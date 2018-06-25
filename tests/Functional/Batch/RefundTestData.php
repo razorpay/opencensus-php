@@ -34,7 +34,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid type passed for batch creation',
+                    'description' => 'Invalid merchant trying to create a non-app-type batch: 100000Razorpay',
                 ],
             ],
             'status_code' => 400,

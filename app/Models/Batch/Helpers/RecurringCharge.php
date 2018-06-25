@@ -40,26 +40,9 @@ class RecurringCharge
             Order\Entity::CURRENCY        => $entry[Header::RECURRING_CHARGE_CURRENCY],
             Order\Entity::RECEIPT         => $entry[Header::RECURRING_CHARGE_RECEIPT],
             Order\Entity::PAYMENT_CAPTURE => true,
-            Order\Entity::NOTES           => self::getOrderNotes($entry),
+            Order\Entity::NOTES           => $entry[HEADER::NOTES] ?? [],
         ];
 
         return $request;
-    }
-
-    protected static function getOrderNotes(array $entry): array
-    {
-        $notes = [];
-
-        foreach (range(1, self::ORDER_NOTES_MAX_COUNT) as $notesIndex)
-        {
-            $notesHeader = self::ORDER_NOTES_PREFIX . $notesIndex;
-
-            if (isset($entry[$notesHeader]) === true)
-            {
-                $notes[$notesHeader] = $entry[$notesHeader];
-            }
-        }
-
-        return $notes;
     }
 }

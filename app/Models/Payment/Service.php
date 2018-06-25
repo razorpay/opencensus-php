@@ -308,6 +308,53 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function fixAttemptedOrders($input)
+    {
+        $paymentIds = $input['payment_ids'];
+        $success = 0;
+        $failed  = 0;
+        $failedPaymentIds = [];
+
+        foreach ($paymentIds as $paymentId)
+        {
+            try
+            {
+                $payment = $this->repo->payment->findByPublicId($paymentId);
+
+                $order = $payment->order;
+
+                $merchant = $payment->merchant;
+
+                if(($payment->isCaptured() === true) and ($order->isPaid() === false))
+                {
+                    $success = $this->repo->transaction(
+                    function() use ($payment, $order, $merchant, $success)
+                    {
+                        $this->getNewProcessor($merchant)->fixAttemptedOrder($payment, $order);
+
+                        $success++;
+
+                        return $success;
+                    });
+                }
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException($ex);
+                $failedPaymentIds[] = $paymentId;
+                $failed++;
+                continue;
+            }
+        }
+
+        return [
+            'success'          => $success,
+            'failed'           => $failed,
+            'failedPaymentIds' => $failedPaymentIds,
+        ];
+
+    }
+
     public function fixAuthorizeAt($input)
     {
         $paymentIds = $input['payment_ids'];

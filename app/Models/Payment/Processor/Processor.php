@@ -19,7 +19,9 @@ use RZP\Models\Customer;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Models\PaymentLink;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Status;
@@ -121,6 +123,10 @@ class Processor
      * @var Order\Entity
      */
     protected $order;
+    /**
+     * @var Offer\Entity
+     */
+    protected $offer;
 
     protected $receiver;
     protected $segment;
@@ -174,6 +180,7 @@ class Processor
     public function flushPaymentObjects()
     {
         $this->order   = null;
+        $this->offer   = null;
         $this->payment = null;
         $this->refund  = null;
         $this->type    = null;
@@ -478,11 +485,12 @@ class Processor
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = [
-            'originalAmount'    => $input['amount'],
-            'fees'              => $fee,
-            'razorpay_fee'      => $fee - $tax,
-            'tax'               => $tax,
-            'amount'            => $input['amount'] + $fee,
+            'originalAmount'  => $input['amount'],
+            'original_amount' => $input['amount'],
+            'fees'            => $fee,
+            'razorpay_fee'    => $fee - $tax,
+            'tax'             => $tax,
+            'amount'          => $input['amount'] + $fee,
         ];
 
         // Set new input amount and fees
@@ -565,15 +573,98 @@ class Processor
 
         $order = $this->fetchOrderFromInput($input);
 
-        if (($order !== null) and
+        $this->setOfferForPaymentFromOrderOrInput($payment, $input);
+
+        if (($this->offer !== null) and
             ($order->isDiscountApplicable() === true))
         {
             $orderAmount = $order->getAmount();
 
-            $discountedAmount = $order->getOffer()->getDiscountedAmount($orderAmount);
+            $discountedAmount = $this->offer->getDiscountedAmount($orderAmount);
 
             $payment->setAmount($discountedAmount);
         }
+    }
+
+    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input)
+    {
+        $order = $payment->order;
+
+        $offer = null;
+
+        // When offer is forced, we do not expect offer_id in the payment input.
+        // Instead we retrieve the offer to be applied (we can figure
+        // this out ourselves from the payment) and validate it.
+        if (($order->hasOffers() === true) and
+            ($order->isOfferForced() === true))
+        {
+            $offer =  $this->selectForcedOfferForPayment($order);
+        }
+        // If offer is not forced, we expect it in the payment input. If it is
+        // not present there, we assume the customer is opting to not use an offer.
+        else if (isset($input[Payment\Entity::OFFER_ID]) === true)
+        {
+            $offer = $this->validateAndFetchOffer($payment, $input);
+        }
+
+        $this->offer = $offer;
+
+        if ($this->offer !== null)
+        {
+            $payment->associateOffer($this->offer);
+
+            $this->trace->info(TraceCode::OFFER_SELECTED_FOR_PAYMENT, [
+                'offer_id'   => $offer->getPublicId(),
+                'payment_id' => $payment->getPublicId(),
+                'order_id'   => $order->getPublicId(),
+            ]);
+        }
+    }
+
+    /**
+     * A forced offer is when merchant has decided that an offer is to be used
+     * for a payment, and the customer does not have a choice to opt out of it.
+     *
+     * - In its simplest form, an offer is associated
+     *   with the order, and we use it for the payment.
+     * - Merchant can also associated multiple offers with a payment, wherein
+     *   only one would be applicable for the payment itself (eg. one offer for each method).
+     *   TODO: Implement auto selection of offer from order->offers, based on payment
+     *
+     * @param  Order\Entity $order
+     * @return Offer\Entity
+     */
+    protected function selectForcedOfferForPayment(Order\Entity $order): Offer\Entity
+    {
+        $offers = $order->offers;
+
+        if ($offers->count() === 1)
+        {
+            return $offers->first();
+        }
+
+        new Exception\LogicException('Auto selection of offer is not implemented yet.');
+    }
+
+    protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
+    {
+        $offerId = $input[Payment\Entity::OFFER_ID];
+
+        Offer\Entity::verifyIdAndStripSign($offerId);
+
+        // If offer is present in the payment request, we need to validate it against the order.
+        if ($payment->order->offers->contains($offerId) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+            [
+                'offer_id' => $offer->getPublicId(),
+                'order_id' => $order->getPublicId(),
+            ]);
+        }
+
+        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
+
+        return $offer;
     }
 
     protected function checkSignature($input, $payment)
@@ -1131,6 +1222,8 @@ class Processor
 
         $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
 
+        $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
+
         $this->validateAndSetReceiverIfApplicable($payment, $input);
 
         $this->validateBankTransferDetailsIfApplicable($payment);
@@ -1386,6 +1479,21 @@ class Processor
         $payment->receiver()->associate($receiver);
     }
 
+    protected function validateAndSetPaymentLinkIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (array_key_exists(Payment\Entity::PAYMENT_LINK_ID, $input) === false)
+        {
+            return;
+        }
+
+        $paymentLinkId = $input[Payment\Entity::PAYMENT_LINK_ID];
+        $paymentLink   = $this->repo->payment_link->findByPublicIdAndMerchant($paymentLinkId, $this->merchant);
+
+        (new PaymentLink\Core)->validateIsPaymentInitiatable($paymentLink, $payment);
+
+        $payment->paymentLink()->associate($paymentLink);
+    }
+
     protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)
     {
         if ($this->order === null)
@@ -1579,6 +1687,16 @@ class Processor
     {
         // Bank transfers are auto-captured only if they are expected. This is checked later.
         if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        //
+        // Post payment authorization payment link's payments are actually auto captured but there is more logic in
+        // the flow and in handling capture failures etc which is all done in specific method(easy to move out to a
+        // service) triggered from postPaymentAuthorizeProcessing() method.
+        //
+        if ($payment->hasPaymentLink() === true)
         {
             return false;
         }
@@ -2040,5 +2158,22 @@ class Processor
                 Payment\Entity::ID              => $payment->getId(),
                 Payment\Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt()
             ]);
+    }
+
+    public function fixAttemptedOrder($payment, $order)
+    {
+        $this->payment = $payment;
+
+        $offer = $this->selectForcedOfferForPayment($order);
+
+        $this->payment->associateOffer($offer);
+
+        $this->postPaymentAuthorizeOfferProcessing($this->payment);
+
+        $this->updateOrderStatusPaidIfApplicable($order, $this->payment);
+
+        $this->repo->saveOrFail($order);
+
+        $this->eventOrderPaid();
     }
 }

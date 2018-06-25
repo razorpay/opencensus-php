@@ -21,7 +21,7 @@ class Gateway
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
     const BILLDESK               = 'billdesk';
-    const BLADE                  = 'blade';
+    const MPI_BLADE              = 'mpi_blade';
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
     const ESIGNER_DIGIO          = 'esigner_digio';
@@ -176,6 +176,8 @@ class Gateway
         Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::HITACHI,
+        Payment\Gateway::UPI_HULK,
+        Payment\Gateway::NETBANKING_AIRTEL,
     ];
 
     public static $channels = [
@@ -183,7 +185,7 @@ class Gateway
         self::ATOM                => Settlement\Channel::ATOM,
         self::AXIS_GENIUS         => Settlement\Channel::KOTAK,
         self::AXIS_MIGS           => Settlement\Channel::KOTAK,
-        self::BLADE               => Settlement\Channel::KOTAK,
+        self::MPI_BLADE           => Settlement\Channel::KOTAK,
         self::BILLDESK            => Settlement\Channel::KOTAK,
         self::EBS                 => Settlement\Channel::KOTAK,
         self::ENACH_RBL           => Settlement\Channel::KOTAK,
@@ -232,7 +234,7 @@ class Gateway
             self::AMEX,
             self::CYBERSOURCE,
             self::FIRST_DATA,
-            self::BLADE,
+            self::MPI_BLADE,
             self::HITACHI,
             self::CARD_FSS,
         ],
@@ -397,7 +399,7 @@ class Gateway
         self::AMEX => [
             Network::AMEX
         ],
-        self::BLADE => [
+        self::MPI_BLADE => [
             Network::MC,
             Network::VISA
         ],
@@ -628,6 +630,48 @@ class Gateway
             IFSC::TSIX,
             IFSC::AMRX,
             IFSC::DDBX,
+            IFSC::SAGX,
+            IFSC::IUCB,
+            IFSC::KDCX,
+            IFSC::VIJX,
+            IFSC::ZSHX,
+            IFSC::PCUX,
+            IFSC::GCUX,
+            IFSC::MSOX,
+            IFSC::BACB,
+            IFSC::NSGX,
+            IFSC::JASB,
+            IFSC::JUCX,
+            IFSC::STRX,
+            IFSC::KSCB,
+            IFSC::VCCX,
+            IFSC::AMAX,
+            IFSC::BURX,
+            IFSC::MERX,
+            IFSC::KHAX,
+            IFSC::TEHX,
+            IFSC::SCCX,
+            IFSC::TGMB,
+            IFSC::JSBP,
+            IFSC::BHSX,
+            IFSC::KUNS,
+            IFSC::APBL,
+            IFSC::KASX,
+            IFSC::SWMX,
+            IFSC::TCUB,
+            IFSC::TECX,
+            IFSC::CHSX,
+            IFSC::CURX,
+            IFSC::JSCX,
+            IFSC::NOIX,
+            IFSC::PDCX,
+            IFSC::RCUX,
+            IFSC::SHUX,
+            IFSC::ZSGX,
+            IFSC::KARB,
+            IFSC::SDCB,
+            IFSC::TSAB,
+            IFSC::VJSX,
         ]
     ];
 
@@ -817,7 +861,7 @@ class Gateway
      * @var array
      */
     public static $internationalCardGateways = [
-        Gateway::BLADE,
+        Gateway::MPI_BLADE,
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX,

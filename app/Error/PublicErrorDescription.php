@@ -613,6 +613,9 @@ class PublicErrorDescription
 
     const BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT                       = 'Merchant does not have enough balance for negative adjustment';
 
+    const BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE                                  = 'Payment cannot be made on this payment link';
+    const BAD_REQUEST_PAYMENT_LINK_PAYMENT_AMOUNT_MISMATCH                      = 'Payment amount provided does not match amount expected for the payment link';
+
     const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                               = 'No data present for gateway file processing in the given time period';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                       = 'Error occurred trying to create file';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE                          = 'Error occurred while sending file';

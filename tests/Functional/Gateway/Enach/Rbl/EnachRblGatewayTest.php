@@ -48,14 +48,14 @@ class EnachRblGatewayTest extends TestCase
 
     public function testSuccessfulEsignGeneration()
     {
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
         $payment['bank_account'] = [
-            'account_number'    => '914010009305862',
-            'ifsc'              => 'utib0000123',
-            'name'              => 'Test account',
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
         ];
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
 
         $this->doAuthPayment($payment);
@@ -77,17 +77,16 @@ class EnachRblGatewayTest extends TestCase
         $payment['bank_account'] = [
             'account_number' => '914010009305864',
             'ifsc'           => 'utib0000123',
-            'name'           => 'Test account'
+            'name'           => 'Test account',
         ];
 
-        $order = $this->fixtures->create('order:emandate_order', [ 'amount' => $payment['amount'] ]);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
 
         $payment['order_id'] = $order->getPublicId();
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($testData, function () use ($payment)
-        {
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
             $this->doAuthPayment($payment);
         });
 
@@ -102,107 +101,53 @@ class EnachRblGatewayTest extends TestCase
     {
         list($payment, $token, $order) = $this->createEmandatePayment();
 
-        $replacePair = [
-            '{$date}' => Carbon::now()->toIso8601String(),
-            '{$paymentId}' => $payment->getId(),
-            '{$status}' => 'true',
-            '{$mandateId}' => 'UTIB6000000005844847',
-            '{$firstCol}' => Carbon::now()->addDay()->format('Y-m-d'),
-            '{$finalCol}' => Carbon::now()->addDay()->addYears(5)->format('Y-m-d'),
-            '{$currency}' => 'INR',
-            '{$maxAmount}' => '0',
-            '{$accountNumber}' => $token->getAccountNumber(),
-            '{$ifsc}' => $token->getIfsc(),
-        ];
+        $batchFile = $this->getAcknowledgeBatchFileToUpload($payment);
 
-        $reconFileStub = file_get_contents(__DIR__ . '/acknowledge.stub');
-
-        $reconFileContent = strtr($reconFileStub, $replacePair);
-
-        $handle = tmpfile();
-        fwrite($handle, $reconFileContent);
-        fseek($handle, 0);
-        $file = (new TestingFile('MMS-CREATE-RATN-RATNA0001-06032018-ESIGN6000001-INP-ACK.xml', $handle));
-
-        $request = [
-            'url' => '/admin/batches',
-            'method' => 'POST',
-            'content' => [
-                'type' => 'emandate',
-                'sub_type' => 'acknowledge',
-                'gateway' => 'enach_rbl',
-            ],
-            'files' => [
-                'file' => $file,
-            ]
-        ];
-
+        $url = '/admin/batches';
         $this->ba->adminAuth();
 
-        $batch = $this->makeRequestAndGetContent($request);
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'acknowledge');
 
         $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('created', $batch['status']);
 
         $enach = $this->getDbLastEntityToArray('enach');
 
-        $this->assertEquals('true', $enach['acknowledge_status']);
         $this->assertNotNull($enach['umrn']);
+        $this->assertEquals('1', $enach['acknowledge_status']);
 
         $token = $this->getDbLastEntityToArray('token');
 
+        $this->assertNotNull($token['acknowledged_at']);
         $this->assertEquals('initiated', $token['recurring_status']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
     }
 
     public function testAcknowledgementFailedReconciliation()
     {
         list($payment, $token, $order) = $this->createEmandatePayment();
 
-        $replacePair = [
-            '{$date}' => Carbon::now()->toIso8601String(),
-            '{$paymentId}' => $payment->getId(),
-            '{$status}' => 'false',
-            '{$mandateId}' => 'UTIB6000000005844847',
-            '{$firstCol}' => Carbon::now()->addDay()->format('Y-m-d'),
-            '{$finalCol}' => Carbon::now()->addDay()->addYears(5)->format('Y-m-d'),
-            '{$currency}' => 'INR',
-            '{$maxAmount}' => '0',
-            '{$accountNumber}' => $token->getAccountNumber(),
-            '{$ifsc}' => $token->getIfsc(),
+        $itemReplace = [
+            'UMRN'         => '',
+            'ACK_DESC'     => 'so this has failed',
         ];
 
-        $reconFileStub = file_get_contents(__DIR__ . '/acknowledge.stub');
+        $batchFile = $this->getAcknowledgeBatchFileToUpload($payment, $itemReplace);
 
-        $reconFileContent = strtr($reconFileStub, $replacePair);
-
-        $handle = tmpfile();
-        fwrite($handle, $reconFileContent);
-        fseek($handle, 0);
-        $file = (new TestingFile('MMS-CREATE-RATN-RATNA0001-06032018-ESIGN6000001-INP-ACK.xml', $handle));
-
-        $request = [
-            'url' => '/admin/batches',
-            'method' => 'POST',
-            'content' => [
-                'type' => 'emandate',
-                'sub_type' => 'acknowledge',
-                'gateway' => 'enach_rbl',
-            ],
-            'files' => [
-                'file' => $file,
-            ]
-        ];
-
+        $url = '/admin/batches';
         $this->ba->adminAuth();
 
-        $batch = $this->makeRequestAndGetContent($request);
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'acknowledge');
 
         $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('created', $batch['status']);
 
         $enach = $this->getDbLastEntityToArray('enach');
 
-        $this->assertEquals('false', $enach['acknowledge_status']);
+        $this->assertEquals('0', $enach['acknowledge_status']);
         $this->assertNotNull($enach['umrn']);
 
         $token = $this->getDbLastEntityToArray('token');
@@ -216,14 +161,14 @@ class EnachRblGatewayTest extends TestCase
 
         Carbon::setTestNow($dt);
 
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
         $payment['bank_account'] = [
-            'account_number'    => '914010009305862',
-            'ifsc'              => 'utib0000123',
-            'name'              => 'Test account',
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
         ];
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
 
         $this->doAuthPayment($payment);
@@ -268,8 +213,7 @@ class EnachRblGatewayTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($testData, function() use ($url, $batchFile)
-        {
+        $this->runRequestResponseFlow($testData, function() use ($url, $batchFile) {
             $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
         });
     }
@@ -285,8 +229,7 @@ class EnachRblGatewayTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($testData, function() use ($url, $batchFile)
-        {
+        $this->runRequestResponseFlow($testData, function() use ($url, $batchFile) {
             $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
         });
     }
@@ -322,7 +265,7 @@ class EnachRblGatewayTest extends TestCase
         $this->refundPayment($payment['public_id']);
 
         $payment = $this->getDbLastEntity('payment')->toArray();
-        $refund = $this->getDbLastEntity('refund')->toArray();
+        $refund  = $this->getDbLastEntity('refund')->toArray();
 
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals(0, $refund['amount']);
@@ -332,14 +275,14 @@ class EnachRblGatewayTest extends TestCase
 
     public function testDebitFileGeneration()
     {
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
         $payment['bank_account'] = [
-            'account_number'    => '914010009305862',
-            'ifsc'              => 'UTIB0000123',
-            'name'              => 'Test account',
+            'account_number' => '914010009305862',
+            'ifsc'           => 'UTIB0000123',
+            'name'           => 'Test account',
         ];
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
 
         $this->doAuthPayment($payment);
@@ -354,13 +297,13 @@ class EnachRblGatewayTest extends TestCase
             'token',
             $tokenId,
             [
-                Token\Entity::GATEWAY_TOKEN => 'UTIB6000000005844847',
-                Token\Entity::RECURRING => 1,
-                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED
+                Token\Entity::GATEWAY_TOKEN    => 'UTIB6000000005844847',
+                Token\Entity::RECURRING        => 1,
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
             ]);
 
-        $payment = $this->getEmandatePaymentArray('UTIB', null, 3000);
-        $payment['token'] = $tokenId;
+        $payment             = $this->getEmandatePaymentArray('UTIB', null, 3000);
+        $payment['token']    = $tokenId;
         $payment['order_id'] = $order->getPublicId();
 
         unset($payment['auth_type']);
@@ -396,15 +339,14 @@ class EnachRblGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             [
                 'payment_id' => $paymentId,
-                'action' => 'authorize',
-                'bank' => 'UTIB',
-                'status' => null
+                'action'     => 'authorize',
+                'bank'       => 'UTIB',
+                'status'     => null,
             ],
             $enach
         );
 
-        Mail::assertQueued(Email::class, function ($mail) use ($file)
-        {
+        Mail::assertQueued(Email::class, function($mail) use ($file) {
             $key = Gateway::ENACH_RBL . '_debit';
 
             $today = Carbon::now(Timezone::IST)->format('d-m-Y');
@@ -442,7 +384,7 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'status' => 'PAID'
+                'status' => 'PAID',
             ],
             $enach
         );
@@ -472,7 +414,7 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'status' => 'REJECT',
+                'status'        => 'REJECT',
                 'error_message' => 'Account closed or transferred',
             ],
             $enach
@@ -481,14 +423,14 @@ class EnachRblGatewayTest extends TestCase
 
     protected function makeDebitPayment()
     {
-        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
         $payment['bank_account'] = [
-            'account_number'    => '914010009305862',
-            'ifsc'              => 'UTIB0000123',
-            'name'              => 'Test account',
+            'account_number' => '914010009305862',
+            'ifsc'           => 'UTIB0000123',
+            'name'           => 'Test account',
         ];
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
 
         $this->doAuthPayment($payment);
@@ -503,13 +445,13 @@ class EnachRblGatewayTest extends TestCase
             'token',
             $tokenId,
             [
-                Token\Entity::GATEWAY_TOKEN => 'UTIB6000000005844847',
-                Token\Entity::RECURRING => 1,
-                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED
+                Token\Entity::GATEWAY_TOKEN    => 'UTIB6000000005844847',
+                Token\Entity::RECURRING        => 1,
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
             ]);
 
-        $payment = $this->getEmandatePaymentArray('UTIB', null, $order->getAmount());
-        $payment['token'] = $tokenId;
+        $payment             = $this->getEmandatePaymentArray('UTIB', null, $order->getAmount());
+        $payment['token']    = $tokenId;
         $payment['order_id'] = $order->getPublicId();
 
         unset($payment['auth_type']);
@@ -536,26 +478,26 @@ class EnachRblGatewayTest extends TestCase
                 'config' => [
                     'start_cell' => 'A1',
                 ],
-                'items' => [
+                'items'  => [
                     [
-                        'SRNO'                  => '1',
-                        'ECS_DATE'              => Carbon::today()->format('m/d/Y'),
-                        'SETTLEMENT DATE'       => Carbon::today()->format('m/d/Y'),
-                        'CUST_REFNO'            => '',
-                        'SCH_REFNO'             => '',
-                        'CUSTOMER_NAME'         => 'User name',
-                        'AMOUNT'                => $payment['amount'] / 100,
-                        'REFNO'                 => $payment['id'],
-                        'UMRN'                  => 'UTIB6000000005844847',
-                        'UPLOAD_DATE'           => '',
-                        'ACKUPD_DATE'           => '',
-                        'RESPONSE_RECEIVED'     => '',
-                        'STATUS'                => $fileStatuses['status'],
-                        'REASON_CODE'           => $fileStatuses['error_code'],
-                        'REASON_DESCRIPTION'    => $fileStatuses['error_desc'],
+                        'SRNO'               => '1',
+                        'ECS_DATE'           => Carbon::today()->format('m/d/Y'),
+                        'SETTLEMENT DATE'    => Carbon::today()->format('m/d/Y'),
+                        'CUST_REFNO'         => '',
+                        'SCH_REFNO'          => '',
+                        'CUSTOMER_NAME'      => 'User name',
+                        'AMOUNT'             => $payment['amount'] / 100,
+                        'REFNO'              => $payment['id'],
+                        'UMRN'               => 'UTIB6000000005844847',
+                        'UPLOAD_DATE'        => '',
+                        'ACKUPD_DATE'        => '',
+                        'RESPONSE_RECEIVED'  => '',
+                        'STATUS'             => $fileStatuses['status'],
+                        'REASON_CODE'        => $fileStatuses['error_code'],
+                        'REASON_DESCRIPTION' => $fileStatuses['error_desc'],
                     ],
-                ]
-            ]
+                ],
+            ],
         ];
 
         $data = $this->getExcelString('Debit MIS', $content);
@@ -566,16 +508,16 @@ class EnachRblGatewayTest extends TestCase
         $file = (new TestingFile('Debit MIS.xlsx', $handle));
 
         $request = [
-            'url' => '/admin/batches',
-            'method' => 'POST',
+            'url'     => '/admin/batches',
+            'method'  => 'POST',
             'content' => [
-                'type' => 'emandate',
+                'type'     => 'emandate',
                 'sub_type' => 'debit',
-                'gateway' => 'enach_rbl',
+                'gateway'  => 'enach_rbl',
             ],
-            'files' => [
+            'files'   => [
                 'file' => $file,
-            ]
+            ],
         ];
 
         $this->ba->adminAuth();
@@ -589,14 +531,12 @@ class EnachRblGatewayTest extends TestCase
     {
         $excel = Excel::create(
             $name,
-            function ($excel) use ($sheets)
-            {
+            function($excel) use ($sheets) {
                 foreach ($sheets as $sheetName => $data)
                 {
                     $excel->sheet(
                         $sheetName,
-                        function ($sheet) use ($data)
-                        {
+                        function($sheet) use ($data) {
                             $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
                         }
                     );
@@ -616,7 +556,7 @@ class EnachRblGatewayTest extends TestCase
         if ($mock)
         {
             $request = $this->makeFirstGatewayPaymentMockRequest(
-                                                    $url, $method, $content);
+                $url, $method, $content);
         }
 
         return $this->submitPaymentCallbackRequest($request);
@@ -643,7 +583,7 @@ class EnachRblGatewayTest extends TestCase
 
         $token = $this->fixtures->create('customer:emandate_token', [
             'aadhaar_number' => '390051307206',
-            'auth_type' => 'aadhaar']);
+            'auth_type'      => 'aadhaar']);
 
         $payment = [
             'auth_type'         => 'aadhaar',
@@ -674,8 +614,7 @@ class EnachRblGatewayTest extends TestCase
 
         if ($webhook === true)
         {
-            $this->mockInfernoFire(function ($data) use ($testData)
-            {
+            $this->mockInfernoFire(function($data) use ($testData) {
                 $data['event'] = json_decode($data['event'], true);
 
                 $this->assertEquals('token.confirmed', $data['event']['event']);
@@ -692,11 +631,73 @@ class EnachRblGatewayTest extends TestCase
             'enach',
             $gatewayEntity['id'],
             [
-                'umrn' => 'UTIB6000000005844847',
+                'umrn'               => 'UTIB6000000005844847',
                 'acknowledge_status' => 'true',
             ]);
 
         return $payment;
+    }
+
+    protected function getAcknowledgeBatchFileToUpload($payment, $contentToReplace = [])
+    {
+        $item = [
+            'MANDATE_DATE' => 'some date',
+            'BATCH'        => 10,
+            'IHNO'         => 6411,
+            'MANDATE_TYPE' => 'NEW',
+            'UMRN'         => 'UTIB6000000005393968',
+            'REF_1'        => $payment->getId(),
+            'REF_2'        => '',
+            'CUST_NAME'    => 'customer name',
+            'BANK'         => 'UTIB',
+            'BRANCH'       => 'branch',
+            'BANK_CODE'    => 'UTIB0000123',
+            'AC_TYPE'      => 'SAVINGS',
+            'ACNO'         => '914010009305862',
+            'ACK_DATE'     => 'some date',
+            'ACK_DESC'     => 'description',
+            'AMOUNT'       => 99999,
+            'FREQUENCY'    => 'ADHO',
+            'TEL_NO'       => '',
+            'MOBILE_NO'    => '9998887776',
+            'MAIL_ID'      => 'test@enach.com',
+            'UPLOAD_BATCH' => 'ESIGN000001',
+            'UPLOAD_DATE'  => 'some date',
+            'UPDATE_DATE'  => '',
+            'SOLE_ID'      => '',
+        ];
+
+        $item = array_merge($item, $contentToReplace);
+
+        $sheets = [
+            'Acknowledgement_summary' => [
+                'config' => [
+                    'start_cell' => 'A1',
+                ],
+                'items'  => [
+                    [
+                        'random' => '1',
+                    ],
+                ],
+            ],
+            'ACKNOWLEDGMENT REPORT'  => [
+                'config' => [
+                    'start_cell' => 'A2',
+                ],
+                'items'  => [
+                    $item
+                ],
+            ],
+        ];
+
+        $data = $this->getExcelString('Acknowledgment Report_15062018_Acknowledgment Report', $sheets);
+
+        $handle = tmpfile();
+        fwrite($handle, $data);
+        fseek($handle, 0);
+        $file = (new TestingFile('Acknowledgment Report_15062018_Acknowledgment Report.xlsx', $handle));
+
+        return $file;
     }
 
     protected function getBatchFileToUpload($payment)
@@ -706,17 +707,17 @@ class EnachRblGatewayTest extends TestCase
                 'config' => [
                     'start_cell' => 'A1',
                 ],
-                'items' => [
+                'items'  => [
                     [
-                        'random' => '1'
-                    ]
-                ]
+                        'random' => '1',
+                    ],
+                ],
             ],
             'sheet2' => [
                 'config' => [
                     'start_cell' => 'A2',
                 ],
-                'items' => [
+                'items'  => [
                     [
                         'SRNO'            => '1',
                         'MANDATE_DATE'    => Carbon::today()->format('m/d/Y'),
@@ -749,9 +750,9 @@ class EnachRblGatewayTest extends TestCase
                         'STATUS'          => 'Active',
                         'CODE_DESC'       => '',
                         'RETURN_CODE'     => '',
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ];
 
         $data = $this->getExcelString('Response Report-Response Report', $sheets);
@@ -764,19 +765,19 @@ class EnachRblGatewayTest extends TestCase
         return $file;
     }
 
-    protected function makeRequestWithGivenUrlAndFile($url, $file)
+    protected function makeRequestWithGivenUrlAndFile($url, $file, $type = 'register')
     {
         $request = [
-            'url' => $url,
-            'method' => 'POST',
+            'url'     => $url,
+            'method'  => 'POST',
             'content' => [
-                'type' => 'emandate',
-                'sub_type' => 'register',
-                'gateway' => 'enach_rbl',
+                'type'     => 'emandate',
+                'sub_type' => $type,
+                'gateway'  => 'enach_rbl',
             ],
-            'files' => [
+            'files'   => [
                 'file' => $file,
-            ]
+            ],
         ];
 
         return $this->makeRequestAndGetContent($request);

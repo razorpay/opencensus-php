@@ -44,7 +44,7 @@ class DirectDebit
             Order\Entity::CURRENCY        => $row[Header::DIRECT_DEBIT_CURRENCY],
             Order\Entity::RECEIPT         => $row[Header::DIRECT_DEBIT_RECEIPT],
             Order\Entity::PAYMENT_CAPTURE => true,
-            Order\Entity::NOTES           => self::getOrderNotes($row),
+            Order\Entity::NOTES           => $row[HEADER::NOTES] ?? [],
         ];
 
         return $request;
@@ -58,22 +58,5 @@ class DirectDebit
         ];
 
         return $request;
-    }
-
-    protected static function getOrderNotes(array $entry): array
-    {
-        $notes = [];
-
-        foreach (range(1, self::ORDER_NOTES_MAX_COUNT) as $notesIndex)
-        {
-            $notesHeader = self::ORDER_NOTES_PREFIX . $notesIndex;
-
-            if (isset($entry[$notesHeader]) === true)
-            {
-                $notes[$notesHeader] = $entry[$notesHeader];
-            }
-        }
-
-        return $notes;
     }
 }

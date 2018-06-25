@@ -118,6 +118,9 @@ return array(
         'expand.*' => [
             'in' => 'Value of each expand must be one of following types: :values',
         ],
+        'emails.*' => [
+            'email' => 'Value must be a valid email address',
+        ],
     ],
     /*
     |--------------------------------------------------------------------------
