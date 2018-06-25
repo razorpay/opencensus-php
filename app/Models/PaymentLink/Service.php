@@ -74,7 +74,30 @@ class Service extends Base\Service
     {
         $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return (new ViewSerializer($paymentLink))->serializeForHosted();
+        $paymentLink->getValidator()->validateIsViewable();
+
+        $payload['data'] = (new ViewSerializer($paymentLink))->serializeForHosted();
+
+        $udfSchema = $this->getUdfSchemaIfDefined($id);
+
+        if (empty($udfSchema) === false)
+        {
+            $payload['udf_schema'] = $udfSchema;
+        }
+
+        return $payload;
+    }
+
+    protected function getUdfSchemaIfDefined(string $id)
+    {
+        Entity::stripSignWithoutValidation($id);
+
+        $schemaAccessor = new FileAccess(FileAccess::UDF_SCHEMA, $id);
+
+        if ($schemaAccessor->exists() === true)
+        {
+            return $schemaAccessor->get();
+        }
     }
 
     public function getHostedViewTemplate(string $id)
