@@ -84,7 +84,7 @@ class Validator extends Base\Validator
         Entity::BRAND_COLOR              => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Entity::TRANSACTION_REPORT_EMAIL => 'sometimes|array',
         Entity::LOGO_URL                 => 'sometimes|max:2000',
-        Entity::INVOICE_LABEL_FIELD      => 'sometimes|filled|string|max:50|in:name,billing_label',
+        Entity::INVOICE_LABEL_FIELD      => 'sometimes|filled|string|max:50|in:business_name,business_dba',
         Entity::AUTO_CAPTURE_LATE_AUTH   => 'sometimes|boolean',
         Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
         MerchantDetail::GSTIN            => 'sometimes|nullable|string|size:15',
@@ -443,7 +443,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateVisibleFeatures(array $input)
+    public function validateVisibleFeatures(array $input)
     {
         $featureNames = array_keys($input['features']);
 
@@ -644,6 +644,53 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED);
+        }
+    }
+
+    /**
+     * Throw an error if the merchant is already a partner
+     *
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIfAlreadyPartner(Entity $merchant)
+    {
+        if ($merchant->isPartner() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER);
+        }
+    }
+
+    /**
+     * Throw an error if the merchant is not a partner
+     *
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIfNotAPartner(Entity $merchant)
+    {
+        if ($merchant->isPartner() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
+        }
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNotLinkedAccount(Entity $merchant)
+    {
+        if ($merchant->isLinkedAccount() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER);
+
         }
     }
 }

@@ -81,18 +81,20 @@ class Validator extends Base\Validator
         self::TAX_INPUTS,
     ];
 
-    public function validateType($attribute, $value)
+    public function validateType($attribute, $type)
     {
-        Item\Type::checkType($value);
+        Item\Type::checkType($type);
 
-        $lineItem    = $this->entity;
-        $morphEntity = $lineItem->entity;
+        $lineItem        = $this->entity;
+        $morphEntity     = $lineItem->entity;
+        $morphEntityId   = $morphEntity->getId();
+        $morphEntityType = $morphEntity->getEntity();
 
         $traceData = [
             Entity::ID          => $lineItem->getId(),
-            Entity::TYPE        => $value,
-            Entity::ENTITY_ID   => $morphEntity->getId(),
-            Entity::ENTITY_TYPE => $morphEntity->getEntity(),
+            Entity::TYPE        => $type,
+            Entity::ENTITY_ID   => $morphEntityId,
+            Entity::ENTITY_TYPE => $morphEntityType,
         ];
 
         if (method_exists($morphEntity, 'getAllowedLineItemTypes') === false)
@@ -102,9 +104,12 @@ class Validator extends Base\Validator
 
         $allowed = $morphEntity->getAllowedLineItemTypes();
 
-        if (in_array($value, $allowed, true) === false)
+        if (in_array($type, $allowed, true) === false)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE, Entity::TYPE, $traceData);
+            throw new BadRequestValidationFailureException(
+                "{$morphEntityType} can only use item of one of following types: " . implode(', ', $allowed),
+                Entity::TYPE,
+                $traceData);
         }
     }
 

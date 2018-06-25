@@ -229,27 +229,24 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
-
-        $actualAmount = $this->formatAmount($content[ResponseFields::AMOUNT]);
-
-        if ($expectedAmount === $actualAmount)
+        if (isset($content[ResponseFields::AMOUNT]) === false)
         {
             return false;
         }
 
-       return true;
+        $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
+
+        $actualAmount = $this->formatAmount($content[ResponseFields::AMOUNT]);
+
+        return ($expectedAmount !== $actualAmount);
     }
 
     protected function parseVerifyResponse(\Requests_Response $response, $payment)
     {
-        if (strpos($response->body, 'No Records Fetched') !== false)
+        if ((strpos($response->body, 'No Records Fetched') !== false) or
+            (empty($response->body) === true))
         {
-           return [
-               ResponseFields::TXN_STATUS => 'FAILURE',
-               ResponseFields::AMOUNT     => $this->formatAmount($payment['amount'] / 100),
-               ResponseFields::PAYEE_ID   => $payment['id'],
-           ];
+           return [];
         }
 
         $response = str_replace('|', '&', $response->body);
@@ -279,7 +276,8 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if ($content[ResponseFields::TXN_STATUS] === Status::VERIFY_SUCCESS)
+        if ((isset($content[ResponseFields::TXN_STATUS]) === true) and
+            ($content[ResponseFields::TXN_STATUS] === Status::VERIFY_SUCCESS))
         {
             $verify->gatewaySuccess = true;
         }
@@ -305,21 +303,19 @@ class Gateway extends Base\Gateway
         $attributesToSave[Base\Entity::RECEIVED] = true;
 
         // If auth status was not success, we update the entity with verify status
-        if ($gatewayPayment->getStatus() !== Status::SUCCESS)
+        if (($gatewayPayment->getStatus() !== Status::SUCCESS) and (isset($content[ResponseFields::TXN_STATUS]) === true))
         {
-            $attributesToSave[Base\Entity::STATUS] = $this->getAuthMappedVerifyStatus($content);
+            $attributesToSave[Base\Entity::STATUS] = $this->getAuthMappedVerifyStatus($content[ResponseFields::TXN_STATUS]);
         }
 
         return $attributesToSave;
     }
 
-    protected function getAuthMappedVerifyStatus(array $content)
+    protected function getAuthMappedVerifyStatus($verifyStatus)
     {
-        $verifyStatus = $content[ResponseFields::TXN_STATUS];
-
         return ($verifyStatus === Status::VERIFY_SUCCESS) ? Status::SUCCESS : Status::FAILED;
     }
-
+    
     protected function checkGatewayStatus(array $content)
     {
         if ((empty($content[ResponseFields::PAID]) === true) or

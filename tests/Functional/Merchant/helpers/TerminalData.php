@@ -796,4 +796,24 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED ,
         ],
     ],
+
+    'testAddAmazonPayTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_amazonpay',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_password' => '12345678',
+                'gateway_access_code'       => '1234567880123456',
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway'                   => 'wallet_amazonpay',
+                'gateway_merchant_id'       => '12345',
+                'enabled'                   => true
+            ]
+        ]
+    ],
 ];

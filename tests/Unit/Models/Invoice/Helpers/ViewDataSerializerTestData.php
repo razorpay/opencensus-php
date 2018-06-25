@@ -79,8 +79,9 @@ return [
                 'billing_address_text' => "billing address line 1\nsome line two\nBangalore, Karnataka, India - 560078",
                 'shipping_address_text' => "some line one\nsome line two\nBangalore, Karnataka, India - 560078",
             ],
-            'supply_state_name' => 'Bihar',
-            'merchant_gstin'    => '29kjsngjk213922',
+            'supply_state_name'  => 'Bihar',
+            'merchant_gstin'     => '29kjsngjk213922',
+            'has_address_or_pos' => true,
         ],
     ],
 

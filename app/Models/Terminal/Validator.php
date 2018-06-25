@@ -43,7 +43,7 @@ class Validator extends Base\Validator
         Entity::MODE                        => 'sometimes|in:1,2,3',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::TPV                         => 'sometimes|in:0,1,2',
-        Entity::CORPORATE                   => 'sometimes_if:netbanking,1|boolean',
+        Entity::CORPORATE                   => 'sometimes_if:netbanking,1|in:0,1,2',
         Entity::EXPECTED                    => 'sometimes|boolean',
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
@@ -504,6 +504,13 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
+    protected static $walletAmazonpayTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:wallet_amazonpay',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+    ];
+
     protected function validateGateway($input)
     {
         Payment\Gateway::validateGateway($input['gateway']);
@@ -514,6 +521,7 @@ class Validator extends Base\Validator
             $input[Entity::SHARED],
             $input[Entity::CATEGORY],
             $input[Entity::CORPORATE],
+            $input[Entity::BANKING_TYPES],
             $input[Entity::NETBANKING],
             $input[Entity::EMANDATE],
             $input[Entity::MERCHANT_ID],

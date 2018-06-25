@@ -291,6 +291,23 @@ class DisputeTest extends TestCase
         $this->assertEquals(false, $payment['disputed']);
     }
 
+    public function testDisputeEditWonPostDeduct()
+    {
+        $this->createWebhook(['events' => ['payment.dispute.won' => '1', 'payment.dispute.lost' => '1']]);
+
+        $data = $this->updateEditTestData(['deduct_at_onset' => 1, 'amount' => 1000000]);
+
+        $eventTestDataKey = 'testDisputeWonEventPostDeductData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $payment['disputed']);
+    }
+
     public function testDisputeEditClose()
     {
         $this->createWebhook(['events' => ['payment.dispute.won' => '1', 'payment.dispute.closed' => '1']]);
@@ -451,8 +468,6 @@ class DisputeTest extends TestCase
 
         $this->assertEquals($dispute['id'], $content['id']);
         $this->assertEquals($testdata['request']['content']['status'], $content['status']);
-        $this->assertEquals($input['amount'], $dispute['amount_deducted']);
-        $this->assertEquals($dispute['amount_deducted'], $dispute['amount_reversed']);
         $this->assertEquals($adjustment['amount'], $dispute['amount_reversed']);
         $this->assertEquals($input['amount'], ($newMerchantBalance - $oldMerchantBalance));
         $this->assertEquals('adjustment', $txn['type']);

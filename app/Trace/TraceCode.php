@@ -267,6 +267,26 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_BATCH_NOTIFY_JOB_ERROR                = 'INVOICE_BATCH_NOTIFY_JOB_ERROR';
     const INVOICE_BATCH_NOTIFY_JOB_INV_NOTIFY_ERROR     = 'INVOICE_BATCH_NOTIFY_JOB_INV_NOTIFY_ERROR';
 
+    const PAYMENT_LINK_CREATE_REQUEST                   = 'PAYMENT_LINK_CREATE_REQUEST';
+    const PAYMENT_LINK_CREATED                          = 'PAYMENT_LINK_CREATED';
+    const PAYMENT_LINK_UPDATE_REQUEST                   = 'PAYMENT_LINK_UPDATE_REQUEST';
+    const PAYMENT_LINK_UPDATED                          = 'PAYMENT_LINK_UPDATED';
+    const PAYMENT_LINK_STATUS_CHANGE                    = 'PAYMENT_LINK_STATUS_CHANGE';
+    const PAYMENT_LINK_SEND_NOTIFICATION                = 'PAYMENT_LINK_SEND_NOTIFICATION';
+    const PAYMENT_LINK_EMAIL_REQUEST                    = 'PAYMENT_LINK_EMAIL_REQUEST';
+    const PAYMENT_LINK_NOTIFY_BY_EMAIL_FAILURE          = 'PAYMENT_LINK_NOTIFY_BY_EMAIL_FAILURE';
+    const PAYMENT_LINK_EXPIRE_CRON_SUMMARY              = 'PAYMENT_LINK_EXPIRE_CRON_SUMMARY';
+    const PAYMENT_LINK_EXPIRE_ERROR                     = 'PAYMENT_LINK_EXPIRE_ERROR';
+    const PAYMENT_LINK_PAYMENT_REFUND_REQUEST           = 'PAYMENT_LINK_PAYMENT_REFUND_REQUEST';
+    const PAYMENT_LINK_PAYMENT_REFUND_HANDLED           = 'PAYMENT_LINK_PAYMENT_REFUND_HANDLED';
+    const PAYMENT_LINK_PAYMENT_REFUND_ERROR             = 'PAYMENT_LINK_PAYMENT_REFUND_ERROR';
+    const PAYMENT_LINK_POST_PAYMENT_CAPTURE_ATTEMPT     = 'PAYMENT_LINK_POST_PAYMENT_CAPTURE_ATTEMPT';
+    const PAYMENT_LINK_UPDATED_POST_PAYMENT_CAPTURE     = 'PAYMENT_LINK_UPDATED_POST_PAYMENT_CAPTURE';
+    const PAYMENT_LINK_DEACTIVATE_REQUEST               = 'PAYMENT_LINK_DEACTIVATE_REQUEST';
+    const PAYMENT_LINK_DEACTIVATED                      = 'PAYMENT_LINK_DEACTIVATED';
+    const PAYMENT_LINK_ACTIVATE_REQUEST                 = 'PAYMENT_LINK_ACTIVATE_REQUEST';
+    const PAYMENT_LINK_ACTIVATED                        = 'PAYMENT_LINK_ACTIVATED';
+
     const SUBSCRIPTION_VIEW_DATA_SERIALIZER_RESPONSE    = 'SUBSCRIPTION_VIEW_DATA_SERIALIZER_RESPONSE';
     const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED    = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED';
     const SUBSCRIPTION_PAYMENT_FAILED                   = 'SUBSCRIPTION_PAYMENT_FAILED';
@@ -642,6 +662,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BHARAT_QR_UNEXPECTED_PAYMENT              = 'BHARAT_QR_UNEXPECTED_PAYMENT';
 
     const PAYMENT_RECEIVED_VIA_RECEIVER             = 'PAYMENT_RECEIVED_VIA_RECEIVER';
+    const PAYMENT_RECEIVER_UPDATE_FAILURE           = 'PAYMENT_RECEIVER_UPDATE_FAILURE';
+    const PAYMENT_RECEIVER_UPDATED                  = 'PAYMENT_RECEIVER_UPDATED';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
@@ -683,7 +705,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRICING_PLAN_CREATE_ATTEMPT               = 'PRICING_PLAN_CREATE_ATTEMPT';
     const PRICING_PLAN_CREATE_SUCCESS               = 'PRICING_PLAN_CREATE_SUCCESS';
     const PRICING_PLAN_RULE_ADD_ATTEMPT             = 'PRICING_PLAN_RULE_ADD_ATTEMPT';
+    const PRICING_PLAN_RULE_UPDATE_ATTEMPT          = 'PRICING_PLAN_RULE_UPDATE_ATTEMPT';
     const PRICING_PLAN_RULE_ADD_SUCCESS             = 'PRICING_PLAN_RULE_ADD_SUCCESS';
+    const PRICING_PLAN_RULE_UPDATE_SUCCESS          = 'PRICING_PLAN_RULE_UPDATE_SUCCESS';
 
     const WEBHOOK_FIRING                            = 'WEBHOOK_FIRING';
     const WEBHOOK_FIRED                             = 'WEBHOOK_FIRED';
@@ -807,6 +831,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
     const BATCH_PROCESS_ASYNC                           = 'BATCH_PROCESS_ASYNC';
+    const BATCH_PROCESS_ENTRIES_CLEANED                 = 'BATCH_PROCESS_ENTRIES_CLEANED';
     const BATCH_RETRY_OUTPUT_FILE                       = 'BATCH_RETRY_OUTPUT_FILE';
     const BATCH_JOB_RECEIVED                            = 'BATCH_JOB_RECEIVED';
     const BATCH_JOB_HANDLED                             = 'BATCH_JOB_HANDLED';
@@ -910,12 +935,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
 // Trace codes for offers
     const OFFER_CREATE_REQUEST                          = 'OFFER_CREATE_REQUEST';
+    const OFFER_DISCOUNT_CREATED                        = 'OFFER_DISCOUNT_CREATED';
     const OFFER_IIN_DOES_NOT_EXISTS                     = 'OFFER_IIN_DOES_NOT_EXISTS';
     const OFFER_UPDATE_REQUEST                          = 'OFFER_UPDATE_REQUEST';
     const OFFER_DEACTIVATE                              = 'OFFER_DEACTIVATE';
     const OFFER_MERCHANT_UPDATE_REQ                     = 'OFFER_MERCHANT_UPDATE_REQ';
     const OFFER_APPLIED_ON_PAYMENT                      = 'OFFER_APPLIED_ON_PAYMENT';
     const OFFER_NOT_APPLIED_ON_PAYMENT                  = 'OFFER_NOT_APPLIED_ON_PAYMENT';
+    const OFFER_SELECTED_FOR_PAYMENT                    = 'OFFER_SELECTED_FOR_PAYMENT';
     const OFFER_APPLIED_ON_ORDER                        = 'OFFER_APPLIED_ON_ORDER';
     const OFFER_ORDER_AMOUNT_CHECK                      = 'OFFER_ORDER_AMOUNT_CHECK';
     const OFFER_PAYMENT_AMOUNT_CHECK                    = 'OFFER_PAYMENT_AMOUNT_CHECK';
@@ -1070,11 +1097,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
     const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
+    const DB_PIVOT_TABLE_ASSOCIATION_ERROR              = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
 
     const AWS_CREDS_CACHE_SET                           = 'AWS_CREDS_CACHE_SET';
 
     const SERVER_ERROR_LOG_RISK                         = 'SERVER_ERROR_LOG_RISK';
+
+    // Partners trace codes
+    const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

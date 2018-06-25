@@ -938,4 +938,18 @@ return [
             ]
         ]
     ],
+
+    "testOfferFixForAttemptedOrders" => [
+        'request' => [
+            'url'      => '/payments/fix_attempted_orders',
+            'method'   => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success'          => 1,
+                'failed'           => 0,
+                'failedPaymentIds' =>[]
+            ]
+        ],
+    ],
 ];

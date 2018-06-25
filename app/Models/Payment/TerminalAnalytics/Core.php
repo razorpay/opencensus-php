@@ -3,13 +3,17 @@
 namespace RZP\Models\Payment\TerminalAnalytics;
 
 use RZP\Models\Base;
-use RZP\Models\Payment\TerminalAnalytics;
+use RZP\Models\Payment;
 
 class Core extends Base\Core
 {
-    public function create($input)
+    public function create($input, Payment\Entity $payment)
     {
-        $auditLog = (new TerminalAnalytics\Entity)->build($input);
+        $auditLog = (new Entity)->build($input);
+
+        $auditLog->payment()->associate($payment);
+
+        $auditLog->terminal()->associate($payment->terminal);
 
         $this->repo->saveOrFail($auditLog);
 

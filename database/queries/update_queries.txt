@@ -1451,6 +1451,44 @@ update emi_plans set deleted_at = now() where subvention = 'merchant';
 
 update emi_plans set merchant_payback = ROUND(10000 * (duration * rate/120000 * POWER(1 + rate/120000 , duration) - POWER(1 + rate/120000, duration) + 1)/ (duration * rate/120000 * POWER(1 + rate/120000, duration)));
 
+# Fixes Billdesk gateway entities not having RefundId due to timeout
+UPDATE billdesk SET RefundId = 'LIOB60395687721' WHERE id = 4339949;
+
+UPDATE billdesk SET RefundId = 'LIDB60246568321' WHERE id = 4268955;
+
+UPDATE billdesk SET RefundId = 'LSBI60189051851' WHERE id = 4268957;
+
+UPDATE billdesk SET RefundId = 'LSBI58831040621' WHERE id = 4268956;
+
+UPDATE billdesk SET RefundId = 'LSBI60302883511' WHERE id = 4304097;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 12th, 13th, 15th and 16th feb 2018
+UPDATE billdesk SET RefundId = 'LSBI60426759831' WHERE id = 4371771;
+
+UPDATE billdesk SET RefundId = 'LSBI60487988231' WHERE id = 4371770;
+
+UPDATE billdesk SET RefundId = 'LSBI60388482901' WHERE id = 4371769;
+
+UPDATE billdesk SET RefundId = 'LSBI58981094251' WHERE id = 4386880;
+
+UPDATE billdesk SET RefundId = 'LSBI59572036921' WHERE id = 4386881;
+
+UPDATE billdesk SET RefundId = 'LSBI60494628531' WHERE id = 4386878;
+
+UPDATE billdesk SET RefundId = 'LSBI60397644501' WHERE id = 4418733;
+
+UPDATE billdesk SET RefundId = 'LSBI60614342151' WHERE id = 4434789;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 19th, 21st and 24th feb 2018
+
+UPDATE billdesk SET RefundId = 'LSBI60621693771' where id = 4486140;
+
+UPDATE billdesk SET RefundId = 'LSBI60626715061' where id = 4517431;
+
+UPDATE billdesk SET RefundId = 'LSBI60666512181' where id = 4517433;
+
+UPDATE billdesk SET RefundId = 'LSBI60817499101' where id = 4566865;
+
 // setting it to max int (jan 19 2038)
 // between nov 1st 2017 and feb 5th 2018
 UPDATE tokens SET expired_at = 2147483647 WHERE method='netbanking' AND recurring_status IS NOT NULL AND created_at > 1506796200 AND created_at <= 1517853630;
@@ -1557,6 +1595,20 @@ JOIN `merchant_details` md ON m.`id` = md.`merchant_id`
 SET m.`has_key_access` = 1
 WHERE m.`parent_id` IS NULL AND md.`submitted_at` IS NOT NULL;
 
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 31st Dec,
+2nd Jan, 12th Jan and 18th Jan 2018
+UPDATE billdesk SET RefundId = 'LIDB59589218521' where id = 3864123;
+UPDATE billdesk SET RefundId = 'LSCB59274689931' where id = 3673857;
+UPDATE billdesk SET RefundId = 'LSBI59036151081' where id = 3652282;
+UPDATE billdesk SET RefundId = 'JSBI58313047741' where id = 3959944;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 26th Feb
+UPDATE billdesk SET RefundId = 'LSBI60804118011' where id = 4597986;
+UPDATE billdesk SET RefundId = 'LSBI60766806491' where id = 4597987;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 17th March
+UPDATE billdesk SET RefundId = 'LSBI61344050641' where id = 4928793;
+
 # Delete workflow for 'delete workflow'
 UPDATE workflows SET deleted_at = UNIX_TIMESTAMP(NOW()) WHERE id = '9R2zfkFxFdMDH4';
 
@@ -1584,11 +1636,30 @@ UPDATE batches SET status = 'processed', failure_reason = NULL where id = '9mgXm
 
 UPDATE batches SET status = 'processed', failure_reason = NULL where id = '9mjTnhhc1GygE1';
 
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 20th and 27th March
+UPDATE billdesk SET RefundId = 'LIOB59657245361' where id = 4975025;
+UPDATE billdesk SET RefundId = 'LSBI61364483171' where id = 5107344;
+
 https://razorpay.slack.com/archives/C0SG9Q7TM/p1522674619000397
 UPDATE refunds SET status='failed', gateway_refunded = 0 WHERE id in ('8fUtGcrig5clJ6', '8fUsm1am4FYOO7')
 
 https://razorpay.slack.com/archives/C3BPZHG8P/p1523020215000036
 UPDATE terminals SET gateway_acquirer = 'ratn' where id in ('92Ay2pCOmk80iq', '9IjdmbQNKKJ7Uz');
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 28th March
+UPDATE billdesk SET RefundId = 'LSBI61681169661' where id = 5124664;
+UPDATE billdesk SET RefundId = 'LSBI61664326211' where id = 5124663;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 4th, 6th April, 8th
+UPDATE billdesk SET RefundId = 'LSBI61725923291' where id = 5236928;
+UPDATE billdesk SET RefundId = 'LSBI61778418671' where id = 5259946;
+UPDATE billdesk SET RefundId = 'LSBI61911634051' where id = 5323641;
+UPDATE billdesk SET RefundId = 'LSBI61961442842' where id = 5323640;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 13th, 17th, 18th April
+UPDATE billdesk SET RefundId = 'LYBK62042059162' where id = 5429674;
+UPDATE billdesk SET RefundId = 'LSBI58935554231' where id = 5521908;
+UPDATE billdesk SET RefundId = 'LSBI61947875451' where id = 5537165;
 
 UPDATE tokens set recurring_failure_reason = 'signed Content does not tally with data mandate' where id = '9tWADFziLif7gI'
 UPDATE tokens set recurring_failure_reason = 'signed Content does not tally with data mandate' where id = '9trR4PM6G0MxDf'
@@ -1640,6 +1711,15 @@ VALUES
 # Updates a user's name on urgent request. Currently there is no flow for same via Dashboard interface
 # Run on production live & test databases
 UPDATE users SET name = 'Nomi J Augustine' WHERE id = '8BpBceh6pcJ8ut' LIMIT 1;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 21st, 27th
+UPDATE billdesk SET RefundId = 'LIDB61055712201' where id = 5571954;
+UPDATE billdesk SET RefundId = 'LSBI61963071281' where id = 5602394;
+UPDATE billdesk SET RefundId = 'LICI59942489131' where id = 5612095;
+UPDATE billdesk SET RefundId = 'NSBI62396573641' where id = 5634122;
+UPDATE billdesk SET RefundId = 'NSBI62383857621' where id = 5645171;
+UPDATE billdesk SET RefundId = 'NSCB62553044431' where id = 5674197;
+UPDATE billdesk SET RefundId = 'LIOB62027806862' where id = 5692026;
 
 # Update reference2 got in recon file,
 UPDATE payments
@@ -1752,3 +1832,63 @@ UPDATE action_state
       merchant_requests.created_at = products.created_at,
       action_state.created_at = products.created_at
   WHERE merchant_requests.type = "product"
+
+# Updates values for old batches.processed_count
+UPDATE batches
+    SET processed_count = success_count + failure_count
+    WHERE processed_count IS NULL AND processing = 0;
+
+# Fills entity_offer (pivot table for order-offer relations) with data from existing orders
+INSERT INTO `entity_offer`
+    (`entity_id`,`entity_type`,`offer_id`,`created_at`,`updated_at`)
+    VALUES
+    ('7bQiSMEa4V9cqK','order','7b3KwTbcVZhfxt',1491466676,1491466676),
+    ...
+    ('AKRam7TzPy5Z3A','order','9okQnoDyccqfut',1528369240,1528369240);
+
+# All existing offers are chosen by merchant, and forced to be applied on payment
+UPDATE orders
+  SET force_offer=1
+  WHERE id in (
+    '7bQiSMEa4V9cqK',
+    ...
+    'AKRam7TzPy5Z3A'
+  );
+
+#Deleting from merchant_terminal mapping table where terminal has been soft deleted
+DELETE FROM merchant_terminal WHERE terminal_id = '9pzyO7B1uNjuXH';
+
+
+# Update GST tax name
+UPDATE taxes SET name = 'IGST @ 0%' WHERE id='9nDpYboKAK9j7t';
+UPDATE taxes SET name = 'IGST @ 5%' WHERE id='9nDpYciCWeNBzE';
+UPDATE taxes SET name = 'IGST @ 12%' WHERE id='9nDpYdbYNqD4Rw';
+UPDATE taxes SET name = 'IGST @ 18%' WHERE id='9nDpYf1tTUs2Vh';
+UPDATE taxes SET name = 'IGST @ 28%' WHERE id='9nDpYfqgnYW5Dx';
+UPDATE taxes SET name = 'CGST @ 0%' WHERE id='9nDpYglSpU58lc';
+UPDATE taxes SET name = 'CGST @ 2.5%' WHERE id='9nDpYhZ0d60X7V';
+UPDATE taxes SET name = 'CGST @ 5%' WHERE id='9nDpYiArP6j0qT';
+UPDATE taxes SET name = 'CGST @ 6%' WHERE id='9nDpYivRHUQQV8';
+UPDATE taxes SET name = 'CGST @ 9%' WHERE id='9nDpYjuyZsOlMK';
+UPDATE taxes SET name = 'CGST @ 12%' WHERE id='9nDpYkng64GyTa';
+UPDATE taxes SET name = 'CGST @ 14%' WHERE id='9nDpYlTs7cWM80';
+UPDATE taxes SET name = 'CGST @ 18%' WHERE id='9nDpYmPK2K2mVi';
+UPDATE taxes SET name = 'CGST @ 28%' WHERE id='9nDpYnFEoqJQ5v';
+UPDATE taxes SET name = 'SGST @ 0%' WHERE id='9nDpYnvgiGXrZh';
+UPDATE taxes SET name = 'SGST @ 2.5%' WHERE id='9nDpYoeYBsXRvC';
+UPDATE taxes SET name = 'SGST @ 5%' WHERE id='9nDpYpMRZgJEgU';
+UPDATE taxes SET name = 'SGST @ 6%' WHERE id='9nDpYpuN72gdfY';
+UPDATE taxes SET name = 'SGST @ 9%' WHERE id='9nDpYqgYcqpr8q';
+UPDATE taxes SET name = 'SGST @ 12%' WHERE id='9nDpYrIMXQTtPd';
+UPDATE taxes SET name = 'SGST @ 14%' WHERE id='9nDpYs1yK0pndD';
+UPDATE taxes SET name = 'SGST @ 18%' WHERE id='9nDpYsoU7subph';
+UPDATE taxes SET name = 'SGST @ 28%' WHERE id='9nDpYtb0S0JhMP';
+UPDATE taxes SET name = 'UTGST @ 0%' WHERE id='9nDpYuFVNQcVaU';
+UPDATE taxes SET name = 'UTGST @ 2.5%' WHERE id='9nDpYv53mqSsip';
+UPDATE taxes SET name = 'UTGST @ 5%' WHERE id='9nDpYvgwu0p8WP';
+UPDATE taxes SET name = 'UTGST @ 6%' WHERE id='9nDpYwRScK0Mz2';
+UPDATE taxes SET name = 'UTGST @ 9%' WHERE id='9nDpYxMkO0LLhz';
+UPDATE taxes SET name = 'UTGST @ 12%' WHERE id='9nDpYyC50acDzW';
+UPDATE taxes SET name = 'UTGST @ 14%' WHERE id='9nDpYz26oaOHgI';
+UPDATE taxes SET name = 'UTGST @ 18%' WHERE id='9nDpYznDzU7NKP';
+UPDATE taxes SET name = 'UTGST @ 28%' WHERE id='9nDpZ0hEw4vZky';

@@ -86,6 +86,17 @@ class ErrorCodes
     const DE68 = '68';
     const DE99 = '99';
 
+    // Error codes modified by RBL upon receiving from NPCI
+    const DE01_RBL = '01';
+    const DE02_RBL = '02';
+    const DE03_RBL = '03';
+    const DE04_RBL = '04';
+    const DE05_RBL = '05';
+    const DE06_RBL = '06';
+    const DE07_RBL = '07';
+    const DE08_RBL = '08';
+    const DE09_RBL = '09';
+
     protected static $registerErrorCodeDescMappings = [
         self::M003 => 'Drawers signature differs',
         self::M004 => 'Drawers signature required',
@@ -166,6 +177,17 @@ class ErrorCodes
         self::DE61 => 'Mandate cancelled',
         self::DE68 => 'A/c blocked or frozen',
         self::DE99 => 'Mark pending',
+
+        // For RBL modified error codes
+        self::DE01_RBL => 'Account closed or transferred',
+        self::DE02_RBL => 'No such account',
+        self::DE03_RBL => 'Account description does not tally',
+        self::DE04_RBL => 'Balance insufficient',
+        self::DE05_RBL => 'Not arranged for',
+        self::DE06_RBL => 'Payment stopped by drawer',
+        self::DE07_RBL => 'Payment stopped under court order/Account under litigation',
+        self::DE08_RBL => 'Mandate not received/UMRN does not exist',
+        self::DE09_RBL => 'Miscellaneous - Others',
     ];
 
     protected static $registerPublicErrorCodeMappings = [
@@ -247,6 +269,16 @@ class ErrorCodes
         self::DE61 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,
         self::DE68 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
         self::DE99 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+
+        self::DE01_RBL => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
+        self::DE02_RBL => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
+        self::DE03_RBL => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
+        self::DE04_RBL => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
+        self::DE05_RBL => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::DE06_RBL => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,
+        self::DE07_RBL => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::DE08_RBL => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        self::DE09_RBL => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
     ];
 
     public static function getRegistrationPublicErrorCode(string $errorCode)

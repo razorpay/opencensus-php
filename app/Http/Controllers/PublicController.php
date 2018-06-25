@@ -29,7 +29,6 @@ class PublicController extends Controller
         ];
 
         $status = [
-            'commit' => env('GIT_COMMIT_HASH') ?? 'Commit hash is not available',
             // Database
             'd'      => $this->getDbStatus(),
             // Database read replica
@@ -180,7 +179,8 @@ class PublicController extends Controller
         $method = 'get' . ucfirst($replica) . 'Pdo';
         try
         {
-            if (DB::connection()->{$method}()) {
+            if (DB::connection()->{$method}())
+            {
                 return 'ok';
             }
         }
@@ -188,6 +188,8 @@ class PublicController extends Controller
         {
             return 'error';
         }
+
+        return 'error';
     }
 
     protected function getCacheStatus($connection = null)
@@ -203,6 +205,8 @@ class PublicController extends Controller
         {
             return 'error';
         }
+
+        return 'error';
     }
 
     /**
@@ -216,7 +220,13 @@ class PublicController extends Controller
         {
             $es = (new EsClient($this->app));
 
-            $es->setEsClient([]);
+            $params = [
+                'hosts' => [
+                    $this->config->get('database.es_host')
+                ],
+            ];
+
+            $es->setEsClient($params);
 
             $count = $es->catCount();
 
@@ -226,5 +236,7 @@ class PublicController extends Controller
         {
             return 'error';
         }
+
+        return 'error';
     }
 }

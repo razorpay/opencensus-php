@@ -31,6 +31,8 @@ class Core extends Base\Core
 
         $batch->merchant()->associate($merchant);
 
+        $batch->getValidator()->validateAuthForBatchType();
+
         $processor = Processor\Factory::get($batch);
 
         $processor->storeInputFileAndSaveBatchWithSettings($input);

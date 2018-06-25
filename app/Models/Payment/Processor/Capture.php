@@ -384,7 +384,14 @@ trait Capture
             return;
         }
 
-        $captureAmount = $order->offer->getDiscountedAmount($order->getAmount());
+        $discount = $payment->discount;
+
+        if ($payment->discount === null)
+        {
+            return;
+        }
+
+        $captureAmount = $discount->offer->getDiscountedAmount($order->getAmount());
     }
 
     /**
@@ -622,7 +629,8 @@ trait Capture
     {
         $payment = $this->payment;
 
-        if ($payment->isBankTransfer() === false)
+        if (($payment->isBankTransfer() === false) and
+            ($payment->isBharatQr() === false))
         {
             return;
         }

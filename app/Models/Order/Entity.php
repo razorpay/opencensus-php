@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Order;
 
+use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
+use RZP\Models\Base\Traits\NotesTrait;
 
 /**
  * @property Offer\Entity $offer
@@ -56,6 +58,17 @@ class Entity extends Base\PublicEntity
      */
     const AUTHORIZED      = 'authorized';
 
+    const REFERENCE1      = 'reference1';
+    const REFERENCE2      = 'reference2';
+    const REFERENCE3      = 'reference3';
+    const REFERENCE4      = 'reference4';
+    const REFERENCE5      = 'reference5';
+    const REFERENCE6      = 'reference6';
+    const REFERENCE7      = 'reference7';
+    const REFERENCE8      = 'reference8';
+    const REFERENCE9      = 'reference9';
+    const REFERENCE10     = 'reference10';
+
     const METHOD          = 'method';
     const BANK            = 'bank';
     const ACCOUNT_NUMBER  = 'account_number';
@@ -65,6 +78,16 @@ class Entity extends Base\PublicEntity
      * Auto capture corresponding payment(s) if this value set to true.
      */
     const PAYMENT_CAPTURE = 'payment_capture';
+
+    /**
+     * Used in creation request to link multiple offers
+     */
+    const OFFERS          = 'offers';
+
+    /**
+     * Enforce usage of an offer for payment of this order
+     */
+    const FORCE_OFFER     = 'force_offer';
 
     protected $fillable = [
         self::DISCOUNT,
@@ -76,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::ACCOUNT_NUMBER,
         self::BANK,
+        self::FORCE_OFFER,
     ];
 
     protected $generateIdOnCreate = true;
@@ -93,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::METHOD          => null,
         self::ACCOUNT_NUMBER  => null,
         self::BANK            => null,
+        self::FORCE_OFFER     => null,
     ];
 
     protected $public = [
@@ -108,6 +133,7 @@ class Entity extends Base\PublicEntity
         // See setPublicDiscountAttribute
         // self::DISCOUNT,
         self::OFFER_ID,
+        self::OFFERS,
         self::STATUS,
         self::ATTEMPTS,
         self::NOTES,
@@ -123,6 +149,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_CAPTURE => 'bool',
         self::AUTHORIZED      => 'bool',
         self::ATTEMPTS        => 'int',
+        self::FORCE_OFFER     => 'bool',
     ];
 
     protected $amounts = [
@@ -135,10 +162,14 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
     ];
 
+    protected static $generators = [
+        self::FORCE_OFFER,
+    ];
+
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::OFFER_ID,
+        self::OFFERS,
         // This is likely needed for the merchant,
         // but still needs to be discussed.
         // self::DISCOUNT,
@@ -170,9 +201,19 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\Invoice\Entity');
     }
 
-    public function offer()
+    public function offers()
     {
-        return $this->belongsTo('RZP\Models\Offer\Entity');
+        return $this->morphToMany(
+                        Offer\Entity::class,
+                        'entity',
+                        Table::ENTITY_OFFER)
+                    ->withTimestamps();
+    }
+
+    public function associateOffer(Offer\Entity $offer)
+    {
+        // Creates row in entity_offers table
+        $this->offers()->attach($offer);
     }
 
     /** End Related Models */
@@ -185,6 +226,28 @@ class Entity extends Base\PublicEntity
     }
 
     /** End Appends */
+
+    /** Generators */
+
+    /**
+     * Enforces a default value for offer-related orders.
+     *
+     * If offers are being used, and no value is set for
+     * force_offer, force_offer is set to false by default.
+     *
+     * @param  array $input
+     * @return null
+     */
+    protected function generateForceOffer($input)
+    {
+        if ((isset($input[Entity::OFFERS]) === true) and
+            (isset($input[Entity::FORCE_OFFER]) === false))
+        {
+            $this->setAttribute(self::FORCE_OFFER, false);
+        }
+    }
+
+    /** End Generators */
 
     /** Setters And Getters */
 
@@ -337,21 +400,45 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DISCOUNT);
     }
 
+    public function isOfferForced()
+    {
+        return $this->getAttribute(self::FORCE_OFFER);
+    }
+
     public function getOfferId()
     {
         return $this->getAttribute(self::OFFER_ID);
     }
 
-    public function hasOffer()
+    public function hasOffers(): bool
     {
-        return $this->isAttributeNotNull(self::OFFER_ID);
+        return ($this->offers->isNotEmpty() === true);
     }
 
-    protected function setPublicOfferIdAttribute(array & $array)
+    protected function setPublicOffersAttribute(array & $array)
     {
-        $offerId = $this->getAttribute(self::OFFER_ID);
+        if ($this->hasOffers() === true)
+        {
+            $offers = $this->offers;
 
-        $array[self::OFFER_ID] = Offer\Entity::getSignedIdOrNull($offerId);
+            //
+            // For backward compatibility
+            //
+            if ($offers->count() === 1)
+            {
+                $array[self::OFFER_ID] = $offers->first()->getPublicId();
+            }
+
+            $array[self::OFFERS] = $offers->getPublicIds();
+        }
+        else
+        {
+            //
+            // We are already sending offer_id=null for all order responses
+            // (even when no offer is associated), so this cannot be removed for now.
+            //
+            $array[self::OFFER_ID] = null;
+        }
     }
 
     protected function setPublicDiscountAttribute(array & $array)
