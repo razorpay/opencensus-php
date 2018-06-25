@@ -38,9 +38,6 @@ class RequestHeader
      */
     const X_RAZORPAY_ACCOUNT            = 'X-Razorpay-Account';
 
-    // Partner Access
-    const X_RAZORPAY_PARTNER_TOKEN      = 'X-Razorpay-Partner-Token';
-
     // Generic
     const X_USER_AGENT                  = 'X-User-Agent';
     const X_IP_ADDRESS                  = 'X-IP-Address';

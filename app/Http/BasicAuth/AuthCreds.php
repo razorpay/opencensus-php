@@ -21,7 +21,6 @@ abstract class AuthCreds
     const ACCOUNT_ID   = 'account_id';
     const SECRET       = 'secret';
     const PUBLIC_KEY   = 'public_key';
-    const PARTNER_TOKEN = 'partner_token';
 
     protected $keyId = '';
 
@@ -78,7 +77,6 @@ abstract class AuthCreds
         self::PUBLIC_KEY    => '',
         self::SECRET        => '',
         self::ACCOUNT_ID    => '',
-        self::PARTNER_TOKEN => '',
     ];
 
     /**

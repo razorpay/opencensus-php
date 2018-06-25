@@ -375,7 +375,7 @@ class BasicAuth
                 return null;
             }
 
-            $this->removeRequestKey('account_id');
+            $this->removeRequestKey(self::ACCOUNT_ID);
         }
 
         if ($this->verifyAccountId($accountId) === false)
@@ -385,32 +385,37 @@ class BasicAuth
 
         $this->authCreds->creds[self::ACCOUNT_ID] = $accountId;
 
-        $callbackKey = $this->getPublicKey() . self::PARTNER_CALLBACK_KEY_DELIMITER . Account::getSignedId($accountId);
+        $callbackKey = $this->getCallbackKeyWithAccountId($accountId);
 
         $this->authCreds->setPublicKey($callbackKey);
 
         return null;
     }
 
+    protected function getCallbackKeyWithAccountId(string $accountId): string
+    {
+        return $this->getPublicKey() . self::PARTNER_CALLBACK_KEY_DELIMITER . Account::getSignedId($accountId);
+    }
+
     /**
-     * If Partner token was sent, verify and set its value in $this->creds[]
+     * Verify and set account id in $this->authCreds->creds[] and set callback key
      *
-     * @param  string|null      $token
+     * @param  string|null      $accountId
      * @return ApiResponse|null
      */
-    protected function checkAndSetPartnerExtraInput(string $token = null)
+    protected function checkAndSetPartnerExtraInput(string $accountId = null)
     {
-        if ($token === null)
+        if ($accountId === null)
         {
             return null;
         }
 
-        $callbackKey = $this->getPublicKey() . self::PARTNER_CALLBACK_KEY_DELIMITER . $token;
-
-        if ($this->verifyAccountId($token) === false)
+        if ($this->verifyAccountId($accountId) === false)
         {
-            return $this->invalidAccountId($token);
+            return $this->invalidAccountId($accountId);
         }
+
+        $callbackKey = $this->getCallbackKeyWithAccountId($accountId);
 
         $this->authCreds->creds[self::ACCOUNT_ID] = Account::verifyIdAndSilentlyStripSign($token);
 

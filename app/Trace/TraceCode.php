@@ -377,7 +377,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BAD_REQUEST_API_SECRET_NOT_PROVIDED           = 'BAD_REQUEST_API_SECRET_NOT_PROVIDED';
     const BAD_REQUEST_INVALID_CLIENT_KEY                = 'BAD_REQUEST_INVALID_CLIENT_KEY';
     const BAD_REQUEST_INVALID_ACCOUNT_HEADER            = 'BAD_REQUEST_INVALID_ACCOUNT_HEADER';
-    const BAD_REQUEST_INVALID_PARTNER_TOKEN_HEADER      = 'BAD_REQUEST_INVALID_PARTNER_TOKEN_HEADER';
 
     const RUNTIME_ERROR                                 = 'RUNTIME_ERROR';
 
@@ -1148,7 +1147,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
         self::BAD_REQUEST_INVALID_API_SECRET            => 'The api secret provided is invalid',
         self::BAD_REQUEST_INVALID_ACCOUNT_HEADER        => 'The Account ID provided is invalid',
-        self::BAD_REQUEST_INVALID_PARTNER_TOKEN_HEADER  => 'The Partner token provided is invalid',
         self::BAD_REQUEST_API_SECRET_NOT_PROVIDED       => 'API secret is not provided',
 
         self::PAYMENT_VERIFY_ALREADY_AUTHORIZED         => 'Payment being authorized is actually already authorized by some other thread',
