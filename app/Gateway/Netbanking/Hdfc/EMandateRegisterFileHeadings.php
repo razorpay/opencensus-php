@@ -21,5 +21,5 @@ class EMandateRegisterFileHeadings
 
     // Additional headings in Response file
     const STATUS                        = 'Status';
-    const REMARKS                       = 'Remarks';
+    const REMARK                        = 'Remark';
 }
