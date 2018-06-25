@@ -1,6 +1,7 @@
 <?php
 namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
+use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Exception\GatewayRequestException;
@@ -26,7 +27,6 @@ class ReconciliationFileTest extends TestCase
 {
     use BatchTestTrait;
     use VirtualAccountTrait;
-    use DbEntityFetchTrait;
 
     protected $payment;
     protected $recurringPayment;
@@ -96,7 +96,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
 
         // Check the status of processed batch.
-        $this->assertBatchStatus();
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     /**
@@ -104,7 +104,6 @@ class ReconciliationFileTest extends TestCase
      *
      * @param string $status
      */
-
     protected function assertBatchStatus(string $status = Status::PROCESSED)
     {
         $batch = $this->getDbLastEntityToArray('batch');
@@ -134,7 +133,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE], "'" . $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
-        $this->assertBatchStatus();
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHdfcFssCaptureFailureReconPaymentFile()
@@ -170,7 +169,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE], "'" . $updatedPayment['reference2']);
         $this->assertTrue($updatedPayment['gateway_captured']);
 
-        $this->assertBatchStatus();
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHdfcCyberSourceReconPaymentFile()
@@ -196,7 +195,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE], "'" . $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
-        $this->assertBatchStatus();
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testAxisMigsReconPaymentFile()
@@ -222,7 +221,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
-        $this->assertBatchStatus();
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testVirtualAccYesBankReconFile()
@@ -278,7 +277,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($payment1['reference2'], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
-        $this->assertBatchStatus();
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHdfcFssReconRefundFile()
@@ -311,7 +310,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedRefund1['arn']);
 
-        $this->assertBatchStatus();
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testAtomReconPaymentFile()
@@ -379,6 +378,8 @@ class ReconciliationFileTest extends TestCase
 
         //Reconciled at should not be null
         $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     /**
@@ -446,7 +447,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertEquals($entries2[0][HDFCPaymentRecon::COLUMN_ARN], "'" . $updatedPayment2['reference1']);
 
-        $this->assertBatchStatus();
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     /**
@@ -835,7 +836,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertEquals($entries[0][HdfcRefundRecon::COLUMN_SEQUENCE_NUMBER], "'" . $updatedRefund1['arn']);
 
-        $this->assertBatchStatus();
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     /**
@@ -865,7 +866,7 @@ class ReconciliationFileTest extends TestCase
         $this->retryFailedBatch('batch_' . $batch['id']);
 
         // Asserting status of batch as 'Processed'.
-        $this->assertBatchStatus();
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testOlamoneyReconPaymentFile()
