@@ -187,6 +187,13 @@ class Validator extends Base\Validator
         'key_access',
     ];
 
+    protected static $bulkCreatePartnerReferralsRules = [
+        'partners'                => 'required|associative_array',
+        'partners.*.partner_type' => 'sometimes|filled|string|in:reseller,bank,pure_platform,aggregator,fully_managed',
+        'partners.*.referrals'    => 'sometimes|array',
+        'partners.*.referrals.*'  => 'string|size:14',
+    ];
+
     protected function validateIsTestAccount(array $input)
     {
         $merchant = $this->entity;

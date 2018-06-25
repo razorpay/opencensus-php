@@ -22,6 +22,7 @@ class Limit
         Type::PAYOUT                => 50000,
         'emandate_register_hdfc'    => 50000,
         Type::ELFIN                 => 5000,
+        Type::PARTNER_REFERRALS     => 5000,
     ];
 
     /**

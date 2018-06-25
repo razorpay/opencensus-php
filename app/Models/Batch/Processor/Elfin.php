@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Models\Merchant;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;

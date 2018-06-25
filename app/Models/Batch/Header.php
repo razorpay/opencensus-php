@@ -273,6 +273,11 @@ class Header
     const ELFIN_LONG_URL             = 'Long Url';
     const ELFIN_SHORT_URL            = 'Short Url';
 
+    // Partner referral headers
+    const PARTNER_TYPE         = 'partner_type';
+    const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
+    const REFERRAL_MERCHANT_ID = 'referral_merchant_id';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -714,6 +719,24 @@ class Header
             self::OUTPUT => [
                 self::ELFIN_LONG_URL,
                 self::ELFIN_SHORT_URL,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::PARTNER_REFERRALS => [
+
+            self::INPUT => [
+                self::PARTNER_MERCHANT_ID,
+                self::PARTNER_TYPE,
+                self::REFERRAL_MERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::PARTNER_MERCHANT_ID,
+                self::PARTNER_TYPE,
+                self::REFERRAL_MERCHANT_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

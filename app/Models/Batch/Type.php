@@ -39,6 +39,8 @@ class Type
      */
     const ELFIN                 = 'elfin';
 
+    const PARTNER_REFERRALS     = 'partner_referrals';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -81,6 +83,7 @@ class Type
         self::DIRECT_DEBIT,
         self::RECURRING_CHARGE,
         self::ELFIN,
+        self::PARTNER_REFERRALS,
     ];
 
     public static function exists(string $type)

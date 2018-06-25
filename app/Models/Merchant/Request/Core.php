@@ -12,8 +12,10 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\State\Reason;
-use RZP\Models\Merchant\Partner;
+use RZP\Models\Settings\Accessor;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicEntity;
+use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\RequestRejection;
 use RZP\Mail\Merchant\RequestNeedsClarification;
 
@@ -253,7 +255,7 @@ class Core extends Base\Core
 
             case $request->isPartnerActivationRequest():
             {
-                (new Merchant\Core)->markAsPartner($request);
+                $this->markAsPartner($request);
 
                 break;
             }
@@ -276,6 +278,47 @@ class Core extends Base\Core
                     ]);
             }
         }
+    }
+
+    /**
+     * @param Entity $merchantRequest
+     *
+     * @return Merchant\Entity
+     * @throws LogicException
+     */
+    protected function markAsPartner(Entity $merchantRequest): Merchant\Entity
+    {
+        $submissions = $this->getPartnerSubmissions($merchantRequest);
+
+        if (empty($submissions[Merchant\Entity::PARTNER_TYPE]) === true)
+        {
+            throw new LogicException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+                ErrorCode::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+                $submissions);
+        }
+
+        $partnerType = $submissions[Merchant\Entity::PARTNER_TYPE];
+
+        $merchant = $merchantRequest->merchant;
+
+        $partner = (new Merchant\Core)->markAsPartner($merchant, $partnerType);
+
+        return $partner;
+    }
+
+    /**
+     * @param Entity $merchantRequest
+     *
+     * @return array
+     */
+    public function getPartnerSubmissions(Entity $merchantRequest): array
+    {
+        $settings = Accessor::for($merchantRequest, Merchant\Constants::PARTNER)->all();
+
+        $response = $settings->toArray();
+
+        return $response;
     }
 
     /**
@@ -539,9 +582,7 @@ class Core extends Base\Core
 
         if ($merchantRequest->isPartnerRequest() === true)
         {
-            $merchantCore = new Merchant\Core;
-
-            $returnData[Constants::SUBMISSIONS] = $merchantCore->getPartnerSubmissions($merchantRequest);
+            $returnData[Constants::SUBMISSIONS] = $this->getPartnerSubmissions($merchantRequest);
         }
 
         return $returnData;
