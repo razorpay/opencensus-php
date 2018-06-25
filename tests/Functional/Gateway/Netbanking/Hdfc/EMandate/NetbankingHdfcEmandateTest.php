@@ -181,7 +181,7 @@ class NetbankingHdfcEmandateTest extends TestCase
         $entities[0]['status_in_file'] = 'success';
 
         $entities[] = $this->createRegistrationInitiatedEntities();
-        $entities[1]['status_in_file'] = 'reject';
+        $entities[1]['status_in_file'] = 'failure';
         $entities[1]['remark_in_file'] = 'Some reject reason';
 
         $file = $this->generateEmandateRegisterReconFile($entities);
@@ -196,6 +196,29 @@ class NetbankingHdfcEmandateTest extends TestCase
         );
 
         $this->assertRegistrationReconEntities($entities);
+    }
+
+    public function testEmandateRegistrationReconInvalidStatus()
+    {
+        Mail::fake();
+
+        $entities = [];
+
+        $entities[] = $this->createRegistrationInitiatedEntities();
+        $entities[0]['status_in_file'] = 'processed';
+
+        $file = $this->generateEmandateRegisterReconFile($entities);
+
+        $this->makeBatchRequest(
+            [
+                'type'     => 'emandate',
+                'sub_type' => 'register',
+                'gateway'  => 'hdfc',
+            ],
+            $file
+        );
+
+        $this->assertRegistrationReconInvalidStatusEntities($entities);
     }
 
     protected function assertRegistrationReconEntities($entities)
@@ -225,6 +248,14 @@ class NetbankingHdfcEmandateTest extends TestCase
         $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
 
         $this->assertEquals('rejected', $netbanking[Netbanking::SI_STATUS]);
+    }
+
+    protected function assertRegistrationReconInvalidStatusEntities($entities)
+    {
+        $token = $this->getDbEntityById('token', $entities[0]['token']['id'])->toArray();
+
+        // Since the status was invalid, the token recurring status should not be changed
+        $this->assertEquals(Token\RecurringStatus::INITIATED, $token['recurring_status']);
     }
 
     public function testEmandateDebit()
@@ -297,10 +328,10 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $entities = [];
         $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
-        $entities[0]['status_in_file'] = 'Processed';
+        $entities[0]['status_in_file'] = 'success';
 
         $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
-        $entities[1]['status_in_file'] = 'Rejected';
+        $entities[1]['status_in_file'] = 'failure';
 
         $file = $this->generateEmandateDebitReconFile($entities);
 
@@ -326,7 +357,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $netbanking = $this->getDbEntityById('netbanking', $entities[0]['netbanking']['id'])->toArray();
 
-        $this->assertEquals('processed', $netbanking[Netbanking::STATUS]);
+        $this->assertEquals('success', $netbanking[Netbanking::STATUS]);
 
         // Validate registration failure entities
         $payment = $this->getDbEntityById('payment', $entities[1]['payment']['id'])->toArray();
@@ -335,7 +366,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
 
-        $this->assertEquals('rejected', $netbanking[Netbanking::STATUS]);
+        $this->assertEquals('failure', $netbanking[Netbanking::STATUS]);
     }
 
     public function testSecondRecurringPaymentVerify()
@@ -606,7 +637,7 @@ class NetbankingHdfcEmandateTest extends TestCase
                 'Mandate Serial Number'        => $entityList['token']['id'],
                 'Merchant Request No'          => $entityList['payment']['id'],
                 'Status'                       => $entityList['status_in_file'],
-                'Remarks'                      => '',
+                'Remark'                       => '',
             ];
         }
 
@@ -630,12 +661,10 @@ class NetbankingHdfcEmandateTest extends TestCase
     protected function generateEmandateDebitReconFile(array $entities)
     {
         $items = [];
-        $i = 1;
 
         foreach ($entities as $entityList)
         {
             $items[] = [
-                'Sr. no'             => $i,
                 'Transaction_Ref_No' => $entityList['payment']['id'],
                 'Mandate ID'         => $entityList['token']['id'],
                 'Account_NO'         => $entityList['token']['account_number'],
@@ -648,8 +677,6 @@ class NetbankingHdfcEmandateTest extends TestCase
                 'Remark'             => '',
                 'Narration'          => '',
             ];
-
-            $i++;
         }
 
         $content = [
