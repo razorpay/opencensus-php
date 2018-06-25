@@ -15,19 +15,10 @@ trait Vpa
         // This will throw bad request validation error
         (new Payment\Validator)->validateInput($action, $input);
 
-        // Currently we are only using MindGate, later when we have
-        // more gateways, we can introduce terminal selection logic
-        $gateway = Payment\Gateway::UPI_MINDGATE;
+        $gateway = Payment\Gateway::getGatewayForValidateVpaForMode($this->mode);
 
-        $terminal = null;
-
-        // For test mode we do not use terminal for MindGate, Later for other
-        // gateways we can check if valid terminal is required
-        if ($this->mode === Mode::TEST)
-        {
-            $terminal = $this->repo->terminal->getSharedTerminalForGateway($gateway)
-                                             ->first();
-        }
+        $terminal = $this->repo->terminal->getSharedTerminalForGateway($gateway)
+                                         ->first();
 
         // Input, GatewayInput and Response are currently same, we are using different variable
         // names as make sure there usage are not mixed, and later they all can be different.

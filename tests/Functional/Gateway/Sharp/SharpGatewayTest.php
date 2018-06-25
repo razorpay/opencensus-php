@@ -338,4 +338,25 @@ class SharpGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
     }
+
+    public function testValidateVpaSuccess()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaFailure()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaInvalid()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
 }

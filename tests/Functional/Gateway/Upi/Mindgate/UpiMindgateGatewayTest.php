@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
+use RZP\Constants\Mode;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Merchant\Account;
@@ -568,29 +569,17 @@ class UpiMindgateGatewayTest extends TestCase
 
     public function testValidateVpaSuccess()
     {
+        Gateway::$upiValidateVpaGateways[Mode::TEST] = [Gateway::UPI_MINDGATE];
+
         $this->ba->privateAuth();
 
         $this->startTest();
-    }
-
-    public function testValidateVpaSuccessWithoutTerminal()
-    {
-        $this->fixtures->edit('terminal', $this->sharedTerminal->id, [
-            'enabled' => 0,
-        ]);
-
-        $this->testValidateVpaSuccess();
     }
 
     public function testValidateVpaFailure()
     {
-        $this->ba->privateAuth();
+        Gateway::$upiValidateVpaGateways[Mode::TEST] = [Gateway::UPI_MINDGATE];
 
-        $this->startTest();
-    }
-
-    public function testValidateVpaInvalid()
-    {
         $this->ba->privateAuth();
 
         $this->startTest();
