@@ -53,14 +53,39 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateTimesPayable(string $attribute, int $value)
+    /**
+     * Validates attribute for edit operation. Note that in edit we allow making of times_payable equal to number of
+     * times_paid already and while doing so payment link goes to inactive status.
+     * @param string   $attribute
+     * @param int|null $value
+     */
+    public function validateTimesPayable(string $attribute, int $value = null)
     {
         $paymentLink = $this->entity;
 
-        if ($value < $paymentLink->getTimesPaid())
+        if (($value !== null) and ($value < $paymentLink->getTimesPaid()))
         {
             throw new BadRequestValidationFailureException(
-                'Times payable cannot be less than the number of payments already made',
+                'Times payable should be greater than or equal to the number of payments already made',
+                Entity::TIMES_PAYABLE,
+                [
+                    Entity::TIMES_PAYABLE => $value,
+                ]);
+        }
+    }
+
+    /**
+     * Validate times_payable attribute for activation. For activation(unlike edit), it must be greater than times_paid
+     * @param int|null $value
+     */
+    public function validateTimesPayableForActivation(int $value = null)
+    {
+        $paymentLink = $this->entity;
+
+        if (($value !== null) and ($value <= $paymentLink->getTimesPaid()))
+        {
+            throw new BadRequestValidationFailureException(
+                'Times payable should be greater than the number of payments already made',
                 Entity::TIMES_PAYABLE,
                 [
                     Entity::TIMES_PAYABLE => $value,
@@ -104,7 +129,7 @@ class Validator extends Base\Validator
 
         if ($timesPayable !== null)
         {
-            $this->validateTimesPayable(Entity::TIMES_PAYABLE, $timesPayable);
+            $this->validateTimesPayableForActivation($timesPayable);
         }
 
         if ($expireBy !== null)

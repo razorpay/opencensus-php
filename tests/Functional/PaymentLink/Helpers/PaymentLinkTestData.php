@@ -326,7 +326,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Times payable cannot be less than the number of payments already made',
+                    'description' => 'Times payable should be greater than or equal to the number of payments already made',
                 ],
             ],
             'status_code' => 400,
