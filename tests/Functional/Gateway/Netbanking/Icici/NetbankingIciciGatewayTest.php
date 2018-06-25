@@ -56,15 +56,33 @@ class NetbankingIciciGatewayTest extends TestCase
 
         Carbon::setTestNow($boundaryTime);
 
-        $this->mockTransactionDateMismatch();
+        $iterator = 0;
+
+        $this->mockServerContentFunction(function(& $content, $action) use (& $iterator)
+        {
+            if ($action === 'verify')
+            {
+                if (($iterator === 0) or
+                    ($iterator == 2))
+                {
+                    $content[ResponseFields::STATUS] = 'failed';
+                }
+
+                $iterator++;
+            }
+        });
 
         $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->assertSame(2, $iterator);
 
         $netbanking = $this->getLastEntity('netbanking', true);
 
         $this->fixtures->edit('netbanking', $netbanking['id'], ['date' => null]);
 
         $this->verifyPayment($payment['id']);
+
+        $this->assertSame(4, $iterator);
 
         $netbanking = $this->getLastEntity('netbanking', true);
 
@@ -463,19 +481,4 @@ class NetbankingIciciGatewayTest extends TestCase
             }
         });
     }
-
-    protected function mockTransactionDateMismatch()
-    {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            if ($action === 'verify')
-            {
-                if ($content[ResponseFields::PAYMENT_DATE] === '2018-06-21')
-                {
-                   $content[ResponseFields::STATUS] = 'failed';
-                }
-            }
-        });
-    }
-
 }
