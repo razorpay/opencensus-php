@@ -801,4 +801,5 @@ class ErrorCode
     // Partners
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                       = 'BAD_REQUEST_MERCHANT_IS_NOT_PARTNER';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                                   = 'BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER';
+    const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                              = 'BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER';
 }

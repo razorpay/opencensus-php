@@ -23,7 +23,6 @@ use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 
-
 /**
  * @property Detail\Entity $merchantDetail
  * @property Methods\Entity $methods
@@ -1499,5 +1498,10 @@ class Entity extends Base\PublicEntity
     public function setPartnerType(string $partnerType = null)
     {
         $this->setAttribute(self::PARTNER_TYPE, $partnerType);
+    }
+
+    public function isPurePlatformTypePartner(): bool
+    {
+        return ($this->getPartnerType() === Constants::PURE_PLATFORM);
     }
 }

@@ -43,6 +43,41 @@ return [
         ],
     ],
 
+    'testMarkingMerchantAsPartnerAgain' => [
+        'request'  => [
+            'url'     => '/merchant/requests',
+            'method'  => 'POST',
+            'content' => [
+                'type'        => 'partner',
+                'name'        => 'activation',
+                'submissions' => [
+                    'partner_type' => 'aggregator',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'      => 'under_review',
+                'type'        => 'partner',
+                'name'        => 'activation',
+                'merchant'    => [
+                    'id' => '10000000000000',
+                ],
+                'states'      => [
+                    'entity' => 'collection',
+                    'items'  => [
+                        [
+                            'name' => 'under_review',
+                        ],
+                    ],
+                ],
+                'submissions' => [
+                    'partner_type' => 'aggregator',
+                ],
+            ],
+        ],
+    ],
+
     'testMarkingMerchantAsPartnerMissingType' => [
         'request'   => [
             'url'     => '/merchant/requests',
@@ -300,6 +335,59 @@ return [
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testApprovingPurePlatformDeactivationRequest' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+    ],
+
+    'testApprovingPurePlatformActivationRequest' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+    ],
+
+    'testLinkedAccountMarkedAsPartner' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
         ],
     ],
 ];

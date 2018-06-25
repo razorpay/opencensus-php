@@ -6,6 +6,7 @@ use Mail;
 use Config;
 use ApiResponse;
 use Carbon\Carbon;
+use Razorpay\OAuth\Application;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -30,6 +31,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
+use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
@@ -807,6 +809,15 @@ class Core extends Base\Core
     }
 
     /**
+     * @param  Entity $merchant
+     * @return null|OAuthApp\Entity
+     */
+    public function getPartnerApp(Entity $merchant)
+    {
+        return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
+    }
+
+    /**
      * @param Request\Entity $merchantRequest
      *
      * @return Entity
@@ -828,11 +839,20 @@ class Core extends Base\Core
 
         $merchant = $merchantRequest->merchant;
 
-        (new Validator)->validateIfAlreadyPartner($merchant);
+        $validator = new Validator;
 
-        $merchant->setPartnerType($partnerType);
+        $validator->validateIsNotLinkedAccount($merchant);
 
-        $this->repo->saveOrFail($merchant);
+        $validator->validateIfAlreadyPartner($merchant);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType)
+        {
+            $merchant->setPartnerType($partnerType);
+
+            $this->repo->saveOrFail($merchant);
+
+            $this->createPartnerApp($merchant);
+        });
 
         return $merchant;
     }
@@ -848,10 +868,65 @@ class Core extends Base\Core
     {
         (new Validator)->validateIfNotAPartner($merchant);
 
-        $merchant->setPartnerType();
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->deletePartnerApp($merchant);
 
-        $this->repo->saveOrFail($merchant);
+            $merchant->setPartnerType();
+
+            $this->repo->saveOrFail($merchant);
+
+        });
 
         return $merchant;
+    }
+
+    /**
+     * @param Entity $merchant
+     */
+    public function createPartnerApp(Entity $merchant)
+    {
+        if ($merchant->isPurePlatformTypePartner() === true)
+        {
+            // Don't create a dummy application for pure platforms
+            return;
+        }
+
+        $name = $merchant->getName();
+
+        // Default value is required because website is a required field to create oauth applications
+        $website = $merchant->getWebsite() ?? 'https://www.razorpay.com';
+
+        $logoUrl = $merchant->getLogoUrl();
+
+        $appInput = [
+            'name'     => $name,
+            'website'  => $website,
+            'logo_url' => $logoUrl,
+        ];
+
+        $app = app('authservice')->createApplication($appInput, $merchant->getId(), Application\Type::PARTNER);
+
+        return $app;
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    public function deletePartnerApp(Entity $merchant)
+    {
+        if ($merchant->isPurePlatformTypePartner() === true)
+        {
+            // A dummy application for pure platforms does not exist
+            return;
+        }
+
+        $app = $this->getPartnerApp($merchant);
+
+        $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());
+
+        return $app;
     }
 }

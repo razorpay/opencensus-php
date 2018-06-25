@@ -678,4 +678,19 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
         }
     }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNotLinkedAccount(Entity $merchant)
+    {
+        if ($merchant->isLinkedAccount() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER);
+
+        }
+    }
 }
