@@ -4,7 +4,6 @@ namespace RZP\Gateway\Netbanking\Hdfc;
 
 use RZP\Error;
 use RZP\Exception\GatewayErrorException;
-use RZP\Exception\ReconciliationException;
 
 class Status
 {

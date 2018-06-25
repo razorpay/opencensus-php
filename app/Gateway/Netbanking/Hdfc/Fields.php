@@ -49,6 +49,7 @@ class Fields
      *
      * @param Token\Entity $token
      * @param string $paymentId
+     * @param Merchant\Entity $merchant
      * @return array
      */
     public static function getEmandateRegistrationData(
