@@ -16,7 +16,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
      * @override
      * @var string
      */
-    protected $fileToWriteName = 'MerchantReport';
+    protected $fileToWriteName = 'Transaction Report';
 
     /**
      * The parent class's method gets only successful payments,
