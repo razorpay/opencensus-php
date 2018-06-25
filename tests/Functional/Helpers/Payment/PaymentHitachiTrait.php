@@ -11,9 +11,13 @@ trait PaymentHitachiTrait
     {
         list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
 
-        if ($this->isOtpCallbackUrl($url))
+        $this->otpFlow = false;
+
+        if ($this->isOtpCallbackUrl($url) === true)
         {
             $this->callbackUrl = $url;
+
+            $this->otpFlow = true;
 
             return $this->makeOtpCallback($url);
         }

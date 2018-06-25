@@ -12,6 +12,8 @@ class HeadlessOtpTest extends TestCase
 {
     use PaymentTrait;
 
+    protected $otpFlow = null;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/HeadlessTestData.php';
@@ -23,7 +25,7 @@ class HeadlessOtpTest extends TestCase
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
             'type' => [
-                'non_recurring' => '1'
+                'non_recurring' => '1',
             ]
         ]);
 
@@ -56,6 +58,7 @@ class HeadlessOtpTest extends TestCase
 
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
+        self::assertTrue($this->otpFlow);
         self::assertEquals('authorized', $payment['status']);
         self::assertEquals('headless_otp', $payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
@@ -204,6 +207,7 @@ class HeadlessOtpTest extends TestCase
 
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
+        self::assertFalse($this->otpFlow);
         self::assertEquals('authorized', $payment['status']);
         self::assertNull($payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
@@ -212,6 +216,7 @@ class HeadlessOtpTest extends TestCase
 
     public function testOtpPreferredAuthPaymentWithoutTerminal()
     {
+        $this->otpFlow = false;
         $this->fixtures->merchant->addFeatures(['otpelf']);
         $this->mockTokenEx();
         $this->mockOtpElf();
@@ -240,6 +245,7 @@ class HeadlessOtpTest extends TestCase
 
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
+        self::assertFalse($this->otpFlow);
         self::assertEquals('authorized', $payment['status']);
         self::assertNull($payment['auth_type']);
         self::assertEquals('axis_migs', $payment['gateway']);
@@ -254,6 +260,7 @@ class HeadlessOtpTest extends TestCase
             ]
         ]);
 
+        $this->otpFlow = false;
         $this->fixtures->merchant->addFeatures(['otpelf']);
         $this->mockTokenEx();
         $this->mockOtpElf();
@@ -290,6 +297,7 @@ class HeadlessOtpTest extends TestCase
 
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
+        self::assertFalse($this->otpFlow);
         self::assertEquals('authorized', $payment['status']);
         self::assertNull($payment['auth_type']);
         self::assertEquals('axis_migs', $payment['gateway']);
@@ -319,6 +327,7 @@ class HeadlessOtpTest extends TestCase
                 ];
             });
 
+        $this->otpFlow = false;
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->iin->create([
@@ -345,6 +354,7 @@ class HeadlessOtpTest extends TestCase
 
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
+        self::assertFalse($this->otpFlow);
         self::assertEquals('authorized', $payment['status']);
         self::assertNull($payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
@@ -370,6 +380,7 @@ class HeadlessOtpTest extends TestCase
             ]
         ]);
 
+        $this->otpFlow = false;
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $payment = $this->getDefaultPaymentArray();
@@ -390,6 +401,7 @@ class HeadlessOtpTest extends TestCase
         // It will be headless since we are identifying on the basis of the
         // terminal gateway not the terminal as there is no property of the terminal to
         // be used here
+        self::assertTrue($this->otpFlow);
         self::assertEquals('headless_otp', $payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
