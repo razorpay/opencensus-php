@@ -829,7 +829,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
                 null,
                 [
-                    Entity::MERCHANT_ID => $partner->getId(),
+                    Entity::MERCHANT_ID => $merchant->getId(),
                 ]);
         }
 
