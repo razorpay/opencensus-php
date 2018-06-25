@@ -85,6 +85,23 @@ class Preferences
 
     const X_AGGREGATOR_HEADER = 'x-aggregator';
 
+    //
+    // Skip settlements for few merchants
+    // Details in: https://github.com/razorpay/api/issues/5830
+    // Temporary, until https://github.com/razorpay/api/pull/6161
+    // is merged
+    //
+    const NO_SETTLEMENT_MIDS = [
+        self::MID_GOALWISE_NON_TPV,
+        self::MID_GOALWISE_TPV,
+        self::MID_MONEYVIEW,
+        self::MID_WEALTHY,
+        self::MID_PIGGY,
+        self::MID_PAISABAZAAR,
+        self::MID_BPCL,
+        self::MID_SRI_CHAITANYA,
+    ];
+
     public static function checkZohoHeaders(Headers $headers)
     {
         $expectedHeader = Config::get('applications.zoho.header');

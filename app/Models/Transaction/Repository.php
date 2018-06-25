@@ -62,6 +62,22 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * We DO NOT want to eager load any relationship for any of the entities
+     * because every transaction will store a separate copy for each of its
+     * relation. So 2 transactions of the same merchant will have a copy each
+     * of merchant, bank_account, and balance – effectively 2 * 3 storage.
+     * Now, compare it against the case where we keep only 1 copy of each of
+     * these relations – in a case where lacs of transactions of a merchant
+     * are going to be settled. The difference is memory used will be huge.
+     * Hence instead will query it separately.
+     *
+     * @param $timestamp
+     * @param string $channel
+     * @param array $inMerchantIds
+     * @param array $notInMerchantIds
+     * @return mixed
+     */
     public function fetchUnsettledTransactions(
         $timestamp, string $channel, array $inMerchantIds = [], array $notInMerchantIds = [])
     {
@@ -112,8 +128,7 @@ class Repository extends Base\Repository
                       ->where(Entity::SETTLED, 0)
                       ->where($transactionChannel, $channel)
                       ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
-                      ->where(Merchant\Entity::HOLD_FUNDS, 0)
-                      ->with('merchant', 'merchant.bankAccount', 'merchant.balance');
+                      ->where(Merchant\Entity::HOLD_FUNDS, 0);
 
         if (empty($inMerchantIds) === false)
         {
