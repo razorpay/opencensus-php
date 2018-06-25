@@ -2159,4 +2159,21 @@ class Processor
                 Payment\Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt()
             ]);
     }
+
+    public function fixAttemptedOrder($payment, $order)
+    {
+        $this->payment = $payment;
+
+        $offer = $this->selectForcedOfferForPayment($order);
+
+        $this->payment->associateOffer($offer);
+
+        $this->postPaymentAuthorizeOfferProcessing($this->payment);
+
+        $this->updateOrderStatusPaidIfApplicable($order, $this->payment);
+
+        $this->repo->saveOrFail($order);
+
+        $this->eventOrderPaid();
+    }
 }

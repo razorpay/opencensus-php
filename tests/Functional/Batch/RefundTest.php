@@ -10,12 +10,10 @@ use RZP\Models\Batch\Header;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Batch\Refund as BatchRefundFileMail;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class RefundTest extends TestCase
 {
     use BatchTestTrait;
-    use DbEntityFetchTrait;
 
     protected $payment = null;
 

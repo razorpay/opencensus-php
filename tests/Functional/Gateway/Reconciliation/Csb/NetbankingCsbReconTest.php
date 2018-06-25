@@ -6,10 +6,11 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
+use RZP\Models\Batch\Status;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Reconciliator\RequestProcessor\Base as Recon;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
 class NetbankingCsbReconTest extends TestCase
@@ -21,7 +22,7 @@ class NetbankingCsbReconTest extends TestCase
     private $method = Payment\Method::NETBANKING;
 
     use ReconTrait;
-    use PaymentTrait;
+    use BatchTestTrait;
 
     public function setUp()
     {
@@ -43,11 +44,6 @@ class NetbankingCsbReconTest extends TestCase
         $this->ba->appAuth();
 
         $response = $this->generateAndUploadReconFile();
-
-        // We assert that all 3 payments were reconciled
-        $this->assertEquals(3, $response['total_count']);
-        $this->assertEquals(3, $response['success_count']);
-        $this->assertEquals(0, $response['failure_count']);
 
         $netbankings = $this->getEntities('netbanking', [], true);
 
@@ -84,6 +80,8 @@ class NetbankingCsbReconTest extends TestCase
             $netbankings['items'],
             array_keys($netbankings['items'])
         );
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testReconRefundAmountValidationFailure()
@@ -195,6 +193,8 @@ class NetbankingCsbReconTest extends TestCase
 
         // Transaction is not reconciled
         $this->assertNull($transaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
     }
 
     protected final function createPayment()

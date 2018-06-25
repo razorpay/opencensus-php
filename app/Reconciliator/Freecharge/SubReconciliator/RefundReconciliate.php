@@ -95,6 +95,7 @@ class RefundReconciliate extends Base\RefundReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
                     'message'           => 'Refund amount mismatch',
                     'expected_amount'   => $this->refund->getBaseAmount(),
                     'currency'          => $this->refund->getCurrency(),

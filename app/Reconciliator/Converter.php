@@ -220,6 +220,10 @@ class Converter extends Base\Core
                 {
                     if ($columnHeadersCount !== count($row))
                     {
+                        //
+                        // This can happen if any row in the file has dummy data.
+                        // Not throwing exception so that further rows get processed.
+                        //
                         $this->trace->debug(
                             TraceCode::RECON_ALERT,
                             [
