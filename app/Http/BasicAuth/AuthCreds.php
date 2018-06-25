@@ -104,7 +104,7 @@ abstract class AuthCreds
      * @var array
      */
     public static $validKeyLengths = [
-        8, 14, 23, 31, 33
+        8, 14, 23, 31, 33, 50
     ];
 
     public function __construct($app, string $key = '')
