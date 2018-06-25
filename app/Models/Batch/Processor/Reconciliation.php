@@ -68,7 +68,7 @@ class Reconciliation extends Base
 
     protected function saveInputFile(File $file): FileStore\Creator
     {
-        $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
+        $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArrayTrace());
 
         // We need the original file name with extension while moving the recon file
         // to local directory used by UFH

@@ -14,6 +14,7 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -22,6 +23,8 @@ use RZP\Models\Currency;
 use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
+use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -36,6 +39,7 @@ use RZP\Models\Payment\Processor\Netbanking;
  * @property Merchant\Entity        $merchant
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
+ * @property PaymentLink\Entity     $paymentLink
  */
 class Entity extends Base\PublicEntity
 {
@@ -55,6 +59,7 @@ class Entity extends Base\PublicEntity
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const TRANSFER_ID           = 'transfer_id';
+    const PAYMENT_LINK_ID       = 'payment_link_id';
     const RECEIVER_ID           = 'receiver_id';
     const RECEIVER_TYPE         = 'receiver_type';
     const INTERNATIONAL         = 'international';
@@ -102,6 +107,15 @@ class Entity extends Base\PublicEntity
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
+    // From 10 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
+    const REFERENCE10           = 'reference10';
+    const REFERENCE11           = 'reference11';
+    const REFERENCE12           = 'reference12';
+    const REFERENCE13           = 'reference13';
+    const REFERENCE14           = 'reference14';
+    const REFERENCE15           = 'reference15';
+    const REFERENCE16           = 'reference16';
+    const REFERENCE17           = 'reference17';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -154,6 +168,8 @@ class Entity extends Base\PublicEntity
     const IFSC                  = 'ifsc';
     const ACCOUNT_NUMBER        = 'account_number';
 
+    const OFFER_ID              = 'offer_id';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -178,7 +194,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::ID,
-        self::MERCHANT_ID,
         self::AMOUNT,
         self::METHOD,
         self::EMI_PLAN_ID,
@@ -252,6 +267,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE2,
         self::ACQUIRER_DATA,
         self::TRANSFER_ID,
+        self::PAYMENT_LINK_ID,
         self::RECEIVER_ID,
         self::RECEIVER_TYPE,
         self::TRANSACTION_ID,
@@ -401,6 +417,7 @@ class Entity extends Base\PublicEntity
         self::VERIFY_BUCKET        => null,
         self::TERMINAL_ID          => null,
         self::TRANSFER_ID          => null,
+        self::PAYMENT_LINK_ID      => null,
         self::DISPUTED             => false,
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
@@ -998,6 +1015,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
     }
 
+    public function setReceiverId(string $receiverId)
+    {
+        $this->setAttribute(self::RECEIVER_ID, $receiverId);
+    }
+
+    public function setReceiverType(string $receiverType)
+    {
+        $this->setAttribute(self::RECEIVER_TYPE, $receiverType);
+    }
+
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------
@@ -1269,6 +1296,16 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::TRANSFER_ID));
     }
 
+    public function hasPaymentLink(): bool
+    {
+        return ($this->isAttributeNotNull(self::PAYMENT_LINK_ID));
+    }
+
+    public function getPaymentLinkId()
+    {
+        return $this->getAttribute(self::PAYMENT_LINK_ID);
+    }
+
     public function hasMetadata($key = null)
     {
         if ($key === null)
@@ -1452,7 +1489,7 @@ class Entity extends Base\PublicEntity
         {
             $order = $this->order;
 
-            if ($order->hasOffer() === true)
+            if ($order->hasOffers() === true)
             {
                 return true;
             }
@@ -2399,6 +2436,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\Transfer\Entity', 'source');
     }
 
+    public function paymentLink()
+    {
+        return $this->belongsTo(PaymentLink\Entity::class);
+    }
+
     public function receiver()
     {
         return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID);
@@ -2433,6 +2475,30 @@ class Entity extends Base\PublicEntity
     public function discount()
     {
         return $this->hasOne('RZP\Models\Discount\Entity');
+    }
+
+    public function offers()
+    {
+        return $this->morphToMany(
+                        Offer\Entity::class,
+                        'entity',
+                        Table::ENTITY_OFFER)
+                    ->withTimestamps();
+    }
+
+    public function associateOffer(Offer\Entity $offer)
+    {
+        // Creates row in entity_offers table
+        $this->offers()->attach($offer);
+    }
+
+    /**
+     * Works cos we only associate one offer with payment
+     * @return Offer\Entity
+     */
+    public function getOffer()
+    {
+        return $this->offers->first();
     }
 
 // --------------- Relation to other entity section ends -----------------------
@@ -2724,5 +2790,13 @@ class Entity extends Base\PublicEntity
     {
         $query->where(Entity::RECEIVER_ID, '=', $entity->getId())
               ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
+    }
+
+    public function isCorporateNetbanking()
+    {
+        return (
+            ($this->isNetbanking() === true) and
+            (Netbanking::isCorporateBank($this->getBank()) === true)
+        );
     }
 }

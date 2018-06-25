@@ -2,8 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
 use RZP\Constants\Entity as E;
 
 class CardController extends Controller
@@ -27,6 +27,15 @@ class CardController extends Controller
     public function getIin($id)
     {
         $data = $this->service(E::IIN)->fetchIin($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getPaymentFlows()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::IIN)->fetchPaymentFlows($input);
 
         return ApiResponse::json($data);
     }

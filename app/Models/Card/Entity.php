@@ -460,6 +460,7 @@ class Entity extends Base\PublicEntity
             '8YPFnW5UOM91H7', // IRCTC Mobile
             '8byazTDARv4Io0', // IRCTC Air Ticketing
             '9m4CChGex4ENkR', // IRCTC FTR
+            Merchant\Preferences::MID_CUREFIT,
             Merchant\Account::TEST_ACCOUNT,
             Merchant\Account::SHARED_ACCOUNT,
         ];
@@ -470,14 +471,13 @@ class Entity extends Base\PublicEntity
         // /
         $allowedMerchantIds = array_merge($allowedMerchantIds, Merchant\Preferences::MID_ENDURANCE);
 
-        $cardMerchant = $this->getMerchantId();
-
         // Allowing for Admin and App Auth(Priviledge)
         $app  = \App::getFacadeRoot();
         $auth = $app['basicauth'];
 
         if (($auth->isPrivilegeAuth() === false) and
-            (in_array($cardMerchant, $allowedMerchantIds, true) === false))
+            (in_array($this->getMerchantId(), $allowedMerchantIds, true) === false) and
+            ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_IIN) === false))
         {
             unset($array[self::IIN]);
         }

@@ -52,6 +52,7 @@ class Base extends Core
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
     const NETBANKING_OBC         = 'NetbankingObc';
+    const NETBANKING_HDFC        = 'NetbankingHdfc';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const JIOMONEY               = 'Jiomoney';
@@ -88,6 +89,7 @@ class Base extends Core
         self::NETBANKING_PNB      => [],
         self::NETBANKING_CSB      => ['noreply@csb.co.in'],
         self::NETBANKING_BOB      => ['billpay@bankofbaroda.com'],
+        self::NETBANKING_HDFC     => [],
         self::JIOMONEY            => [],
         self::EBS                 => [],
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],

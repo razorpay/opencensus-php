@@ -5,15 +5,17 @@ namespace RZP\Tests\Functional\Batch;
 use Mail;
 use Illuminate\Support\Facades\Queue;
 
+use RZP\Models\FileStore;
 use RZP\Models\Batch\Header;
+use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Batch\Refund as BatchRefundFileMail;
-use RZP\Models\FileStore;
-use RZP\Jobs\Batch as BatchJob;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class RefundTest extends TestCase
 {
     use BatchTestTrait;
+    use DbEntityFetchTrait;
 
     protected $payment = null;
 
@@ -34,9 +36,39 @@ class RefundTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        // This attribute(derived) is only exposed in admin auth at the moment
+        $this->assertArrayNotHasKey('processed_percentage', $response);
+        $this->assertArrayNotHasKey('processed_count', $response);
+
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(0, $batch->getProcessedCount());
 
         Queue::assertNotPushed(BatchJob::class);
+    }
+
+    public function testRefundBatchWithAdminAuth()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testRefundBatchWithSharedMerchantProxyAuth()
+    {
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+
+        $this->startTest();
     }
 
     public function testUploadRefundFileException()
@@ -100,6 +132,10 @@ class RefundTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(2, $batch->getProcessedCount());
 
         // Assert that the processed file exist
 
@@ -238,10 +274,12 @@ class RefundTest extends TestCase
 
         $this->startTest();
 
-        $batch = $this->getLastEntity('batch', true);
+        $batch = $this->getDbLastEntity('batch');
 
-        $this->assertEquals($batch['attempts'], 3);
-        $this->assertEquals($batch['status'], 'processed');
+        $this->assertEquals(3, $batch->getAttempts());
+        $this->assertEquals('processed', $batch->getStatus());
+        $this->assertEquals(1, $batch->getProcessedCount());
+        $this->assertEquals(100, $batch->getProcessedPercentage());
     }
 
     public function testProcessRefundWithThreeAttemptSuccess()
@@ -260,10 +298,12 @@ class RefundTest extends TestCase
 
         $this->startTest();
 
-        $batch = $this->getLastEntity('batch', true);
+        $batch = $this->getDbLastEntity('batch');
 
-        $this->assertEquals($batch['attempts'], 3);
-        $this->assertEquals($batch['status'], 'processed');
+        $this->assertEquals(3, $batch->getAttempts());
+        $this->assertEquals('processed', $batch->getStatus());
+        $this->assertEquals(1, $batch->getProcessedCount());
+        $this->assertEquals(100, $batch->getProcessedPercentage());
     }
 
     protected function getDefaultRefundFileEntries(bool $withNotes = true)
@@ -280,8 +320,8 @@ class RefundTest extends TestCase
         if ($withNotes === true)
         {
             $entries[0] += [
-                'Notes[key_1]'     => 'Notes Value 1',
-                'Notes[key_2]'     => 'Notes Value 2',
+                'notes[key_1]'     => 'Notes Value 1',
+                'notes[key_2]'     => 'Notes Value 2',
             ];
         }
 

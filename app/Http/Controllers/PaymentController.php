@@ -47,9 +47,9 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->service()->refund($id, $input);
+        $refund = $this->service()->refund($id, $input);
 
-        return ApiResponse::json($payment);
+        return ApiResponse::json($refund);
     }
 
     public function postRefundAuthorized($id)
@@ -89,6 +89,15 @@ class PaymentController extends Controller
     public function postAuthorizeFailedPayment($id)
     {
         $data = $this->service()->authorizeFailed($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postFixAttemptedOrders()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fixAttemptedOrders($input);
 
         return ApiResponse::json($data);
     }
@@ -370,5 +379,12 @@ class PaymentController extends Controller
         $this->service()->acknowledge($paymentId);
 
         return ApiResponse::json([], 204);
+    }
+
+    public function updateReceiverData()
+    {
+        $data = $this->service()->updateReceiverData();
+
+        return ApiResponse::json($data);
     }
 }

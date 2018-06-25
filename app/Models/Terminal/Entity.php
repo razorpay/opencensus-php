@@ -8,11 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
-use RZP\Models\Card\Network;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Terminal\TpvType;
 use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class Entity extends Base\PublicEntity
@@ -62,6 +60,7 @@ class Entity extends Base\PublicEntity
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
+    const BANKING_TYPES                 = 'banking_types';
 
     //
     // Currenly being used to handle 'unexpected' BharatQR payments.
@@ -93,7 +92,6 @@ class Entity extends Base\PublicEntity
     //const PRIORITY                      = 'priority';
 
     protected $fillable = [
-        self::MERCHANT_ID,
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
@@ -232,19 +230,30 @@ class Entity extends Base\PublicEntity
         self::TYPE                      => 'int',
         self::MODE                      => 'int',
         self::CATEGORY                  => 'int',
-        self::CORPORATE                 => 'boolean',
+        self::CORPORATE                 => 'int',
         self::EXPECTED                  => 'boolean',
         self::USED                      => 'boolean',
     ];
 
     protected $appends = [
         self::SHARED,
+        self::BANKING_TYPES
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($terminal)
+        {
+            $terminal->merchants()->detach();
+        });
+    }
 
     // ---------------------- GETTERS ----------------------
 
@@ -335,6 +344,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MODE);
     }
 
+    public function getBankingTypes()
+    {
+        return $this->getAttribute(self::BANKING_TYPES);
+    }
+
     // ---------------------- END GETTERS ----------------------
 
     public function isEnabled()
@@ -423,9 +437,17 @@ class Entity extends Base\PublicEntity
         return $this->isDirectForMerchant($merchant);
     }
 
-    public function isCorporate()
+    /**
+     * Values for CORPORATE can be 0, 1, 2
+     * 0: Retail only
+     * 1: Corporate only
+     * 2: Both
+     *
+     * @return bool
+     */
+    public function isBankingTypeBoth()
     {
-        return $this->getAttribute(self::CORPORATE);
+        return ($this->getAttribute(self::CORPORATE) === BankingType::BOTH);
     }
 
     public function isExpected()
@@ -557,6 +579,11 @@ class Entity extends Base\PublicEntity
     protected function getSharedAttribute()
     {
         return $this->isShared();
+    }
+
+    protected function getBankingTypesAttribute()
+    {
+        return BankingType::getBankingTypes($this->getAttribute(self::CORPORATE));
     }
 
     // ---------------------- END ACCESSORS ----------------------
@@ -953,6 +980,11 @@ class Entity extends Base\PublicEntity
     public function isBharatQr()
     {
         return ($this->isTypeApplicable(Type::BHARAT_QR) === true);
+    }
+
+    public function isMoto()
+    {
+        return ($this->isTypeApplicable(Type::MOTO) === true);
     }
 
     public function isInternational()

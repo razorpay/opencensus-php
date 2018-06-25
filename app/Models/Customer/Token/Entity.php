@@ -44,6 +44,10 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_NAME          = 'beneficiary_name';
     const IFSC                      = 'ifsc';
     const AADHAAR_NUMBER            = 'aadhaar_number';
+    const CONFIRMED_AT              = 'confirmed_at';
+    const REJECTED_AT               = 'rejected_at';
+    const INITIATED_AT              = 'initiated_at';
+    const ACKNOWLEDGED_AT           = 'acknowledged_at';
     const USED_COUNT                = 'used_count';
     const USED_AT                   = 'used_at';
     const EXPIRED_AT                = 'expired_at';
@@ -121,6 +125,10 @@ class Entity extends Base\PublicEntity
         self::AUTH_TYPE,
         self::AADHAAR_NUMBER,
         self::USED_COUNT,
+        self::CONFIRMED_AT,
+        self::REJECTED_AT,
+        self::INITIATED_AT,
+        self::ACKNOWLEDGED_AT,
         self::USED_AT,
         self::EXPIRED_AT,
         self::CREATED_AT,
@@ -359,12 +367,41 @@ class Entity extends Base\PublicEntity
     {
         RecurringStatus::validateRecurringStatus($recurringStatus);
 
+        $currentRecurringStatus = $this->getRecurringStatus();
+
+        //
+        // This is added just as a robust check to ensure that we don't
+        // update the same status again. If it's changed to the
+        // same status, it might cause an issue because we will end up
+        // setting `confirmed_at` to the later time, whereas it would have
+        // been confirmed earlier itself.
+        //
+        if ((empty($currentRecurringStatus) === false) and
+            ($currentRecurringStatus === $recurringStatus))
+        {
+            return;
+        }
+
         $this->setAttribute(self::RECURRING_STATUS, $recurringStatus);
+
+        if (RecurringStatus::isTimestampedStatus($recurringStatus) === true)
+        {
+            $timestampKey = $recurringStatus . '_at';
+
+            $currentTime = Carbon::now()->getTimestamp();
+
+            $this->setAttribute($timestampKey, $currentTime);
+        }
     }
 
     public function setRecurringFailureReason($recurringFailureReason)
     {
         $this->setAttribute(self::RECURRING_FAILURE_REASON, $recurringFailureReason);
+    }
+
+    public function setAcknowledgedAt($timestamp)
+    {
+        $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
     }
 
     public function setUsedAt($timestamp)

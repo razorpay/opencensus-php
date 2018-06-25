@@ -50,7 +50,11 @@ class BankTransferBatchTest extends TestCase
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
+        $this->ba->adminAuth();
+
         $response = $this->startTest();
+
+        $this->ba->proxyAuth();
 
         // Gets last entity (Post queue processing) and asserts attributes
         $entities = $this->getLastEntity('batch', true);

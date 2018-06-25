@@ -3,7 +3,9 @@
 namespace RZP\Models\Order;
 
 use RZP\Models\Base;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Models\Offer\EntityOffer;
 
 class Repository extends Base\Repository
 {

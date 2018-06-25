@@ -174,7 +174,7 @@ return [
         'hitachi' => [
             'terminal_id'           => '38R00001',
             'amount'                => 500,
-            'retr_ref_nr'           => 736022780722,
+            'retr_ref_nr'           => '123456789012',
             'auth_id'               => 108418,
             'interchange_type'      => 'VISA',
             'fee_amount'            => 0.00,
@@ -183,7 +183,26 @@ return [
             'arn'                   => 74110757361008597807228,
             'issettled'             => 'S',
             'message_type'          => '0200',
-            'datetime'              => '2018-03-05 23:50:00'
+            'datetime'              => '2018-03-05 23:50:00',
+            'tran_currency_code'    => '356',
+        ],
+
+        'olamoney' => [
+            'Tdr deducted in Rs'        => '9.67',
+            'Unique Bill Id'            => '9LRjiRNokiZ3Ww',
+            'Bill Amount in Rs'         => '500',
+            'Goods And Services Tax'    => '1.7406',
+            'Date of Settlement'        => '2018-06-07 02:22:32.0',
+            'Transaction Type'          => 'debit'
+        ],
+
+        'mobikwik' => [
+            'Fee'                   => '9.67',
+            'OrderId'               => '9LRjiRNokiZ3Ww',
+            'TxnAmount'             => '500',
+            'ServiceTax'            => 'NA',
+            'IGST'                  => '2.02',
+            'RefundAdjustedDate'    => 'None'
         ]
     ],
 

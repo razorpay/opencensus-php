@@ -50,6 +50,8 @@ class CreateQrCodeTable extends Migration
 
             $table->integer(QrCode::UPDATED_AT);
 
+            $table->index(QrCode::REFERENCE);
+
             $table->index(QrCode::ENTITY_ID);
 
             $table->index(QrCode::ENTITY_TYPE);

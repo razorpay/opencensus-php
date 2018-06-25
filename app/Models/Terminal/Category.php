@@ -123,6 +123,7 @@ class Category
                 self::CORPORATE      => self::INVALID,
                 self::INSURANCE      => self::INSURANCE,
                 self::HOUSING        => self::HOUSING,
+                self::UTILITIES      => self::UTILITIES
             ],
         ],
         Method::EMANDATE => [

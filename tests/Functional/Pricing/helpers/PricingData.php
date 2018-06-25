@@ -542,6 +542,26 @@ return [
             ],
         ],
     ],
+    'testUpdatePricingPlanRule' => [
+        'request' => [
+            'content' => [
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan2',
+                'percent_rate' => 450,
+                'fixed_rate' => 0,
+                'min_fee' => 101,
+                'max_fee' => 10000,
+            ],
+        ],
+    ],
 
     'testGetPricingPlan' => [
         'response' => [

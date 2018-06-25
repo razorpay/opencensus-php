@@ -3,13 +3,14 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Exception\GatewayRequestException;
 use RZP\Models\Batch\Status;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
-use RZP\Gateway\Blade\Mock\CardNumber;
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 
 use RZP\Reconciliator\HDFC\RefundReconciliate as HdfcRefundRecon;
 use RZP\Reconciliator\HDFC\PaymentReconciliate as HDFCPaymentRecon;
@@ -19,7 +20,6 @@ use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
 use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
 use RZP\Reconciliator\BillDesk\RefundReconciliate as BilldeskRefundRecon;
 use RZP\Reconciliator\Hitachi\PaymentReconciliate as HitachiPaymentRecon;
-
 use RZP\Reconciliator\VirtualAccYesBank\PaymentReconciliate as VirtualAccYesBank;
 
 class ReconciliationFileTest extends TestCase
@@ -145,7 +145,7 @@ class ReconciliationFileTest extends TestCase
         {
             if ($action === 'capture')
             {
-                throw new Exception\GatewayRequestException('Timed out');
+                throw new GatewayRequestException('Timed out');
             }
 
             return $content;
@@ -287,7 +287,7 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
         // Recurring authorised payment
-        $refund1 = $this->getNewRefundEntity(true, false);
+        $refund1 = $this->getNewRefundEntity(true);
         $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
 
         $this->assertNull($refund1['arn']);
@@ -347,7 +347,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
-  
+
     //For success case of Bill desk reconciliation
     public function testBillDeskReconRefundFileFailure()
     {
@@ -519,7 +519,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->refundPayment($payment['id']);
 
-        return $this->getDbLastRefund('refund')->toArrayAdmin();
+        return $this->getDbLastRefund()->toArrayAdmin();
     }
 
     private function overrideFirstDataPayment(array $payment, array $forceOverride = [])
@@ -633,6 +633,7 @@ class ReconciliationFileTest extends TestCase
         $facade[HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT] = intval($payment['amount'] / 100);
         $facade[HitachiPaymentRecon::COLUMN_AUTH_CODE]      = $payment['pAuthID'];
         $facade[HitachiPaymentRecon::COLUMN_ARN]            = str_random(24);
+        $facade[HitachiPaymentRecon::COLUMN_CURRENCY_CODE]  = '356';
 
         return array_merge($facade, $forceOverride);
     }
@@ -643,6 +644,26 @@ class ReconciliationFileTest extends TestCase
 
         $facade['message_type'] = '0220';
         $facade[HitachiRefundRecon::COLUMN_REFUND_ID] = $payment['refund_id'];
+
+        return $facade;
+    }
+
+    private function overrideOlamoneyPayment(array $payment)
+    {
+        $facade = $this->testData['facades']['olamoney'];
+
+        $facade['Unique Bill Id'] = $payment['payment_id'];
+
+        return $facade;
+    }
+
+    private function overrideMobikwikPayment(array $payment)
+    {
+        $facade = $this->testData['facades']['mobikwik'];
+
+        $paymentId = str_replace("pay_", '', $payment['id']);
+
+        $facade['OrderID'] = '"""'. $paymentId;
 
         return $facade;
     }
@@ -689,6 +710,19 @@ class ReconciliationFileTest extends TestCase
             true);
     }
 
+    private function getNewWalletEntity($merchantId, $wallet)
+    {
+        $this->fixtures->merchant->enableWallet($merchantId, $wallet);
+
+        $payment = $this->getDefaultWalletPaymentArray($wallet);
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        $gatewayPayment = $this->getDbLastEntityPublic('payment');
+
+        return $gatewayPayment;
+    }
+
     public function testHitachiReconPaymentFile()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -715,6 +749,45 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
 
         $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testHitachiBharatQrRecon()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->create('terminal:bharat_qr_terminal');
+
+        $this->createVirtualAccount([], true, null, true);
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $this->payViaBharatQr($qrCode['id'], 'hitachi');
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($transaction['reconciled_at']);
+
+        $entries[] = $this->testData['facades']['hitachi'];
+
+        $entries[0][HitachiPaymentRecon::COLUMN_TERMINAL_NUMBER] = '38R00450';
+
+        $entries[0][HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT] = $payment['amount']/100;
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi');
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHitachiReconRefundFile()
@@ -725,7 +798,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
 
-        $refund1 = $this->getNewRefundEntity(true, false);
+        $refund1 = $this->getNewRefundEntity(true);
 
         $gatewayPayment1 = $this->getDbLastEntityToArray('hitachi');
 
@@ -739,6 +812,8 @@ class ReconciliationFileTest extends TestCase
         $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
         $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['arn']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHdfcFssOnusTransactionRecon()
@@ -746,7 +821,7 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $refund1 = $this->getNewRefundEntity(true, false);
+        $refund1 = $this->getNewRefundEntity(true);
         $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
 
         $this->assertNull($refund1['arn']);
@@ -791,5 +866,55 @@ class ReconciliationFileTest extends TestCase
 
         // Asserting status of batch as 'Processed'.
         $this->assertBatchStatus();
+    }
+
+    public function testOlamoneyReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_olamoney_terminal');
+
+        $gatewayPayment1 = $this->getNewWalletEntity('10000000000000', 'olamoney');
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $entries[] = $this->overrideOlamoneyPayment($wallet);
+
+        $file = $this->writeToCsvFile($entries, 'olamoney');
+
+        $this->runForFiles([$file], 'Olamoney');
+
+        $updatedPayment1 = $this->getEntityById('payment', $wallet['payment_id'], true);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $updatedTransaction = $this->getEntityById('transaction', $updatedPayment1['transaction_id'], true);
+
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testMobikwikReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_mobikwik_terminal');
+
+        $gatewayPayment1 = $this->getNewWalletEntity('10000000000000', 'mobikwik');
+
+        $entries[] = $this->overrideMobikwikPayment($gatewayPayment1);
+
+        $file = $this->writeToCsvFile($entries, 'mobikwik');
+
+        $this->runForFiles([$file], 'Mobikwik');
+
+        $updatedPayment1 = $this->getEntityById('payment', $gatewayPayment1['id'], true);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $updatedTransaction = $this->getEntityById('transaction', $updatedPayment1['transaction_id'], true);
+
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 }

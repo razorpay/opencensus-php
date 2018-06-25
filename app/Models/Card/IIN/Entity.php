@@ -102,6 +102,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI);
     }
 
+    public function isDebitPin()
+    {
+        return $this->supports(Flow::PIN);
+    }
+
+    public function isHeadLessOtp()
+    {
+        return $this->supports(Flow::HEADLESS_OTP);
+    }
+
+    public function isOtp()
+    {
+        return $this->supports(Flow::OTP);
+    }
+
     public function isInternational()
     {
         return $this->getInternationalAttribute();

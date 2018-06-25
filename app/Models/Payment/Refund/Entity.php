@@ -58,13 +58,12 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::MERCHANT_ID,
-        self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
         self::RECEIPT,
         self::STATUS,
+        self::REFERENCE1,
     ];
 
     protected $visible = [
@@ -85,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
+        self::REFERENCE1,
         self::CREATED_AT,
         self::UPDATED_AT
     ];

@@ -1005,7 +1005,7 @@ trait Refund
         return null;
     }
 
-    protected function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
+    public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
     {
         $this->validatePaymentForRefund($payment);
 

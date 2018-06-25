@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Gateway\Blade\Entity as Blade;
+use RZP\Gateway\Mpi\Base\Entity as Mpi;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Refund\Entity as Refund;
 
@@ -18,65 +18,65 @@ class CreateBladeTable extends Migration
      */
     public function up()
     {
-        Schema::create(Table::BLADE, function(Blueprint $table)
+        Schema::create(Table::MPI, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
-            $table->increments(Blade::ID);
+            $table->increments(Mpi::ID);
 
-            $table->char(Blade::ACTION, 10)
+            $table->string(Mpi::ACTION)
                   ->nullable();
 
-            $table->char(Blade::ACQUIRER, 10)
+            $table->char(Mpi::ACQUIRER, 10)
                   ->nullable();
 
-            $table->string(Blade::PAYMENT_ID, Payment::ID_LENGTH);
+            $table->string(Mpi::PAYMENT_ID, Payment::ID_LENGTH);
 
-            $table->char(Blade::REFUND_ID, Refund::ID_LENGTH)
+            $table->char(Mpi::REFUND_ID, Refund::ID_LENGTH)
                   ->nullable();
 
-            $table->integer(Blade::AMOUNT);
+            $table->integer(Mpi::AMOUNT);
 
-            $table->string(Blade::CURRENCY, 3)
+            $table->string(Mpi::CURRENCY, 3)
                   ->nullable();
 
-            $table->char(Blade::STATUS, 1)
+            $table->char(Mpi::STATUS, 1)
                   ->nullable();
 
-            $table->char(Blade::XID, 40)
+            $table->char(Mpi::XID, 40)
                   ->nullable();
 
-            $table->char(Blade::CAVV, 40)
+            $table->char(Mpi::CAVV, 40)
                   ->nullable();
 
-            $table->char(Blade::ACC_ID, 40)
+            $table->char(Mpi::ACC_ID, 40)
                   ->nullable();
 
-            $table->char(Blade::CAVV_ALGORITHM, 1)
+            $table->char(Mpi::CAVV_ALGORITHM, 1)
                   ->nullable();
 
-            $table->char(Blade::ENROLLED, 1)
+            $table->char(Mpi::ENROLLED, 1)
                   ->nullable();
 
-            $table->char(Blade::ECI, 2)
+            $table->char(Mpi::ECI, 2)
                   ->nullable();
 
-            $table->integer(Blade::RECEIVED)
+            $table->integer(Mpi::RECEIVED)
                   ->default(0);
 
-            $table->integer(Blade::CREATED_AT);
+            $table->integer(Mpi::CREATED_AT);
 
-            $table->integer(Blade::UPDATED_AT);
+            $table->integer(Mpi::UPDATED_AT);
 
-            $table->foreign(Blade::PAYMENT_ID)
-                  ->references(Blade::ID)
+            $table->foreign(Mpi::PAYMENT_ID)
+                  ->references(Mpi::ID)
                   ->on(Table::PAYMENT)
                   ->onDelete('restrict');
 
-            $table->index(Blade::STATUS);
-            $table->index(Blade::RECEIVED);
-            $table->index(Blade::CREATED_AT);
-            $table->index(Blade::REFUND_ID);
+            $table->index(Mpi::STATUS);
+            $table->index(Mpi::RECEIVED);
+            $table->index(Mpi::CREATED_AT);
+            $table->index(Mpi::REFUND_ID);
         });
     }
 
@@ -87,11 +87,11 @@ class CreateBladeTable extends Migration
      */
     public function down()
     {
-        Schema::table(Table::BLADE, function($table)
+        Schema::table(Table::MPI, function($table)
         {
-            $table->dropForeign(Table::BLADE . '_' . Blade::PAYMENT_ID . '_foreign');
+            $table->dropForeign(Table::MPI . '_' . Mpi::PAYMENT_ID . '_foreign');
         });
 
-        Schema::drop(Table::BLADE);
+        Schema::drop(Table::MPI);
     }
 }

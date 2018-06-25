@@ -10,9 +10,9 @@ use RobRichards\XMLSecLibs\XMLSecurityKey;
 use RobRichards\XMLSecLibs\XMLSecurityDSig;
 use UnexpectedValueException;
 
-use RZP\Gateway\Blade\XmlseclibsAdapter;
-use RZP\Gateway\Blade\Gateway as BladeGateway;
-use RZP\Gateway\Blade\Mock\Gateway as BladeMockGateway;
+use RZP\Gateway\Mpi\Blade\XmlseclibsAdapter;
+use RZP\Gateway\Mpi\Blade\Gateway as BladeGateway;
+use RZP\Gateway\Mpi\Blade\Mock\Gateway as BladeMockGateway;
 use RZP\Tests\TestCase;
 //use Gateway\Blade\XmlseclibsAdapter;
 

@@ -155,9 +155,9 @@ class Base extends BaseModel\Core
 
         $this->repo->transaction(function () use ($ufhFile, $input)
         {
-            $this->repo->saveOrFail($ufhFile);
-
             $this->repo->saveOrFail($this->batch);
+
+            $this->repo->saveOrFail($ufhFile);
 
             $this->saveSettings($input);
         });
@@ -317,7 +317,7 @@ class Base extends BaseModel\Core
     {
         try
         {
-            $this->trace->info(TraceCode::BATCH_FILE_PROCESSING, $this->batch->toArray());
+            $this->trace->info(TraceCode::BATCH_FILE_PROCESSING, $this->batch->toArrayTraceAll());
 
             $this->performPreProcessingActions();
 
@@ -331,7 +331,7 @@ class Base extends BaseModel\Core
         {
             $this->postProcess();
 
-            $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArray());
+            $this->trace->info(TraceCode::BATCH_FILE_PROCESSED, $this->batch->toArrayTraceAll());
         }
     }
 
@@ -341,6 +341,15 @@ class Base extends BaseModel\Core
 
         $this->batch->incrementAttempts();
 
+        $this->repo->saveOrFail($this->batch);
+
+        //
+        // Note:
+        // We are not saving batch entity's status after resetting. It is a temporary reset and after current
+        // processing the actual values would be saved. Additionally, notice that in below method we set status to null,
+        // which is not allowed at database layer and so even if we attempt saving it'll fail or else need to figure
+        // out what the temporary status should be.
+        //
         $this->resetBatchAttributes();
 
         $this->downloadAndSetInputFile();
@@ -359,6 +368,9 @@ class Base extends BaseModel\Core
         {
             $this->batch->setStatusNull();
             $this->batch->unsetFailureReason();
+            $this->batch->unsetProcessedCount();
+            $this->batch->setSuccessCount(0);
+            $this->batch->setFailureCount(0);
         }
     }
 
@@ -380,12 +392,9 @@ class Base extends BaseModel\Core
      */
     protected function processEntries(array & $entries)
     {
-        foreach ($entries as & $entry)
+        foreach ($entries as $index => & $entry)
         {
-            $tracePayload = [
-                Batch\Entity::ID          => $this->batch->getId(),
-                Batch\Entity::MERCHANT_ID => $this->batch->getMerchantId(),
-            ];
+            $tracePayload = $this->batch->toArrayTrace([], ['row_index' => $index]);
 
             try
             {
@@ -400,14 +409,8 @@ class Base extends BaseModel\Core
             }
             catch (BaseException $e)
             {
-                // All RZP Exceptions have public error code and public error
-                // description which can be exposed in the output file.
-
-                $this->trace->traceException(
-                                $e,
-                                null,
-                                TraceCode::BATCH_PROCESSING_ERROR,
-                                $tracePayload);
+                // RZP Exceptions have public error code & description which can be exposed in the output file
+                $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, $tracePayload);
 
                 $error = $e->getError();
 
@@ -417,18 +420,17 @@ class Base extends BaseModel\Core
             }
             catch (\Throwable $e)
             {
-                // All non RZP exception/errors case:
-                // - Log critical error
-                // - Just expose error code SERVER_ERROR in output file.
-
-                $this->trace->traceException(
-                                $e,
-                                Trace::CRITICAL,
-                                TraceCode::BATCH_PROCESSING_ERROR,
-                                $tracePayload);
+                // All non RZP exception/errors case: 1) Log critical error & 2) expose just SERVER_ERROR code in output
+                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::BATCH_PROCESSING_ERROR, $tracePayload);
 
                 $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
                 $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+            }
+            finally
+            {
+                $this->batch->incrementProcessedCount();
+
+                $this->repo->saveOrFail($this->batch);
             }
         }
     }
@@ -586,11 +588,7 @@ class Base extends BaseModel\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::BATCH_PROCESSING_ERROR,
-                $this->batch->toArrayPublic());
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, $this->batch->toArrayTrace());
         }
     }
 
@@ -718,11 +716,7 @@ class Base extends BaseModel\Core
 
             if ($success === false)
             {
-                $this->trace->critical(
-                    TraceCode::BATCH_FILE_DELETE_ERROR,
-                    [
-                        'file_path' => $filePath,
-                    ]);
+                $this->trace->critical(TraceCode::BATCH_FILE_DELETE_ERROR, ['file_path' => $filePath]);
             }
         }
     }
@@ -815,8 +809,10 @@ class Base extends BaseModel\Core
      */
     protected function cleanParsedEntries(array $entries): array
     {
+        $totalEntries = count($entries);
+
         // CSV: Removes first dictionary if it's the header itself
-        if ((empty($entries) === false) && (array_keys($entries[0]) === array_values($entries[0])))
+        if ((empty($entries) === false) and (array_keys($entries[0]) === array_values($entries[0])))
         {
             array_shift($entries);
         }
@@ -837,7 +833,10 @@ class Base extends BaseModel\Core
         }
 
         // Excel: Removes empty trailing rows
-        $entries = array_filter($entries, function ($v) { return (empty(array_filter($v)) === false); });
+        $entries = array_filter($entries, function ($v)
+        {
+            return (empty(array_filter($v)) === false);
+        });
 
         //
         // Excel: Removes empty(not all additional columns) trailing columns
@@ -865,6 +864,11 @@ class Base extends BaseModel\Core
             }
         }
 
+        $stats        = ['total_entries' => $totalEntries, 'total_cleaned_entries' => $totalEntries - count($entries)];
+        $tracePayload = $this->batch->toArrayTrace([], $stats);
+
+        $this->trace->debug(TraceCode::BATCH_PROCESS_ENTRIES_CLEANED, $tracePayload);
+
         return $entries;
     }
 
@@ -880,7 +884,7 @@ class Base extends BaseModel\Core
      */
     protected function saveInputFile(File $file): FileStore\Creator
     {
-        $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
+        $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArrayTrace());
 
         //
         // PHP's upload file get's deleted automatically once request terminates.
@@ -955,11 +959,11 @@ class Base extends BaseModel\Core
             $ufh->entity($this->batch);
         }
 
-        if ($this->shouldEncrypt() and ($type == FileStore\Type::BATCH_INPUT))
+        if ($this->shouldEncrypt() and ($type === FileStore\Type::BATCH_INPUT))
         {
             $ufh->encrypt(Type::AES_ENCRYPTION, [
-                    'mode'   =>   \phpseclib\Crypt\Base::MODE_CBC,
-                    'secret' =>  openssl_random_pseudo_bytes(256)
+                    'mode'   => \phpseclib\Crypt\Base::MODE_CBC,
+                    'secret' => openssl_random_pseudo_bytes(256)
                 ]);
         }
 
@@ -1079,7 +1083,7 @@ class Base extends BaseModel\Core
      */
     public function retryOutputFile()
     {
-        $this->trace->info(TraceCode::BATCH_RETRY_OUTPUT_FILE, $this->batch->toArrayPublic());
+        $this->trace->info(TraceCode::BATCH_RETRY_OUTPUT_FILE, $this->batch->toArrayTraceAll());
 
         $this->validateRetryOutputFileOperationAllowed();
 
@@ -1165,10 +1169,7 @@ class Base extends BaseModel\Core
             $ex,
             Trace::ERROR,
             TraceCode::BATCH_FILE_PROCESSING_ERROR,
-            [
-                Batch\Entity::ID   => $this->batch->getId(),
-                Batch\Entity::TYPE => $this->batch->getType(),
-            ]);
+            $this->batch->toArrayTrace());
 
         //
         // In case of any unhandled exceptions we set the status to failed,

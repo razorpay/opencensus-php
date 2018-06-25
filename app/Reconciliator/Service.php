@@ -23,8 +23,11 @@ class Service extends Base\Service
         RequestProcessor\Base::ATOM,
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::JIOMONEY,
+        RequestProcessor\Base::OLAMONEY,
+        RequestProcessor\Base::MOBIKWIK,
         RequestProcessor\Base::FIRST_DATA,
         RequestProcessor\Base::NETBANKING_OBC,
+        RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
     ];

@@ -642,6 +642,28 @@ return [
         ]
     ],
 
+    'testRecurringRule'  => [
+        'payment_options' => [
+            'method' => Method::CARD,
+            'recurring' => 1,
+        ],
+        'fixtures' => [
+            [
+                'method'      => Method::CARD,
+                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'gateway'     => 'hdfc',
+                'type'        => 'filter',
+                'filter_type' => 'select',
+                'issuer'      => 'HDFC',
+                'recurring'   => 1,
+                'group'       => 'A',
+            ],
+        ],
+        'expected_terminal_ids' => [
+            'FssRecurringTl',
+        ]
+    ],
+
     'testInternationalFilter' => [
         [
             'payment_options' => [
