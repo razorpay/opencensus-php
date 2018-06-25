@@ -63,6 +63,7 @@ class Base extends Core
     const UPI_ICICI              = 'UpiIcici';
     const ADMIN                  = 'admin';
     const HITACHI                = 'Hitachi';
+    const CARD_FSS               = 'CardFss';
     const ATOM                   = 'Atom';
 
     /**
@@ -99,10 +100,11 @@ class Base extends Core
         self::UPI_SBI             => [],
         self::PAYUMONEY           => [],
         self::HITACHI             => ['reportsmailer@hitachi-payments.com'],
+        self::CARD_FSS            => [],
         self::ATOM                => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN               => ['saurav.chowdhury@razorpay.com']
+        self::ADMIN               => ['saurav.chowdhury@razorpay.com'],
     ];
 
     /**

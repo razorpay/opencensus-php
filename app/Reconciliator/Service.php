@@ -23,6 +23,7 @@ class Service extends Base\Service
         RequestProcessor\Base::ATOM,
         RequestProcessor\Base::KOTAK,
         RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::CARD_FSS,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::BILLDESK,
         RequestProcessor\Base::UPI_ICICI,
@@ -38,7 +39,7 @@ class Service extends Base\Service
         RequestProcessor\Base::NETBANKING_FEDERAL,
         RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK
     ];
 
     /**

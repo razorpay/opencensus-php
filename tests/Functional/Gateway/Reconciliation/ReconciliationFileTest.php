@@ -10,6 +10,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Exception\GatewayRequestException;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
@@ -221,6 +222,86 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
+    }
+
+    public function testCardFssReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($transaction['reconciled_at']);
+
+        $gatewayPayment = $this->getLastEntity('card_fss', true);
+
+        $entries[] = $this->overrideCardFssPayment($gatewayPayment);
+
+        $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'payment');
+
+        $this->runForFiles([$file], 'CardFss');
+
+        $updatedPayment = $this->getDbEntityById('payment', $response['id']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertEquals($entries[0]['RRN'], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0]['Auth/Approval Code'], $updatedPayment['reference2']);
+
+        $updatedTransaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['gateway_settled_at']);
+        $this->assertNotNull($updatedTransaction['gateway_fee']);
+        $this->assertNotNull($updatedTransaction['gateway_service_tax']);
+
+        $this->assertBatchStatus();
+    }
+
+    public function testCardFssReconRefundFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $gatewayPayment = $this->getLastEntity('card_fss', true);
+
+        $this->refundPayment('pay_' . $gatewayPayment['payment_id']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($transaction['reconciled_at']);
+
+        $gatewayRefund = $this->getLastEntity('card_fss', true);
+
+        $entries[] = $this->overrideCardFssRefund($gatewayRefund, $gatewayPayment);
+
+        $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'refund', 'xls');
+
+        $this->runForFiles([$file], 'CardFss');
+
+        $updatedTransaction = $this->getLastEntity('transaction', true);
+
+        $updatedRefund = $this->getLastEntity('refund', true);
+        
+        $this->assertEquals($entries[0]['Reference Tran Id'], $updatedRefund['arn']);
+
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -620,6 +701,40 @@ class ReconciliationFileTest extends TestCase
 
         $facade['rec_fmt'] = 'CVD';
         $facade[HDFCPaymentRecon::COLUMN_PAYMENT_ID] = $payment['refund_id'];
+
+        return $facade;
+    }
+
+    private function overrideCardFssPayment($gatewayPayment)
+    {
+        $facade = $this->testData['facades']['card_fss_payment'];
+
+        $facade['payment gateway payment transaction id'] = $gatewayPayment[CardFssEntity::GATEWAY_PAYMENT_ID];
+        $facade['transaction amount']                     = number_format($gatewayPayment[CardFssEntity::AMOUNT] / 100, 2, '.', '');
+        $facade['merchant track id']                      = $gatewayPayment[CardFssEntity::PAYMENT_ID];
+        $facade['RRN']                                    = $gatewayPayment[CardFssEntity::REF];
+        $facade['Auth/Approval Code']                     = $gatewayPayment[CardFssEntity::AUTH];
+        $facade['payment gateway transaction id']         = $gatewayPayment[CardFssEntity::GATEWAY_TRANSACTION_ID];
+        $facade['MSF']                                    = $facade['transaction amount'] * 0.009 * (-1);
+        $facade['MSF Tax Amount']                         = $facade['MSF'] / 5.6;
+        $facade['settlement amount']                      = $facade['transaction amount'] - $facade['MSF'] - $facade['MSF Tax Amount'];
+
+        return $facade;
+    }
+
+    private function overrideCardFssRefund($gatewayRefund, $gatewayPayment)
+    {
+        $facade = $this->testData['facades']['card_fss_refund'];
+
+        $facade['Aggregator Transaction ID']       = $gatewayRefund[CardFssEntity::GATEWAY_TRANSACTION_ID];
+        $facade['Transaction Date']                = Carbon::createFromTimestamp($gatewayPayment[CardFssEntity::CREATED_AT], Timezone::IST)->format('d/m/Y h:i:s');
+        $facade['Action Code']                     = 'Credit';
+        $facade['transaction_amount']              = number_format($gatewayPayment[CardFssEntity::AMOUNT] / 100, 2, '.', '');
+        $facade['Merchant Track Id']               = $gatewayRefund[CardFssEntity::REFUND_ID];
+        $facade['Original Transaction Id']         = $gatewayPayment[CardFssEntity::GATEWAY_TRANSACTION_ID];
+        $facade['aggregator_request_sent_time']    = $facade['Transaction Date'];
+        $facade['merchant_response_sent_time']     = $facade['Transaction Date'];
+        $facade['Reference Tran Id']               = $gatewayRefund[CardFssEntity::REF];
 
         return $facade;
     }
