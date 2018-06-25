@@ -37,6 +37,7 @@ class Fields
     const DATE2                     = 'Date2';          // End date
 
     // Constant values used in E-Mandate registration request
+    const CLIENT_NAME       = 'RAZORPAY';
     const AMOUNT_TYPE       = 'Maximum';
     const END_TIMESTAMP     = 'end_timestamp';
     const START_TIMESTAMP   = 'start_timestamp';
@@ -73,7 +74,8 @@ class Fields
             EMandateRegisterFileHeadings::MANDATE_ID                    => $tokenId,
             EMandateRegisterFileHeadings::MERCHANT_REQUEST_NO           => $paymentId,
             EMandateRegisterFileHeadings::AMOUNT_TYPE                   => self::AMOUNT_TYPE,
-            EMandateRegisterFileHeadings::CLIENT_NAME                   => $merchantName,
+            EMandateRegisterFileHeadings::CLIENT_NAME                   => self::CLIENT_NAME,
+            EMandateRegisterFileHeadings::SUB_MERCHANT_NAME             => $merchantName,
             self::START_TIMESTAMP                                       => $token->getCreatedAt(),
             self::END_TIMESTAMP                                         => $token->getExpiredAt(),
         ];

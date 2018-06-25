@@ -6,6 +6,7 @@ class EMandateRegisterFileHeadings
 {
     // Request file headings
     const CLIENT_NAME                   = 'Client Name';
+    const SUB_MERCHANT_NAME             = 'Sub-merchant Name';
     const MERCHANT_UNIQUE_REFERENCE_NO  = 'Merchant Unique Reference No';
     const CUSTOMER_NAME                 = 'Customer Name';
     const CUSTOMER_ACCOUNT_NUMBER       = 'Customer Account Number';
