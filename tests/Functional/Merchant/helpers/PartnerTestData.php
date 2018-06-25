@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant\Partner;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Batch\Header;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
@@ -549,6 +550,42 @@ return [
             'content' => [
                 'status' => 'activated',
             ],
+        ],
+    ],
+    'testCreateBatchOfPartnerReferralsType' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'partner_referrals',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'partner_referrals',
+                'status'           => 'created',
+                'total_count'      => 2,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => null,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testCreateBatchOfPartnerReferralsTypeFileRows' => [
+        [
+            Header::PARTNER_MERCHANT_ID  => '10000000000000',
+            Header::PARTNER_TYPE         => 'reseller',
+            Header::REFERRAL_MERCHANT_ID => '100DemoAccount',
+        ],
+        [
+            Header::PARTNER_MERCHANT_ID  => '10000000000000',
+            Header::PARTNER_TYPE         => '',
+            Header::REFERRAL_MERCHANT_ID => '10000000000001',
         ],
     ],
 ];

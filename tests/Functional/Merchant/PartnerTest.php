@@ -7,14 +7,15 @@ use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class PartnerTest extends OAuthTestCase
 {
     use OAuthTrait;
+    use BatchTestTrait;
     use DbEntityFetchTrait;
-    use RequestResponseFlowTrait;
 
     const PARTNER               = 'partner';
     const ACTIVATION            = 'activation';
@@ -480,6 +481,45 @@ class PartnerTest extends OAuthTestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testCreateBatchOfPartnerReferralsType()
+    {
+        $rows = $this->testData[__FUNCTION__ . 'FileRows'];
+
+        $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
+
+        // Default merchant to be used for tests
+        $this->fixtures->create('merchant',
+            [
+                'id'            => '100DemoAccount',
+                'email'         => 'test@razorpay.com',
+                'billing_label' => 'Test Merchant'
+            ]);
+
+        // Default merchant to be used for tests
+        $this->fixtures->create('merchant',
+            [
+                'id'            => '10000000000001',
+                'email'         => 'test@razorpay.com',
+                'billing_label' => 'Test Merchant'
+            ]);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $this->createOAuthApplication($partnerData);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->assertTrue($merchant->isPartner());
+
+        $merchant = $this->getDbEntities('merchant_access_map' ,[], 'test');
+        s($merchant);
     }
 
     protected function getDummyPartnerAttributes(array $attributes = []): array

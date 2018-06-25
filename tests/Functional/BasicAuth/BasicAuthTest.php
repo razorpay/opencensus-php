@@ -37,12 +37,12 @@ class BasicAuthTest extends TestCase
         $this->assertEquals('Basic realm="Razorpay"', $this->response->headers->get('WWW-Authenticate'));
     }
 
-    public function testWrongKeyOnPublicJsonpRoute()
-    {
-        $this->ba->publicAuth('rzp_test_TheTstWrongKey');
-
-        $this->startTest();
-    }
+//    public function testWrongKeyOnPublicJsonpRoute()
+//    {
+//        $this->ba->publicAuth('rzp_test_TheTstWrongKey');
+//
+//        $this->startTest();
+//    }
 
     /**
      * This also checks the effect of providing secret on
@@ -69,12 +69,12 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
-    public function testUnauthorizedOnJsonpRoute()
-    {
-        $this->ba->publicAuth('rzp_test_TheTestAusdKey');
-
-        $this->startTest();
-    }
+//    public function testUnauthorizedOnJsonpRoute()
+//    {
+//        $this->ba->publicAuth('rzp_test_TheTestAusdKey');
+//
+//        $this->startTest();
+//    }
 
     public function testNoSecretOnPrivateRoute()
     {
@@ -83,19 +83,19 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
-    public function testPublicAuthWithWrongKeyId()
-    {
-        $this->ba->publicAuth('abcdefgh820b0c06208ccd99');
-
-        $this->startTest();
-    }
-
-    public function testPrivateAuthWithWrongKeyId()
-    {
-        $this->ba->privateAuth('abcdefgh820b0c06208ccd99');
-
-        $this->startTest();
-    }
+//    public function testPublicAuthWithWrongKeyId()
+//    {
+//        $this->ba->publicAuth('abcdefgh820b0c06208ccd99');
+//
+//        $this->startTest();
+//    }
+//
+//    public function testPrivateAuthWithWrongKeyId()
+//    {
+//        $this->ba->privateAuth('abcdefgh820b0c06208ccd99');
+//
+//        $this->startTest();
+//    }
 
     public function testPrivateAuthWithWrongSecret()
     {
