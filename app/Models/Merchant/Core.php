@@ -31,6 +31,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
+use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
@@ -808,6 +809,15 @@ class Core extends Base\Core
     }
 
     /**
+     * @param  Entity $merchant
+     * @return null|OAuthApp\Entity
+     */
+    public function getPartnerApp(Entity $merchant)
+    {
+        return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
+    }
+
+    /**
      * @param Request\Entity $merchantRequest
      *
      * @return Entity
@@ -913,7 +923,7 @@ class Core extends Base\Core
             return;
         }
 
-        $app = $merchant->getPartnerApp();
+        $app = $this->getPartnerApp($merchant);
 
         $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());
 
