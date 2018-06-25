@@ -125,6 +125,10 @@ class Entity extends Base\PublicEntity
         self::AUTH_TYPE,
         self::AADHAAR_NUMBER,
         self::USED_COUNT,
+        self::CONFIRMED_AT,
+        self::REJECTED_AT,
+        self::INITIATED_AT,
+        self::ACKNOWLEDGED_AT,
         self::USED_AT,
         self::EXPIRED_AT,
         self::CREATED_AT,
@@ -393,6 +397,11 @@ class Entity extends Base\PublicEntity
     public function setRecurringFailureReason($recurringFailureReason)
     {
         $this->setAttribute(self::RECURRING_FAILURE_REASON, $recurringFailureReason);
+    }
+
+    public function setAcknowledgedAt($timestamp)
+    {
+        $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
     }
 
     public function setUsedAt($timestamp)

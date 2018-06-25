@@ -2,13 +2,13 @@
 
 namespace RZP\Models\PaymentLink;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 /**
- * Status of a payment link is active or inactive.
- * For active link, status_reason is null;
- * For inactive link, valid values are : expired,
- * deactivated and completed
+ * Status of a payment link is active or inactive. Additionally we have status reason accompanying the status.
+ * - For active link, status_reason is null.
+ * - For inactive link, valid values are : expired, deactivated and completed.
  *
- * Class StatusReason
  * @package RZP\Models\PaymentLink
  */
 class StatusReason
@@ -19,13 +19,16 @@ class StatusReason
 
     public static function isValid(string $statusReason): bool
     {
-        if ($statusReason === null)
-        {
-            return true;
-        }
-
         $key = __CLASS__ . '::' . strtoupper($statusReason);
 
         return ((defined($key) === true) and (constant($key) === $statusReason));
+    }
+
+    public static function checkStatusReason(string $statusReason)
+    {
+        if (self::isValid($statusReason) === false)
+        {
+            throw new BadRequestValidationFailureException('Not a valid status reason: ' . $statusReason);
+        }
     }
 }

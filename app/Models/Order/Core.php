@@ -84,7 +84,7 @@ class Core extends Base\Core
         $offer = (new Offer\Core)->fetchAndValidateOfferForOrder($offerId, $order);
 
         // Creates row in entity_offers table
-        $this->repo->order->attachOfferToOrder($order, $offer);
+        $order->associateOffer($offer);
 
         $this->trace->info(
             TraceCode::OFFER_APPLIED_ON_ORDER,

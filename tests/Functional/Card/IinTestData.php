@@ -54,7 +54,7 @@ return [
 
     'testGetPaymentFlows' => [
         'request'  => [
-            'url'     => '/iins/payment_flows',
+            'url'     => '/payment_flows',
             'content' => [
                 'iin' => '112333',
             ],
@@ -70,7 +70,7 @@ return [
 
     'testGetPaymentFlowsEmptyResponse' => [
         'request'  => [
-            'url'     => '/iins/payment_flows',
+            'url'     => '/payment_flows',
             'content' => [
                 'iin' => '112333',
             ],
@@ -83,7 +83,7 @@ return [
 
     'testGetPaymentOtpFlow' => [
         'request'  => [
-            'url'     => '/iins/payment_flows',
+            'url'     => '/payment_flows',
             'content' => [
                 'iin' => '112333',
             ],

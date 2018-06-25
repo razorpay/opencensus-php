@@ -48,6 +48,14 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals(90000, $payment['amount']);
         $this->assertEquals('captured', $payment['status']);
 
+        // Payment Offer row got created
+        $entityOffers = $this->getEntities('entity_offer', ['entity_type' => 'payment'], true);
+        $entityOffer = $entityOffers['items'][0];
+
+        $this->assertEquals($offer->getId(), $entityOffer['offer_id']);
+        $this->assertEquals($payment['entity'], $entityOffer['entity_type']);
+        $this->assertEquals($payment['id'], 'pay_' . $entityOffer['entity_id']);
+
         $order = $this->getLastEntity('order', true);
         $this->assertEquals(100000, $order['amount']);
         $this->assertEquals('paid', $order['status']);
@@ -135,6 +143,26 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals($offer['id'], $discount['offer_id']);
     }
 
+    public function testOfferFixForAttemptedOrders()
+    {
+        $payment = $this->setUpOfferFailedPayment();
+
+        $this->testData[__FUNCTION__]['request']['content']['payment_ids'] = (array) $payment['id'];
+
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals($order['status'], 'paid');
+
+        $discount = $this->getLastEntity('discount', true);
+        $offer = $this->getLastEntity('offer', true);
+        $this->assertEquals(100000, $discount['amount']);
+        $this->assertEquals($payment['id'], $discount['payment_id']);
+        $this->assertEquals($order['id'], $discount['order_id']);
+        $this->assertEquals($offer['id'], $discount['offer_id']);
+    }
+
     protected function getOrderPaymentArray($order)
     {
         $payment = $this->getDefaultPaymentArray();
@@ -150,6 +178,41 @@ class OffersPaymentTest extends TestCase
         $payment = $this->getOrderPaymentArray($order);
 
         $payment['offer_id'] = $offer->getPublicId();
+
+        return $payment;
+    }
+
+    protected function setUpOfferFailedPayment()
+    {
+        $offer = $this->fixtures->create('offer');
+
+        $order = $this->fixtures->create('order');
+
+        $payment = $this->getOrderPaymentArray($order);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $this->fixtures->create('entity_offer', [
+                'entity_id'   => $order->getId(),
+                'entity_type' => 'order',
+                'offer_id'    => $offer->getId(),
+            ]);
+
+        $orderAttributes = [
+            'status' => 'attempted',
+            'force_offer' => true,
+            'discount'  => true,
+        ];
+
+        $this->fixtures->edit('order', $order->getId(), $orderAttributes);
+
+        $paymentAttributes = [
+            'amount' => 90000,
+        ];
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->fixtures->edit('payment', $payment['id'], $paymentAttributes);
 
         return $payment;
     }

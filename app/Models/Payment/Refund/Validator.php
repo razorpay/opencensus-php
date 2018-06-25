@@ -22,7 +22,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editStatusRules = [
-        Entity::STATUS          => 'required|string|in:initiated|custom',
+        Entity::STATUS          => 'required|string|custom',
+        Entity::REFERENCE1      => 'sometimes|string|max:255',
     ];
 
     protected static $createValidators = [
@@ -60,13 +61,21 @@ class Validator extends Base\Validator
         $this->payment = $payment;
     }
 
-    protected function validateStatus($input)
+    protected function validateStatus($attribute, $value)
     {
         if ($this->entity->getStatus() === Status::PROCESSED)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Status cannot be updated to initiated from processed.',
                 'status');
+        }
+
+        $validStatus = in_array($value, Status::REFUND_STATUS, true);
+
+        if($validStatus === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The selected status is invalid.');
         }
     }
 

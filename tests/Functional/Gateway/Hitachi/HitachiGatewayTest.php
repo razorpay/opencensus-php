@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Hitachi;
 use RZP\Models\Card;
 use RZP\Gateway\Hitachi;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\Blade\Mock\CardNumber;
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class HitachiGatewayTest extends TestCase
