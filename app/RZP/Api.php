@@ -2,8 +2,9 @@
 
 namespace App\RZP;
 
-use Razorpay;
 use Config;
+use Razorpay;
+use App\Http\ApiUrl;
 
 class Api extends Razorpay\Api\Api
 {
@@ -14,7 +15,7 @@ class Api extends Razorpay\Api\Api
      */
     function __construct($key, $secret)
     {
-        self::$baseUrl = Config::get('api.url');
+        self::$baseUrl = ApiUrl::getApiBaseUrl();
         self::$mock = Config::get('api.mock');
         parent::__construct($key, $secret);
     }

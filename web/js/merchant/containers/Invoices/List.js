@@ -13,6 +13,7 @@ import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { track } from './ga';
 
 @withRouter
 @connect(
@@ -22,6 +23,16 @@ import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
   { ...InvoiceActions, ...ModalActions, luminateRow }
 )
 export default class InvoicesListContainer extends ListContainer {
+  componentDidMount() {
+    super.componentDidMount();
+
+    // Hotjar tag and events.
+    if (typeof window.hj === 'function') {
+      window.hj('trigger', 'open_invoice');
+      window.hj('tagRecording', ['open_invoice']);
+    }
+  }
+
   fetchEntityList(params) {
     params.type = 'invoice';
 
@@ -53,8 +64,7 @@ export default class InvoicesListContainer extends ListContainer {
   onSearchAnalytics = params => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
-      window.rzpAnalytics({
-        eventCategory: 'Dashboard - Invoices',
+      track({
         eventAction: 'Search - Invoices',
         eventLabel: label,
       });
@@ -62,18 +72,24 @@ export default class InvoicesListContainer extends ListContainer {
   };
 
   onClearAnalytics = () => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Invoices',
+    track({
       eventAction: 'Clear Search Params - Invoices',
     });
   };
 
   componentDidMount() {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Invoices',
+    track({
       eventAction: 'Go To - Invoices',
     });
   }
+
+  triggerHotjar = () => {
+    // Hotjar tag and events.
+    if (typeof window.hj === 'function') {
+      window.hj('trigger', 'create_invoice');
+      window.hj('tagRecording', ['create_invoice']);
+    }
+  };
 
   render() {
     let { loading, invoices, user } = this.props;
@@ -87,7 +103,11 @@ export default class InvoicesListContainer extends ListContainer {
             featureEnabled="Invoice"
           >
             <div class="btn-toolbar pull-right">
-              <NavLink to="/invoices/new" class="btn btn-primary">
+              <NavLink
+                to="/invoices/new"
+                class="btn btn-primary"
+                onClick={this.triggerHotjar}
+              >
                 <i class="i i-plus" />
                 <span>Create Invoice</span>
               </NavLink>
@@ -112,8 +132,7 @@ export default class InvoicesListContainer extends ListContainer {
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
           onCopy={({ invoiceId }) => {
-            window.rzpAnalytics({
-              eventCategory: 'Dashboard - Invoices',
+            track({
               eventAction: 'Copy - Invoice Link',
               eventLabel: `invoice_id=${invoiceId}`,
             });

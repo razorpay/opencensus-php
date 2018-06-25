@@ -37,6 +37,11 @@ div.panel.recent-activity-cont {
           position: relative;
           display: inline-block;
 
+          @media (max-width: 375px) {
+
+            font-size: 0.85em;
+          }
+
           &.active {
 
             color: $primary-color;
@@ -63,6 +68,16 @@ div.panel.recent-activity-cont {
   &.has-footer {
 
     padding-bottom: 45px;
+
+    .panel-footer {
+
+      background-color: #fff;
+    }
+  }
+
+  &.compact .panel-body table td:nth-child(n) {
+
+    text-align: center;
   }
 
   .panel-body {
@@ -75,14 +90,9 @@ div.panel.recent-activity-cont {
       margin-bottom: 0;
       border-bottom: 0;
 
-      tr:nth-of-type(even) {
+      tr {
 
-        background-color: #f9f9f9;
-      }
-
-      tr:nth-of-type(odd) { 
-
-        background-color: transparent;
+        background-color: #fbfcfd;
       }
 
       td {

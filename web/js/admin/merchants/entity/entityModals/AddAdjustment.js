@@ -1,5 +1,5 @@
 import React from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
@@ -42,7 +42,7 @@ export default ({ merchantId }) => {
   }
 
   return (
-    <BaseModal header="Add Adjustment">
+    <ModalContent header="Add Adjustment">
       <Form class="full-span full-elements" style={{ width: '450px' }}>
         <div class="m-b">
           <strong>
@@ -72,6 +72,6 @@ export default ({ merchantId }) => {
           onSubmit={handleConfirm}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };

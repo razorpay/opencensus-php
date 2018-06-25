@@ -1,6 +1,8 @@
 export const testMerchantId = '10000000000000';
 import { snakeToTitleCase } from './util';
 
+export const activationDuration = '4-5 working days';
+
 export const entity2Prefix = {
   account: 'acc',
   balance_account: 'ba',
@@ -64,6 +66,7 @@ export const wallets = {
   mpesa: 'Mpesa',
   paytm: 'Paytm',
   sbibuddy: 'SBI Buddy',
+  amazonpay: 'Amazon Pay',
 };
 
 export const networks = {

@@ -28,7 +28,17 @@ const defaultFilters = {
   skip: 0,
 };
 
-function fetchMerchants() {
+function fetchMerchants(pms) {
+  let { params } = arguments[0];
+  // date unix time
+  if (params.from) {
+    params.from = new Date(moment(params.from, 'DD-MM-YYYY')).getTime() / 1000;
+  }
+
+  if (params.to) {
+    params.to = new Date(moment(params.to, 'DD-MM-YYYY')).getTime() / 1000;
+  }
+
   return adminFetch(...arguments).then(response => {
     if (response) {
       //update merchantReviewerMap when filters are apllied.
@@ -290,8 +300,8 @@ export default class MerchantList extends Component {
               name="sub_accounts"
               defaultChecked={''}
             />
-            <FromField />
-            <ToField />
+            <FromField allowToday={true} />
+            <ToField allowToday={true} />
             <div style={{ width: '172px' }}>
               <SearchableSelectField
                 label="Reviewer"

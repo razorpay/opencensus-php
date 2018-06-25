@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
 import { SwitchField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
@@ -27,15 +27,13 @@ export default ({ props, merchantId }) => {
     const fields = [];
     const methods = {};
 
-    _getForceFields().map(method => {
-      // Assign a default of false and override if we have it
-      methods[method] = '0';
-
-      if (methods.hasOwnProperty(method)) {
-        methods[method] = props.merchant.details.methods[method] ? '1' : '0';
-      }
-    });
-
+    Object.keys(props.merchant.details.methods)
+      .sort()
+      .forEach(method => {
+        if (exclusionFields.indexOf(method) < 0) {
+          methods[method] = props.merchant.details.methods[method] | 0;
+        }
+      });
     defaultMethods = { ...methods };
 
     for (let method in methods) {
@@ -58,6 +56,10 @@ export default ({ props, merchantId }) => {
   /* Submit button action */
   function onSubmit(body) {
     body = filterChangedMethods(body);
+
+    if (Object.keys(body).length === 0) {
+      return notifyError('Please change a method or methods to proceed.');
+    }
 
     for (let method in body) {
       if (body[method] === '1') {
@@ -90,7 +92,7 @@ export default ({ props, merchantId }) => {
   }
 
   return (
-    <BaseModal header="Activate/Deactivate Merchant Payment Methods">
+    <ModalContent header="Activate/Deactivate Merchant Payment Methods">
       <Form class="">
         {getFormFields()}
 
@@ -103,32 +105,17 @@ export default ({ props, merchantId }) => {
           onSubmit={onSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };
 
-function _getForceFields() {
-  // List all the methods here
-  // This lets us display methods that are not returned by the API as false
-  return [
-    'aeps',
-    'bank_transfer',
-    'mobikwik',
-    'payzapp',
-    'payumoney',
-    'olamoney',
-    'mpesa',
-    'upi',
-    'airtelmoney',
-    'freecharge',
-    'emi',
-    'amex',
-    'netbanking',
-    'emandate',
-    'debit_card',
-    'credit_card',
-    'jiomoney',
-    'openwallet',
-    'sbibuddy',
-  ];
-}
+//exclude fields from `methods` which are not required
+const exclusionFields = [
+  //extra fields
+  'card',
+  'disabled_banks',
+  'entity',
+  'merchant_id',
+  //method fields
+  'paytm',
+];

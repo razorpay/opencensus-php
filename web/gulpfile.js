@@ -18,7 +18,7 @@ function createBaseDir() {
 function handleError(err) {
   console.log(err.toString());
   this.emit('end');
-  process.exit(1);
+  isProd && process.exit(1);
 }
 
 function compileCss(o) {
@@ -72,6 +72,16 @@ gulp.task('watch', () => {
   iconFont(compileCss);
   gulp.watch('css/**/*.styl', compileCss);
   gulp.watch('icons/*.svg', _ => iconFont(compileCss));
+
+  require('livereload')
+    .createServer()
+    .watch([
+      __dirname + '/../public/dist/css',
+      __dirname + '/../public/dist/js/component',
+      __dirname + '/../public/playground/index.php',
+    ]);
+
+  playgroundServer();
 });
 
 gulp.task('default', () => {
@@ -80,3 +90,44 @@ gulp.task('default', () => {
   execSync('cp -r css/assets ../public/dist/css');
   iconFont(compileCss);
 });
+
+const { readFile } = require('fs');
+const webpackConfig = require('./webpack.config');
+webpackConfig.output.filename = '[name]';
+webpackConfig.output.library = 'component';
+webpackConfig.output.libraryTarget = 'umd';
+
+let workbenchApp;
+let serverPath;
+let webpackCompiler;
+
+function playgroundServer() {
+  const webpack = require('webpack');
+  require('http')
+    .createServer((req, res) => {
+      if (req.url === '/favicon.ico') return res.end('');
+      if (req.url === serverPath) return serveFile(req, res);
+
+      serverPath = req.url;
+      if (webpackCompiler) webpackCompiler.close();
+      webpackConfig.entry = {
+        [req.url]: '.' + [req.url],
+      };
+      webpackCompiler = webpack(webpackConfig).watch({}, (err, stats) => {
+        serveFile(req, res);
+        console.log(
+          stats.toString({
+            colors: true,
+          })
+        );
+      });
+    })
+    .listen(3000);
+}
+
+const serveFile = (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  readFile(__dirname + '/../public/dist' + req.url, (e, content) =>
+    res.end(content)
+  );
+};

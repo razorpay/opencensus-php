@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import Form from 'ui/Form';
 import Field, {
@@ -107,7 +107,7 @@ export default class CreateOffer extends Component {
 
   render() {
     return (
-      <BaseModal header="Create Offer">
+      <ModalContent header="Create Offer">
         <Form class="full-span full-elements" style={{ width: '500px' }}>
           <SelectMode />
           <Field label="Name" name="name" />
@@ -247,7 +247,7 @@ export default class CreateOffer extends Component {
             onSubmit={this.handleConfirm}
           />
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

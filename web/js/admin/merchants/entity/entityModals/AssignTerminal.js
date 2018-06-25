@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
@@ -139,7 +139,7 @@ export default class TerminalForm extends Component {
   render() {
     const { isEditMode, handleEdit, entity } = this.props;
     return (
-      <BaseModal header={`${isEditMode ? 'Edit' : 'Assign'} Terminal`}>
+      <ModalContent header={`${isEditMode ? 'Edit' : 'Assign'} Terminal`}>
         <div class="m-b">
           <strong class="text-danger">
             {isEditMode
@@ -406,6 +406,15 @@ export default class TerminalForm extends Component {
               entity && entity.type && entity.type.indexOf('bharat_qr') >= 0
             }
           />
+          <CheckField
+            label="Debit Recurring"
+            name="type[debit_recurring]"
+            defaultChecked={
+              entity &&
+              entity.type &&
+              entity.type.indexOf('debit_recurring') >= 0
+            }
+          />
 
           <div class="m-t m-b" />
           <AsyncButton
@@ -425,7 +434,7 @@ export default class TerminalForm extends Component {
             Ok
           </AsyncButton>
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

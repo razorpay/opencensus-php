@@ -6,7 +6,7 @@ import { notifyError, notifySuccess } from 'common/modal';
 
 import ShowWhen from 'admin/components/ShowWhen';
 import AsyncButton from 'ui/AsyncButton';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
 import Field, { SelectField, DateField, CheckField } from 'ui/Field';
 
@@ -118,7 +118,7 @@ export class DisputeForm extends Component {
     const expiresOn =
       isEditMode && entity.expires_on ? moment.unix(entity.expires_on) : '';
     return (
-      <BaseModal header={`${isEditMode ? 'Edit' : 'Create'} Dispute`}>
+      <ModalContent header={`${isEditMode ? 'Edit' : 'Create'} Dispute`}>
         <Form class="full-span full-elements">
           {/* Gate Dispute Id */}
           <Field
@@ -265,7 +265,7 @@ export class DisputeForm extends Component {
             onSubmit={body => handleSubmit(this.cleanFields(body))}
           />
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

@@ -1,12 +1,14 @@
-export const ProgressBar = ({ value, min, max, type, className }) => {
+export const ProgressBar = ({ value, min, max, type, className, color }) => {
   let completionPercentage = `${100 / (max - min) * value}%`;
+
+  const style = {
+    width: completionPercentage,
+    ...(!!color && { backgroundColor: color }),
+  };
 
   return (
     <div class={`progress ${className}`}>
-      <div
-        class={`progress-bar progress-bar-${type}`}
-        style={{ width: completionPercentage }}
-      >
+      <div class={`progress-bar progress-bar-${type}`} style={style}>
         <span class="sr-only">
           {completionPercentage} Complete ({type})
         </span>

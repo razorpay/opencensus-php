@@ -71,11 +71,11 @@ function getValue(result, mode, attributes) {
   ) {
     // Value is time
     value = formatDate(value);
-  } else if (
-    typeof value === 'number' &&
-    /amount|fee|tax|credit|charge/.test(key)
-  ) {
+  } else if (typeof value === 'number' && /base_amount|fee|tax/.test(key)) {
+    // Base Amount is always saved as INR in DB. Fee and Tax are calcualted as pre base amount, so in Rs.
     value = <Amount value={value} />;
+  } else if (typeof value === 'number' && /amount|credit|charge/.test(key)) {
+    value = <Amount value={value} currency={attributes.currency} />;
   } else if (
     key === 'merchant_id' ||
     (key === 'entity_id' && attributes.entity_type === 'merchant') ||

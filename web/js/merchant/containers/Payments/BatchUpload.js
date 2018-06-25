@@ -108,7 +108,6 @@ export default class BatchUploadContainer extends Component {
   };
 
   render() {
-    console.log(this.state.files, 'batch upload');
     const Header = ({ title }) => (
       <ModalHeader title={title} onCloseClick={this.closeModal} />
     );

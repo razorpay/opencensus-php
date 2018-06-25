@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
-import { beneficiaryStateMap } from '../entity-resources';
 import { isWorkflow } from 'common/util';
 import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
@@ -66,7 +65,7 @@ export default class EditBankAccountDetails extends Component {
     const { bankAccount } = this.state;
 
     return (
-      <BaseModal header="Edit Bank Account details">
+      <ModalContent header="Edit Bank Account details">
         <Form class="full-span full-elements" style={{ width: '600px' }}>
           {!bankAccount ? (
             <div class="spinner center m-t" />
@@ -115,7 +114,7 @@ export default class EditBankAccountDetails extends Component {
             </div>
           )}
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

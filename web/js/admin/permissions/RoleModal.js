@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import Table from 'ui/Table';
 import { adminFetch } from 'common/fetch';
 import { openModal } from 'common/modal';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import { prevent } from 'common/util';
 
 export default class RoleModal extends Component {
@@ -30,9 +30,9 @@ export default class RoleModal extends Component {
     let { items, pending } = this.state;
 
     return (
-      <BaseModal header="Roles">
+      <ModalContent header="Roles">
         <Table pending={pending} items={items} fields={fields} />
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

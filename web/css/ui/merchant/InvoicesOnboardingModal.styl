@@ -1,0 +1,33 @@
+.InvoicesOnboardingModal
+  background-image: url('assets/invoice_onboarding_illustration.svg');
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position-x: 284px;
+  background-position-y: -8px;
+
+  @media screen and (max-width: 991px)
+    background: none;
+
+  .modal-header
+    &::after
+      background-color: #96C5FF
+      height: 4px;
+      width: 100%;
+      max-width: 24px;
+      position: relative;
+      margin-top: 8px;
+  .title
+    color: #212121;
+  .section-title
+    color: #212121;
+    font-weight: bold;
+    margin-top: 8px;
+  .merchant-title
+    margin-top: 2px;
+    margin-bottom: 8px;
+
+  .Modal__actions
+    margin-top: 8px;
+    .btn-block
+      width: auto;

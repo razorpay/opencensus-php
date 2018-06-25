@@ -1,6 +1,6 @@
 import React from 'react';
 import { toJS } from 'mobx';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import Form from 'ui/Form';
 import Field from 'ui/Field';
@@ -38,7 +38,7 @@ export default ({ props, merchantId }) => {
   }
 
   return (
-    <BaseModal header="Mark as Referred">
+    <ModalContent header="Mark as Referred">
       <Form class="full-span full-elements" style={{ width: '350px' }}>
         <Field label="Merchant Id" name="referral" />
 
@@ -56,6 +56,6 @@ export default ({ props, merchantId }) => {
           onSubmit={onSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
 import { SelectModeButton, TextAreaField } from 'ui/Field';
@@ -65,7 +65,7 @@ export default class EditWhiteListIps extends Component {
     const { whitelisted_ips_live, whitelisted_ips_test } = details;
 
     return (
-      <BaseModal header="Edit Whitelist IPs">
+      <ModalContent header="Edit Whitelist IPs">
         <Form
           class="full-span full-elements edit-whilelist-ip"
           style={{ width: '500px' }}
@@ -93,7 +93,7 @@ export default class EditWhiteListIps extends Component {
             onSubmit={this.handleSave}
           />
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

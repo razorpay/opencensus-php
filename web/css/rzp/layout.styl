@@ -9,11 +9,14 @@ a, .btn-link {
 
 html, body {
   background-color: #f0f3f4;
-  overflow-x: hidden;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
+
+  &.noscroll {
+    overflow: hidden;
+  }
 }
 
 *:focus {
@@ -41,7 +44,7 @@ body {
   margin-left: 200px;
   margin-top: 51px;
   @media (max-width $screen-sm-min) {
-    margin-left: 45px;
+    margin-left: 0;
   }
 
   .rzp-error-boundary {
@@ -64,15 +67,36 @@ body {
   font-weight: 300;
 }
 
+.sidebar-bg-overlay {
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1110;
+  cursor: pointer;
+  background-color: rgba(46, 51, 68, 0.5);
+}
+
 .sidebar {
   position: fixed;
   top: 0;
   bottom: 0;
-  background-color: #2E3345;
+  background-color: $sidebar-bg-color;
   width: 200px;
   z-index: 1111;
-  @media (max-width $screen-sm-min) {
-    width: 45px;
+
+  @media (max-width: $screen-sm-min) {
+
+    transform: translate(-100%, 0);
+    transition: transform 150ms ease-in;
+    will-change: transform;
+
+    &.show-mobile-menu {
+
+      transform: translate(0);
+    }
   }
 
   .brand-logo {
@@ -150,7 +174,7 @@ body {
       padding: 12px 20px;
       background-color: #315BC2;
       margin-bottom: 15px;
-     
+
       i.i-chevron-right {
 
         position: relative;
@@ -173,7 +197,7 @@ body {
         line-height: 20px;
         color: rgba(255, 255, 255, 0.7);
       }
- 
+
       div.activation-bar-content {
 
         display: table;
@@ -185,7 +209,7 @@ body {
 
           display: table-cell;
           vertical-align: middle;
-          
+
           &.activation-bar-text {
 
             white-space: nowrap;
@@ -211,11 +235,6 @@ body {
             }
           }
         }
-      }
-
-      @media (max-width $screen-sm-min) {
-
-        display: none;
       }
     }
   }
@@ -251,6 +270,10 @@ body {
       color: #fff;
       background-color: #252939;
     }
+
+    .spin-loader {
+      margin-top: 10px
+    }
   }
 
   .bg-primary-fuse {
@@ -264,9 +287,9 @@ body {
   margin-bottom: 0;
   border-bottom: 0;
   background-color: #fff;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
+  box-shadow:0px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
   @media (max-width $screen-sm-min) {
-    margin-left: 45px;
+    margin-left: 0;
   }
 }
 
@@ -291,7 +314,7 @@ body {
   color: #8F96B3;
   margin-left: 200px;
   @media (max-width $screen-sm-min) {
-    margin-left: 45px;
+    margin-left: 0;
   }
 
   a {
@@ -339,7 +362,26 @@ body {
 
 .content-wrapper {
   padding: 24px;
-  @media (max-width $screen-sm-min) {
+  position: relative;
+
+
+  /* General Input styles (new UI Component) */
+  .Input {
+    margin-top: 0
+  }
+
+  /* Input pairs inside details view (new UI Component) */
+  .Input--pair {
+    .Input-elWrapper {
+      font-size: inherit
+    }
+
+    textarea.Input-el {
+      height: 36px
+    }
+  }
+
+    @media (max-width $screen-sm-min) {
     padding: 20px;
   }
 }
@@ -478,8 +520,8 @@ body.ReactModal__Body--open {
   }
 
   .CalendarDay__selected {
-    border-color: #6a5ace;
-    background-color: #6a5ace;
+    border-color: $primary-color;
+    background-color: $primary-color;
   }
 }
 
@@ -622,8 +664,8 @@ body.ReactModal__Body--open {
 .CalendarDay--after-hovered-start,
 .CalendarDay--hovered-span,
 .CalendarDay--selected-span {
-  background-color: #E9E6F8;
-  border-color: #CBCCE0;
+  background-color: rgba(82, 143, 240, 0.2);
+  border-color: #e4e4e4;
   color: #706E77;
 }
 
@@ -639,8 +681,8 @@ body.ReactModal__Body--open {
 .CalendarDay--selected-end:active,
 .CalendarDay--selected-start:active,
 .CalendarDay--selected:active {
-  background-color: #6A5ACE;
-  border-color: #6A5ACE;
+  background-color: $primary-color;
+  border-color: $primary-color;
   color: #fff;
 }
 
@@ -656,7 +698,11 @@ body.ReactModal__Body--open {
 .tether-element {
   z-index: 1;
 }
-.super-impose {
+
+// Add class `ps-in-modal` to all PowerSelect elems that would be within a modal.
+.super-impose,
+.ps-in-modal__Tether,
+.ps-in-modal__Menu {
   z-index: 100000;
 }
 
@@ -711,8 +757,8 @@ tr:hover .row-action.btn-group {
   }
 
   &.description {
-    white-space: 'pre-wrap';
-    word-wrap: 'break-word';
+    white-space: pre-wrap;
+    word-wrap: break-word;
     overflow: auto;
   }
 
@@ -741,6 +787,7 @@ tr:hover .row-action.btn-group {
   }
 
   .pair-value {
+    position: relative
     width: 60%;
     padding-left: 8px;
 
@@ -749,7 +796,7 @@ tr:hover .row-action.btn-group {
     }
 
     > div {
-      line-height: 18px;
+      line-height: 20px;
     }
 
     // check icon looks mis-aligned without negative margin
@@ -919,7 +966,7 @@ tr:hover .row-action.btn-group {
   display: inline-block;
   color: #777;
 
-  .i-done {
+  .i-check {
     margin-top: 2px;
     margin-left: 5px;
   }
@@ -947,9 +994,29 @@ tr:hover .row-action.btn-group {
   padding: 0;
   line-height: 1.8;
 
+  .merchant-details-container {
+
+    .rzp-group {
+
+      width: 100%;
+
+      .rzp-group-item {
+
+        width: auto;
+        padding: 0;
+        border: none;
+
+        &:last-child {
+
+          text-align: right;
+        }
+      }
+    }
+  }
+
   .media {
     margin-top: 0;
-    padding: 10px 12px;
+    padding: 12px;
 
     + .media {
       border-top: 1px solid #eee;
@@ -988,6 +1055,33 @@ tr:hover .row-action.btn-group {
   .i-tour,
   .i-undo {
     font-size: 20px;
+  }
+}
+
+ul.switch-modes-menu.nav.nav-stacked {
+
+  padding: 0;
+
+  > li {
+
+    margin: 0;
+
+    > a {
+
+      border-top: 1px solid #eee;
+
+      &.selected {
+        background-color: #eee;
+      }
+    }
+
+    &:first-child {
+
+      > a {
+
+        border-top: none;
+      }
+    }
   }
 }
 
@@ -1138,8 +1232,12 @@ tr:hover .row-action.btn-group {
     color: #58666E;
   }
 
+  &--faded {
+    color: $secondary-color;
+  }
+
   &--secondary {
-    color: #7B8199;
+    color: $secondary-color;
     font-size: 85%;
 
     i {
@@ -1205,3 +1303,24 @@ span.transfer-scheduled-text.text-warning,
 span.transfer-scheduled-text.text-warning span.label--primary {
   color: #F5A623;
 }
+
+.light-placeholder {
+  color: $light-grey;
+}
+
+.input-number-no-arrows
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0;
+
+.PowerSelect--focused,
+.PowerSelect__SearchInput:focus
+  border-color: $primary-color;
+
+// Temporary fix for invisible triggers until react-power-select library is updated
+.PowerSelect__TriggerLabel
+  overflow: hidden;
+  max-width: 0px;

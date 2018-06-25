@@ -37,6 +37,7 @@ export const paidCount = {
   title: 'Paid Count',
   value: item => item.paid_count,
 };
+export const paidOn = { title: 'Paid On', value: items.createdAt };
 export const createdAt = { title: 'Created At', value: items.createdAt };
 export const attempts = { title: 'Attempts', value: item => item.attempts };
 export const receipt = { title: 'Receipt', value: item => item.receipt };
@@ -52,6 +53,7 @@ export const reversalId = { title: 'Reversal Id', value: id.reversal };
 export const source = { title: 'Source', value: id.source };
 export const recipient = { title: 'Recipient', value: id.recipient };
 export const batchId = { title: 'Batch Id', value: id.batch };
+export const batchIdLink = { title: 'Batch Id', value: id.batchLink };
 export const disputeId = { title: 'Dispute Id', value: id.dispute };
 
 export const mapValues = values => title => {

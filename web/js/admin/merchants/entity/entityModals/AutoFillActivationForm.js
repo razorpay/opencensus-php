@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import fetch from 'common/fetch';
 import { notifyError } from 'common/modal';
@@ -74,7 +74,7 @@ export default class AutoFillActivationForm extends Component {
 
   render() {
     return (
-      <BaseModal header="Autofill Bank Activation Forms">
+      <ModalContent header="Autofill Bank Activation Forms">
         {!this.state.scriptLoaded ? (
           <div class="spinner center" />
         ) : (
@@ -113,7 +113,7 @@ export default class AutoFillActivationForm extends Component {
             />
           </Form>
         )}
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

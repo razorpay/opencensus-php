@@ -2,22 +2,19 @@
 
 namespace App\Admin;
 
-use Config;
+use Auth;
 use Input;
 use Route;
-use Auth;
+use Trace;
+use Config;
+use Request;
 
-use GuzzleHttp\Client as Guzzle;
+use App\Http\ApiUrl;
+use App\Trace\TraceCode;
 use GuzzleHttp\Post\PostFile;
+use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
 use App\Merchant\Service as MerchantService;
-use Trace;
-use App\Trace\TraceCode;
-
-// This is the default class we use for making requests
-use App\RZP\Api as Api;
-
-use Request;
 
 class ApiRequestAny
 {
@@ -100,12 +97,10 @@ class ApiRequestAny
             'headers' => $headers,
         ];
 
-        $base_url = Config::get('api.url');
-
         // === Guzzle client
 
         $this->client = new Guzzle([
-            'base_url' => $base_url
+            'base_url' => ApiUrl::getApiBaseUrl(),
         ]);
 
         // === Get API Route map config
@@ -376,7 +371,7 @@ class ApiRequestAny
 
     public function forwardCookies()
     {
-        // UTM cookies needs forwarding with some manipulation because php cookies only accept asci
+        // UTM cookies needs forwarding with some manipulation because PHP cookies only accept ASCII
         if (empty($_COOKIE['rzp_utm']) === false)
         {
             $cookie = $_COOKIE['rzp_utm'];

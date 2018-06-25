@@ -1,22 +1,82 @@
 pipeline:
-  restore_cache:
+  restore-cache:
     image: razorpay/containers:drone-s3-cache
     restore: true
     mount:
       - docker_cache
+      - npm_cache
     endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
-    path: /rzp/dashboard/
+    # See the rebuild-cache step below for an explanation
+    path: "/rzp/dashboard/${DRONE_BUILD_CREATED:0:5}.tar"
     secrets:
       - aws_access_key_id
       - aws_secret_access_key
       - aws_region
     when:
+      event: [push, deployment]
+  # TODO: This file can be generated without
+  # running this, since it is a simple templated
+  # JSON file
+  generate-composer-auth-file:
+    image: razorpay/pithos:rzp-php7.1
+    secrets: [GIT_TOKEN]
+    commands:
+      - composer config -g "github-oauth.github.com" "$GIT_TOKEN"
+      - cp /root/.composer/auth.json /drone/src/github.com/razorpay/dashboard/composer-auth.json
+      - sha1sum /drone/src/github.com/razorpay/dashboard/composer-auth.json
+    when:
+        event: push
+  build-js:
+    group: build
+    # TODO: Get the source for this image and push it
+    # to razorpay
+    image: pronav/dash
+    pull: false
+    environment:
+      CHROME_BIN: /usr/bin/chromium
+    commands:
+      # Fix for https://github.com/npm/uid-number/issues/3
+      - npm config set unsafe-perm true
+      - npm config set cache npm_cache
+      - npm install --global gulp
+      # Root directory
+      - npm install
+      - npm link gulp
+      - node signup.js
+      # Web directory
+      - cd web && npm link gulp && npm install && npm run build
+    when:
+        event: push
+  test-js:
+    image: pronav/dash
+    pull: false
+    environment:
+      CHROME_BIN: /usr/bin/chromium
+    commands:
+      - npm test
+    when:
       event: push
-  build:
+  # Uploaded to a build artifact
+  # This is not a deployment
+  upload-javascript-to-s3:
+    image: razorpay/containers:drone-s3-cache
+    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    path: "/rzp/dashboard/javascript/${DRONE_COMMIT_SHA}.tar"
+    secrets:
+      - aws_region
+      - aws_access_key_id
+      - aws_secret_access_key
+    rebuild: true
+    # Only upload the public directory
+    mount:
+      - public
+    when:
+      event: push
+  build-docker:
+    group: build
     image: plugins/docker
     repo: razorpay/dashboard
-    secrets: [docker_username, docker_password, git_token]
-    build_args_from_env: [git_token]
+    secrets: [docker_username, docker_password]
     environment:
     # Makes sure that the docker volume cache survives this run
       PLUGIN_STORAGE_PATH: /drone/src/github.com/razorpay/dashboard/docker_cache
@@ -29,13 +89,15 @@ pipeline:
       purge: false
     when:
       status: [success]
-      event:
-        exclude: [deployment]
-        include: [push]
+      event: push
   rebuild-cache:
     image: razorpay/containers:drone-s3-cache
     endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
-    path: '/rzp/dashboard/'
+    # This uses the first 5 characters of the Unix Epoch timestamp
+    # which roughly changes every day so that the cache size does not
+    # get huge over time (one build every day gets affected and downloads
+    # the whole cache though)
+    path: "/rzp/dashboard/${DRONE_BUILD_CREATED:0:5}.tar"
     secrets:
       - aws_region
       - aws_access_key_id
@@ -43,23 +105,30 @@ pipeline:
     rebuild: true
     mount:
       - docker_cache
+      - npm_cache
     when:
-      event: push
-  # This is a trick step to use the artifacts from the above step
-  # Since we have pushed this image above, we can use the same
-  # without pulling it
+      event: [push, deployment]
+  get-javascript-artifacts-from-cache:
+    image: razorpay/containers:drone-s3-cache
+    restore: true
+    mount:
+      - public
+    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    path: "/rzp/dashboard/javascript/${DRONE_COMMIT_SHA}.tar"
+    secrets:
+      - aws_access_key_id
+      - aws_secret_access_key
+      - aws_region
+    when:
+      event: deployment
   deploy-s3-beta:
-    image: "razorpay/dashboard:${DRONE_COMMIT_SHA}"
-    pull: false
+    image: node:9-alpine
     environment:
         - AWS_CDN_BUCKET=betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
         - CDN_DASHBOARD_URL=https://betacdn.razorpay.com/dashboard
     secrets: [AWS_KEY, AWS_SECRET]
     commands:
-        - cd /app/
-        # Have to re-install npm
-        - apk add nodejs-current nodejs-npm
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
         # Show what all will get synced
@@ -68,22 +137,16 @@ pipeline:
         - ls -laR public/css/generated/
         - ./s3sync.js
     when:
-      environment: never
-      event:
-        exclude: [push]
-        include: [deployment]
+      event: deployment
+      environment: beta
   deploy-s3-prod:
-    image: "razorpay/dashboard:${DRONE_COMMIT_SHA}"
-    pull: false
+    image: node:9-alpine
     environment:
         - AWS_CDN_BUCKET=checkout-live
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E34MFQ6HI02NUZ
         - CDN_DASHBOARD_URL=https://cdn.razorpay.com/dashboard
     secrets: [AWS_KEY, AWS_SECRET]
     commands:
-        - cd /app/
-        # Have to re-install npm
-        - apk add nodejs-current nodejs-npm
         # Requirements for running s3sync.js
         - npm install multi-glob aws-sdk
         # Show what all will get synced
@@ -92,11 +155,8 @@ pipeline:
         - ls -laR public/css/generated/
         - ./s3sync.js
     when:
-      # Disable this step
-      environment: never
-      event:
-        exclude: [push]
-        include: [deployment]
+      environment: prod
+      event: deployment
   deploy-beta:
     image: razorpay/drone-kubernetes
     pull: true
@@ -117,9 +177,7 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: beta
-      event:
-        exclude: [push]
-        include: [deployment]
+      event: deployment
   deploy-prod:
     image: razorpay/drone-kubernetes
     pull: true
@@ -140,9 +198,7 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: prod
-      event:
-        exclude: [push]
-        include: [deployment]
+      event: deployment
   deploy-qa-func:
     image: razorpay/drone-kubernetes
     pull: true
@@ -163,9 +219,7 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: qa-func
-      event:
-        exclude: [push]
-        include: [deployment]
+      event: deployment
   build-notify:
     image: plugins/slack
     secrets: [slack_webhook]
@@ -186,9 +240,7 @@ pipeline:
         Time taken: {{since build.started}}
         Link: {{build.link}}
     when:
-      event:
-        exclude: [deployment]
-        include: [push, tag]
+      event: [push, tag]
   build-falcon-notify:
     image: plugins/webhook
     urls:
@@ -196,4 +248,4 @@ pipeline:
     secrets:
       - plugin_headers
     when:
-      status: [ success, failure ]
+      status: [success, failure]

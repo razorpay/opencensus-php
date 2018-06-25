@@ -11,7 +11,7 @@ import AsyncButton from 'ui/AsyncButton';
 import { openModal, notifyError } from 'common/modal';
 import { observer } from 'mobx-react';
 import user from 'admin/user';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import {
   methods,
   gateways,
@@ -31,7 +31,7 @@ class EntityProps extends Component {
     const isEditable = user.permissions.indexOf('edit_gateway_rule') > -1;
 
     return (
-      <BaseModal
+      <ModalContent
         header={`${isEditable ? 'Edit Rule' : 'View Rule'}`}
         noPadding={!isEditable}
       >
@@ -40,7 +40,7 @@ class EntityProps extends Component {
         ) : (
           <Duplex fields={fields} model={model} />
         )}
-      </BaseModal>
+      </ModalContent>
     );
   }
 }
@@ -57,6 +57,7 @@ const fields = [
   item => item.network && ['Network', networks[item.network]],
   item => ['Currency', item.currency],
   item => item.international && ['International', item.international],
+  item => item.recurring && ['Recurring', item.recurring],
   item => (item.iins.length && ['IINs', item.iins]) || null,
   item =>
     (item.type === 'filter' && ['Network Category', item.network_category]) ||
@@ -340,6 +341,17 @@ class GatewayRuleForm extends Component {
           <option value="0">No</option>
           <option value="1">Yes</option>
         </SelectField>
+
+        <SelectField
+          name="recurring"
+          label="Recurring"
+          defaultValue={model.recurring | 0}
+          disabled={!!model.id}
+        >
+          <option value="" />
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </SelectField>
         <br />
         <TextAreaField
           label="Add Comment:"
@@ -363,9 +375,9 @@ export function showEntity(collection) {
     this ? (
       <EntityProps model={this} />
     ) : (
-      <BaseModal header="Create new Gateway Rule">
+      <ModalContent header="Create new Gateway Rule">
         <GatewayRuleForm model={new GatewayRule(collection)} />
-      </BaseModal>
+      </ModalContent>
     )
   );
 }

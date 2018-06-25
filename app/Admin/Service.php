@@ -14,9 +14,9 @@ use Input;
 use Config;
 use Session;
 use Requests;
-use Exception;
 use App\Base;
 use App\User;
+use Exception;
 use App\Admin;
 use App\Generic;
 use App\Merchant;
@@ -26,6 +26,7 @@ use Carbon\Carbon;
 use App\User\Helper;
 use App\Transaction;
 use UAParser\Parser;
+use App\Http\ApiUrl;
 use App\MerchantDetails;
 use App\Trace\TraceCode;
 use App\Mailers\MiscMailer;
@@ -1345,8 +1346,9 @@ class Service extends Base\Service
 
         try
         {
+            $apiBaseUrl = ApiUrl::getApiBaseUrl();
             // removing the /v1/ part at the end in the apiURL obtained from config
-            $apiURL = substr(config('api.url'), 0, -4);
+            $apiURL = substr($apiBaseUrl, 0, -4);
 
             $APIConnection = Requests::request($apiURL);
         }

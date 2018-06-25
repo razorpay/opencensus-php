@@ -33,7 +33,7 @@ export default class AddAccount extends Component {
         this.props.onSave(account);
         this.props.showNotification({
           type: 'success',
-          message: 'Account saved successfully',
+          message: 'Account created successfully',
         });
       })
       .catch(({ errors }) => {

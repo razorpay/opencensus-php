@@ -1,5 +1,5 @@
 import React from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import Form from 'ui/Form';
 import Field, { SelectMode, SelectField } from 'ui/Field';
@@ -36,7 +36,7 @@ export default ({ merchantId }) => {
   }
 
   return (
-    <BaseModal header="Credits">
+    <ModalContent header="Credits">
       <Form class="full-span" style={{ width: '350px' }}>
         <SelectMode />
 
@@ -60,6 +60,6 @@ export default ({ merchantId }) => {
           onSubmit={onSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };

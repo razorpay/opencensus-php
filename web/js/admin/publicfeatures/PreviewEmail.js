@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import { closeModal, notifyError } from 'common/modal';
 import { snakeToTitleCase } from 'common/util';
 /**
@@ -33,7 +33,7 @@ export default class PreviewEmail extends Component {
     const { productName } = this.props;
 
     return (
-      <BaseModal header="Email Preview (Add your comments inside Clarification box)">
+      <ModalContent header="Email Preview (Add your comments inside Clarification box)">
         <div class="email-preview">
           <p>
             Hey,
@@ -84,7 +84,7 @@ export default class PreviewEmail extends Component {
             Add
           </button>
         </div>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

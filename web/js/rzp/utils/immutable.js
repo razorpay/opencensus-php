@@ -81,3 +81,22 @@ export const remove = (array, itemToRemove) => {
 
   return removeItem(array, array.findIndex(ele => ele === itemToRemove));
 };
+
+/**
+ * Deep-copies an object.
+ * @param {Object} item
+ * @return {Object}
+ */
+export const deepCopy = item => {
+  if (typeof item !== 'object') {
+    return item;
+  }
+
+  try {
+    const str = JSON.stringify(item);
+    const _item = JSON.parse(str);
+    return _item;
+  } catch (e) {
+    return item;
+  }
+};
