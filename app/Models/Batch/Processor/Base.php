@@ -399,8 +399,7 @@ class Base extends BaseModel\Core
                 [
                     'row_index' => $index,
                     'row'       => $entry,
-                ]
-            );
+                ]);
 
             try
             {
