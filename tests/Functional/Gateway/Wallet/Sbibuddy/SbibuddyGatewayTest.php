@@ -43,6 +43,26 @@ class SbibuddyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
+    public function testAmountTampering()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if($action === 'authorize')
+            {
+                $content[ResponseFields::AMOUNT] = "100.00";
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testPaymentFailure()
     {
         $payment = $this->getDefaultWalletPaymentArray('sbibuddy');

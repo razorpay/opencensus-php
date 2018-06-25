@@ -169,9 +169,12 @@ class Server extends Base\Mock\Server
             ResponseFields::TIMESTAMP               => time(),
         ];
 
-        $responseContent[ResponseFields::HASH] = $this->generateHash($responseContent);
-
         $this->content($responseContent);
+
+        if (empty($responseContent) === false)
+        {
+            $responseContent[ResponseFields::HASH] = $this->generateHash($responseContent);
+        }
 
         return $this->makeResponse($responseContent);
     }
