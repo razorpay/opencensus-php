@@ -29,6 +29,7 @@ class Service extends Base\Service
         RequestProcessor\Base::OLAMONEY,
         RequestProcessor\Base::MOBIKWIK,
         RequestProcessor\Base::FIRST_DATA,
+        RequestProcessor\Base::FREECHARGE,
         RequestProcessor\Base::NETBANKING_CSB,
         RequestProcessor\Base::NETBANKING_OBC,
         RequestProcessor\Base::NETBANKING_RBL,

@@ -4,14 +4,14 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Exception\GatewayRequestException;
 use RZP\Models\Batch\Status;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
+use RZP\Exception\GatewayRequestException;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
-use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 
 use RZP\Reconciliator\HDFC\RefundReconciliate as HdfcRefundRecon;
 use RZP\Reconciliator\HDFC\PaymentReconciliate as HDFCPaymentRecon;
@@ -21,6 +21,7 @@ use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
 use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
 use RZP\Reconciliator\BillDesk\RefundReconciliate as BilldeskRefundRecon;
 use RZP\Reconciliator\Hitachi\PaymentReconciliate as HitachiPaymentRecon;
+use RZP\Reconciliator\Freecharge\PaymentReconciliate as FreechargePaymentRecon;
 use RZP\Reconciliator\VirtualAccYesBank\PaymentReconciliate as VirtualAccYesBank;
 
 class ReconciliationFileTest extends TestCase
@@ -480,6 +481,32 @@ class ReconciliationFileTest extends TestCase
         $this->testAxisMigsBatchProcessTest(false);
     }
 
+    public function testFreechargeReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_freecharge_terminal');
+
+        $gatewayPayment1 = $this->getNewWalletEntity('10000000000000', 'freecharge');
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $entries = $this->overrideFreechargePayment($wallet);
+
+        $file = $this->writeToCsvFile($entries, 'freecharge');
+
+        $this->runForFiles([$file], 'Freecharge');
+
+        $updatedPayment1 = $this->getEntityById('payment', $wallet['payment_id'], true);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+
+        $updatedTransaction = $this->getEntityById('transaction', $updatedPayment1['transaction_id'], true);
+
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     /*
      * Helpers
      */
@@ -564,6 +591,15 @@ class ReconciliationFileTest extends TestCase
             $facade[AxisPaymentRecon::COLUMN_MID] = 'RAZORPAYCYBS';
             $facade[AxisPaymentRecon::COLUMN_ORDER_ID] = $payment['ref'];
         }
+
+        return $facade;
+    }
+
+    private function overrideFreechargePayment(array $payment, array $forceOverride = [], $gateway = 'freecharge')
+    {
+        $facade = $this->testData['facades']['freecharge'];
+
+        $facade[0][FreechargePaymentRecon::COLUMN_PAYMENT_ID] = 'pay_' . $payment['payment_id'];;
 
         return $facade;
     }

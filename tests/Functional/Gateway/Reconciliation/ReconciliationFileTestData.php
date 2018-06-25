@@ -187,6 +187,27 @@ return [
             'tran_currency_code'    => '356',
         ],
 
+        // Freecharge reconciliate has config of skipping 3 lines from bottom
+        // Only first row will be read
+        'freecharge' => [
+            [
+                'Order Id'                  => 'pay_9LEuURhlBPVCxk',
+                'Total Transaction Amount'  => 500,
+                'Transaction Type'          => 'Payment',
+                'GST/Service Tax'           => 1.06272,
+                'Net Deduction'             => 4.5
+            ],
+            [
+                'Order Id' => str_random(14)
+            ],
+            [
+                'Order Id' => str_random(14)
+            ],
+            [
+                'Order Id' => str_random(14)
+            ]
+        ],
+
         'olamoney' => [
             'Tdr deducted in Rs'        => '9.67',
             'Unique Bill Id'            => '9LRjiRNokiZ3Ww',
