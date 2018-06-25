@@ -2289,6 +2289,7 @@ final class Route
             $key = $this->ba->getPublicKey();
         }
 
+
         return $this->getUrl($routeName, $parameters, $key);
     }
 

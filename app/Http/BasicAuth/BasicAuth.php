@@ -21,6 +21,7 @@ use RZP\Models\Merchant;
 use RZP\Http\RequestHeader;
 use RZP\Base\RepositoryManager;
 use RZP\Models\User\Entity as User;
+use RZP\Models\Merchant\Account\Entity as Account;
 
 /**
  * Class BasicAuth
@@ -67,7 +68,6 @@ class BasicAuth
      */
     const PARTNER_CALLBACK_KEY_DELIMITER = '~';
 
-    const PARTNER_TOKEN           = 'partner_token';
     const KEY                     = 'key';
     const KEY_ID                  = 'key_id';
     const ACCOUNT_ID              = 'account_id';
@@ -121,7 +121,6 @@ class BasicAuth
         self::PUBLIC_KEY    => '',
         self::SECRET        => '',
         self::ACCOUNT_ID    => '',
-        self::PARTNER_TOKEN => '',
     ];
 
     /**
@@ -286,7 +285,7 @@ class BasicAuth
      *
      * @var array
      */
-    public $partnerTokenCallbackData = [];
+    public $partnerAuthCallbackData = [];
 
     public function __construct($app)
     {
@@ -386,6 +385,10 @@ class BasicAuth
 
         $this->authCreds->creds[self::ACCOUNT_ID] = $accountId;
 
+        $callbackKey = $this->getPublicKey() . self::PARTNER_CALLBACK_KEY_DELIMITER . Account::getSignedId($accountId);
+
+        $this->authCreds->setPublicKey($callbackKey);
+
         return null;
     }
 
@@ -395,21 +398,21 @@ class BasicAuth
      * @param  string|null      $token
      * @return ApiResponse|null
      */
-    protected function checkAndSetPartnerToken(string $token = null)
+    protected function checkAndSetPartnerExtraInput(string $token = null)
     {
         if ($token === null)
         {
             return null;
         }
 
+        $callbackKey = $this->getPublicKey() . self::PARTNER_CALLBACK_KEY_DELIMITER . $token;
+
         if ($this->verifyAccountId($token) === false)
         {
-            return $this->invalidPartnerToken($token);
+            return $this->invalidAccountId($token);
         }
 
-        $this->creds[self::PARTNER_TOKEN] = $token;
-
-        $callbackKey = $this->getPublicKey() . self::PARTNER_CALLBACK_KEY_DELIMITER . $token;
+        $this->authCreds->creds[self::ACCOUNT_ID] = Account::verifyIdAndSilentlyStripSign($token);
 
         $this->authCreds->setPublicKey($callbackKey);
 
@@ -424,7 +427,7 @@ class BasicAuth
      *
      * @return bool
      */
-    public function hasPartnerTokenCallbackKey(): bool
+    public function hasPartnerAuthCallbackKey(): bool
     {
         $key = $this->getKeyForNonBasicAuthTokens();
 
@@ -437,9 +440,9 @@ class BasicAuth
 
         if ($validCallbackKey === true)
         {
-            $this->partnerTokenCallbackData = [
+            $this->partnerAuthCallbackData = [
                 self::KEY           => $matches[1],
-                self::PARTNER_TOKEN => $matches[3],
+                self::ACCOUNT_ID    => $matches[3],
             ];
 
             //
@@ -455,17 +458,17 @@ class BasicAuth
     /**
      * Handles public callback auth when a partner token is used
      */
-    public function handlePartnerTokenOnPublicCallback()
+    public function handlePartnerAuthOnPublicCallback()
     {
         $this->setType(Type::PUBLIC_AUTH);
 
-        $data = $this->partnerTokenCallbackData;
+        $data = $this->partnerAuthCallbackData;
 
-        $key          = $data[self::KEY];
-        $partnerToken = $data[self::PARTNER_TOKEN];
+        $key       = $data[self::KEY];
+        $accountId = $data[self::ACCOUNT_ID];
 
-        $this->creds[self::KEY]           = $key;
-        $this->creds[self::PARTNER_TOKEN] = $partnerToken;
+        $this->authCreds->creds[self::KEY]        = $key;
+        $this->authCreds->creds[self::ACCOUNT_ID] = Account::verifyIdAndSilentlyStripSign($accountId);
 
         if ($this->checkAndSetKeyId($key) !== null)
         {
@@ -482,7 +485,7 @@ class BasicAuth
         $this->authCreds->setPublicKey($key);
         $this->authCreds->fetchAndSetMerchantAndCheckLive();
 
-        $error = $this->checkAndSetPartnerToken($partnerToken);
+        $error = $this->checkAndSetPartnerExtraInput($accountId);
 
         if ($error !== null)
         {
@@ -881,7 +884,7 @@ class BasicAuth
     {
         try
         {
-            Merchant\Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+            Account::verifyIdAndSilentlyStripSign($accountId);
         }
         catch (\Exception $e)
         {
@@ -1121,11 +1124,6 @@ class BasicAuth
         return $this->creds[self::ACCOUNT_ID];
     }
 
-    public function getPartnerToken()
-    {
-        return $this->creds[self::PARTNER_TOKEN];
-    }
-
     public function getMode()
     {
         $authCreds = $this->authCreds;
@@ -1140,6 +1138,11 @@ class BasicAuth
 
     public function getKeyEntity()
     {
+        if ($this->isPartnerAuth() === true)
+        {
+            return;
+        }
+
         return $this->authCreds->getKeyEntity();
     }
 
@@ -1578,19 +1581,6 @@ class BasicAuth
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID);
     }
 
-    protected function invalidPartnerToken(string $token)
-    {
-        $this->trace->info(
-            TraceCode::BAD_REQUEST_INVALID_PARTNER_TOKEN_HEADER,
-            [
-                self::AUTH_TYPE     => $this->getAuthType(),
-                self::KEY_ID        => $this->getKey(),
-                self::PARTNER_TOKEN => $token,
-            ]);
-
-        return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_PARTNER_TOKEN);
-    }
-
     protected function isKeyBlank()
     {
         return ($this->authCreds->creds['key'] === '');
@@ -1815,7 +1805,8 @@ class BasicAuth
 
         // For callback routes, gets the key from route parameter
         $route = $this->router->currentRouteName();
-        if ((empty($key) === true) and (in_array($route, Route::$publicCallback, true) === true)) {
+        if ((empty($key) === true) and (in_array($route, Route::$publicCallback, true) === true))
+        {
             $key = $this->router->current()->parameter(self::KEY);
         }
 
