@@ -53,6 +53,7 @@ class Validator extends Base\Validator
         'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer|associative_array|filled',
         'receiver.type'                 => 'required_with:receiver|filled|string|in:qr_code,bank_account',
         'receiver.id'                   => 'required_with:receiver|filled|size:17|public_id',
+        'payment_link_id'               => 'sometimes|public_id|size:17',
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
         'save'                          => 'sometimes|in:0,1',
@@ -78,6 +79,7 @@ class Validator extends Base\Validator
         'recurring_token'               => 'sometimes_if:method,emandate|associative_array|filled',
         'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
         'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch',
+        'offer_id'                      => 'filled|public_id|size:20',
     ];
 
     protected static $editRules = [

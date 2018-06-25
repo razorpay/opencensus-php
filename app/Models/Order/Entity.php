@@ -133,7 +133,7 @@ class Entity extends Base\PublicEntity
         // See setPublicDiscountAttribute
         // self::DISCOUNT,
         self::OFFER_ID,
-        // self::OFFERS,
+        self::OFFERS,
         self::STATUS,
         self::ATTEMPTS,
         self::NOTES,
@@ -169,7 +169,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::OFFER_ID,
+        self::OFFERS,
         // This is likely needed for the merchant,
         // but still needs to be discussed.
         // self::DISCOUNT,
@@ -201,12 +201,6 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\Invoice\Entity');
     }
 
-    public function offer()
-    {
-        return $this->belongsTo('RZP\Models\Offer\Entity');
-    }
-
-
     public function offers()
     {
         return $this->morphToMany(
@@ -214,6 +208,12 @@ class Entity extends Base\PublicEntity
                         'entity',
                         Table::ENTITY_OFFER)
                     ->withTimestamps();
+    }
+
+    public function associateOffer(Offer\Entity $offer)
+    {
+        // Creates row in entity_offers table
+        $this->offers()->attach($offer);
     }
 
     /** End Related Models */
@@ -400,6 +400,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DISCOUNT);
     }
 
+    public function isOfferForced()
+    {
+        return $this->getAttribute(self::FORCE_OFFER);
+    }
+
     public function getOfferId()
     {
         return $this->getAttribute(self::OFFER_ID);
@@ -410,31 +415,21 @@ class Entity extends Base\PublicEntity
         return ($this->offers->isNotEmpty() === true);
     }
 
-    /**
-     * Temporary. Serves to fetch the only offer available via pivot table.
-     * Includes validations to ensure there isn't more than one.
-     * TODO: Remove this when multiple offers are expected.
-     *
-     * @return Offer\Entity
-     */
-    public function getOffer()
-    {
-        $offers = $this->offers;
-
-        // Multiple offers not permitted yet
-        if ($offers->count() > 1)
-        {
-            throw new Exception\LogicException('Multiple offers not supported');
-        }
-
-        return $offers->first();
-    }
-
-    protected function setPublicOfferIdAttribute(array & $array)
+    protected function setPublicOffersAttribute(array & $array)
     {
         if ($this->hasOffers() === true)
         {
-            $array[self::OFFER_ID] = $this->getOffer()->getPublicId();
+            $offers = $this->offers;
+
+            //
+            // For backward compatibility
+            //
+            if ($offers->count() === 1)
+            {
+                $array[self::OFFER_ID] = $offers->first()->getPublicId();
+            }
+
+            $array[self::OFFERS] = $offers->getPublicIds();
         }
         else
         {

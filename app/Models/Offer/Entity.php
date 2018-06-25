@@ -388,6 +388,7 @@ class Entity extends Base\PublicEntity
     public function toArrayCheckout(bool $discount = false, int $amount = null)
     {
         $data = [
+            self::ID              => $this->getPublicId(),
             self::NAME            => $this->getAttribute(self::NAME),
             self::PAYMENT_METHOD  => $this->getAttribute(self::PAYMENT_METHOD),
             self::PAYMENT_NETWORK => $this->getAttribute(self::PAYMENT_NETWORK),

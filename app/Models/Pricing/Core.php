@@ -41,6 +41,38 @@ class Core extends Base\Core
         return $this->createPlanFromRule($rule);
     }
 
+    /**
+     * Duplicate the existing rule, update its properties from input and create it as a new rule.
+     * Soft delete the previous rule.
+     */
+    public function editPlanRule(String $planId, String $ruleId, array $input): Entity
+    {
+        $newRule = $this->repo->transaction(function() use ($planId, $ruleId, $input)
+        {
+            $rule = $this->repo->pricing->getPricingPlanRule($planId, $ruleId);
+
+            $newRule = $rule->replicate();
+
+            $this->repo->pricing->deletePlanRuleForce($planId, $ruleId);
+
+            $plan = $this->repo->pricing->getPricingPlanById($planId);
+
+            $newRule->edit($input, 'editPlanRule');
+
+            $newRule = $newRule->generateId();
+
+            $newRule->getValidator()->validateRuleDoesNotMatch($plan);
+
+            $newRule->setAuditAction(Action::CREATE_UPDATE_PRICING_PLAN_RULE);
+
+            $this->repo->saveOrFail($newRule);
+
+            return $newRule;
+        });
+
+        return $newRule;
+    }
+
     public function createPricing(array $input)
     {
         $validator = new Validator();

@@ -10,7 +10,7 @@ class Helper
      * @param $amount
      * @return int
      */
-    public static function getIntegerFormattedAmount(string $amount)
+    public static function getIntegerFormattedAmount($amount)
     {
         $amountToBeFormatted = floatval($amount) * 100;
 

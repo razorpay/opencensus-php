@@ -20,7 +20,8 @@ return [
     'testRefundEditStatus' => [
         'request'  => [
             'content' => [
-                'status' => 'initiated',
+                'status'    => 'initiated',
+                'reference1' => 'abcd'
             ],
             'method'  => 'PUT',
         ],
@@ -31,6 +32,63 @@ return [
         ],
     ],
 
+    'testRefundEditStatustoFailedFromInitiated' => [
+        'request'  => [
+            'content' => [
+                'status'    => 'failed',
+                'reference1' => 'abcdFailed'
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'failed',
+            ],
+        ],
+    ],
+
+    'testRefundEditStatustoInitiatedFromFailed' => [
+        'request'  => [
+            'content' => [
+                'status'    => 'initiated',
+                'reference1' => 'abcdInitiated'
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'initiated',
+            ],
+        ],
+    ],
+
+    'testRefundEditStatustoProcessedFromFailed' => [
+        'request'  => [
+            'content' => [
+                'status'    => 'processed',
+                'reference1' => 'abcdProcessed'
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'processed',
+            ],
+        ],
+    ],
+    'testRefundEditStatusWithoutReference' => [
+        'request'  => [
+            'content' => [
+                'status'    => 'initiated'
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'initiated',
+            ],
+        ],
+    ],
     'testRefundEditInvalidStatus' => [
         'request'  => [
             'content' => [

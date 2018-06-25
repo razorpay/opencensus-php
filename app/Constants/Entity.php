@@ -132,7 +132,8 @@ class Entity
     const UPI                    = 'upi';
     const AEPS                   = 'aeps';
     const AMEX                   = 'amex';
-    const BLADE                  = 'blade';
+    const MPI                    = 'mpi';
+    const MPI_BLADE              = 'mpi_blade';
     const ATOM                   = 'atom';
     const ENACH                  = 'enach';
     const HDFC                   = 'hdfc';
@@ -222,6 +223,7 @@ class Entity
         self::PAYMENT,
         self::CUSTOMER,
         self::SUBSCRIPTION,
+        self::PAYMENT_LINK,
     ];
 
     public static $namespace = [
@@ -233,7 +235,6 @@ class Entity
         self::EBS                   => \RZP\Gateway\Ebs::class,
         self::ATOM                  => \RZP\Gateway\Atom::class,
         self::AMEX                  => \RZP\Gateway\Amex::class,
-        self::BLADE                 => \RZP\Gateway\Blade::class,
         self::HDFC                  => \RZP\Gateway\Hdfc::class,
         self::USER                  => \RZP\Models\User::class,
         self::OFFER                 => \RZP\Models\Offer::class,
@@ -337,6 +338,8 @@ class Entity
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
         self::WALLET_AIRTELMONEY     => \RZP\Gateway\Wallet\Airtelmoney::class,
         self::WALLET_MPESA           => \RZP\Gateway\Wallet\Mpesa::class,
+        self::MPI                    => \RZP\Gateway\Mpi\Base::class,
+        self::MPI_BLADE              => \RZP\Gateway\Mpi\Blade::class,
         self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Amazonpay::class,
 
         // heimdall
@@ -375,6 +378,8 @@ class Entity
         self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
+
+        self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,
 
         self::ENACH_RBL              => \RZP\Gateway\Enach\Base::class,
 

@@ -101,7 +101,7 @@ class Entity extends Base\PublicEntity
     public function isPartnerActivationRequest(): bool
     {
         return (($this->isPartnerRequest() === true) and
-                    ($this->getAttribute(self::NAME) === Constants::ACTIVATION));
+            ($this->getAttribute(self::NAME) === Constants::ACTIVATION));
     }
 
     public function isPartnerDeactivationRequest(): bool

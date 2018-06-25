@@ -57,9 +57,4 @@ class Repository extends Base\Repository
 
         return $orders;
     }
-
-    public function attachOfferToOrder(Entity $order, Offer\Entity $offer)
-    {
-        $order->offers()->attach($offer->getId());
-    }
 }

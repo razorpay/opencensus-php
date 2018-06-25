@@ -11,6 +11,7 @@ class Preferences
     const MID_SOCH             = '6QGdVzDAIpBniU';
     const MID_ZOMATO           = '6H7N6hlcv29OMG';
     const MID_IPAY             = '6VS1z0fmis8fn6';
+    const MID_CUREFIT          = '6vwsEbqse39D4d';
     const MID_DSPBLACKROCK     = '7thBRSDflu7NHL';
     const MID_GOALWISE_TPV     = '7BfRNg10LH7N6T';
     const MID_GOALWISE_NON_TPV = '8ytYezIThlseJd';

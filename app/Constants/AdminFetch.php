@@ -1202,6 +1202,10 @@ class AdminFetch
                     Fetch::LABEL  => 'Order Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'payment_link_id' => [
+                    Fetch::LABEL => 'Payment Link Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
                 'refund_status' => [
                     Fetch::LABEL  => 'Refund Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
@@ -1253,6 +1257,39 @@ class AdminFetch
                 'vpa' => [
                     Fetch::LABEL  => 'VPA',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::PAYMENT_LINK => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'active',
+                        'inactive',
+                    ],
+                ],
+                'status_reason' => [
+                    Fetch::LABEL  => 'Status Reason',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'expired',
+                        'deactivated',
+                        'completed',
+                    ],
+                ],
+                'user_id' => [
+                    Fetch::LABEL => 'User Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'receipt' => [
+                    Fetch::LABEL => 'Receipt',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'title' => [
+                    Fetch::LABEL => 'Title',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
             ],
 

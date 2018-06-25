@@ -187,6 +187,10 @@ class InvoiceController extends Controller
 
         $view = 'invoice.index';
 
+        if (isset($data['invoice']) and $data['invoice']['type'] !== 'invoice') {
+            $view = 'invoice.payment_link';
+        }
+
         if (in_array($merchantId, $idsForUberFlow, true) === true)
         {
             $view = 'invoice.uber';
