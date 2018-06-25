@@ -142,6 +142,7 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
     public function testStatusAfterAutoCapturePaymentWCallbackOAuth()
     {
+        $this->markTestSkipped();
         // Sharp gateway will make payment go via callback flow
         $this->setUpSharpGateway();
 
@@ -150,6 +151,7 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
     public function testStatusAfterAutoCapturePaymentWoCallbackOAuth()
     {
+        $this->markTestSkipped();
         $order = $this->fixtures->create('order', ['amount' => 50000, 'payment_capture' => 1]);
 
         $payment = $this->getDefaultPaymentArray();

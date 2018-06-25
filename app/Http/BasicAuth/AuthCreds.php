@@ -38,12 +38,6 @@ abstract class AuthCreds
     protected $trace;
 
     /**
-     * Used instead of api key for partner authentication
-     * @var OAuthClient\Entity
-     */
-    private $partnerClient = null;
-
-    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application

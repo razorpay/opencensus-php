@@ -130,4 +130,9 @@ class ClientAuthCreds extends AuthCreds
 
         return $this->merchant;
     }
+
+    public function getPartnerClient()
+    {
+        return $this->partnerClient;
+    }
 }

@@ -1590,16 +1590,24 @@ class BasicAuth
     {
         $key = $this->getKeyEntity();
 
-        if (($key === null) and ($this->oauthClientId === null))
+        if (($key === null) and ($this->isPartnerAuth() === false) and ($this->oauthClientId === null))
         {
             throw new Exception\LogicException('Key cannot be null here');
         }
 
-        if (($this->oauthClientId === null) === false)
+        if (empty($this->oauthClientId) === false)
         {
-            $client = (new OAuthClient\Repository)->findOrFail($this->oauthClientId);
+            $client = (new OAuthClient\Repository)->findOrFailPublic($this->oauthClientId);
+        }
 
-            $secret = 'TheKeySecretForTests';//$client->getSecret();
+        if (empty($client) === true and ($this->isPartnerAuth() === true))
+        {
+            $client = $this->authCreds->getPartnerClient();
+        }
+
+        if (empty($client) === false)
+        {
+            $secret = $client->getSecret();
         }
         else
         {

@@ -169,7 +169,8 @@ class BasicAuthTest extends TestCase
 
         $internalRoutes = $this->app['api.route']->getApiRouteInCategory('internal');
 
-        foreach ($internalRoutes as $routeName => $routeInfo) {
+        foreach ($internalRoutes as $routeName => $routeInfo)
+        {
             $testData['request']['method'] = $routeInfo[0];
             $testData['request']['url']    = $routeInfo[1];
 
@@ -183,7 +184,8 @@ class BasicAuthTest extends TestCase
 
         $internalRoutes = $this->app['api.route']->getApiRouteInCategory('internal');
 
-        foreach ($internalRoutes as $routeName => $routeInfo) {
+        foreach ($internalRoutes as $routeName => $routeInfo)
+        {
             $testData['request']['method'] = $routeInfo[0];
             $testData['request']['url']    = $routeInfo[1];
 
