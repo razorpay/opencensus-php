@@ -809,12 +809,31 @@ class Core extends Base\Core
     }
 
     /**
-     * @param  Entity $merchant
-     * @return null|OAuthApp\Entity
+     * @param Entity $merchant
+     *
+     * @return mixed
+     * @throws BadRequestException
      */
     public function getPartnerApp(Entity $merchant)
     {
-        return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
+        // For pure platforms, no internal partner app is created
+        (new Validator)->validateIsPurePartner($merchant);
+
+        try
+        {
+            $app = (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
+        }
+        catch (\Exception $ex)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
+                null,
+                [
+                    Entity::MERCHANT_ID => $partner->getId(),
+                ]);
+        }
+
+        return $app;
     }
 
     /**
@@ -890,23 +909,9 @@ class Core extends Base\Core
      */
     public function createPartnerReferral(Entity $partner, Entity $referral)
     {
-        $validator = new Validator;
+        (new Validator)->validateReferralIsNotPartner($referral);
 
-        $validator->validateIsPurePartner($partner);
-
-        $validator->validateReferralIsNotPartner($referral);
-
-        $partnerApp = $partner->getPartnerApp();
-
-        if ($partnerApp === null)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
-                null,
-                [
-                    Entity::MERCHANT_ID => $partner->getId(),
-                ]);
-        }
+        $partnerApp = $this->getPartnerApp($partner);
 
         $referralId = $referral->getId();
 
@@ -949,21 +954,9 @@ class Core extends Base\Core
      */
     public function deletePartnerReferral(Entity $partner, Entity $referral)
     {
-        $referralId = $referral->getId();
+        $partnerApp = $this->getPartnerApp($partner);
 
-        try
-        {
-            $partnerApp = $partner->getPartnerApp();
-        }
-        catch (\Exception $ex)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
-                null,
-                [
-                    Entity::MERCHANT_ID => $partner->getId(),
-                ]);
-        }
+        $referralId = $referral->getId();
 
         $partnerAppId = $partnerApp->getId();
 
