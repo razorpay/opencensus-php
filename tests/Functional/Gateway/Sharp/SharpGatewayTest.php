@@ -319,6 +319,40 @@ class SharpGatewayTest extends TestCase
         $this->otpCommonFlow('400000');
     }
 
+    public function testValidateVpaSuccess()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaFailure()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaInvalid()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaForForbiddenMerchant()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     protected function otpCommonFlow($otp)
     {
         $this->fixtures->merchant->enableWallet('10000000000000', 'olamoney');
@@ -337,26 +371,5 @@ class SharpGatewayTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
-    }
-
-    public function testValidateVpaSuccess()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    public function testValidateVpaFailure()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    public function testValidateVpaInvalid()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
     }
 }

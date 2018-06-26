@@ -71,6 +71,7 @@ class Constants
     const PARTNER                       = 'partner';
     const OTPELF                        = 'otpelf';
     const PAYMENT_NOBRANDING            = 'payment_nobranding';
+    const ENABLE_VPA_VALIDATE           = 'enable_vpa_validate';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -170,6 +171,7 @@ class Constants
         self::PARTNER                       => true,
         self::PAYMENT_NOBRANDING            => true,
         self::OTPELF                        => true,
+        self::ENABLE_VPA_VALIDATE           => true,
     ];
 
     // Entity type constants

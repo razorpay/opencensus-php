@@ -232,4 +232,23 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
         ],
     ],
+
+    'testValidateVpaForForbiddenMerchant' => [
+        'request'   => [
+            'url'       => '/payments/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'razorpay',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
 ];

@@ -1446,12 +1446,6 @@ class Gateway
 
     public static function getGatewayForValidateVpaForMode(string $mode)
     {
-        if (isset(self::$upiValidateVpaGateways[$mode]) === false)
-        {
-            throw new Exception\RuntimeException('Invalid mode for vpa validation',
-                                                 ['mode'  => $mode]);
-        }
-
         // Currently we are only using MindGate for live and Sharp for test, later when
         // we have more gateways, we can introduce gateway selection logic here.
         return self::$upiValidateVpaGateways[$mode][0];
