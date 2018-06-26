@@ -104,6 +104,7 @@ final class Route
         'payment_capture_gateway_manual'           => ['post',     'payments/{id}/gateway/capture',                  'PaymentController@postManualGatewayCapture'                        ],
         'payment_acknowledge'                      => ['post',     'payments/{id}/acknowledge',                      'PaymentController@postAcknowledge'                                 ],
         'payment_authorize_time_out'               => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
+        'payment_validate_vpa'                     => ['post',     'payment/validate/vpa',                           'PaymentController@postPaymentValidateVpa'                          ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
         'refund_fetch_by_id'                       => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
@@ -931,6 +932,7 @@ final class Route
         'payment_fetch_transaction',
         'payment_fetch_card_details',
         'payment_payout',
+        'payment_validate_vpa',
         'refund_create',
         'refund_fetch_by_id',
         'refund_fetch_multiple',
@@ -2137,6 +2139,7 @@ final class Route
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
+        'payment_validate_vpa'                 => [Feature::ENABLE_VPA_VALIDATE],
 
         // Account APIs
         'beta_account_create'                  => [Feature::MARKETPLACE],

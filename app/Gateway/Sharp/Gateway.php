@@ -327,6 +327,17 @@ class Gateway extends Base\Gateway
         parent::refund($input);
     }
 
+    public function validateVpa(array $input)
+    {
+        $vpa = $input['vpa'];
+
+        if ($vpa === 'failure@razorpay')
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
+        }
+    }
+
     protected function verifyPaymentCreateResponse($input)
     {
         if ((isset($input['gateway']['status']) === false) or

@@ -135,6 +135,10 @@ class Validator extends Base\Validator
         'upi'       => 2000000,
     ];
 
+    protected static $validateVpaRules = [
+        'vpa' => 'required|string|filled|max:100|custom',
+    ];
+
     protected static $createValidators = [
         'card_key',
         'amount',

@@ -48,6 +48,7 @@ class Processor
     use Payout;
     use Reversal;
     use Transfer;
+    use Vpa;
 
     /**
      * Callback urls can be hit multiple times by customers.
