@@ -57,7 +57,7 @@ class Gateway extends Base\Gateway
             else
             {
                 $this->trace->info(
-                    TraceCode::GATEWAY_RESPONSE,
+                    TraceCode::PAYMENT_AUTH_ESIGN_FAILURE,
                     [
                         'response' => $content
                     ]);
