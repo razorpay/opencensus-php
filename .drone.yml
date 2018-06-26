@@ -165,3 +165,28 @@ pipeline:
       event:
         exclude: [push]
         include: [deployment]
+  deploy-prod-api:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_kluster_api
+      - client_key_kluster_api
+      - server_cert_kluster_api
+      - client_cert_kluster_api
+    user: drone
+    cluster: prod
+    auth_mode: client-cert
+    kind: daemonset
+    daemonset:
+      - api-web
+    repo: razorpay/api
+    namespace: api
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: prod-api
+      event:
+        exclude: [push]
+        include: [deployment]
