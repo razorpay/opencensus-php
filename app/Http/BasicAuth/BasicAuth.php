@@ -417,7 +417,7 @@ class BasicAuth
 
         $callbackKey = $this->getCallbackKeyWithAccountId($accountId);
 
-        $this->authCreds->creds[self::ACCOUNT_ID] = Account::verifyIdAndSilentlyStripSign($token);
+        $this->authCreds->creds[self::ACCOUNT_ID] = Account::verifyIdAndSilentlyStripSign($accountId);
 
         $this->authCreds->setPublicKey($callbackKey);
 
