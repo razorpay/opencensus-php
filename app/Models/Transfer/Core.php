@@ -325,8 +325,6 @@ class Core extends Base\Core
      * @param  Merchant\Entity $merchant
      *
      * @return Entity
-     * @throws Exception\BadRequestException
-     * @throws Exception\BadRequestValidationFailureException
      */
     protected function accountTransfer(string $accountId, Base\Entity $source, array $input, Merchant\Entity $merchant)
     {

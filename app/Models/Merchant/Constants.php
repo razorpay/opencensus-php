@@ -14,6 +14,22 @@ final class Constants
     const DATE                                    = 'date';
     const SIGNUP_DATE                             = 'signup_date';
 
+    // Partner constants
+    const BANK                                    = 'bank';
+    const PARTNER                                 = 'partner';
+    const RESELLER                                = 'reseller';
+    const AGGREGATOR                              = 'aggregator';
+    const FULLY_MANAGED                           = 'fully_managed';
+    const PURE_PLATFORM                           = 'pure_platform';
+
+    public static $partnerTypes = [
+        self::BANK,
+        self::RESELLER,
+        self::AGGREGATOR,
+        self::FULLY_MANAGED,
+        self::PURE_PLATFORM,
+    ];
+
     /**
      * Step Map gives information on attributes filled by merchant Step wise.
      * this is used to let merchant know what all the steps are finished and

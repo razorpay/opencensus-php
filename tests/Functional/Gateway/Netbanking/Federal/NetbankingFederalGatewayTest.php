@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Federal;
 use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -57,6 +56,21 @@ class NetbankingFederalGatewayTest extends TestCase
         {
             $this->doAuthPayment($this->payment);
         });
+    }
+
+    public function testVerifyAmountMismatch()
+    {
+        $this->mockAmountMismatch();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthAndCapturePayment($this->payment);
+            });
+
     }
 
     public function testTpvPayment()
@@ -420,6 +434,19 @@ class NetbankingFederalGatewayTest extends TestCase
             if ($action === 'authorize')
             {
                 $content['PAID'] = 'N';
+            }
+        });
+    }
+
+    protected function mockAmountMismatch()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                // gateway responds with single string like: "AKS68pCw9uqnKu|AKS68PCW9UQNKU|99999999|500|S"
+                // To mock AmountMismatch, 500 is replaced with 300. -5 is index from end.
+                $content = substr_replace($content, "300|S", -5);
             }
         });
     }

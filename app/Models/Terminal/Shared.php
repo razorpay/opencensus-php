@@ -119,7 +119,7 @@ class Shared
     // See getSharedTerminalForGateway() for the reason
     protected static $map = [
         self::AMEX_RAZORPAY_TERMINAL             => Gateway::AMEX,
-        self::BLADE_RAZORPAY_TERMINAL            => Gateway::BLADE,
+        self::BLADE_RAZORPAY_TERMINAL            => Gateway::MPI_BLADE,
         self::DIGIO_RAZORPAY_TERMINAL            => Gateway::ESIGNER_DIGIO,
         self::ATOM_RAZORPAY_TERMINAL             => Gateway::ATOM,
         self::AXIS_GENIUS_RAZORPAY_TERMINAL      => Gateway::AXIS_GENIUS,

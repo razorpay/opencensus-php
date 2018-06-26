@@ -1695,6 +1695,36 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithEmiOffer' => [
+        'request' => [
+            'url'    => null,
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity'         => 'methods',
+                    'card'           => true,
+                    'credit_card'    => true,
+                    'debit_card'     => true,
+                    'emi'            => true,
+                    'emi_plans'      => [],
+                    'emi_options'    => [],
+                    'emi_subvention' => 'customer'
+                    ],
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'emi',
+                        'display_text'    => 'Some display text',
+                        'original_amount' => 100000,
+                        'amount'          => 100000,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithAllCardGeatewayDowntime' => [
         'request' => [
             'url' => '/preferences',

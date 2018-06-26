@@ -48,9 +48,10 @@ class Repository extends Base\Repository
         Entity::EMAIL           => 'sometimes',
         Entity::STATUS          => 'sometimes|string',
         Entity::NOTES           => 'sometimes|string|max:500',
-        Entity::PAYMENT_LINK_ID => 'fillable|public_id|size:17',
+        Entity::PAYMENT_LINK_ID => 'filled|public_id|size:17',
         Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
+        Entity::CAPTURED        => 'sometimes|boolean',
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',
     ];
 
@@ -67,7 +68,6 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID             => 'sometimes|alpha_num',
         Entity::TRANSFER_ID             => 'sometimes|alpha_num|size:14',
         Entity::CARD_ID                 => 'sometimes|alpha_num|size:14',
-        Entity::CAPTURED                => 'sometimes|in:0,1',
         Entity::WALLET                  => 'sometimes|custom',
         Entity::NOTES                   => 'sometimes|notes_fetch',
         Card\Entity::IIN                => 'sometimes|integer|digits:6',
@@ -89,6 +89,7 @@ class Repository extends Base\Repository
         Entity::INVOICE_ID,
         Entity::SUBSCRIPTION_ID,
         Entity::CUSTOMER_ID,
+        Entity::PAYMENT_LINK_ID,
     ];
 
     protected $cardQueryKeys = [
@@ -729,11 +730,9 @@ class Repository extends Base\Repository
         $query->where($amountTransferred, '>', 0);
     }
 
-    protected function addQueryCaptured($query, $params)
+    protected function addQueryParamCaptured($query, $params)
     {
-        $captured = $params[Entity::CAPTURED];
-
-        if ($captured === '0')
+        if (boolval($params[Entity::CAPTURED]) === false)
         {
             $query->whereNull(Entity::CAPTURED_AT);
         }
@@ -1112,7 +1111,7 @@ class Repository extends Base\Repository
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
                     ->where($tokenRecurringColumn, '!=', 1)
                     ->whereNotNull(Entity::AUTHORIZED_AT)
-                    ->with(['localToken', 'globalToken', 'customer'])
+                    ->with(['localToken', 'globalToken', 'customer', 'merchant'])
                     ->get();
     }
 

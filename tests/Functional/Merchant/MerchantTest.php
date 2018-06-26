@@ -1672,6 +1672,32 @@ class MerchantTest extends TestCase
         }
     }
 
+    public function testGetCheckoutPreferencesWithEmiOffer()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->enableEmi();
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $offer = $this->fixtures->create('offer', [
+            'payment_method' => 'emi',
+            'error_message'  => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+            'display_text'   => 'Some display text',
+            'percent_rate'   => 5000,
+            'min_amount'     => 200000,
+            'terms'          => 'Some terms',
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer);
+
+        $testData['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testGetCheckoutRouteWithSavedLocal()
     {
         $this->ba->publicAuth();

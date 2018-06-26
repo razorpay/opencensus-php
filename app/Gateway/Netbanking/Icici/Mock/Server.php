@@ -204,7 +204,7 @@ class Server extends Base\Mock\Server
 
     protected function createXmlResponse(array $responseArray)
     {
-        $this->content($responseArray);
+        $this->content($responseArray, 'verify');
 
         if (is_array($responseArray) === false)
         {

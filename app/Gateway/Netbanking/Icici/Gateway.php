@@ -237,8 +237,9 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-            $actualAmount = number_format($callbackAmount, 2, '.', '');
+
+            $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
+            $actualAmount   = $this->formatAmount($callbackAmount);
 
             $this->assertAmount($expectedAmount, $actualAmount);
         }
@@ -278,11 +279,42 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
+
+        //
+        // We don't do this for recurring payments as they don't have amount
+        // in the response
+        //
+        if ((isset($input['payment']['recurring']) === true) and
+            ($input['payment']['recurring'] === true))
+        {
+            return;
+        }
+
+        $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
+
+        if ($this->isCorporateBanking() === true)
+        {
+            $actualAmount = $this->formatAmount((float) $verify->verifyResponseContent[ResponseFields::UC_AMOUNT]);
+        }
+        else
+        {
+            $actualAmount = $this->formatAmount((float) $verify->verifyResponseContent[ResponseFields::AMOUNT]);
+        }
+
+        $this->assertAmount($expectedAmount, $actualAmount);
     }
 
     public function verify(array $input)
     {
         parent::verify($input);
+
+        //
+        // temp fix: failed recurring payments are getting marked as success on verify on ICICI's end
+        //
+        if ($input['payment']['recurring'] === true)
+        {
+           return ;
+        }
 
         $verify = new Verify($this->gateway, $input);
 
@@ -971,6 +1003,10 @@ class Gateway extends Base\Gateway
         return $recurringData;
     }
 
+    protected function formatAmount($amount)
+    {
+        return number_format($amount, 2, '.', '');
+    }
     public function forceAuthorizeFailed($input)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(

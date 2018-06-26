@@ -210,6 +210,12 @@ class Entity extends Base\PublicEntity
                     ->withTimestamps();
     }
 
+    public function associateOffer(Offer\Entity $offer)
+    {
+        // Creates row in entity_offers table
+        $this->offers()->attach($offer);
+    }
+
     /** End Related Models */
 
     /** Appends */

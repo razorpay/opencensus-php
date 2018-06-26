@@ -4,6 +4,7 @@ namespace RZP\Models\Base;
 
 use App;
 use RZP\Base;
+use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Base\RepositoryManager;
 
@@ -36,6 +37,11 @@ class Service
      * @var Merchant\Entity
      */
     protected $merchant;
+
+    /**
+     * @var User\Entity
+     */
+    protected $user;
 
     /**
      * Repository manager instance
@@ -76,6 +82,8 @@ class Service
         $this->auth = $this->app['basicauth'];
 
         $this->merchant = $this->auth->getMerchant();
+
+        $this->user = $this->auth->getUser();
 
         $this->slack = $this->app['slack'];
     }

@@ -29,6 +29,42 @@ return [
             'udf14'              => null,
         ],
 
+        'card_fss_refund' => [
+            'Merchant ID'            => '1000013',
+            'Merchant Legal Name'    => 'Razorpay software pvt ltd',
+            'Store ID'               => '1000013',
+            'Store Trading Name'     => 'Razorpay software pvt ltd',
+            'Terminal ID'            => '1000013',
+            'Terminal Name'          => 'Razorpaysoftwarepvtltd',
+            'Transaction IP Address' => '1.1.1.1',
+            'Transaction Currency'   => 'INR',
+            'Payment Method'         => 'Debit With PIN',
+            'result_code'            => 'CAPTURED',
+            'response_description'   => 'Success',
+            'Bank ID'                => '1113',
+            'Bank Name'              => 'Axis Bank Debit Card with ATM PIN',
+            'Transaction Status'     => 'PROCESSED',
+        ],
+
+        'card_fss_payment' => [
+            'Transaction Source'                     => 'Super Merchant PG',
+            'Transaction Id'                         => '1234567812345678',
+            'Mid'                                    => '10000013',
+            'merchant legal name'                    => 'Razorpay software pvt ltd',
+            'sid'                                    => '10000013',
+            'store trading name'                     => 'Razorpay software pvt ltd',
+            'tid'                                    => '1000013',
+            'settlement date'                        => '01/05/2018',
+            'transaction date'                       => '01/05/2018',
+            'transaction type'                       => 'Purchase',
+            'transaction currency'                   => 'INR',
+            'additional amount'                      => '0.00',
+            'merchant category code'                 => '7399',
+            'Payment Method'                         => 'Debit With Pin',
+            'transaction category'                   => 'NORMAL',
+            'MSF %'                                  => '0',
+        ],
+
         'first_data' => [
             'super_mid'            => '78541547',
             'mid'                  => '87001081',
@@ -185,6 +221,45 @@ return [
             'message_type'          => '0200',
             'datetime'              => '2018-03-05 23:50:00',
             'tran_currency_code'    => '356',
+        ],
+
+        // Freecharge reconciliate has config of skipping 3 lines from bottom
+        // Only first row will be read
+        'freecharge' => [
+            [
+                'Order Id'                  => 'pay_9LEuURhlBPVCxk',
+                'Total Transaction Amount'  => 500,
+                'Transaction Type'          => 'Payment',
+                'GST/Service Tax'           => 1.06272,
+                'Net Deduction'             => 4.5
+            ],
+            [
+                'Order Id' => str_random(14)
+            ],
+            [
+                'Order Id' => str_random(14)
+            ],
+            [
+                'Order Id' => str_random(14)
+            ]
+        ],
+
+        'olamoney' => [
+            'Tdr deducted in Rs'        => '9.67',
+            'Unique Bill Id'            => '9LRjiRNokiZ3Ww',
+            'Bill Amount in Rs'         => '500',
+            'Goods And Services Tax'    => '1.7406',
+            'Date of Settlement'        => '2018-06-07 02:22:32.0',
+            'Transaction Type'          => 'debit'
+        ],
+
+        'mobikwik' => [
+            'Fee'                   => '9.67',
+            'OrderId'               => '9LRjiRNokiZ3Ww',
+            'TxnAmount'             => '500',
+            'ServiceTax'            => 'NA',
+            'IGST'                  => '2.02',
+            'RefundAdjustedDate'    => 'None'
         ]
     ],
 

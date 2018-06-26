@@ -72,8 +72,7 @@ class DirectDebitTest extends TestCase
         $this->assertEquals($order['notes']['notes_1'], 'random notes');
         $this->assertEquals($order['notes']['notes_2'], 123);
         $this->assertEquals($order['notes']['notes_3'], true);
-        $this->assertArrayNotHasKey('notes_4', $order['notes']);
-        $this->assertArrayNotHasKey('notes_5', $order['notes']);
+        $this->assertEquals($order['notes']['notes_4'], null);
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('INR', $payment['currency']);
@@ -97,11 +96,10 @@ class DirectDebitTest extends TestCase
                 Header::DIRECT_DEBIT_CURRENCY        => 'INR',
                 Header::DIRECT_DEBIT_RECEIPT         => 'random receipt',
                 Header::DIRECT_DEBIT_DESCRIPTION     => 'random description',
-                Header::DIRECT_DEBIT_NOTES_1         => 'random notes',
-                Header::DIRECT_DEBIT_NOTES_2         => 123,
-                Header::DIRECT_DEBIT_NOTES_3         => true,
-                Header::DIRECT_DEBIT_NOTES_4         => '',
-                Header::DIRECT_DEBIT_NOTES_5         => null,
+                'notes[notes_1]'                     =>  null,
+                'notes[notes_2]'                     =>  null,
+                'notes[notes_3]'                     =>  null,
+                'notes[notes_4]'                     =>  null,
             ],
             [
                 Header::DIRECT_DEBIT_EMAIL           => 'test@razorpay.com',
@@ -114,11 +112,10 @@ class DirectDebitTest extends TestCase
                 Header::DIRECT_DEBIT_CURRENCY        => 'INR',
                 Header::DIRECT_DEBIT_RECEIPT         => 'random receipt',
                 Header::DIRECT_DEBIT_DESCRIPTION     => 'random description',
-                Header::DIRECT_DEBIT_NOTES_1         => 'random notes',
-                Header::DIRECT_DEBIT_NOTES_2         => 123,
-                Header::DIRECT_DEBIT_NOTES_3         => true,
-                Header::DIRECT_DEBIT_NOTES_4         => '',
-                Header::DIRECT_DEBIT_NOTES_5         => null,
+                'notes[notes_1]'                     => 'random notes',
+                'notes[notes_2]'                     =>  123,
+                'notes[notes_3]'                     =>  true,
+                'notes[notes_4]'                     =>  null,
             ],
         ];
     }

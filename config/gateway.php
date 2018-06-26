@@ -15,7 +15,7 @@ return [
         'axis_genius',
         'axis_migs',
         'billdesk',
-        'blade',
+        'mpi_blade',
         'card_fss',
         'cybersource',
         'esigner_digio',
@@ -86,7 +86,7 @@ return [
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
-    'mock_blade'                  => env('BLADE_MOCK'),
+    'mock_mpi_blade'              => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
     'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),
     'mock_wallet_payzapp'         => env('PAYZAPP_MOCK'),
@@ -191,7 +191,7 @@ return [
         'test_access_code'            => env('ATOM_TEST_ACCESS_CODE'),
     ],
 
-    'blade' => [
+    'mpi_blade' => [
         'cert_dir_name'               => env('BLADE_CERT_DIR_NAME'),
 
         'live_visa_certificate'       => env('BLADE_GATEWAY_LIVE_VISA_CERTIFICATE'),
