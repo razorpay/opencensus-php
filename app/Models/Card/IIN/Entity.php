@@ -196,13 +196,13 @@ class Entity extends Base\PublicEntity
 
         if ($merchant->isFeatureEnabled(Feature\Constants::ATM_PIN_AUTH) === true)
         {
-            $data[Constants::PIN] = $iinEntity->isDebitPin();
+            $data[Constants::PIN] = $this->isDebitPin();
         }
 
         if ($merchant->isFeatureEnabled(Feature\Constants::OTPELF) === true)
         {
-            $data[Constants::OTP] = (($iinEntity->isHeadLessOtp()) or
-                                     ($iinEntity->isOtp()));
+            $data[Constants::OTP] = (($this->isHeadLessOtp()) or
+                                     ($this->isOtp()));
         }
 
         return $data;

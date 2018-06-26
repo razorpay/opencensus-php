@@ -697,7 +697,7 @@ class Service extends Base\Service
             return $data;
         }
 
-        $data = $iin->getMerchantFlows($merchant);
+        $data = $iinEntity->getMerchantFlows($merchant);
 
         return $data;
     }
