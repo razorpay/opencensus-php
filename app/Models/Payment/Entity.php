@@ -290,12 +290,11 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_ID,
         self::CONVERT_CURRENCY,
         self::AUTH_TYPE,
+        self::CREATED_AT,
+        self::UPDATED_AT,
         self::DISPUTED,
         self::RECURRING_TYPE,
         self::ACKNOWLEDGED_AT,
-        self::PAYMENT_LINK_ID,
-        self::CREATED_AT,
-        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -1185,20 +1184,6 @@ class Entity extends Base\PublicEntity
 
         return $count;
     }
-
-//    protected function getAuthTypeAttribute()
-//    {
-//        $authType = $this->attributes[self::AUTH_TYPE];
-//
-//        // We are doing this as headless_otp is an internal
-//        // auth_type, we expose only otp to the merchant
-//        if ($authType === AuthType::HEADLESS_OTP)
-//        {
-//            $authType = AuthType::OTP;
-//        }
-//
-//        return $authType;
-//    }
 
     public function getMetadata($key = null, $default = null)
     {

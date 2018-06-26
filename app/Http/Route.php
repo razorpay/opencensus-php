@@ -2324,7 +2324,7 @@ final class Route
 
     public function getPublicCallbackUrlWithHash($pid, $key = '')
     {
-        // $key is not used here and should be remove
+        // @todo: $key is not used here and should be remove
         if ($key === '')
         {
             $key = $this->ba->getPublicKey();

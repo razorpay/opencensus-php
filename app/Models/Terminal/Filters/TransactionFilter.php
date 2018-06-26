@@ -589,7 +589,8 @@ class TransactionFilter extends Terminal\Filter
                         break;
 
                     case Payment\AuthType::OTP:
-                        // We should select the terminal only if
+                        // We should select the terminal only if iin is set and flows are supported
+                        // by the IIN
                         if ($payment->card->iinRelation !== null)
                         {
                             if (($terminal->isIvr() === true) and

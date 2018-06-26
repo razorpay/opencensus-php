@@ -93,6 +93,10 @@ trait HeadlessOtp
         return [];
     }
 
+    /**
+     * This function sets TermUrl to a dummy URL, so that payment is
+     * not processed and we get the response
+     */
     protected function setHeadlessDummyCallbackUrl(&$content)
     {
         $content['TermUrl'] = 'https://api.razorpay.com';

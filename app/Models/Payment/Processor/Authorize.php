@@ -892,8 +892,11 @@ trait Authorize
                 break;
 
             case Payment\AuthType::OTP:
+                // We support OTP flow with native supports from the gateway, headless_otp
+                // flow is something which is a hack and not natively supported by the gateway
                 if (($payment->card->iinRelation === null) or
-                    ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === false))
+                    (($payment->card->iinRelation->supports(IIN\Flow::OTP) === false) and
+                     ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === false)))
                 {
                     throw new Exception\BadRequestValidationFailureException(
                         'The otp authentication type is not applicable on the given card');
