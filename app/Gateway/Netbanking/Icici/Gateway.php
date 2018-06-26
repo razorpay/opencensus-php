@@ -280,6 +280,16 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
 
+        //
+        // We don't do this for recurring payments as they don't have amount
+        // in the response
+        //
+        if ((isset($input['payment']['recurring']) === true) and
+            ($input['payment']['recurring'] === true))
+        {
+            return;
+        }
+
         $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
 
         if ($this->isCorporateBanking() === true)
