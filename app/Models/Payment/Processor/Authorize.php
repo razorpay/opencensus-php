@@ -353,7 +353,8 @@ trait Authorize
                'cdn'  => $this->app['config']->get('url.cdn.production')
             ];
 
-            $content = \View::make('gateway.gatewayOtpPostForm')
+            $content = $this->app['view']
+                            ->make('gateway.gatewayOtpPostForm')
                             ->with('data', $templateData)
                             ->render();
 
