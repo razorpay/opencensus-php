@@ -1875,10 +1875,8 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
-//        'partners_referral_create'                 => Permission::EDIT_PARTNERS,
-//        'partners_referral_delete'                 => Permission::EDIT_PARTNERS,
-        'partners_referral_create'                 => '*',
-        'partners_referral_delete'                 => '*',
+        'partners_referral_create'                 => Permission::EDIT_PARTNERS,
+        'partners_referral_delete'                 => Permission::EDIT_PARTNERS,
     ];
 
     public static $direct = [
