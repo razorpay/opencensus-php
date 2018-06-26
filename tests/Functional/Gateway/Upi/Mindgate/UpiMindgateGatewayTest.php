@@ -571,6 +571,8 @@ class UpiMindgateGatewayTest extends TestCase
     {
         Gateway::$upiValidateVpaGateways[Mode::TEST] = [Gateway::UPI_MINDGATE];
 
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -579,6 +581,8 @@ class UpiMindgateGatewayTest extends TestCase
     public function testValidateVpaFailure()
     {
         Gateway::$upiValidateVpaGateways[Mode::TEST] = [Gateway::UPI_MINDGATE];
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
 
         $this->ba->privateAuth();
 

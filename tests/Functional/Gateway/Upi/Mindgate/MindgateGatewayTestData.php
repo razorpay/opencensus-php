@@ -165,7 +165,7 @@ return [
 
     'testValidateVpaSuccess' => [
         'request'   => [
-            'url'       => '/payments/validate/vpa',
+            'url'       => '/payment/validate/vpa',
             'method'    => 'post',
             'content'   => [
                 'vpa' => 'success@hdfcbank',
@@ -181,7 +181,7 @@ return [
 
     'testValidateVpaFailure' => [
         'request'   => [
-            'url'       => '/payments/validate/vpa',
+            'url'       => '/payment/validate/vpa',
             'method'    => 'post',
             'content'   => [
                 'vpa' => 'invalidvpa@hdfcbank',

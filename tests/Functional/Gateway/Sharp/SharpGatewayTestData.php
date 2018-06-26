@@ -180,7 +180,7 @@ return [
 
     'testValidateVpaSuccess' => [
         'request'   => [
-            'url'       => '/payments/validate/vpa',
+            'url'       => '/payment/validate/vpa',
             'method'    => 'post',
             'content'   => [
                 'vpa' => 'success@razorpay',
@@ -196,7 +196,7 @@ return [
 
     'testValidateVpaFailure' => [
         'request'   => [
-            'url'       => '/payments/validate/vpa',
+            'url'       => '/payment/validate/vpa',
             'method'    => 'post',
             'content'   => [
                 'vpa' => 'failure@razorpay',
@@ -212,7 +212,7 @@ return [
 
     'testValidateVpaInvalid' => [
         'request'   => [
-            'url'       => '/payments/validate/vpa',
+            'url'       => '/payment/validate/vpa',
             'method'    => 'post',
             'content'   => [
                 'vpa' => 'razorpay',
@@ -235,7 +235,7 @@ return [
 
     'testValidateVpaForForbiddenMerchant' => [
         'request'   => [
-            'url'       => '/payments/validate/vpa',
+            'url'       => '/payment/validate/vpa',
             'method'    => 'post',
             'content'   => [
                 'vpa' => 'razorpay',
