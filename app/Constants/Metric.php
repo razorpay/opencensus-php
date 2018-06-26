@@ -40,6 +40,7 @@ class Metric
     const LABEL_TRACE_CONTEXT_CODE              = 'context_code';
     const LABEL_TRACE_LEVEL                     = 'level';
     const LABEL_TRACE_LEVEL_NAME                = 'level_name';
+    const LABEL_INSTANCE                        = 'instance';
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';

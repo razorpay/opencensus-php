@@ -44,7 +44,7 @@ class MetricsHandler extends AbstractProcessingHandler
         // Multiple times actual exception is wrapped in general exception e.g. RECOVERABLE_EXCEPTION. Following is the
         // underlying exception/trace code.
         //
-        $dimensions[Metric::LABEL_TRACE_CONTEXT_CODE] = $filtered['context.code'] ?? $filtered['code'];
+        $dimensions[Metric::LABEL_TRACE_CONTEXT_CODE] = strval($filtered['context.code'] ?? $filtered['code']);
         $dimensions[Metric::LABEL_RZP_MERCHANT_ID]    = $filtered['request.merchant_id'];
 
         // Adds request route name, using optional() because async job wont' have a route instance

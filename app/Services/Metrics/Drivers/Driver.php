@@ -2,6 +2,8 @@
 
 namespace RZP\Services\Metrics\Drivers;
 
+use Razorpay\EC2Metadata\Ec2MetadataGetter;
+
 /**
  * Base driver class
  */
@@ -72,9 +74,17 @@ abstract class Driver
 
         //
         // Adds instance tag in each metrics because our current infra setup is in such a way that we loose this label.
-        // Prometheus has honor_lable configuration set to true for this. Later we will have this removed.
+        // Prometheus has honor_labels configuration set to true for this. Later we will have this removed.
         //
-        $dimensions['instance'] = gethostname();
+
+        $ec2 = new Ec2MetadataGetter(config('trace.cache'));
+
+        if (config('trace.cloud') === false)
+        {
+            $ec2->allowDummy();
+        }
+
+        $dimensions['instance'] = $ec2->getLocalIpv4();
 
         return $dimensions;
     }
