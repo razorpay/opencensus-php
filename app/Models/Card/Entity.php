@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const VAULT_TOKEN    = 'vault_token';
     const VAULT          = 'vault';
     const TRIVIA         = 'trivia';
+    const FLOWS          = 'flows';
 
     /**
      * Number and cvv are never saved in the database
@@ -105,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::COUNTRY,
         self::INTERNATIONAL,
+        self::FLOWS,
         self::VAULT_TOKEN,
         self::VAULT,
         self::NETWORK_CODE,
@@ -126,6 +128,7 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
+        self::FLOWS,
     ];
 
     protected $appends = [self::NETWORK_CODE];
@@ -460,6 +463,13 @@ class Entity extends Base\PublicEntity
         {
             unset($array[self::IIN]);
         }
+    }
+
+    public function setPublicFlowsAttribute(array & $array)
+    {
+        $merchant = $this->merchant;
+
+        $array[self::FLOWS] = $this->iinRelation->getMerchantFlows($merchant);
     }
 
     public function setPublicExpiryMonthAttribute(array & $array)

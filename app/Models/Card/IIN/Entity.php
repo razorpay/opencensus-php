@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Bank\Name;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Feature;
 
 class Entity extends Base\PublicEntity
 {
@@ -187,6 +188,24 @@ class Entity extends Base\PublicEntity
     public function isLocked()
     {
         return $this->getAttribute(self::LOCKED);
+    }
+
+    public function getMerchantFlows($merchant)
+    {
+        $data = [];
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::ATM_PIN_AUTH) === true)
+        {
+            $data[Constants::PIN] = $iinEntity->isDebitPin();
+        }
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::OTPELF) === true)
+        {
+            $data[Constants::OTP] = (($iinEntity->isHeadLessOtp()) or
+                                     ($iinEntity->isOtp()));
+        }
+
+        return $data;
     }
 
     public function setTrivia($trivia)

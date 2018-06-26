@@ -697,16 +697,7 @@ class Service extends Base\Service
             return $data;
         }
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::ATM_PIN_AUTH) === true)
-        {
-            $data[IIN\Constants::PIN] = $iinEntity->isDebitPin();
-        }
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::OTPELF) === true)
-        {
-            $data[IIN\Constants::OTP] = (($iinEntity->isHeadLessOtp()) or
-                                     ($iinEntity->isOtp()));
-        }
+        $data = $iin->getMerchantFlows($merchant);
 
         return $data;
     }
