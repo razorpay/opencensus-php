@@ -836,7 +836,11 @@ class Core extends Base\Core
 
     public function markAsPartner(Entity $merchant, string $partnerType): Entity
     {
-        (new Validator)->validateIfAlreadyPartner($merchant);
+        $validator = new Validator;
+
+        $validator->validateIfAlreadyPartner($merchant);
+
+        $validator->validateIsNotLinkedAccount($merchant);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType)
         {

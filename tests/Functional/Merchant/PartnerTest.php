@@ -8,14 +8,11 @@ use RZP\Models\Settings\Accessor;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class PartnerTest extends OAuthTestCase
 {
     use OAuthTrait;
     use BatchTestTrait;
-    use DbEntityFetchTrait;
 
     const PARTNER               = 'partner';
     const ACTIVATION            = 'activation';
