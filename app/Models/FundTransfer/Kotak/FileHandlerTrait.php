@@ -737,12 +737,18 @@ trait FileHandlerTrait
             ]);
     }
 
-    protected function parseExcelFile($filePath)
+    protected function parseExcelFile(string $filePath, array $sheetNames = [])
     {
-        $data = Excel::load($filePath)
-                      ->formatDates(false)
-                      ->toArray();
-        return $data;
+        $excel = Excel::getFacadeRoot();
+
+        if (empty($sheetNames) === false)
+        {
+            $excel = $excel->selectSheets($sheetNames);
+        }
+
+        return $excel->load($filePath)
+                     ->formatDates(false)
+                     ->toArray();
     }
 
     protected function parseExcelSheets($filePath)

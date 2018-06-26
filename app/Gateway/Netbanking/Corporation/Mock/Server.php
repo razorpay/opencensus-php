@@ -29,9 +29,9 @@ class Server extends Base\Mock\Server
         $callbackUrl = $this->route->getUrl('gateway_payment_callback_corporation');
 
         $request = [
-            'url'       => $callbackUrl,
-            'content'   => $response,
-            'method'    => 'post',
+            'url'     => $callbackUrl,
+            'content' => $response,
+            'method'  => 'get',
         ];
 
         return $this->makePostResponse($request);
@@ -51,12 +51,12 @@ class Server extends Base\Mock\Server
     {
         $data = $this->getVerifyResponseData($input);
 
-        return $this->makeResponse(http_build_query($data));
+        return $this->makeResponse($data);
     }
 
     protected function getCallbackResponseData(array $input)
     {
-        return [
+        $data = [
             ResponseFields::MODE_OF_TRANSACTION => 'P',
             ResponseFields::MERCHANT_CODE       => $input[RequestFields::MERCHANT_CODE],
             ResponseFields::PAYMENT_ID          => $input[RequestFields::PAYMENT_ID],
@@ -66,21 +66,19 @@ class Server extends Base\Mock\Server
             ResponseFields::BANK_REF_NUMBER     => self::BANK_REF_NUMBER,
             ResponseFields::STATUS              => ResponseCodeMap::SUCCESS_CODE,
         ];
+
+        $this->content($data, Base\Action::CALLBACK);
+
+        return $data;
     }
 
     protected function getVerifyResponseData(array $input)
     {
-        $merchantId = $input[RequestFields::VERIFY_MERCHANT_CODE];
-
         $data = $this->getGatewayInstance()->getEncryptor()->decryptData(
             $input[RequestFields::VERIFY_DATA]
         );
 
-        $data = $this->buildVerifyResponseContent($data);
-
-        return [
-            ResponseFields::VERIFY_DATA => $data
-        ];
+        return $this->buildVerifyResponseContent($data);
     }
 
     protected function buildVerifyResponseContent($input)
@@ -97,7 +95,7 @@ class Server extends Base\Mock\Server
             ResponseFields::VERIFY_PAYMENT_DATE_TIME => $datetime,
         ];
 
-        $this->content($data, 'verify');
+        $this->content($data, Base\Action::VERIFY);
 
         return $this->getGatewayInstance()->getEncryptor()->encryptData($data);
     }

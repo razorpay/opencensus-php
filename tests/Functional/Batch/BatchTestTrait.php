@@ -5,14 +5,17 @@ namespace RZP\Tests\Functional\Batch;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Models\FileStore;
+use RZP\Models\Batch\Status;
 use RZP\Models\Batch as BatchModel;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 trait BatchTestTrait
 {
-    use FileHandlerTrait;
     use PaymentTrait;
+    use FileHandlerTrait;
+    use DbEntityFetchTrait;
 
     public function createAndPutExcelFileInRequest(array $entries, string $callee)
     {
@@ -85,5 +88,15 @@ trait BatchTestTrait
         ];
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    /**
+     * Assert the status of processed batch.
+     */
+    protected function assertBatchStatus(string $expected)
+    {
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals($expected, $batch['status']);
     }
 }

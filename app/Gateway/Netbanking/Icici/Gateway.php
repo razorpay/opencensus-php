@@ -7,7 +7,6 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
@@ -42,7 +41,7 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->setBankingTypeAndDomainType($terminal);
+        $this->setBankingTypeAndDomainType($input);
     }
 
     public function authorize(array $input)
@@ -238,8 +237,9 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-            $actualAmount = number_format($callbackAmount, 2, '.', '');
+
+            $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
+            $actualAmount   = $this->formatAmount($callbackAmount);
 
             $this->assertAmount($expectedAmount, $actualAmount);
         }
@@ -279,29 +279,61 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
+
+        //
+        // We don't do this for recurring payments as they don't have amount
+        // in the response
+        //
+        if ((isset($input['payment']['recurring']) === true) and
+            ($input['payment']['recurring'] === true))
+        {
+            return;
+        }
+
+        $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
+
+        if ($this->isCorporateBanking() === true)
+        {
+            $actualAmount = $this->formatAmount((float) $verify->verifyResponseContent[ResponseFields::UC_AMOUNT]);
+        }
+        else
+        {
+            $actualAmount = $this->formatAmount((float) $verify->verifyResponseContent[ResponseFields::AMOUNT]);
+        }
+
+        $this->assertAmount($expectedAmount, $actualAmount);
     }
 
     public function verify(array $input)
     {
         parent::verify($input);
 
+        //
+        // temp fix: failed recurring payments are getting marked as success on verify on ICICI's end
+        //
+        if ($input['payment']['recurring'] === true)
+        {
+           return ;
+        }
+
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function setBankingTypeAndDomainType($terminal)
+    protected function setBankingTypeAndDomainType($input)
     {
         // Default banking type is retail
-        if ((isset($terminal) === true) and
-            ($terminal->isCorporate() === true))
+        if (isset($input['payment']) === true)
         {
-            $this->setBankingType(BankingType::CORPORATE);
-        }
-        else if ((isset($terminal) === true) and
-                 ($terminal->isRecurring() === true))
-        {
-            $this->setBankingType(BankingType::RECURRING);
+            if ($input['payment']['bank'] === Payment\Processor\Netbanking::ICIC_C)
+            {
+                $this->setBankingType(BankingType::CORPORATE);
+            }
+            else if ($input['payment']['recurring'] === true)
+            {
+                $this->setBankingType(BankingType::RECURRING);
+            }
         }
 
         $this->setDomainType();
@@ -969,5 +1001,33 @@ class Gateway extends Base\Gateway
         ];
 
         return $recurringData;
+    }
+
+    protected function formatAmount($amount)
+    {
+        return number_format($amount, 2, '.', '');
+    }
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                                            $input['payment']['id'],
+                                            Payment\Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === Confirmation::YES))
+        {
+            return true;
+        }
+
+        $attrs = [
+            Base\Entity::STATUS  => Confirmation::YES,
+        ];
+
+        $gatewayPayment->fill($attrs);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
     }
 }

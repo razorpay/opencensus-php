@@ -29,7 +29,6 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::STATUS,
         self::INTERNAL_COMMENT,
-        self::MERCHANT_ID,
         self::PUBLIC_MESSAGE,
     ];
 
@@ -92,6 +91,23 @@ class Entity extends Base\PublicEntity
     public function isProductRequest()
     {
         return ($this->getAttribute(self::TYPE) === Type::PRODUCT);
+    }
+
+    public function isPartnerRequest(): bool
+    {
+        return ($this->getAttribute(self::TYPE) === Type::PARTNER);
+    }
+
+    public function isPartnerActivationRequest(): bool
+    {
+        return (($this->isPartnerRequest() === true) and
+            ($this->getAttribute(self::NAME) === Constants::ACTIVATION));
+    }
+
+    public function isPartnerDeactivationRequest(): bool
+    {
+        return (($this->isPartnerRequest() === true) and
+            ($this->getAttribute(self::NAME) === Constants::DEACTIVATION));
     }
 
     public function setPublicMerchantIdAttribute(array &$attributes)

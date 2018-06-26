@@ -18,12 +18,13 @@ class Converter extends Base\Core
     const DEFAULT_DELIMITER = ',';
 
     const NORMALIZED_HEADER_GATEWAYS = [
-        RequestProcessor\Base::BILLDESK,
-        RequestProcessor\Base::FREECHARGE,
+        RequestProcessor\Base::ATOM,
         RequestProcessor\Base::HDFC,
-        RequestProcessor\Base::MOBIKWIK,
         RequestProcessor\Base::PAYZAPP,
-        RequestProcessor\Base::ATOM
+        RequestProcessor\Base::BILLDESK,
+        RequestProcessor\Base::MOBIKWIK,
+        RequestProcessor\Base::OLAMONEY,
+        RequestProcessor\Base::FREECHARGE,
     ];
 
     const MAX_SHEETS_ALLOWED = 3;
@@ -219,10 +220,19 @@ class Converter extends Base\Core
                 {
                     if ($columnHeadersCount !== count($row))
                     {
-                        throw new Exception\ReconciliationException(
-                            'The number of columns in the row does not match the column headers count.',
-                            ['file_details' => $fileDetails, 'column_headers' => $columnHeaders, 'row' => $row]
-                        );
+                        //
+                        // This can happen if any row in the file has dummy data.
+                        // Not throwing exception so that further rows get processed.
+                        //
+                        $this->trace->debug(
+                            TraceCode::RECON_ALERT,
+                            [
+                                'message'       => 'The number of columns in the row does not match the column headers count',
+                                'file_details'  => ['column_headers' => $columnHeaders, 'row' => $row],
+                                'info_code'     => 'COLUMN_HEADER_MISMATCH'
+                            ]);
+
+                        continue;
                     }
 
                     /**

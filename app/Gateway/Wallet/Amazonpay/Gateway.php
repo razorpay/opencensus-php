@@ -13,6 +13,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Exception\RuntimeException;
 use RZP\Gateway\Wallet\Base\Entity;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
@@ -20,6 +21,8 @@ use RZP\Gateway\Wallet\Amazonpay\Sdk\PWAINBackendSDK;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     /**
      * The name of the payment gateway developed in this class.
      * @override

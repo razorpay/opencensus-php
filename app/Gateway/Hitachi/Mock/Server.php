@@ -35,17 +35,17 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function getBharatQrCallback($qrCodeId)
+    public function getBharatQrCallback($qrCodeId, $ref = null)
     {
         $data = [
-            'F002'       => '423156XXXXXX1234',
+            'F002'       => '525783XXXXXX3413',
             'F003'       => '26000',
             'F004'       => '000000000200',
             'F011'       => 'abc123',
             'F012'       => '120000',
             'F013'       => '1212',
             'F037'       => 'somethingabc',
-            'F038'       => 'randoma',
+            'F038'       => 'random',
             'F039'       => '0',
             'F041'       => 'abcd_hitachi_bharat',
             'F042'       => 'abcd_hitachi_bharat',
@@ -54,6 +54,11 @@ class Server extends Base\Mock\Server
             'PurchaseID' => $qrCodeId,
             'SenderName' => 'Random Name',
         ];
+
+        if ($ref !== null)
+        {
+            $data['F037'] = $ref;
+        }
 
         $hash = $this->getGatewayInstance()->getStringToHashForBharatQr($data);
 

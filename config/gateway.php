@@ -15,7 +15,7 @@ return [
         'axis_genius',
         'axis_migs',
         'billdesk',
-        'blade',
+        'mpi_blade',
         'card_fss',
         'cybersource',
         'esigner_digio',
@@ -86,7 +86,7 @@ return [
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
-    'mock_blade'                  => env('BLADE_MOCK'),
+    'mock_mpi_blade'              => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
     'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),
     'mock_wallet_payzapp'         => env('PAYZAPP_MOCK'),
@@ -191,7 +191,7 @@ return [
         'test_access_code'            => env('ATOM_TEST_ACCESS_CODE'),
     ],
 
-    'blade' => [
+    'mpi_blade' => [
         'cert_dir_name'               => env('BLADE_CERT_DIR_NAME'),
 
         'live_visa_certificate'       => env('BLADE_GATEWAY_LIVE_VISA_CERTIFICATE'),
@@ -436,19 +436,21 @@ return [
 
     'netbanking_axis' => [
         // retail netbanking
-        'live_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
-        'test_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
-        'test_merchant_id'           => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        'live_hash_secret'                  => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
+        'test_hash_secret'                  => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'                  => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
 
         // corporate netbanking
-        'live_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_CORPORATE'),
-        'test_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_CORPORATE'),
-        'test_merchant_id_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_CORPORATE'),
+        'live_hash_secret_corporate'        => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_CORPORATE'),
+        'live_hash_secret_corporate_verify' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_CORPORATE_VERIFY'),
+        'test_hash_secret_corporate_verify' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_CORPORATE_VERIFY'),
+        'test_hash_secret_corporate'        => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_CORPORATE'),
+        'test_merchant_id_corporate'        => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_CORPORATE'),
 
         // recurring
-        'test_hash_secret_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_REC'),
-        'test_hash_secret_encrec'    => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_ENCREC'),
-        'test_merchant_id_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_REC'),
+        'test_hash_secret_rec'              => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_REC'),
+        'test_hash_secret_encrec'           => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_ENCREC'),
+        'test_merchant_id_rec'              => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_REC'),
     ],
 
     'netbanking_airtel' => [

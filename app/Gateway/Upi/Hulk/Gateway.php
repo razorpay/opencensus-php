@@ -507,6 +507,32 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
+        {
+            return true;
+        }
+
+        throw new Exception\LogicException(
+            'Shouldn\'t reach here',
+            null,
+            [
+                'refund_id'      => $input['refund']['id'],
+            ]);
+    }
+
     public function refund(array $input)
     {
         parent::refund($input);
@@ -526,5 +552,16 @@ class Gateway extends Base\Gateway
                 $p2p[Fields::INTERNAL_ERROR_CODE],
                 $p2p[Fields::ERROR_DESCRIPTION]);
         }
+    }
+
+    /**
+     * Only called for func environment.
+     *
+     * @param string $type
+     * @return string
+     */
+    protected function getExternalMockUrl(string $type)
+    {
+        return env('UPI_HULK_URL') . '/' . $this->getRelativeUrl($type);
     }
 }

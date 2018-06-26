@@ -11,9 +11,6 @@ use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as Headings;
 
 class Hdfc extends Base
 {
-    const PROCESSED = 'processed';
-    const REJECT  = 'reject';
-
     protected $gateway = Gateway::NETBANKING_HDFC;
 
     protected function getDataFromRow(array & $row): array
@@ -38,15 +35,6 @@ class Hdfc extends Base
     {
         $gatewayStatus = strtolower($content[self::GATEWAY_RESPONSE_CODE]);
 
-        if (in_array($gatewayStatus, [self::PROCESSED, self::REJECT], true) === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                '',
-                '',
-                $content);
-        }
-
         return [
             NetbankingBase\Entity::RECEIVED       => true,
             NetbankingBase\Entity::ERROR_MESSAGE  => $content[self::GATEWAY_ERROR_MESSAGE],
@@ -54,6 +42,11 @@ class Hdfc extends Base
         ];
     }
 
+    /**
+     * @param array $content
+     * @return bool
+     * @throws Exception\GatewayErrorException
+     */
     protected function isAuthorized(array $content): bool
     {
         return Netbanking\Hdfc\Status::isDebitSuccess($content[self::GATEWAY_RESPONSE_CODE]);

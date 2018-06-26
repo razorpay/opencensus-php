@@ -364,7 +364,6 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2Axis()
     {
-
         $this->ba->adminAuth();
 
         $channel = Channel::AXIS;
@@ -374,7 +373,6 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2Icici()
     {
-
         $this->ba->adminAuth();
 
         $channel = Channel::ICICI;
@@ -442,6 +440,37 @@ class SettlementTest extends TestCase
         $this->assertEquals(4, $setlResponse[$channel]['txnCount']);
 
         Carbon::setTestNow();
+    }
+
+    /**
+     * Tests the case for MF merchants that shouldn't get settlements
+     */
+    public function testMfMerchantSettlementSkip()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $skipMfIds = Preferences::NO_SETTLEMENT_MIDS;
+
+        foreach ($skipMfIds as $mid)
+        {
+            $this->fixtures->merchant->createAccount($mid);
+
+            $dt = Carbon::create(2017, 12, 12, 16, 0, 0, Timezone::IST)
+                        ->subDays(5);
+
+            $this->createPaymentEntities(2, $mid, $dt);
+
+            $dt = Carbon::create(2017, 12, 12, 16, 13, 0, Timezone::IST);
+
+            Carbon::setTestNow($dt);
+
+            $setlResponse = $this->initiateSettlements($channel);
+
+            $this->assertNotNull($setlResponse[$channel]);
+            $this->assertEquals(0, $setlResponse[$channel]['count']);
+        }
     }
 
     public function testMutualFundMarketplaceSettlementSchedule()

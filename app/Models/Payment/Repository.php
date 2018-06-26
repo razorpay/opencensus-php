@@ -19,6 +19,7 @@ use RZP\Models\Terminal;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Models\Customer\Token;
@@ -47,8 +48,10 @@ class Repository extends Base\Repository
         Entity::EMAIL           => 'sometimes',
         Entity::STATUS          => 'sometimes|string',
         Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::PAYMENT_LINK_ID => 'filled|public_id|size:17',
         Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
+        Entity::CAPTURED        => 'sometimes|boolean',
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',
     ];
 
@@ -65,7 +68,6 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID             => 'sometimes|alpha_num',
         Entity::TRANSFER_ID             => 'sometimes|alpha_num|size:14',
         Entity::CARD_ID                 => 'sometimes|alpha_num|size:14',
-        Entity::CAPTURED                => 'sometimes|in:0,1',
         Entity::WALLET                  => 'sometimes|custom',
         Entity::NOTES                   => 'sometimes|notes_fetch',
         Card\Entity::IIN                => 'sometimes|integer|digits:6',
@@ -79,6 +81,7 @@ class Repository extends Base\Repository
         Entity::AMOUNT                  => 'sometimes|integer',
         Entity::TERMINAL_ID             => 'sometimes|alpha_num|size:14',
         Token\Entity::RECURRING_STATUS  => 'sometimes|string|max:15',
+        Entity::VPA                     => 'sometimes|string|max:100',
     ];
 
     protected $signedIds = [
@@ -86,6 +89,7 @@ class Repository extends Base\Repository
         Entity::INVOICE_ID,
         Entity::SUBSCRIPTION_ID,
         Entity::CUSTOMER_ID,
+        Entity::PAYMENT_LINK_ID,
     ];
 
     protected $cardQueryKeys = [
@@ -726,11 +730,9 @@ class Repository extends Base\Repository
         $query->where($amountTransferred, '>', 0);
     }
 
-    protected function addQueryCaptured($query, $params)
+    protected function addQueryParamCaptured($query, $params)
     {
-        $captured = $params[Entity::CAPTURED];
-
-        if ($captured === '0')
+        if (boolval($params[Entity::CAPTURED]) === false)
         {
             $query->whereNull(Entity::CAPTURED_AT);
         }
@@ -966,35 +968,34 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function fetchBankTransferPaymentsByPublicVaIdAndMerchant(
-        string $virtualAccountId,
-        Merchant\Entity $merchant
-        )
+    public function fetchByPublicVaIdAndMerchant(string $virtualAccountId, Merchant\Entity $merchant)
     {
-        $paymentId = $this->dbColumn(Payment\Entity::ID);
-        $paymentMethod = $this->dbColumn(Payment\Entity::METHOD);
+        $paymentReceiverId = $this->dbColumn(Payment\Entity::RECEIVER_ID);
         $paymentMerchantId = $this->dbColumn(Payment\Entity::MERCHANT_ID);
+
+        $virtualAccountIdCol = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
 
         $paymentColumns = $this->dbColumn('*');
 
-        $bankTransferTable = $this->repo->bank_transfer->getTableName();
+        $qrcodeId = $this->repo
+                         ->virtual_account
+                         ->dbColumn(VirtualAccount\Entity::QR_CODE_ID);
 
-        $bankTransferPaymentId = $this->repo
-                                      ->bank_transfer
-                                      ->dbColumn(BankTransfer\Entity::PAYMENT_ID);
-
-        $bankTransferVirtualAccountId = $this->repo
-                                             ->bank_transfer
-                                             ->dbColumn(BankTransfer\Entity::VIRTUAL_ACCOUNT_ID);
+        $bankAccountId = $this->repo
+                              ->virtual_account
+                              ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
 
         VirtualAccount\Entity::verifyIdAndSilentlyStripSign($virtualAccountId);
 
         return $this->newQuery()
                     ->select($paymentColumns)
-                    ->join($bankTransferTable, $paymentId, '=', $bankTransferPaymentId)
-                    ->where($bankTransferVirtualAccountId, '=', $virtualAccountId)
+                    ->join(Table::VIRTUAL_ACCOUNT, function ($join) use($paymentReceiverId, $qrcodeId, $bankAccountId)
+                        {
+                            $join->on($paymentReceiverId, '=', $qrcodeId);
+                            $join->orOn($paymentReceiverId, '=', $bankAccountId);
+                        })
+                    ->where($virtualAccountIdCol, '=', $virtualAccountId)
                     ->where($paymentMerchantId, '=', $merchant->getId())
-                    ->where($paymentMethod, '=', Method::BANK_TRANSFER)
                     ->orderByCreatedAt()
                     ->get();
     }
@@ -1110,7 +1111,7 @@ class Repository extends Base\Repository
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
                     ->where($tokenRecurringColumn, '!=', 1)
                     ->whereNotNull(Entity::AUTHORIZED_AT)
-                    ->with(['localToken', 'globalToken', 'customer'])
+                    ->with(['localToken', 'globalToken', 'customer', 'merchant'])
                     ->get();
     }
 
@@ -1359,7 +1360,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()
                       ->selectRaw(
-                          'SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                          'SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
                       ->whereBetween(Entity::CAPTURED_AT, [$start, $end])
                       ->whereNotNull(Entity::TRANSACTION_ID);
 
@@ -1400,4 +1401,43 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    /**
+     * select `payments`.*, `bank_accounts`.`id` as `bank_account_id` from `payments` inner join
+     * `bank_transfers` on `bank_transfers`.`payment_id` = `payments`.`id` inner join `virtual_accounts`
+     * on `bank_transfers`.`virtual_account_id` = `virtual_accounts`.`id` inner join `bank_accounts` on
+     * `bank_accounts`.`id` = `virtual_accounts`.`bank_account_id` where `method` = 'bank_transfer' and
+     * `receiver_id` is null limit 1000
+     *
+     *  @return collection
+     */
+    public function fetchBankTransferPaymentWithoutReceiver()
+    {
+        $paymentId = $this->repo->payment->dbColumn(Entity::ID);
+
+        $bankTransferTable = $this->repo->bank_transfer->getTableName();
+
+        $bankTransferPaymentId = $this->repo->bank_transfer->dbColumn(BankTransfer\Entity::PAYMENT_ID);
+
+        $bankTransferVirtualAccountId = $this->repo->bank_transfer->dbColumn(BankTransfer\Entity::VIRTUAL_ACCOUNT_ID);
+
+        $virtualAccountId = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
+
+        $virtualAccountTable = $this->repo->virtual_account->getTableName();
+
+        $virtualAccountBankAccountId = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
+
+        $bankAccountTable = $this->repo->bank_account->getTableName();
+
+        $bankAccountId = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
+
+        return $this->newQuery()
+                    ->select('payments.*', 'bank_accounts.id as bank_account_id')
+                    ->where(Payment\Entity::METHOD, Method::BANK_TRANSFER)
+                    ->join($bankTransferTable, $bankTransferPaymentId , '=', $paymentId)
+                    ->join($virtualAccountTable, $bankTransferVirtualAccountId, '=', $virtualAccountId)
+                    ->join($bankAccountTable, $bankAccountId, '=', $virtualAccountBankAccountId)
+                    ->whereNull(Payment\Entity::RECEIVER_ID)
+                    ->limit(1000)
+                    ->get();
+    }
 }

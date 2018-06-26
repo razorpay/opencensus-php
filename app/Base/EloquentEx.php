@@ -14,6 +14,9 @@ use RZP\Base\Database\QueryBuilder;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {
+    /**
+     * @var bool
+     */
     public $incrementing = false;
 
     /**
@@ -38,7 +41,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
         if (count($nonExistentRelations) > 0)
         {
-            Trace::critical(TraceCode::DB_DATA_INTEGRITY_ERROR, [
+            throw new Exception\RuntimeException('All parent entities must exist before save', [
                 'entity'                 => $this->entity,
                 'non_existent_relations' => array_keys($nonExistentRelations),
             ]);
@@ -191,5 +194,18 @@ class EloquentEx extends \Razorpay\Spine\Entity
         return (in_array($relation, $this->ignoredRelations, true) === true) ?
                 true :
                 (($model instanceof Model) ? $model->exists : true);
+    }
+
+    /**
+     * Every entity which wants to implement delete should use either the
+     * SoftDeletes or HardDeletes traits. Deleting by default is not allowed
+     * here.
+     *
+     */
+    protected function performDeleteOnModel()
+    {
+        throw new Exception\LogicException('Delete not supported, Use either HardDeletes or SoftDeletes trait', null, [
+            'entity' => $this->entity
+        ]);
     }
 }

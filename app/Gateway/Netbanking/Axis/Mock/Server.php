@@ -4,12 +4,13 @@ namespace RZP\Gateway\Netbanking\Axis\Mock;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
-use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Base\Action;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Netbanking\Axis\Status;
 use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Gateway\Netbanking\Axis\AESCrypto;
+use RZP\Gateway\Netbanking\Base\BankingType;
 use RZP\Gateway\Netbanking\Axis\RequestFields;
 use RZP\Gateway\Netbanking\Axis\ResponseFields;
 
@@ -17,7 +18,16 @@ class Server extends Base\Mock\Server
 {
     use EmandateTrait;
 
-    protected $bankingType = 'retail';
+    protected $config;
+
+    protected $bankingType = BankingType::RETAIL;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->config = $this->app['config']->get('gateway.netbanking_axis');
+    }
 
     public function authorize($input)
     {
@@ -93,9 +103,20 @@ class Server extends Base\Mock\Server
         return $data;
     }
 
-    protected function getDecryptedDataForBankingType($input, $bankingType = null)
+    protected function getDecryptedData(string $decryptedString): array
     {
-        $masterKey = $this->getGatewayInstance($bankingType)->getSecret();
+        $decryptedString = str_replace('|', '&', $decryptedString);
+
+        parse_str($decryptedString, $decryptedData);
+
+        return $decryptedData;
+    }
+
+    protected function getDecryptedDataForBankingType($input, $bankingType = BankingType::RETAIL)
+    {
+        $this->bankingType = $bankingType;
+
+        $masterKey = $this->getSecret();
 
         $crypto = new AESCrypto($masterKey);
 
@@ -174,11 +195,24 @@ class Server extends Base\Mock\Server
 
     protected function getMasterKeyFromGateway()
     {
-        return $this->getGatewayInstance($this->bankingType)->getSecret();
+        return $this->getSecret();
     }
 
     protected function getVerifyXml($input)
     {
+        $flag = false;
+
+        if (isset($input['encdata']) === true)
+        {
+            $flag = true;
+
+            $decryptedString = $this->getDataFromEncryptedCorporateVerifyInput($input[RequestFields::VERIFY_ENCDATA]);
+
+            $input = $this->getDecryptedData($decryptedString);
+
+            $input = array_change_key_case($input, CASE_LOWER);
+        }
+
         $response = [
             ResponseFields::PAYEE_ID            => $input[RequestFields::VERIFY_PAYEE_ID],
             ResponseFields::ITEM_CODE           => $input[RequestFields::VERIFY_ITC],
@@ -191,7 +225,7 @@ class Server extends Base\Mock\Server
         ];
 
         // for test cases
-        $this->content($response);
+        $this->content($response, Base\Action::VERIFY);
 
         // For null verify response
         if ($response === "")
@@ -199,15 +233,90 @@ class Server extends Base\Mock\Server
             return $response;
         }
 
-        $response = array_flip($response);
-
         $xml = new \SimpleXMLElement('<DataSet/>');
+
         $xml->addChild('Table1');
 
-        array_walk_recursive($response, array ($xml->Table1, 'addChild'));
+        $this->array_to_xml($response, $xml->Table1);
 
         $this->content($xml, 'multiple_tables');
 
-        return $xml->asXML();
+        $response = $xml->asXML();
+
+        if ($flag === true)
+        {
+            $response = $this->getCorporateVerifyEncryptedStringResponse($response);
+        }
+
+        return $response;
+    }
+
+    protected function array_to_xml($array, &$xml)
+    {
+        foreach ($array as $key => $value)
+        {
+            if (is_array($value) === true)
+            {
+                if (is_numeric($key) === true)
+                {
+                    $subnode = $xml->addChild("item" . $key);
+
+                    array_to_xml($value, $subnode);
+                }
+                else
+                {
+                    $subnode = $xml->addChild($key);
+
+                    array_to_xml($value, $subnode);
+                }
+            }
+            else
+            {
+                $xml->addChild($key, htmlspecialchars($value));
+            }
+        }
+    }
+
+    protected function getDataFromEncryptedCorporateVerifyInput($encryptedString)
+    {
+        $masterKey = $this->getSecret();
+
+        $crypto = new AESCrypto($masterKey);
+
+        $decryptedString = $crypto->decryptString($encryptedString);
+
+        return $decryptedString;
+    }
+
+    protected function getCorporateVerifyEncryptedStringResponse(string $data)
+    {
+        $masterKey = $this->getSecret();
+
+        $crypto = new AESCrypto($masterKey);
+
+        $encryptedString = $crypto->encryptString($data);
+
+        return $encryptedString;
+    }
+
+    protected function getSecret()
+    {
+        if ($this->bankingType === BankingType::RETAIL)
+        {
+            return $this->config['test_hash_secret'];
+        }
+        else
+        {
+            if ($this->action === Action::VERIFY)
+            {
+                $key = $this->config['test_hash_secret_corporate_verify'];
+
+                return substr($key, 0, 16);
+            }
+            else
+            {
+                return $this->config['test_hash_secret_corporate'];
+            }
+        }
     }
 }

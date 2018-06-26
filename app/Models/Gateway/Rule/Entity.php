@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const MIN_AMOUNT       = 'min_amount';
     const MAX_AMOUNT       = 'max_amount';
     const IINS             = 'iins';
+    const RECURRING        = 'recurring';
 
     // Terminal and payment properties both
     const EMI_DURATION     = 'emi_duration';
@@ -99,6 +100,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::IINS,
         self::CURRENCY,
+        self::RECURRING,
     ];
 
     /**
@@ -162,10 +164,10 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT      => 'int',
         self::EMI_DURATION    => 'int',
         self::IINS            => 'array',
+        self::RECURRING       => 'boolean',
     ];
 
     protected $fillable = [
-        self::MERCHANT_ID,
         self::GATEWAY,
         self::TYPE,
         self::GROUP,
@@ -186,6 +188,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
         self::CURRENCY,
+        self::RECURRING,
         self::COMMENTS,
     ];
 
@@ -212,10 +215,11 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
         self::CURRENCY,
+        self::RECURRING,
         self::COMMENTS,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::DELETED_AT
+        self::DELETED_AT,
     ];
 
     protected static $modifiers = [
@@ -234,6 +238,11 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::MIN_AMOUNT => 0,
     ];
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
 
     // ---------------------Overridden--------------------------
 

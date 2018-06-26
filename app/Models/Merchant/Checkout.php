@@ -4,26 +4,25 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Request;
-use RZP\Base\RepositoryManager;
 use Session;
+use Razorpay\Trace\Logger as Trace;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Customer;
 use RZP\Models\Emi;
-use RZP\Models\Feature;
-use RZP\Models\Gateway\Downtime;
-use RZP\Models\Invoice;
-use RZP\Models\Merchant;
 use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Processor\Netbanking;
-use RZP\Models\Plan\Subscription;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Invoice;
+use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base\PublicCollection;
+use RZP\Base\RepositoryManager;
+use RZP\Models\Gateway\Downtime;
+use RZP\Models\Plan\Subscription;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Checkout
 {
@@ -228,18 +227,18 @@ class Checkout
             ]);
     }
 
-    protected function fetchCustomerData(array $input, Entity $merchant)
+    protected function fetchCustomerData(array $input, Entity $merchant, $isGlobal)
     {
         $custData = null;
 
         try
         {
             //
-            // For the second 2FA in global flow also, we will have the app_token. Hence,
-            // in this usage (preferences) of getCustomerAndApp, we don't need to have
-            // the global_customer_id in the input.
+            // For the second 2FA in global flow also, we will have the
+            // app_token. Hence, in this usage (preferences) of getCustomerAndApp,
+            // we don't need to have the global_customer_id in the input.
             //
-            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
+            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant, $isGlobal);
 
             if ($customer === null)
             {
@@ -276,7 +275,6 @@ class Checkout
             //
             if ($customer->isLocal() === true)
             {
-                // TODO: Figure out a way to tell the checkout whether it's local/global flow.
                 $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
             }
         }
@@ -355,7 +353,7 @@ class Checkout
             if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
                 (isset($input[Payment\Entity::APP_TOKEN])))
             {
-                $custData = $this->fetchCustomerData($input, $merchant);
+                $custData = $this->fetchCustomerData($input, $merchant, $data['global']);
 
                 if ($custData !== null)
                 {
@@ -551,19 +549,41 @@ class Checkout
         }
 
         if (($order !== null) and
-            ($order->offer !== null))
+            ($order->hasOffers() === true))
         {
-            $orderAmount = $order->getAmount();
-
-            $this->updateMethodsToEnableOnCheckout($order->offer, $data);
-
-            $data['offers'] = [
-                $order->offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount),
-            ];
+            $this->checkAndFillOrderOffers($merchant, $order, $data);
         }
         else
         {
             $this->checkAndFillNonOrderOffers($merchant, $data);
+        }
+    }
+
+    protected function checkAndFillOrderOffers(Merchant\Entity $merchant, Order\Entity $order, array & $data)
+    {
+        $offers = $order->offers;
+
+        $orderAmount = $order->getAmount();
+
+        //
+        // If there's a single forced offer, we only put those
+        // methods on checkout which can be used with that offer.
+        //
+        if (($offers->count() === 1) and
+            ($order->isOfferForced() === true))
+        {
+            $offer = $offers->first();
+
+            $this->updateMethodsToEnableOnCheckout($merchant, $offer, $data);
+        }
+
+        //
+        // For multiple offers, we show all methods,
+        // and rely on validation during payment.
+        //
+        foreach ($offers as $offer)
+        {
+            $data['offers'][] = $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount);
         }
     }
 
@@ -577,14 +597,14 @@ class Checkout
         }
     }
 
-    protected function updateMethodsToEnableOnCheckout(Offer\Entity $offer, array & $data)
+    protected function updateMethodsToEnableOnCheckout(Merchant\Entity $merchant, Offer\Entity $offer, array & $data)
     {
-        $method = $offer->getPaymentMethod();
+        $offerMethod = $offer->getPaymentMethod();
 
         // If offer method is empty we do not update methods in response
-        if (empty($method) === true)
+        if (empty($offerMethod) === true)
         {
-            return ;
+            return;
         }
 
         $enabledBanks = $data['methods'][Payment\Method::NETBANKING];
@@ -595,13 +615,20 @@ class Checkout
             'entity' => 'methods'
         ];
 
-        switch ($method)
+        switch ($offerMethod)
         {
             case Payment\Method::CARD:
             case Payment\Method::EMI:
 
-                // For card offers only set card method to true
-                $data['methods']['card'] = true;
+                $offerMethodType = $offer->getPaymentMethodType();
+
+                $emiSubvention = $merchant->getEmiSubvention();
+
+                $this->updateMethodsForCardOrEmiOffer(
+                    $data,
+                    $emiSubvention,
+                    $offerMethod,
+                    $offerMethodType);
 
                 break;
 
@@ -644,9 +671,49 @@ class Checkout
             // For other methods like UPI, we currently handle it here, by just
             // enabling the particular method.
             default:
-                $data['methods'][$method] = true;
+                $data['methods'][$offerMethod] = true;
 
                 break;
+        }
+    }
+
+    protected function updateMethodsForCardOrEmiOffer(
+        array & $data,
+        string $emiSubvention,
+        string $offerMethod,
+        string $offerMethodType = null)
+    {
+        $data['methods'][Payment\Method::CARD] = true;
+
+        if ($offerMethod === Payment\Method::EMI)
+        {
+            $emiService = new Emi\Service;
+
+            $data['methods'][Payment\Method::EMI] = true;
+
+            $data['methods']['emi_subvention']    = $emiSubvention;
+
+            $data['methods']['emi_plans']         = $emiService->all();
+
+            $data['methods']['emi_options']       = $emiService->getEmiOptions();
+        }
+
+        switch ($offerMethodType)
+        {
+            case 'credit':
+                $data['methods'][Methods\Entity::CREDIT_CARD]  = true;
+
+                break;
+
+            case 'debit':
+                $data['methods'][Methods\Entity::DEBIT_CARD]  = true;
+
+                break;
+
+            default:
+
+                $data['methods'][Methods\Entity::DEBIT_CARD]  = true;
+                $data['methods'][Methods\Entity::CREDIT_CARD] = true;
         }
     }
 

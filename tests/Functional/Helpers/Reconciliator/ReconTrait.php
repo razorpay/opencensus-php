@@ -43,7 +43,9 @@ trait ReconTrait
             ],
         ];
 
-        return $this->makeRequestAndGetContent($request)[0];
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content[0] ?? $content;
     }
 
     protected function setMockRecon($recon, $gateway = null)

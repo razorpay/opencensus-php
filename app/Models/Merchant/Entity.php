@@ -23,7 +23,6 @@ use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 
-
 /**
  * @property Detail\Entity $merchantDetail
  * @property Methods\Entity $methods
@@ -61,6 +60,7 @@ class Entity extends Base\PublicEntity
     const REFUND_SOURCE            = 'refund_source';
     const LINKED_ACCOUNT_KYC       = 'linked_account_kyc';
     const HAS_KEY_ACCESS           = 'has_key_access';
+    const PARTNER_TYPE             = 'partner_type';
     const BRAND_COLOR              = 'brand_color';
     const HANDLE                   = 'handle';
     const RISK_RATING              = 'risk_rating';
@@ -169,7 +169,6 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::EMAIL,
         self::SCOPE,
-        self::ORG_ID,
         self::WEBSITE,
         self::CHANNEL,
         self::CATEGORY,
@@ -181,6 +180,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS,
         self::RISK_RATING,
         self::RISK_THRESHOLD,
+        self::PARTNER_TYPE,
         self::BRAND_COLOR,
         self::HANDLE,
         self::INTERNATIONAL,
@@ -242,6 +242,7 @@ class Entity extends Base\PublicEntity
         self::HANDLE,
         self::RISK_RATING,
         self::RISK_THRESHOLD,
+        self::PARTNER_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SUSPENDED_AT,
@@ -265,6 +266,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED  => true,
         self::HOLD_FUNDS             => false,
         self::FEE_BEARER             => FeeBearer::PLATFORM,
+        self::PARTNER_TYPE           => null,
         self::BRAND_COLOR            => null,
         self::HANDLE                 => null,
         self::RISK_RATING            => 3,
@@ -835,18 +837,22 @@ class Entity extends Base\PublicEntity
 
     /**
      * Helper method to fetch the actual display_name for an
-     * invoice, based on merchant-defined field preference:
-     * `billing_label` or `name`
+     * invoice, based on merchant-defined field preference from merchant_detail:
+     * `business_name` or `business_dba`
      *
-     * Fallback to `billing_name` if the setting is not defined
+     * Fallback to `merchant_detail.business_name` if the invoice_label_field setting is not defined
+     *
+     * If invoice_label_field is defined but the attribute is null, use merchant.billing_label instead.
      *
      * @return mixed
      */
     public function getLabelForInvoice()
     {
-        $field = $this->getInvoiceLabelField() ?: self::BILLING_LABEL;
+        $field = $this->getInvoiceLabelField() ?: Detail\Entity::BUSINESS_NAME;
 
-        return $this->getAttribute($field);
+        $value = optional($this->merchantDetail)->getAttribute($field);
+
+        return $value ?: $this->getBillingLabel();
     }
 
     public function getAutoCaptureLateAuth()
@@ -1019,6 +1025,16 @@ class Entity extends Base\PublicEntity
 
         // Just so there is no whitespace before or after the email
         return array_filter(array_map('trim', $emails));
+    }
+
+    public function getPartnerType()
+    {
+        return $this->getAttribute(self::PARTNER_TYPE);
+    }
+
+    public function isPartner(): bool
+    {
+        return $this->isAttributeNotNull(self::PARTNER_TYPE);
     }
 
     protected function setEmailAttribute($email)
@@ -1478,5 +1494,18 @@ class Entity extends Base\PublicEntity
         }
 
         return $merchantAttributes;
+    }
+
+    /**
+     * @param string|null $partnerType
+     */
+    public function setPartnerType(string $partnerType = null)
+    {
+        $this->setAttribute(self::PARTNER_TYPE, $partnerType);
+    }
+
+    public function isPurePlatformTypePartner(): bool
+    {
+        return ($this->getPartnerType() === Constants::PURE_PLATFORM);
     }
 }

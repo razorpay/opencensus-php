@@ -353,6 +353,12 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($content);
 
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+        $actualAmount = number_format((float) $content[ResponseFields::AMOUNT], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
+
         $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input, $content);
 
         $this->createGatewayPaymentEntity($gatewayPaymentAttrs, Action::AUTHORIZE);

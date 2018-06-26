@@ -54,15 +54,6 @@ class WebhookTest extends TestCase
         $this->assertEquals(true, $webhook['disable_on_failure']);
     }
 
-    public function testCreateWebhookWithdisableWebhookFalse()
-    {
-        $this->startTest();
-
-        $webhook = $this->getDbLastEntity('webhook');
-
-        $this->assertEquals(false, $webhook['disable_on_failure']);
-    }
-
     public function testCreateWebhookWhenAlreadyCreated()
     {
         $this->fixtures->create('webhook');
@@ -121,6 +112,28 @@ class WebhookTest extends TestCase
         $webhook = $this->createWebhook();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
+
+        $this->startTest();
+    }
+
+    public function testEditDisableWebhookOnPrivateAuth()
+    {
+        $webhook = $this->createWebhook();
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
+
+        $this->startTest();
+    }
+
+    public function testEditDisableWebhookOnProxyAuth()
+    {
+        $webhook = $this->createWebhook();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }

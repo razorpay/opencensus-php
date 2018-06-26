@@ -145,6 +145,7 @@ class ShieldClient implements ExternalService
             Payment\Entity::EMAIL         => $payment->getEmail(),
             Payment\Entity::CREATED_AT    => $payment->getCreatedAt(),
             Payment\Entity::METHOD        => $payment->getMethod(),
+            'website'                     => $payment->merchant->merchantDetail->getWebsite()
         ];
 
         $methodParams = $this->fillMethodSpecificDetails($payment);
@@ -154,6 +155,13 @@ class ShieldClient implements ExternalService
         if ($payment->hasOrder() === true)
         {
             $input['attempts'] = $payment->order->getAttempts();
+        }
+
+        //Pass client metadata to shield
+        //These include browser fingerprint, local timezone etc
+        if ($payment->hasMetadata('shield'))
+        {
+            $input['client_metadata'] = $payment->getMetadata('shield');
         }
 
         $analytics = $this->getPaymentAnalyticsData($payment);

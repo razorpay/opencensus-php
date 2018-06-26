@@ -68,12 +68,14 @@ class Entity
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
     const FEE_BREAKUP           = 'fee_breakup';
+    const PAYMENT_LINK          = 'payment_link';
     const GATEWAY_RULE          = 'gateway_rule';
     const GATEWAY_FILE          = 'gateway_file';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
     const DISPUTE_FILE          = 'dispute_file';
     const SUBSCRIPTION          = 'subscription';
+    const ENTITY_OFFER          = 'entity_offer';
     const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
@@ -130,7 +132,8 @@ class Entity
     const UPI                    = 'upi';
     const AEPS                   = 'aeps';
     const AMEX                   = 'amex';
-    const BLADE                  = 'blade';
+    const MPI                    = 'mpi';
+    const MPI_BLADE              = 'mpi_blade';
     const ATOM                   = 'atom';
     const ENACH                  = 'enach';
     const HDFC                   = 'hdfc';
@@ -220,6 +223,7 @@ class Entity
         self::PAYMENT,
         self::CUSTOMER,
         self::SUBSCRIPTION,
+        self::PAYMENT_LINK,
     ];
 
     public static $namespace = [
@@ -231,7 +235,6 @@ class Entity
         self::EBS                   => \RZP\Gateway\Ebs::class,
         self::ATOM                  => \RZP\Gateway\Atom::class,
         self::AMEX                  => \RZP\Gateway\Amex::class,
-        self::BLADE                 => \RZP\Gateway\Blade::class,
         self::HDFC                  => \RZP\Gateway\Hdfc::class,
         self::USER                  => \RZP\Models\User::class,
         self::OFFER                 => \RZP\Models\Offer::class,
@@ -257,9 +260,11 @@ class Entity
         self::INVITATION            => \RZP\Models\Invitation::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
+        self::ENTITY_OFFER          => \RZP\Models\Offer\EntityOffer::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
         self::DISPUTE_FILE          => \RZP\Models\Dispute\File::class,
+        self::PAYMENT_LINK          => \RZP\Models\PaymentLink::class,
         self::GATEWAY_TOKEN         => \RZP\Models\Customer\GatewayToken::class,
         self::SCHEDULE_TASK         => \RZP\Models\Schedule\Task::class,
         self::DISPUTE_REASON        => \RZP\Models\Dispute\Reason::class,
@@ -333,6 +338,8 @@ class Entity
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
         self::WALLET_AIRTELMONEY     => \RZP\Gateway\Wallet\Airtelmoney::class,
         self::WALLET_MPESA           => \RZP\Gateway\Wallet\Mpesa::class,
+        self::MPI                    => \RZP\Gateway\Mpi\Base::class,
+        self::MPI_BLADE              => \RZP\Gateway\Mpi\Blade::class,
         self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Amazonpay::class,
 
         // heimdall
@@ -371,6 +378,8 @@ class Entity
         self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
+
+        self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,
 
         self::ENACH_RBL              => \RZP\Gateway\Enach\Base::class,
 

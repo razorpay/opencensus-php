@@ -92,7 +92,8 @@ class EnachRbl extends Base
     protected function getGatewayAttributes(Payment\Entity $payment): array
     {
         return [
-            Enach\Base\Entity::ACQUIRER => self::ACQUIRER
+            Enach\Base\Entity::ACQUIRER => self::ACQUIRER,
+            Enach\Base\Entity::UMRN     => $payment->getGlobalOrLocalTokenEntity()->getGatewayToken(),
         ];
     }
 }
