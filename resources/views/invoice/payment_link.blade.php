@@ -72,10 +72,9 @@ $invoice_status                 = $invoice_data['status'];
                 document.getElementById('invoice-status-container').removeChild(document.getElementById('desktop-container'));
             }
         }
-
         function toggleTrimDescription(toTrim) {
             var data = window.RZP_DATA.data,
-            desc = data.payment_link.description,
+            desc = data.invoice.description,
             charLimit, pseudoChar, button = '';
 
             if (checkIsDesktop()) {
@@ -88,6 +87,9 @@ $invoice_status                 = $invoice_data['status'];
 
             if (desc && toTrim) {
                 var visLength = 0;
+
+                desc =  desc.trim();
+                var descLength = desc.length;
 
                 var i = 0;
                 for (; i < desc.length ; i++) {
@@ -105,8 +107,11 @@ $invoice_status                 = $invoice_data['status'];
 
                 desc= desc.substr(0, i + 1);
                 desc =  desc.trim();
-                desc += '...';
-                button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
+
+                if (desc.length < descLength) {
+                    desc += '...';
+                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
+                }
             }
 
             document.getElementById('payment-for').innerHTML = desc + button;
