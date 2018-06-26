@@ -451,32 +451,11 @@ class Entity extends Base\PublicEntity
 
     public function setPublicIinAttribute(array & $array)
     {
-        // Allowing only for akbar travels, irctc merchants and shared merchant account
-        $allowedMerchantIds = [
-            '62UtF084z3H6RT',
-            '6o1ohA0HNz3B2S',
-            '6z1Uc42LAxBGpl',
-            '8ST00QgEPT14cE', // IRCTC WEB
-            '8YPFnW5UOM91H7', // IRCTC Mobile
-            '8byazTDARv4Io0', // IRCTC Air Ticketing
-            '9m4CChGex4ENkR', // IRCTC FTR
-            Merchant\Preferences::MID_CUREFIT,
-            Merchant\Account::TEST_ACCOUNT,
-            Merchant\Account::SHARED_ACCOUNT,
-        ];
-
-        //
-        // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
-        // https://razorpay.slack.com/archives/C3GF5LWJK/p1525965476000128
-        // /
-        $allowedMerchantIds = array_merge($allowedMerchantIds, Merchant\Preferences::MID_ENDURANCE);
-
         // Allowing for Admin and App Auth(Priviledge)
         $app  = \App::getFacadeRoot();
         $auth = $app['basicauth'];
 
         if (($auth->isPrivilegeAuth() === false) and
-            (in_array($this->getMerchantId(), $allowedMerchantIds, true) === false) and
             ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_IIN) === false))
         {
             unset($array[self::IIN]);
