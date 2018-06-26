@@ -338,6 +338,7 @@ class Gateway extends Base\Gateway
     {
         $paymentCreatedAt = $verify->input['payment']['created_at'];
 
+        //We need transaction date in verify request to the api
         if ($verify->payment->getDate() === null)
         {
             $formattedDate =  Carbon::createFromTimestamp($paymentCreatedAt,Timezone::IST)
@@ -350,6 +351,7 @@ class Gateway extends Base\Gateway
 
         $this->setGatewaySuccess($verify);
 
+        // Sometimes  verify tnx that happens near to eod fails since it hits the  gateway server next day.
         if (($verify->gatewaySuccess === false) and
             ($this->isEodTransaction($paymentCreatedAt) === true))
         {
@@ -1043,14 +1045,7 @@ class Gateway extends Base\Gateway
     {
         $paymentTime = Carbon::createFromTimestamp($paymentCreatedAt, Timezone::IST);
 
-        $secondsUntilEod = $paymentTime->secondsUntilEndOfDay();
-
-        if ($secondsUntilEod <= self::VERIFY_WINDOW)
-        {
-            return true;
-        }
-
-        return false;
+        return ($paymentTime->secondsUntilEndOfDay() <= self::VERIFY_WINDOW);
     }
 
     public function forceAuthorizeFailed($input)
