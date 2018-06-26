@@ -372,6 +372,12 @@ class Gateway
         self::SHARP,
     ];
 
+    public static $headless = [
+        self::CYBERSOURCE,
+        self::HITACHI,
+        self::HDFC,
+    ];
+
     /**
      * Each card gateway only support specific card networks.
      * This maintains a map of gateway to card network which
@@ -1263,6 +1269,11 @@ class Gateway
     public static function supportsAsync($gateway)
     {
         return in_array($gateway, self::$asynchronous, true);
+    }
+
+    public static function supportsHeadlessBrowser($gateway)
+    {
+        return in_array($gateway, self::$headless, true);
     }
 
     public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)

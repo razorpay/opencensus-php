@@ -60,6 +60,8 @@ class Server extends Base\Mock\Server
         // $this->validateAuthInput($input);
         $VERes = $this->getVERes($input);
 
+        $this->content($VERes,'authenticate');
+
         return $this->makeXmlResponse($VERes);
     }
 
