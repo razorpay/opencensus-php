@@ -87,20 +87,20 @@ class FeaturesTest extends TestCase
     {
         $accountId = '10000000000000';
 
-        $dummy = 'dummy';
+        $noflashcheckout = 'noflashcheckout';
 
         $testData = $this->getDataToAddAccountFeatures(Mode::TEST,
             true,
-            [$dummy],
+            [$noflashcheckout],
             $accountId);
 
         $this->startTest($testData);
 
-        $this->verifyFeaturePresenceForAccounts(Mode::TEST, $accountId, [$dummy]);
+        $this->verifyFeaturePresenceForAccounts(Mode::TEST, $accountId, [$noflashcheckout]);
 
         $testData = $this->getDataToDeleteFeaturesFromEntity(Mode::TEST,
             true,
-            $dummy,
+            $noflashcheckout,
             Constants::ACCOUNT,
             $accountId);
 
@@ -633,6 +633,16 @@ class FeaturesTest extends TestCase
         }
     }
 
+    /**
+     * This function tests adding a non visible feature to a merchant account through a private auth
+     */
+    public function testAddNonVisibleFeatureToAccount()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testUpdateOnboardingResponses()
     {
         $liveMode = $this->app['basicauth']->getLiveConnection();
@@ -1120,6 +1130,8 @@ class FeaturesTest extends TestCase
         $testData['request']['url'] = '/accounts/me/features';
 
         $testData['response']['content'][0]['entity_id'] = $entityId;
+
+        $testData['response']['content'][0]['name'] = $featureNames[0];
 
         $testData['response']['content'][0]['entity_type'] = Constants::MERCHANT;
 

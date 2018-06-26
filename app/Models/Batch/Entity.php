@@ -436,6 +436,19 @@ class Entity extends Base\PublicEntity
         return $this->createdByFileUpload;
     }
 
+    public function toArrayTrace(array $fields = [], array $extra = []): array
+    {
+        // Always merges ID and MERCHANT_ID to trace fields
+        $fields = array_merge($fields, [self::ID, self::MERCHANT_ID]);
+
+        return array_merge($this->only($fields), $extra);
+    }
+
+    public function toArrayTraceAll(): array
+    {
+        return $this->attributesToArray();
+    }
+
     // ----------------------- End  Getters --------------------------
 
     // ----------------------- Setters -------------------------------

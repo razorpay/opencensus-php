@@ -29,6 +29,7 @@ use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
+use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
@@ -791,6 +792,48 @@ class Core extends Base\Core
             ->save();
     }
 
+    /**
+     * @param Request\Entity $merchantRequest
+     *
+     * @return array
+     */
+    public function getPartnerSubmissions(MerchantRequest\Entity $merchantRequest): array
+    {
+        $settings = Accessor::for($merchantRequest, Constants::PARTNER)->all();
+
+        $response = $settings->toArray();
+
+        return $response;
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @return mixed
+     * @throws BadRequestException
+     */
+    public function getPartnerApp(Entity $merchant)
+    {
+        // For pure platforms, no internal partner app is created
+        (new Validator)->validateIsPurePartner($merchant);
+
+        try
+        {
+            $app = (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
+        }
+        catch (\Exception $ex)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        return $app;
+    }
+
     public function markAsPartner(Entity $merchant, string $partnerType): Entity
     {
         (new Validator)->validateIfAlreadyPartner($merchant);
@@ -840,23 +883,9 @@ class Core extends Base\Core
      */
     public function createPartnerReferral(Entity $partner, Entity $referral)
     {
-        $validator = new Validator;
+        (new Validator)->validateReferralIsNotPartner($referral);
 
-        $validator->validateIsPurePartner($partner);
-
-        $validator->validateReferralIsNotPartner($referral);
-
-        $partnerApp = $partner->getPartnerApp();
-
-        if ($partnerApp === null)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
-                null,
-                [
-                    Entity::MERCHANT_ID => $partner->getId(),
-                ]);
-        }
+        $partnerApp = $this->getPartnerApp($partner);
 
         $referralId = $referral->getId();
 
@@ -899,21 +928,9 @@ class Core extends Base\Core
      */
     public function deletePartnerReferral(Entity $partner, Entity $referral)
     {
-        $referralId = $referral->getId();
+        $partnerApp = $this->getPartnerApp($partner);
 
-        try
-        {
-            $partnerApp = $partner->getPartnerApp();
-        }
-        catch (\Exception $ex)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
-                null,
-                [
-                    Entity::MERCHANT_ID => $partner->getId(),
-                ]);
-        }
+        $referralId = $referral->getId();
 
         $partnerAppId = $partnerApp->getId();
 
@@ -983,7 +1000,7 @@ class Core extends Base\Core
             return;
         }
 
-        $app = $merchant->getPartnerApp();
+        $app = $this->getPartnerApp($merchant);
 
         $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());
 

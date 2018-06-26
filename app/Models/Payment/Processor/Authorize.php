@@ -17,6 +17,7 @@ use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
 use RZP\Models\Card;
+use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Constants\TLD;
 use RZP\Http\BasicAuth;
@@ -33,6 +34,7 @@ use RZP\Models\Customer;
 use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
+use RZP\Models\PaymentLink;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
@@ -558,7 +560,7 @@ trait Authorize
         // international is not enabled.
         $this->verifyFeesLessThanAmount($payment);
 
-        $this->validateOfferIfApplicable($payment);
+        $this->validateOfferIfApplicable($payment, $input);
     }
 
     protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, $input)
@@ -1238,9 +1240,14 @@ trait Authorize
         }
     }
 
-    protected function validateOfferIfApplicable(Payment\Entity $payment)
+    protected function validateOfferIfApplicable(Payment\Entity $payment, array $input)
     {
-        (new Offer\Core)->validateOfferApplicableOnPayment($payment);
+        $offer = $this->offer;
+
+        if ($offer !== null)
+        {
+            (new Offer\Core)->validateOfferApplicableOnPayment($offer, $payment);
+        }
     }
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
@@ -2783,12 +2790,18 @@ trait Authorize
     {
         $this->updateLateAuthFlag($payment);
 
+        //
+        // Needs to be before capture, since disount amount
+        // is used to decide whether to capture or not
+        //
+        $this->postPaymentAuthorizeOfferProcessing($payment);
+
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
         $this->postPaymentAuthorizeSubscriptionProcessing($payment);
 
-        $this->postPaymentAuthorizeOfferProcessing($payment);
+        $this->postPaymentAuthorizePaymentLinkProcessing($payment);
 
         return $this->processAuthorizeResponse($payment);
     }
@@ -2807,13 +2820,42 @@ trait Authorize
             return;
         }
 
-        $appliedOffer = $order->getOffer();
+        $this->offer = $payment->getOffer();
+
+        if ($this->offer === null)
+        {
+            return;
+        }
 
         $discountInput = [
-            Discount\Entity::AMOUNT => $appliedOffer->getDiscount($order->getAmount()),
+            Discount\Entity::AMOUNT => $this->offer->getDiscount($order->getAmount()),
         ];
 
-        (new Discount\Service)->create($discountInput, $payment, $appliedOffer);
+        (new Discount\Service)->create($discountInput, $payment, $this->offer);
+    }
+
+    /**
+     * Post payment authorization we initiate auto capture and let payment link's core method take care of further
+     * action to be taken - e.g. update it's own entities, refund payment if this comes out as extra payment etc.
+     *
+     * @param Payment\Entity $payment
+     */
+    protected function postPaymentAuthorizePaymentLinkProcessing(Payment\Entity $payment)
+    {
+        if ($payment->hasPaymentLink() === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $this->autoCapturePayment($payment);
+        }
+        // Whether capture succeeds or fails, we let payment link's core take care of what to do (refer below method)
+        finally
+        {
+            (new PaymentLink\Core)->postPaymentCaptureAttemptProcessing($payment);
+        }
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)

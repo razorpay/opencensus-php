@@ -20,26 +20,28 @@ use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 
 trait PaymentTrait
 {
-    use EntityActionTrait;
+    use PaymentEbsTrait;
+    use PaymentFssTrait;
     use PaymentAmexTrait;
     use PaymentAtomTrait;
-    use PaymentAxisGeniusTrait;
-    use PaymentAxisMigsTrait;
-    use PaymentBilldeskTrait;
     use PaymentHdfcTrait;
-    use PaymentNetbankingTrait;
     use PaymentPaytmTrait;
     use PaymentSharpTrait;
-    use PaymentMobikwikTrait;
-    use PaymentCybersourceTrait;
-    use PaymentHitachiTrait;
     use PaymentBladeTrait;
-    use PaymentFirstDataTrait;
-    use PaymentEbsTrait;
+    use EntityActionTrait;
+    use PaymentHitachiTrait;
+    use PaymentMobikwikTrait;
+    use PaymentOlamoneyTrait;
     use PaymentCreationTrait;
-    use PaymentFssTrait;
-    use PaymentWalletAirtelMoneyTrait;
+    use PaymentAxisMigsTrait;
+    use PaymentBilldeskTrait;
+    use PaymentFirstDataTrait;
+    use PaymentAxisGeniusTrait;
+    use PaymentNetbankingTrait;
+    use PaymentFreechargeTrait;
+    use PaymentCybersourceTrait;
     use PaymentWalletAmazonpayTrait;
+    use PaymentWalletAirtelMoneyTrait;
 
     use RequestResponseFlowTrait
     {
@@ -139,6 +141,18 @@ trait PaymentTrait
         }
 
         $content = $this->getFeesForPayment($payment);
+
+        return $content;
+    }
+
+    protected function createAndGetFeesForPaymentS2S($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $content = $this->getFeesForPaymentS2S($payment);
 
         return $content;
     }
@@ -650,6 +664,19 @@ trait PaymentTrait
             'content' => $payment);
 
         $this->ba->publicAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function getFeesForPaymentS2S($payment)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/fees',
+            'content' => $payment
+        ];
 
         $content = $this->makeRequestAndGetContent($request);
 

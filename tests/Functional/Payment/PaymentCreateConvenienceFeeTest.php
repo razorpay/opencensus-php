@@ -36,11 +36,35 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $feesArray = $this->createAndGetFeesForPayment($payment);
 
-        if ($payment['amount'] === 50000)
+        if ($payment['amount'] === '50000')
         {
-            $this->assertEquals($feesArray['input']['fee'], 1173);
+            $this->assertEquals(1000, $feesArray['input']['fee']);
 
-            $this->assertEquals($feesArray['display']['tax'], 1.49);
+            $this->assertEquals(0, $feesArray['display']['tax']);
+        }
+
+        return $feesArray;
+    }
+
+    public function testFeesS2S()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $feesArray = $this->createAndGetFeesForPaymentS2S($payment);
+
+        if ($payment['amount'] === '50000')
+        {
+            $this->assertEquals(0, $feesArray['tax']);
+
+            $this->assertEquals(1000, $feesArray['fees']);
+
+            $this->assertEquals(50000, $feesArray['original_amount']);
+
+            // Checkout utilizes originalAmount but not this route
+            // TODO : Remove this when checkout stops using originalAmount
+            $this->assertArrayNotHasKey('originalAmount', $feesArray);
         }
 
         return $feesArray;

@@ -23,9 +23,6 @@ use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 
-// @todo: remove this. included in #8406.
-use Razorpay\OAuth\Application as OAuthApp;
-
 /**
  * @property Detail\Entity $merchantDetail
  * @property Methods\Entity $methods
@@ -840,18 +837,22 @@ class Entity extends Base\PublicEntity
 
     /**
      * Helper method to fetch the actual display_name for an
-     * invoice, based on merchant-defined field preference:
-     * `billing_label` or `name`
+     * invoice, based on merchant-defined field preference from merchant_detail:
+     * `business_name` or `business_dba`
      *
-     * Fallback to `billing_name` if the setting is not defined
+     * Fallback to `merchant_detail.business_name` if the invoice_label_field setting is not defined
+     *
+     * If invoice_label_field is defined but the attribute is null, use merchant.billing_label instead.
      *
      * @return mixed
      */
     public function getLabelForInvoice()
     {
-        $field = $this->getInvoiceLabelField() ?: self::BILLING_LABEL;
+        $field = $this->getInvoiceLabelField() ?: Detail\Entity::BUSINESS_NAME;
 
-        return $this->getAttribute($field);
+        $value = optional($this->merchantDetail)->getAttribute($field);
+
+        return $value ?: $this->getBillingLabel();
     }
 
     public function getAutoCaptureLateAuth()
@@ -1503,19 +1504,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PARTNER_TYPE, $partnerType);
     }
 
-    /**
-     * @todo: remove this function. included in #8406
-     *
-     * @return null|OAuthApp\Entity
-     */
-    public function getPartnerApp()
-    {
-        return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($this->getId());
-    }
-
-    /**
-     * @todo: remove this function. included in #8406
-     */
     public function isPurePlatformTypePartner(): bool
     {
         return ($this->getPartnerType() === Constants::PURE_PLATFORM);

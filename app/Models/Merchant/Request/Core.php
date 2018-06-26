@@ -202,7 +202,6 @@ class Core extends Base\Core
             switch ($status)
             {
                 case Status::REJECTED:
-                {
                     if (empty($rejectionReason) === false)
                     {
                         (new Reason\Core)->addRejectionReasons([$rejectionReason], $stateEntity);
@@ -211,24 +210,19 @@ class Core extends Base\Core
                     }
 
                     break;
-                }
 
                 case Status::ACTIVATED:
-                {
                     $this->activated($request);
 
                     break;
-                }
 
                 case Status::NEEDS_CLARIFICATION:
-                {
                     if (empty($needsClarificationText) === false)
                     {
                         $this->sendNeedsClarificationEmail($request, $needsClarificationText);
                     }
 
                     break;
-                }
             }
         });
 
@@ -247,28 +241,18 @@ class Core extends Base\Core
         switch (true)
         {
             case $request->isProductRequest():
-            {
                 $this->addFeatureIfNotEnabled($request);
-
                 break;
-            }
 
             case $request->isPartnerActivationRequest():
-            {
                 $this->markAsPartner($request);
-
                 break;
-            }
 
             case $request->isPartnerDeactivationRequest():
-            {
                 (new Merchant\Core)->unmarkAsPartner($request->merchant);
-
                 break;
-            }
 
             default:
-            {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME,
                     Entity::NAME,
@@ -276,7 +260,6 @@ class Core extends Base\Core
                         Entity::ID   => $request->getId(),
                         Entity::NAME => $request->getName(),
                     ]);
-            }
         }
     }
 
@@ -858,19 +841,13 @@ class Core extends Base\Core
         switch (true)
         {
             case $request->isProductRequest():
-            {
                 (new Feature\Core)->postOnboardingSubmissions($request->merchant, $submissions, $input[Entity::NAME]);
-
                 break;
-            }
 
             // Partner deactivation requests do not have any submissions to store
             case $request->isPartnerActivationRequest():
-            {
                 (new Merchant\Core)->postPartnerSubmissions($request, $submissions);
-
                 break;
-            }
         }
     }
 }

@@ -290,6 +290,29 @@ class PartnerTest extends OAuthTestCase
         $this->assertFalse($merchant->isPartner());
     }
 
+    public function testLinkedAccountMarkedAsPartner()
+    {
+        // Create a merchant request
+        $merchantRequest = $this->createMerchantRequest(self::ACTIVATION, true);
+
+        $this->fixtures->merchant->createAccount('100DemoAccount');
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['parent_id' => '100DemoAccount']);
+
+        // Set the admin auth
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->ba->adminAuth($liveMode);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $merchantRequestId = $merchantRequest->getPublicId();
+
+        $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
+
+        $this->startTest($testData);
+    }
+
     protected function createMerchantRequest(
         string $merchantRequestName,
         bool $createSubmission = false,

@@ -35,6 +35,22 @@ class Service extends Base\Service
         return $features->toArray();
     }
 
+    public function addAccountFeatures(array $input): array
+    {
+        $features = $input[Entity::NAMES] ?? [];
+
+        $data[Constants::FEATURES] = [];
+
+        foreach ($features as $feature)
+        {
+            $data[Constants::FEATURES][$feature] = "1";
+        }
+
+        (new Merchant\Validator)->validateVisibleFeatures($data);
+
+        return $this->addFeatures($input);
+    }
+
     public function getFeatures($routeEndpoint, $entityId)
     {
         //

@@ -9,6 +9,7 @@ use Request;
 use App;
 use View;
 
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 
@@ -226,6 +227,19 @@ class PaymentCreateController extends Controller
         return ApiResponse::json(['input' => $input,'display' => $data]);
     }
 
+    public function postPaymentFees()
+    {
+        $input = Request::all();
+
+        $this->setMerchantCallbackUrlIfApplicable($input);
+
+        $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
+
+        unset($data['originalAmount']);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Resend OTP for a payment
      */
@@ -406,6 +420,7 @@ class PaymentCreateController extends Controller
         $postFormData = $data;
         $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
         $postFormData['name'] = $merchant->getBillingLabel();
+        $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
 
         return View::make('gateway.gatewayPostForm')
                    ->with('data', $postFormData);

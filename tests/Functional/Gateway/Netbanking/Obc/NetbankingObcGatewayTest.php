@@ -59,6 +59,7 @@ class NetbankingObcGatewayTest extends TestCase
         $netbanking = $this->getDbLastEntityToArray(ConstantsEntity::NETBANKING);
 
         $this->assertTestResponse($netbanking, 'netbankingPaymentFailed');
+
     }
 
     public function testVerifyCallbackFailure()
@@ -134,14 +135,7 @@ class NetbankingObcGatewayTest extends TestCase
                 $this->verifyPayment($payment[Payment\Entity::ID]);
             });
     }
-
-    public function testransactionNotFoundAtObc()
-    {
-        $this->mockTransactionNotFoundAtObc();
-
-        $this->createPaymentFailed();
-    }
-
+    
     public function testPaymentAmountMismatch()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
@@ -193,6 +187,17 @@ class NetbankingObcGatewayTest extends TestCase
         $this->assertNotNull($payment['reference1']);
 
         $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testransactionNotFoundAtObc()
+    {
+        $payment = $this->createPaymentFailed();
+
+        $this->mockTransactionNotFoundAtObc();
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        $this->assertEquals(VerifyStatus::SUCCESS, $verify[ConstantsEntity::PAYMENT][Payment\Entity::VERIFIED]);
     }
 
     protected function createPaymentFailed()

@@ -63,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::RECEIPT,
         self::STATUS,
+        self::REFERENCE1,
     ];
 
     protected $visible = [
@@ -83,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
+        self::REFERENCE1,
         self::CREATED_AT,
         self::UPDATED_AT
     ];

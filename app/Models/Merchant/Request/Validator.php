@@ -207,18 +207,15 @@ class Validator extends Base\Validator
         switch (true)
         {
             case ($type === Type::PRODUCT):
-            {
                 if (empty($submissions) === true)
                 {
                     throw new Exception\BadRequestValidationFailureException(self::MISSING_SUBMISSIONS);
                 }
 
                 break;
-            }
 
             // Submissions are not required for partner deactivation requests
             case (($type === Type::PARTNER) and ($name === Constants::ACTIVATION)):
-            {
                 if (empty($submissions) === true)
                 {
                     throw new Exception\BadRequestValidationFailureException(self::MISSING_SUBMISSIONS);
@@ -248,12 +245,9 @@ class Validator extends Base\Validator
                 }
 
                 break;
-            }
 
             default:
-            {
                 break;
-            }
         }
     }
 
