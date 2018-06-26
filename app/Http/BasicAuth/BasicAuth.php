@@ -1442,7 +1442,7 @@ class BasicAuth
      */
     protected function checkAndSetAccountScope()
     {
-        if ($this->isAccountAuthAllowed() === false)
+        if (($this->isAccountAuthAllowed() === false) or ($this->isPartnerAuth() === true))
         {
             return null;
         }
@@ -1578,7 +1578,7 @@ class BasicAuth
             TraceCode::BAD_REQUEST_INVALID_ACCOUNT_HEADER,
             [
                 self::AUTH_TYPE  => $this->getAuthType(),
-                self::KEY_ID     => $this->getKey(),
+                self::KEY_ID     => $this->authCreds->getKey(),
                 self::ACCOUNT_ID => $accountId,
             ]);
 
