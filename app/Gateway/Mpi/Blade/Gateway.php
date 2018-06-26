@@ -613,7 +613,7 @@ class Gateway extends Base\Gateway
         unset($traceContent['Message']['VEReq']['Merchant']['password']);
 
         $this->trace->info(TraceCode::GATEWAY_ENROLL_REQUEST, [
-            'gateway' => 'blade',
+            'gateway' => 'mpi_blade',
             'payment_id' => $input['payment']['id'],
             'content' => $traceContent
         ]);

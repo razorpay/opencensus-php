@@ -341,7 +341,7 @@ class Entity
         self::WALLET_MPESA           => \RZP\Gateway\Wallet\Mpesa::class,
         self::MPI                    => \RZP\Gateway\Mpi\Base::class,
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Blade::class,
-        self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Enstage    ::class,
+        self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Enstage::class,
         self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Amazonpay::class,
 
         // heimdall
