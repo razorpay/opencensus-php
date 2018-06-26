@@ -387,6 +387,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BAD_REQUEST_INVALID_API_KEY                   = 'BAD_REQUEST_INVALID_API_KEY';
     const BAD_REQUEST_INVALID_API_SECRET                = 'BAD_REQUEST_INVALID_API_SECRET';
     const BAD_REQUEST_API_SECRET_NOT_PROVIDED           = 'BAD_REQUEST_API_SECRET_NOT_PROVIDED';
+    const BAD_REQUEST_INVALID_CLIENT_KEY                = 'BAD_REQUEST_INVALID_CLIENT_KEY';
     const BAD_REQUEST_INVALID_ACCOUNT_HEADER            = 'BAD_REQUEST_INVALID_ACCOUNT_HEADER';
 
     const RUNTIME_ERROR                                 = 'RUNTIME_ERROR';

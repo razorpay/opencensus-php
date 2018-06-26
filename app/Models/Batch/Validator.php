@@ -5,7 +5,6 @@ namespace RZP\Models\Batch;
 use App;
 use RZP\Base;
 use RZP\Models\Invoice;
-use RZP\Http\BasicAuth;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;

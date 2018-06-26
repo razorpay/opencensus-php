@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
@@ -394,5 +395,218 @@ return [
         ],
     ],
 
+    'testPartnerAuthOnJsonpRoute' => [
+        'request'   => [
+            'url'     => '/emi',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'HDFC' => [
+                    'min_amount' => 500000,
+                    'plans' => [
+                        '9' => 12,
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 
+    'testPartnerAuthOnJsonpRouteWrongClientId' => [
+        'request'   => [
+            'url'     => '/emi',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY,
+                ]
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testPartnerAuthOnJsonpRouteWrongMerchantForClient' => [
+        'request'   => [
+            'url'     => '/emi',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testPartnerAuthOnJsonpRouteApiKey' => [
+        'request'   => [
+            'url'     => '/emi',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY,
+                ]
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testRequestWithPartnerHeadersClientCreds' => [
+        'request'   => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testRequestWithPartnerNoSecret' => [
+        'request'   => [
+            'url'     => '/customers',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED,
+                ]
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testRequestWithPartnerHeadersClientCredsWrongMode' => [
+        'request'   => [
+            'url'     => '/customers',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY,
+                ]
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testRequestWithPartnerHeadersWrongClientCreds' => [
+        'request'   => [
+            'url'     => '/customers',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET,
+                ]
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testRequestWithPartnerInactiveMerchantLiveMode' => [
+        'request'   => [
+            'url'     => '/customers',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ]
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\LogicException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+        ],
+    ],
+
+    'testRequestWithPartnerHeadersClientCredsNotPartner' => [
+        'request'   => [
+            'url'     => '/customers',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testPartnerRequestOnNonMappedMerchant' => [
+        'request'   => [
+            'url'     => '/customers',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
 ];

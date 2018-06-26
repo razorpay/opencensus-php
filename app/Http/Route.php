@@ -856,7 +856,6 @@ final class Route
         'mock_netbanking_payment',
         'mock_netbanking_payment_get',
         'mock_card_fss_payment',
-        'mock_ebs_payment',
         'mock_sharp_payment_post',
         'mock_sharp_payment_get',
         'mock_sharp_payment_submit',
@@ -1891,6 +1890,7 @@ final class Route
         'sms_callback',
         'checkout_public',
         'mock_hdfc_3dsecure',
+        'mock_ebs_payment',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_get',
@@ -2275,6 +2275,14 @@ final class Route
         if (($key === '') and ($this->ba->isKeylessPublicAuth() === true))
         {
             $parameters['x_entity_id'] = $this->ba->getKeylessXEntityId();
+        }
+        // For a partner token authenticated route, keep the token in the public URL
+        if (($key === '') and ($this->ba->isPartnerAuth() === true))
+        {
+            $parts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $this->ba->getPublicKey());
+
+            $key                         = $parts[0];
+            $parameters['account_id']    = $this->ba->getAccountId();
         }
         // Else continue with the key_id flow
         else if ($key === '')
