@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Error;
 use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -679,6 +680,36 @@ class Service extends Base\Service
 
         return $payment->toArrayPublic();
     }
+
+    public function getPaymentFlows(array $input)
+    {
+        $merchant = $this->merchant;
+
+        (new Payment\Validator)->validateInput('get_flows', $input);
+
+        $iinEntity = $this->repo->iin->find($input['iin']);
+
+        $data = [];
+
+        if (empty($iinEntity) === true)
+        {
+            return $data;
+        }
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::ATM_PIN_AUTH) === true)
+        {
+            $data[Constants::PIN] = $iinEntity->isDebitPin();
+        }
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::OTPELF) === true)
+        {
+            $data[Constants::OTP] = (($iinEntity->isHeadLessOtp()) or
+                                     ($iinEntity->isOtp()));
+        }
+
+        return $data;
+    }
+
 
     /**
      * We only return the payment status in case of an async

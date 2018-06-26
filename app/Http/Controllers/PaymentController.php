@@ -32,6 +32,16 @@ class PaymentController extends Controller
         return ApiResponse::json($payments);
     }
 
+    public function getPaymentFlows()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getPaymentFlows($input);
+
+        return ApiResponse::json($data);
+    }
+
+
     public function getVerify($id)
     {
         $data = $this->service()->verify($id);

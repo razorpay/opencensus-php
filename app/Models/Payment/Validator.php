@@ -131,6 +131,10 @@ class Validator extends Base\Validator
         'transfers.*.on_hold_until'  => 'sometimes|epoch',
     ];
 
+    protected static $getFlowsRules = [
+        'iin'                       => 'required|numeric|digits:6',
+    ];
+
     protected static $pspAmountLimit = [
         'upi'       => 2000000,
     ];
