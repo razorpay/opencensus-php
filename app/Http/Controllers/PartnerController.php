@@ -37,16 +37,4 @@ class PartnerController extends Controller
 
         return ApiResponse::json($response);
     }
-
-    /**
-     * @return \Illuminate\Http\Response
-     */
-    public function bulkCreateReferrals()
-    {
-        $input = $this->input;
-
-        $response = $this->service()->bulkCreatePartnerReferrals($input);
-
-        return ApiResponse::json($response);
-    }
 }

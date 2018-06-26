@@ -819,7 +819,6 @@ final class Route
 
         // Partner routes
         'partners_referral_create'                 => ['post',     'partners/{id}/referrals',                        'PartnerController@createReferral'                                  ],
-        'partners_bulk_create_referrals'           => ['post',     'partners/referrals/bulk',                        'PartnerController@bulkCreateReferrals'                             ],
         'partners_referral_delete'                 => ['delete',   'partners/{id}/referrals/{referralId}',           'PartnerController@deleteReferral'                                  ],
     ];
 
@@ -1560,7 +1559,6 @@ final class Route
         // Partners
         'partners_referral_create',
         'partners_referral_delete',
-        'partners_bulk_create_referrals',
     ];
 
     public static $routePermission = [
@@ -1881,7 +1879,6 @@ final class Route
 //        'partners_referral_delete'                 => Permission::EDIT_PARTNERS,
         'partners_referral_create'                 => '*',
         'partners_referral_delete'                 => '*',
-        'partners_bulk_create_referrals'           => '*',
     ];
 
     public static $direct = [
