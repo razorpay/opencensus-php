@@ -46,16 +46,18 @@ abstract class Driver
     }
 
     /**
-     * Modifies values in dimensions. For a list of labels only allows white-
-     * listed values or else uses default. This way we ensure that labels with
-     * high cardinality are not causing issues in monitoring system and we
-     * only instrument where monitoring is needed (e.g. for big merchants etc).
-     *
+     * Modifies dimensions in some ways as commented below
      * @param  array $dimensions
      * @return array
      */
     public function getModifiedDimensions(array $dimensions = []): array
     {
+        //
+        // Modifies values in dimensions. For a list of labels only allows white-listed values or else uses default.
+        // This way we ensure that labels with high cardinality are not causing issues in monitoring system and we
+        // only instrument where monitoring is needed (e.g. for big merchants etc).
+        //
+
         $defaultLabelValue = $this->config['default_label_value'];
         $whitelistedLabelValues = $this->config['whitelisted_label_values'];
 
@@ -67,6 +69,9 @@ abstract class Driver
                 $dimensions[$label] = $defaultLabelValue;
             }
         }
+
+        // Adds instance tag in each metrics because our current infra setup is in such a way that we loose this label
+        $dimensions['instance'] = gethostname();
 
         return $dimensions;
     }
