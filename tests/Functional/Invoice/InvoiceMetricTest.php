@@ -81,7 +81,6 @@ class InvoiceMetricTest extends TestCase
 
     public function testCreateInvoiceAndAssertMetricsSent()
     {
-        $this->markTestSkipped();
         $expectedHttpMetricTags = $this->testData[__FUNCTION__ . 'ExpectedMetricTags'];
 
         $mock = $this->createMetricsMock();

@@ -57,13 +57,13 @@ trait OAuthTrait
         $application = $this->createOAuthApplication(['type' => 'partner']);
 
         return $application->clients()
-            ->get()
-            ->filter(
-                function($client, $key) use ($env)
-                {
-                    return $client->getEnvironment() === $env;
-                })
-            ->first();
+                           ->get()
+                           ->filter(
+                            function($client, $key) use ($env)
+                            {
+                                return $client->getEnvironment() === $env;
+                            })
+                           ->first();
     }
 
     public function generateOAuthAccessToken(array $attributes = [], string $env = 'dev')

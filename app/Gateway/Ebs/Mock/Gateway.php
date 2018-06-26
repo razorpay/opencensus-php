@@ -25,7 +25,7 @@ class Gateway extends Ebs\Gateway
     {
         $gateway = $this->gateway;
 
-        if (is_null($route))
+        if (is_null($route) === true)
         {
             $route = 'mock_' . $gateway . '_payment';
         }

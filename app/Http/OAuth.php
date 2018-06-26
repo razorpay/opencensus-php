@@ -204,7 +204,7 @@ class OAuth
         // Set merchant for the current request
         // TODO: Move this to a common auth class
         //
-        $this->ba->authCreds->setMerchantById($response[OAuthToken::MERCHANT_ID]);
+        $this->ba->setMerchantById($response[OAuthToken::MERCHANT_ID]);
 
 
 

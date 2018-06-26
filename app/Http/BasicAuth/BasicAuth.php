@@ -343,6 +343,13 @@ class BasicAuth
         return $this->authCreds->validateAndSetKeyId($key);
     }
 
+    /**
+     * This function checks if it's API key auth or client auth
+     * and sets the context and initializes authCreds accordingly
+     * The authCreds class holds all the actual credential details.
+     *
+     * @param string $key
+     */
     protected function checkAndSetCreds(string $key)
     {
         $keyRegex = '/^rzp_(test|live)_(partner)_[a-zA-Z0-9]{14}$/';
@@ -916,8 +923,7 @@ class BasicAuth
             $this->trace->info(
                 TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, [self::KEY_ID => $this->getKey()]);
 
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
         $device = $this->repo->device->findByAuthToken($deviceToken);
@@ -927,11 +933,9 @@ class BasicAuth
         if (($device === null) or
             ($keyEntity->merchant->getId() !== $device->merchant->getId()))
         {
-            $this->trace->info(
-                TraceCode::BAD_REQUEST_INVALID_API_SECRET, [self::KEY_ID => $this->getKey()]);
+            $this->trace->info(TraceCode::BAD_REQUEST_INVALID_API_SECRET, [self::KEY_ID => $this->getKey()]);
 
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
         }
     }
 
@@ -1222,6 +1226,7 @@ class BasicAuth
         {
             $this->creds[self::PUBLIC_KEY] = $authCreds->creds[AuthCreds::PUBLIC_KEY];
         }
+
         return $this->creds[self::PUBLIC_KEY];
     }
 
@@ -1310,6 +1315,19 @@ class BasicAuth
 
             $this->merchant = $this->authCreds->getMerchant();
         }
+    }
+
+    /**
+     * Sets $merchant instance var value by given $merchantId.
+     * Called by OAuth flow. OAuth server response contains the same($merchantId).
+     *
+     * @param string $merchantId
+     */
+    public function setMerchantById(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->setMerchant($merchant);
     }
 
     protected function setType($type)
@@ -1447,9 +1465,7 @@ class BasicAuth
             return null;
         }
 
-        $account = $this->repo
-                        ->merchant
-                        ->find($this->getAccountId());
+        $account = $this->repo->merchant->find($this->getAccountId());
 
         if (($account === null) or
             ($this->validateAccountForCurrentAuthType($account) === false))
@@ -1481,14 +1497,12 @@ class BasicAuth
 
         if ($accountId === '')
         {
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_PARTNER_ACCOUNT_ID_REQUIRED);
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_PARTNER_ACCOUNT_ID_REQUIRED);
         }
 
         if ($this->isPartnerAuthAllowed() === false)
         {
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED);
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED);
         }
 
         $account = $this->repo
@@ -1568,8 +1582,7 @@ class BasicAuth
         $this->trace->info(
             TraceCode::BAD_REQUEST_INVALID_API_KEY, [self::KEY_ID => $this->getKey()]);
 
-        return ApiResponse::unauthorized(
-            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
+        return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 
     protected function invalidAccountId(string $accountId)
@@ -1582,8 +1595,7 @@ class BasicAuth
                 self::ACCOUNT_ID => $accountId,
             ]);
 
-        return ApiResponse::unauthorized(
-            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID);
+        return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID);
     }
 
     protected function isKeyBlank()
@@ -1591,6 +1603,18 @@ class BasicAuth
         return ($this->authCreds->creds['key'] === '');
     }
 
+    /**
+     * The secret used for signing can be one of the following:
+     * 1. Api key secret for key auth
+     * 2. OAuth app's client secret for Bearer/PublicOAuthToken auth
+     * 3. Dummy partner app's client secret for partner auth
+     *
+     * @param  $str
+     *
+     * @return string
+     *
+     * @throws Exception\LogicException
+     */
     public function sign($str)
     {
         $key = $this->getKeyEntity();

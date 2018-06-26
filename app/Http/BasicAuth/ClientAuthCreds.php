@@ -47,7 +47,7 @@ class ClientAuthCreds extends AuthCreds
                 self::$clientModes[$this->getMode()]
             );
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->error(TraceCode::BAD_REQUEST_INVALID_CLIENT_KEY, [self::CLIENT_ID => $this->getKey()]);
         }

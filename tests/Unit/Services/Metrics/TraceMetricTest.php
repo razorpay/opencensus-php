@@ -22,7 +22,6 @@ class TraceMetricTest extends TestCase
      */
     public function testTracesAreSendingMetrics()
     {
-        $this->markTestSkipped();
         $this->createMetricsMock()
              ->expects($this->exactly(3))
              ->method('count')

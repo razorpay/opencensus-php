@@ -52,7 +52,7 @@ class MerchantIpFilter
     {
         $requestIp = $request->getClientIp();
 
-        $merchant = $this->ba->authCreds->getMerchant();
+        $merchant = $this->ba->getMerchant();
 
         $mode = $this->ba->getMode();
 

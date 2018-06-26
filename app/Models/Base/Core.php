@@ -135,7 +135,7 @@ class Core
         // This function updates the mode and app['rzp.mode'] properties
         // of the BasicAuth class that has been initialized.
         //
-        $this->app['basicauth']->authCreds->setModeAndDbConnection($mode);
+        $this->app['basicauth']->setModeAndDbConnection($mode);
 
         $this->mode = $mode;
     }
