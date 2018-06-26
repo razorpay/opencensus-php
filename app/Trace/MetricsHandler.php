@@ -14,13 +14,17 @@ use RZP\Constants\Metric;
 class MetricsHandler extends AbstractProcessingHandler
 {
     /**
-     * Following attributes of log record is pushed as dimension to metric
+     * Following attributes of log record is used for metric dimension. It is an dot notation list to pull out specific
+     * keys(nested) from trace record & then get used as metric dimensions.
      */
-    const RECORD_METRIC_DIMENSIONS = [
-        Metric::LABEL_TRACE_CHANNEL,
-        Metric::LABEL_TRACE_CODE,
-        Metric::LABEL_TRACE_LEVEL,
-        Metric::LABEL_TRACE_LEVEL_NAME,
+    const METRIC_DIMENSION_KEYS = [
+        'channel',
+        'code',
+        'level',
+        'level_name',
+        'mode',
+        'context.code',
+        'request.merchant_id',
     ];
 
     /**
@@ -28,15 +32,23 @@ class MetricsHandler extends AbstractProcessingHandler
      */
     protected function write(array $record)
     {
-        $dimensions = array_only($record, self::RECORD_METRIC_DIMENSIONS);
 
+        $filtered = array_only(array_dot($record), self::METRIC_DIMENSION_KEYS);
+
+        $dimensions[Metric::LABEL_TRACE_CHANNEL]      = $filtered['channel'];
+        $dimensions[Metric::LABEL_TRACE_CODE]         = $filtered['code'];
+        $dimensions[Metric::LABEL_TRACE_LEVEL]        = $filtered['level'];
+        $dimensions[Metric::LABEL_TRACE_LEVEL_NAME]   = $filtered['level_name'];
+        $dimensions[Metric::LABEL_RZP_MODE]           = $filtered['mode'];
         //
-        // Adds api's route name & mode as well in list of dimensions
-        // We use optional() method to get route name because in tests and async
-        // job there won't be a current route() associated with Request.
+        // Multiple times actual exception is wrapped in general exception e.g. RECOVERABLE_EXCEPTION. Following is the
+        // underlying exception/trace code.
         //
-        $dimensions[Metric::LABEL_ROUTE]    = optional(Request::route())->getName();
-        $dimensions[Metric::LABEL_RZP_MODE] = $record['mode'];
+        $dimensions[Metric::LABEL_TRACE_CONTEXT_CODE] = $filtered['context.code'] ?? $filtered['code'];
+        $dimensions[Metric::LABEL_RZP_MERCHANT_ID]    = $filtered['request.merchant_id'];
+
+        // Adds request route name, using optional() because async job wont' have a route instance
+        $dimensions[Metric::LABEL_ROUTE] = optional(Request::route())->getName();
 
         Metrics::count(Metric::TRACES_TOTAL, 1, $dimensions);
     }

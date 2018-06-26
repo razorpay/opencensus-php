@@ -70,7 +70,10 @@ abstract class Driver
             }
         }
 
-        // Adds instance tag in each metrics because our current infra setup is in such a way that we loose this label
+        //
+        // Adds instance tag in each metrics because our current infra setup is in such a way that we loose this label.
+        // Prometheus has honor_lable configuration set to true for this. Later we will have this removed.
+        //
         $dimensions['instance'] = gethostname();
 
         return $dimensions;

@@ -37,6 +37,7 @@ class Metric
     const LABEL_ASYNC_JOB_NAME                  = 'async_job_name';
     const LABEL_TRACE_CHANNEL                   = 'channel';
     const LABEL_TRACE_CODE                      = 'code';
+    const LABEL_TRACE_CONTEXT_CODE              = 'context_code';
     const LABEL_TRACE_LEVEL                     = 'level';
     const LABEL_TRACE_LEVEL_NAME                = 'level_name';
 
