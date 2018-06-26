@@ -6,6 +6,7 @@ use Mail;
 use Config;
 use ApiResponse;
 use Carbon\Carbon;
+use Razorpay\OAuth\Application;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -24,10 +25,15 @@ use RZP\Models\Admin\Action;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
+use RZP\Exception\LogicException;
+use RZP\Models\Settings\Accessor;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
+use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Merchant\Request as MerchantRequest;
 
 class Core extends Base\Core
 {
@@ -762,5 +768,165 @@ class Core extends Base\Core
                            ->all();
 
         return $emails;
+    }
+
+    /**
+     * Saves data from partner activation/deactivation requests into the settings table.
+     *
+     * @param Request\Entity $request
+     * @param array          $submissions
+     */
+    public function postPartnerSubmissions(MerchantRequest\Entity $request, array $submissions)
+    {
+        $parterType = $submissions[Entity::PARTNER_TYPE];
+
+        $data[Entity::PARTNER_TYPE] = $parterType;
+
+        $this->trace->info(
+            TraceCode::PARTNER_REQUEST_SUBMITTED,
+            [
+                Entity::PARTNER_TYPE       => $parterType,
+                MerchantRequest\Entity::ID => $request->getId(),
+            ]);
+
+        Accessor::for ($request, Constants::PARTNER)
+            ->upsert($data)
+            ->save();
+    }
+
+    /**
+     * @param Request\Entity $merchantRequest
+     *
+     * @return array
+     */
+    public function getPartnerSubmissions(MerchantRequest\Entity $merchantRequest): array
+    {
+        $settings = Accessor::for($merchantRequest, Constants::PARTNER)->all();
+
+        $response = $settings->toArray();
+
+        return $response;
+    }
+
+    /**
+     * @param  Entity $merchant
+     * @return null|OAuthApp\Entity
+     */
+    public function getPartnerApp(Entity $merchant)
+    {
+        return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
+    }
+
+    /**
+     * @param Request\Entity $merchantRequest
+     *
+     * @return Entity
+     * @throws LogicException
+     */
+    public function markAsPartner(MerchantRequest\Entity $merchantRequest): Entity
+    {
+        $submissions = $this->getPartnerSubmissions($merchantRequest);
+
+        if (empty($submissions[Entity::PARTNER_TYPE]) === true)
+        {
+            throw new LogicException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+                ErrorCode::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+                $submissions);
+        }
+
+        $partnerType = $submissions[Entity::PARTNER_TYPE];
+
+        $merchant = $merchantRequest->merchant;
+
+        $validator = new Validator;
+
+        $validator->validateIsNotLinkedAccount($merchant);
+
+        $validator->validateIfAlreadyPartner($merchant);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType)
+        {
+            $merchant->setPartnerType($partnerType);
+
+            $this->repo->saveOrFail($merchant);
+
+            $this->createPartnerApp($merchant);
+        });
+
+        return $merchant;
+    }
+
+    /**
+     * Sets the Partner type attribute as null
+     *
+     * @param Entity $merchant
+     *
+     * @return Entity
+     */
+    public function unmarkAsPartner(Entity $merchant): Entity
+    {
+        (new Validator)->validateIfNotAPartner($merchant);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->deletePartnerApp($merchant);
+
+            $merchant->setPartnerType();
+
+            $this->repo->saveOrFail($merchant);
+
+        });
+
+        return $merchant;
+    }
+
+    /**
+     * @param Entity $merchant
+     */
+    public function createPartnerApp(Entity $merchant)
+    {
+        if ($merchant->isPurePlatformTypePartner() === true)
+        {
+            // Don't create a dummy application for pure platforms
+            return;
+        }
+
+        $name = $merchant->getName();
+
+        // Default value is required because website is a required field to create oauth applications
+        $website = $merchant->getWebsite() ?? 'https://www.razorpay.com';
+
+        $logoUrl = $merchant->getLogoUrl();
+
+        $appInput = [
+            'name'     => $name,
+            'website'  => $website,
+            'logo_url' => $logoUrl,
+        ];
+
+        $app = app('authservice')->createApplication($appInput, $merchant->getId(), Application\Type::PARTNER);
+
+        return $app;
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    public function deletePartnerApp(Entity $merchant)
+    {
+        if ($merchant->isPurePlatformTypePartner() === true)
+        {
+            // A dummy application for pure platforms does not exist
+            return;
+        }
+
+        $app = $this->getPartnerApp($merchant);
+
+        $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());
+
+        return $app;
     }
 }

@@ -38,9 +38,10 @@ trait PaymentTrait
     use PaymentFirstDataTrait;
     use PaymentAxisGeniusTrait;
     use PaymentNetbankingTrait;
+    use PaymentFreechargeTrait;
     use PaymentCybersourceTrait;
-    use PaymentWalletAirtelMoneyTrait;
     use PaymentWalletAmazonpayTrait;
+    use PaymentWalletAirtelMoneyTrait;
 
     use RequestResponseFlowTrait
     {

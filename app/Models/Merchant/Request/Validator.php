@@ -2,31 +2,28 @@
 
 namespace RZP\Models\Merchant\Request;
 
+use App;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Feature;
+use RZP\Models\Merchant;
+use RZP\Error\PublicErrorDescription;
 
 class Validator extends Base\Validator
 {
+    const INVALID_NAME                  = 'Invalid request name';
     const INVALID_TYPE                  = 'Invalid request type';
     const INVALID_INPUT                 = 'Invalid input';
-    const INVALID_FEATURE               = 'Invalid feature';
     const MISSING_SUBMISSIONS           = 'Missing submissions in request';
     const INVALID_STATUS_MESSAGE        = 'Invalid status';
     const INVALID_STATUS_CHANGE_MESSAGE = 'Invalid status change';
 
     protected static $createRules = [
-        Entity::NAME        => 'required|string|max:40|custom',
+        Entity::NAME        => 'required|string|max:40',
         Entity::TYPE        => 'required|string|max:25|custom',
         Entity::STATUS      => 'required|max:30',
         Entity::MERCHANT_ID => 'required|string|size:14',
-    ];
-
-    // Required for the API which not only creates the entity but also form submissions if any.
-    protected static $createMerchantRequestRules = [
-        Entity::NAME           => 'required|string|max:40|custom',
-        Entity::TYPE           => 'required|string|max:25|custom',
-        Constants::SUBMISSIONS => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -64,18 +61,6 @@ class Validator extends Base\Validator
                 self::INVALID_STATUS_MESSAGE,
                 Entity::STATUS,
                 $traceData);
-        }
-    }
-
-    public function validateName($attribute, $value)
-    {
-        if (in_array($value, array_keys(Feature\Constants::$featureValueMap)) === false)
-        {
-            $traceData = [
-                'input_name' => $value
-            ];
-
-            throw new Exception\BadRequestValidationFailureException(self::INVALID_FEATURE, Entity::NAME, $traceData);
         }
     }
 
@@ -124,11 +109,6 @@ class Validator extends Base\Validator
      */
     public function validateType($attribute, $value)
     {
-        if (empty($value) === true)
-        {
-            return;
-        }
-
         if (defined(Type::class . '::' . strtoupper($value)) === false)
         {
             $traceData = [
@@ -140,38 +120,134 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Validate the name of feature being a product feature, if request type is Product
+     * Handle the validations before creating a new merchant request
+     *
+     * @param array $input
+     */
+    public function validateCreateMerchantRequest(array $input)
+    {
+        $submissions = $input[Constants::SUBMISSIONS] ?? [];
+
+        unset($input[Constants::SUBMISSIONS]);
+
+        $this->validateInput('create', $input);
+
+        $type = $input[Entity::TYPE];
+
+        $name = $input[Entity::NAME];
+
+        $this->validateName($type, $name);
+
+        $this->validateAdminAccessIfPartnerRequest($type, $name);
+
+        $this->validateSubmissions($input, $submissions);
+    }
+
+    /**
+     * Validate the name based on the type attribute
      *
      * @param $type
      * @param $name
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function validateTypeAndProduct($type, $name)
+    public function validateName(string $type, string $name)
     {
-        $productFeatures = Feature\Constants::PRODUCT_FEATURES;
-
-        if (($type === Type::PRODUCT) and
-            (in_array($name, $productFeatures, true) === false))
+        if (in_array($name, Constants::$typeNamesMap[$type], true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "Invalid product: $name for request type : $type");
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME,
+                Entity::NAME,
+                [
+                    Entity::NAME                  => $name,
+                    Merchant\Entity::PARTNER_TYPE => $type,
+                ]);
         }
     }
 
     /**
-     * Validate existence of submissions in case it is a Product type request
+     * Do not allow the merchants to raise requests for marking and unmarking themselves as partners.
+     * The same route can be used to submit the product activation requests.
      *
-     * @param array  $input
+     * @param string $type
+     * @param string $name
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function validateSubmissionsForProductType(array $input)
+    public function validateAdminAccessIfPartnerRequest(string $type, string $name)
     {
-        if (($input[Entity::TYPE] === Type::PRODUCT) and
-            (isset($input[Constants::SUBMISSIONS]) === false))
+        $isAdminAuth = app('basicauth')->isAdminAuth();
+
+        if (($type === Type::PARTNER) and ($isAdminAuth === false))
         {
-            throw new Exception\BadRequestValidationFailureException(self::MISSING_SUBMISSIONS);
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
+                null,
+                [
+                    Entity::NAME                  => $name,
+                    Merchant\Entity::PARTNER_TYPE => $type,
+                ]);
+        }
+    }
+
+    /**
+     * Validates submissions based on the merchant request type
+     *
+     * @param array  $input
+     * @param array  $submissions
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateSubmissions(array $input, array $submissions)
+    {
+        $type = $input[Entity::TYPE];
+
+        $name = $input[Entity::NAME];
+
+        switch (true)
+        {
+            case ($type === Type::PRODUCT):
+                if (empty($submissions) === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(self::MISSING_SUBMISSIONS);
+                }
+
+                break;
+
+            // Submissions are not required for partner deactivation requests
+            case (($type === Type::PARTNER) and ($name === Constants::ACTIVATION)):
+                if (empty($submissions) === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(self::MISSING_SUBMISSIONS);
+                }
+
+                if (empty($submissions[Merchant\Entity::PARTNER_TYPE]) === true)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_REQUIRED,
+                        Merchant\Entity::PARTNER_TYPE,
+                        [
+                            Constants::SUBMISSIONS => $submissions,
+                        ]);
+                }
+
+                $partnerType = $submissions[Merchant\Entity::PARTNER_TYPE];
+
+                if (in_array($partnerType, Merchant\Constants::$partnerTypes, true) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                        Merchant\Entity::PARTNER_TYPE,
+                        [
+                            Constants::SUBMISSIONS        => $submissions,
+                            Merchant\Entity::PARTNER_TYPE => $partnerType,
+                        ]);
+                }
+
+                break;
+
+            default:
+                break;
         }
     }
 

@@ -16,6 +16,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_AUTH_SUCCESS                          = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_PENDING                          = 'PAYMENT_AUTH_PENDING';
     const PAYMENT_AUTH_FAILURE                          = 'PAYMENT_AUTH_FAILURE';
+    const PAYMENT_AUTH_ESIGN_FAILURE                    = 'PAYMENT_AUTH_ESIGN_FAILURE';
     const PAYMENT_AUTHORIZED_NULL                       = 'PAYMENT_AUTHORIZED_NULL';
     const PAYMENT_CALLBACK_REQUEST                      = 'PAYMENT_CALLBACK_REQUEST';
     const PAYMENT_REFUND_REQUEST                        = 'PAYMENT_REFUND_REQUEST';
@@ -280,7 +281,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_LINK_PAYMENT_REFUND_REQUEST           = 'PAYMENT_LINK_PAYMENT_REFUND_REQUEST';
     const PAYMENT_LINK_PAYMENT_REFUND_HANDLED           = 'PAYMENT_LINK_PAYMENT_REFUND_HANDLED';
     const PAYMENT_LINK_PAYMENT_REFUND_ERROR             = 'PAYMENT_LINK_PAYMENT_REFUND_ERROR';
-    const PAYMENT_LINK_POST_PAYMENT_CAPTURE_ATTEMPT     = 'PAYMENT_LINK_POST_PAYMENT_CAPTURE_ATTEMPT';
+    const PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS          = 'PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS';
+    const PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS_SKIPPED  = 'PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS_SKIPPED';
     const PAYMENT_LINK_UPDATED_POST_PAYMENT_CAPTURE     = 'PAYMENT_LINK_UPDATED_POST_PAYMENT_CAPTURE';
     const PAYMENT_LINK_DEACTIVATE_REQUEST               = 'PAYMENT_LINK_DEACTIVATE_REQUEST';
     const PAYMENT_LINK_DEACTIVATED                      = 'PAYMENT_LINK_DEACTIVATED';
@@ -1103,6 +1105,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_CREDS_CACHE_SET                           = 'AWS_CREDS_CACHE_SET';
 
     const SERVER_ERROR_LOG_RISK                         = 'SERVER_ERROR_LOG_RISK';
+
+    // Partners trace codes
+    const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

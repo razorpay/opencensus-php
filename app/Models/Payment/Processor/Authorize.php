@@ -2847,6 +2847,31 @@ trait Authorize
             return;
         }
 
+        //
+        // If for some reason(e.g. multiple payment callback request) the payment here is found to be already captured
+        // we just return and don't execute further processing because that must have already happened during first
+        // successful request.
+        //
+        // Payment capture happens in a MUTEX. In case of multiple requests one is bound to fail (with e.g. another
+        // payment operation is in progress) and in case one is captured successfully, it will throw validation error
+        // saying 'payment is already captured'. In both cases our finally block below, for the 2nd request will attempt
+        // to refund the payment because it's an exception. In refund call as well, we have separate methods for
+        // refunding authorized and captured payment and so in both cases it will fail there. Additionally, a refund
+        // also requires the same lock and will fail if another capture operation is in progress.
+        //
+        if ($payment->hasBeenCaptured() === true)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS_SKIPPED,
+                [
+                    'payment_id'      => $payment->getId(),
+                    'payment_status'  => $payment->getStatus(),
+                    'payment_link_id' => $payment->paymentLink->getId(),
+                ]);
+
+            return;
+        }
+
         try
         {
             $this->autoCapturePayment($payment);

@@ -72,11 +72,10 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                 document.getElementById('invoice-status-container').removeChild(document.getElementById('desktop-container'));
             }
         }
-
         function toggleTrimDescription(toTrim) {
-            var data = window.RZP_DATA.data;
-            desc = data.payment_link.description;
-            var charLimit, pseudoChar, button = '';
+            var data = window.RZP_DATA.data,
+            desc = data.payment_link.description,
+            charLimit, pseudoChar, button = '';
 
             if (checkIsDesktop()) {
                 charLimit = 200;
@@ -86,25 +85,32 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                 pseudoChar = 35;
             }
 
-            if (desc && (desc.length > charLimit)) {
-                if (toTrim) {
-                    var newLines = 0;
-                    newLines = (desc.match(new RegExp("\n", "g")) || []).length;
+            if (desc && toTrim) {
+                var visLength = 0;
 
-                    if (newLines) {
-                        for(let i = 0; i < newLines; i++) {
-                            if ((charLimit - i * pseudoChar) < 0.6 * charLimit) {
-                                desc = desc.substr(0, charLimit - i*pseudoChar);
-                                break;
-                            }
-                        }
+                desc =  desc.trim();
+                var descLength = desc.length;
+
+                var i = 0;
+                for(; i < desc.length ; i++) {
+                    if (desc[i] === '\n') {
+                        visLength += pseudoChar;
                     } else {
-                        desc = desc.substr(0,charLimit);
+                        visLength++;
                     }
 
-                    desc =  desc.trim();
+                    if (visLength > charLimit) {
+                        i = i - 1;
+                        break;
+                    }
+                }
+
+                desc= desc.substr(0, i + 1);
+                desc =  desc.trim();
+
+                if (desc.length < descLength) {
                     desc += '...';
-                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button'
+                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
                 }
             }
 
@@ -256,7 +262,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                                 @endif
                                 <div class="inv-details">
                                     <div id="inv-details-main">
-                                        <div class="inv-for">
+                                        <div class="inv-for" style="overflow-wrap: break-word;">
                                             {{$payment_page_data['title']}}
                                         </div>
                                         @if(isset($payment_page_data['description']))
@@ -368,7 +374,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                         @endif
                         <div class="inv-details">
                             <div id="inv-details-main">
-                                <div class="inv-for">
+                                <div class="inv-for" style="overflow-wrap: break-word;">
                                     {{$payment_page_data['title']}}
                                 </div>
                                 @if(isset($payment_page_data['description']))
@@ -431,10 +437,13 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
             var color = data.merchant.brand_color || '#168AFA';
             document.getElementById('chkout-header').style['background-color'] = color;
 
-
             toggleTrimDescription(true);
 
             function fullPaid(respPaymentId) {
+                if (!respPaymentId) {
+                    return;
+                }
+
                 var amount = data.payment_link.amount;
                 document.getElementById('pay-title').innerHTML = 'AMOUNT PAID';
 
@@ -442,12 +451,13 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                     document.getElementById('scs-box').style.display = 'block';
                     var successNote = "You have successfully paid ₹ " + (amount/100).toFixed(2);
 
-                    successNote += '<div> Payment ID: ' + respPaymentId + ' </div>'
+                    successNote += '<div> Payment ID: ' + respPaymentId + ' </div>';
 
                     document.getElementById('scs-msg').innerHTML = successNote;
 
                     document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
                 } else {
+                    document.getElementById('mob-payment-btn').style.display = 'none';
                     document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
                     document.getElementById('payment_id').style.display = 'block';
                     document.querySelector('#payment_id .val').innerHTML = respPaymentId;
@@ -520,11 +530,11 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                                 );
                             }
 
-                            if (ga && ga.length) {
+                            if (window.ga && window.ga.length) {
                                 var sessionTDiff = (new Date()).getTime() - window.t0;
                                 var paymentSuccessAction = 'Payment Successful';
 
-                                ga('send', 'event', 'Payment Page Hosted', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
+                                window.ga('send', 'event', 'Payment Page Hosted', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
                                     hitCallback: function() {
                                         return fullPaid(response.razorpay_payment_id); // To display the latest payment id
                                     }

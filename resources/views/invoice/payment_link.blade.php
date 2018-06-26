@@ -72,11 +72,10 @@ $invoice_status                 = $invoice_data['status'];
                 document.getElementById('invoice-status-container').removeChild(document.getElementById('desktop-container'));
             }
         }
-
         function toggleTrimDescription(toTrim) {
-            var data = window.RZP_DATA.data;
-            desc = data.invoice.description;
-            var charLimit, pseudoChar, button = '';
+            var data = window.RZP_DATA.data,
+            desc = data.invoice.description,
+            charLimit, pseudoChar, button = '';
 
             if (checkIsDesktop()) {
                 charLimit = 200;
@@ -86,25 +85,32 @@ $invoice_status                 = $invoice_data['status'];
                 pseudoChar = 35;
             }
 
-            if (desc && (desc.length > charLimit)) {
-                if (toTrim) {
-                    var newLines = 0;
-                    newLines = (desc.match(new RegExp("\n", "g")) || []).length;
+            if (desc && toTrim) {
+                var visLength = 0;
 
-                    if (newLines) {
-                        for(let i = 0; i < newLines; i++) {
-                            if ((charLimit - i * pseudoChar) < 0.6 * charLimit) {
-                                desc = desc.substr(0, charLimit - i*pseudoChar);
-                                break;
-                            }
-                        }
+                desc =  desc.trim();
+                var descLength = desc.length;
+
+                var i = 0;
+                for (; i < desc.length ; i++) {
+                    if (desc[i] === '\n') {
+                        visLength += pseudoChar;
                     } else {
-                        desc = desc.substr(0,charLimit);
+                        visLength++;
                     }
 
-                    desc =  desc.trim();
+                    if (visLength > charLimit) {
+                        i = i - 1;
+                        break;
+                    }
+                }
+
+                desc= desc.substr(0, i + 1);
+                desc =  desc.trim();
+
+                if (desc.length < descLength) {
                     desc += '...';
-                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button'
+                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
                 }
             }
 
@@ -580,14 +586,14 @@ $invoice_status                 = $invoice_data['status'];
             document.getElementById('hist-modal').className = 'show';
             showOverlay('overlay-hist');
 
-            ga('send', 'event', 'PL Hosted Page', 'Click - Show Payment History', undefined, data.invoice.payments.length);
+            window.ga('send', 'event', 'PL Hosted Page', 'Click - Show Payment History', undefined, data.invoice.payments.length);
         }
 
         function closePayHist() {
             document.getElementById('hist-modal').className = '';
             hideOverlay('overlay-hist');
 
-            ga('send', 'event', 'PL Hosted Page', 'Click - Close Payment History', undefined, data.invoice.payments.length);
+            window.ga('send', 'event', 'PL Hosted Page', 'Click - Close Payment History', undefined, data.invoice.payments.length);
         }
     </script>
 @endif
@@ -633,11 +639,11 @@ $invoice_status                 = $invoice_data['status'];
                         );
                     }
 
-                    if (ga && ga.length) {
+                    if (window.ga && window.ga.length) {
                         var sessionTDiff = (new Date()).getTime() - window.t0;
                         var paymentSuccessAction = data.invoice.partial_payment ? 'Payment Successful - Partial' : 'Payment Successful';
 
-                        ga('send', 'event', 'PL Hosted Page', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
+                        window.ga('send', 'event', 'PL Hosted Page', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
                             hitCallback: function() {
                                 return location.reload(); // To display the latest payment id
                             }
