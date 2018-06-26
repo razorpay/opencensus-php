@@ -408,12 +408,12 @@ const WelcomeScreen = ({ openWizard }) => {
       <div class="welcome-illustration" />
       <div class="short-content">
         <p>
-          Simply submit your business details and upload relavant proofs to
+          Simply submit your business details and upload relevant proofs to
           start accepting payments.
         </p>
         <p>
           Once you submit the form, it may take upto {activationDuration} to get
-          you account activated.
+          your account activated.
         </p>
 
         <Button.Primary onClick={openWizard}>
