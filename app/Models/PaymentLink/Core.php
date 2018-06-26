@@ -204,7 +204,7 @@ class Core extends Base\Core
         $paymentLink = $payment->paymentLink;
 
         $this->trace->info(
-            TraceCode::PAYMENT_LINK_POST_PAYMENT_CAPTURE_ATTEMPT,
+            TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS,
             [
                 'payment_id' => $payment->getId(),
                 'payment_status' => $payment->getStatus(),
@@ -455,13 +455,20 @@ class Core extends Base\Core
 
         try
         {
+            //
+            // We use existing payment entity's status attribute to decide which method to call for refund.
+            // Additionally while calling the refund{X}Payment() method we pass reloaded payment entity because reload
+            // doesn't happen in the called method. This is an additional level of check for concurrent issues. The
+            // payment's refund will fail if the status has changed in between. We can't do reload before that because
+            // then condition check will happen on new status.
+            //
             if ($payment->isAuthorized() === true)
             {
-                $refund = $processor->refundAuthorizedPayment($payment);
+                $refund = $processor->refundAuthorizedPayment($payment->reload());
             }
             else if ($payment->isCaptured() === true)
             {
-                $refund = $processor->refundCapturedPayment($payment);
+                $refund = $processor->refundCapturedPayment($payment->reload());
             }
             else
             {
