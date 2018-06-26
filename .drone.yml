@@ -176,7 +176,7 @@ pipeline:
       - server_cert_kluster_api
       - client_cert_kluster_api
     user: drone
-    cluster: prod
+    cluster: kluster-api
     auth_mode: client-cert
     kind: daemonset
     daemonset:
