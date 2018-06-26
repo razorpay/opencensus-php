@@ -464,12 +464,6 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED, $responseStatus);
         }
 
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-        $paymentAmount  = (float) $content[ResponseFields::AMOUNT];
-        $actualAmount   = number_format($paymentAmount, 2, '.', '');
-
-        $this->assertAmount($expectedAmount, $actualAmount);
-
         return [];
     }
 
