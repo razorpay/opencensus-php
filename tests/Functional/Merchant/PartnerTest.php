@@ -130,19 +130,7 @@ class PartnerTest extends OAuthTestCase
 
         $merchant = $merchantRequest->merchant;
 
-        // Mock create application call to auth service
-        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
-
-        $createParams = [
-            'name'     => $merchant->getName(),
-            'website'  => $merchant->getWebsite(),
-            'logo_url' => null,
-            'type'     => self::PARTNER,
-        ];
-
-        $requestParams = array_merge($requestParams, $createParams);
-
-        $this->setAuthServiceMockDetail('applications', 'POST', $requestParams);
+        $this->mockAuthServiceCreateApplication($merchant);
 
         // Set the admin auth
         $liveMode = $this->app['basicauth']->getLiveConnection();
@@ -485,6 +473,10 @@ class PartnerTest extends OAuthTestCase
 
     public function testCreateBatchOfPartnerReferralsType()
     {
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->mockAuthServiceCreateApplication($merchant);
+
         $rows = $this->testData[__FUNCTION__ . 'FileRows'];
 
         $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
@@ -518,8 +510,9 @@ class PartnerTest extends OAuthTestCase
 
         $this->assertTrue($merchant->isPartner());
 
-        $merchant = $this->getDbEntities('merchant_access_map' ,[], 'test');
-        s($merchant);
+        $merchantAccessEntities = $this->getDbEntities('merchant_access_map' ,[], 'test');
+
+        $this->assertCount(2, $merchantAccessEntities);
     }
 
     protected function getDummyPartnerAttributes(array $attributes = []): array
@@ -551,5 +544,22 @@ class PartnerTest extends OAuthTestCase
     protected function markMerchantAsPartner(string $merchantId, string $partnerType)
     {
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => $partnerType]);
+    }
+
+    protected function mockAuthServiceCreateApplication(Merchant\Entity $merchant)
+    {
+        // Mock create application call to auth service
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $createParams = [
+            'name'     => $merchant->getName(),
+            'website'  => $merchant->getWebsite(),
+            'logo_url' => null,
+            'type'     => self::PARTNER,
+        ];
+
+        $requestParams = array_merge($requestParams, $createParams);
+
+        $this->setAuthServiceMockDetail('applications', 'POST', $requestParams);
     }
 }
