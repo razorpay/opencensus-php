@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Card;
+use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 use RZP\Constants;
@@ -698,12 +699,12 @@ class Service extends Base\Service
 
         if ($merchant->isFeatureEnabled(Feature\Constants::ATM_PIN_AUTH) === true)
         {
-            $data[Constants::PIN] = $iinEntity->isDebitPin();
+            $data[IIN\Constants::PIN] = $iinEntity->isDebitPin();
         }
 
         if ($merchant->isFeatureEnabled(Feature\Constants::OTPELF) === true)
         {
-            $data[Constants::OTP] = (($iinEntity->isHeadLessOtp()) or
+            $data[IIN\Constants::OTP] = (($iinEntity->isHeadLessOtp()) or
                                      ($iinEntity->isOtp()));
         }
 
