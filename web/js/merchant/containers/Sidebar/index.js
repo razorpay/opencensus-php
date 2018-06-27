@@ -209,6 +209,7 @@ export default class Sidebar extends Component {
                     featureEnabled="Invoice"
                     apiFeatureEnabled="subscriptions"
                     notMyRole="sellerapp"
+                    isNew={true}
                   />
                   <MainNavLink
                     label="Payment Links"
