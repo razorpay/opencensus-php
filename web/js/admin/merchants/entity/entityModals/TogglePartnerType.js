@@ -12,7 +12,7 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 const RequestExistenceMessage = ({ requestName }) => (
   <div>
-    Request is already pending for {requestName} of this merchant as partner
+    Request for partner account {requestName} is already submitted
     <div>
       <button class="btn" onClick={closeModal}>
         Ok
@@ -54,7 +54,7 @@ export default ({ props, merchantId }) => {
       <RequestExistenceMessage requestName={requestName} />
     ) : (
       <div>
-        Are you sure, you want to unmark merchant as partner?
+        Are you sure you want to unmark merchant as partner?
         <div class="action-buttons">
           <AsyncButton
             text="Yes"
@@ -92,7 +92,7 @@ export default ({ props, merchantId }) => {
     );
 
   return (
-    <ModalContent header={(isPartner ? 'Unm' : 'M') + 'ark as Partner'}>
+    <ModalContent header={(isPartner ? 'Unmark' : 'Mark') + ' as Partner'}>
       {isPartner ? renderPartnerDeactivation() : renderPartnerActivation()}
     </ModalContent>
   );

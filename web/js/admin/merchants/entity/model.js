@@ -1,4 +1,4 @@
-import { observable, action, toJS } from 'mobx';
+import { observable, action } from 'mobx';
 
 import { notifySuccess } from 'common/modal';
 import BaseModel from 'model/base';
@@ -94,9 +94,8 @@ export default class Model extends BaseModel {
       }
 
       if (user.permissions.find(perm => perm === 'view_merchant_requests')) {
-        this.fetchPartnerActivationRequest(
-          !!data.partner_type ? 'deactivation' : 'activation'
-        );
+        const requestType = !!data.partner_type ? 'deactivation' : 'activation';
+        this.fetchPartnerActivationRequest(requestType);
       }
     });
   }
@@ -239,10 +238,11 @@ export default class Model extends BaseModel {
       )
     ).then(data => {
       if (data) {
+        // partnerRequests coud be either for activation or deactivation
+        // hence in [action + 'Pending'] below, action could be activationPending or deactivationPending
         this.merchant.partnerRequests[action + 'Pending'] =
           !!data.status &&
           ['under_review', 'needs_clarification'].indexOf(data.status) > -1;
-        // ...this.merchant.partnerRequests,
       }
     });
   };

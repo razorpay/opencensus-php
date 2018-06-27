@@ -694,7 +694,8 @@ const ActionsList = ({ model, merchantId, actions }) => {
         {(!isDetailsLoading || !isPartnerRequestsLoading) && (
           <ShowWhen>
             <div onClick={actions.TogglePartnerType}>
-              {(merchant.details.partner_type ? 'Unm' : 'M') + 'ark As Partner'}
+              {(merchant.details.partner_type ? 'Unmark' : 'Mark') +
+                ' as partner'}
             </div>
           </ShowWhen>
         )}
