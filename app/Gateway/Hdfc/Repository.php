@@ -105,6 +105,7 @@ class Repository extends Base\Repository
             'amount'                => $requestData['amt'],
             'currency'              => $requestData['currencycode'],
             'error_code'            => $error['code'],
+            'error_code2'           => $error['code'],
             'error_text'            => $error['text'],
             'enroll_result'         => $enrollResult,
             'status'                => Payment\Status::ENROLL_FAILED
@@ -199,6 +200,7 @@ class Repository extends Base\Repository
             'status'        => Payment\Status::AUTH_NOT_ENROLL_FAILED,
             'result'        => $result,
             'error_code'    => $error['code'],
+            'error_code2'   => $error['code'],
             'error_text'    => $error['text']
         ];
 
@@ -223,6 +225,7 @@ class Repository extends Base\Repository
             'status'        => Payment\Status::AUTH_ENROLL_FAILED,
             'result'        => $result,
             'error_code'    => $error['code'],
+            'error_code2'   => $error['code'],
             'error_text'    => $error['text']
         ];
 
@@ -240,6 +243,7 @@ class Repository extends Base\Repository
             'amount'                => $request['amt'],
             'currency'              => $request['currencycode'],
             'error_code'            => $error['code'],
+            'error_code2'           => $error['code'],
             'error_text'            => $error['text'],
             'status'                => Payment\Status::AUTH_RECURRING_FAILED
          ];
@@ -338,6 +342,7 @@ class Repository extends Base\Repository
             'gateway_transaction_id'    => $requestData['transid'],
             'amount'                    => $requestData['amt'],
             'error_code'                => $error['code'],
+            'error_code2'               => $error['code'],
             'error_text'                => $errorText,
             'action'                    => $action,
             'status'                    => $status,
