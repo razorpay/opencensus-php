@@ -1775,7 +1775,9 @@ class Service extends Base\Service
 
     /**
      * Creates submerchant User and associates with the submerchant as owner.
-     * @param array $input
+     *
+     * @param string $merchantId
+     * @param array  $input
      *
      * @return array
      */
@@ -1800,18 +1802,20 @@ class Service extends Base\Service
 
         $this->attachSubMerchantOwner($subMerchantUser['id'], $subMerchant);
 
-        (new User\Service)->sendConfirmationMail($subMerchantUser['id']);
+        (new User\Service)->postResetPassword(['email' => $subMerchantUser['email']]);
 
         return $subMerchantUser;
     }
 
     public function formatUserCreationData(array $input, Merchant\Entity $subMerchant)
     {
+        $dummyPass = str_random(20);
+
         return [
             User\Entity::NAME                  => $subMerchant->getName(),
             User\Entity::EMAIL                 => $input['email'],
-            User\Entity::PASSWORD              => $input['password'],
-            User\Entity::PASSWORD_CONFIRMATION => $input['password_confirmation'],
+            User\Entity::PASSWORD              => $dummyPass,
+            User\Entity::PASSWORD_CONFIRMATION => $dummyPass,
             User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
         ];
     }
@@ -1836,10 +1840,43 @@ class Service extends Base\Service
     {
         $referrer = $subMerchant->getReferrer();
 
-        if ((empty($referrer) === true) or ($referrer !== $aggregatorMerchantId))
+        $referrerEmptyOrNotSame = (empty($referrer) === true) or ($referrer !== $aggregatorMerchantId);
+
+        if ($referrerEmptyOrNotSame === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FORBIDDEN);
+            return;
         }
+
+        if ($aggregatorMerchantId->isNonPurePlatformTypePartner() === true)
+        {
+            if ($this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchantId) === true)
+            {
+                return;
+            }
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+    }
+
+    /**
+     * This function checks for a mapping between the partner merchant's dummy app from
+     * auth database and the submerchant. This is stored in the `merchant_access_map` table
+     * on API side.
+     *
+     * @param  string $merchantId
+     * @param  string $partnerId
+     *
+     * @return bool
+     */
+    public function isPartnerMerchantMapped(string $merchantId, string $partnerId): bool
+    {
+        $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+        $app = $this->core()->getPartnerApp($partner);
+
+        $mapping = (new AccessMap\Repository)
+            ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), AccessMap\Entity::APPLICATION);
+
+        return (empty($mapping) === false);
     }
 }

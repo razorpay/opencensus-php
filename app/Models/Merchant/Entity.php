@@ -1508,4 +1508,9 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getPartnerType() === Constants::PURE_PLATFORM);
     }
+
+    public function isNonPurePlatformTypePartner(): bool
+    {
+        return (($this->isPartner() === true) and ($this->getPartnerType() !== Constants::PURE_PLATFORM));
+    }
 }

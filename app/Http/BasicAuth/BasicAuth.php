@@ -1518,20 +1518,14 @@ class BasicAuth
 
         $this->authCreds->setAndCheckMerchantActivatedForLive($account);
 
-        if ($this->isPartnerMerchantMapped($this->authCreds->getMerchant()->getId(), $this->getPartnerMerchantId()) === false)
+        $merchantId = $this->authCreds->getMerchant()->getId();
+
+        $partnerId = $this->getPartnerMerchantId();
+
+        if ((new Merchant\Service)->isPartnerMerchantMapped($merchantId, $partnerId) === false)
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
         }
-    }
-
-    protected function isPartnerMerchantMapped(string $merchantId, string $partnerId)
-    {
-        $app = (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($partnerId);
-
-        $mapping = (new Merchant\AccessMap\Repository)
-                        ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), 'application');
-
-        return (empty($mapping) === false);
     }
 
     protected function isPartnerAuthAllowed(): bool

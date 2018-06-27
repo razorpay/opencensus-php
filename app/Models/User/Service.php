@@ -359,7 +359,9 @@ class Service extends Base\Service
     }
 
     /**
-     * @param array $input
+     * @param  array $input
+     *
+     * @return array
      *
      * @throws Exception\BadRequestException
      */
@@ -386,6 +388,9 @@ class Service extends Base\Service
             ];
 
             (new Core)->changePassword($user, $changePasswordData);
+
+            // Password reset via mail essentially confirms the email.
+            $this->confirm($user->getId());
         }
 
         return ['success' => true];
