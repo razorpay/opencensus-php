@@ -100,10 +100,15 @@ export default class EditMerchant extends Component {
       return;
     }
 
+    body.convert_currency = body.convert_currency || null;
+
     return fetch({
       url: '/admin/api/live/merchants/' + this.props.merchantId,
       method: 'put',
       data: body,
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
       .then(data => {
         if (data) {
@@ -300,13 +305,14 @@ export default class EditMerchant extends Component {
             defaultValue={details.auto_capture_late_auth ? '1' : '0'}
           />
 
-          {details.convert_currency != null ? (
-            <SwitchField
-              label="Convert Currency"
-              name="convert_currency"
-              defaultValue={details.convert_currency ? '1' : '0'}
-            />
-          ) : null}
+          <SelectField
+            name="convert_currency"
+            label="Convert Currency"
+            defaultValue={details.convert_currency === false ? '0' : ''}
+          >
+            <option value="" />
+            <option value="0">False</option>
+          </SelectField>
 
           <div class="field">
             <label>Groups</label>
