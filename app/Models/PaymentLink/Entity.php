@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\User;
-use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -55,7 +54,7 @@ class Entity extends Base\PublicEntity
     const REQUEST_PARAMS     = 'request_params';
 
     /**
-     * expiry_by has to be atleast 15 mins from current timestamp
+     * expire_by has to be atleast 15 minutes from current timestamp
      */
     const MIN_EXPIRY_SECS    = 900;
 
@@ -146,6 +145,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
+        self::AMOUNT            => null,
+        self::CURRENCY          => null,
         self::EXPIRE_BY         => null,
         self::TIMES_PAYABLE     => null,
         self::TIMES_PAID        => 0,
@@ -178,9 +179,14 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Getters ------------------------------
 
-    public function getAmount(): int
+    public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
     }
 
     public function getStatus(): string
@@ -287,6 +293,7 @@ class Entity extends Base\PublicEntity
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------
+
     public function setStatus(string $status)
     {
         Status::checkStatus($status);
@@ -307,6 +314,11 @@ class Entity extends Base\PublicEntity
     public function setShortUrl(string $url)
     {
         $this->setAttribute(self::SHORT_URL, $url);
+    }
+
+    public function setCurrency(string $currency = null)
+    {
+        $this->setAttribute(self::CURRENCY, $currency);
     }
 
     public function incrementTimesPaid()
