@@ -458,12 +458,15 @@ trait Authorize
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             [
-                'payment_id'      => $payment->getId(),
-                'payment_created' => $paymentCreatedTime,
-                'verify_bucket'   => $payment->getVerifyBucket(),
-                'authorized_at'   => $currentTime,
-                'time_difference' => $currentTime - $paymentCreatedTime,
-                'caller'          => $this->getVerifyCaller(),
+                'payment_id'          => $payment->getId(),
+                'payment_created'     => $paymentCreatedTime,
+                'verify_bucket'       => $payment->getVerifyBucket(),
+                'authorized_at'       => $currentTime,
+                'time_difference'     => $currentTime - $paymentCreatedTime,
+                'caller'              => $this->getVerifyCaller(),
+                'error_code'          => $payment->getErrorCode(),
+                'internal_error_code' => $payment->getInternalErrorCode(),
+                'gateway'             => $payment->getGateway(),
             ]);
 
         $this->segment->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED);
