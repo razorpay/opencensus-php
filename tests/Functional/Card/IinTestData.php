@@ -83,7 +83,7 @@ return [
 
     'testGetPaymentOtpFlow' => [
         'request'  => [
-            'url'     => '/payment_flows',
+            'url'     => '/payment/flows',
             'content' => [
                 'iin' => '112333',
             ],
