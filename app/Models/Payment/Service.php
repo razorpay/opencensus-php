@@ -11,12 +11,10 @@ use RZP\Exception;
 use RZP\Error;
 use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
 use RZP\Models\Base;
-use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Card;
-use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 use RZP\Constants;
@@ -690,14 +688,7 @@ class Service extends Base\Service
 
         $iinEntity = $this->repo->iin->find($input['iin']);
 
-        $data = [];
-
-        if (empty($iinEntity) === true)
-        {
-            return $data;
-        }
-
-        $data = $iinEntity->getMerchantFlows($merchant);
+        $data = $merchant->getPaymentFlows($iinEntity);
 
         return $data;
     }

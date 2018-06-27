@@ -436,6 +436,13 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ISSUER);
     }
 
+    public function getFlows()
+    {
+        $iin = $this->iinRelation;
+
+        return $this->merchant->getPaymentFlows($iin);
+    }
+
     public function setPublicIssuerAttribute(array & $array)
     {
         // Allowing only for policy bazaar and shared merchant account
@@ -463,13 +470,6 @@ class Entity extends Base\PublicEntity
         {
             unset($array[self::IIN]);
         }
-    }
-
-    public function setPublicFlowsAttribute(array & $array)
-    {
-        $merchant = $this->merchant;
-
-        $array[self::FLOWS] = $this->iinRelation->getMerchantFlows($merchant);
     }
 
     public function setPublicExpiryMonthAttribute(array & $array)
@@ -678,7 +678,8 @@ class Entity extends Base\PublicEntity
             self::EXPIRY_MONTH => $this->getExpiryMonth(),
             self::EXPIRY_YEAR  => $this->getExpiryYear(),
             self::EMI          => $this->getEmi(),
-            self::ISSUER       => $this->getIssuer()
+            self::ISSUER       => $this->getIssuer(),
+            self::FLOWS        => $this->getFlows()
         ];
 
         return $attributes;
