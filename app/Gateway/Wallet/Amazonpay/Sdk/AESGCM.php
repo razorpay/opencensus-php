@@ -80,6 +80,14 @@ final class AESGCM
         return [$C, $T];
     }
 
+    private static function assertTrue(bool $bool, string $msg)
+    {
+        if ($bool !== true)
+        {
+            throw new \Exception($msg);
+        }
+    }
+
     /**
      * @param string      $K          Key encryption key
      * @param string      $key_length Key length
