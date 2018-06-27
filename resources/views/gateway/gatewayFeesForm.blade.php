@@ -129,14 +129,8 @@
   </head>
   <body>
     <form action='{{$url}}' method='post'>
-      @foreach ($input as $key=>$value)
-        @if (is_array($value))
-          @foreach ($value as $key2=>$value2)
-            <input type='hidden' name='{{$key}}[{{$key2}}]' value='{{$value2}}'>
-          @endforeach
-        @else
+      @foreach ($input_flattened as $key=>$value)
           <input type='hidden' name='{{$key}}' value='{{$value}}'>
-        @endif
       @endforeach
       <div id='receipt'>
         <h2 style='font-weight: normal'>Fees Breakup</h2>
