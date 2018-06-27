@@ -8,6 +8,7 @@ import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
 import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
 import { updatePLInReduxList } from 'merchant/modules/invoices/list';
+import { keysToSentence } from 'common/util';
 
 @connect(state => ({ ...state.invoice, ...state.session }), {
   ...InvoiceActions,
@@ -152,6 +153,14 @@ export default class InvoiceDetailContainer extends Component {
             });
           })
           .catch(({ errors }) => {
+            if (
+              !errors ||
+              (errors instanceof Array === true &&
+                (!errors.length || !errors[0]))
+            ) {
+              errors = 'Some network error has occurred';
+            }
+
             this.props.showNotification({
               type: 'error',
               message: errors,
@@ -183,7 +192,7 @@ export default class InvoiceDetailContainer extends Component {
 
           this.props.showNotification({
             type: 'success',
-            message: `${this.props.invoice.id} successfully Updated`,
+            message: `${keysToSentence(data)} updated successfully`,
           });
 
           return resp;

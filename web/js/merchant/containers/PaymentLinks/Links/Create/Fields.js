@@ -12,6 +12,7 @@ export default [
       placeholder: '0.00',
       required: true,
       addonBefore: '₹',
+      autoFocus: true,
       validator: val => {
         if (!isAmount(val)) {
           const decimal = val && val.split('.');
@@ -27,7 +28,7 @@ export default [
     {
       name: 'partial_payment',
       fieldLabel: (
-        <b>
+        <span>
           Enable Partial Payment
           <a
             class="btn-link m-l"
@@ -35,9 +36,9 @@ export default [
             target="_blank"
             onClick={trackHelpClick}
           >
-            What's this?
+            (What's this?)
           </a>
-        </b>
+        </span>
       ),
       _cmp: Input.Check,
       _autoRenderImpure: true,

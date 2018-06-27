@@ -9,6 +9,7 @@ export default [
     placeholder: '0.00',
     required: true,
     addonBefore: '₹',
+    autoFocus: true,
     validator: val => {
       if (!isAmount(val)) {
         const decimal = val && val.split('.');

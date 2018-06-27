@@ -25,7 +25,7 @@ export default class EditNotes extends React.Component {
         notes: onChangeNotes(pairs),
       })
       .then(resp => {
-        if (resp.data) {
+        if (resp && resp.data) {
           // Handle failed case..
           this.setState({
             notes,

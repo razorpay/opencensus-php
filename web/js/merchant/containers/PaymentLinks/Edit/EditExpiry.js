@@ -55,7 +55,12 @@ export default class EditExpiry extends React.Component {
   render() {
     let content = (
       <React.Fragment>
-        <Time value={this.props.value} format="DD MMM YYYY, hh:mm a" />
+        {this.props.value ? (
+          <Time value={this.props.value} format="DD MMM YYYY, hh:mm a" />
+        ) : (
+          'No Expiry'
+        )}
+
         <Button.Transparent
           onClick={this.makeEditable}
           class="Button--Link"
@@ -141,7 +146,7 @@ export default class EditExpiry extends React.Component {
                         : Math.floor(this.state.expire_by / 1000),
                   })
                   .then(resp => {
-                    if (resp.data) {
+                    if (resp && resp.data) {
                       this.setState(this.resetState());
                     }
                   });

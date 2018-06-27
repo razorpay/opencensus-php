@@ -71,7 +71,7 @@ export default class EditReceipt extends React.Component {
                     receipt: this.state.receipt,
                   })
                   .then(resp => {
-                    if (resp.data) {
+                    if (resp && resp.data) {
                       this.setState(this.resetState());
                     }
                   });

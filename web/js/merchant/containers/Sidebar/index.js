@@ -209,7 +209,7 @@ export default class Sidebar extends Component {
                     featureEnabled="Invoice"
                     apiFeatureEnabled="subscriptions"
                     notMyRole="sellerapp"
-                    isNew={true}
+                    isNew
                   />
                   <MainNavLink
                     label="Payment Links"
@@ -221,7 +221,7 @@ export default class Sidebar extends Component {
                     icon="i i-payment-pages text-warm"
                     to={routes.paymentpages}
                     featureEnabled="paymentpages"
-                    isNew={true}
+                    isNew
                   />
                   <MainNavLink
                     label="Route"

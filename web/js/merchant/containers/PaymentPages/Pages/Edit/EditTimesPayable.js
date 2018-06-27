@@ -32,7 +32,7 @@ export default class EditTimesPayable extends React.Component {
   render() {
     let content = (
       <React.Fragment>
-        {this.state.timesPayable || <span class="text-danger">No Limit</span>}
+        {this.state.timesPayable || 'No Limit'}
         <Button.Transparent
           onClick={this.makeEditable}
           class="Button--Link"
@@ -125,7 +125,7 @@ export default class EditTimesPayable extends React.Component {
                         : Number(this.state.timesPayable),
                   })
                   .then(resp => {
-                    if (resp.data) {
+                    if (resp && resp.data) {
                       this.setState(this.resetState());
                     }
                   });

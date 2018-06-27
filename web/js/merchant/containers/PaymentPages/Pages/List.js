@@ -211,7 +211,7 @@ export default class PaymentPagesContainer extends ListContainer {
                   <EntityItemRow id={item.id} key={item.id}>
                     <td>
                       <NavLink to={`/paymentpages/${item.id}`}>
-                        <code>{item.title}</code>
+                        {item.title}
                       </NavLink>
                     </td>
                     <td>

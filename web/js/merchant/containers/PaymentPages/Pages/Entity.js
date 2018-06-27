@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import { updatePPInReduxList } from 'merchant/modules/invoices/list';
+import { keysToSentence } from 'common/util';
 
 import {
   fetchPaymentPageEntity,
@@ -374,7 +375,7 @@ export default class PaymentPagesEntity extends React.Component {
 
           this.props.showNotification({
             type: 'success',
-            message: `${this.state.paymentPageEntity.id} successfully Updated`,
+            message: `${keysToSentence(data)} updated successfully`,
           });
 
           this.setState({
@@ -470,7 +471,7 @@ export default class PaymentPagesEntity extends React.Component {
                     class="btn btn-primary btn-sm"
                     onClick={this.openShareView}
                   >
-                    Send URL
+                    Share URL
                   </button>
                 )}
               </div>
@@ -546,7 +547,7 @@ export default class PaymentPagesEntity extends React.Component {
                 />
 
                 <EntityDetailRow
-                  label="Receipt"
+                  label="Receipt No."
                   value={() => (
                     <EditReceipt
                       value={paymentPageEntity.receipt}

@@ -113,7 +113,7 @@ export default class EditDescription extends React.Component {
                     description: this.state.description,
                   })
                   .then(resp => {
-                    if (resp.data) {
+                    if (resp && resp.data) {
                       this.setState(this.resetState());
                     }
                   });

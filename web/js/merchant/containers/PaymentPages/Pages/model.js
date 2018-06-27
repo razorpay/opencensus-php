@@ -7,6 +7,15 @@ export function createPaymentPage(reqPayload) {
   reqPayload.expire_by &&
     (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
 
+  if (reqPayload.title) {
+    // It is required field. Safe check.
+    reqPayload.title = reqPayload.title.trim();
+  }
+
+  if (reqPayload.description) {
+    reqPayload.description = reqPayload.description.trim();
+  }
+
   return merchantFetch({
     url: 'payment_links',
     method: 'post',

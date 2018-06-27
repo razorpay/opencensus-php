@@ -204,11 +204,7 @@ export default props => {
                       <EntityDetailRow
                         label="Partial Payment"
                         value={() => (
-                          <div
-                            class={
-                              isPartialPayment ? 'text-success' : 'text-danger'
-                            }
-                          >
+                          <div>
                             {isPartialPayment ? 'Enabled' : 'Disabled'}
                             {isPaymentLinksV2Enabled &&
                               isIssued && (
@@ -278,7 +274,7 @@ export default props => {
                 </EntityDetailRow>
 
                 <EntityDetailRow
-                  label="Receipt"
+                  label="Receipt No."
                   value={
                     isPaymentLinksV2Enabled && isIssued
                       ? () => (
@@ -320,12 +316,15 @@ export default props => {
                             trackerFn={trackDetailViewEdits}
                           />
                         )
-                      : () => (
-                          <Time
-                            value={invoice.expire_by}
-                            format="DD MMM YYYY, hh:mm a"
-                          />
-                        )
+                      : () =>
+                          invoice.expire_by ? (
+                            <Time
+                              value={invoice.expire_by}
+                              format="DD MMM YYYY, hh:mm a"
+                            />
+                          ) : (
+                            'No Expiry'
+                          )
                   }
                 />
 

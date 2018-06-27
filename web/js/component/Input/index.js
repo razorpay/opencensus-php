@@ -217,14 +217,22 @@ export default class Field extends React.Component {
   blur = e => {
     this.props.onBlur && this.props.onBlur(e);
     this.setState({ focus: false });
+
+    /*
+    * Setting mature shows the error. However, mature is done only when the field is touched and also, blurred.
+    * So, error on mature is shown only when it has touched + blurred once.
+    * */
+    if (this.state.touched) {
+      this.setState({ mature: true });
+    }
   };
 
   change = e => {
     this.valid();
     this.props.onChange && this.props.onChange(e);
 
-    if (!this.state.mature) {
-      this.setState({ mature: true });
+    if (!this.state.mature || !this.state.touched) {
+      this.setState({ touched: true });
     }
 
     this.updateInfo(e); // On focus, it must display information based on some value of self / other field.
@@ -583,7 +591,11 @@ Field.PairList = PairList;
 Field.EditablePairsList = EditablePairsList;
 
 const ToCalendar = _ => (
-  <CalendarPicker postSelectionValue={val => val.endOf('day')} {..._} />
+  <CalendarPicker
+    class="disable-past-year"
+    postSelectionValue={val => val.endOf('day')}
+    {..._}
+  />
 );
 
 Field.CalendarPicker = CalendarPicker;
