@@ -58,11 +58,12 @@ class Notifier extends Base\Core
             ]);
 
         $mailPayload = (new ViewSerializer($paymentLink))->serializeForInternal();
-        $paymentRequestMail    = new PaymentRequest($mailPayload, $email);
+
+        $mailable = new PaymentRequest($mailPayload, $email);
 
         try
         {
-            Mail::send($paymentRequestMail);
+            Mail::send($mailable);
         }
         catch (\Throwable $ex)
         {

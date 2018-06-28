@@ -12,7 +12,16 @@ use RZP\Mail\Base\Mailable;
  */
 class PaymentRequest extends Mailable
 {
+    /**
+     * Payload contains payment_link, merchant & other few vars to be used in mail template
+     * @var array
+     */
     protected $mailPayload;
+
+    /**
+     * Recipient email address
+     * @var string
+     */
     protected $toEmail;
 
     public function __construct(array $mailPayload, string $toEmail)
@@ -20,7 +29,7 @@ class PaymentRequest extends Mailable
         parent::__construct();
 
         $this->mailPayload = $mailPayload;
-        $this->toEmail      = $toEmail;
+        $this->toEmail     = $toEmail;
     }
 
     protected function addRecipients()

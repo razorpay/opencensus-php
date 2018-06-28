@@ -123,12 +123,10 @@ class ViewSerializer extends Base\Core
     /**
      * Adds additional attributes ONLY to be used internally in various flows. E.g. merchant side mails, which requires
      * attributes besides hosted attributes, which is basically public user view attributes, etc.
-     *
      * @param array $serialized
      */
     protected function addAdditionalAttributesForInternal(array & $serialized)
     {
-        // Adds registered business address of merchant
         $serialized[E::MERCHANT] += [
             'business_registered_address' => optional($this->merchant->merchantDetail)->getBusinessRegisteredAddress(),
         ];
