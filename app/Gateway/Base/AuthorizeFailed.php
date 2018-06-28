@@ -2,10 +2,11 @@
 
 namespace RZP\Gateway\Base;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Payment\Verify\Result;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Verify\Action;
 
@@ -90,6 +91,15 @@ trait AuthorizeFailed
         if (method_exists($gatewayPayment, 'getBankPaymentId') === true)
         {
             $response['acquirer'][Entity::REFERENCE1] = $gatewayPayment->getBankPaymentId();
+
+            // For api based emandate initial payments, if late authorized,
+            // we need to update the token status to confirmed
+            if (($this->input['payment']['method'] === Payment\Method::EMANDATE) and
+                (Payment\Gateway::isFileBasedEMandateRegistrationGateway($this->input['payment']['gateway']) === false) and
+                ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL))
+            {
+                $response[Token\Entity::RECURRING_STATUS] = Token\RecurringStatus::CONFIRMED;
+            }
         }
       
         if (method_exists($gatewayPayment, 'getVpa') === true)
