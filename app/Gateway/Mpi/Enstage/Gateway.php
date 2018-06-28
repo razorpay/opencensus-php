@@ -418,7 +418,6 @@ class Gateway extends Base\Gateway
         switch ($this->input['card']['network_code'])
         {
             case Card\Network::MC:
-            case Card\Network::MAES:
                 $cavvAlgo= 3;
                 break;
 
@@ -566,5 +565,31 @@ class Gateway extends Base\Gateway
         }
 
         return $this->config['test'];
+    }
+
+    protected function getAcquirerBin(array $input)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_acq_bin'];
+        }
+
+        switch ($input['card']['network_code'])
+        {
+            case Card\Network::MC:
+                $acqBin = $this->config['live_mastercard_acq_bin'];
+                break;
+
+            case Card\Network::VISA:
+                $acqBin = $this->config['live_visa_acq_bin'];
+                break;
+
+            default:
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
+
+        }
+
+        return $acqBin;
     }
 }
