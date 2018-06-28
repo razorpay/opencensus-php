@@ -476,9 +476,8 @@ class PaymentCreateController extends Controller
     {
         return View::make('gateway.gatewayFeesForm')
                    ->with('data', $data)
-                   ->with('input', $input)
-                   ->with('url', $url)
-                   ->with('input_flattened', array_assoc_flatten($input, "%s[%s]"));
+                   ->with('input', array_assoc_flatten($input, "%s[%s]"))
+                   ->with('url', $url);
     }
 
     protected function setMerchantCallbackUrlIfApplicable(array $input)

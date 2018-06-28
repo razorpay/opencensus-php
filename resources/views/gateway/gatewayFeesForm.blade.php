@@ -129,7 +129,7 @@
   </head>
   <body>
     <form action='{{$url}}' method='post'>
-      @foreach ($input_flattened as $key=>$value)
+      @foreach ($input as $key=>$value)
           <input type='hidden' name='{{$key}}' value='{{$value}}'>
       @endforeach
       <div id='receipt'>
