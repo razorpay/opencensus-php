@@ -12,6 +12,8 @@ class AuthType
     const SKIP          = 'skip';
     const PIN           = 'pin';
     const _3DS          = '3ds';
+    const OTP           = 'otp';
+    const HEADLESS_OTP  = 'headless_otp';
 
     public static $types = [
         Method::EMANDATE => [
@@ -21,16 +23,19 @@ class AuthType
         Method::CARD    => [
             self::PIN,
             self::_3DS,
+            self::OTP,
             self::SKIP,
         ],
         Method::EMI     => [
             self::PIN,
-            self::_3DS
+            self::_3DS,
+            self::OTP,
         ],
     ];
 
     public static $featureToAuthMap = [
         self::PIN => Feature\Constants::ATM_PIN_AUTH,
+        self::OTP => Feature\Constants::OTPELF,
     ];
 
     public static function isAuthTypeValid($type, $method): bool

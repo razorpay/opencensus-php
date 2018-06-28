@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use App;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
@@ -370,6 +371,12 @@ class Gateway
         self::UPI_HULK,
         self::UPI_SBI,
         self::SHARP,
+    ];
+
+    public static $headless = [
+        self::CYBERSOURCE,
+        self::HITACHI,
+        self::HDFC,
     ];
 
     /**
@@ -1010,6 +1017,15 @@ class Gateway
         Gateway::UPI_MINDGATE,
     ];
 
+    public static $upiValidateVpaGateways = [
+        Mode::LIVE => [
+            Gateway::UPI_MINDGATE,
+        ],
+        Mode::TEST => [
+            Gateway::SHARP,
+        ],
+    ];
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -1265,6 +1281,11 @@ class Gateway
         return in_array($gateway, self::$asynchronous, true);
     }
 
+    public static function supportsHeadlessBrowser($gateway)
+    {
+        return in_array($gateway, self::$headless, true);
+    }
+
     public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)
     {
         // This means that all the networks are supported by the gateway for authAndCapture.
@@ -1421,5 +1442,12 @@ class Gateway
         }
 
         return $gateways;
+    }
+
+    public static function getGatewayForValidateVpaForMode(string $mode)
+    {
+        // Currently we are only using MindGate for live and Sharp for test, later when
+        // we have more gateways, we can introduce gateway selection logic here.
+        return self::$upiValidateVpaGateways[$mode][0];
     }
 }

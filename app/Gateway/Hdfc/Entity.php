@@ -26,6 +26,7 @@ class Entity extends Base\Entity
         'arn_no',
         'postdate',
         'error_code',
+        'error_code2',
         'error_text',
         'created_at',
         'updated_at'
@@ -49,6 +50,7 @@ class Entity extends Base\Entity
         'avr',
         'postdate',
         'error_code',
+        'error_code2',
         'error_text',
     ];
 

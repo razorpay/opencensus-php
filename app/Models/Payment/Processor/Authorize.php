@@ -175,6 +175,11 @@ trait Authorize
 
                 $retry = false;
 
+                if ($this->canRunHeadlessOtpFlow($payment) === true)
+                {
+                    $request = $this->openHeadlessBrowser($payment, $request);
+                }
+
                 break;
             }
             catch (Exception\GatewayRequestException $e)
@@ -345,10 +350,11 @@ trait Authorize
         {
             $templateData = [
                'data' => $response,
-               'cdn'  => $this->config->get('url.cdn.production')
+               'cdn'  => $this->app['config']->get('url.cdn.production')
             ];
 
-            $content = View::make('gateway.gatewayOtpPostForm')
+            $content = $this->app['view']
+                            ->make('gateway.gatewayOtpPostForm')
                             ->with('data', $templateData)
                             ->render();
 
@@ -360,7 +366,8 @@ trait Authorize
                 ],
                 'version'    => 1,
                 'payment_id' => $payment->getPublicId(),
-                'gateway'    => $response['gateway']
+                'next'       => ['otp_submit'],
+                'gateway'    => $response['gateway'],
             ];
         }
 
@@ -451,12 +458,15 @@ trait Authorize
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             [
-                'payment_id'      => $payment->getId(),
-                'payment_created' => $paymentCreatedTime,
-                'verify_bucket'   => $payment->getVerifyBucket(),
-                'authorized_at'   => $currentTime,
-                'time_difference' => $currentTime - $paymentCreatedTime,
-                'caller'          => $this->getVerifyCaller(),
+                'payment_id'          => $payment->getId(),
+                'payment_created'     => $paymentCreatedTime,
+                'verify_bucket'       => $payment->getVerifyBucket(),
+                'authorized_at'       => $currentTime,
+                'time_difference'     => $currentTime - $paymentCreatedTime,
+                'caller'              => $this->getVerifyCaller(),
+                'error_code'          => $payment->getErrorCode(),
+                'internal_error_code' => $payment->getInternalErrorCode(),
+                'gateway'             => $payment->getGateway(),
             ]);
 
         $this->segment->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED);
@@ -874,14 +884,28 @@ trait Authorize
             return;
         }
 
-        if ($payment->getAuthType() === Payment\AuthType::PIN)
+        switch ($payment->getAuthType())
         {
-            if (($payment->card->iinRelation === null) or
-                ($payment->card->iinRelation->supports(IIN\Flow::PIN) === false))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The pin authentication type is not applicable on the given card');
-            }
+            case Payment\AuthType::PIN:
+                if (($payment->card->iinRelation === null) or
+                    ($payment->card->iinRelation->supports(IIN\Flow::PIN) === false))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The pin authentication type is not applicable on the given card');
+                }
+                break;
+
+            case Payment\AuthType::OTP:
+                // We support OTP flow with native supports from the gateway, headless_otp
+                // flow is something which is a hack and not natively supported by the gateway
+                if (($payment->card->iinRelation === null) or
+                    (($payment->card->iinRelation->supports(IIN\Flow::OTP) === false) and
+                     ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === false)))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The otp authentication type is not applicable on the given card');
+                }
+                break;
         }
     }
 
@@ -3605,6 +3629,16 @@ trait Authorize
         if ($payment->terminal->isIvr() === true)
         {
             return true;
+        }
+
+        // If the payment is card payment with headless browser flow then
+        // we render the otp submission page to the user
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            if ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP)
+            {
+                return true;
+            }
         }
 
         $wallet = $payment->getWallet();

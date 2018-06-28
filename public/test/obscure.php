@@ -228,9 +228,17 @@ function disableEmptyInputs(form) {
             <select name="auth_type">
                 <option value="">Please Select</option>
                 <option value="pin">Card - PIN</option>
+                <option value="otp">Card - OTP</option>
                 <option value="aadhaar">eMandate - Aadhaar</option>
                 <option value="netbanking">eMandate - Netbanking</option>
             </select>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="40">Select Preferred Auth </td>
+        <td>
+            <input type="checkbox" name="preferred_auth[]" value="pin">Card - PIN<br>
+            <input type="checkbox" name="preferred_auth[]" value="otp">Card - OTP<br>
         </td>
     </tr>
     <tr>
