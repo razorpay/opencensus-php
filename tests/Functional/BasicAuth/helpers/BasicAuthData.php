@@ -486,6 +486,26 @@ return [
         ],
     ],
 
+    'testRequestWithPartnerHeadersPurePlatform' => [
+        'request'   => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testRequestWithPartnerNoSecret' => [
         'request'   => [
             'url'     => '/customers',
