@@ -30,8 +30,6 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'mpi_enstage';
 
-    protected $messageHash;
-
     protected $sortRequestContent = false;
 
     public function __construct()
@@ -158,8 +156,6 @@ class Gateway extends Base\Gateway
 
         $userIP = $this->app['request']->getClientIp();
 
-        $messageHash = $this->generateHash($hashContent);
-
         $content = [
             Field::VERSION          => Constant::VERSION,
             Field::MERCHANT_TXN_ID  => $payment['id'],
@@ -176,7 +172,7 @@ class Gateway extends Base\Gateway
                 Field::DEVICE_CATEGORY      => '1',
                 Field::ACQUIRER_BIN         => $this->getAcquirerBin($input),
             ],
-            Field::MESSAGE_HASH        => $messageHash,
+            Field::MESSAGE_HASH        => $this->generateHash($hashContent),
             Field::ADDITIONAL_DATA_REQ => [
                 Field::USER_AGENT => $userAgent,
                 Field::USER_IP    => $userIP,
