@@ -240,9 +240,14 @@ export default class Model extends BaseModel {
       if (data) {
         // partnerRequests coud be either for activation or deactivation
         // hence in [action + 'Pending'] below, action could be activationPending or deactivationPending
-        this.merchant.partnerRequests[action + 'Pending'] =
-          !!data.status &&
-          ['under_review', 'needs_clarification'].indexOf(data.status) > -1;
+        this.merchant = {
+          ...this.merchant, //to force re-render
+          partnerRequests: {
+            [action + 'Pending']:
+              !!data.status &&
+              ['under_review', 'needs_clarification'].indexOf(data.status) > -1,
+          },
+        };
       }
     });
   };

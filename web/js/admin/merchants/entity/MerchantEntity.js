@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
@@ -691,14 +691,23 @@ const ActionsList = ({ model, merchantId, actions }) => {
           </div>
         </ShowWhen>
 
-        {(!isDetailsLoading || !isPartnerRequestsLoading) && (
-          <ShowWhen>
-            <div onClick={actions.TogglePartnerType}>
-              {(merchant.details.partner_type ? 'Unmark' : 'Mark') +
-                ' as partner'}
-            </div>
-          </ShowWhen>
-        )}
+        {(function() {
+          const loading = isDetailsLoading || isPartnerRequestsLoading;
+          const action = merchant.details.partner_type ? 'Remove' : 'Mark';
+          return (
+            <ShowWhen>
+              <div onClick={loading ? null : actions.TogglePartnerType}>
+                {loading ? (
+                  <Fragment>
+                    Fetching Partner Status <div class="dot-loader">.</div>{' '}
+                  </Fragment>
+                ) : (
+                  <Fragment>{action} as partner</Fragment>
+                )}
+              </div>
+            </ShowWhen>
+          );
+        })()}
 
         <ShowWhen permission="edit_merchant_screenshot">
           <div onClick={actions.UploadScreenshots}>
