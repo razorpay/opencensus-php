@@ -323,6 +323,13 @@ export default class Model extends BaseModel {
     this.merchant = { ...this.merchant }; // To force re-render the view
   }
 
+  updatePartnerRequests(data) {
+    this.merchant.partnerRequests = {
+      ...data,
+    };
+    this.merchant = { ...this.merchant };
+  }
+
   /**
    * Sets the auto refund delay value and type.
    * `data` is passed by reference.

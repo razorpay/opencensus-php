@@ -37,7 +37,9 @@ export default ({ props, merchantId }) => {
     })
       .then(response => {
         if (response) {
-          props.updateDetails(response.merchant);
+          props.updatePartnerRequests({
+            [requestName + 'Pending']: true,
+          });
           notifySuccess(
             `Request for partner ${requestName} submitted successfully`
           );
