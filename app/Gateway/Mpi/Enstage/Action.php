@@ -8,7 +8,7 @@ class Action extends Base
 {
     const OTP_GENERATE      = 'otp_generate';
 
-    const OTP_RESEND        = 'otp_resent';
+    const OTP_RESEND        = 'otp_resend';
 
     const OTP_SUBMIT        = 'otp_submit';
 

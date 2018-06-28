@@ -165,10 +165,8 @@ class Gateway extends Base\Gateway
             Field::MERCHANT_TXN_ID  => $payment['id'],
             Field::CARD_DETAILS     => $this->getEncryptedCardDetails($input),
             Field::TXN_DETAILS      => [
-                // @todo: Remove from constant
                 Field::EXPAY_IDENTIFIER     => Constant::EXPAY_IDENTIFIER,
                 Field::PAYMENT_GATEWAY_NAME => Constant::PAYMENT_GATEWAY_NAME,
-                // @todo: Remove from constant
                 Field::MERCHANT_NAME        => $merchantName,
                 Field::MERCHANT_ID          => $merchantId,
                 Field::AMOUNT               => (string) $payment['amount'],
@@ -441,16 +439,13 @@ class Gateway extends Base\Gateway
 
     protected function validateResponseContent($response)
     {
-        if ((isset($response[Field::RESPONSE_CODE]) === false) or
-            (in_array($response[Field::RESPONSE_CODE], ['000', '016']) === false))
+        if ((isset($response[Field::RESPONSE_CODE]) === true) or
+            (in_array($response[Field::RESPONSE_CODE], ['000', '016']) === true))
         {
-            throw new Exception\GatewayErrorException(
-                Error\ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR);
+            $content = $this->getCheckSumArray($response);
+
+            $this->verifySecureHash($content);
         }
-
-        $content = $this->getCheckSumArray($response);
-
-        $this->verifySecureHash($content);
     }
 
     protected function getCheckSumArray($response)
@@ -478,7 +473,7 @@ class Gateway extends Base\Gateway
 
     protected function handleError($responseCode, $paymentId)
     {
-        if ($responseCode !== '000')
+        if (in_array($responseCode , ['000', '016']) === false)
         {
             throw new Exception\GatewayErrorException(
                 ResponseCode::getMappedCode($responseCode),
