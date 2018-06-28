@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
-
 trait PaymentTraitMpiEnstage
 {
     protected function runPaymentCallbackFlowMpiEnstage($response, &$callback = null)
