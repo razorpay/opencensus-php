@@ -42,7 +42,10 @@ class Gateway extends Base\Gateway
 
     protected function getAcquirerBin(array $input)
     {
-        $acqBin = '';
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_acq_bin'];
+        }
 
         switch ($input['card']['network_code'])
         {
@@ -59,11 +62,6 @@ class Gateway extends Base\Gateway
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
 
-        }
-
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_acq_bin'];
         }
 
         return $acqBin;
