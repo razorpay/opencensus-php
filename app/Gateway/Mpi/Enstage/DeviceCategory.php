@@ -2,7 +2,9 @@
 
 namespace RZP\Gateway\Mpi\Enstage;
 
-class DeviceCategory
+use RZP\Gateway\Mpi\Base\DeviceCategory as Base;
+
+class DeviceCategory extends Base
 {
     const DESKTOP           = 'desktop';
     const MOBILE_BROWSER    = 'mobile_browser';
@@ -20,16 +22,4 @@ class DeviceCategory
         self::MOBILE_BROWSER,
         self::MOBILE_APP,
     ];
-
-    public static function getDeviceCategory(string $platform = null)
-    {
-        $platform = strtolower($platform);
-
-        if (in_array($platform, self::AVAILABLE_DEVICE, true) === true)
-        {
-            return self::DEVICE_CATEGORY[$platform];
-        }
-
-        return self::DEVICE_CATEGORY[self::DESKTOP];
-    }
 }
