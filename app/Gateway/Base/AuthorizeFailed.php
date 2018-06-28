@@ -12,6 +12,12 @@ use RZP\Models\Payment\Verify\Action;
 
 trait AuthorizeFailed
 {
+    /**
+     * @param array $input
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\LogicException
+     */
     public function authorizeFailed(array $input)
     {
         $e = null;
@@ -60,6 +66,11 @@ trait AuthorizeFailed
         return $this->authorizeFailedPayment($verify);
     }
 
+    /**
+     * @param $verify
+     * @return array
+     * @throws Exception\LogicException
+     */
     protected function authorizeFailedPayment($verify)
     {
         if (($verify->apiSuccess === false) and
@@ -87,7 +98,7 @@ trait AuthorizeFailed
         {
             $response['acquirer'][Entity::REFERENCE2] = $gatewayPayment->getAuthCode();
         }
-        
+
         if (method_exists($gatewayPayment, 'getBankPaymentId') === true)
         {
             $response['acquirer'][Entity::REFERENCE1] = $gatewayPayment->getBankPaymentId();
@@ -95,13 +106,17 @@ trait AuthorizeFailed
             // For api based emandate initial payments, if late authorized,
             // we need to update the token status to confirmed
             if (($this->input['payment']['method'] === Payment\Method::EMANDATE) and
-                (Payment\Gateway::isFileBasedEMandateRegistrationGateway($this->input['payment']['gateway']) === false) and
                 ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL))
             {
-                $response[Token\Entity::RECURRING_STATUS] = Token\RecurringStatus::CONFIRMED;
+                if (method_exists($this, 'getRecurringData') === true)
+                {
+                    $recurringData = $this->getRecurringData();
+
+                    $response = array_merge($response, $recurringData);
+                }
             }
         }
-      
+
         if (method_exists($gatewayPayment, 'getVpa') === true)
         {
             $response['acquirer'][Entity::VPA] = $gatewayPayment->getVpa();
