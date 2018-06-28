@@ -1237,6 +1237,13 @@ class Service extends Base\Service
         return $this->core->updateReceiverData();
     }
 
+    public function validateVpa($input)
+    {
+        $data = $this->getNewProcessor()->validateVpa($input);
+
+        return $data;
+    }
+
     protected function setHoldFalse(Payment\Entity $payment)
     {
         $this->repo->payment->lockForUpdateAndReload($payment);

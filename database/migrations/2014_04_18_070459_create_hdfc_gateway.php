@@ -70,6 +70,9 @@ class CreateHdfcGateway extends Migration
             $table->string('error_code', Hdfc\Constants::ERROR_CODE_LENGTH)
                   ->nullable();
 
+            $table->string('error_code2')
+                  ->nullable();
+
             $table->string('error_text')
                   ->nullable();
 

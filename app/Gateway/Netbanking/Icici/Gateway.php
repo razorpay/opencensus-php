@@ -311,7 +311,9 @@ class Gateway extends Base\Gateway
         //
         // temp fix: failed recurring payments are getting marked as success on verify on ICICI's end
         //
-        if ($input['payment']['recurring'] === true)
+        if (($input['payment']['recurring'] === true) and
+            (isset($input['payment']['recurring_type']) === true) and
+            ($input['payment']['recurring_type'] === 'auto'))
         {
            return ;
         }

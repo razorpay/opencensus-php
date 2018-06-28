@@ -16,6 +16,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_AUTH_SUCCESS                          = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_PENDING                          = 'PAYMENT_AUTH_PENDING';
     const PAYMENT_AUTH_FAILURE                          = 'PAYMENT_AUTH_FAILURE';
+    const PAYMENT_AUTH_ESIGN_FAILURE                    = 'PAYMENT_AUTH_ESIGN_FAILURE';
     const PAYMENT_AUTHORIZED_NULL                       = 'PAYMENT_AUTHORIZED_NULL';
     const PAYMENT_CALLBACK_REQUEST                      = 'PAYMENT_CALLBACK_REQUEST';
     const PAYMENT_REFUND_REQUEST                        = 'PAYMENT_REFUND_REQUEST';
@@ -386,6 +387,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BAD_REQUEST_INVALID_API_KEY                   = 'BAD_REQUEST_INVALID_API_KEY';
     const BAD_REQUEST_INVALID_API_SECRET                = 'BAD_REQUEST_INVALID_API_SECRET';
     const BAD_REQUEST_API_SECRET_NOT_PROVIDED           = 'BAD_REQUEST_API_SECRET_NOT_PROVIDED';
+    const BAD_REQUEST_INVALID_CLIENT_KEY                = 'BAD_REQUEST_INVALID_CLIENT_KEY';
     const BAD_REQUEST_INVALID_ACCOUNT_HEADER            = 'BAD_REQUEST_INVALID_ACCOUNT_HEADER';
 
     const RUNTIME_ERROR                                 = 'RUNTIME_ERROR';
@@ -752,6 +754,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
+    const OTPELF_REQUEST                            = 'OTPELF_REQUEST';
+    const OTPELF_RESPONSE                           = 'OTPELF_RESPONSE';
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';

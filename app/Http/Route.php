@@ -53,6 +53,7 @@ final class Route
         'payment_callback_with_key_get'            => ['get',      'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
         'payment_get_status'                       => ['get',      'payments/{x_entity_id}/status',                  'PaymentController@getPaymentStatusForAsyncPayments'                ],
         'payment_otp_submit'                       => ['post',     'payments/{x_entity_id}/otp_submit/{hash}',       'PaymentCreateController@postOtpSubmit'                             ],
+        'payment_otp_submit_private'               => ['post',     'payments/{x_entity_id}/otp/submit',              'PaymentCreateController@postOtpSubmitPrivate'                      ],
         'payment_otp_resend'                       => ['post',     'payments/{x_entity_id}/otp_resend',              'PaymentCreateController@postOtpResend'                             ],
         'payment_topup_ajax'                       => ['post',     'payments/{x_entity_id}/topup/ajax',              'PaymentCreateController@postTopupAjax'                             ],
         'payment_topup_post'                       => ['post',     'payments/{x_entity_id}/topup',                   'PaymentCreateController@postTopup'                                 ],
@@ -103,6 +104,7 @@ final class Route
         'payment_capture_gateway_manual'           => ['post',     'payments/{id}/gateway/capture',                  'PaymentController@postManualGatewayCapture'                        ],
         'payment_acknowledge'                      => ['post',     'payments/{id}/acknowledge',                      'PaymentController@postAcknowledge'                                 ],
         'payment_authorize_time_out'               => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
+        'payment_validate_vpa'                     => ['post',     'payment/validate/vpa',                           'PaymentController@postPaymentValidateVpa'                          ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
         'refund_fetch_by_id'                       => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
@@ -856,7 +858,6 @@ final class Route
         'mock_netbanking_payment',
         'mock_netbanking_payment_get',
         'mock_card_fss_payment',
-        'mock_ebs_payment',
         'mock_sharp_payment_post',
         'mock_sharp_payment_get',
         'mock_sharp_payment_submit',
@@ -919,6 +920,7 @@ final class Route
         'payment_create_upi',
         'payment_create_openwallet',
         'payment_create_aeps',
+        'payment_otp_submit_private',
         'payment_refund',
         'payment_capture',
         'payment_fetch_transfers',
@@ -930,6 +932,7 @@ final class Route
         'payment_fetch_transaction',
         'payment_fetch_card_details',
         'payment_payout',
+        'payment_validate_vpa',
         'refund_create',
         'refund_fetch_by_id',
         'refund_fetch_multiple',
@@ -1891,6 +1894,7 @@ final class Route
         'sms_callback',
         'checkout_public',
         'mock_hdfc_3dsecure',
+        'mock_ebs_payment',
         'transparent_redirect_get',
         'transparent_redirect_post',
         'gateway_payment_callback_get',
@@ -2135,6 +2139,7 @@ final class Route
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
+        'payment_validate_vpa'                 => [Feature::ENABLE_VPA_VALIDATE],
 
         // Account APIs
         'beta_account_create'                  => [Feature::MARKETPLACE],
@@ -2276,6 +2281,14 @@ final class Route
         {
             $parameters['x_entity_id'] = $this->ba->getKeylessXEntityId();
         }
+        // For a partner token authenticated route, keep the token in the public URL
+        if (($key === '') and ($this->ba->isPartnerAuth() === true))
+        {
+            $parts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $this->ba->getPublicKey());
+
+            $key                         = $parts[0];
+            $parameters['account_id']    = $this->ba->getAccountId();
+        }
         // Else continue with the key_id flow
         else if ($key === '')
         {
@@ -2314,14 +2327,13 @@ final class Route
 
     public function getPublicCallbackUrlWithHash($pid, $key = '')
     {
+        // @todo: $key is not used here and should be remove
         if ($key === '')
         {
             $key = $this->ba->getPublicKey();
         }
 
-        $secret = $this->app->config->get('app.key');
-
-        $hash = hash_hmac('sha1', $pid, $secret);
+        $hash = $this->getHashOf($pid);
 
         $parameters = ['id' => $pid, 'hash' => $hash];
 
@@ -2524,5 +2536,12 @@ final class Route
         $currentRoute = $this->getCurrentRouteName();
 
         return (in_array($currentRoute, self::S2S_PAYMENT_ROUTES, true) === true);
+    }
+
+    public function getHashOf(string $string): string
+    {
+        $secret = $this->app->config->get('app.key');
+
+        return hash_hmac('sha1', $string, $secret);
     }
 }

@@ -407,13 +407,27 @@ class Gateway extends Base\Gateway
 
     protected function getEnrollmentRequestArray(array $input)
     {
-        $content = $this->getVEReqContent($input);
+        $traceContent = $content = $this->getVEReqContent($input);
 
         $options = $this->getRequestOptions();
 
+        unset($traceContent[VEReq::MESSAGE][VEReq::VEREQ][VEReq::PAN]);
+        unset($traceContent[VEReq::MESSAGE][VEReq::VEREQ][VEReq::MERCHANT][VEReq::PASSWORD]);
+
+        $content = Xml::create('ThreeDSecure', $content);
+
         $type = $input['card']['network'];
 
-        $request = $this->getStandardRequestArray($content, 'POST', $type, $options);
+        $traceRequest = $request = $this->getStandardRequestArray($content, 'POST', $type, $options);
+
+        $traceRequest['content'] = $traceContent;
+        unset($traceRequest['options']['hooks']);
+
+        $this->trace->info(TraceCode::GATEWAY_ENROLL_REQUEST, [
+            'gateway' => 'mpi_blade',
+            'payment_id' => $input['payment']['id'],
+            'request' => $traceRequest
+        ]);
 
         return $request;
     }
@@ -609,16 +623,8 @@ class Gateway extends Base\Gateway
         ];
 
         $traceContent = $content;
-        unset($traceContent['Message']['VEReq']['pan']);
-        unset($traceContent['Message']['VEReq']['Merchant']['password']);
 
-        $this->trace->info(TraceCode::GATEWAY_ENROLL_REQUEST, [
-            'gateway' => 'mpi_blade',
-            'payment_id' => $input['payment']['id'],
-            'content' => $traceContent
-        ]);
-
-        return Xml::create('ThreeDSecure', $content);
+        return $content;
     }
 
     protected function getCreds()

@@ -72,7 +72,6 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                 document.getElementById('invoice-status-container').removeChild(document.getElementById('desktop-container'));
             }
         }
-
         function toggleTrimDescription(toTrim) {
             var data = window.RZP_DATA.data,
             desc = data.payment_link.description,
@@ -88,6 +87,9 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
 
             if (desc && toTrim) {
                 var visLength = 0;
+
+                desc =  desc.trim();
+                var descLength = desc.length;
 
                 var i = 0;
                 for(; i < desc.length ; i++) {
@@ -105,8 +107,11 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
 
                 desc= desc.substr(0, i + 1);
                 desc =  desc.trim();
-                desc += '...';
-                button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
+
+                if (desc.length < descLength) {
+                    desc += '...';
+                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
+                }
             }
 
             var ele = document.getElementById('payment-for');
