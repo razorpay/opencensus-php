@@ -282,7 +282,7 @@ class Gateway extends Base\Gateway
 
     protected function getOtpValidateRequestContent(array $input, $gatewayPayment)
     {
-        $otpToken =  $this->getOtpToken($input['gateway']['otp']);
+        $otpToken =  $this->encrypt($input['gateway']['otp']);
 
         $gatewayPaymentId = $gatewayPayment->getGatewayPaymentId();
 
@@ -302,11 +302,6 @@ class Gateway extends Base\Gateway
         ];
 
         return $content;
-    }
-
-    protected function getOtpToken($otp)
-    {
-        return $this->encrypt($otp);
     }
 
     protected function sendOtpResendRequest(array $input, $gatewayPayment)
