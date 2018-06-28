@@ -169,7 +169,7 @@ class Gateway extends Base\Gateway
                 Field::CURRENCY             => Currency::getIsoCode($payment['currency']),
                 Field::CURRENCY_EXPONENT    => (string) Currency::getExponent($payment['currency']),
                 Field::ORDER_DESCRIPTION    => $payment['description'] ?? Constant::DEFAULT_ORDER_MESSAGE,
-                Field::DEVICE_CATEGORY      => '1',
+                Field::DEVICE_CATEGORY      => DeviceCategory::getDeviceCategory(DeviceCategory::DESKTOP),
                 Field::ACQUIRER_BIN         => $this->getAcquirerBin($input),
             ],
             Field::MESSAGE_HASH        => $this->generateHash($hashContent),
