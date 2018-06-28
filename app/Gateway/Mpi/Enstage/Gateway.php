@@ -380,7 +380,7 @@ class Gateway extends Base\Gateway
             Base\Entity::RESPONSE_CODE        => $response[Field::RESPONSE_CODE] ?? null,
             Base\Entity::RESPONSE_DESCRIPTION => $response[Field::RES_DESC] ?? null,
             Base\Entity::ACC_ID               => $response[Field::ACC_ID] ?? null,
-            Base\Entity::STATUS               => $this->getAuthenticationStatus(Field::RESPONSE_CODE),
+            Base\Entity::STATUS               => $this->getAuthenticationStatus($response[Field::RESPONSE_CODE]),
             Base\Entity::XID                  => $this->generateXid($this->input),
             BASE\Entity::CAVV_ALGORITHM       => $this->getCavvAlgorthm(),
         ];
@@ -468,13 +468,13 @@ class Gateway extends Base\Gateway
         if (in_array($response[Field::RESPONSE_CODE] , ['000', '016'], true) === false)
         {
             throw new Exception\GatewayErrorException(
+                ResponseCode::getMappedCode($response[Field::RESPONSE_CODE]),
                 $response[Field::RESPONSE_CODE],
-                $response[Field::RESPONSE_CODE],
-                ResponseCode::getDescription($response[Field::RESPONSE_CODE]),
+                $response[Field::RES_DESC],
                 [
                     'payment_id' => $paymentId,
                     'response_code' => $response[Field::RESPONSE_CODE],
-                    'response_desc' => $response[Field::RESP_DESC],
+                    'response_desc' => $response[Field::RES_DESC],
                 ]);
         }
     }
