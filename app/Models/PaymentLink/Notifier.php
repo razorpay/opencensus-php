@@ -57,8 +57,8 @@ class Notifier extends Base\Core
                 Entity::EMAIL => $email,
             ]);
 
-        $paymentLinkSerialized = $paymentLink->toArrayPublic();
-        $paymentRequestMail    = new PaymentRequest($paymentLinkSerialized, $email);
+        $mailPayload = (new ViewSerializer($paymentLink))->serializeForInternal();
+        $paymentRequestMail    = new PaymentRequest($mailPayload, $email);
 
         try
         {

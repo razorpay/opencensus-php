@@ -12,15 +12,15 @@ use RZP\Mail\Base\Mailable;
  */
 class PaymentRequest extends Mailable
 {
-    protected $paymentLink;
+    protected $mailPayload;
     protected $toEmail;
 
-    public function __construct(array $paymentLink, string $toEmail)
+    public function __construct(array $mailPayload, string $toEmail)
     {
         parent::__construct();
 
-        $this->paymentLink = $paymentLink;
-        $this->toEmail     = $toEmail;
+        $this->mailPayload = $mailPayload;
+        $this->toEmail      = $toEmail;
     }
 
     protected function addRecipients()
@@ -58,11 +58,7 @@ class PaymentRequest extends Mailable
 
     protected function addMailData()
     {
-        $mailData = [
-            Entity::PAYMENT_LINK => $this->paymentLink,
-        ];
-
-        $this->with($mailData);
+        $this->with($this->mailPayload);
 
         return $this;
     }

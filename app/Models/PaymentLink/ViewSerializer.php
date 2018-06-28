@@ -128,5 +128,9 @@ class ViewSerializer extends Base\Core
      */
     protected function addAdditionalAttributesForInternal(array & $serialized)
     {
+        // Adds registered business address of merchant
+        $serialized[E::MERCHANT] += [
+            'business_registered_address' => optional($this->merchant->merchantDetail)->getBusinessRegisteredAddress(),
+        ];
     }
 }
