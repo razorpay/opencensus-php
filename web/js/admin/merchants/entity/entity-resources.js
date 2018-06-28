@@ -353,6 +353,12 @@ export function getDetailsViewMap(model) {
       ),
     },
     {
+      label: 'Partner',
+      value: details.partner_type
+        ? snakeToTitleCase(details.partner_type)
+        : _getBoolIcon(details.partner_type),
+    },
+    {
       label: 'Marketplace Merchant',
       toHide: !details.parent_id,
       value: details.parent_id
