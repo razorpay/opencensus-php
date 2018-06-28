@@ -199,12 +199,12 @@ return [
             'url'       => '/payment/validate/vpa',
             'method'    => 'post',
             'content'   => [
-                'vpa' => 'failure@razorpay',
+                'vpa' => 'invalidvpa@razorpay',
             ]
         ],
         'response'  => [
             'content' => [
-                'vpa'       => 'failure@razorpay',
+                'vpa'       => 'invalidvpa@razorpay',
                 'success'   => false,
             ],
         ]
