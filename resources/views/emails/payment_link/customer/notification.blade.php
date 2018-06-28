@@ -4,10 +4,9 @@
   @extends('emails.invoice.notification')
 
   @php
-      $status    = $invoice['status'];
-      $isInvoice = ($invoice['type'] === 'invoice');
+      $status    = $payment_link['status'];
 
-      $amountPaid = ($invoice['amount_paid']);
+      $amountPaid = ($payment_link['amount_paid']);
 
       if (isset($payment))
       {
@@ -15,33 +14,20 @@
       }
 
       $headerLabel = '';
-      $ctaLabel = '';
-      $ctaHref = '';
+      $ctaLabel = 'PROCEED TO PAY';
+      $ctaHref = $payment_link['short_url'];
 
       if (isset($payment))
       {
-          if ($amountPaid >= $invoice['amount'])
-          {
-            $ctaLabel = $isInvoice ? 'DOWNLOAD PDF' : '';
-          }
-          else
-          {
-            $ctaLabel = 'PROCEED TO PAY';
-          }
-
-          $ctaHref = $invoice['short_url'];
-
           $headerLabel = 'You have made a payment of ' . $payment['amount'];
       }
       elseif ($status === 'issued')
       {
-          $ctaLabel = 'PROCEED TO PAY';
-          $ctaHref = $invoice['short_url'];
-          $headerLabel = $merchant['name'] . ' has sent you ' . ($invoice['type_label']=== 'Invoice' ? 'an ' : 'a ') . strtolower($invoice['type_label']) . ' for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
+          $headerLabel = $merchant['name'] . ' has sent you an ' . strtolower($payment_link['type_label']) . ' for ' . $payment_link['currency'] . ' ' . $payment_link['amount_formatted'];
       }
-      elseif ($status === 'expired')
+      elseif ($status === 'inactive')
       {
-          $headerLabel = strtoupper($invoice['type_label']) . ' EXPIRED';
+          $headerLabel = 'PAYMENT PAGE INACTIVE';
       }
   @endphp
 
@@ -59,17 +45,17 @@
 <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
 <td class="text-center" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; text-align: center;">
               <h2 style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; margin: 0; font-size: 20px; line-height: 24px; color: {{ $merchant['brand_text_color'] }};">
-                  {{ $invoice['type_label'] }} from {{$merchant['name']}}
+                  {{ $payment_link['type_label'] }} from {{$merchant['name']}}
               </h2>
             </td>
           </tr>
 <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
 <td class="text-center" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; text-align: center;">
               <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: {{ $merchant['brand_text_color'] }};">
-                  @if ($invoice['receipt'])
-                      {{ $invoice['type_label'] }} Receipt: {{$invoice['receipt']}}
+                  @if ($payment_link['receipt'])
+                      {{ $payment_link['type_label'] }} Receipt: {{$payment_link['receipt']}}
                   @else
-                      {{ $invoice['type_label'] }} Id: {{$invoice['id']}}
+                      {{ $payment_link['type_label'] }} Id: {{$payment_link['id']}}
                   @endif
               </div>
             </td>
