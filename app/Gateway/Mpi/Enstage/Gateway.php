@@ -465,7 +465,7 @@ class Gateway extends Base\Gateway
 
     protected function handleError($responseCode, $paymentId)
     {
-        if (in_array($responseCode , ['000', '016']) === false)
+        if (in_array($responseCode , ['000', '016'], true) === false)
         {
             throw new Exception\GatewayErrorException(
                 ResponseCode::getMappedCode($responseCode),
