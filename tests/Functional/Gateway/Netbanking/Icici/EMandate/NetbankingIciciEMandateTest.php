@@ -90,7 +90,8 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($testData, function() use ($payment) {
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
 
@@ -100,7 +101,15 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $token = $this->getLastEntity(Entity::TOKEN, true);
 
-        $this->assertEquals(RecurringStatus::CONFIRMED, $token[Token::RECURRING_STATUS]);
+        $this->assertArraySelectiveEquals(
+            [
+                Token::RECURRING_STATUS => RecurringStatus::CONFIRMED,
+                Token::METHOD           => 'emandate',
+                Token::BANK             => 'ICIC',
+                Token::GATEWAY_TOKEN    => '123123123',
+            ],
+            $token
+        );
     }
 
     public function testEMandateScheduledPayment()
