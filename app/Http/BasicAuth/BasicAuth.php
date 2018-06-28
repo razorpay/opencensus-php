@@ -1538,9 +1538,12 @@ class BasicAuth
     {
         $partnerMerchant = $this->authCreds->getMerchant();
         //
-        // $this->merchant needs to have been set, and have been tagged as 'partner'
+        // $this->merchant needs to have been set, and have been marked
+        // as non pure-platform type partner
         //
-        if ((empty($partnerMerchant) === true) or ($partnerMerchant->isPartner() === false))
+        if ((empty($partnerMerchant) === true) or
+            ($partnerMerchant->isPartner() === false) or
+            ($partnerMerchant->isPurePlatformTypePartner() === true))
         {
             return false;
         }

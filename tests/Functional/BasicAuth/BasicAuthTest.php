@@ -20,6 +20,10 @@ class BasicAuthTest extends TestCase
 
         parent::setUp();
 
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
         $this->ba->privateAuth();
     }
 
@@ -378,6 +382,25 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testRequestWithPartnerHeadersPurePlatform()
+    {
+        $client = $this->createOAuthApplicationAndGetClientByEnv('dev');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'pure_platform']);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $this->startTest();
+    }
+
     public function testRequestWithPartnerNoSecret()
     {
         $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
@@ -417,10 +440,6 @@ class BasicAuthTest extends TestCase
 
     public function testRequestWithPartnerHeadersClientCredsNotPartner()
     {
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
-
-        $this->app->make(Factory::class)->load($factoryPath);
-
         $client = $this->createOAuthApplicationAndGetClientByEnv('dev');
 
         $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
@@ -452,13 +471,9 @@ class BasicAuthTest extends TestCase
 
     protected function setUpPartnerMerchantAppAndGetClient(string $env = 'dev')
     {
-        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
-
-        $this->app->make(Factory::class)->load($factoryPath);
-
         $client = $this->createPartnerApplicationAndGetClientByEnv($env);
 
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully-managed']);
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
 
         $this->fixtures->merchant->addFeatures(['partner']);
 
