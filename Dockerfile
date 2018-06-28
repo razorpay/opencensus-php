@@ -8,10 +8,10 @@ WORKDIR /app
 # Hack to load php gnu-libiconv.so
 # https://github.com/docker-library/php/issues/240#issuecomment-327992638
 RUN apk add --update libxrender libx11-dev fontconfig zlib-dev && \
-    apk add --update-cache gnu-libiconv ca-certificates \
+    apk add --update-cache gnu-libiconv ca-certificates wkhtmltopdf \
     --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ --allow-untrusted && \
     cd /tmp && git clone https://github.com/razorpay/docker-alpine-wkhtmltopdf.git && \
-    mv docker-alpine-wkhtmltopdf/wkhtmltopdf /usr/bin/ && \
+    mv docker-alpine-wkhtmltopdf/wkhtmltopdf /usr/bin/wkhtmltopdf && \
     rm -rf docker-alpine-wkhtmltopdf && cd /app
 
 ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
