@@ -328,14 +328,14 @@ class Gateway extends Base\Gateway
         $gatewayPaymentId = $gatewayPayment->getGatewayPaymentId();
 
         $hash = [
-            Field::VERSION         => Constant::ENSTAGE_VERSION,
+            Field::VERSION         => Constant::VERSION,
             Field::MERCHANT_TXN_ID => $input['payment']['id'],
             Field::ACS_TXN_ID      => $gatewayPaymentId,
             Field::SECRET          => $this->getSecret(),
         ];
 
         $content = [
-            Field::VERSION          => Constant::ENSTAGE_VERSION,
+            Field::VERSION          => Constant::VERSION,
             Field::MERCHANT_TXN_ID  => $input['payment']['id'],
             Field::ACS_TXN_ID       => $gatewayPaymentId,
             Field::OTP_SENT_COUNT   => $input['payment']['otp_count'],
