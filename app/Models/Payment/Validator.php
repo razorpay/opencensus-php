@@ -133,6 +133,7 @@ class Validator extends Base\Validator
 
     protected static $getFlowsRules = [
         'iin'                       => 'required|numeric|digits:6',
+        '_'                         => 'sometimes|array',
     ];
 
     protected static $pspAmountLimit = [
