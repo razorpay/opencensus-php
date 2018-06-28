@@ -95,7 +95,9 @@ class NetbankingIciciEMandateTest extends TestCase
         });
 
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
         $this->authorizedFailedPayment($payment['id']);
+
         $token = $this->getLastEntity(Entity::TOKEN, true);
 
         $this->assertEquals(RecurringStatus::CONFIRMED, $token[Token::RECURRING_STATUS]);

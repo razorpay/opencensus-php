@@ -110,7 +110,7 @@ trait AuthorizeFailed
             {
                 if (method_exists($this, 'getRecurringData') === true)
                 {
-                    $recurringData = $this->getRecurringData();
+                    $recurringData = $this->getRecurringData($gatewayPayment);
 
                     $response = array_merge($response, $recurringData);
                 }
