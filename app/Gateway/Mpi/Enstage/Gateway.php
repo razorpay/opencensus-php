@@ -79,7 +79,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPaymentEntity = $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
 
-        return $this->decideAuthStepAfterEnroll($gatewayPaymentEntity, $input, $response[field::RESPONSE_CODE]);
+        return $this->decideAuthStepAfterEnroll($gatewayPaymentEntity, $input, $response);
     }
 
     public function callback(array $input)
@@ -104,7 +104,7 @@ class Gateway extends Base\Gateway
 
         $this->validateResponseContent($response);
 
-        $this->handleError($response[Field::RESPONSE_CODE], $input['payment']['id']);
+        $this->handleError($response, $input['payment']['id']);
 
         $this->updateGatewayPaymentFromCallbackResponse($gatewayPayment, $response);
 
@@ -378,7 +378,7 @@ class Gateway extends Base\Gateway
             Base\Entity::CAVV                 => $response[Field::CAVV] ?? null,
             Base\Entity::ECI                  => $response[Field::ECI] ?? null,
             Base\Entity::RESPONSE_CODE        => $response[Field::RESPONSE_CODE] ?? null,
-            Base\Entity::RESPONSE_DESCRIPTION => $response[Field::RESP_DESC] ?? null,
+            Base\Entity::RESPONSE_DESCRIPTION => $response[Field::RES_DESC] ?? null,
             Base\Entity::ACC_ID               => $response[Field::ACC_ID] ?? null,
             Base\Entity::STATUS               => $this->getAuthenticationStatus(Field::RESPONSE_CODE),
             Base\Entity::XID                  => $this->generateXid($this->input),
@@ -463,17 +463,18 @@ class Gateway extends Base\Gateway
         return $this->getMappedAttributes($response);
     }
 
-    protected function handleError($responseCode, $paymentId)
+    protected function handleError($response, $paymentId)
     {
-        if (in_array($responseCode , ['000', '016'], true) === false)
+        if (in_array($response[Field::RESPONSE_CODE] , ['000', '016'], true) === false)
         {
             throw new Exception\GatewayErrorException(
-                ResponseCode::getMappedCode($responseCode),
-                $responseCode,
-                ResponseCode::getDescription($responseCode),
+                $response[Field::RESPONSE_CODE],
+                $response[Field::RESPONSE_CODE],
+                ResponseCode::getDescription($response[Field::RESPONSE_CODE]),
                 [
                     'payment_id' => $paymentId,
-                    'response_code' => $responseCode,
+                    'response_code' => $response[Field::RESPONSE_CODE],
+                    'response_desc' => $response[Field::RESP_DESC],
                 ]);
         }
     }

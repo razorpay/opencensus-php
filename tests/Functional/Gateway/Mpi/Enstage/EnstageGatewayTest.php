@@ -43,7 +43,7 @@ class EnstageGatewayTest extends TestCase
                 if ($action === 'otp_generate')
                 {
                     $content[Field::RESPONSE_CODE] = '016';
-                    $content[Field::RESP_DESC] = 'CARD NOT PARTICITIPATING IN 3ds';
+                    $content[Field::RES_DESC] = 'CARD NOT PARTICITIPATING IN 3ds';
                     unset($content[Field::MESSAGE_HASH]);
 
                 }
@@ -66,7 +66,7 @@ class EnstageGatewayTest extends TestCase
                 if ($action === 'otp_submit')
                 {
                     $content[Field::RESPONSE_CODE] = '008';
-                    $content[Field::RESP_DESC] = 'ISSUER found PAN to be invalid';
+                    $content[Field::RES_DESC] = 'ISSUER found PAN to be invalid';
                 }
             },
             $this->gateway
@@ -129,7 +129,7 @@ class EnstageGatewayTest extends TestCase
 
                     $content[Field::RESPONSE_CODE] = '001';
 
-                    $content[Field::RESP_DESC] = 'WRONG OTP';
+                    $content[Field::RES_DESC] = 'WRONG OTP';
 
                     unset($content[Field::MESSAGE_HASH]);
 

@@ -42,7 +42,7 @@ class Server extends Base\Mock\Server
             Field::MERCHANT_TXN_ID      => $content[Field::MERCHANT_TXN_ID],
             Field::ACS_TXN_ID           => 'TVBJWElENXdYN3ZVOGlQMm1FM2Y',
             Field::RESPONSE_CODE        => '000',
-            Field::RESP_DESC            => 'Success',
+            Field::RES_DESC            => 'Success',
             Field::ACS_VERIFICATION_URL => Url::LIVE_DOMAIN . Url::OTP_SUBMIT,
             Field::ADDITIONAL_DATA_REQ  => [
             ],
@@ -75,7 +75,7 @@ class Server extends Base\Mock\Server
             Field::MERCHANT_TXN_ID      => $content[Field::MERCHANT_TXN_ID],
             Field::ACS_TXN_ID           => 'TVBJWElENXdYN3ZVOGlQMm1FM2Y',
             Field::RESPONSE_CODE        => '000',
-            Field::RESP_DESC            => 'Success',
+            Field::RES_DESC            => 'Success',
             Field::ACC_STATUS           => 'Y',
             Field::ACC_ID               => '201611181642092180hE7iE9oZ',
             Field::CAVV                 => 'AAABA5IAAGmTFAYTlAAAAAAAAAA',

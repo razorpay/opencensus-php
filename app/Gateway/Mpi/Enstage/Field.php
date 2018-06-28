@@ -48,7 +48,7 @@ class Field
 
     const RESPONSE_CODE        = 'resCode';
 
-    const RESP_DESC            = 'resDesc';
+    const RES_DESC            = 'resDesc';
 
     const ACS_VERIFICATION_URL = 'acsverificationURL';
 
