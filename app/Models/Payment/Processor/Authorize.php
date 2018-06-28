@@ -359,7 +359,7 @@ trait Authorize
                             ->render();
 
             $response = [
-                'type'       => 'first',
+                'type'       => 'otp',
                 'request'    => [
                     'method'  => 'direct',
                     'content' => $content
