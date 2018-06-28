@@ -1892,3 +1892,6 @@ UPDATE taxes SET name = 'UTGST @ 12%' WHERE id='9nDpYyC50acDzW';
 UPDATE taxes SET name = 'UTGST @ 14%' WHERE id='9nDpYz26oaOHgI';
 UPDATE taxes SET name = 'UTGST @ 18%' WHERE id='9nDpYznDzU7NKP';
 UPDATE taxes SET name = 'UTGST @ 28%' WHERE id='9nDpZ0hEw4vZky';
+
+UPDATE merchants m JOIN merchant_details md ON m.id = md.merchant_id SET m.has_key_access = 1
+    WHERE m.parent_id IS NULL AND md.submitted_at IS NULL AND md.submitted = 1;
