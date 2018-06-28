@@ -23,6 +23,8 @@ class EnstageGatewayTest extends TestCase
 
         $this->gateway = 'mpi_enstage';
 
+        $this->fixtures->merchant->addFeatures(['otpelf']);
+
         $this->mockTokenex();
     }
 
@@ -107,15 +109,22 @@ class EnstageGatewayTest extends TestCase
 
     protected function authorizePayment()
     {
-       return $this->defaultAuthPayment([
+
+        $this->fixtures->edit('iin', '411146', ['flows' => ['otp' => '1']]);
+
+        $payment = $this->defaultAuthPayment([
            'card' => [
-               'number'       => '5567630000002004',
+               'number'       => '4111466126747568',
                'expiry_month' => '02',
                'expiry_year'  => '21',
                'cvv'          => 123,
-               'name'         => 'Test Card'
-           ]
+               'name'         => 'Test Card',
+           ],
+            'auth_type' => 'otp',
         ]);
+
+
+        return $payment;
     }
 
     public function testAuthenticationFailed()
