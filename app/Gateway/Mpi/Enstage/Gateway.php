@@ -32,6 +32,13 @@ class Gateway extends Base\Gateway
 
     protected $sortRequestContent = false;
 
+    protected $map = [
+        Field::MERCHANT_TXN_ID => 'merchantTxnId',
+        Field::ACS_TXN_ID      => 'acsTxnId',
+        Field::RESPONSE_CODE   => 'resDesc',
+        Field::MESSAGE_HASH    => 'messageHash',
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -440,6 +447,8 @@ class Gateway extends Base\Gateway
         {
             $content = $this->getCheckSumArray($response);
 
+            $content[Field::SECRET] = $this->getSecret();
+
             $this->verifySecureHash($content);
         }
     }
@@ -453,18 +462,11 @@ class Gateway extends Base\Gateway
                 Field::ACC_ID       => $response[Field::ACC_ID],
                 Field::CAVV         => $response[Field::CAVV],
                 Field::ECI          => $response[Field::ECI],
-                Field::SECRET       => $this->getSecret(),
                 Field::MESSAGE_HASH => $response[Field::MESSAGE_HASH],
             ];
         }
 
-        return [
-            Field::MERCHANT_TXN_ID => $response[Field::MERCHANT_TXN_ID],
-            Field::ACS_TXN_ID      => $response[Field::ACS_TXN_ID],
-            Field::RESPONSE_CODE   => $response[Field::RESPONSE_CODE],
-            Field::SECRET          => $this->getSecret(),
-            Field::MESSAGE_HASH    => $response[Field::MESSAGE_HASH],
-        ];
+        return $this->getMappedAttributes($response);
     }
 
     protected function handleError($responseCode, $paymentId)
