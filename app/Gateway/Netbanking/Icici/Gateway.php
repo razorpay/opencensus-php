@@ -273,8 +273,6 @@ class Gateway extends Base\Gateway
 
         $this->sendPaymentVerifyRequest($verify);
 
-        $this->setGatewaySuccess($verify);
-
         //
         // If verify returns false, we throw an error as
         // authorize request / response has been tampered with
@@ -351,7 +349,7 @@ class Gateway extends Base\Gateway
 
         $this->setGatewaySuccess($verify);
 
-        // Sometimes  verify tnx that happens near to eod fails since it hits the  gateway server next day.
+        // Sometimes  verify txn that happens near to eod fails since it hits the  gateway server next day.
         if (($verify->gatewaySuccess === false) and
             ($this->isEodTransaction($paymentCreatedAt) === true))
         {
@@ -361,6 +359,8 @@ class Gateway extends Base\Gateway
 
             $this->makeVerifyRequestToGateway($verify);
         }
+
+        $this->setGatewaySuccess($verify);
     }
 
     protected function makeVerifyRequestToGateway($verify)
@@ -831,7 +831,9 @@ class Gateway extends Base\Gateway
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[$bankPaymentIdKey] ?? null;
         }
 
-        if (empty($content[ResponseFields::PAYMENT_DATE]) === false)
+        if ((empty($content[ResponseFields::PAYMENT_DATE]) === false) and
+            ($content[ResponseFields::STATUS] === Status::SUCCESS) and
+            (empty($gatewayPayment[Base\Entity::DATE]) === true))
         {
             $attributes[Base\Entity::DATE] = $content[ResponseFields::PAYMENT_DATE];
         }
