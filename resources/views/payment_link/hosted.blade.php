@@ -40,6 +40,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
             </script>
         @endif
     @endif
+
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     @include('invoice.payment_link_stylesheet')
     <style>
@@ -272,7 +273,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                                         @endif
                                         @if($payment_page_expire_by and $payment_page_status === 'active')
                                             <div class="info">
-                                                EXPIRES BY
+                                                EXPIRES ON
                                                 <div class="val">
                                                     {{epoch_format($payment_page_expire_by)}}
                                                 </div>
@@ -397,7 +398,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
 
                                 @if($payment_page_expire_by and $payment_page_status === 'active')
                                     <div class="info">
-                                        EXPIRES BY
+                                        EXPIRES ON
                                         <div class="val">{{epoch_format($payment_page_expire_by)}} </div>
                                     </div>
                                 @endif
