@@ -2102,7 +2102,6 @@ final class Route
      */
     public static $routeNameToFeaturesMap = [
         'feature_dummy'                        => [Feature::DUMMY],
-        'merchant_sub_create'                  => [Feature::AGGREGATOR, Feature::MARKETPLACE],
         'customer_delete'                      => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_delete_token'                => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_fetch_tokens'                => [Feature::TOKENS, Feature::CHARGE_AT_WILL],

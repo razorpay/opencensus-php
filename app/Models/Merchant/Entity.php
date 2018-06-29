@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+use Conner\Tagging\Taggable;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -17,7 +18,6 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
-use Conner\Tagging\Taggable;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
@@ -1038,6 +1038,36 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::PARTNER_TYPE);
     }
 
+    public function isFullyManagedTypePartner(): bool
+    {
+        return ($this->getPartnerType() === Constants::FULLY_MANAGED);
+    }
+
+    public function isPurePlatformTypePartner(): bool
+    {
+        return ($this->getPartnerType() === Constants::PURE_PLATFORM);
+    }
+
+    public function isAggregatorPartner(): bool
+    {
+        return ($this->getPartnerType() === Constants::AGGREGATOR);
+    }
+
+    public function hasAggregatorFeature(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::AGGREGATOR));
+    }
+
+    public function hasOptionalSubmerchantEmailFeature(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::ALLOW_SUBMERCHANT_WITHOUT_EMAIL));
+    }
+
+    public function isOptionalEmailAllowedAggregator(): bool
+    {
+        return (($this->isAggregatorPartner() === true) and ($this->hasOptionalSubmerchantEmailFeature() === true));
+    }
+
     protected function setEmailAttribute($email)
     {
         $formattedEmail = ($email === null) ? null : mb_strtolower(trim($email));
@@ -1527,10 +1557,5 @@ class Entity extends Base\PublicEntity
     public function setPartnerType(string $partnerType = null)
     {
         $this->setAttribute(self::PARTNER_TYPE, $partnerType);
-    }
-
-    public function isPurePlatformTypePartner(): bool
-    {
-        return ($this->getPartnerType() === Constants::PURE_PLATFORM);
     }
 }
