@@ -897,13 +897,18 @@ class Core extends Base\Core
         // Default value is required because website is a required field to create oauth applications
         $website = $merchant->getWebsite() ?? 'https://www.razorpay.com';
 
-        $logoUrl = $merchant->getLogoUrl();
-
         $appInput = [
             'name'     => $name,
             'website'  => $website,
-            'logo_url' => $logoUrl,
         ];
+
+        $logoUrl = $merchant->getLogoUrl();
+
+        // Do not send the logo_url parameter if it is null. Auth service will reject it.
+        if ($logoUrl !== null)
+        {
+            $appInput['logo_url'] = $logoUrl;
+        }
 
         $app = app('authservice')->createApplication($appInput, $merchant->getId(), Application\Type::PARTNER);
 
