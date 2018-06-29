@@ -812,6 +812,20 @@ class Gateway extends Base\Gateway
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[$bankPaymentIdKey] ?? null;
         }
 
+        // If RID exists and status is registration success, set token related attributes here
+        if ((empty($content[ResponseFields::SI_REFERENCE_ID]) === false) and
+            ($content[ResponseFields::STATUS] === Status::SI_REGISTRATION_SUCCESS))
+        {
+            $recurringData = [
+                Base\Entity::SI_TOKEN  => $content[ResponseFields::SI_REFERENCE_ID] ??
+                    $content[ResponseFields::SI_SCHEDULE_ID] ??
+                    null,
+                Base\Entity::SI_STATUS => Status::Y,
+            ];
+
+            $attributes = array_merge($attributes, $recurringData);
+        }
+
         return $attributes;
     }
 
