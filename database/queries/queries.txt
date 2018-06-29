@@ -3700,3 +3700,6 @@ SET sql_log_bin = 1;
 # Once above has executed, on each replica apart from redash login and execute the same command.
 # Doing it this way, so that there is no time in which redash replica does not have fk constraints.
 
+ALTER table offers
+    ADD COLUMN emi_subvention tinyint DEFAULT NULL AFTER flat_cashback,
+    ADD COLUMN emi_duration TEXT DEFAULT NULL AFTER emi_subvention;

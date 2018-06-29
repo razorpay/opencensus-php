@@ -70,6 +70,12 @@ class CreateOffers extends Migration
             $table->integer(Offer::FLAT_CASHBACK)
                   ->nullable();
 
+            $table->tinyInteger(Offer::EMI_SUBVENTION)
+                  ->nullable();
+
+            $table->text(Offer::EMI_DURATION)
+                  ->nullable();
+
             $table->integer(Offer::MAX_PAYMENT_COUNT)
                   ->nullable();
 
