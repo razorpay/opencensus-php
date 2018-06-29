@@ -52,7 +52,9 @@ export default class PaymentPagesContainer extends ListContainer {
 
   /* Fetch all payment pages list to find whether first-time user */
   fetchAllEntityList() {
-    fetchPaymentPagesList()
+    fetchPaymentPagesList({
+      count: 1,
+    })
       .then(resp => {
         this.setState({
           loadingAllList: false,

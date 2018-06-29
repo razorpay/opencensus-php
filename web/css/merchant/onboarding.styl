@@ -23,7 +23,7 @@
     margin 20px auto 0
 
 
-.Onboarding--PaymentPages
+.Onboarding--PaymentPages, .Onboarding--Invoices
   margin: 20px 0 80px
   color: #58666E
 
@@ -36,7 +36,7 @@
       color: $primary-color
 
   .Onboarding--content
-    margin-top: 100px
+    margin-top: 56px
 
   .step
     position: relative
@@ -46,14 +46,21 @@
     min-width: 240px
     font-size: 14px
     padding: 0 8px
+    vertical-align: top
 
-    img
-      height: 124px
+    .img
+      position: relative
+
+      img
+        position: absolute
+        bottom: 0
+        left: 50%
+        transform: translateX(-50%)
 
     .title
-      font-size: 18px
+      font-size: 16px
       font-weight: 600
-      margin-bottom: 8px;
+      margin: 16px 0 4px
 
     .i
       position: absolute
@@ -62,7 +69,7 @@
       transform: translateY(-50%)
       font-size: 36px
       font-weight: 600
-      color: $primary-color
+      color: #58666E
 
   @media (max-width: 1023px)
 
@@ -72,4 +79,18 @@
 
       .i
         display: none
+
+.Onboarding--PaymentPages
+  .Onboarding--content
+    margin-top: 76px
+
+  .img
+    height: 140px
+  img
+    height: 100%
+
+.Onboarding--Invoices
+  .img
+    height: 160px
+
 
