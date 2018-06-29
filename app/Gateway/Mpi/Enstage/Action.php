@@ -11,5 +11,4 @@ class Action extends Base
     const OTP_RESEND        = 'otp_resend';
 
     const OTP_SUBMIT        = 'otp_submit';
-
 }

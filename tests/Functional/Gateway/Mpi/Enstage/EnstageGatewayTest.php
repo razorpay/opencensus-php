@@ -47,7 +47,6 @@ class EnstageGatewayTest extends TestCase
                     $content[Field::RESPONSE_CODE] = '016';
                     $content[Field::RES_DESC] = 'CARD NOT PARTICITIPATING IN 3ds';
                     unset($content[Field::MESSAGE_HASH]);
-
                 }
             },
             $this->gateway
@@ -109,7 +108,6 @@ class EnstageGatewayTest extends TestCase
 
     protected function authorizePayment()
     {
-
         $this->fixtures->edit('iin', '411146', ['flows' => ['otp' => '1']]);
 
         $payment = $this->defaultAuthPayment([
@@ -122,8 +120,7 @@ class EnstageGatewayTest extends TestCase
            ],
             'auth_type' => 'otp',
         ]);
-
-
+        
         return $payment;
     }
 
