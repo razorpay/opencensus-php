@@ -41,7 +41,6 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-
     public function getVerify($id)
     {
         $data = $this->service()->verify($id);

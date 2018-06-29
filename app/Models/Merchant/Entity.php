@@ -1471,7 +1471,7 @@ class Entity extends Base\PublicEntity
         if ($this->isFeatureEnabled(Feature\Constants::OTPELF) === true)
         {
             $data[IIN\Constants::OTP] = (($iin->isHeadLessOtp()) or
-                                     ($iin->isOtp()));
+                                         ($iin->isOtp()));
         }
 
         return $data;

@@ -187,8 +187,8 @@ class CustomerTokenTest extends TestCase
         $token = $this->fixtures->create('token', [
             'method'  => 'card',
             'card_id' => '100000001lcard',
-            'bank' => null,
-            'wallet' =>  null
+            'bank'    => null,
+            'wallet'  => null
         ]);
 
         $flows = [
@@ -203,15 +203,14 @@ class CustomerTokenTest extends TestCase
 
         $token = $this->getTokenById('token_' . $token['id']);
 
-
-        $this->assertFalse($token[Token\Entity::RECURRING]);
-        $this->assertEquals(2, count($token['card']['flows']));
+        self::assertFalse($token[Token\Entity::RECURRING]);
+        self::assertEquals(2, count($token['card']['flows']));
 
         // We never display the keys below to the public
-        $this->assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);
-        $this->assertArrayNotHasKey(Token\Entity::RECURRING_FAILURE_REASON, $token);
+        self::assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);
+        self::assertArrayNotHasKey(Token\Entity::RECURRING_FAILURE_REASON, $token);
 
-        $this->assertArrayNotHasKey(Token\Entity::RECURRING_DETAILS, $token);
+        self::assertArrayNotHasKey(Token\Entity::RECURRING_DETAILS, $token);
     }
 
 

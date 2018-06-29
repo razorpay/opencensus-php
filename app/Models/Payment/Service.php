@@ -693,14 +693,15 @@ class Service extends Base\Service
         return $data;
     }
 
-
     /**
      * We only return the payment status in case of an async
      * payment + status being either of created or authorized
      *
      * Note: This will only work within 15 minutes of the payment creation
      *
+     * @param $id
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function fetchStatus($id)
     {
