@@ -817,7 +817,7 @@ class Core extends Base\Core
     public function getPartnerApp(Entity $merchant)
     {
         // For pure platforms, no internal partner app is created
-        (new Validator)->validateIsPurePartner($merchant);
+        (new Validator)->validateIsNotPurePlatform($merchant);
 
         try
         {
@@ -885,7 +885,7 @@ class Core extends Base\Core
      */
     public function unmarkAsPartner(Entity $merchant): Entity
     {
-        (new Validator)->validateIfNotAPartner($merchant);
+        (new Validator)->validateIsPartner($merchant);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant)
         {
@@ -989,7 +989,7 @@ class Core extends Base\Core
      */
     public function createPartnerApp(Entity $merchant)
     {
-        if ($merchant->isPurePlatformTypePartner() === true)
+        if ($merchant->isPurePlatformPartner() === true)
         {
             // Don't create a dummy application for pure platforms
             return;
@@ -1020,7 +1020,7 @@ class Core extends Base\Core
      */
     public function deletePartnerApp(Entity $merchant)
     {
-        if ($merchant->isPurePlatformTypePartner() === true)
+        if ($merchant->isPurePlatformPartner() === true)
         {
             // A dummy application for pure platforms does not exist
             return;
