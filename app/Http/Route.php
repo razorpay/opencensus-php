@@ -818,8 +818,8 @@ final class Route
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
 
         // Partner routes
-        'partners_referral_create'                 => ['post',     'partners/{id}/referrals',                        'PartnerController@createReferral'                                  ],
-        'partners_referral_delete'                 => ['delete',   'partners/{id}/referrals/{referralId}',           'PartnerController@deleteReferral'                                  ],
+        'partners_referral_create'                 => ['post',     'merchants/{id}/referrals',                       'MerchantController@createReferral'                                  ],
+        'partners_referral_delete'                 => ['delete',   'merchants/{id}/referrals/{referralId}',          'MerchantController@deleteReferral'                                  ],
     ];
 
     public static $public = [

@@ -989,4 +989,31 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * @param string $partnerId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function createReferral(string $partnerId)
+    {
+        $input = $this->input;
+
+        $response = $this->service()->createPartnerReferral($partnerId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @param string $partnerId
+     * @param string $referralId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function deleteReferral(string $partnerId, string $referralId)
+    {
+        $response = $this->service()->deletePartnerReferral($partnerId, $referralId);
+
+        return ApiResponse::json($response);
+    }
 }

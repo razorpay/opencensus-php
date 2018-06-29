@@ -340,7 +340,7 @@ return [
 
     'testAddReferralToPartnerWithoutMerchantId' => [
         'request'   => [
-            'url'     => '/partners/10000000000000/referrals',
+            'url'     => '/merchants/10000000000000/referrals',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -361,7 +361,7 @@ return [
 
     'testAddPartnerReferral' => [
         'request'   => [
-            'url'     => '/partners/10000000000000/referrals',
+            'url'     => '/merchants/10000000000000/referrals',
             'method'  => 'POST',
             'content' => [
                 'merchant_id' => '10000000000011',
@@ -377,7 +377,7 @@ return [
 
     'testAddReferralToPurePlatform' => [
         'request'   => [
-            'url'     => '/partners/10000000000000/referrals',
+            'url'     => '/merchants/10000000000000/referrals',
             'method'  => 'POST',
             'content' => [
                 'merchant_id' => '10000000000011',
@@ -400,7 +400,7 @@ return [
 
     'testAddPartnerAsReferralToPartner' => [
         'request'   => [
-            'url'     => '/partners/10000000000000/referrals',
+            'url'     => '/merchants/10000000000000/referrals',
             'method'  => 'POST',
             'content' => [
                 'merchant_id' => '10000000000011',
@@ -423,7 +423,7 @@ return [
 
     'testAddReferralToNonPartner' => [
         'request'   => [
-            'url'     => '/partners/10000000000000/referrals',
+            'url'     => '/merchants/10000000000000/referrals',
             'method'  => 'POST',
             'content' => [
                 'merchant_id' => '10000000000011',
@@ -446,7 +446,7 @@ return [
 
     'testAddPartnerReferralAgain' => [
         'request'   => [
-            'url'     => '/partners/10000000000000/referrals',
+            'url'     => '/merchants/10000000000000/referrals',
             'method'  => 'POST',
             'content' => [
                 'merchant_id' => '10000000000011',
@@ -469,7 +469,7 @@ return [
 
     'testRemovePartnerReferral' => [
         'request'   => [
-            'url'     => '/partners/10000000000000/referrals/10000000000011',
+            'url'     => '/merchants/10000000000000/referrals/10000000000011',
             'method'  => 'DELETE',
             'content' => [],
         ],
@@ -482,7 +482,7 @@ return [
 
     'testRemoveNonExistingPartnerReferral' => [
         'request'   => [
-            'url'     => '/partners/10000000000000/referrals/10000000000011',
+            'url'     => '/merchants/10000000000000/referrals/10000000000011',
             'method'  => 'DELETE',
             'content' => [],
         ],
@@ -503,7 +503,7 @@ return [
 
     'testRemovePartnerReferralAgain' => [
         'request'   => [
-            'url'     => '/partners/10000000000000/referrals/10000000000011',
+            'url'     => '/merchants/10000000000000/referrals/10000000000011',
             'method'  => 'DELETE',
             'content' => [],
         ],
