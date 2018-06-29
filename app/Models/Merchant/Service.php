@@ -1809,7 +1809,7 @@ class Service extends Base\Service
 
     public function formatUserCreationData(array $input, Merchant\Entity $subMerchant)
     {
-        $dummyPass = str_random(20);
+        $dummyPass = bin2hex(random_bytes(20));
 
         return [
             User\Entity::NAME                  => $subMerchant->getName(),
@@ -1847,7 +1847,9 @@ class Service extends Base\Service
             return;
         }
 
-        if ($aggregatorMerchantId->isNonPurePlatformTypePartner() === true)
+        $aggregatorMerchant = $this->repo->merchant->findOrFailPublic($aggregatorMerchantId);
+
+        if ($aggregatorMerchant->isNonPurePlatformTypePartner() === true)
         {
             if ($this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchantId) === true)
             {

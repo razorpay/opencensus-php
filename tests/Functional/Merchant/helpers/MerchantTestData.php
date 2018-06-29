@@ -2955,5 +2955,92 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
         ],
-    ]
+    ],
+
+    'testCreateSubmerchantLogin' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000044',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginSameEmail' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000044',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The email has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginDuplicate' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000044',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The email has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateLinkedAccountLogin' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000044',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN,
+                ],
+            ],
+            'status_code' => 403,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginPartnerWithMarketplace' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000044',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
 ];
