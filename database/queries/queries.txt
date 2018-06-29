@@ -3655,7 +3655,6 @@ ALTER TABLE invoices
     DROP INDEX invoices_merchant_id_receipt_unique,
     ADD INDEX invoices_merchant_id_receipt_index (merchant_id, receipt);
 
-
 #increase error_code length for hdfc
 ALTER TABLE hdfc
     ADD COLUMN error_code2 VARCHAR(255) DEFAULT NULL AFTER error_code,
@@ -3706,3 +3705,4 @@ ALTER TABLE blade
     ADD COLUMN response_code VARCHAR(255) DEFAULT NULL AFTER gateway_payment_id,
     ADD COLUMN response_description VARCHAR(255) DEFAULT NULL AFTER response_code,
     ADD INDEX `blade_gateway_payment_id_index` (gateway_payment_id);
+
