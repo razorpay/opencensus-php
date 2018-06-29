@@ -283,6 +283,16 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
 
+        //
+        // We don't do this for recurring payments as they don't have amount
+        // in the response
+        //
+        if ((isset($input['payment']['recurring']) === true) and
+            ($input['payment']['recurring'] === true))
+        {
+            return;
+        }
+
         $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
 
         if ($this->isCorporateBanking() === true)
@@ -304,7 +314,9 @@ class Gateway extends Base\Gateway
         //
         // temp fix: failed recurring payments are getting marked as success on verify on ICICI's end
         //
-        if ($input['payment']['recurring'] === true)
+        if (($input['payment']['recurring'] === true) and
+            (isset($input['payment']['recurring_type']) === true) and
+            ($input['payment']['recurring_type'] === 'auto'))
         {
            return ;
         }
@@ -831,11 +843,25 @@ class Gateway extends Base\Gateway
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[$bankPaymentIdKey] ?? null;
         }
 
+
         if ((empty($content[ResponseFields::PAYMENT_DATE]) === false) and
             ($content[ResponseFields::STATUS] === Status::SUCCESS) and
             (empty($gatewayPayment[Base\Entity::DATE]) === true))
         {
             $attributes[Base\Entity::DATE] = $content[ResponseFields::PAYMENT_DATE];
+        }
+        // If RID exists and status is registration success, set token related attributes here
+        if ((empty($content[ResponseFields::SI_REFERENCE_ID]) === false) and
+            ($content[ResponseFields::STATUS] === Status::SI_REGISTRATION_SUCCESS))
+        {
+            $recurringData = [
+                Base\Entity::SI_TOKEN  => $content[ResponseFields::SI_REFERENCE_ID] ??
+                    $content[ResponseFields::SI_SCHEDULE_ID] ??
+                    null,
+                Base\Entity::SI_STATUS => Status::Y,
+            ];
+
+            $attributes = array_merge($attributes, $recurringData);
         }
 
         return $attributes;

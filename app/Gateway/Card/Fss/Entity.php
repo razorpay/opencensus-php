@@ -91,6 +91,16 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::AUTH);
     }
 
+    public function getGatewayTransactionId()
+    {
+        return $this->getAttribute(self::GATEWAY_TRANSACTION_ID);
+    }
+
+    public function getRef()
+    {
+        return $this->getAttribute(self::REF);
+    }
+
     public function setAcquirer($acquirer)
     {
         $this->setAttribute(self::ACQUIRER, $acquirer);
@@ -114,5 +124,15 @@ class Entity extends Base\Entity
     public function setErrorMessage($errorMessage)
     {
         $this->setAttribute(self::ERROR_MESSAGE, $errorMessage);
+    }
+
+    public function setGatewayTransactionId(string $gatewayTransactionId)
+    {
+        $this->setAttribute(self::GATEWAY_TRANSACTION_ID, $gatewayTransactionId);
+    }
+
+    public function setRef(string $ref)
+    {
+        $this->setAttribute(self::REF, $ref);
     }
 }

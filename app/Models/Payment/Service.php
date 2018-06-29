@@ -308,6 +308,53 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function fixAttemptedOrders($input)
+    {
+        $paymentIds = $input['payment_ids'];
+        $success = 0;
+        $failed  = 0;
+        $failedPaymentIds = [];
+
+        foreach ($paymentIds as $paymentId)
+        {
+            try
+            {
+                $payment = $this->repo->payment->findByPublicId($paymentId);
+
+                $order = $payment->order;
+
+                $merchant = $payment->merchant;
+
+                if(($payment->isCaptured() === true) and ($order->isPaid() === false))
+                {
+                    $success = $this->repo->transaction(
+                    function() use ($payment, $order, $merchant, $success)
+                    {
+                        $this->getNewProcessor($merchant)->fixAttemptedOrder($payment, $order);
+
+                        $success++;
+
+                        return $success;
+                    });
+                }
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException($ex);
+                $failedPaymentIds[] = $paymentId;
+                $failed++;
+                continue;
+            }
+        }
+
+        return [
+            'success'          => $success,
+            'failed'           => $failed,
+            'failedPaymentIds' => $failedPaymentIds,
+        ];
+
+    }
+
     public function fixAuthorizeAt($input)
     {
         $paymentIds = $input['payment_ids'];
@@ -633,13 +680,28 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    public function getPaymentFlows(array $input)
+    {
+        $merchant = $this->merchant;
+
+        (new Payment\Validator)->validateInput('get_flows', $input);
+
+        $iinEntity = $this->repo->iin->find($input['iin']);
+
+        $data = $merchant->getPaymentFlows($iinEntity);
+
+        return $data;
+    }
+
     /**
      * We only return the payment status in case of an async
      * payment + status being either of created or authorized
      *
      * Note: This will only work within 15 minutes of the payment creation
      *
+     * @param $id
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function fetchStatus($id)
     {
@@ -1188,6 +1250,13 @@ class Service extends Base\Service
     public function updateReceiverData()
     {
         return $this->core->updateReceiverData();
+    }
+
+    public function validateVpa($input)
+    {
+        $data = $this->getNewProcessor()->validateVpa($input);
+
+        return $data;
     }
 
     protected function setHoldFalse(Payment\Entity $payment)

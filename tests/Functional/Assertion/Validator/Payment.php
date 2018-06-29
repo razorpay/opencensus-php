@@ -26,6 +26,7 @@ class Payment extends Validator
         Entity::CARD_ID             => 'sometimes',
         Entity::CARD                => 'sometimes',
         Entity::TRANSFER_ID         => 'sometimes',
+        Entity::PAYMENT_LINK_ID     => 'sometimes',
         Entity::BANK                => 'sometimes',
         Entity::WALLET              => 'sometimes',
         Entity::VPA                 => 'sometimes|max:100',

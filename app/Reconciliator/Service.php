@@ -21,12 +21,25 @@ class Service extends Base\Service
         RequestProcessor\Base::AXIS,
         RequestProcessor\Base::HDFC,
         RequestProcessor\Base::ATOM,
+        RequestProcessor\Base::KOTAK,
         RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::CARD_FSS,
         RequestProcessor\Base::JIOMONEY,
+        RequestProcessor\Base::BILLDESK,
+        RequestProcessor\Base::UPI_ICICI,
+        RequestProcessor\Base::OLAMONEY,
+        RequestProcessor\Base::MOBIKWIK,
         RequestProcessor\Base::FIRST_DATA,
+        RequestProcessor\Base::FREECHARGE,
+        RequestProcessor\Base::NETBANKING_CSB,
         RequestProcessor\Base::NETBANKING_OBC,
+        RequestProcessor\Base::NETBANKING_RBL,
+        RequestProcessor\Base::NETBANKING_AXIS,
+        RequestProcessor\Base::NETBANKING_ICICI,
+        RequestProcessor\Base::NETBANKING_FEDERAL,
+        RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK
     ];
 
     /**

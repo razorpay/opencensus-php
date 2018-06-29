@@ -588,6 +588,28 @@ class TransactionFilter extends Terminal\Filter
 
                         break;
 
+                    case Payment\AuthType::OTP:
+                        // We should select the terminal only if iin is set and flows are supported
+                        // by the IIN
+                        if ($payment->card->iinRelation !== null)
+                        {
+                            if (($terminal->isIvr() === true) and
+                                ($payment->card->iinRelation->supports(Flow::OTP) === true))
+                            {
+                                return true;
+                            }
+
+                            $gateway = $terminal->getGateway();
+
+                            if ((Gateway::supportsHeadlessBrowser($gateway) === true) and
+                                ($payment->card->iinRelation->supports(Flow::HEADLESS_OTP) === true))
+                            {
+                                return true;
+                            }
+                        }
+
+                        break;
+
                     case Payment\AuthType::_3DS:
                         if ($this->is3DSTerminal($terminal) === true)
                         {
@@ -616,7 +638,7 @@ class TransactionFilter extends Terminal\Filter
 
     protected function is3DSTerminal($terminal)
     {
-        return ($terminal->isPin() === false);
+        return (($terminal->isPin() === false) and ($terminal->isIvr() === false));
     }
 
     protected function isTerminalWithMerchantMccAbsent(

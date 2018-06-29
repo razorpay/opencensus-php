@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use App;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
@@ -372,6 +373,12 @@ class Gateway
         self::SHARP,
     ];
 
+    public static $headless = [
+        self::CYBERSOURCE,
+        self::HITACHI,
+        self::HDFC,
+    ];
+
     /**
      * Each card gateway only support specific card networks.
      * This maintains a map of gateway to card network which
@@ -630,6 +637,48 @@ class Gateway
             IFSC::TSIX,
             IFSC::AMRX,
             IFSC::DDBX,
+            IFSC::SAGX,
+            IFSC::IUCB,
+            IFSC::KDCX,
+            IFSC::VIJX,
+            IFSC::ZSHX,
+            IFSC::PCUX,
+            IFSC::GCUX,
+            IFSC::MSOX,
+            IFSC::BACB,
+            IFSC::NSGX,
+            IFSC::JASB,
+            IFSC::JUCX,
+            IFSC::STRX,
+            IFSC::KSCB,
+            IFSC::VCCX,
+            IFSC::AMAX,
+            IFSC::BURX,
+            IFSC::MERX,
+            IFSC::KHAX,
+            IFSC::TEHX,
+            IFSC::SCCX,
+            IFSC::TGMB,
+            IFSC::JSBP,
+            IFSC::BHSX,
+            IFSC::KUNS,
+            IFSC::APBL,
+            IFSC::KASX,
+            IFSC::SWMX,
+            IFSC::TCUB,
+            IFSC::TECX,
+            IFSC::CHSX,
+            IFSC::CURX,
+            IFSC::JSCX,
+            IFSC::NOIX,
+            IFSC::PDCX,
+            IFSC::RCUX,
+            IFSC::SHUX,
+            IFSC::ZSGX,
+            IFSC::KARB,
+            IFSC::SDCB,
+            IFSC::TSAB,
+            IFSC::VJSX,
         ]
     ];
 
@@ -968,6 +1017,15 @@ class Gateway
         Gateway::UPI_MINDGATE,
     ];
 
+    public static $upiValidateVpaGateways = [
+        Mode::LIVE => [
+            Gateway::UPI_MINDGATE,
+        ],
+        Mode::TEST => [
+            Gateway::SHARP,
+        ],
+    ];
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -1223,6 +1281,11 @@ class Gateway
         return in_array($gateway, self::$asynchronous, true);
     }
 
+    public static function supportsHeadlessBrowser($gateway)
+    {
+        return in_array($gateway, self::$headless, true);
+    }
+
     public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)
     {
         // This means that all the networks are supported by the gateway for authAndCapture.
@@ -1379,5 +1442,12 @@ class Gateway
         }
 
         return $gateways;
+    }
+
+    public static function getGatewayForValidateVpaForMode(string $mode)
+    {
+        // Currently we are only using MindGate for live and Sharp for test, later when
+        // we have more gateways, we can introduce gateway selection logic here.
+        return self::$upiValidateVpaGateways[$mode][0];
     }
 }

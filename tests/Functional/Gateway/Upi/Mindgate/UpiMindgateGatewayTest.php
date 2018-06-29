@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
+use RZP\Constants\Mode;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Merchant\Account;
@@ -564,6 +565,28 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->assertNull($upi['ifsc']);
 
+    }
+
+    public function testValidateVpaSuccess()
+    {
+        Gateway::$upiValidateVpaGateways[Mode::TEST] = [Gateway::UPI_MINDGATE];
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaFailure()
+    {
+        Gateway::$upiValidateVpaGateways[Mode::TEST] = [Gateway::UPI_MINDGATE];
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 
     protected function checkPaymentStatus($id, $expectedStatus)

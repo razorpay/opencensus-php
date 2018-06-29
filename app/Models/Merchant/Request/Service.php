@@ -81,6 +81,10 @@ class Service extends Base\Service
     {
         $core = new Core;
 
+        $input[Entity::MERCHANT_ID] = $this->merchant->getId();
+
+        $input[Entity::STATUS] = Status::UNDER_REVIEW;
+
         $request = $core->createMerchantRequest($input);
 
         return $core->getMerchantRequestDetails($request->getId());
@@ -96,7 +100,7 @@ class Service extends Base\Service
 
         $core->updateMerchantRequest($request, $input);
 
-        return $core->getMerchantRequestDetails($id, $request->merchant->getId());
+        return $core->getMerchantRequestDetails($id);
     }
 
     public function bulkUpdate(array $input)

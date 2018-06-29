@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Hdfc;
 
+use RZP\Models\Merchant;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment;
 
@@ -48,14 +49,20 @@ class Fields
      *
      * @param Token\Entity $token
      * @param string $paymentId
+     * @param Merchant\Entity $merchant
      * @return array
      */
-    public static function getEmandateRegistrationData(Token\Entity $token, string $paymentId): array
+    public static function getEmandateRegistrationData(
+        Token\Entity $token,
+        string $paymentId,
+        Merchant\Entity $merchant
+    ): array
     {
-
         $tokenId = $token->getId();
 
         $accountNumber = $token->getAccountNumber();
+
+        $merchantName = $merchant->getFilteredDba();
 
         $customerName = $token->customer->getName();
 
@@ -69,6 +76,7 @@ class Fields
             EMandateRegisterFileHeadings::MERCHANT_REQUEST_NO           => $paymentId,
             EMandateRegisterFileHeadings::AMOUNT_TYPE                   => self::AMOUNT_TYPE,
             EMandateRegisterFileHeadings::CLIENT_NAME                   => self::CLIENT_NAME,
+            EMandateRegisterFileHeadings::SUB_MERCHANT_NAME             => $merchantName,
             self::START_TIMESTAMP                                       => $token->getCreatedAt(),
             self::END_TIMESTAMP                                         => $token->getExpiredAt(),
         ];

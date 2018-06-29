@@ -76,6 +76,7 @@ class Server extends Base\Mock\Server
             Fields::PAY_ID                 => $this->generateId(15),
             Fields::AMOUNT                 => $input[Fields::AMOUNT],
             Fields::AUTH_RES_CODE          => $this->generateId(3),
+            Fields::REF                    => $this->generateId(12),
         ];
 
         $this->content($refundResponse, 'refund');

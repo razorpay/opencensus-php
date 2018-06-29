@@ -16,6 +16,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_AUTH_SUCCESS                          = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_PENDING                          = 'PAYMENT_AUTH_PENDING';
     const PAYMENT_AUTH_FAILURE                          = 'PAYMENT_AUTH_FAILURE';
+    const PAYMENT_AUTH_ESIGN_FAILURE                    = 'PAYMENT_AUTH_ESIGN_FAILURE';
     const PAYMENT_AUTHORIZED_NULL                       = 'PAYMENT_AUTHORIZED_NULL';
     const PAYMENT_CALLBACK_REQUEST                      = 'PAYMENT_CALLBACK_REQUEST';
     const PAYMENT_REFUND_REQUEST                        = 'PAYMENT_REFUND_REQUEST';
@@ -271,11 +272,22 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_LINK_CREATED                          = 'PAYMENT_LINK_CREATED';
     const PAYMENT_LINK_UPDATE_REQUEST                   = 'PAYMENT_LINK_UPDATE_REQUEST';
     const PAYMENT_LINK_UPDATED                          = 'PAYMENT_LINK_UPDATED';
+    const PAYMENT_LINK_STATUS_CHANGE                    = 'PAYMENT_LINK_STATUS_CHANGE';
     const PAYMENT_LINK_SEND_NOTIFICATION                = 'PAYMENT_LINK_SEND_NOTIFICATION';
     const PAYMENT_LINK_EMAIL_REQUEST                    = 'PAYMENT_LINK_EMAIL_REQUEST';
     const PAYMENT_LINK_NOTIFY_BY_EMAIL_FAILURE          = 'PAYMENT_LINK_NOTIFY_BY_EMAIL_FAILURE';
     const PAYMENT_LINK_EXPIRE_CRON_SUMMARY              = 'PAYMENT_LINK_EXPIRE_CRON_SUMMARY';
     const PAYMENT_LINK_EXPIRE_ERROR                     = 'PAYMENT_LINK_EXPIRE_ERROR';
+    const PAYMENT_LINK_PAYMENT_REFUND_REQUEST           = 'PAYMENT_LINK_PAYMENT_REFUND_REQUEST';
+    const PAYMENT_LINK_PAYMENT_REFUND_HANDLED           = 'PAYMENT_LINK_PAYMENT_REFUND_HANDLED';
+    const PAYMENT_LINK_PAYMENT_REFUND_ERROR             = 'PAYMENT_LINK_PAYMENT_REFUND_ERROR';
+    const PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS          = 'PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS';
+    const PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS_SKIPPED  = 'PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS_SKIPPED';
+    const PAYMENT_LINK_UPDATED_POST_PAYMENT_CAPTURE     = 'PAYMENT_LINK_UPDATED_POST_PAYMENT_CAPTURE';
+    const PAYMENT_LINK_DEACTIVATE_REQUEST               = 'PAYMENT_LINK_DEACTIVATE_REQUEST';
+    const PAYMENT_LINK_DEACTIVATED                      = 'PAYMENT_LINK_DEACTIVATED';
+    const PAYMENT_LINK_ACTIVATE_REQUEST                 = 'PAYMENT_LINK_ACTIVATE_REQUEST';
+    const PAYMENT_LINK_ACTIVATED                        = 'PAYMENT_LINK_ACTIVATED';
 
     const SUBSCRIPTION_VIEW_DATA_SERIALIZER_RESPONSE    = 'SUBSCRIPTION_VIEW_DATA_SERIALIZER_RESPONSE';
     const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED    = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED';
@@ -375,6 +387,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BAD_REQUEST_INVALID_API_KEY                   = 'BAD_REQUEST_INVALID_API_KEY';
     const BAD_REQUEST_INVALID_API_SECRET                = 'BAD_REQUEST_INVALID_API_SECRET';
     const BAD_REQUEST_API_SECRET_NOT_PROVIDED           = 'BAD_REQUEST_API_SECRET_NOT_PROVIDED';
+    const BAD_REQUEST_INVALID_CLIENT_KEY                = 'BAD_REQUEST_INVALID_CLIENT_KEY';
     const BAD_REQUEST_INVALID_ACCOUNT_HEADER            = 'BAD_REQUEST_INVALID_ACCOUNT_HEADER';
 
     const RUNTIME_ERROR                                 = 'RUNTIME_ERROR';
@@ -741,6 +754,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
+    const OTPELF_REQUEST                            = 'OTPELF_REQUEST';
+    const OTPELF_RESPONSE                           = 'OTPELF_RESPONSE';
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
@@ -821,6 +836,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
     const BATCH_PROCESS_ASYNC                           = 'BATCH_PROCESS_ASYNC';
+    const BATCH_PROCESS_ENTRIES_CLEANED                 = 'BATCH_PROCESS_ENTRIES_CLEANED';
     const BATCH_RETRY_OUTPUT_FILE                       = 'BATCH_RETRY_OUTPUT_FILE';
     const BATCH_JOB_RECEIVED                            = 'BATCH_JOB_RECEIVED';
     const BATCH_JOB_HANDLED                             = 'BATCH_JOB_HANDLED';
@@ -1092,6 +1108,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_CREDS_CACHE_SET                           = 'AWS_CREDS_CACHE_SET';
 
     const SERVER_ERROR_LOG_RISK                         = 'SERVER_ERROR_LOG_RISK';
+
+    // Partners trace codes
+    const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

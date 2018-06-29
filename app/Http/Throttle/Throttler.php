@@ -331,6 +331,14 @@ class Throttler
      */
     protected function setMidIfApplicable()
     {
+        // Skipping this for partner auth for now. We have to fix on whether the client's
+        // merchant should be throttled or the account passed in the input/header i.e.
+        // the submerchant.
+        if (str_contains($this->keyId, 'partner_') === true)
+        {
+            return;
+        }
+
         if ((empty($this->keyId) === true) or (empty($this->mode) === true))
         {
             return;

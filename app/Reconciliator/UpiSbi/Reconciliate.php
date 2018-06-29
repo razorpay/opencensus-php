@@ -14,16 +14,22 @@ class Reconciliate extends Base\Reconciliate
     /**
      * According to the POC from the gateway, the file will contain this substring
      */
-    const TRANSACTION_REPORT = 'merchantreport';
+    const TRANSACTION_REPORT = 'transaction report';
 
     protected function getFileName(array $extraDetails): string
     {
         return $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_NAME];
     }
 
+    /**
+     * Receiving MIS files via SFTP, not keeping any constraint on file name.
+     *
+     * @param string $fileName
+     * @return string|void
+     */
     protected function getTypeName($fileName)
     {
-        if (strpos(strtolower($fileName), self::TRANSACTION_REPORT) !== false)
+        if (str_contains(strtolower($fileName), self::TRANSACTION_REPORT) !== false)
         {
             return self::PAYMENT;
         }
