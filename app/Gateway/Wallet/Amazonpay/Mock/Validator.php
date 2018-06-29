@@ -24,6 +24,8 @@ final class Validator extends Base\Validator
         RequestFields::SELLER_ID         => 'required|string',
         RequestFields::START_TIME        => 'required|string|integer',
         RequestFields::SIGNATURE         => 'required|string|size:44',
+        RequestFields::SELLER_NOTE       => 'required|string|max:255',
+        RequestFields::SELLER_STORE_NAME => 'required|string|max:255',
     ];
 
     protected static $verifyRules = [
