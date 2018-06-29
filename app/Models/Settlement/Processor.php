@@ -325,6 +325,8 @@ class Processor extends Base\Core
 
         $mids = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
 
+        $mids = array_unique($mids);
+
         $this->merchants = $this->repo
                                 ->merchant
                                 ->findManyWithRelations(

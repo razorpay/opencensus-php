@@ -6,6 +6,7 @@ use Config;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
+use RZP\Models\Card\IIN;
 use RZP\Models\User;
 use RZP\Models\State;
 use RZP\Constants\Mode;
@@ -1451,6 +1452,29 @@ class Entity extends Base\PublicEntity
         }
 
         return $config;
+    }
+
+    public function getPaymentFlows(IIN\Entity $iin = null)
+    {
+        $data = [];
+
+        if (empty($iin) === true)
+        {
+            return $data;
+        }
+
+        if ($this->isFeatureEnabled(Feature\Constants::ATM_PIN_AUTH) === true)
+        {
+            $data[IIN\Constants::PIN] = $iin->isDebitPin();
+        }
+
+        if ($this->isFeatureEnabled(Feature\Constants::OTPELF) === true)
+        {
+            $data[IIN\Constants::OTP] = (($iin->isHeadLessOtp()) or
+                                         ($iin->isOtp()));
+        }
+
+        return $data;
     }
 
     public function toArrayUser()

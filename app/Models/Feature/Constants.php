@@ -71,6 +71,7 @@ class Constants
     const PARTNER                       = 'partner';
     const OTPELF                        = 'otpelf';
     const PAYMENT_NOBRANDING            = 'payment_nobranding';
+    const ENABLE_VPA_VALIDATE           = 'enable_vpa_validate';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -78,9 +79,6 @@ class Constants
 
     // Payment authentication
     const ATM_PIN_AUTH                  = 'atm_pin_auth';
-
-    // Payment headless otp auth
-    const HEADLESS_OTP                  = 'headless_otp';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -172,8 +170,8 @@ class Constants
         self::S2S_OPTIONAL_DATA             => true,
         self::PARTNER                       => true,
         self::PAYMENT_NOBRANDING            => true,
-        self::HEADLESS_OTP                  => true,
         self::OTPELF                        => true,
+        self::ENABLE_VPA_VALIDATE           => true,
     ];
 
     // Entity type constants

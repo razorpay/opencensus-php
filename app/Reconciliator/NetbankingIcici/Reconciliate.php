@@ -11,7 +11,8 @@ class Reconciliate extends Base\Reconciliate
      * Currently Icici shares only payment report
      */
     const SUCCESS = [
-        'razorpayreports' => self::PAYMENT
+        'razorpayreports'               => self::PAYMENT,
+        'razorpaysoftwarepvtltdreports' => self::PAYMENT,
     ];
 
     const EXCLUDE_FILE_STRING = 'success';
