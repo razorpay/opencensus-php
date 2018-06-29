@@ -440,7 +440,16 @@ class Entity extends Base\PublicEntity
     {
         $iin = $this->iinRelation;
 
-        return $this->merchant->getPaymentFlows($iin);
+        // Allowing for Admin and App Auth(Priviledge)
+        $app  = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        // card can be linked with the shared merchant since it could have been
+        // saved via global card saving, hence use basic auth merchant
+        $merchant = $auth->getMerchant();
+
+        return $merchant->getPaymentFlows($iin);
     }
 
     public function setPublicIssuerAttribute(array & $array)
