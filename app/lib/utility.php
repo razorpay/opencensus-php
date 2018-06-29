@@ -64,7 +64,6 @@ if (! function_exists('array_assoc_flatten'))
     }
 }
 
-
 if (! function_exists('get_last_query'))
 {
     function get_last_query()
