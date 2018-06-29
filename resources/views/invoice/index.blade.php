@@ -275,15 +275,15 @@ $error_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" vi
                             );
                         }
 
-                        if (response.razorpay_invoice_status === 'partially_paid') {
-                            window.location.reload()
-                        } else if (response.razorpay_invoice_status === 'paid') {
+                        if (response.razorpay_invoice_status === 'paid') {
                             let invoice = data.invoice;
                             invoice.amount_due_formatted = '0.00';
                             invoice.amount_paid_formatted = invoice.amount_formatted;
                             invoice.status = 'paid';
                             invoice.is_paid = true;
                             this.rerender(data);
+                        } else {
+                            window.location.reload()
                         }
                     }
                 });
