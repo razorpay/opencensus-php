@@ -53,6 +53,7 @@ class Entity extends Base\PublicEntity
     const CONTACT           = 'contact';
     const EMAIL             = 'email';
     const USER              = 'user';
+    const SLUG              = 'slug';
 
     // Additional general usage input/output constants for the module
     const PAYMENT_ID         = 'payment_id';
@@ -300,16 +301,18 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Payment link's hosted view long url is of the following format -
-     * https://api.razorpay.com/v1/payment_links/v1/:id/view
+     * Payment link's hosted view long url is one of the following formats:
+     * - https://links.razorpay.in/pl_10000000000000/view
+     * - https://links.razorpay.in/AlphaNumMin4Max20Slug
+     * Notice the suffix in 1nd kind of route(when there is no slug), we need this distinction for routes to work.
      *
-     * @param  string $plHostedBaseUrl
-     *
+     * @param  string      $plHostedBaseUrl
+     * @param  string|null $slug
      * @return string
      */
-    public function getHostedViewUrl(string $plHostedBaseUrl): string
+    public function getHostedViewUrl(string $plHostedBaseUrl, string $slug = null): string
     {
-        return $plHostedBaseUrl . '/v1/payment_links/' . $this->getPublicId() . '/view';
+        return $plHostedBaseUrl . '/' . ($slug === null ? $this->getPublicId() . '/view' : $slug);
     }
 
     // -------------------------------------- End Getters -----------------------------

@@ -72,7 +72,7 @@ class Service extends Base\Service
     public function getViewNameAndPayload(string $id)
     {
         /** @var Entity $paymentLink */
-        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+        $paymentLink = $this->repo->payment_link->findByPublicId($id);
 
         $viewPayload = $this->core->getHostedViewPayload($paymentLink);
 

@@ -29,6 +29,7 @@ class Validator extends Base\Validator
         Entity::TITLE         => 'required|filled|string|max:40',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
+        Entity::SLUG          => 'filled|string|min:4|max:20',
     ];
 
     protected static $editRules = [
@@ -40,6 +41,7 @@ class Validator extends Base\Validator
         Entity::TITLE         => 'filled|string|max:40',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
+        Entity::SLUG          => 'filled|string|min:4|max:20',
     ];
 
     protected static $sendNotificationRules = [

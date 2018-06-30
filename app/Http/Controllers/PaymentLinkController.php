@@ -78,4 +78,19 @@ class PaymentLinkController extends Controller
 
         return View::make($view, $payload);
     }
+
+    /**
+     * Renders hosted view for payment link with given slug
+     * @param string $slug
+     */
+    public function viewBySlug(string $slug)
+    {
+        $gimli = $this->app['elfin']->driver('gimli');
+
+        $slugMetadata = $gimli->expandAndGetMetadata($slug);
+
+        $this->ba->setModeAndDbConnection($slugMetadata['mode']);
+
+        return $this->view($slugMetadata['id']);
+    }
 }
