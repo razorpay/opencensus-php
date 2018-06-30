@@ -6,8 +6,10 @@ use View;
 use Request;
 use ApiResponse;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
 use RZP\Models\PaymentLink\Entity;
+use RZP\Exception\BadRequestException;
 use RZP\Http\Controllers\Traits\HasCrudMethods;
 
 class PaymentLinkController extends Controller
@@ -88,6 +90,11 @@ class PaymentLinkController extends Controller
         $gimli = $this->app['elfin']->driver('gimli');
 
         $slugMetadata = $gimli->expandAndGetMetadata($slug);
+
+        if ($slugMetadata === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
 
         $this->ba->setModeAndDbConnection($slugMetadata['mode']);
 

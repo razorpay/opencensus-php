@@ -33,36 +33,32 @@ class Gimli extends Base
     }
 
     /**
-     * Expands a given hash
+     * Expands a given hash, Returns array if success else null
      * @param  string $hash
      * @return array|null
      */
     public function expand(string $hash)
     {
-        $apiUrl  = "{$this->apiBaseUrl}hashes/{$hash}";
-        $headers = $this->getHeaders("");
-
+        $apiUrl   = "{$this->apiBaseUrl}hashes/{$hash}";
+        $headers  = $this->getHeaders("");
         $response = Requests::get($apiUrl, $headers);
         $body     = $response->body;
 
-        return isJson($body) ? json_decode($body, true) : null;
+        return (($response->status_code === 200) and (isJson($body) === true)) ? json_decode($body, true) : null;
     }
 
     /**
-     * Expands a given hash and returns metadata saved with it in gimli
+     * Expands a given hash and returns metadata saved with it in gimli, Returns array if success else null
      * @param  string $hash
      * @return array|null
      */
     public function expandAndGetMetadata(string $hash)
     {
-        $hashDetails = $this->expand($hash);
+        $details = $this->expand($hash);
 
-        if (empty($hashDetails) === false)
+        if ($details !== null)
         {
-            $aliasDetails = $hashDetails['URLAliases'][0];
-            $metadata     = json_decode($aliasDetails['metadata'], true);
-
-            return $metadata;
+            return $details['url_aliases'][0]['metadata'];
         }
     }
 

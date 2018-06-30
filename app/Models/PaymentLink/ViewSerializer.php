@@ -51,6 +51,7 @@ class ViewSerializer extends Base\Core
             'key_id'         => $this->getMerchantKeyId(),
             'is_test_mode'   => ($this->mode === Mode::TEST),
             'environment'    => $this->app->environment(),
+            'app_url'        => config('app.url'),
             E::MERCHANT      => $this->serializeMerchantForHosted(),
             E::PAYMENT_LINK  => $this->serializePaymentLinkForHosted(),
         ];

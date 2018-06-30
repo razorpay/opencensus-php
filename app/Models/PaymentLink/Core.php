@@ -408,7 +408,7 @@ class Core extends Base\Core
         catch (\RZP\Exception\BaseException $e)
         {
             // TODO: Gimli should return 4xx & Elfin service should propagate that error to callee
-            if (str_contains($e->getDataAsString(), 'Duplicate entry') === true)
+            if (str_contains($e->getDataAsString(), 'Duplicate') === true)
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_LINK_SLUGIFY_FAILED,
@@ -441,8 +441,9 @@ class Core extends Base\Core
             $this->elfin->setNoFallback();
             // Additional parameters/metadata which gets used later in rendering view endpoint
             $params += [
-                'alias' => $slug,
-                'metadata' => [
+                'alias'          => $slug,
+                'fail_if_exists' => true,
+                'metadata'       => [
                     'mode'   => $this->mode,
                     'entity' => $paymentLink->getEntity(),
                     'id'     => $paymentLink->getPublicId(),
