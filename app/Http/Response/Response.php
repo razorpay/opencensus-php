@@ -5,6 +5,7 @@ namespace RZP\Http\Response;
 use App;
 use View;
 use Request;
+use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 
@@ -174,6 +175,10 @@ class Response
         else if ($this->isCheckoutRoute($route))
         {
             return $this->generateCheckoutView($data);
+        }
+        else if ($this->isViewRoute($route))
+        {
+            return $this->generateDefaultErrorView($data);
         }
 
         return $this->json($data, $status);
@@ -377,5 +382,18 @@ class Response
     protected function getCurrentRouteName()
     {
         return $this->route->getCurrentRouteName();
+    }
+
+    protected function isViewRoute(string $route): bool
+    {
+        return in_array($route, Route::$publicView, true);
+    }
+
+    protected function generateDefaultErrorView(array $data)
+    {
+        // TODO: Should have a default error view instead of payment_link.hosted, but for now this works too
+        $response = \View::make('payment_link.hosted', ['data' => $data]);
+
+        return \Response::make($response);
     }
 }

@@ -7,7 +7,6 @@ use Request;
 use ApiResponse;
 
 use RZP\Error\ErrorCode;
-use RZP\Exception\BaseException;
 use RZP\Models\PaymentLink\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Http\Controllers\Traits\HasCrudMethods;

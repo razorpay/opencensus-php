@@ -33,7 +33,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
             <script>
                 var Razorpay = {
                     config: {
-                        // TODO: Why/how will this work?
+                        // TODO: Why won't/how will this work?
                         api: {{$data['app_url'] ?? '/'}}
                     }
                 }

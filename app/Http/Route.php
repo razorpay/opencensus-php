@@ -441,14 +441,7 @@ final class Route
         'item_fetch_multiple'                      => ['get',      'items',                                          'ItemController@getItems'                                           ],
         'item_update'                              => ['patch',    'items/{id}',                                     'ItemController@updateItem'                                         ],
         'item_delete'                              => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
-        //
-        // TODO:
-        // - Finalize routes & it's post corresponding, actually don't add
-        //   more routes, just fix the utility method which register routes to allow
-        //   multiple HTTP methods on same route
-        // - Get hosted page working, for non-prod ENV it usage browser URL as base for other calls
-        // - Rewrite stuff & Error views (Fix error handler to render a generic view error instead of JSON)
-        //
+        // TODO: Finalize routes cases - slug, id, multiple HTTP methods and their changes
         'links_view_by_slug_get'                   => ['get',      'links/{slug}',                                   'PaymentLinkController@viewBySlug'                                  ],
         'links_view_get'                           => ['get',      'links/{x_entity_id}/view',                       'PaymentLinkController@view'                                        ],
         'payment_link_view_get'                    => ['get',      'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
@@ -919,6 +912,16 @@ final class Route
     public static $publicCallback = [
         'payment_callback_with_key_post',
         'payment_callback_with_key_get',
+    ];
+
+    /**
+     * Routes which are supposed to always render a view and not JSON(Api like behavior)
+     * @var array
+     */
+    public static $publicView = [
+        'links_view_get',
+        'links_view_by_slug_get',
+        'payment_link_view_get',
     ];
 
     public static $private = [
