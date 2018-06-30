@@ -38,6 +38,11 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePaymentLinkWithoutAmount()
+    {
+        $this->startTest();
+    }
+
     public function testCreatePaymentLinkWithBadExpireBy()
     {
         $this->startTest();
@@ -59,7 +64,7 @@ class PaymentLinkTest extends TestCase
 
     public function testUpdatePaymentLink()
     {
-        $this->createPaymentLink();
+        $this->createPaymentLink(self::TEST_PL_ID, ['amount' => 2000]);
 
         $this->startTest();
     }
@@ -336,7 +341,7 @@ class PaymentLinkTest extends TestCase
 
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
     {
-        $attributes[PaymentLinkModel\Entity::ID] = $id;
+        $attributes[PaymentLinkModel\Entity::ID]      = $id;
         $attributes[PaymentLinkModel\Entity::USER_ID] = User::MERCHANT_USER_ID;
 
         return $this->fixtures->create('payment_link', $attributes);

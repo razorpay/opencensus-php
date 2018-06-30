@@ -37,6 +37,28 @@ return [
         ],
     ],
 
+    'testCreatePaymentLinkWithoutAmount' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => 'Sample description'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user_id'       => User::MERCHANT_USER_ID,
+                'receipt'       => '00000000000001',
+                'amount'        => null,
+                'currency'      => null,
+                'title'         => 'Sample title',
+                'description'   => 'Sample description',
+            ],
+        ],
+    ],
+
     'testCreatePaymentLinkWithBadExpireBy' => [
         'request'  => [
             'url'     => '/payment_links',
@@ -119,6 +141,8 @@ return [
             'method'  => 'patch',
             'content' => [
                 'receipt'       => '00000000000002',
+                'amount'        => 4000,
+                'currency'      => 'INR',
                 'title'         => 'Sample test title',
                 'description'   => 'Sample test description',
                 'notes'         => [
@@ -130,6 +154,7 @@ return [
             'content' => [
                 'id'            => 'pl_100000000000pl',
                 'receipt'       => '00000000000002',
+                'amount'        => 4000,
                 'title'         => 'Sample test title',
                 'description'   => 'Sample test description',
                 'notes'         => [

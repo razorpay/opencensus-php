@@ -128,14 +128,11 @@ class Core extends Base\Core
         {
             $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
 
-            /** @var Validator $validator */
-            $validator = $paymentLink->getValidator();
-
-            $validator->validateActivateOperation();
+            $paymentLink->getValidator()->validateActivateOperation();
 
             $paymentLink->edit($input);
 
-            $validator->validateShouldActivationBeAllowed();
+            $paymentLink->getValidator()->validateShouldActivationBeAllowed();
 
             $this->changeStatus($paymentLink, Status::ACTIVE, null);
 
