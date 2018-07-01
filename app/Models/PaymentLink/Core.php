@@ -96,7 +96,12 @@ class Core extends Base\Core
         return $paymentLink;
     }
 
-    public function updateShortUrlIfApplicable(Entity $paymentLink, $input)
+    /**
+     * Attempts recreating short URL for payment link in case of new slug in patch input
+     * @param Entity $paymentLink
+     * @param array  $input
+     */
+    public function updateShortUrlIfApplicable(Entity $paymentLink, array $input)
     {
         if (($slug = $input[Entity::SLUG] ?? null) !== null)
         {
@@ -457,7 +462,6 @@ class Core extends Base\Core
     /**
      * Called from CRON.
      * Updates status to INACTIVE, status_reason to EXPIRED of all payment links which are active and past expire_by.
-     *
      * @return array
      */
     public function expirePaymentLinks(): array
