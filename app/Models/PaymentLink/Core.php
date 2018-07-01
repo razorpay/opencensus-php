@@ -181,7 +181,15 @@ class Core extends Base\Core
         // 1. Validates amount, if applicable
         $paymentLink->getValidator()->validatePaymentAmount($payment);
 
-        // 2. Validates payment link is active and has payment slots available
+        // 2. Validates $payment notes (UDF values) if applicable
+        $schema        = new Template\UdfSchema;
+        $udfSchema     = $schema->getJSONSchema($paymentLink->getId());
+        $udfProperties = array_keys($udfSchema['properties'] ?? []);
+        $paymentNotes  = $payment->getNotes()->toArray();
+
+        $schema->validate(array_only($paymentNotes, $udfProperties));
+
+        // 3. Validates payment link is active and has payment slots available
         if (($paymentLink->isPayable() === false) or
             ($this->hasPaymentSlots($paymentLink) === false))
         {
