@@ -15,10 +15,8 @@ export default reduxForm({ form: 'editWebsiteDetails' })(
         onSubmit={handleSubmit(onSubmit)}
       >
         <div className="form-group">
-          <span className="text-muted">
+          <span class="text-muted">
             Your website/app should contain these pages:{' '}
-          </span>
-          <span class="text-links">
             <strong>
               About Us, Contact Us,{' '}
               <a
@@ -75,7 +73,6 @@ export const SuccessModalContent = ({ onClose }) => (
     <div className="form-group">
       <button
         className="btn btn-primary btn-block center-block"
-        style={{ width: '50%' }}
         onClick={onClose}
       >
         Okay, Got it!

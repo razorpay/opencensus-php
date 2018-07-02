@@ -33,24 +33,30 @@ export default class OnBoardingForm extends Component {
   };
 
   render() {
-    const { formType } = this.props;
+    const { formType, isPreStepCompleted } = this.props;
 
     const currentForm = FORM_TYPE[formType];
-    const WizardFormPreStep = currentForm.preStep.component || null;
+    const WizardFormPreStep =
+      currentForm.preStep && currentForm.preStep.component;
 
     return (
       <Fragment>
         {WizardFormPreStep ? (
-          <Accordian>
-            <AccordianItem>
-              <AccordianItemTitle>
+          <Accordian expandedKey={isPreStepCompleted | 0}>
+            <AccordianItem cantBeOpened={isPreStepCompleted}>
+              <AccordianItemTitle
+                classNames={`${isPreStepCompleted ? 'text-success' : ''}`}
+              >
+                {isPreStepCompleted && (
+                  <i class="i i-check" style={{ marginRight: '4px' }} />
+                )}
                 Step 1: {currentForm.preStep.title}
               </AccordianItemTitle>
               <AccordianItemContent>
-                <WizardFormPreStep />
+                <WizardFormPreStep disabled={isPreStepCompleted} />
               </AccordianItemContent>
             </AccordianItem>
-            <AccordianItem>
+            <AccordianItem cantBeOpened={!isPreStepCompleted}>
               <AccordianItemTitle>
                 Step 2: {currentForm.title}
               </AccordianItemTitle>

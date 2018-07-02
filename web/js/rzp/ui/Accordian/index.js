@@ -18,8 +18,8 @@ export default class Accordian extends Component {
     this.setState({ items });
   };
 
-  componentWillMount() {
-    const { children, expandedKey = 0 } = this.props;
+  setExpandedTab(props = this.props) {
+    const { children, expandedKey = 0 } = props;
     let items = [];
 
     // map children props to state item
@@ -32,11 +32,21 @@ export default class Accordian extends Component {
     this.setState({ items });
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (this.props.expandedKey !== nextProps.expandedKey) {
+      this.setExpandedTab(nextProps);
+    }
+  }
+
+  componentWillMount() {
+    this.setExpandedTab();
+  }
+
   render() {
-    const { children } = this.props;
+    const { children, classNames } = this.props;
 
     return (
-      <div class="Accordian">
+      <div class={`Accordian ${classNames}`}>
         {Children.map(children, (child, index) =>
           cloneElement(child, {
             uuid: index,
@@ -54,6 +64,7 @@ export const AccordianItem = ({
   children,
   expanded = false,
   uuid,
+  cantBeOpened,
   onClick = () => {},
 }) => {
   const title = children[0];
@@ -64,8 +75,8 @@ export const AccordianItem = ({
 
   return (
     <div class={`Accordian__item ${classNames}`}>
-      {cloneElement(title, { onClick, uuid })}
-      {content}
+      {cloneElement(title, { onClick, uuid, cantBeOpened })}
+      {cloneElement(content, { cantBeOpened })}
     </div>
   );
 };
@@ -74,19 +85,31 @@ export const AccordianItemTitle = ({
   classNames = '',
   children,
   onClick,
+  cantBeOpened,
   uuid,
 }) => {
+  const props = {
+    className: `Accordian__title ${classNames}`,
+    'data-uuid': uuid,
+  };
+
+  if (!cantBeOpened) {
+    props.onClick = onClick;
+  }
+
   return (
-    <div
-      class={`Accordian__title ${classNames}`}
-      onClick={onClick}
-      data-uuid={uuid}
-    >
+    <div {...props}>
       {children}
-      <div class="accordian__arrow" />
+      {!cantBeOpened && <div class="accordian__arrow" />}
     </div>
   );
 };
-export const AccordianItemContent = ({ classNames = '', children }) => {
-  return <div class={`Accordian__content ${classNames}`}>{children}</div>;
+export const AccordianItemContent = ({
+  classNames = '',
+  cantBeOpened,
+  children,
+}) => {
+  return cantBeOpened ? null : (
+    <div class={`Accordian__content ${classNames}`}>{children}</div>
+  );
 };

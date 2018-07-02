@@ -11,7 +11,7 @@ import { required } from 'rzp/utils/validators';
 import Spinner from 'rzp/ui/Spinner';
 import { showNotification } from 'rzp/modules/notifications';
 
-import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { autoPrefixUrls, isFunction } from 'rzp/utils/rzp-utils';
 
 import {
   saveOnboarding,
@@ -200,6 +200,11 @@ export default class OnBoarding extends Component {
                     handleChange={this.handleChange}
                     formType={formType}
                     onSave={handleSubmit(this.onSubmitClick)}
+                    isPreStepCompleted={
+                      isFunction(this.props.isPreStepCompleted)
+                        ? this.props.isPreStepCompleted()
+                        : this.props.isPreStepCompleted
+                    }
                     disabled={
                       invalid ||
                       (formType === 'marketplace' && !this.state.uploadedFile)

@@ -16,6 +16,7 @@ import User from 'merchant/models/User';
 @connect(
   state => ({
     user: state.session.user,
+    mode: state.session.mode,
     initialValues: {
       business_website: state.session.user.business_website,
     },
@@ -27,13 +28,10 @@ import User from 'merchant/models/User';
 )
 @reduxForm({
   form: 'editWebsiteDetails_subscription',
-  enableReinitialize: true,
 })
 export default class SubscriptionsPreStep extends Component {
-  static title = 'Website/App details';
-
   handleSave = form => {
-    const { user } = this.props;
+    const { user, mode } = this.props;
 
     return merchantFetch({
       url: 'merchant/activation/update_website_details',
@@ -51,7 +49,7 @@ export default class SubscriptionsPreStep extends Component {
 
           this.props.updateSession({
             user: newUser,
-            mode: 'test',
+            mode,
           });
           this.props.showNotification({
             type: 'success',
@@ -68,6 +66,7 @@ export default class SubscriptionsPreStep extends Component {
   };
 
   render() {
+    const { disabled } = this.props;
     return (
       <div class="form-body">
         <div class="form-group">
@@ -80,8 +79,9 @@ export default class SubscriptionsPreStep extends Component {
             rows="3"
             class="form-control"
             placeholder="https://razorpay.com"
-            validate={[required()]}
+            validate={[required(), lenientUrl('Invalid url')]}
           />
+          {/* disabled={disabled} */}
           <small class="help-block">
             <span className="text-muted">
               Your website/app should contain these pages:{' '}
@@ -122,6 +122,7 @@ export default class SubscriptionsPreStep extends Component {
             pendingText="Saving..."
             onClick={this.props.handleSubmit(this.handleSave)}
           />
+          {/* disabled={disabled} */}
         </div>
       </div>
     );
