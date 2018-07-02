@@ -1,7 +1,6 @@
 <?php
 
 date_default_timezone_set('Asia/Kolkata');
-$error_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 16.538l-4.592-4.548 4.546-4.587-1.416-1.403-4.545 4.589-4.588-4.543-1.405 1.405 4.593 4.552-4.547 4.592 1.405 1.405 4.555-4.596 4.591 4.55 1.403-1.416z"/></svg>';
 
 $payment_page_data               = $data['payment_link'] ?? null;
 $payment_page_expire_by          = $payment_page_data['expire_by'] ?? null;
@@ -13,7 +12,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
 <!doctype html>
 <html>
 <head>
-    <title>Payment Link</title>
+    <title>Payment Page</title>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
@@ -56,6 +55,10 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
         function initAnalytics() {
             analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
             analytics.track('ga', 'pageview');
+
+            if (typeof window.hj === 'function') {
+                window.hj('tagRecording', ['pp_hosted']);
+            }
         }
 
         function checkIsDesktop() {
@@ -340,9 +343,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                             <img id="rzp-logo" src="https://cdn.razorpay.com/logo.svg" style="float: right;"/>
                         </div>
                         <div>
-                            Want to create payment links for your business? Visit
-                            <a href="https://www.razorpay.com/payment-links" target="_blank">razorpay.com/payment-links</a>
-                            and get started instantly
+                            Want to create payment pages for your business? Sign up for <a href="http://bit.ly/2IxmWRC" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">Early Access</a> to create Payment pages and accept payments for your business.
                         </div>
                     </div>
                 </div>
