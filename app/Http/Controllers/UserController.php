@@ -54,7 +54,7 @@ class UserController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->changePassword($id, $input);
+        $data = $this->service()->changePassword($input);
 
         return ApiResponse::json($data);
     }

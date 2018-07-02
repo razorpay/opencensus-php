@@ -228,9 +228,16 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function changePassword(string $id, array $input): array
+    public function changePassword(array $input): array
     {
-        $user = $this->repo->user->findOrFailPublic($id);
+        $user = $this->user;
+
+        (new Validator)->validateInput('change_password', $input);
+
+        if (Hash::check($input[Entity::OLD_PASSWORD], $user->getPassword()) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OLD_PASSWORD_MISMATCH);
+        }
 
         $user = (new Core)->changePassword($user, $input);
 

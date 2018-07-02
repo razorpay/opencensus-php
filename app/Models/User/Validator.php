@@ -34,7 +34,7 @@ class Validator extends Base\Validator
     protected static $changePasswordRules = [
         Entity::PASSWORD              => 'required|between:8,50|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
-        Entity::OLD_PASSWORD          => 'sometimes|string',
+        Entity::OLD_PASSWORD          => 'required|string',
     ];
 
     protected static $actionRules = [
