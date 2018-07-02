@@ -183,18 +183,21 @@ class UserTest extends TestCase
 
     public function testChangeInvalidPassword()
     {
-        $user = $this->fixtures->create('user');
+        $password = Hash::make('12345');
+
+        $user = $this->fixtures->create('user', ['password' => $password]);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
             'password'              => 'hello1234',
-            'password_confirmation' => 'hello123'
+            'password_confirmation' => 'hello123',
+            'old_password'          => '12345',
         ];
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['url'] = '/users/' . $user['id'] . '/password';
+        $testData['request']['url'] = '/users/change_password';
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
