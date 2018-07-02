@@ -1,8 +1,12 @@
 import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 
+import { openModal, closeModal } from 'rzp/modules/modals';
+
 import DataTable from 'rzp/ui/Table/DataTable';
 import StatsCard from 'rzp/ui/StatsCard';
+import HeaderAction from 'rzp/ui/HeaderAction';
+
 import { getTime } from 'rzp/ui/item';
 import {
   submerchant as name,
@@ -11,6 +15,7 @@ import {
 } from 'rzp/ui/item/pair';
 import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
 
+import AddMerchant from './AddMerchant';
 import ListFilter from './ListFilter';
 
 const email = {
@@ -37,9 +42,16 @@ const switchMerchant = {
   value: () => 'Partnership Removed',
 };
 
-@connect(null, { fetchAll })
+@connect(null, { fetchAll, openModal, closeModal })
 export default class SubMerchantsList extends Component {
   state = {};
+
+  handleAddMerchant = () => {
+    this.props.openModal({
+      size: 'small',
+      component: <AddMerchant closeModal={this.props.closeModal} />,
+    });
+  };
 
   search = () => {};
   render() {
@@ -47,7 +59,10 @@ export default class SubMerchantsList extends Component {
       <div class="sub-merchants-list">
         <div class="content-wrapper sub-merchants-list--stats">
           <HeaderAction>
-            <button class="btn btn-primary pull-right">
+            <button
+              class="btn btn-primary pull-right"
+              onClick={this.handleAddMerchant}
+            >
               <i class="i i-plus" />
               Add New Merchant
             </button>
