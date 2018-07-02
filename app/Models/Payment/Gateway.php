@@ -23,6 +23,7 @@ class Gateway
     const AXIS_MIGS              = 'axis_migs';
     const BILLDESK               = 'billdesk';
     const MPI_BLADE              = 'mpi_blade';
+    const MPI_ENSTAGE            = 'mpi_enstage';
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
     const ESIGNER_DIGIO          = 'esigner_digio';
@@ -187,6 +188,7 @@ class Gateway
         self::AXIS_GENIUS         => Settlement\Channel::KOTAK,
         self::AXIS_MIGS           => Settlement\Channel::KOTAK,
         self::MPI_BLADE           => Settlement\Channel::KOTAK,
+        self::MPI_ENSTAGE         => Settlement\Channel::KOTAK,
         self::BILLDESK            => Settlement\Channel::KOTAK,
         self::EBS                 => Settlement\Channel::KOTAK,
         self::ENACH_RBL           => Settlement\Channel::KOTAK,
@@ -236,6 +238,7 @@ class Gateway
             self::CYBERSOURCE,
             self::FIRST_DATA,
             self::MPI_BLADE,
+            self::MPI_ENSTAGE,
             self::HITACHI,
             self::CARD_FSS,
         ],
@@ -407,6 +410,10 @@ class Gateway
             Network::AMEX
         ],
         self::MPI_BLADE => [
+            Network::MC,
+            Network::VISA
+        ],
+        self::MPI_ENSTAGE => [
             Network::MC,
             Network::VISA
         ],

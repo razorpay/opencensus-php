@@ -262,7 +262,7 @@ $invoice_status                 = $invoice_data['status'];
 
                                 @if($invoice_expire_by and $invoice_status !== 'paid')
                                     <div class="info">
-                                        {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
+                                        {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
                                         <div class="val">
                                             {{epoch_format($invoice_expire_by)}}
                                         </div>
@@ -435,7 +435,7 @@ $invoice_status                 = $invoice_data['status'];
 
                         @if($invoice_expire_by and $invoice_status !== 'paid')
                             <div class="info">
-                                {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
+                                {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
                                 <div class="val">{{epoch_format($invoice_expire_by)}} </div>
                             </div>
                         @endif

@@ -15,8 +15,8 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Lib\Formatters\Xml;
-use RZP\Gateway\Base\Action;
 use RZP\Models\Currency\Currency;
+use RZP\Gateway\Base\Action as Action;
 use RZP\Gateway\Mpi\Base\DeviceCategory;
 
 class Gateway extends Base\Gateway
@@ -377,7 +377,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_ENROLL_RESPONSE,
             [
-                'gateway' => 'mpi_blade ',
+                'gateway' => 'mpi_blade',
                 'response' => $response->body,
                 'payment_id' => $input['payment']['id']
             ]);
@@ -579,13 +579,6 @@ class Gateway extends Base\Gateway
         return $xml;
     }
 
-    private function generateXid(array $input)
-    {
-        $xid = str_pad($input['payment']['id'], 20, '0', STR_PAD_LEFT);
-
-        return base64_encode($xid);
-    }
-
     private function getFormattedAmount(array $payment)
     {
         $currency = Currency::getSymbol($payment['currency']);
@@ -656,35 +649,6 @@ class Gateway extends Base\Gateway
         }
 
         return $creds;
-    }
-
-    protected function getAcquirerBin(array $input)
-    {
-        $acqBin = '';
-
-        switch ($input['card']['network_code'])
-        {
-            case Card\Network::MC:
-            case Card\Network::MAES:
-                $acqBin = $this->config['live_mastercard_acq_bin'];
-                break;
-
-            case Card\Network::VISA:
-                $acqBin = $this->config['live_visa_acq_bin'];
-                break;
-
-            default:
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
-
-        }
-
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_acq_bin'];
-        }
-
-        return $acqBin;
     }
 
     protected function getMerchantId(array $input)
