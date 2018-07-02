@@ -37,7 +37,7 @@
       {
           $ctaLabel = 'PROCEED TO PAY';
           $ctaHref = $invoice['short_url'];
-          $headerLabel = $merchant['name'] . ' has sent you an ' . strtolower($invoice['type_label']) . ' for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
+          $headerLabel = $merchant['name'] . ' has sent you ' . ($invoice['type_label']=== 'Invoice' ? 'an ' : 'a ') . strtolower($invoice['type_label']) . ' for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
       }
       elseif ($status === 'expired')
       {
@@ -88,7 +88,7 @@
 
   @section('footerCTA')
       @if ($ctaLabel)
-          <a class="footer--cta" href="{{ $ctaHref }}" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-decoration: none; padding: 10px 15px; display: inline-block; border-radius: 5px; white-space: nowrap; cursor: pointer; color: {{ $merchant['brand_text_color'] }}; background-color: {{ $merchant['brand_color'] }}; border: 1px solid {{ $merchant['brand_color'] }};">
+          <a class="footer--cta" href="{{ $ctaHref }}" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-decoration: none; padding: 9px 15px; display: inline-block; border-radius: 4px; white-space: nowrap; cursor: pointer; color: {{ $merchant['brand_text_color'] }}; background-color: {{ $merchant['brand_color'] }}; border: 1px solid {{ $merchant['brand_color'] }};">
             {{ $ctaLabel }}
           </a>
       @endif

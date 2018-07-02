@@ -3560,7 +3560,7 @@ DROP INDEX `card_fss_status_index` on `card_fss`; CREATE INDEX `card_fss_status_
 
 ALTER TABLE line_items
     ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
-    
+
 Alter table terminals
     Modify column type integer default '1';
 
@@ -3655,7 +3655,6 @@ ALTER TABLE invoices
     DROP INDEX invoices_merchant_id_receipt_unique,
     ADD INDEX invoices_merchant_id_receipt_index (merchant_id, receipt);
 
-
 #increase error_code length for hdfc
 ALTER TABLE hdfc
     ADD COLUMN error_code2 VARCHAR(255) DEFAULT NULL AFTER error_code,
@@ -3699,4 +3698,11 @@ SET sql_log_bin = 1;
 
 # Once above has executed, on each replica apart from redash login and execute the same command.
 # Doing it this way, so that there is no time in which redash replica does not have fk constraints.
+
+ALTER TABLE blade
+    ADD COLUMN gateway CHAR(64) DEFAULT NULL AFTER acquirer,
+    ADD COLUMN gateway_payment_id VARCHAR(255) DEFAULT NULL AFTER eci,
+    ADD COLUMN response_code VARCHAR(255) DEFAULT NULL AFTER gateway_payment_id,
+    ADD COLUMN response_description VARCHAR(255) DEFAULT NULL AFTER response_code,
+    ADD INDEX `blade_gateway_payment_id_index` (gateway_payment_id);
 

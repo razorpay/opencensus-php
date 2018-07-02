@@ -378,6 +378,13 @@ trait SettlementTrait
                 Trace::ERROR,
                 TraceCode::SETTLEMENT_SKIPPED,
                 $traceData);
+
+            $data = [
+                    'message' => 'Settlement Skipped. Check for Retry.',
+                    'status'  => SlackNotification::BAD,
+                ] + $traceData;
+
+            (new SlackNotification)->send($data);
         }
 
         return [$settlement, $bankTransferAtpt];

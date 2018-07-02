@@ -4,7 +4,6 @@ namespace RZP\Models\Card\IIN;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Feature;
 
 class Service extends Base\Service
 {
@@ -20,35 +19,6 @@ class Service extends Base\Service
         $iins = $this->repo->iin->fetch($input);
 
         return $iins->toArrayPublic();
-    }
-
-    public function fetchPaymentFlows(array $input)
-    {
-        (new Validator)->validateInput('fetch_payment_flows', $input);
-
-        $iinEntity = $this->repo->iin->find($input['iin']);
-
-        $data = [];
-
-        if (empty($iinEntity) === true)
-        {
-            return $data;
-        }
-
-        $merchant = $this->merchant;
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::ATM_PIN_AUTH) === true)
-        {
-            $data[Constants::PIN] = $iinEntity->isDebitPin();
-        }
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::OTPELF) === true)
-        {
-            $data[Constants::OTP] = (($iinEntity->isHeadLessOtp()) or
-                                     ($iinEntity->isOtp()));
-        }
-
-        return $data;
     }
 
     public function addIin($input)
