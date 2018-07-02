@@ -989,4 +989,32 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function createAccessMap(string $merchantId)
+    {
+        $input = $this->input;
+
+        $response = $this->service()->createPartnerAccessMap($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function deleteAccessMap(string $merchantId)
+    {
+        $input = $this->input;
+
+        $response = $this->service()->deletePartnerAccessMap($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
 }

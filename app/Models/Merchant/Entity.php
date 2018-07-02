@@ -1504,7 +1504,10 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PARTNER_TYPE, $partnerType);
     }
 
-    public function isPurePlatformTypePartner(): bool
+    /**
+     * @return bool
+     */
+    public function isPurePlatformPartner(): bool
     {
         return ($this->getPartnerType() === Constants::PURE_PLATFORM);
     }

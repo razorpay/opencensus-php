@@ -376,33 +376,13 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
-    public function validateIsPurePartner(Entity $merchant)
+    public function validateIsNotPurePlatform(Entity $merchant)
     {
-        // Block non-partner merchants and pure platforms
-        if (($merchant->isPartner() === false) or ($merchant->isPurePlatformTypePartner() === true))
+        // Block pure platforms
+        if ($merchant->isPurePlatformPartner() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
-                Entity::PARTNER_TYPE,
-                [
-                    Entity::ID           => $merchant->getId(),
-                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
-                ]);
-        }
-    }
-
-    /**
-     * @param Entity $merchant
-     *
-     * @throws Exception\BadRequestException
-     */
-    public function validateReferralIsNotPartner(Entity $merchant)
-    {
-        // Block non-partner merchants and pure platforms
-        if (($merchant->isPartner() === true))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER,
                 Entity::PARTNER_TYPE,
                 [
                     Entity::ID           => $merchant->getId(),
@@ -717,12 +697,17 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
-    public function validateIfNotAPartner(Entity $merchant)
+    public function validateIsPartner(Entity $merchant)
     {
         if ($merchant->isPartner() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
+                ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::ID           => $merchant->getId(),
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]);
         }
     }
 

@@ -814,8 +814,12 @@ class Core extends Base\Core
      */
     public function getPartnerApp(Entity $merchant)
     {
+        $validator = new Validator;
+
+        $validator->validateIsPartner($merchant);
+
         // For pure platforms, no internal partner app is created
-        (new Validator)->validateIsPurePartner($merchant);
+        $validator->validateIsNotPurePlatform($merchant);
 
         try
         {
@@ -863,7 +867,7 @@ class Core extends Base\Core
      */
     public function unmarkAsPartner(Entity $merchant): Entity
     {
-        (new Validator)->validateIfNotAPartner($merchant);
+        (new Validator)->validateIsPartner($merchant);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant)
         {
@@ -880,18 +884,16 @@ class Core extends Base\Core
 
     /**
      * @param Entity $partner
-     * @param Entity $referral
+     * @param Entity $submerchant
      *
      * @return array
      * @throws BadRequestException
      */
-    public function createPartnerReferral(Entity $partner, Entity $referral)
+    public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
     {
-        (new Validator)->validateReferralIsNotPartner($referral);
-
         $partnerApp = $this->getPartnerApp($partner);
 
-        $referralId = $referral->getId();
+        $submerchantId = $submerchant->getId();
 
         $partnerAppId = $partnerApp->getId();
 
@@ -900,22 +902,22 @@ class Core extends Base\Core
             AccessMap\Entity::ENTITY_ID   => $partnerAppId,
         ];
 
-        $accessMap = $this->repo->merchant_access_map->fetch($params, $referralId);
+        $accessMap = $this->repo->merchant_access_map->fetch($params, $submerchantId);
 
         if ($accessMap->isEmpty() === false)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS,
+                ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_ALREADY_EXISTS,
                 null,
                 [
-                    Entity::MERCHANT_ID           => $referralId,
+                    Entity::MERCHANT_ID           => $submerchantId,
                     AccessMap\Entity::ENTITY_ID   => $partnerAppId,
                     AccessMap\Entity::ENTITY_TYPE => AccessMap\Entity::APPLICATION,
                 ]);
         }
 
         $accessMap = (new AccessMap\Service)->mapOAuthApplication(
-            $referralId,
+            $submerchantId,
             [
                 AccessMap\Entity::APPLICATION_ID => $partnerAppId,
             ]);
@@ -925,16 +927,16 @@ class Core extends Base\Core
 
     /**
      * @param Entity $partner
-     * @param Entity $referral
+     * @param Entity $submerchant
      *
      * @return array
      * @throws BadRequestException
      */
-    public function deletePartnerReferral(Entity $partner, Entity $referral)
+    public function deletePartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
     {
         $partnerApp = $this->getPartnerApp($partner);
 
-        $referralId = $referral->getId();
+        $submerchantId = $submerchant->getId();
 
         $partnerAppId = $partnerApp->getId();
 
@@ -943,21 +945,21 @@ class Core extends Base\Core
             AccessMap\Entity::ENTITY_ID   => $partnerAppId,
         ];
 
-        $accessMap = $this->repo->merchant_access_map->fetch($params, $referralId);
+        $accessMap = $this->repo->merchant_access_map->fetch($params, $submerchantId);
 
         if ($accessMap->isEmpty() === true)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_REFERRAL_NOT_FOUND,
+                ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_FOUND,
                 null,
                 [
-                    Entity::MERCHANT_ID           => $referralId,
+                    Entity::MERCHANT_ID           => $submerchantId,
                     AccessMap\Entity::ENTITY_ID   => $partnerAppId,
                     AccessMap\Entity::ENTITY_TYPE => AccessMap\Entity::APPLICATION,
                 ]);
         }
 
-        $response = (new AccessMap\Service)->deleteMapOAuthApplication($referralId,$partnerAppId);
+        $response = (new AccessMap\Service)->deleteMapOAuthApplication($submerchantId, $partnerAppId);
 
         return $response;
     }
@@ -967,7 +969,7 @@ class Core extends Base\Core
      */
     public function createPartnerApp(Entity $merchant)
     {
-        if ($merchant->isPurePlatformTypePartner() === true)
+        if ($merchant->isPurePlatformPartner() === true)
         {
             // Don't create a dummy application for pure platforms
             return;
@@ -998,7 +1000,7 @@ class Core extends Base\Core
      */
     public function deletePartnerApp(Entity $merchant)
     {
-        if ($merchant->isPurePlatformTypePartner() === true)
+        if ($merchant->isPurePlatformPartner() === true)
         {
             // A dummy application for pure platforms does not exist
             return;

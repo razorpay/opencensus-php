@@ -338,20 +338,7 @@ class PartnerTest extends OAuthTestCase
         return $merchantRequest;
     }
 
-    public function testAddReferralToPartnerWithoutMerchantId()
-    {
-        $merchantId = self::DEFAULT_MERCHANT_ID;
-
-        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
-
-        $liveMode = $this->app['basicauth']->getLiveConnection();
-
-        $this->ba->adminAuth($liveMode);
-
-        $this->startTest();
-    }
-
-    public function testAddPartnerReferral()
+    public function testAddPartnerAccessMap()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
@@ -367,16 +354,11 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    /**
-     * Tests adding a partner as a referral to some other partner
-     */
-    public function testAddPartnerAsReferralToPartner()
+    public function testAddAccessMapWithoutPartnerContext()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
-
-        $this->fixtures->merchant->edit('10000000000011', ['partner_type' => 'reseller']);
 
         $partnerData = $this->getDummyPartnerAttributes();
 
@@ -388,7 +370,7 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testAddReferralToPurePlatform()
+    public function testAddAccessMapToPurePlatform()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
@@ -404,7 +386,7 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testAddReferralToNonPartner()
+    public function testAddAccessMapToNonPartner()
     {
         $partnerData = $this->getDummyPartnerAttributes();
 
@@ -416,7 +398,7 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testAddPartnerReferralAgain()
+    public function testAddPartnerAccessMapAgain()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
@@ -440,7 +422,7 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testRemovePartnerReferral()
+    public function testRemovePartnerAccessMap()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
@@ -464,7 +446,7 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testRemoveNonExistingPartnerReferral()
+    public function testRemoveNonExistingPartnerAccessMap()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
@@ -480,7 +462,7 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testRemovePartnerReferralAgain()
+    public function testRemovePartnerAccessMapAgain()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
