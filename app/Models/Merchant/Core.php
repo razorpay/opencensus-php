@@ -816,8 +816,12 @@ class Core extends Base\Core
      */
     public function getPartnerApp(Entity $merchant)
     {
+        $validator = new Validator;
+
+        $validator->validateIsPartner($merchant);
+
         // For pure platforms, no internal partner app is created
-        (new Validator)->validateIsNotPurePlatform($merchant);
+        $validator->validateIsNotPurePlatform($merchant);
 
         try
         {

@@ -368,6 +368,22 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAddAccessMapWithoutPartnerContext()
+    {
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $this->createOAuthApplication($partnerData);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testAddAccessMapToPurePlatform()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;

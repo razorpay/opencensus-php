@@ -371,8 +371,6 @@ class Validator extends Base\Validator
      */
     public function validateIsNotPurePlatform(Entity $merchant)
     {
-        $this->validateIsPartner($merchant);
-
         // Block pure platforms
         if ($merchant->isPurePlatformPartner() === true)
         {

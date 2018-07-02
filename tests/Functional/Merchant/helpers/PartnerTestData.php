@@ -355,6 +355,27 @@ return [
         ],
     ],
 
+    'testAddAccessMapWithoutPartnerContext' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000011/access_maps',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_CONTEXT_NOT_SET,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testAddAccessMapToPurePlatform' => [
         'request'   => [
             'url'     => '/merchants/10000000000011/access_maps',
