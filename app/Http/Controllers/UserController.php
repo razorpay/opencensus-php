@@ -50,6 +50,7 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    // Remove id from the route.
     public function changeUserPassword(string $id)
     {
         $input = Request::all();
