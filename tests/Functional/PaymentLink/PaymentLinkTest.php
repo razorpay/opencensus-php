@@ -134,6 +134,29 @@ class PaymentLinkTest extends TestCase
         $this->getLastPaymentLinkEntityAndAssert($this->testData[__FUNCTION__]['payment_link']);
     }
 
+    public function testPaymentLinkMakePaymentWithUserDefinedAmount()
+    {
+        $attributes = [
+            PaymentLinkModel\Entity::AMOUNT        => null,
+            PaymentLinkModel\Entity::CURRENCY      => null,
+            PaymentLinkModel\Entity::TIMES_PAYABLE => 10,
+        ];
+
+        $paymentLink = $this->fixtures->create('payment_link', $attributes);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment[Payment\Entity::PAYMENT_LINK_ID] = $paymentLink->getPublicId();
+        $payment[Payment\Entity::AMOUNT]          = 45000;
+
+        $this->doAuthAndGetPayment($payment, [Payment\Entity::STATUS => Payment\Status::CAPTURED]);
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals(45000, $payment->getAmount());
+        $this->assertEquals($paymentLink->getId(), $payment->getPaymentLinkId());
+
+        $this->getLastPaymentLinkEntityAndAssert($this->testData[__FUNCTION__]['payment_link']);
+    }
+
     public function testPaymentLinkMakePaymentWithInvalidAmount()
     {
         $paymentLink = $this->createPaymentLink();

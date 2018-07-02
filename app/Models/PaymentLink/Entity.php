@@ -316,11 +316,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SHORT_URL, $url);
     }
 
-    public function setCurrency(string $currency = null)
-    {
-        $this->setAttribute(self::CURRENCY, $currency);
-    }
-
     public function incrementTimesPaid()
     {
         $this->setAttribute(self::TIMES_PAID, ($this->getTimesPaid() + 1));

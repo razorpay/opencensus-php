@@ -303,6 +303,16 @@ return [
         ],
     ],
 
+    'testPaymentLinkMakePaymentWithUserDefinedAmount' => [
+        // Used to assert payment link's attributes after payment in test
+        'payment_link' => [
+            'times_paid'        => 1,
+            'total_amount_paid' => 45000,
+            'status'            => 'active',
+            'status_reason'     => null,
+        ],
+    ],
+
     'testPaymentLinkCompletePayments' => [
         // Used to assert payment link's attributes after payment in test
         'payment_link_after_payment_1' => [
