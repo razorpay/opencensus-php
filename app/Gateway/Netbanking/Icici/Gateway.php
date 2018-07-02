@@ -822,6 +822,11 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getVerifyAttributesFromPaymentAndContent($gatewayPayment, $content);
 
+        if ($verify->gatewaySuccess === false)
+        {
+           unset($gatewayPayment[Base\Entity::DATE]);
+        }
+
         $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);

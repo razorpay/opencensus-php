@@ -291,6 +291,10 @@ class NetbankingIciciGatewayTest extends TestCase
             {
                 $this->verifyPayment($payment['razorpay_payment_id']);
             });
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertNull($netbanking['date']);
     }
 
     public function testEmptyVerifyResponse()
