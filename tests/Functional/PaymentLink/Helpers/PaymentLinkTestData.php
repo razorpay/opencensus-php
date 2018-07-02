@@ -37,6 +37,30 @@ return [
         ],
     ],
 
+    'testCreatePaymentLinkWithoutCurrency' => [
+        'request'   => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'currency' => 'INR',
+                'title'    => 'Sample title',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both amount and currency fields must be sent together',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePaymentLinkWithoutAmount' => [
         'request'  => [
             'url'     => '/payment_links',
@@ -161,6 +185,30 @@ return [
                     'sample_key' => 'Sample test notes',
                 ],
             ],
+        ],
+    ],
+
+    'testUpdatePaymentLinkInvalidAmountCurrency' => [
+        'request'  => [
+            'url'     => '/payment_links/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'amount'   => null,
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The currency should be null when amount is null',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

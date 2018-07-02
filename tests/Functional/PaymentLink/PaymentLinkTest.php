@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\PaymentLink;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Queue;
 
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -38,6 +37,11 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePaymentLinkWithoutCurrency()
+    {
+        $this->startTest();
+    }
+
     public function testCreatePaymentLinkWithoutAmount()
     {
         $this->startTest();
@@ -65,6 +69,13 @@ class PaymentLinkTest extends TestCase
     public function testUpdatePaymentLink()
     {
         $this->createPaymentLink(self::TEST_PL_ID, ['amount' => 2000]);
+
+        $this->startTest();
+    }
+
+    public function testUpdatePaymentLinkInvalidAmountCurrency()
+    {
+        $this->createPaymentLink(self::TEST_PL_ID);
 
         $this->startTest();
     }
