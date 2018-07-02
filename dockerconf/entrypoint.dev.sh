@@ -52,29 +52,6 @@ configure_dev(){
   mv /tmp/php.ini /etc/php7/php.ini
 }
 
-configure_cloud(){
-  ALOHOMORA_BIN=$(which alohomora)
-  echo "casting alohomora - vault,env.php,apache"
-  sed -i "s|APACHE_HOST|$HOSTNAME|g" dockerconf/api.apache.conf.j2
-  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
-  echo "copying apache config"
-  cp dockerconf/api.apache.conf /etc/apache2/conf.d/api.conf
-
-  ## Enable newrelic only for prod and perf
-  if [[ "${APP_MODE}" == "prod" ]] || [[ "${APP_MODE}" == "perf" ]]; then
-    $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "dockerconf/newrelic.ini.j2"
-    cp dockerconf/newrelic.ini /etc/php7/conf.d/newrelic.ini
-  fi
-}
-
-configure_app(){
-  if [[ "${APP_MODE}" == "dev" ]]; then
-    configure_dev
-  else
-    configure_cloud
-  fi
-}
-
 configure_db_dev(){
   echo "$(date) Seeding live database"
   cd /app/ && \
@@ -85,28 +62,6 @@ configure_db_dev(){
   php artisan migrate --database auth --path vendor/razorpay/oauth/database/migrations
   echo "$(date) Seeding Auth Test database"
   APP_ENV=testing_docker php artisan migrate --database auth --path vendor/razorpay/oauth/database/migrations
-}
-
-configure_db_cloud(){
-  # Clear and Re-cache Routes
-  echo "Route Cache"
-  php artisan route:cache
-}
-
-configure_db(){
-  echo  "$(date) DB Migrate"
-  if [[ "$APP_MODE" == "dev" ]]; then
-    configure_db_dev
-  else
-    configure_db_cloud
-  fi
-}
-
-update_commit(){
-  if [[ -n "${GIT_COMMIT_HASH-}" ]]; then
-    echo "GIT_COMMIT_HASH=${GIT_COMMIT_HASH}" >> /app/.env.vault
-    echo "${GIT_COMMIT_HASH}" > /app/public/commit.txt
-  fi
 }
 
 start_apache(){
@@ -122,9 +77,8 @@ start_apache(){
 initialize(){
   db_wait
   fix_permissions
-  configure_app
-  configure_db
-  update_commit
+  configure_dev
+  configure_db_dev
 }
 
 ### Check that atleast either webapp or supervisor is specified
@@ -133,37 +87,8 @@ initialize(){
 
 function main {
   initialize
-  app_type="web"
-
-  ## Now, based on the app type, call the specific functions
-  if [[ "${app_type}" == "web" ]]; then
-    echo "Starting web app"
-    start_apache
-  elif [[ "${app_type}" == "sqs" ]]; then
-    sleep_time=$2
-    #['sqs', '10']
-    if [ "$#" -ne 2 ]; then
-        echo "Need to specify following args: "
-        echo "sleep: <n seconds>"
-        exit -1
-    else
-      echo "starting sqs listener"
-      php artisan queue:work ${app_type} --sleep=${sleep_time}
-    fi
-  elif [[ "${app_type}" == "sqs_multi_default" ]]; then
-    queue_name=$2
-    sleep_time=$3
-    if [ "$#" -ne 3 ]; then
-        echo "Need to specify following args: "
-        echo "queue: <sqs-name>"
-        echo "sleep: <n seconds>"
-        exit -1
-    else
-      echo "starting sqs listener"
-      php artisan queue:work ${app_type} --queue=${APP_MODE}-${queue_name} --sleep=${sleep_time}
-    fi
-  fi
-
+  echo "Starting web app"
+  start_apache
 }
 
-main $@
+main
