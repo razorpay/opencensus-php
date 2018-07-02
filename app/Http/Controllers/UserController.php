@@ -51,7 +51,7 @@ class UserController extends Controller
     }
 
     // Remove id from the route.
-    public function changeUserPassword(string $id)
+    public function changeUserPassword()
     {
         $input = Request::all();
 
