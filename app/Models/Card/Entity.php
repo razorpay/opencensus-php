@@ -449,6 +449,13 @@ class Entity extends Base\PublicEntity
         // saved via global card saving, hence use basic auth merchant
         $merchant = $auth->getMerchant();
 
+        // if tokens are fetch on a auth where merchant context is not availale
+        // tokens are being fetched on admin auth use card merchant
+        if ($merchant === null)
+        {
+            $merchant = $this->merchant;
+        }
+
         return $merchant->getPaymentFlows($iin);
     }
 
