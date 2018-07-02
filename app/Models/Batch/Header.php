@@ -291,10 +291,10 @@ class Header
     const ELFIN_LONG_URL             = 'Long Url';
     const ELFIN_SHORT_URL            = 'Short Url';
 
-    // Partner referral headers
+    // Partner submerchant headers
     const PARTNER_TYPE         = 'partner_type';
+    const SUBMERCHANT_ID       = 'submerchant_id';
     const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
-    const REFERRAL_MERCHANT_ID = 'referral_merchant_id';
 
     /**
      * Input and output file headers
@@ -750,18 +750,18 @@ class Header
             ],
         ],
 
-        Type::PARTNER_REFERRALS => [
+        Type::PARTNER_SUBMERCHANTS => [
 
             self::INPUT => [
                 self::PARTNER_MERCHANT_ID,
                 self::PARTNER_TYPE,
-                self::REFERRAL_MERCHANT_ID,
+                self::SUBMERCHANT_ID,
             ],
 
             self::OUTPUT => [
                 self::PARTNER_MERCHANT_ID,
                 self::PARTNER_TYPE,
-                self::REFERRAL_MERCHANT_ID,
+                self::SUBMERCHANT_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

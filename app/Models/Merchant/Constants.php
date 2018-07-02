@@ -17,11 +17,8 @@ final class Constants
     // Partner constants
     const BANK                                    = 'bank';
     const PARTNER                                 = 'partner';
-    const PARTNERS                                = 'partners';
     const RESELLER                                = 'reseller';
-    const REFERRALS                               = 'referrals';
     const AGGREGATOR                              = 'aggregator';
-    const PARTNER_TYPE                            = 'partner_type';
     const FULLY_MANAGED                           = 'fully_managed';
     const PURE_PLATFORM                           = 'pure_platform';
 

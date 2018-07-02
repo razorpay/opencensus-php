@@ -9,7 +9,7 @@ use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
 use RZP\Error\PublicErrorDescription;
 
-class PartnerReferrals extends Base
+class PartnerSubmerchants extends Base
 {
     /**
      * @var Merchant\Core
@@ -28,9 +28,9 @@ class PartnerReferrals extends Base
      */
     protected function processEntry(array & $entry)
     {
-        $partnerType = $entry[Header::PARTNER_TYPE];
-        $partnerId   = $entry[Header::PARTNER_MERCHANT_ID];
-        $referralId  = $entry[Header::REFERRAL_MERCHANT_ID];
+        $partnerType   = $entry[Header::PARTNER_TYPE];
+        $submerchantId = $entry[Header::SUBMERCHANT_ID];
+        $partnerId     = $entry[Header::PARTNER_MERCHANT_ID];
 
         $partner = $this->repo->merchant->findOrFail($partnerId);
 
@@ -49,11 +49,12 @@ class PartnerReferrals extends Base
             $partner = $this->merchantCore->markAsPartner($partner, $partnerType);
         }
 
-        if (empty($referralId) === false)
+        if (empty($submerchantId) === false)
         {
-            $referral = $this->repo->merchant->findOrFail($referralId);
+            $submerchant = $this->repo->merchant->findOrFail($submerchantId);
 
-            $this->merchantCore->createPartnerReferral($partner, $referral);
+
+            $this->merchantCore->createPartnerSubmerchantAccessMap($partner, $submerchant);
         }
 
         $entry[Header::STATUS] = Status::SUCCESS;

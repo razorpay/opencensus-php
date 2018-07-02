@@ -566,18 +566,18 @@ return [
         ],
     ],
 
-    'testCreateBatchOfPartnerReferralsType' => [
+    'testPartnerSubmerchantsBatch' => [
         'request'  => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
-                'type' => 'partner_referrals',
+                'type' => 'partner_submerchants',
             ],
         ],
         'response' => [
             'content' => [
                 'entity'           => 'batch',
-                'type'             => 'partner_referrals',
+                'type'             => 'partner_submerchants',
                 'status'           => 'created',
                 'total_count'      => 2,
                 'success_count'    => 0,
@@ -590,16 +590,16 @@ return [
         ],
     ],
 
-    'testCreateBatchOfPartnerReferralsTypeFileRows' => [
+    'testPartnerSubmerchantsBatchFileRows' => [
         [
             Header::PARTNER_MERCHANT_ID  => '10000000000000',
             Header::PARTNER_TYPE         => 'reseller',
-            Header::REFERRAL_MERCHANT_ID => '100DemoAccount',
+            Header::SUBMERCHANT_ID       => '100DemoAccount',
         ],
         [
             Header::PARTNER_MERCHANT_ID  => '10000000000000',
             Header::PARTNER_TYPE         => '',
-            Header::REFERRAL_MERCHANT_ID => '10000000000001',
+            Header::SUBMERCHANT_ID       => '10000000000001',
         ],
     ],
 ];

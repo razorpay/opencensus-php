@@ -473,7 +473,7 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testCreateBatchOfPartnerReferralsType()
+    public function testPartnerSubmerchantsBatch()
     {
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 

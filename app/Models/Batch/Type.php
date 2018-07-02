@@ -39,7 +39,7 @@ class Type
      */
     const ELFIN                 = 'elfin';
 
-    const PARTNER_REFERRALS     = 'partner_referrals';
+    const PARTNER_SUBMERCHANTS  = 'partner_submerchants';
 
     public static $disabledTypes = [
         //
@@ -83,7 +83,7 @@ class Type
         self::DIRECT_DEBIT,
         self::RECURRING_CHARGE,
         self::ELFIN,
-        self::PARTNER_REFERRALS,
+        self::PARTNER_SUBMERCHANTS,
     ];
 
     public static function exists(string $type)
