@@ -338,34 +338,14 @@ return [
         ],
     ],
 
-    'testAddReferralToPartnerWithoutMerchantId' => [
+    'testAddPartnerAccessMap' => [
         'request'   => [
-            'url'     => '/merchants/10000000000000/referrals',
+            'url'     => '/merchants/10000000000011/access_maps',
             'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
             'content' => [],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_REQUIRED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testAddPartnerReferral' => [
-        'request'   => [
-            'url'     => '/merchants/10000000000000/referrals',
-            'method'  => 'POST',
-            'content' => [
-                'merchant_id' => '10000000000011',
-            ],
         ],
         'response'  => [
             'content' => [
@@ -375,13 +355,14 @@ return [
         ],
     ],
 
-    'testAddReferralToPurePlatform' => [
+    'testAddAccessMapToPurePlatform' => [
         'request'   => [
-            'url'     => '/merchants/10000000000000/referrals',
+            'url'     => '/merchants/10000000000011/access_maps',
             'method'  => 'POST',
-            'content' => [
-                'merchant_id' => '10000000000011',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
             ],
+            'content' => [],
         ],
         'response'  => [
             'content'     => [
@@ -398,36 +379,14 @@ return [
         ],
     ],
 
-    'testAddPartnerAsReferralToPartner' => [
+    'testAddAccessMapToNonPartner' => [
         'request'   => [
-            'url'     => '/merchants/10000000000000/referrals',
+            'url'     => '/merchants/10000000000011/access_maps',
             'method'  => 'POST',
-            'content' => [
-                'merchant_id' => '10000000000011',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
             ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER,
-        ],
-    ],
-
-    'testAddReferralToNonPartner' => [
-        'request'   => [
-            'url'     => '/merchants/10000000000000/referrals',
-            'method'  => 'POST',
-            'content' => [
-                'merchant_id' => '10000000000011',
-            ],
+            'content' => [],
         ],
         'response'  => [
             'content'     => [
@@ -444,33 +403,37 @@ return [
         ],
     ],
 
-    'testAddPartnerReferralAgain' => [
+    'testAddPartnerAccessMapAgain' => [
         'request'   => [
-            'url'     => '/merchants/10000000000000/referrals',
+            'url'     => '/merchants/10000000000011/access_maps',
             'method'  => 'POST',
-            'content' => [
-                'merchant_id' => '10000000000011',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
             ],
+            'content' => [],
         ],
         'response'  => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_SUBMERCHANT_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_ALREADY_EXISTS,
         ],
     ],
 
-    'testRemovePartnerReferral' => [
+    'testRemovePartnerAccessMap' => [
         'request'   => [
-            'url'     => '/merchants/10000000000000/referrals/10000000000011',
+            'url'     => '/merchants/10000000000011/access_maps',
             'method'  => 'DELETE',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
             'content' => [],
         ],
         'response'  => [
@@ -480,31 +443,37 @@ return [
         ],
     ],
 
-    'testRemoveNonExistingPartnerReferral' => [
+    'testRemoveNonExistingPartnerAccessMap' => [
         'request'   => [
-            'url'     => '/merchants/10000000000000/referrals/10000000000011',
+            'url'     => '/merchants/10000000000011/access_maps',
             'method'  => 'DELETE',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
             'content' => [],
         ],
         'response'  => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_REFERRAL_NOT_FOUND,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_FOUND,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_REFERRAL_NOT_FOUND,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_FOUND,
         ],
     ],
 
-    'testRemovePartnerReferralAgain' => [
+    'testRemovePartnerAccessMapAgain' => [
         'request'   => [
-            'url'     => '/merchants/10000000000000/referrals/10000000000011',
+            'url'     => '/merchants/10000000000011/access_maps',
             'method'  => 'DELETE',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
             'content' => [],
         ],
         'response'  => [

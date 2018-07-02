@@ -625,16 +625,14 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                      = 'The merchant request submissions are missing';
 
     // Partners
-    const BAD_REQUEST_INVALID_PARTNER_NAME                                      = 'Partner name is invalid';
     const BAD_REQUEST_PARTNER_TYPE_INVALID                                      = 'Partner type is invalid';
-    const BAD_REQUEST_MERCHANT_ID_REQUIRED                                      = 'Merchant id is required';
     const BAD_REQUEST_PARTNER_TYPE_REQUIRED                                     = 'Partner type is required';
     const BAD_REQUEST_PARTNER_APP_NOT_FOUND                                     = 'Partner app could not be found';
     const BAD_REQUEST_INVALID_PARTNER_ACTION                                    = 'Invalid partner action';
+    const BAD_REQUEST_PARTNER_CONTEXT_NOT_SET                                   = 'Partner context must be set';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
-    const BAD_REQUEST_PARTNER_REFERRAL_NOT_FOUND                                = 'Partner referral could not be found';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
-    const BAD_REQUEST_PARTNER_REFERRAL_ALREADY_EXISTS                           = 'Partner referral already exists';
+    const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_FOUND                             = 'Partner submerchant could not be found';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
-    const BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER                       = 'Partner referral should not be a partner';
+    const BAD_REQUEST_PARTNER_SUBMERCHANT_ALREADY_EXISTS                        = 'Partner submerchant already exists';
 }

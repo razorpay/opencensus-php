@@ -991,28 +991,29 @@ class MerchantController extends Controller
     }
 
     /**
-     * @param string $partnerId
+     * @param string $merchantId
      *
      * @return \Illuminate\Http\Response
      */
-    public function createReferral(string $partnerId)
+    public function createAccessMap(string $merchantId)
     {
         $input = $this->input;
 
-        $response = $this->service()->createPartnerReferral($partnerId, $input);
+        $response = $this->service()->createPartnerAccessMap($merchantId, $input);
 
         return ApiResponse::json($response);
     }
 
     /**
-     * @param string $partnerId
-     * @param string $referralId
+     * @param string $merchantId
      *
      * @return \Illuminate\Http\Response
      */
-    public function deleteReferral(string $partnerId, string $referralId)
+    public function deleteAccessMap(string $merchantId)
     {
-        $response = $this->service()->deletePartnerReferral($partnerId, $referralId);
+        $input = $this->input;
+
+        $response = $this->service()->deletePartnerAccessMap($merchantId, $input);
 
         return ApiResponse::json($response);
     }

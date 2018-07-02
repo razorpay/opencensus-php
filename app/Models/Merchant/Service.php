@@ -1846,48 +1846,71 @@ class Service extends Base\Service
     }
 
     /**
-     * @param string $partnerId
+     * @param string $merchantId
      * @param array  $input
      *
      * @return array
-     * @throws Exception\BadRequestValidationFailureException
      */
-    public function createPartnerReferral(string $partnerId, array $input): array
+    public function createPartnerAccessMap(string $merchantId, array $input): array
     {
-        if (empty($input[Entity::MERCHANT_ID]) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_REQUIRED,
-                Entity::MERCHANT_ID,
-                $input);
-        }
+        $list = $this->getPartnerAndSubMerchant($merchantId, $input);
 
-        // Expecting signed account id - Eg: acc_100DemoAccount
-        $referralId = $input[Entity::MERCHANT_ID];
+        $partner = $list[0];
 
-        $partner = $this->repo->merchant->findOrFail($partnerId);
+        $submerchant = $list[1];
 
-        $referral = $this->repo->merchant->findOrFail($referralId);
-
-        $accessMap = $this->core()->createPartnerReferral($partner, $referral);
+        $accessMap = $this->core()->createPartnerSubmerchantAccessMap($partner, $submerchant);
 
         return $accessMap;
     }
 
     /**
-     * @param string $partnerId
-     * @param string $referralId
+     * @param string $merchantId
+     * @param array  $input
      *
      * @return array
      */
-    public function deletePartnerReferral(string $partnerId, string $referralId): array
+    public function deletePartnerAccessMap(string $merchantId, array $input): array
     {
-        $partner = $this->repo->merchant->findOrFail($partnerId);
+        $list = $this->getPartnerAndSubMerchant($merchantId, $input);
 
-        $referral = $this->repo->merchant->findOrFail($referralId);
+        $partner = $list[0];
 
-        $response = $this->core()->deletePartnerReferral($partner, $referral);
+        $submerchant = $list[1];
 
-        return $response;
+        $accessMap = $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
+
+        return $accessMap;
+    }
+
+    /**
+     * @param string $merchantId
+     * @param array  $input
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function getPartnerAndSubMerchant(string $merchantId, array $input): array
+    {
+        //
+        // In the context of partners and submerchants -
+        //
+        // $merchant_id here corresponds to the submerchant's id. This is because the merchant_access_map entity maps
+        // the submerchant id to the application entity (entity_type = application and entity_id = application_id),
+        // which makes the submerchant as the primary entity in the merchant_access_map
+        //
+        $partner = $this->merchant;
+
+        if ($partner === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PARTNER_CONTEXT_NOT_SET,
+                Entity::MERCHANT_ID,
+                $input);
+        }
+
+        $submerchant = $this->repo->merchant->findOrFail($merchantId);
+
+        return [$partner, $submerchant];
     }
 }

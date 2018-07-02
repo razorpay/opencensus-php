@@ -386,26 +386,6 @@ class Validator extends Base\Validator
         }
     }
 
-    /**
-     * @param Entity $merchant
-     *
-     * @throws Exception\BadRequestException
-     */
-    public function validateReferralIsNotPartner(Entity $merchant)
-    {
-        // Block non-partner merchants and pure platforms
-        if (($merchant->isPartner() === true))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_REFERRAL_MERCHANT_CANNOT_BE_PARTNER,
-                Entity::PARTNER_TYPE,
-                [
-                    Entity::ID           => $merchant->getId(),
-                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
-                ]);
-        }
-    }
-
     protected function validateCsvEmail($input)
     {
         if (empty($input[Entity::TRANSACTION_REPORT_EMAIL]) === true)
