@@ -1794,4 +1794,23 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createSharedEnstageTerminal(array $attributes)
+    {
+        $termId = \RZP\Models\Terminal\Shared::ENSTAGE_TERMINAL;
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'mpi_enstage',
+            'card'                      => 1,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'random',
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::IVR => '1',
+            ],
+        ];
+        $attributes = array_merge($defaultValues, $attributes);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }
