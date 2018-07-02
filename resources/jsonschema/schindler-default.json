@@ -19,12 +19,14 @@
     "invoice_number": {
       "type": "string",
       "title": "Invoice Number",
-      "length": 100
+      "length": 100,
+      "minLength": 1
     },
     "customer_name": {
       "type": "string",
       "title": "Customer Name",
-      "length": 100
+      "length": 100,
+      "minLength": 1
     },
     "job_number": {
       "type": "integer",

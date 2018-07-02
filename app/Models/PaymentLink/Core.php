@@ -175,19 +175,23 @@ class Core extends Base\Core
      * @param Payment\Entity $payment
      *
      * @throws BadRequestException
+     * @throws \RZP\Exception\BadRequestValidationFailureException
      */
     public function validateIsPaymentInitiatable(Entity $paymentLink, Payment\Entity $payment)
     {
         // 1. Validates amount, if applicable
         $paymentLink->getValidator()->validatePaymentAmount($payment);
 
-        // 2. Validates $payment notes (UDF values) if applicable
-        $schema        = new Template\UdfSchema;
-        $udfSchema     = $schema->getJSONSchema($paymentLink->getId());
-        $udfProperties = array_keys($udfSchema['properties'] ?? []);
-        $paymentNotes  = $payment->getNotes()->toArray();
+        // 2. Validates Payment notes (UDF values), if applicable
+        $udfSchema = new Template\UdfSchema;
+        $schema    = $udfSchema->getJSONSchema($paymentLink->getId());
 
-        $schema->validate(array_only($paymentNotes, $udfProperties));
+        if ($schema !== null)
+        {
+            $paymentNotes = $payment->getNotes()->toArray();
+
+            $udfSchema->validate($paymentNotes);
+        }
 
         // 3. Validates payment link is active and has payment slots available
         if (($paymentLink->isPayable() === false) or
@@ -217,9 +221,9 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS,
             [
-                'payment_id' => $payment->getId(),
+                'payment_id'     => $payment->getId(),
                 'payment_status' => $payment->getStatus(),
-                'payment_link' => $paymentLink->toArrayPublic(),
+                'payment_link'   => $paymentLink->toArrayPublic(),
             ]);
 
         //

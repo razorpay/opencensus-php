@@ -3,6 +3,8 @@
 namespace RZP\Models\PaymentLink\Template;
 
 use JsonSchema;
+use JsonSchema\Constraints\Constraint as JsonSchemaConstraint;
+
 use RZP\Exception\BadRequestValidationFailureException;
 
 class UdfSchema
@@ -67,7 +69,16 @@ class UdfSchema
         $data = (object) $input;
 
         $validator = new JsonSchema\Validator;
-        $validator->validate($data, $this->getSchemaDecoded());
+
+        //
+        // The `CHECK_MODE_COERCE_TYPES` option will convert the input data type to the
+        // required one, whenever possible. This is used because our input values for
+        // notes are always in string format
+        //
+        $validator->validate(
+            $data,
+            $this->getSchemaDecoded(),
+            JsonSchemaConstraint::CHECK_MODE_COERCE_TYPES);
 
         if ($validator->isValid() === false)
         {
