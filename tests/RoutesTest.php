@@ -89,10 +89,33 @@ class RoutesTest extends TestCase
      */
     public function testSecurityInternalRoutes()
     {
+        // These apps only have access to merchant routes, and cannot make requests to internal routes
+        $merchantProxyOnlyApps = [
+            'subscriptions',
+        ];
+
+        $merchantRoutes = array_merge(Route::$private, Route::$proxy);
+
+        foreach ($merchantProxyOnlyApps as $app)
+        {
+            $appRoutesOutsideMerchantAuth = array_diff(Route::$internalApps[$app], $merchantRoutes);
+
+            // No routes apart from merchant auth routes
+            $this->assertEquals([], $appRoutesOutsideMerchantAuth);
+        }
+
         $internalAppRoutes = [];
 
-        foreach (Route::$internalApps as $app => $routes) {
-            foreach ($routes as $route) {
+        foreach (Route::$internalApps as $app => $routes)
+        {
+            // These can be skipped, since we've already checked that they have no access to internal routes
+            if (in_array($app, $merchantProxyOnlyApps, true) === true)
+            {
+                continue;
+            }
+
+            foreach ($routes as $route)
+            {
                 $internalAppRoutes[] = $route;
             }
         }
