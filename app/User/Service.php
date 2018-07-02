@@ -130,7 +130,7 @@ class Service extends Base\Service
             return [["Password change forbidden on this account"], null];
         }
 
-        list($error, $data) = $this->updatePasswordOnApi($user->id, $input);
+        list($error, $data) = $this->updatePasswordOnApi($input);
 
         $currentSessionId = Session::getId();
 
@@ -202,7 +202,7 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function updatePasswordOnApi($userId, $data)
+    public function updatePasswordOnApi($data)
     {
         $passwordData = [
             'password'              => $data['password'],
@@ -216,7 +216,7 @@ class Service extends Base\Service
 
         $request = new \App\Admin\ApiRequestAny();
 
-        list($error, $data) = $request->processInput($passwordData)->send("users/$userId/password", 'PUT');
+        list($error, $data) = $request->processInput($passwordData)->send("users/change_password", 'PUT');
 
         if (empty($error) === false)
         {
