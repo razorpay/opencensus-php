@@ -25,7 +25,7 @@ class Entity extends Base\Entity
         'avr',
         'arn_no',
         'postdate',
-        'error_code',
+        'error_code2',
         'error_text',
         'created_at',
         'updated_at'
@@ -48,7 +48,7 @@ class Entity extends Base\Entity
         'ref',
         'avr',
         'postdate',
-        'error_code',
+        'error_code2',
         'error_text',
     ];
 
@@ -75,7 +75,7 @@ class Entity extends Base\Entity
 
     public function getErrorCode()
     {
-        return $this->getAttribute('error_code');
+        return $this->getAttribute('error_code2');
     }
 
     public function getResult()

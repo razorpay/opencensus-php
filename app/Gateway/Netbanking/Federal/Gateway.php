@@ -77,8 +77,9 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::PAYMENT_ID]
         );
 
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-        $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+        $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
+        $actualAmount   = $this->formatAmount((float) $content[ResponseFields::AMOUNT]);
+
         $this->assertAmount($expectedAmount, $actualAmount);
 
         $this->checkCallbackStatus($content);
@@ -132,6 +133,12 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
+
+        $expectedAmount = $this->formatAmount($input['payment']['amount']/100);
+
+        $actualAmount   = $this->formatAmount((float) $verify->verifyResponseContent[ResponseFields::AMOUNT]);
+
+        $this->assertAmount($expectedAmount, $actualAmount);
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -480,5 +487,10 @@ class Gateway extends Base\Gateway
     protected function getLiveMerchantId()
     {
         return $this->config['live_merchant_id'];
+    }
+
+    public function formatAmount($amount): string
+    {
+        return number_format($amount , 2, '.', '');
     }
 }

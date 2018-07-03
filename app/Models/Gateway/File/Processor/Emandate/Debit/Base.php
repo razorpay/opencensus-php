@@ -107,8 +107,12 @@ abstract class Base extends EMandate\Base
     }
 
     /**
-     * Override this method in the child classes incase you want
+     * Override this method in the child classes in case you want
      * to add extra values in the gateway entity
+     *
+     * @param Payment\Entity $payment
+     *
+     * @return array
      */
     protected function getGatewayAttributes(Payment\Entity $payment): array
     {

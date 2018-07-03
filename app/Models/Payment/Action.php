@@ -36,6 +36,7 @@ class Action
     const GENERATE_REFUNDS              = 'generate_refunds';
     const GENERATE_CLAIMS               = 'generate_claims';
     const RECONCILE_DEBIT_EMANDATE      = 'reconcile_debit_emandate';
+    const VALIDATE_VPA                  = 'validate_vpa';
 
     protected $merchant;
 

@@ -3,9 +3,11 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+use Conner\Tagging\Taggable;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
+use RZP\Models\Card\IIN;
 use RZP\Models\User;
 use RZP\Models\State;
 use RZP\Constants\Mode;
@@ -16,13 +18,11 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
-use Conner\Tagging\Taggable;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
-
 
 /**
  * @property Detail\Entity $merchantDetail
@@ -243,6 +243,7 @@ class Entity extends Base\PublicEntity
         self::HANDLE,
         self::RISK_RATING,
         self::RISK_THRESHOLD,
+        self::PARTNER_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SUSPENDED_AT,
@@ -837,18 +838,22 @@ class Entity extends Base\PublicEntity
 
     /**
      * Helper method to fetch the actual display_name for an
-     * invoice, based on merchant-defined field preference:
-     * `billing_label` or `name`
+     * invoice, based on merchant-defined field preference from merchant_detail:
+     * `business_name` or `business_dba`
      *
-     * Fallback to `billing_name` if the setting is not defined
+     * Fallback to `merchant_detail.business_name` if the invoice_label_field setting is not defined
+     *
+     * If invoice_label_field is defined but the attribute is null, use merchant.billing_label instead.
      *
      * @return mixed
      */
     public function getLabelForInvoice()
     {
-        $field = $this->getInvoiceLabelField() ?: self::BILLING_LABEL;
+        $field = $this->getInvoiceLabelField() ?: Detail\Entity::BUSINESS_NAME;
 
-        return $this->getAttribute($field);
+        $value = optional($this->merchantDetail)->getAttribute($field);
+
+        return $value ?: $this->getBillingLabel();
     }
 
     public function getAutoCaptureLateAuth()
@@ -1031,6 +1036,36 @@ class Entity extends Base\PublicEntity
     public function isPartner(): bool
     {
         return $this->isAttributeNotNull(self::PARTNER_TYPE);
+    }
+
+    public function isFullyManagedTypePartner(): bool
+    {
+        return ($this->getPartnerType() === Constants::FULLY_MANAGED);
+    }
+
+    public function isPurePlatformTypePartner(): bool
+    {
+        return ($this->getPartnerType() === Constants::PURE_PLATFORM);
+    }
+
+    public function isAggregatorPartner(): bool
+    {
+        return ($this->getPartnerType() === Constants::AGGREGATOR);
+    }
+
+    public function hasAggregatorFeature(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::AGGREGATOR));
+    }
+
+    public function hasOptionalSubmerchantEmailFeature(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::ALLOW_SUBMERCHANT_WITHOUT_EMAIL));
+    }
+
+    public function isOptionalEmailAllowedAggregator(): bool
+    {
+        return (($this->isAggregatorPartner() === true) and ($this->hasOptionalSubmerchantEmailFeature() === true));
     }
 
     protected function setEmailAttribute($email)
@@ -1449,6 +1484,29 @@ class Entity extends Base\PublicEntity
         return $config;
     }
 
+    public function getPaymentFlows(IIN\Entity $iin = null)
+    {
+        $data = [];
+
+        if (empty($iin) === true)
+        {
+            return $data;
+        }
+
+        if ($this->isFeatureEnabled(Feature\Constants::ATM_PIN_AUTH) === true)
+        {
+            $data[IIN\Constants::PIN] = $iin->isDebitPin();
+        }
+
+        if ($this->isFeatureEnabled(Feature\Constants::OTPELF) === true)
+        {
+            $data[IIN\Constants::OTP] = (($iin->isHeadLessOtp()) or
+                                         ($iin->isOtp()));
+        }
+
+        return $data;
+    }
+
     public function toArrayUser()
     {
         $attributes = [
@@ -1461,6 +1519,7 @@ class Entity extends Base\PublicEntity
             self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
             self::LOGO_URL       => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
+            self::PARTNER_TYPE   => $this->getAttribute(self::PARTNER_TYPE),
             self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
         ];
@@ -1490,5 +1549,13 @@ class Entity extends Base\PublicEntity
         }
 
         return $merchantAttributes;
+    }
+
+    /**
+     * @param string|null $partnerType
+     */
+    public function setPartnerType(string $partnerType = null)
+    {
+        $this->setAttribute(self::PARTNER_TYPE, $partnerType);
     }
 }

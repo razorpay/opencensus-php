@@ -4,9 +4,9 @@ namespace RZP\Gateway\Hitachi;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Gateway\Mpi;
 use RZP\Models\Card;
 use RZP\Gateway\Base;
-use RZP\Gateway\Blade;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -209,7 +209,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::MID],
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
-            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::AUTHORIZATION_ID],
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::RRN],
         ];
 
         return $qrData;
@@ -239,7 +239,7 @@ class Gateway extends Base\Gateway
     protected function callAuthenticationGateway(array $input)
     {
         return $this->app['gateway']->call(
-            Payment\Gateway::BLADE,
+            Payment\Gateway::MPI_BLADE,
             $this->action,
             $input,
             $this->mode);
@@ -417,20 +417,20 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
 
-        $content[RequestFields::AUTH_STATUS] = $authResponse[Blade\Entity::STATUS];
-        $content[RequestFields::ECI]         = $authResponse[Blade\Entity::ECI];
-        $content[RequestFields::XID]         = $authResponse[Blade\Entity::XID];
-        $content[RequestFields::ALGORITHM]   = $authResponse[Blade\Entity::CAVV_ALGORITHM];
+        $content[RequestFields::AUTH_STATUS] = $authResponse[Mpi\Base\Entity::STATUS];
+        $content[RequestFields::ECI]         = $authResponse[Mpi\Base\Entity::ECI];
+        $content[RequestFields::XID]         = $authResponse[Mpi\Base\Entity::XID];
+        $content[RequestFields::ALGORITHM]   = $authResponse[Mpi\Base\Entity::CAVV_ALGORITHM];
 
         $network = Network::getCode($this->input['card']['network']);
 
         if ($network === Card\Network::VISA)
         {
-            $content[RequestFields::CAVV2] = $authResponse[Blade\Entity::CAVV];
+            $content[RequestFields::CAVV2] = $authResponse[Mpi\Base\Entity::CAVV];
         }
         else if (($network === Card\Network::MC) or ($network === Card\Network::MAES))
         {
-            $content[RequestFields::UCAF] = $authResponse[Blade\Entity::CAVV];
+            $content[RequestFields::UCAF] = $authResponse[Mpi\Base\Entity::CAVV];
         }
         else
         {
@@ -676,7 +676,7 @@ class Gateway extends Base\Gateway
             Entity::CARD_NETWORK       => $response[ResponseFields::CARD_NETWORK],
             Entity::AMOUNT             => $this->getIntegerFormattedAmount($response[ResponseFields::AMOUNT]),
             Entity::RRN                => $response[ResponseFields::RRN],
-            Entity::REQUEST_ID         => $response[ResponseFields::AUTHORIZATION_ID],
+            Entity::AUTH_ID            => $response[ResponseFields::AUTHORIZATION_ID],
             Entity::STATUS             => $response[ResponseFields::STATUS_CODE],
             Entity::MERCHANT_REFERENCE => $response[ResponseFields::PURCHASE_ID],
         ];

@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -219,6 +220,26 @@ class MerchantFeeTest extends TestCase
             'feature'             => 'payment',
             'payment_method'      => 'card',
             'payment_method_type' => 'credit',
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'amount_range_active' => false,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 0,
+            'percent_rate'        => 200,
+            'fixed_rate'          => 0,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+        ]);
+
+        $pricingRuleDebitPin = new Pricing\Entity([
+            'id'                  => '1nvp2TPMmaRLxy',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPinPlan',
+            'feature'             => 'payment',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'debit',
+            'auth_type'           => 'pin',
             'payment_network'     => null,
             'payment_issuer'      => null,
             'amount_range_active' => false,
@@ -576,6 +597,7 @@ class MerchantFeeTest extends TestCase
             $pricingPlanEmi,
             $pricingPlanEmiAmex,
             $pricingRuleCardRecurring,
+            $pricingRuleDebitPin,
         ];
 
         if ($withDefault === false)
@@ -815,6 +837,13 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantTestForUpi('100', ['payment' => '1nvp2ABMasRLxx'], 'qr_code');
     }
 
+    public function testDebitCardPinRule()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo(false, false, true));
+
+        $this->runMerchantFeeTest('301', 'Visa', ['payment' => '1nvp2TPMmaRLxy'], Card\Type::DEBIT, false, false, null, 'pin');
+    }
+
     public function testDebitPaymentsWithReceiver()
     {
         $this->fee->setPricingRepo($this->getMockPricingRepo(false, true, false));
@@ -1008,6 +1037,10 @@ class MerchantFeeTest extends TestCase
 
             $payment->setAttribute(Payment\Entity::INTERNATIONAL, false);
 
+            $merchant = Merchant\Entity::find('10000000000000');
+
+            $payment->merchant()->associate($merchant);
+
             $payment->card = (new Card\Entity)->build($this->card);
 
             $payment->card->setNetwork('Visa');
@@ -1065,9 +1098,10 @@ class MerchantFeeTest extends TestCase
         $this->assertFeesAndTax($fee, $tax, $feesSplit->toArray(), $expectedFee, $expectedTax, $feeComponents);
     }
 
-    protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null)
+    protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null)
     {
-        $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational, $receiver);
+        $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational, $receiver, $authType);
+
 
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
@@ -1098,7 +1132,7 @@ class MerchantFeeTest extends TestCase
         $this->fail();
     }
 
-    protected function createPaymentEntityForCard($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null)
+    protected function createPaymentEntityForCard($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null)
     {
         $paymentArray = $this->getDefaultPaymentEntityArray();
 
@@ -1127,6 +1161,12 @@ class MerchantFeeTest extends TestCase
 
         $payment->setBaseAmount($amount);
 
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $payment->setAuthType($authType);
+
         return $payment;
     }
 
@@ -1143,6 +1183,10 @@ class MerchantFeeTest extends TestCase
         $payment = new Payment\Entity($paymentArray);
 
         $payment->setBaseAmount($amount);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
 
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
@@ -1162,6 +1206,10 @@ class MerchantFeeTest extends TestCase
         $paymentArray[Payment\Entity::METHOD] = Payment\Method::WALLET;
 
         $payment = new Payment\Entity($paymentArray);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
 
         $payment->setBaseAmount($amount);
 
@@ -1184,6 +1232,10 @@ class MerchantFeeTest extends TestCase
         $payment = new Payment\Entity($paymentArray);
 
         $payment->setBaseAmount($amount);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
 
         if ($receiver == Receiver::QR_CODE)
         {
@@ -1210,6 +1262,10 @@ class MerchantFeeTest extends TestCase
 
         $payment = new Payment\Entity($paymentArray);
 
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
         $payment->card = (new Card\Entity)->build($this->card);
 
         $payment->card->setNetwork($network);
@@ -1230,6 +1286,10 @@ class MerchantFeeTest extends TestCase
         $paymentArray[Payment\Entity::EMI_PLAN_ID] = '10101010101010';
 
         $payment = new Payment\Entity($paymentArray);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
 
         $payment->card = (new Card\Entity)->build($this->card);
 

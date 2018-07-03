@@ -702,7 +702,7 @@ return [
             'content' => [
                 'brand_color'         => '00bcd4',
                 'handle'              => 'LOLO',
-                'invoice_label_field' => 'name',
+                'invoice_label_field' => 'business_name',
             ],
             'url'     => '/account/config',
             'method'  => 'put',
@@ -716,7 +716,7 @@ return [
                 'id'                  => '10000000000000',
                 'brand_color'         => '#00BCD4',
                 'handle'              => 'LOLO',
-                'invoice_label_field' => 'name',
+                'invoice_label_field' => 'business_name',
             ]
         ]
     ],
@@ -1446,6 +1446,34 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithMultipleOrderOffers' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => null
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name' => 'Test Offer',
+                        'payment_method' => 'card',
+                        'payment_network' => 'VISA',
+                        'issuer' => 'HDFC',
+                    ],
+                    [
+                        'name' => 'Test Offer',
+                        'payment_method' => 'card',
+                        'payment_network' => 'VISA',
+                        'issuer' => 'HDFC',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer' => [
         'request' => [
             'url'    => null,
@@ -1663,6 +1691,36 @@ return [
                         ],
                     ]
                 ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithEmiOffer' => [
+        'request' => [
+            'url'    => null,
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity'         => 'methods',
+                    'card'           => true,
+                    'credit_card'    => true,
+                    'debit_card'     => true,
+                    'emi'            => true,
+                    'emi_plans'      => [],
+                    'emi_options'    => [],
+                    'emi_subvention' => 'customer'
+                    ],
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'emi',
+                        'display_text'    => 'Some display text',
+                        'original_amount' => 100000,
+                        'amount'          => 100000,
+                    ],
+                ],
             ],
         ],
     ],
@@ -2881,7 +2939,7 @@ return [
                 'email' => 'differentemail@razorpay.com'
             ],
             'server' => [
-                'HTTP_' . \RZP\Http\BasicAuth\BasicAuth::ACCOUNT_HEADER_KEY => '10000000000044',
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000044',
             ],
         ],
         'response'  => [

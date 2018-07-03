@@ -9,7 +9,6 @@ use Illuminate\Support\Str;
 use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
-use RZP\Http\Throttle;
 use RZP\Http\FeatureAccess;
 use RZP\Http\BasicAuth\BasicAuth;
 
@@ -133,7 +132,11 @@ class Authenticate
         }
         else if (in_array($route, Route::$publicCallback, true) === true)
         {
-            if ($this->oauth->hasOAuthPublicToken() === true)
+            if ($this->ba->hasPartnerAuthCallbackKey() === true)
+            {
+                $ret = $this->ba->handlePartnerAuthOnPublicCallback();
+            }
+            else if ($this->oauth->hasOAuthPublicToken() === true)
             {
                 $ret = $this->authenticateOAuthPublicToken();
             }

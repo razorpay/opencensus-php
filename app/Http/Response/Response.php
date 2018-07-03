@@ -311,7 +311,8 @@ class Response
             'merchant_public_get_banks',
             'payment_cancel',
             'payment_create_jsonp',
-            'payment_get_status'
+            'payment_get_status',
+            'payment_get_flows',
         ];
 
         return (in_array($route, $jsonpRoutes));
@@ -326,6 +327,7 @@ class Response
             'payment_otp_resend',
             'payment_topup_ajax',
             'merchant_methods_downtime',
+            'customer_create_token_public',
         ];
 
         if (in_array($route, $routes, true) === true)

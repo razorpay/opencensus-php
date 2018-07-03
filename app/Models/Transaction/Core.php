@@ -346,9 +346,9 @@ class Core extends Base\Core
      */
     protected function calculatePrepaidFee(Entity $transaction)
     {
-        $merchant = $transaction->merchant;
+        $merchantId = $transaction->getMerchantId();
 
-        $merchantBalance = $this->getBalanceLockForUpdate($merchant);
+        $merchantBalance = $this->getBalanceLockForUpdate($merchantId);
 
         list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
 
@@ -382,9 +382,9 @@ class Core extends Base\Core
      */
     protected function calculatePostpaidFee(Entity $transaction)
     {
-        $merchant = $transaction->merchant;
+        $merchantId = $transaction->getMerchantId();
 
-        $merchantBalance = $this->getBalanceLockForUpdate($merchant);
+        $merchantBalance = $this->getBalanceLockForUpdate($merchantId);
 
         list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
 
@@ -902,7 +902,7 @@ class Core extends Base\Core
 
     public function updateMerchantBalance(Transaction\Entity $txn)
     {
-        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->getMerchantId());
 
         $merchantBalance->updateBalance($txn);
         $this->repo->balance->updateBalance($merchantBalance);
@@ -944,7 +944,7 @@ class Core extends Base\Core
 
         $amount = $txn->getAmount();
 
-        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->getMerchantId());
 
         $amountCredits = $this->getMerchantCreditsOfType($merchantBalance, Credits\Type::AMOUNT);
 
@@ -988,7 +988,7 @@ class Core extends Base\Core
 
         $fee = $txn->getFee();
 
-        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->getMerchantId());
 
         $merchantId = $merchantBalance->merchant->getId();
 
@@ -1031,7 +1031,7 @@ class Core extends Base\Core
 
         $amount = $txn->getAmount();
 
-        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->getMerchantId());
 
         $merchantId = $merchantBalance->merchant->getId();
 
@@ -1070,14 +1070,29 @@ class Core extends Base\Core
         // return $nodalBalance;
     }
 
-    protected function getBalanceLockForUpdate(Merchant\Entity $merchant)
+    /**
+     * Note: Passing merchantId instead of the merchant entity because
+     * the latter will require the calling methods to access the
+     * merchant() relationship of the transaction entity – which
+     * either needs to be eager-loaded or will be queried at run-time.
+     * Eager-loading uses a lot of memory when the number of
+     * transactions are huge; and query at run-time will lead to
+     * a steep increase in the execution time, and will increase db-load.
+     * Since only merchantId is required in this method, we have let
+     * gone of using the merchant entity despite it being the better
+     * practice so optimise performance.
+     *
+     * @param string $merchantId
+     * @return null
+     */
+    protected function getBalanceLockForUpdate(string $merchantId)
     {
         if ($this->merchantBalance !== null)
         {
             return $this->merchantBalance;
         }
 
-        $merchantBalance = $this->repo->balance->getBalanceLockForUpdate($merchant->getId());
+        $merchantBalance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
 
         $this->merchantBalance = $merchantBalance;
 
@@ -1235,7 +1250,7 @@ class Core extends Base\Core
     {
         $merchant = $transaction->merchant;
 
-        $merchantBalance = $this->getBalanceLockForUpdate($merchant);
+        $merchantBalance = $this->getBalanceLockForUpdate($merchant->getId());
 
         list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
 

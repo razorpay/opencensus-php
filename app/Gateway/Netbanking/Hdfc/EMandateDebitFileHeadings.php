@@ -14,6 +14,7 @@ class EMandateDebitFileHeadings
     const FREQUENCY           = 'Frequency';
     const FROM_DATE           = 'FROM_DATE';
     const TO_DATE             = 'TO_DATE';
+    const SUB_MERCHANT_NAME   = 'Sub-merchant Name';
 
     // Additional headings in response file
     const STATUS              = 'Status';

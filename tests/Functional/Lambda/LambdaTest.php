@@ -2,14 +2,12 @@
 
 namespace RZP\Tests\Functional\Lambda;
 
+use Excel;
 use Config;
-use Carbon\Carbon;
 use ZipArchive;
 
-use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class LambdaTest extends TestCase
@@ -116,30 +114,60 @@ class LambdaTest extends TestCase
     {
         list($payment, $token, $order) = $this->createEmandatePayment();
 
-        $replacePair = [
-            '{$date}' => Carbon::now()->toIso8601String(),
-            '{$paymentId}' => $payment->getId(),
-            '{$status}' => 'true',
-            '{$mandateId}' => 'UTIB6000000005844847',
-            '{$firstCol}' => Carbon::now()->addDay()->format('Y-m-d'),
-            '{$finalCol}' => Carbon::now()->addDay()->addYears(5)->format('Y-m-d'),
-            '{$currency}' => 'INR',
-            '{$maxAmount}' => '0',
-            '{$accountNumber}' => $token->getAccountNumber(),
-            '{$ifsc}' => $token->getIfsc(),
+        $sheets = [
+            'Acknowledgement_summary' => [
+                'config' => [
+                    'start_cell' => 'A1',
+                ],
+                'items'  => [
+                    [
+                        'random' => '1',
+                    ],
+                ],
+            ],
+            'ACKNOWLEDGMENT REPORT'  => [
+                'config' => [
+                    'start_cell' => 'A2',
+                ],
+                'items'  => [
+                    [
+                        'MANDATE_DATE' => 'some date',
+                        'BATCH'        => 10,
+                        'IHNO'         => 6411,
+                        'MANDATE_TYPE' => 'NEW',
+                        'UMRN'         => 'UTIB6000000005393968',
+                        'REF_1'        => $payment->getId(),
+                        'REF_2'        => '',
+                        'CUST_NAME'    => 'customer name',
+                        'BANK'         => 'UTIB',
+                        'BRANCH'       => 'branch',
+                        'BANK_CODE'    => 'UTIB0000123',
+                        'AC_TYPE'      => 'SAVINGS',
+                        'ACNO'         => '914010009305862',
+                        'ACK_DATE'     => 'some date',
+                        'ACK_DESC'     => 'description',
+                        'AMOUNT'       => 99999,
+                        'FREQUENCY'    => 'ADHO',
+                        'TEL_NO'       => '',
+                        'MOBILE_NO'    => '9998887776',
+                        'MAIL_ID'      => 'test@enach.com',
+                        'UPLOAD_BATCH' => 'ESIGN000001',
+                        'UPLOAD_DATE'  => 'some date',
+                        'UPDATE_DATE'  => '',
+                        'SOLE_ID'      => '',
+                    ]
+                ],
+            ],
         ];
 
-        $reconFileStub = file_get_contents(__DIR__ . '/../Gateway/Enach/Rbl/acknowledge.stub');
+        $data = $this->getExcelString('Acknowledgment Report_15062018_Acknowledgment Report', $sheets);
 
-        $reconFileContent = strtr($reconFileStub, $replacePair);
-
-        $tempFileName = sys_get_temp_dir() . '/MMS-CREATE-RATN-RATNA0001-06032018-ESIGN6000001-INP-ACK.xml';//tmpfile();
+        $tempFileName = sys_get_temp_dir() . '/Acknowledgment Report_15062018_Acknowledgment Report.xlsx';
 
         $handle = fopen($tempFileName, 'w+');
-
-        fwrite($handle, $reconFileContent);
+        fwrite($handle, $data);
         fseek($handle, 0);
-        $file = (new TestingFile('MMS-CREATE-RATN-RATNA0001-06032018-ESIGN6000001-INP-ACK.xml', $handle));
+        $file = (new TestingFile('Acknowledgment Report_15062018_Acknowledgment Report.xlsx', $handle));
 
         return $file;
     }
@@ -173,4 +201,23 @@ class LambdaTest extends TestCase
         return [$payment, $token, $order];
     }
 
+    protected function getExcelString($name, $sheets)
+    {
+        $excel = Excel::create(
+            $name,
+            function($excel) use ($sheets) {
+                foreach ($sheets as $sheetName => $data)
+                {
+                    $excel->sheet(
+                        $sheetName,
+                        function($sheet) use ($data) {
+                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
+                        }
+                    );
+                }
+            }
+        );
+
+        return $excel->string('xlsx');
+    }
 }

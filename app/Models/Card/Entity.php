@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const VAULT_TOKEN    = 'vault_token';
     const VAULT          = 'vault';
     const TRIVIA         = 'trivia';
+    const FLOWS          = 'flows';
 
     /**
      * Number and cvv are never saved in the database
@@ -105,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::COUNTRY,
         self::INTERNATIONAL,
+        self::FLOWS,
         self::VAULT_TOKEN,
         self::VAULT,
         self::NETWORK_CODE,
@@ -126,6 +128,7 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
+        self::FLOWS,
     ];
 
     protected $appends = [self::NETWORK_CODE];
@@ -433,6 +436,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ISSUER);
     }
 
+    public function getFlows()
+    {
+        $iin = $this->iinRelation;
+
+        // Allowing for Admin and App Auth(Priviledge)
+        $app  = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        // card can be linked with the shared merchant since it could have been
+        // saved via global card saving, hence use basic auth merchant
+        $merchant = $auth->getMerchant();
+
+        // if tokens are fetch on a auth where merchant context is not availale
+        // tokens are being fetched on admin auth use card merchant
+        if ($merchant === null)
+        {
+            $merchant = $this->merchant;
+        }
+
+        return $merchant->getPaymentFlows($iin);
+    }
+
     public function setPublicIssuerAttribute(array & $array)
     {
         // Allowing only for policy bazaar and shared merchant account
@@ -451,33 +477,12 @@ class Entity extends Base\PublicEntity
 
     public function setPublicIinAttribute(array & $array)
     {
-        // Allowing only for akbar travels, irctc merchants and shared merchant account
-        $allowedMerchantIds = [
-            '62UtF084z3H6RT',
-            '6o1ohA0HNz3B2S',
-            '6z1Uc42LAxBGpl',
-            '8ST00QgEPT14cE', // IRCTC WEB
-            '8YPFnW5UOM91H7', // IRCTC Mobile
-            '8byazTDARv4Io0', // IRCTC Air Ticketing
-            '9m4CChGex4ENkR', // IRCTC FTR
-            Merchant\Account::TEST_ACCOUNT,
-            Merchant\Account::SHARED_ACCOUNT,
-        ];
-
-        //
-        // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
-        // https://razorpay.slack.com/archives/C3GF5LWJK/p1525965476000128
-        // /
-        $allowedMerchantIds = array_merge($allowedMerchantIds, Merchant\Preferences::MID_ENDURANCE);
-
-        $cardMerchant = $this->getMerchantId();
-
         // Allowing for Admin and App Auth(Priviledge)
         $app  = \App::getFacadeRoot();
         $auth = $app['basicauth'];
 
         if (($auth->isPrivilegeAuth() === false) and
-            (in_array($cardMerchant, $allowedMerchantIds, true) === false))
+            ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_IIN) === false))
         {
             unset($array[self::IIN]);
         }
@@ -689,7 +694,8 @@ class Entity extends Base\PublicEntity
             self::EXPIRY_MONTH => $this->getExpiryMonth(),
             self::EXPIRY_YEAR  => $this->getExpiryYear(),
             self::EMI          => $this->getEmi(),
-            self::ISSUER       => $this->getIssuer()
+            self::ISSUER       => $this->getIssuer(),
+            self::FLOWS        => $this->getFlows()
         ];
 
         return $attributes;

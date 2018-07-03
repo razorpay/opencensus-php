@@ -60,6 +60,15 @@ class PricingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updatePricingPlanRule($planId, $ruleId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updatePricingPlanRule($planId, $ruleId, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function deletePricingPlanRuleForce($planId, $ruleId)
     {
         $data = $this->service()->deletePricingPlanRuleForce($planId, $ruleId);

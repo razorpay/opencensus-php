@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Merchant\Account;
 
-use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Notify;

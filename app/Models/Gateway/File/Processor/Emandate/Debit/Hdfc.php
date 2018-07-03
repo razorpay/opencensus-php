@@ -5,11 +5,9 @@ namespace RZP\Models\Gateway\File\Processor\EMandate\Debit;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
-use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Netbanking;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as Headings;
 use RZP\Gateway\Utility;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\FileStore;
 use RZP\Models\Payment;
 
@@ -54,6 +52,7 @@ class Hdfc extends Base
 
             $row = [
                 Headings::TRANSACTION_REF_NO  => $paymentId,
+                Headings::SUB_MERCHANT_NAME   => $payment->merchant->getFilteredDba(),
                 Headings::MANDATE_ID          => $token->getId(),
                 Headings::ACCOUNT_NO          => $token->getAccountNumber(),
                 Headings::AMOUNT              => $this->getFormattedAmount($payment->getAmount()),

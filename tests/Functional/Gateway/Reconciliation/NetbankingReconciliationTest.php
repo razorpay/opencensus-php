@@ -5,14 +5,13 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation;
 use Mockery;
 use Illuminate\Http\UploadedFile;
 
+use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 
 class NetbankingReconciliationTest extends TestCase
 {
-    use DbEntityFetchTrait;
-    use RequestResponseFlowTrait;
+    use BatchTestTrait;
 
     const ACCOUNT_NUMBER = '309002069863';
 
@@ -56,6 +55,8 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEntity['account_number']);
 
         $this->assertEquals('309001141935', $gatewayEntity['credit_account_number']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testRblWrongFormatReconciliation()
@@ -78,15 +79,19 @@ class NetbankingReconciliationTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $data = $this->testData[__FUNCTION__];
+        $this->reconcile('NetbankingRbl', $uploadedFile);
 
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($uploadedFile)
-            {
-                $this->reconcile('NetbankingRbl', $uploadedFile);
-            }
-        );
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(0, $batch['total_count']);
+
+        $this->assertEquals(0, $batch['success_count']);
+
+        $this->assertEquals(0, $batch['failure_count']);
+
+        $transactionEntity = $this->getDbLastEntityPublic('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
     }
 
     public function testRblFailedPaymentReconciliation()
@@ -108,6 +113,8 @@ class NetbankingReconciliationTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity['status'], 'authorized');
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testIndusindManualReconciliation()
@@ -308,6 +315,33 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertTrue($transactionEntity['reconciled_at'] !== null);
     }
 
+    public function testHdfcPaymentReconciliation()
+    {
+        $this->gateway = 'netbanking_hdfc';
+
+        $payment = $this->createPayment('netbanking_hdfc');
+
+        $this->createNetbanking($payment['id'], 'ICIC', 'S');
+
+        $fileContents = $this->generateFile('hdfc', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingHdfc', $uploadedFile);
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($gatewayEntity['bank_payment_id'], 99999);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
+    }
+
     public function testIciciFailedPaymentReconciliation()
     {
         $this->gateway = 'netbanking_icici';
@@ -331,6 +365,31 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
+    }
+
+    public function testIciciManualReconciliation()
+    {
+        $this->gateway = 'netbanking_icici';
+
+        $payment = $this->createPayment('netbanking_icici');
+
+        $this->createNetbanking($payment['id'], 'ICIC', 'S');
+
+        $fileContents = $this->generateFile('icici', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingIcici', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertEquals($gatewayEntity['bank_payment_id'], 99999);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     protected function reconcile($gateway, $uploadedFile)

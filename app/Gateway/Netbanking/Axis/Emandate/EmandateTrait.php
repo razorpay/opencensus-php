@@ -322,11 +322,12 @@ trait EmandateTrait
         $payment = $verify->input['payment'];
         $token = $verify->input['token'];
 
-        $paymentAmount = ($payment[Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL) ?
-                                                                        $token[Token\Entity::MAX_AMOUNT] :
-                                                                        $payment[Payment\Entity::AMOUNT];
+        if ($payment[Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            return ;
+        }
 
-        $paymentAmount = $this->formatAmount($paymentAmount);
+        $paymentAmount = $this->formatAmount($payment[Payment\Entity::AMOUNT]);
 
         $verifyAmount = $verify->verifyResponseContent[ResponseFields::AMOUNT] ?: '0';
 

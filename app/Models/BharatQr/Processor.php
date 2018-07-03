@@ -94,33 +94,6 @@ class Processor extends VirtualAccount\Processor
         }
     }
 
-<<<<<<< HEAD
-	protected function setTerminalIdInCallback()
-	{
-		$gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
-
-		if (isset($this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
-		{
-			$gatewayMerchantId = $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
-
-			$terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
-		}
-
-		else
-		{
-			$gatewayMpan = $this->gatewayInput[GatewayResponseParams::MPAN];
-
-			$terminal = $this->repo->terminal->findByGatewayMpan($gatewayMpan, $gateway);
-		}
-
-		if ($terminal === null)
-		{
-			throw new Exception\LogicException(
-				'Terminal should not be null here',
-				null,
-				['gateway_merchant_id' => $gatewayMerchantId]);
-		}
-=======
     /**
      * A receiver is expected if there exists an active VA
      * to receive it or if the terminal expected is set to
@@ -247,21 +220,20 @@ class Processor extends VirtualAccount\Processor
             throw new Exception\LogicException(
                 'Terminal should not be null here',
                 null,
-                ['gateway_merchant_id' => $gatewayMerchantId,
-                 'merchant_pan'        => $gatewayMpan,
-                ]);
+                [
+					'gateway_merchant_id' => $gatewayMerchantId,
+					'merchant_pan'        => $gatewayMpan,
+                ]
+            );
         }
 
         $this->terminal = $terminal;
 
         return $terminal;
     }
->>>>>>> 3790b6417ddb4f8ed923385a6a93fc989f588cd2
 
-		$this->callbackData[Constants::RAZORPAY_TERMINAL_ID] = $terminal->getId();
-	}
 
-	protected function getVirtualAccountFromEntity(Base\PublicEntity $bharatQr)
+    protected function getVirtualAccountFromEntity(Base\PublicEntity $bharatQr)
     {
         $merchantReference = $bharatQr->getMerchantReference();
 
@@ -332,36 +304,28 @@ class Processor extends VirtualAccount\Processor
         return $finalCardNumber;
     }
 
-	protected function getDummyCardDetails()
-	{
-		$card = (new Card\Entity)->getDummyCardArray();
+    protected function getDummyCardDetails()
+    {
+        $card = (new Card\Entity)->getDummyCardArray();
 
-		$card[Card\Entity::NUMBER] = $this->getLuhnValidCardNumber();
+        $card[Card\Entity::NUMBER] = $this->getLuhnValidCardNumber();
 
-<<<<<<< HEAD
-		if (isset($this->gatewayInput[GatewayResponseParams::SENDER_NAME]) === true)
-		{
-			$cardHolderName = preg_replace("/[^ \w]+/", "",
-				$this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
-		}
-=======
         if (isset($this->gatewayInput[GatewayResponseParams::SENDER_NAME]) === true)
         {
 	        $cardHolderName = preg_replace("/[^ \w]+/",
 		                                   "",
 		                                    $this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
         }
->>>>>>> 3790b6417ddb4f8ed923385a6a93fc989f588cd2
 
-		if (empty($cardHolderName) === false)
-		{
-			$card[Card\Entity::NAME] = $cardHolderName;
-		}
+        if (empty($cardHolderName) === false)
+        {
+            $card[Card\Entity::NAME] = $cardHolderName;
+        }
 
-		return $card;
-	}
+        return $card;
+    }
 
-	protected function getReceiver()
+    protected function getReceiver()
     {
         return $this->virtualAccount->qrCode;
     }

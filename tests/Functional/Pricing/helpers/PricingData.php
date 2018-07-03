@@ -255,6 +255,38 @@ return [
             ],
         ],
     ],
+    'testAddPricingPlanRuleWithDebitPinFeature' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => 'debit',
+                'payment_network' => 'MAES',
+                'auth_type' => 'pin',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => 0,
+                'amount_range_active' => '0',
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'card',
+                'payment_method_type' => 'debit',
+                'auth_type' => 'pin',
+                'payment_network' => 'MAES',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => false,
+                'amount_range_active' => false,
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+            ],
+        ],
+    ],
 
     'testAddPricingPlanRuleWithReceiver' => [
         'request' => [
@@ -539,6 +571,26 @@ return [
                 'amount_range_max' => null,
                 'min_fee'  => 0,
                 'max_fee'  => null,
+            ],
+        ],
+    ],
+    'testUpdatePricingPlanRule' => [
+        'request' => [
+            'content' => [
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan2',
+                'percent_rate' => 450,
+                'fixed_rate' => 0,
+                'min_fee' => 101,
+                'max_fee' => 10000,
             ],
         ],
     ],

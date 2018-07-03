@@ -12,6 +12,7 @@ use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Terminal\Options;
+use RZP\Gateway\Netbanking\Icici\ResponseFields;
 
 class NetbankingIciciGatewayTest extends TestCase
 {
@@ -106,6 +107,20 @@ class NetbankingIciciGatewayTest extends TestCase
         {
             $this->doAuthPayment($this->payment);
         });
+    }
+
+    public function testVerifyAmountMismatch()
+    {
+        $this->mockAmountMismatch();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthAndCapturePayment($this->payment);
+            });
     }
 
     public function testPaymentVerify()
@@ -413,6 +428,17 @@ class NetbankingIciciGatewayTest extends TestCase
             if ($action === 'hash')
             {
                 $content['ES'] = 'This_is_a_random_string';
+            }
+        });
+    }
+
+    protected function mockAmountMismatch()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content[ResponseFields::AMOUNT] = '300';
             }
         });
     }

@@ -334,11 +334,31 @@ class TransactionFilter extends Terminal\Filter
 
         if ($payment->isNetbanking() === true)
         {
+            // If terminal supports both corporate and retail,
+            // we can directly pass this filter
+            if ($terminal->isBankingTypeBoth() === true)
+            {
+                return true;
+            }
+
             $bank = $payment->getBank();
 
-            // If a bank does not require a corporate terminal
-            // a corporate terminal should not allow the payment.
-            return (Netbanking::isCorporateTerminalRequired($bank) === $terminal->isCorporate());
+            $terminalBankingTypes = $terminal->getBankingTypes();
+
+            // For corporate bank, the terminal should support corporate type
+            if ((Netbanking::isCorporateBank($bank) === true) and
+                (in_array(Terminal\BankingType::CORPORATE, $terminalBankingTypes) === true))
+            {
+                return true;
+            }
+            else if ((Netbanking::isCorporateBank($bank) === false) and
+                     (in_array(Terminal\BankingType::RETAIL, $terminalBankingTypes) === true))
+            {
+                return true;
+            }
+
+            // If the banking type in payment and terminal does not match
+            return false;
         }
 
         return true;
@@ -568,6 +588,28 @@ class TransactionFilter extends Terminal\Filter
 
                         break;
 
+                    case Payment\AuthType::OTP:
+                        // We should select the terminal only if iin is set and flows are supported
+                        // by the IIN
+                        if ($payment->card->iinRelation !== null)
+                        {
+                            if (($terminal->isIvr() === true) and
+                                ($payment->card->iinRelation->supports(Flow::OTP) === true))
+                            {
+                                return true;
+                            }
+
+                            $gateway = $terminal->getGateway();
+
+                            if ((Gateway::supportsHeadlessBrowser($gateway) === true) and
+                                ($payment->card->iinRelation->supports(Flow::HEADLESS_OTP) === true))
+                            {
+                                return true;
+                            }
+                        }
+
+                        break;
+
                     case Payment\AuthType::_3DS:
                         if ($this->is3DSTerminal($terminal) === true)
                         {
@@ -596,7 +638,7 @@ class TransactionFilter extends Terminal\Filter
 
     protected function is3DSTerminal($terminal)
     {
-        return ($terminal->isPin() === false);
+        return (($terminal->isPin() === false) and ($terminal->isIvr() === false));
     }
 
     protected function isTerminalWithMerchantMccAbsent(

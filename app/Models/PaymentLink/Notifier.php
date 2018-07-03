@@ -57,12 +57,13 @@ class Notifier extends Base\Core
                 Entity::EMAIL => $email,
             ]);
 
-        $paymentLinkSerialized = $paymentLink->toArrayPublic();
-        $paymentRequestMail    = new PaymentRequest($paymentLinkSerialized, $email);
+        $mailPayload = (new ViewSerializer($paymentLink))->serializeForInternal();
+
+        $mailable = new PaymentRequest($mailPayload, $email);
 
         try
         {
-            Mail::send($paymentRequestMail);
+            Mail::send($mailable);
         }
         catch (\Throwable $ex)
         {
@@ -119,12 +120,13 @@ class Notifier extends Base\Core
         return [
             'receiver' => $contact,
             'source'   => "api.{$this->mode}.payment_link",
-            'template' => 'sms.payment_link_v1',
+            // The template for invoice & payment_link is same, we are continuing to use the same for now
+            'template' => 'sms.invoice',
             'params'   => [
-                'merchant_name'    => $merchant->getBillingLabel(),
-                'payment_link_url' => $paymentLink->getShortUrl(),
-                'amount'           => $paymentLink->getAmount() / 100,
-            ]
+                'merchant_name' => $merchant->getBillingLabel(),
+                'amount'        => amount_format_IN($paymentLink->getAmount()),
+                'invoice_link'  => $paymentLink->getShortUrl(),
+            ],
         ];
     }
 }

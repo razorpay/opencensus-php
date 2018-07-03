@@ -135,6 +135,7 @@ class Table
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
     const MIGS                  = 'axis';
+    const MPI                   = 'blade';
     const ENACH                 = 'enach';
     const PAYTM                 = 'paytm';
     const WALLET                = 'wallet';
@@ -180,6 +181,8 @@ class Table
         Entity::WALLET_OLAMONEY     => self::WALLET,
         Entity::WALLET_AIRTELMONEY  => self::WALLET,
         Entity::WALLET_PAYUMONEY    => self::WALLET,
+        Entity::MPI_BLADE           => self::BLADE,
+        Entity::MPI_ENSTAGE         => self::BLADE,
     );
 
     public static function getTableNameForEntity(string $entity)

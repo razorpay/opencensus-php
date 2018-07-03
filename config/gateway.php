@@ -15,7 +15,8 @@ return [
         'axis_genius',
         'axis_migs',
         'billdesk',
-        'blade',
+        'mpi_blade',
+        'mpi_enstage',
         'card_fss',
         'cybersource',
         'esigner_digio',
@@ -24,7 +25,6 @@ return [
         'first_data',
         'hdfc',
         'hitachi',
-	    'isg',
         'kotak',
         'mobikwik',
         'netbanking_hdfc',
@@ -87,7 +87,7 @@ return [
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
-    'mock_blade'                  => env('BLADE_MOCK'),
+    'mock_mpi_blade'              => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
     'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),
     'mock_wallet_payzapp'         => env('PAYZAPP_MOCK'),
@@ -105,7 +105,7 @@ return [
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
     'mock_wallet_mpesa'           => env('MPESA_MOCK'),
     'mock_card_fss'               => env('FSS_MOCK'),
-	'mock_isg'                    => env('ISG_MOCK'),
+    'mock_mpi_enstage'            => env('ENSTAGE_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
@@ -131,9 +131,6 @@ return [
         'test_hash_secret2'    => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
         'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
-	'isg' => [
-		'bharatqr_secret'        => env('ISG_GATEWAY_BHARAT_QR_SECRET'),
-	],
 
     'first_data' => [
         // Test credentials
@@ -196,7 +193,7 @@ return [
         'test_access_code'            => env('ATOM_TEST_ACCESS_CODE'),
     ],
 
-    'blade' => [
+    'mpi_blade' => [
         'cert_dir_name'               => env('BLADE_CERT_DIR_NAME'),
 
         'live_visa_certificate'       => env('BLADE_GATEWAY_LIVE_VISA_CERTIFICATE'),
@@ -495,6 +492,24 @@ return [
     ],
 
     'sharp' => [
+    ],
+
+    'mpi_enstage' => [
+        'test' => [
+            'gateway_merchant_id'          => env('ENSTAGE_TEST_MERCHANT_ID'),
+            'gateway_merchant_name'        => 'Test Merchant',
+        ],
+        '6ZJzxyLFWrGs74' => [
+            'gateway_merchant_id'          => 'Wibmo_RYatra_Axis_Expay',
+            'gateway_merchant_name'        => 'RYatra_Axis_Expay',
+        ],
+        'test_acq_bin'                      => env('ENSTAGE_TEST_GATEWAY_ACQUIRER_BIN'),
+        'test_secret_key'                   => env('ENSTAGE_TEST_SECRET_KEY_ID'),
+        'test_encryption_key'               => env('ENSTAGE_TEST_ENCRYPTION_KEY'),
+        'live_encryption_key'               => env('ENSTAGE_GATEWAY_LIVE_ENCRYPTION_KEY'),
+        'live_secret'                       => env('ENSTAGE_GATEWAY_LIVE_SECRET'),
+        'live_mastercard_acq_bin'           => env('ENSTAGE_LIVE_MASTERCARD_ACQ_BIN'),
+        'live_visa_acq_bin'                 => env('ENSTAGE_LIVE_VISA_ACQ_BIN'),
     ],
 
     'proxy_enabled' => env('PROXY_ENABLED'),
