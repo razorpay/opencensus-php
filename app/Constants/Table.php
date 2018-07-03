@@ -181,6 +181,7 @@ class Table
         Entity::WALLET_AIRTELMONEY  => self::WALLET,
         Entity::WALLET_PAYUMONEY    => self::WALLET,
         Entity::MPI_BLADE           => self::BLADE,
+        Entity::MPI_ENSTAGE         => self::BLADE,
     );
 
     public static function getTableNameForEntity(string $entity)

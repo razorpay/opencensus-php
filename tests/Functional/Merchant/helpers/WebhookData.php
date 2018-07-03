@@ -290,6 +290,7 @@ return [
                 'payment.dispute.created',
                 'order.paid',
                 'invoice.paid',
+                'invoice.partially_paid',
                 'invoice.expired',
                 'vpa.edited',
                 'p2p.created',

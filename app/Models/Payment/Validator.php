@@ -131,8 +131,18 @@ class Validator extends Base\Validator
         'transfers.*.on_hold_until'  => 'sometimes|epoch',
     ];
 
+    protected static $getFlowsRules = [
+        'callback'                  => 'sometimes', // JSONP
+        'iin'                       => 'required|numeric|digits:6',
+        '_'                         => 'sometimes|array',
+    ];
+
     protected static $pspAmountLimit = [
         'upi'       => 2000000,
+    ];
+
+    protected static $validateVpaRules = [
+        'vpa' => 'required|string|filled|max:100|custom',
     ];
 
     protected static $createValidators = [

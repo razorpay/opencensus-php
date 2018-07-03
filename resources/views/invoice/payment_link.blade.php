@@ -1,7 +1,6 @@
 <?php
 
 date_default_timezone_set('Asia/Kolkata');
-$error_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 16.538l-4.592-4.548 4.546-4.587-1.416-1.403-4.545 4.589-4.588-4.543-1.405 1.405 4.593 4.552-4.547 4.592 1.405 1.405 4.555-4.596 4.591 4.55 1.403-1.416z"/></svg>';
 
 $invoice_data                   = $data['invoice'];
 $invoice_expire_by              = $invoice_data['expire_by'];
@@ -72,10 +71,9 @@ $invoice_status                 = $invoice_data['status'];
                 document.getElementById('invoice-status-container').removeChild(document.getElementById('desktop-container'));
             }
         }
-
         function toggleTrimDescription(toTrim) {
             var data = window.RZP_DATA.data,
-            desc = data.payment_link.description,
+            desc = data.invoice.description,
             charLimit, pseudoChar, button = '';
 
             if (checkIsDesktop()) {
@@ -88,6 +86,9 @@ $invoice_status                 = $invoice_data['status'];
 
             if (desc && toTrim) {
                 var visLength = 0;
+
+                desc =  desc.trim();
+                var descLength = desc.length;
 
                 var i = 0;
                 for (; i < desc.length ; i++) {
@@ -105,8 +106,11 @@ $invoice_status                 = $invoice_data['status'];
 
                 desc= desc.substr(0, i + 1);
                 desc =  desc.trim();
-                desc += '...';
-                button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
+
+                if (desc.length < descLength) {
+                    desc += '...';
+                    button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
+                }
             }
 
             document.getElementById('payment-for').innerHTML = desc + button;
@@ -257,7 +261,7 @@ $invoice_status                 = $invoice_data['status'];
 
                                 @if($invoice_expire_by and $invoice_status !== 'paid')
                                     <div class="info">
-                                        {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
+                                        {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
                                         <div class="val">
                                             {{epoch_format($invoice_expire_by)}}
                                         </div>
@@ -430,7 +434,7 @@ $invoice_status                 = $invoice_data['status'];
 
                         @if($invoice_expire_by and $invoice_status !== 'paid')
                             <div class="info">
-                                {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
+                                {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
                                 <div class="val">{{epoch_format($invoice_expire_by)}} </div>
                             </div>
                         @endif
@@ -593,14 +597,6 @@ $invoice_status                 = $invoice_data['status'];
     </script>
 @endif
 @if ($invoice_status !== 'paid' and ($invoice_status !== 'expired' and $invoice_status !== 'cancelled'))
-    @if (isset($data['error']))
-        <div id="failure" class="card">
-            {!! $error_icon !!}
-            <h2>Payment Failed</h2>
-            <p>{{ $data['error']['description'] }}</p>
-            <button id="button" onclick="razorpay.open()">Retry</button>
-        </div>
-    @endif
     <script>
         if (checkIsDesktop()) {
             document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
@@ -673,16 +669,15 @@ $invoice_status                 = $invoice_data['status'];
             }
 
             var razorpay;
-            if (!data.error) {
-                if (checkIsDesktop()) {
-                    options.parent = '#chkout-box';
+
+            if (checkIsDesktop()) {
+                options.parent = '#chkout-box';
+                razorpay = window.razorpay = Razorpay(options);
+            } else {
+                document.getElementById('mob-payment-btn').addEventListener('click', function() {
                     razorpay = window.razorpay = Razorpay(options);
-                } else {
-                    document.getElementById('mob-payment-btn').addEventListener('click', function() {
-                        razorpay = window.razorpay = Razorpay(options);
-                        razorpay.open();
-                    });
-                }
+                    razorpay.open();
+                });
             }
 
         }(window.RZP_DATA = window.RZP_DATA || {}));

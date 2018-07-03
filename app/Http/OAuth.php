@@ -4,6 +4,7 @@ namespace RZP\Http;
 
 use ApiResponse;
 use Razorpay\OAuth\OAuthServer;
+use Illuminate\Support\Facades\App;
 use Razorpay\OAuth\Token\Entity as OAuthToken;
 
 use RZP\Exception;
@@ -12,7 +13,6 @@ use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
-use Illuminate\Support\Facades\App;
 
 class OAuth
 {
@@ -58,14 +58,7 @@ class OAuth
      */
     public function hasOAuthPublicToken(): bool
     {
-        $keyParam = $this->request->input('key_id');
-        $key = $keyParam ?? $this->request->getUser();
-        // For callback routes, gets the key from route parameter
-        $route = $this->router->currentRouteName();
-        if ((empty($key) === true) and (in_array($route, Route::$publicCallback, true) === true))
-        {
-            $key = $this->router->current()->parameter('key');
-        }
+        $key = $this->ba->getKeyForNonBasicAuthTokens();
 
         //
         // If the key was empty or null, return false and allow
@@ -89,24 +82,18 @@ class OAuth
         $this->publicToken = $key;
 
         //
+        // If the request was authenticated with key_id sent in the request params
+        // we remove the key_id attribute before proceeding
+        //
+        $this->ba->removeRequestKey('key_id');
+
+        //
         // Set the public_key on BasicAuth
         // We need to do this as public_key gets used to create callback URL
         // which gets sent as query parameter to some of the external calls to
         // bank/gateways.
         //
         $this->ba->setPublicKey($key);
-
-        //
-        // If $keyParam is non-null, it means the request was authenticated with
-        // key_id sent in the request params and not via Basic Auth header.
-        // In this case, we remove the key_id attribute before proceeding
-        //
-        if ($keyParam !== null)
-        {
-            // Remove 'key_id' from query params
-            $this->request->query->remove('key_id');
-            $this->request->request->remove('key_id');
-        }
 
         return $isPublicToken;
     }
@@ -202,10 +189,16 @@ class OAuth
 
         $mode = $response[OAuthToken::MODE];
 
-        // Sets the mode for the request, and database connection
-        $this->ba->setMode($mode);
+        //
+        // Public key is used to generate the callback URL parameter that is
+        // being sent with the payment create request to the gateway.
+        //
+        $publicKey = 'rzp_' . $mode . '_oauth_' . $response[OAuthToken::PUBLIC_TOKEN];
 
-        \Database\DefaultConnection::set($mode);
+        $this->ba->oauthPublicTokenAuth($publicKey);
+
+        // Sets the mode for the request, and database connection
+        $this->ba->authCreds->setModeAndDbConnection($mode);
 
         //
         // Set merchant for the current request
@@ -213,24 +206,17 @@ class OAuth
         //
         $this->ba->setMerchantById($response[OAuthToken::MERCHANT_ID]);
 
-        //
-        // Public key is used to generate the callback URL parameter that is
-        // being sent with the payment create request to the gateway.
-        //
-        $publicKey = 'rzp_' . $mode . '_oauth_' . $response[OAuthToken::PUBLIC_TOKEN];
 
-        $this->ba->setPublicKey($publicKey);
 
         try
         {
-            $this->ba->checkMerchantActivatedForLive();
+            $this->ba->authCreds->checkMerchantActivatedForLive();
         }
         catch (Exception\LogicException $e)
         {
             return ApiResponse::generateErrorResponse(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_MERCHANT_NOT_ACTIVATED);
         }
-
 
         // Sets the identifiers that are sent in trace logs
         $this->ba->setAccessTokenId($response[OAuthToken::ID]);

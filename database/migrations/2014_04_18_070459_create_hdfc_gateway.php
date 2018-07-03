@@ -67,7 +67,7 @@ class CreateHdfcGateway extends Migration
             $table->string('postdate', Hdfc\Constants::POSTDATE_LENGTH)
                   ->nullable();
 
-            $table->string('error_code', Hdfc\Constants::ERROR_CODE_LENGTH)
+            $table->string('error_code2')
                   ->nullable();
 
             $table->string('error_text')

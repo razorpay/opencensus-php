@@ -680,13 +680,28 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    public function getPaymentFlows(array $input)
+    {
+        $merchant = $this->merchant;
+
+        (new Payment\Validator)->validateInput('get_flows', $input);
+
+        $iinEntity = $this->repo->iin->find($input['iin']);
+
+        $data = $merchant->getPaymentFlows($iinEntity);
+
+        return $data;
+    }
+
     /**
      * We only return the payment status in case of an async
      * payment + status being either of created or authorized
      *
      * Note: This will only work within 15 minutes of the payment creation
      *
+     * @param $id
      * @return array
+     * @throws Exception\BadRequestException
      */
     public function fetchStatus($id)
     {
@@ -1235,6 +1250,13 @@ class Service extends Base\Service
     public function updateReceiverData()
     {
         return $this->core->updateReceiverData();
+    }
+
+    public function validateVpa($input)
+    {
+        $data = $this->getNewProcessor()->validateVpa($input);
+
+        return $data;
     }
 
     protected function setHoldFalse(Payment\Entity $payment)

@@ -44,9 +44,11 @@ class Processor
     use OtpResend;
     use Topup;
     use FraudDetector;
+    use HeadlessOtp;
     use Payout;
     use Reversal;
     use Transfer;
+    use Vpa;
 
     /**
      * Callback urls can be hit multiple times by customers.

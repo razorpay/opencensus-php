@@ -730,6 +730,10 @@ class Gateway extends Base\Gateway
             // Optional fields
             RequestFields::IS_SANDBOX        => $this->isSandbox() ? 'true' : 'false',
             RequestFields::TXN_TIMEOUT       => Constant::TIMEOUT,
+
+            // Merchant Based ( Max size is 255 char for both )
+            RequestFields::SELLER_NOTE       => $input['merchant']->getFilteredDba(),
+            RequestFields::SELLER_STORE_NAME => $input['merchant']->getFilteredDba(),
         ];
 
         // Callback Url needs to whitelisted at Amazon, thus can't use payment's callback url

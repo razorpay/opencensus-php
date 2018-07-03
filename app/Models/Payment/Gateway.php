@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use App;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
@@ -22,6 +23,7 @@ class Gateway
     const AXIS_MIGS              = 'axis_migs';
     const BILLDESK               = 'billdesk';
     const MPI_BLADE              = 'mpi_blade';
+    const MPI_ENSTAGE            = 'mpi_enstage';
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
     const ESIGNER_DIGIO          = 'esigner_digio';
@@ -186,6 +188,7 @@ class Gateway
         self::AXIS_GENIUS         => Settlement\Channel::KOTAK,
         self::AXIS_MIGS           => Settlement\Channel::KOTAK,
         self::MPI_BLADE           => Settlement\Channel::KOTAK,
+        self::MPI_ENSTAGE         => Settlement\Channel::KOTAK,
         self::BILLDESK            => Settlement\Channel::KOTAK,
         self::EBS                 => Settlement\Channel::KOTAK,
         self::ENACH_RBL           => Settlement\Channel::KOTAK,
@@ -235,6 +238,7 @@ class Gateway
             self::CYBERSOURCE,
             self::FIRST_DATA,
             self::MPI_BLADE,
+            self::MPI_ENSTAGE,
             self::HITACHI,
             self::CARD_FSS,
         ],
@@ -372,6 +376,12 @@ class Gateway
         self::SHARP,
     ];
 
+    public static $headless = [
+        self::CYBERSOURCE,
+        self::HITACHI,
+        self::HDFC,
+    ];
+
     /**
      * Each card gateway only support specific card networks.
      * This maintains a map of gateway to card network which
@@ -400,6 +410,10 @@ class Gateway
             Network::AMEX
         ],
         self::MPI_BLADE => [
+            Network::MC,
+            Network::VISA
+        ],
+        self::MPI_ENSTAGE => [
             Network::MC,
             Network::VISA
         ],
@@ -1010,6 +1024,15 @@ class Gateway
         Gateway::UPI_MINDGATE,
     ];
 
+    public static $upiValidateVpaGateways = [
+        Mode::LIVE => [
+            Gateway::UPI_MINDGATE,
+        ],
+        Mode::TEST => [
+            Gateway::SHARP,
+        ],
+    ];
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -1265,6 +1288,11 @@ class Gateway
         return in_array($gateway, self::$asynchronous, true);
     }
 
+    public static function supportsHeadlessBrowser($gateway)
+    {
+        return in_array($gateway, self::$headless, true);
+    }
+
     public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)
     {
         // This means that all the networks are supported by the gateway for authAndCapture.
@@ -1421,5 +1449,12 @@ class Gateway
         }
 
         return $gateways;
+    }
+
+    public static function getGatewayForValidateVpaForMode(string $mode)
+    {
+        // Currently we are only using MindGate for live and Sharp for test, later when
+        // we have more gateways, we can introduce gateway selection logic here.
+        return self::$upiValidateVpaGateways[$mode][0];
     }
 }

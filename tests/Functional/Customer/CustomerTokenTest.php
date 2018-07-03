@@ -182,6 +182,38 @@ class CustomerTokenTest extends TestCase
         $this->assertArrayNotHasKey(Token\Entity::RECURRING_DETAILS, $token);
     }
 
+    public function testFetchTokenCardWithFlows()
+    {
+        $token = $this->fixtures->create('token', [
+            'method'  => 'card',
+            'card_id' => '100000001lcard',
+            'bank'    => null,
+            'wallet'  => null
+        ]);
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'otpelf']);
+
+        $this->fixtures->edit('iin', 411111, ['flows' => $flows]);
+
+        $token = $this->getTokenById('token_' . $token['id']);
+
+        self::assertFalse($token[Token\Entity::RECURRING]);
+        self::assertEquals(2, count($token['card']['flows']));
+
+        // We never display the keys below to the public
+        self::assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);
+        self::assertArrayNotHasKey(Token\Entity::RECURRING_FAILURE_REASON, $token);
+
+        self::assertArrayNotHasKey(Token\Entity::RECURRING_DETAILS, $token);
+    }
+
+
     public function testFetchTokenCardRecurringWithStatus()
     {
         $token = $this->fixtures->create(

@@ -11,6 +11,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Exception\GatewayErrorException;
+use RZP\Exception\GatewayTimeoutException;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Mail\Payment\Failed as PaymentFailedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -627,13 +628,13 @@ class AuthorizeTest extends TestCase
 
         $response = $this->doAuthPayment($payment);
 
-        $this->assertArrayHasKey('razorpay_payment_id', $response);
+        self::assertArrayHasKey('razorpay_payment_id', $response);
 
         $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
 
-        $this->assertEquals('pin', $payment['auth_type']);
-        $this->assertEquals('card_fss', $payment['gateway']);
-        $this->assertEquals('SharedFssTrmnl', $payment['terminal_id']);
+        self::assertEquals('pin', $payment['auth_type']);
+        self::assertEquals('card_fss', $payment['gateway']);
+        self::assertEquals('SharedFssTrmnl', $payment['terminal_id']);
     }
 
     public function testPinPreferredAuthPaymentWoFeatureFallback()
