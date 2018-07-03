@@ -217,6 +217,17 @@ trait EmandateTrait
 
     protected function getEmandateAcquirerData(Netbanking\Entity $gatewayPayment): array
     {
+        $acquirerData = [
+            'acquirer' => [
+                Payment\Entity::REFERENCE1         => $gatewayPayment->getBankPaymentId(),
+            ]
+        ];
+
+        return array_merge($acquirerData, $this->getRecurringData($gatewayPayment));
+    }
+
+    protected function getRecurringData(Netbanking\Entity $gatewayPayment)
+    {
         $recurringStatus = null;
 
         $gatewaySiStatus = $gatewayPayment->getReference1();
@@ -233,18 +244,10 @@ trait EmandateTrait
         $recurringFailureReason = $gatewayPayment->getSIMessage();
 
         return [
-            'acquirer' => [
-                Payment\Entity::REFERENCE1         => $gatewayPayment->getBankPaymentId(),
-            ],
             Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getSIToken(),
             Token\Entity::RECURRING_STATUS         => $recurringStatus,
             Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
         ];
-    }
-
-    protected function getRecurringData(Netbanking\Entity $gatewayPayment)
-    {
-        return $this->getEmandateAcquirerData($gatewayPayment);
     }
     //---------------Callback request helpers end-----------------
 
