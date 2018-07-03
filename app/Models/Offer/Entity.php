@@ -3,6 +3,7 @@
 namespace RZP\Models\Offer;
 
 use Carbon\Carbon;
+use RZP\Models\Emi;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
@@ -195,7 +196,6 @@ class Entity extends Base\PublicEntity
         self::TYPE             => self::DEFERRED,
         self::ERROR_MESSAGE    => self::DEFAULT_ERROR_MESSAGE,
         self::EMI_SUBVENTION   => null,
-        self::EMI_DURATION     => null,
     ];
 
     protected $publicSetters = [
@@ -206,9 +206,12 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = [
         self::STARTS_AT,
+        self::MIN_AMOUNT,
     ];
 
     protected $casts = [
+        self::EMI_DURATION       => 'array',
+        self::EMI_SUBVENTION     => 'boolean',
         self::IINS               => 'array',
         self::INTERNATIONAL      => 'boolean',
         self::ACTIVE             => 'boolean',
@@ -303,6 +306,11 @@ class Entity extends Base\PublicEntity
     public function getIins()
     {
         return $this->getAttribute(self::IINS);
+    }
+
+    public function getEmiDuration()
+    {
+        return $this->getAttribute(self::EMI_DURATION);
     }
 
     public function getStartsAt()
@@ -415,6 +423,24 @@ class Entity extends Base\PublicEntity
         $startsAt = $input[self::STARTS_AT] ?? Carbon::now()->getTimestamp();
 
         $this->setAttribute(self::STARTS_AT, $startsAt);
+    }
+
+    protected function generateMinAmount(array $input)
+    {
+        if (isset($input[self::EMI_SUBVENTION]) === false)
+        {
+            return;
+        }
+
+        $bank = $input[self::ISSUER] ?? null;
+
+        $network = $input[self::PAYMENT_NETWORK] ?? null;
+
+        $emiDurations = $input[self::EMI_DURATION] ?? null;
+
+        $minAmount = $input[self::MIN_AMOUNT] ?? (new Emi\Core)->calculateMinAmountForPlans($bank, $network, $emiDurations);
+
+        $this->setAttribute(self::MIN_AMOUNT, $minAmount);
     }
 
     public function toArrayCheckout(bool $discount = false, int $amount = null)

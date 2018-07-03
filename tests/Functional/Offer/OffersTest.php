@@ -138,6 +138,32 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateEmiSubventionOffer()
+    {
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->startTest();
+    }
+
+    public function testEmiSubventionOfferWithInvalidAmount()
+    {
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->startTest();
+    }
+
+    public function testEmiSubventionWithDuration()
+    {
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->startTest();
+    }
+
+    public function testInvalidEmiDuration()
+    {
+        $this->startTest();
+    }
+
     public function testAddIinsToCardOffer()
     {
         $offer = $this->fixtures->create('offer:card');

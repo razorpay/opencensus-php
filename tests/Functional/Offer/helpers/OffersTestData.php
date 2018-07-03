@@ -681,6 +681,131 @@ return [
         ]
     ],
 
+    'testCreateEmiSubventionOffer' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'issuer'              => 'HDFC',
+                'emi_subvention'      => true,
+                'max_payment_count'   => 2,
+                'processing_time'     => '1',
+                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'issuer'              => 'HDFC',
+                'max_payment_count'   => 2,
+                'min_amount'          => 316389,
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details'
+            ]
+        ]
+    ],
+
+    'testEmiSubventionOfferWithInvalidAmount' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'payment_network'     => 'AMEX',
+                'emi_subvention'      => true,
+                'min_amount'          => 200000,
+                'max_payment_count'   => 2,
+                'processing_time'     => '1',
+                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Min amount required for these emi subvention is 319149'
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testEmiSubventionWithDuration' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'payment_network'     => 'AMEX',
+                'emi_subvention'      => true,
+                'emi_duration'        => [9],
+                'max_payment_count'   => 2,
+                'processing_time'     => '1',
+                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'payment_network'     => 'AMEX',
+                'max_payment_count'   => 2,
+                'min_amount'          => 316389,
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details'
+            ]
+        ]
+    ],
+
+    'testInvalidEmiDuration' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'payment_network'     => 'AMEX',
+                'emi_subvention'      => true,
+                'emi_duration'        => [3,7],
+                'max_payment_count'   => 2,
+                'processing_time'     => '1',
+                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid emi duration given 7'
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
     'testAddIinsToCardOffer' => [
         'request' => [
             'content' => [

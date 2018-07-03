@@ -16,4 +16,23 @@ class Core extends Base\Core
 
         return $emiPlan;
     }
+
+    public function calculateMinAmountForPlans($bank, $network, $durations)
+    {
+        $emiPlans = $this->repo->emi_plan->fetchByBankOrNetwork($bank, $network, $durations);
+
+        $minAmount = 0;
+
+        foreach ($emiPlans as $emiPlan)
+        {
+            $amount = Calculator::calculateMinAmount($emiPlan->getMinAmount(), $emiPlan->getMerchantPayback());
+
+            if ($minAmount < $amount)
+            {
+                $minAmount = $amount;
+            }
+        }
+
+        return $minAmount;
+    }
 }
