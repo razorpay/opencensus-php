@@ -416,7 +416,7 @@ class Core extends Base\Core
             if (str_contains($e->getDataAsString(), 'Duplicate') === true)
             {
                 throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_LINK_SLUGIFY_FAILED,
+                    ErrorCode::BAD_REQUEST_PAYMENT_LINK_SLUG_GENERATE_FAILED,
                     Entity::SLUG,
                     [
                         Entity::SLUG => $slug,
@@ -430,7 +430,7 @@ class Core extends Base\Core
     protected function getShortenUrlRequestParams(Entity $paymentLink, string $slug = null): array
     {
         // Following are default set of parameters, when there is no slug passed in input
-        // URL: https://links.razorpay.in/pl_10000000000000/view OR https://links.razorpay.in/AlphaNumMin4Max20Slug
+        // URL: https://pages.razorpay.in/pl_10000000000000/view OR https://pages.razorpay.in/AlphaNumMin4Max20Slug
         $url = $paymentLink->getHostedViewUrl($this->plHostedBaseUrl, $slug);
         // Fail: In case not able to shorten URL, will keep above value itself as short URL and continue with creation
         $fail = false;

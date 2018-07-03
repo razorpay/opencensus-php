@@ -384,15 +384,24 @@ class Response
         return $this->route->getCurrentRouteName();
     }
 
-    protected function isViewRoute(string $route): bool
+    /**
+     * Returns true if given route is expected to render a view(always)
+     * @param  string $route
+     * @return bool
+     */
+    protected function isViewRoute(string $route = null): bool
     {
         return in_array($route, Route::$publicView, true);
     }
 
+    /**
+     * Generates and renders a fallback minimal error view
+     * @param  array $data
+     * @return \Illuminate\Http\Response
+     */
     protected function generateDefaultErrorView(array $data)
     {
-        // TODO: Should have a default error view instead of payment_link.hosted, but for now this works too
-        $response = \View::make('payment_link.hosted', ['data' => $data]);
+        $response = \View::make('public.error', ['data' => $data]);
 
         return \Response::make($response);
     }

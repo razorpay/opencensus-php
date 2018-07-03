@@ -302,8 +302,8 @@ class Entity extends Base\PublicEntity
 
     /**
      * Payment link's hosted view long url is one of the following formats:
-     * - https://links.razorpay.in/pl_10000000000000/view
-     * - https://links.razorpay.in/AlphaNumMin4Max20Slug
+     * - https://pages.razorpay.in/pl_10000000000000/view
+     * - https://pages.razorpay.in/AlphaNumMin4Max20Slug
      * Notice the suffix in 1nd kind of route(when there is no slug), we need this distinction for routes to work.
      *
      * @param  string      $plHostedBaseUrl

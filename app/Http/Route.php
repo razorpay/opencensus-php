@@ -441,9 +441,8 @@ final class Route
         'item_fetch_multiple'                      => ['get',      'items',                                          'ItemController@getItems'                                           ],
         'item_update'                              => ['patch',    'items/{id}',                                     'ItemController@updateItem'                                         ],
         'item_delete'                              => ['delete',   'items/{id}',                                     'ItemController@deleteItem'                                         ],
-        // TODO: Finalize routes cases - slug, id, multiple HTTP methods and their changes
-        'links_view_by_slug_get'                   => ['get',      'links/{slug}',                                   'PaymentLinkController@viewBySlug'                                  ],
-        'links_view_get'                           => ['get',      'links/{x_entity_id}/view',                       'PaymentLinkController@view'                                        ],
+        'pages_view'                               => ['get,post', 'pages/{x_entity_id}/view',                       'PaymentLinkController@view'                                        ],
+        'pages_view_by_slug'                       => ['get,post', 'pages/{slug}',                                   'PaymentLinkController@viewBySlug'                                  ],
         'payment_link_view_get'                    => ['get',      'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
         'payment_link_view_post'                   => ['post',     'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
         'payment_link_get'                         => ['get',      'payment_links/{id}',                             'PaymentLinkController@get'                                         ],
@@ -844,7 +843,7 @@ final class Route
         'invoice_get_status',
         'invoice_send_notification',
         'invoice_get_pdf',
-        'links_view_get',
+        'pages_view',
         'payment_link_view_get',
         'payment_link_view_post',
         'merchant_public_get_banks',
@@ -919,8 +918,8 @@ final class Route
      * @var array
      */
     public static $publicView = [
-        'links_view_get',
-        'links_view_by_slug_get',
+        'pages_view',
+        'pages_view_by_slug',
         'payment_link_view_get',
     ];
 
@@ -1895,7 +1894,7 @@ final class Route
         'upi_get_key_list',
         'account',
         'payment_create_checkout_get',
-        'links_view_by_slug_get',
+        'pages_view_by_slug',
         'invoice_view_live',
         'invoice_view_test',
         'invoice_view_live_post',
@@ -2447,11 +2446,11 @@ final class Route
     {
         $info = self::$apiRoutes[$name];
 
-        $method = $info[0];
-        $uri = $info[1];
-        $action = $info[2];
+        $methods = explode(',', $info[0]);
+        $uri     = $info[1];
+        $action  = $info[2];
 
-        $router = $this->router->$method($uri, ['as' => $name, 'uses' => $action]);
+        $router = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
 
         //
         // We add the web middleware group, conditionally to routes

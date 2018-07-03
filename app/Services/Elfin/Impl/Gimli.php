@@ -34,12 +34,41 @@ class Gimli extends Base
 
     /**
      * Expands a given hash, Returns array if success else null
+     *
+     * Sample success JSON response:
+     * {
+     *    "id":"AUpw6M9h1CCK24",
+     *    "url":"http://pages.razorpay.in/pl_AUpw6KzJrLSBki/view",
+     *    "hash":"http://localhost:8081/i/vh3M8Xh",
+     *    "comment":"",
+     *    "clicks":0,
+     *    "created_at":1530638371,
+     *    "updated_at":1530638371,
+     *    "url_aliases":[
+     *       {
+     *          "id":45,
+     *          "url_id":"AUpw6M9h1CCK24",
+     *          "hash":"vh3M8Xh",
+     *          "metadata": {
+     *              "id": "pl_AUpw6KzJrLSBki",
+     *              "entity": "payment_link",
+     *              "mode": "test"
+     *          },
+     *          "created_at":1530638411
+     *       }
+     *    ],
+     *    "hash_key":"vh3M8Xh"
+     * }
+     *
+     * Note - In case of edits being allowed on Gimli in future, there could be
+     *        multiple url_aliases, in that case the top one would be the most recent.
+     *
      * @param  string $hash
      * @return array|null
      */
     public function expand(string $hash)
     {
-        $apiUrl   = "{$this->apiBaseUrl}hashes/{$hash}";
+        $apiUrl   = "{$this->apiBaseUrl}/hashes/{$hash}";
         $headers  = $this->getHeaders("");
         $response = Requests::get($apiUrl, $headers);
         $body     = $response->body;
@@ -71,7 +100,7 @@ class Gimli extends Base
     {
         $query = http_build_query($query);
 
-        $apiUrl = "{$this->apiBaseUrl}shorten";
+        $apiUrl = "{$this->apiBaseUrl}/shorten";
 
         if (empty($query) === false)
         {
