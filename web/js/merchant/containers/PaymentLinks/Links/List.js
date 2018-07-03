@@ -91,27 +91,18 @@ export default class PaymentLinksContainer extends ListContainer {
     let { loading, invoices, user } = this.props;
     let status = this.state.status;
 
-    const isPaymentLinksV2Enabled = user.isPaymentLinksV2Enabled;
-
     return (
       <div class="content-wrapper">
         <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar pull-right">
-              {isPaymentLinksV2Enabled ? (
-                <NavLink class="btn btn-primary" to="/paymentlinks/new">
-                  <i class="i i-plus" />
-                  <span>Create Payment Link</span>
-                </NavLink>
-              ) : (
-                <button
-                  class="btn btn-primary"
-                  onClick={() => this.showPaymentLinkModal()}
-                >
-                  <i class="i i-plus" />
-                  <span>Create Payment Link</span>
-                </button>
-              )}
+              <button
+                class="btn btn-primary"
+                onClick={() => this.showPaymentLinkModal()}
+              >
+                <i class="i i-plus" />
+                <span>Create Payment Link</span>
+              </button>
             </div>
           </ShowWhen>
         </HeaderAction>
@@ -133,7 +124,6 @@ export default class PaymentLinksContainer extends ListContainer {
           type="link"
           onEdit={this.showPaymentLinkModal}
           onCopy={this.onCopy}
-          isPaymentLinksV2Enabled={isPaymentLinksV2Enabled}
         />
 
         <Pager

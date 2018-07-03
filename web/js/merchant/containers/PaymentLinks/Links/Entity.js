@@ -27,12 +27,10 @@ export default class InvoiceDetailContainer extends Component {
       statusMsg: {},
     };
 
-    if (props.user.isPaymentLinksV2Enabled) {
-      // recording new payments links creation UI form in hotjar
-      if (typeof window.hj === 'function') {
-        window.hj('trigger', 'payment_links_v2_details_open');
-        window.hj('tagRecording', ['payment_links_v2_details_open']);
-      }
+    // recording new payments links creation UI form in hotjar
+    if (typeof window.hj === 'function') {
+      window.hj('trigger', 'payment_links_v2_details_open');
+      window.hj('tagRecording', ['payment_links_v2_details_open']);
     }
   }
 
@@ -239,7 +237,6 @@ export default class InvoiceDetailContainer extends Component {
         onIssue={this.showIssueConfirmModal}
         onCancel={this.cancelInvoice}
         editPaymentLink={this.editPaymentLink}
-        isPaymentLinksV2Enabled={this.props.user.isPaymentLinksV2Enabled}
       />
     );
   }
