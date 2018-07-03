@@ -8,7 +8,7 @@ const createFields = [
   'id',
   'amount',
   'currency',
-  // 'partial_payment' // Commented just for the sake of listing. Discuss if you feel like uncommenting this.
+  'partial_payment',
   'date',
   'expire_by',
   'draft',
@@ -28,13 +28,13 @@ const createFields = [
 ];
 
 const editableFieldsInIssuedState = [
+  'partial_payment',
   'date',
   'expire_by',
   'terms',
   'notes',
   'receipt',
-  'comment',
-  // 'partial_payment' // Commented just for the sake of listing. Discuss if you feel like uncommenting this.
+  'comment'
 ];
 
 export default class Invoice extends GenericEntity {
@@ -46,15 +46,6 @@ export default class Invoice extends GenericEntity {
   }
 
   resourceFields() {
-    // Add partial payment to list if partial payment is enabled.
-    const isPPEnabled = store.getState().session.user
-      .isInvoicePartialPaymentsEnabled;
-
-    if (isPPEnabled) {
-      createFields.push('partial_payment');
-      editableFieldsInIssuedState.push('partial_payment');
-    }
-
     return this.status === 'issued'
       ? editableFieldsInIssuedState
       : createFields;

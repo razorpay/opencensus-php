@@ -41,8 +41,7 @@ export default [
         </span>
       ),
       _cmp: Input.Check,
-      _autoRenderImpure: true,
-      _featureEnabled: 'Invoice_Partial_Payments',
+      _autoRenderImpure: true
     },
   ],
   {
