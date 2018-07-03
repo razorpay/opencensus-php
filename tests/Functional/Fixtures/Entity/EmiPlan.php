@@ -102,6 +102,7 @@ class EmiPlan extends Base
             'network'           => 'AMEX',
             'min_amount'        => '300000',
             'merchant_payback'  => '518',
+            'bank'              => null,
         ],
         [
             'id'                => '11101010111111',
@@ -111,6 +112,7 @@ class EmiPlan extends Base
             'network'           => 'AMEX',
             'min_amount'        => '300000',
             'merchant_payback'  => '600',
+            'bank'              => null,
         ],
     ];
 

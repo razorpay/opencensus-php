@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Emi;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -57,8 +58,8 @@ class Validator extends Base\Validator
         Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX',
         Entity::EMI_SUBVENTION      => 'required|boolean|in:1',
         Entity::EMI_DURATION        => 'sometimes|array|custom',
-        Entity::MIN_AMOUNT          => 'filled|custom',
         // Not validating these params as they have been validated.
+        Entity::MIN_AMOUNT          => 'filled',
         Entity::MAX_PAYMENT_COUNT   => 'filled',
         Entity::PROCESSING_TIME     => 'filled',
         Entity::STARTS_AT           => 'filled',
@@ -89,6 +90,7 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_COUNT,
         Entity::LINKED_OFFER_IDS,
         Entity::EMI_SUBVENTION,
+        Entity::MIN_AMOUNT,
     ];
 
     protected static $editValidators = [
@@ -221,12 +223,6 @@ class Validator extends Base\Validator
                         'Iins should be a valid array');
         }
 
-        if (isset($input[Entity::EMI_SUBVENTION]) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Iins are not supported for no cost emi');
-        }
-
         $paymentMethod = $input[Entity::PAYMENT_METHOD] ?? $this->entity->getPaymentMethod();
 
         if (empty($paymentMethod) === true)
@@ -306,6 +302,11 @@ class Validator extends Base\Validator
 
     protected function validateEmiSubvention(array $input)
     {
+        if (isset($input[Entity::EMI_SUBVENTION]) === false)
+        {
+            return;
+        }
+
         $op =  'emi_subvention';
 
         $var = $this->getRulesVariableName($op);
@@ -316,9 +317,10 @@ class Validator extends Base\Validator
         }
     }
 
-    // Note: this method is called from only emi subvention validation
-    protected function validateMinAmount(string $attribute, string $minAmount, array $input)
+    protected function validateMinAmount(array $input)
     {
+        $minAmount = $input[Entity::MIN_AMOUNT] ?? null;
+
         if ((isset($input[Entity::EMI_SUBVENTION]) === false) or
             (empty($minAmount) === true))
         {
@@ -331,7 +333,7 @@ class Validator extends Base\Validator
 
         $emiDurations = $input[Entity::EMI_DURATION] ?? null;
 
-        $requiredMinAmount = (new \RZP\Models\Emi\Core)->calculateMinAmountForPlans($bank, $network, $emiDurations);
+        $requiredMinAmount = (new Emi\Core)->calculateMinAmountForPlans($bank, $network, $emiDurations);
 
         if ($minAmount < $requiredMinAmount)
         {

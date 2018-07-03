@@ -196,6 +196,7 @@ class Entity extends Base\PublicEntity
         self::TYPE             => self::DEFERRED,
         self::ERROR_MESSAGE    => self::DEFAULT_ERROR_MESSAGE,
         self::EMI_SUBVENTION   => null,
+        self::EMI_DURATION     => null,
     ];
 
     protected $publicSetters = [
@@ -394,9 +395,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::IINS] = json_encode(array_values($iins));
     }
 
-    protected function setEmiDurationAttribute(array $emiDurations)
+    protected function setEmiDurationAttribute($emiDurations)
     {
         $existingEmiDuration = $this->getAttribute(self::EMI_DURATION);
+
+        $emiDurations = [];
 
         if ($existingEmiDuration !== null)
         {
