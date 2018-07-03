@@ -45,9 +45,7 @@ class UserTest extends TestCase
 
     public function testLogin()
     {
-        $password = (new BcryptHasher)->make('hello123');
-
-        $user = $this->fixtures->create('user', ['password' => $password]);
+        $user = $this->fixtures->create('user', ['password' => 'hello123']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -65,9 +63,7 @@ class UserTest extends TestCase
 
     public function testFailedLogin()
     {
-        $password = (new BcryptHasher)->make('hello123');
-
-        $user = $this->fixtures->create('user', ['password' => $password]);
+        $user = $this->fixtures->create('user', ['password' => 'hello123']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -158,9 +154,7 @@ class UserTest extends TestCase
 
     public function testChangePassword()
     {
-        $password = Hash::make('12345');
-
-        $user = $this->fixtures->create('user', ['password' => $password]);
+        $user = $this->fixtures->create('user', ['password' => '12345']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -183,9 +177,7 @@ class UserTest extends TestCase
 
     public function testChangeInvalidPassword()
     {
-        $password = Hash::make('12345');
-
-        $user = $this->fixtures->create('user', ['password' => $password]);
+        $user = $this->fixtures->create('user', ['password' => '12345']);
 
         $testData = & $this->testData[__FUNCTION__];
 
