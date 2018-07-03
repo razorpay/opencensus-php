@@ -45,13 +45,7 @@
         @include('hostedpage.partials.styles.desktop')
         @include('hostedpage.partials.styles.mobile')
 
-
         @include('hostedpage.partials.scripts')
-
-        @if ($has_udf === true)
-            {{--<link rel="stylesheet" id="theme_stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">--}}
-            <script src="https://cdn.jsdelivr.net/npm/{{'@'}}json-editor/json-editor/dist/jsoneditor.min.js"></script>
-        @endif
     </head>
 
     <body>
@@ -78,53 +72,57 @@
                 @include('hostedpage.partials.form')
             </div>
         </div>
-    </body>
-    <script>
-        cleanHTML();
-        window.t0 = (new Date()).getTime(); // initial time stamp
+        @if ($has_udf === true)
+            {{--<link rel="stylesheet" id="theme_stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">--}}
+            <script src="https://cdn.jsdelivr.net/npm/{{'@'}}json-editor/json-editor/dist/jsoneditor.min.js"></script>
+        @endif
+        <script>
+            cleanHTML();
+            window.t0 = (new Date()).getTime(); // initial time stamp
 
-        var data = window.RZP_DATA.data;
-        var color = data.merchant.brand_color || '#168AFA';
+            var data = window.RZP_DATA.data;
+            var color = data.merchant.brand_color || '#168AFA';
 
-        toggleTrimDescription(true);
+            toggleTrimDescription(true);
 
-        function fullPaid(respPaymentId) {
-            if (!respPaymentId) {
-                return;
+            function fullPaid(respPaymentId) {
+                if (!respPaymentId) {
+                    return;
+                }
+
+                var amount = data.payment_link.amount;
+                document.getElementById('pay-title').innerHTML = 'AMOUNT PAID';
+
+                if (checkIsDesktop()) {
+                    document.getElementById('scs-box').style.display = 'block';
+                    var successNote = "You have successfully paid ₹ " + (amount/100).toFixed(2);
+
+                    successNote += '<div> Payment ID: ' + respPaymentId + ' </div>';
+
+                    document.getElementById('scs-msg').innerHTML = successNote;
+
+                    document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
+                } else {
+                    document.getElementById('mob-payment-btn').style.display = 'none';
+                }
             }
+        </script>
+        <script>
+            function submitUdf(btn) {
+                var errors = editor.validate();
+                console.log('ERRORS...', errors);
 
-            var amount = data.payment_link.amount;
-            document.getElementById('pay-title').innerHTML = 'AMOUNT PAID';
+                if (errors.length) {
+                    alert("Errors in the form");
+                    return;
+                }
 
-            if (checkIsDesktop()) {
-                document.getElementById('scs-box').style.display = 'block';
-                var successNote = "You have successfully paid ₹ " + (amount/100).toFixed(2);
+                var udfData = editor.getValue();
+                document.getElementById("udf_submit_btn").style.display='none';
 
-                successNote += '<div> Payment ID: ' + respPaymentId + ' </div>';
-
-                document.getElementById('scs-msg').innerHTML = successNote;
-
-                document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
-            } else {
-                document.getElementById('mob-payment-btn').style.display = 'none';
+                editor.destroy();
+                checkoutStart(window.RZP_DATA = window.RZP_DATA || {}, udfData);
             }
-        }
-    </script>
-    <script>
-        function submitUdf(btn) {
-            var errors = editor.validate();
-
-            if (errors.length) {
-                alert("Errors in the form");
-                return;
-            }
-
-            var udfData = editor.getValue();
-            document.getElementById("udf_submit_btn").style.display='none';
-
-            editor.destroy();
-            checkoutStart(window.RZP_DATA = window.RZP_DATA || {}, udfData);
-        }
 
         // UDF start
         JSONEditor.defaults.languages.en.error_required = "";
@@ -145,61 +143,62 @@
         document.getElementById('udf_submit_btn').addEventListener('click', submitUdf);
         // UDF end
 
-        function checkoutStart(globalScope, udfData) {
-            var data = globalScope.data;
+            function checkoutStart(globalScope, udfData) {
+                var data = globalScope.data;
 
-            var paymentPageObj = data.payment_link;
-            var merchant = data.merchant;
+                var paymentPageObj = data.payment_link;
+                var merchant = data.merchant;
 
-            // Checkout options
-            var options = {
-                key: data.key_id,
-                payment_link_id: paymentPageObj.id,
-                amount: parseInt(udfData.amount * 100),
-                notes: udfData,
-                description: '#' + paymentPageObj.id,
-                handler: function(response) {
-                    if (globalScope.hasRedirect()) {
+                // Checkout options
+                var options = {
+                    key: data.key_id,
+                    payment_link_id: paymentPageObj.id,
+                    amount: parseInt(udfData.amount * 100),
+                    notes: udfData,
+                    description: '#' + paymentPageObj.id,
+                    handler: function(response) {
+                        if (globalScope.hasRedirect()) {
 
-                        return globalScope.redirectToCallback(
-                            data.payment_link.callback_url,
-                            data.payment_link.callback_method,
-                            response
-                        );
+                            return globalScope.redirectToCallback(
+                                data.payment_link.callback_url,
+                                data.payment_link.callback_method,
+                                response
+                            );
+                        }
+
+                        if (window.ga && window.ga.length) {
+                            var sessionTDiff = (new Date()).getTime() - window.t0;
+                            var paymentSuccessAction = 'Payment Successful';
+
+                            window.ga('send', 'event', 'Payment Page Hosted', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
+                                hitCallback: function() {
+                                    return fullPaid(response.razorpay_payment_id); // To display the latest payment id
+                                }
+                            });
+                        } else {
+                            return fullPaid(response.razorpay_payment_id); // To display the latest payment id
+                        }
+                    },
+                    callback_url: location.href,
+                    theme: {
+                        close_button: false,
+                    },
+                    modal: {
+                        confirm_close: true,
+                        escape: false
                     }
+                };
 
-                    if (window.ga && window.ga.length) {
-                        var sessionTDiff = (new Date()).getTime() - window.t0;
-                        var paymentSuccessAction = 'Payment Successful';
-
-                        window.ga('send', 'event', 'Payment Page Hosted', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
-                            hitCallback: function() {
-                                return fullPaid(response.razorpay_payment_id); // To display the latest payment id
-                            }
-                        });
-                    } else {
-                        return fullPaid(response.razorpay_payment_id); // To display the latest payment id
-                    }
-                },
-                callback_url: location.href,
-                theme: {
-                    close_button: false,
-                },
-                modal: {
-                    confirm_close: true,
-                    escape: false
+                options.name = data.merchant.name;
+                options.theme.color = merchant.brand_color || '#168AFA';
+                if (merchant.image) {
+                    options.image = merchant.image;
                 }
+
+                var razorpay;
+                razorpay = window.razorpay = Razorpay(options);
+                razorpay.open();
             };
-
-            options.name = data.merchant.name;
-            options.theme.color = merchant.brand_color || '#168AFA';
-            if (merchant.image) {
-                options.image = merchant.image;
-            }
-
-            var razorpay;
-            razorpay = window.razorpay = Razorpay(options);
-            razorpay.open();
-        };
-    </script>
+        </script>
+    </body>
 </html>

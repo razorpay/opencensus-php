@@ -1,5 +1,6 @@
 <?php
     $secondary_color = '#6F7691';
+    $text_red        = '#F05150';
 ?>
 
 <style>
@@ -53,6 +54,18 @@
         /*-webkit-border-radius: 2px;*/
     }
 
+    .form-group .help-block {
+        margin: 4px 0 0 160px;
+        font-size: 12px;
+    }
+
+    .form-group .errormsg {
+        color: {{$text_red}};
+    }
+
+    .form-group.has-error .form-control {
+        border-color: {{$text_red}};
+    }
 
     .form-group .icon {
         font-size: 16px;
@@ -88,6 +101,10 @@
 
         .form-group .form-control {
             width: 100%;
+        }
+
+        .form-group .help-block {
+            margin-left: 0;
         }
     }
     

@@ -14,11 +14,21 @@
     * {
         box-sizing: border-box;
     }
+
+    html {
+        overflow: hidden;
+    }
+
+    html, body {
+        height: 100%;
+    }
+
     body {
         margin: 0;
         font-family: Muli,BlinkMacSystemFont,-apple-system,"Segoe UI","Roboto","Oxygen","Ubuntu","Cantarell","Fira Sans","Droid Sans","Helvetica Neue","Helvetica","Arial",sans-serif;
         color: {{$primary_color}};
         background: {{$canvas_bg}};
+        overflow: auto;
     }
 
     body div.redirect-message {

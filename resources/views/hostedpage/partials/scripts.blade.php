@@ -22,9 +22,6 @@
             document.getElementById('mobile-container').style.display = 'block';
 
             document.body.style.overflow = 'hidden';
-            document.documentElement.style.overflow = 'hidden';
-            document.body.style.scrollTop = 0;
-            document.documentElement.scrollTop = 0
         }
     }
 
