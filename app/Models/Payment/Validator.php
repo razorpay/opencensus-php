@@ -684,7 +684,6 @@ class Validator extends Base\Validator
     {
         $currency = $input['currency'];
 
-        // Right now only INR and USD is supported.
         if (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false)
         {
             throw new Exception\BadRequestException(

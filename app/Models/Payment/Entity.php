@@ -1397,6 +1397,12 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
     }
 
+    public function isPinAuth()
+    {
+        return (($this->getAttribute(self::METHOD) === Payment\Method::CARD) and
+            ($this->getAttribute(self::AUTH_TYPE) === AuthType::PIN));
+    }
+
     public function isUpi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
