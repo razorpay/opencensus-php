@@ -3655,6 +3655,10 @@ ALTER TABLE invoices
     DROP INDEX invoices_merchant_id_receipt_unique,
     ADD INDEX invoices_merchant_id_receipt_index (merchant_id, receipt);
 
+# Adds auth_type column to pricing table
+ALTER TABLE pricing
+    ADD COLUMN auth_type VARCHAR(255) DEFAULT NULL AFTER payment_method_type;
+
 #increase error_code length for hdfc
 ALTER TABLE hdfc
     ADD COLUMN error_code2 VARCHAR(255) DEFAULT NULL AFTER error_code,
