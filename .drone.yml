@@ -1,7 +1,7 @@
 pipeline:
   test:
     group: A
-    image: razorpay/pithos:rzp-php7.1
+    image: razorpay/containers:php7
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
       - DB_LIVE_HOST=livedb
