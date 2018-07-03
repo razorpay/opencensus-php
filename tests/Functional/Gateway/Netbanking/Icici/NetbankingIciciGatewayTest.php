@@ -63,7 +63,7 @@ class NetbankingIciciGatewayTest extends TestCase
             if ($action === 'verify')
             {
                 if (($iterator === 0) or
-                    ($iterator == 2))
+                    ($iterator === 2))
                 {
                     $content[ResponseFields::STATUS] = 'failed';
                 }
