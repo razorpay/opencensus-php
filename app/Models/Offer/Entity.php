@@ -386,6 +386,18 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::IINS] = json_encode(array_values($iins));
     }
 
+    protected function setEmiDurationAttribute(array $emiDurations)
+    {
+        $existingEmiDuration = $this->getAttribute(self::EMI_DURATION);
+
+        if ($existingEmiDuration !== null)
+        {
+            $emiDurations = array_unique(array_merge($existingEmiDuration, $emiDurations));
+        }
+
+        $this->attributes[self::EMI_DURATION] = json_encode(array_values($emiDurations));
+    }
+
     protected function setLinkedOfferIdsAttribute(array $linkedOfferIds)
     {
         $existingLinkedOfferIds = $this->getAttribute(self::LINKED_OFFER_IDS);

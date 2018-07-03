@@ -45,7 +45,10 @@ class Validator extends Base\Validator
         Entity::ENDS_AT             => 'required|epoch',
         Entity::DISPLAY_TEXT        => 'filled|string|max:255',
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
-        Entity::TERMS               => 'required|string'
+        Entity::TERMS               => 'required|string',
+        Entity::EMI_SUBVENTION      => 'sometimes_if:payment_method,emi|boolean',
+        Entity::EMI_DURATION        => 'sometimes_if:emi_subvention,1',
+
     ];
 
     protected static $editRules = [
@@ -68,6 +71,7 @@ class Validator extends Base\Validator
         Entity::FLAT_CASHBACK,
         Entity::MAX_PAYMENT_COUNT,
         Entity::LINKED_OFFER_IDS,
+        Entity::EMI_SUBVENTION,
     ];
 
     protected static $editValidators = [
@@ -104,6 +108,14 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'This card payment network is not supported');
+        }
+
+        if ((isset($input[Entity::EMI_SUBVENTION]) === true) and
+            ($input[Entity::EMI_SUBVENTION] === true) and
+            ($input[Entity::PAYMENT_NETWORK] !== Network::AMEX))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Payment network is not applicable for no cost emi");
         }
     }
 
@@ -169,6 +181,12 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK);
         }
+
+        if (isset($input[Entity::EMI_SUBVENTION]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'flat cashback is not supported for no cost emi');
+        }
     }
 
     protected function validateIssuer(string $attribute, string $issuer)
@@ -193,6 +211,12 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                         'Iins should be a valid array');
+        }
+
+        if (isset($input[Entity::EMI_SUBVENTION]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Iins are not supported for no cost emi');
         }
 
         $paymentMethod = $input[Entity::PAYMENT_METHOD] ?? $this->entity->getPaymentMethod();
@@ -269,6 +293,20 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                         'Linked offer ids submitted are not valid');
+        }
+    }
+
+    protected function validateEmiSubvention(array $input)
+    {
+        if (isset($input[Entity::PERCENT_RATE]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Percent rate is not supported for no cost emi');
+        }
+
+        if (isset($input[Entity::MAX_CASHBACK]) === true) {
+            throw new Exception\BadRequestValidationFailureException(
+                'Max cashback is not supported for no cost emi');
         }
     }
 }
