@@ -2,7 +2,6 @@ import GenericEntity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
 import { getFixedINRAmount, isBlank, rupeesToPaise } from 'rzp/utils/rzp-utils';
 import Payment from 'merchant/models/Payment';
-import store from 'merchant/store';
 
 const createFields = [
   'id',
@@ -34,7 +33,7 @@ const editableFieldsInIssuedState = [
   'terms',
   'notes',
   'receipt',
-  'comment'
+  'comment',
 ];
 
 export default class Invoice extends GenericEntity {
