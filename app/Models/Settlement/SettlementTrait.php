@@ -4,20 +4,15 @@ namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
 
-use RZP\Base\RuntimeManager;
-use RZP\Constants\Mode;
-use RZP\Dashboard\Dashboard;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Entity;
-use RZP\Models\Payment;
-use RZP\Models\Feature\Constants as FConstants;
+use RZP\Models\Transaction;
+use RZP\Base\RuntimeManager;
+use RZP\Dashboard\Dashboard;
 use RZP\Models\Merchant\Preferences;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Merchant\Entity as MerchantEntity;
 
 trait SettlementTrait
 {
@@ -34,10 +29,8 @@ trait SettlementTrait
 
         foreach ($txns as $txn)
         {
-            $merchant = $txn->merchant;
-
             // skip if txn not to be settled
-            if ($this->shouldSettle($merchant) === false)
+            if ($this->shouldSettle($txn) === false)
             {
                 continue;
             }
@@ -63,7 +56,7 @@ trait SettlementTrait
                 continue;
             }
 
-            $merchantId = $merchant->getId();
+            $merchantId = $txn->getMerchantId();
 
             $filterGroupedTxns[$merchantId] = ($filterGroupedTxns[$merchantId] ?? (new Base\PublicCollection));
 
@@ -130,11 +123,15 @@ trait SettlementTrait
             Preferences::MID_PAISABAZAAR,
         ];
 
-        $parentId = $txn->merchant->getParentId();
+        $mid = $txn->getMerchantId();
+
+        $merchant = $this->merchants[$mid];
+
+        $parentId = $merchant->getParentId();
 
         // Check if it is a sub-merchant of a Mutual-fund account
         if (($txn->isTypePayment() === true) and
-            ($txn->merchant->isLinkedAccount() === true) and
+            ($merchant->isLinkedAccount() === true) and
             (in_array($parentId, $mfMids, true) === true))
         {
             $now = Carbon::now(Timezone::IST)->getTimestamp();
@@ -219,9 +216,11 @@ trait SettlementTrait
 
     protected function createSettlementsFromTxns($txns, string $channel): array
     {
-        $merchant = $txns->first()->merchant;
+        $merchantId = $txns->first()->getMerchantId();
 
-        $this->trace->info(TraceCode::SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT, ['merchant' => $merchant->getId()]);
+        $merchant = $this->merchants[$merchantId];
+
+        $this->trace->info(TraceCode::SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT, ['merchant' => $merchantId]);
 
         list($setlAmount, $setlFee, $setlApiFee, $tax) = $this->getSettlementAmountsForMerchant($txns);
 
@@ -278,7 +277,11 @@ trait SettlementTrait
 
         foreach ($txns as $txn)
         {
-            if (($txn->isTypePayment() === true) and ($txn->merchant->isLinkedAccount() === true))
+            $merchantId = $txn->getMerchantId();
+
+            $merchant = $this->merchants[$merchantId];
+
+            if (($txn->isTypePayment() === true) and ($merchant->isLinkedAccount() === true))
             {
                 $filteredTxnIds[] = $txn->getId();
             }
@@ -375,6 +378,13 @@ trait SettlementTrait
                 Trace::ERROR,
                 TraceCode::SETTLEMENT_SKIPPED,
                 $traceData);
+
+            $data = [
+                    'message' => 'Settlement Skipped. Check for Retry.',
+                    'status'  => SlackNotification::BAD,
+                ] + $traceData;
+
+            (new SlackNotification)->send($data);
         }
 
         return [$settlement, $bankTransferAtpt];
@@ -384,34 +394,16 @@ trait SettlementTrait
      * Settlement is done only bank account change is not recent as we need some
      * time till beneficiary is updated in kotak
      *
-     * @param MerchantEntity $merchant
+     * @param Transaction\Entity $txn
      *
      * @return bool
      * @throws Exception\LogicException
      */
-    protected function shouldSettle(MerchantEntity $merchant): bool
+    protected function shouldSettle(Transaction\Entity $txn): bool
     {
-        //
-        // Skip settlements for few merchants
-        // Details in: https://github.com/razorpay/api/issues/5830
-        // Temporary, until https://github.com/razorpay/api/pull/6161
-        // is merged
-        //
-        $skipMerchantIds = [
-            Preferences::MID_GOALWISE_NON_TPV,
-            Preferences::MID_GOALWISE_TPV,
-            Preferences::MID_MONEYVIEW,
-            Preferences::MID_WEALTHY,
-            Preferences::MID_PIGGY,
-            Preferences::MID_PAISABAZAAR,
-            Preferences::MID_BPCL,
-            Preferences::MID_SRI_CHAITANYA,
-        ];
+        $mid = $txn->getMerchantId();
 
-        if (in_array($merchant->getId(), $skipMerchantIds, true) === true)
-        {
-            return false;
-        }
+        $merchant = $this->merchants[$mid];
 
         $today = Carbon::today(Timezone::IST);
 
@@ -426,7 +418,9 @@ trait SettlementTrait
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
-        if ($merchant->bankAccount === null)
+        $bankAccount = $merchant->bankAccount;
+
+        if ($bankAccount === null)
         {
             throw new Exception\LogicException(
                 'No bank account mapped for merchant settlement',
@@ -435,7 +429,7 @@ trait SettlementTrait
         }
 
         if (($this->env !== 'testing') and
-            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
+            ($bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
         {
             $shouldSettle = false;
         }

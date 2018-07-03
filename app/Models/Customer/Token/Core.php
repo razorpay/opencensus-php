@@ -291,6 +291,13 @@ class Core extends Base\Core
             return;
         }
 
+        if (empty($gatewayData[Entity::ACKNOWLEDGED_AT]) === false)
+        {
+            $acknowledgedAt = $gatewayData[Entity::ACKNOWLEDGED_AT];
+
+            $token->setAcknowledgedAt($acknowledgedAt);
+        }
+
         if ($gatewayRecurringStatus === RecurringStatus::CONFIRMED)
         {
             $token->setRecurring(true);

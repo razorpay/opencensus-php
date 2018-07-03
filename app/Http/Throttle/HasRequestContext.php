@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\BasicAuth\AuthCreds;
 use RZP\Exception\BadRequestException;
 
 /**
@@ -306,7 +307,7 @@ trait HasRequestContext
 
     protected function validateKeyLen(string $key)
     {
-        $validKeyLengths = array_merge(BasicAuth::$validKeyLengths, [OAuth::PUBLIC_TOKEN_LENGTH]);
+        $validKeyLengths = array_merge(AuthCreds::$validKeyLengths, [OAuth::PUBLIC_TOKEN_LENGTH]);
 
         if (in_array(strlen($key), $validKeyLengths, true) === false)
         {

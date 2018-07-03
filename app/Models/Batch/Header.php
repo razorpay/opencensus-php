@@ -19,7 +19,7 @@ class Header
     // A header key which holds notes values(key value pairs)
     const NOTES             = 'notes';
     // In file, notes columns are expected to be in format: Notes[<key>] & while parsing the file, formatted as above
-    const NOTES_REGEX       = '/^Notes\[(.*)]$/';
+    const NOTES_REGEX       = '/^notes\[(.*)]$/';
 
     //
     // Refund Headers
@@ -137,11 +137,6 @@ class Header
     const RECURRING_CHARGE_CURRENCY    = 'currency';
     const RECURRING_CHARGE_RECEIPT     = 'receipt';
     const RECURRING_CHARGE_DESCRIPTION = 'description';
-    const RECURRING_CHARGE_NOTES_1     = 'notes_1';
-    const RECURRING_CHARGE_NOTES_2     = 'notes_2';
-    const RECURRING_CHARGE_NOTES_3     = 'notes_3';
-    const RECURRING_CHARGE_NOTES_4     = 'notes_4';
-    const RECURRING_CHARGE_NOTES_5     = 'notes_5';
     const RECURRING_CHARGE_PAYMENT_ID  = 'payment_id';
     const RECURRING_CHARGE_ORDER_ID    = 'order_id';
 
@@ -161,12 +156,11 @@ class Header
     const HDFC_EM_REGISTER_MANDATE_SERIAL_NO                = HdfcEMRegisterHeadings::MANDATE_SERIAL_NUMBER;
     const HDFC_EM_REGISTER_MERCHANT_REQUEST_NO              = HdfcEMRegisterHeadings::MERCHANT_REQUEST_NO;
     const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
-    const HDFC_EM_REGISTER_REMARKS                          = HdfcEMRegisterHeadings::REMARKS;
+    const HDFC_EM_REGISTER_REMARKS                          = HdfcEMRegisterHeadings::REMARK;
 
     //
     // HDFC Emandate Debit Response File Headers
     //
-    const HDFC_EM_DEBIT_SERIAL_NO           = HdfcEMDebitHeadings::SERIAL_NO;
     const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
     const HDFC_EM_DEBIT_MANDATE_ID          = HdfcEMDebitHeadings::MANDATE_ID;
     const HDFC_EM_DEBIT_ACCOUNT_NO          = HdfcEMDebitHeadings::ACCOUNT_NO;
@@ -178,6 +172,34 @@ class Header
     const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
     const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
     const HDFC_EM_DEBIT_NARRATION           = HdfcEMDebitHeadings::NARRATION;
+
+    //
+    // eNach Acknowledgement Response File Headers
+    //
+    const ENACH_ACK_MANDATE_DATE    = 'MANDATE_DATE';
+    const ENACH_ACK_BATCH           = 'BATCH';
+    const ENACH_ACK_IHNO            = 'IHNO';
+    const ENACH_ACK_MANDATE_TYPE    = 'MANDATE_TYPE';
+    const ENACH_ACK_UMRN            = 'UMRN';
+    const ENACH_ACK_REF_1           = 'REF_1';
+    const ENACH_ACK_REF_2           = 'REF_2';
+    const ENACH_ACK_CUST_NAME       = 'CUST_NAME';
+    const ENACH_ACK_BANK            = 'BANK';
+    const ENACH_ACK_BRANCH          = 'BRANCH';
+    const ENACH_ACK_BANK_CODE       = 'BANK_CODE';
+    const ENACH_ACK_AC_TYPE         = 'AC_TYPE';
+    const ENACH_ACK_ACNO            = 'ACNO';
+    const ENACH_ACK_ACK_DATE        = 'ACK_DATE';
+    const ENACH_ACK_ACK_DESC        = 'ACK_DESC';
+    const ENACH_ACK_AMOUNT          = 'AMOUNT';
+    const ENACH_ACK_FREQUENCY       = 'FREQUENCY';
+    const ENACH_ACK_TEL_NO          = 'TEL_NO';
+    const ENACH_ACK_MOBILE_NO       = 'MOBILE_NO';
+    const ENACH_ACK_MAIL_ID         = 'MAIL_ID';
+    const ENACH_ACK_UPLOAD_BATCH    = 'UPLOAD_BATCH';
+    const ENACH_ACK_UPLOAD_DATE     = 'UPLOAD_DATE';
+    const ENACH_ACK_UPDATE_DATE     = 'UPDATE_DATE';
+    const ENACH_ACK_SOLE_ID         = 'SOLE_ID';
 
     //
     // eNach Register Response File Headers
@@ -261,11 +283,6 @@ class Header
     const DIRECT_DEBIT_CURRENCY        = 'currency';
     const DIRECT_DEBIT_RECEIPT         = 'receipt';
     const DIRECT_DEBIT_DESCRIPTION     = 'description';
-    const DIRECT_DEBIT_NOTES_1         = 'notes_1';
-    const DIRECT_DEBIT_NOTES_2         = 'notes_2';
-    const DIRECT_DEBIT_NOTES_3         = 'notes_3';
-    const DIRECT_DEBIT_NOTES_4         = 'notes_4';
-    const DIRECT_DEBIT_NOTES_5         = 'notes_5';
     const DIRECT_DEBIT_ORDER_ID        = 'order_id';
     const DIRECT_DEBIT_PAYMENT_ID      = 'payment_id';
     const DIRECT_DEBIT_REMARKS         = 'remarks';
@@ -433,7 +450,6 @@ class Header
 
         'emandate_debit_hdfc' => [
             self::INPUT => [
-                self::HDFC_EM_DEBIT_SERIAL_NO,
                 self::HDFC_EM_DEBIT_TRANSACTION_REF_NO,
                 self::HDFC_EM_DEBIT_MANDATE_ID,
                 self::HDFC_EM_DEBIT_ACCOUNT_NO,
@@ -506,11 +522,7 @@ class Header
                 self::RECURRING_CHARGE_CURRENCY,
                 self::RECURRING_CHARGE_RECEIPT,
                 self::RECURRING_CHARGE_DESCRIPTION,
-                self::RECURRING_CHARGE_NOTES_1,
-                self::RECURRING_CHARGE_NOTES_2,
-                self::RECURRING_CHARGE_NOTES_3,
-                self::RECURRING_CHARGE_NOTES_4,
-                self::RECURRING_CHARGE_NOTES_5,
+                self::NOTES,
             ],
             self::OUTPUT => [
                 self::RECURRING_CHARGE_TOKEN,
@@ -519,11 +531,7 @@ class Header
                 self::RECURRING_CHARGE_CURRENCY,
                 self::RECURRING_CHARGE_RECEIPT,
                 self::RECURRING_CHARGE_DESCRIPTION,
-                self::RECURRING_CHARGE_NOTES_1,
-                self::RECURRING_CHARGE_NOTES_2,
-                self::RECURRING_CHARGE_NOTES_3,
-                self::RECURRING_CHARGE_NOTES_4,
-                self::RECURRING_CHARGE_NOTES_5,
+                self::NOTES,
                 self::RECURRING_CHARGE_ORDER_ID,
                 self::RECURRING_CHARGE_PAYMENT_ID,
             ],
@@ -550,7 +558,30 @@ class Header
 
         'emandate_acknowledge_enach_rbl' => [
             self::INPUT => [
-                'data'
+                self::ENACH_ACK_MANDATE_DATE,
+                self::ENACH_ACK_BATCH,
+                self::ENACH_ACK_IHNO,
+                self::ENACH_ACK_MANDATE_TYPE,
+                self::ENACH_ACK_UMRN,
+                self::ENACH_ACK_REF_1,
+                self::ENACH_ACK_REF_2,
+                self::ENACH_ACK_CUST_NAME,
+                self::ENACH_ACK_BANK,
+                self::ENACH_ACK_BRANCH,
+                self::ENACH_ACK_BANK_CODE,
+                self::ENACH_ACK_AC_TYPE,
+                self::ENACH_ACK_ACNO,
+                self::ENACH_ACK_ACK_DATE,
+                self::ENACH_ACK_ACK_DESC,
+                self::ENACH_ACK_AMOUNT,
+                self::ENACH_ACK_FREQUENCY,
+                self::ENACH_ACK_TEL_NO,
+                self::ENACH_ACK_MOBILE_NO,
+                self::ENACH_ACK_MAIL_ID,
+                self::ENACH_ACK_UPLOAD_BATCH,
+                self::ENACH_ACK_UPLOAD_DATE,
+                self::ENACH_ACK_UPDATE_DATE,
+                self::ENACH_ACK_SOLE_ID,
             ],
         ],
 
@@ -677,11 +708,7 @@ class Header
                 self::DIRECT_DEBIT_CURRENCY,
                 self::DIRECT_DEBIT_RECEIPT,
                 self::DIRECT_DEBIT_DESCRIPTION,
-                self::DIRECT_DEBIT_NOTES_1,
-                self::DIRECT_DEBIT_NOTES_2,
-                self::DIRECT_DEBIT_NOTES_3,
-                self::DIRECT_DEBIT_NOTES_4,
-                self::DIRECT_DEBIT_NOTES_5,
+                self::NOTES,
             ],
 
             self::OUTPUT    => [
@@ -695,11 +722,7 @@ class Header
                 self::DIRECT_DEBIT_CURRENCY,
                 self::DIRECT_DEBIT_RECEIPT,
                 self::DIRECT_DEBIT_DESCRIPTION,
-                self::DIRECT_DEBIT_NOTES_1,
-                self::DIRECT_DEBIT_NOTES_2,
-                self::DIRECT_DEBIT_NOTES_3,
-                self::DIRECT_DEBIT_NOTES_4,
-                self::DIRECT_DEBIT_NOTES_5,
+                self::NOTES,
                 self::DIRECT_DEBIT_ORDER_ID,
                 self::DIRECT_DEBIT_PAYMENT_ID,
             ],

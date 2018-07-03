@@ -303,21 +303,19 @@ class Gateway extends Base\Gateway
         $attributesToSave[Base\Entity::RECEIVED] = true;
 
         // If auth status was not success, we update the entity with verify status
-        if ($gatewayPayment->getStatus() !== Status::SUCCESS)
+        if (($gatewayPayment->getStatus() !== Status::SUCCESS) and (isset($content[ResponseFields::TXN_STATUS]) === true))
         {
-            $attributesToSave[Base\Entity::STATUS] = $this->getAuthMappedVerifyStatus($content);
+            $attributesToSave[Base\Entity::STATUS] = $this->getAuthMappedVerifyStatus($content[ResponseFields::TXN_STATUS]);
         }
 
         return $attributesToSave;
     }
 
-    protected function getAuthMappedVerifyStatus(array $content)
+    protected function getAuthMappedVerifyStatus($verifyStatus)
     {
-        $verifyStatus = $content[ResponseFields::TXN_STATUS];
-
         return ($verifyStatus === Status::VERIFY_SUCCESS) ? Status::SUCCESS : Status::FAILED;
     }
-
+    
     protected function checkGatewayStatus(array $content)
     {
         if ((empty($content[ResponseFields::PAID]) === true) or

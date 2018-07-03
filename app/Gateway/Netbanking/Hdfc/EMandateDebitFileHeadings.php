@@ -5,7 +5,6 @@ namespace RZP\Gateway\Netbanking\Hdfc;
 class EMandateDebitFileHeadings
 {
     // Request file headings
-    const SERIAL_NO           = 'Sr. no';
     const TRANSACTION_REF_NO  = 'Transaction_Ref_No';
     const MANDATE_ID          = 'Mandate ID';
     const ACCOUNT_NO          = 'Account_NO';
@@ -14,6 +13,7 @@ class EMandateDebitFileHeadings
     const FREQUENCY           = 'Frequency';
     const FROM_DATE           = 'FROM_DATE';
     const TO_DATE             = 'TO_DATE';
+    const SUB_MERCHANT_NAME   = 'Sub-merchant Name';
 
     // Additional headings in response file
     const STATUS              = 'Status';

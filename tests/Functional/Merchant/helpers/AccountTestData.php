@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Tests\Functional\Merchant\Account;
+
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 

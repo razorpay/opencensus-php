@@ -21,6 +21,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Models\PaymentLink;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment\Status;
@@ -43,9 +44,11 @@ class Processor
     use OtpResend;
     use Topup;
     use FraudDetector;
+    use HeadlessOtp;
     use Payout;
     use Reversal;
     use Transfer;
+    use Vpa;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -484,11 +487,12 @@ class Processor
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = [
-            'originalAmount'    => $input['amount'],
-            'fees'              => $fee,
-            'razorpay_fee'      => $fee - $tax,
-            'tax'               => $tax,
-            'amount'            => $input['amount'] + $fee,
+            'originalAmount'  => $input['amount'],
+            'original_amount' => $input['amount'],
+            'fees'            => $fee,
+            'razorpay_fee'    => $fee - $tax,
+            'tax'             => $tax,
+            'amount'          => $input['amount'] + $fee,
         ];
 
         // Set new input amount and fees
@@ -605,8 +609,18 @@ class Processor
             $offer = $this->validateAndFetchOffer($payment, $input);
         }
 
-
         $this->offer = $offer;
+
+        if ($this->offer !== null)
+        {
+            $payment->associateOffer($this->offer);
+
+            $this->trace->info(TraceCode::OFFER_SELECTED_FOR_PAYMENT, [
+                'offer_id'   => $offer->getPublicId(),
+                'payment_id' => $payment->getPublicId(),
+                'order_id'   => $order->getPublicId(),
+            ]);
+        }
     }
 
     /**
@@ -1210,6 +1224,8 @@ class Processor
 
         $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
 
+        $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
+
         $this->validateAndSetReceiverIfApplicable($payment, $input);
 
         $this->validateBankTransferDetailsIfApplicable($payment);
@@ -1465,6 +1481,21 @@ class Processor
         $payment->receiver()->associate($receiver);
     }
 
+    protected function validateAndSetPaymentLinkIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (array_key_exists(Payment\Entity::PAYMENT_LINK_ID, $input) === false)
+        {
+            return;
+        }
+
+        $paymentLinkId = $input[Payment\Entity::PAYMENT_LINK_ID];
+        $paymentLink   = $this->repo->payment_link->findByPublicIdAndMerchant($paymentLinkId, $this->merchant);
+
+        (new PaymentLink\Core)->validateIsPaymentInitiatable($paymentLink, $payment);
+
+        $payment->paymentLink()->associate($paymentLink);
+    }
+
     protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)
     {
         if ($this->order === null)
@@ -1658,6 +1689,16 @@ class Processor
     {
         // Bank transfers are auto-captured only if they are expected. This is checked later.
         if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        //
+        // Post payment authorization payment link's payments are actually auto captured but there is more logic in
+        // the flow and in handling capture failures etc which is all done in specific method(easy to move out to a
+        // service) triggered from postPaymentAuthorizeProcessing() method.
+        //
+        if ($payment->hasPaymentLink() === true)
         {
             return false;
         }
@@ -2119,5 +2160,22 @@ class Processor
                 Payment\Entity::ID              => $payment->getId(),
                 Payment\Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt()
             ]);
+    }
+
+    public function fixAttemptedOrder($payment, $order)
+    {
+        $this->payment = $payment;
+
+        $offer = $this->selectForcedOfferForPayment($order);
+
+        $this->payment->associateOffer($offer);
+
+        $this->postPaymentAuthorizeOfferProcessing($this->payment);
+
+        $this->updateOrderStatusPaidIfApplicable($order, $this->payment);
+
+        $this->repo->saveOrFail($order);
+
+        $this->eventOrderPaid();
     }
 }

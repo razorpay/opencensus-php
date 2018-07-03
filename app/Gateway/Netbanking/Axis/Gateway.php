@@ -122,10 +122,7 @@ class Gateway extends Base\Gateway
 
         $this->checkResponseStatus($attrs, $content);
 
-        if ($this->isCorporateBanking() === false)
-        {
-            $this->verifyCallback($input, $gatewayEntity);
-        }
+        $this->verifyCallback($input, $gatewayEntity);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
@@ -149,6 +146,14 @@ class Gateway extends Base\Gateway
         else
         {
             $this->checkGatewaySuccess($verify);
+        }
+
+        if ($verify->input['payment'][Payment\Entity::RECURRING] === false)
+        {
+            $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+            $actualAmount = number_format($verify->verifyResponseContent[ResponseFields::VERIFY_RESPONSE_AMT], 2, '.', '');
+
+            $this->assertAmount($expectedAmount, $actualAmount);
         }
 
         //
@@ -593,7 +598,8 @@ class Gateway extends Base\Gateway
 
         foreach ($responseArray as $key => $table)
         {
-            if ($table[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS)
+            if ((isset($table[ResponseFields::PAYMENT_STATUS])) and
+                ($table[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
             {
                 $tableToBeReturned = $table;
 
@@ -776,7 +782,7 @@ class Gateway extends Base\Gateway
      * @param  int $amount amount in paise (100)
      * @return string amount in Rupees
      */
-    protected function formatAmount(int $amount): string
+    protected function formatAmount($amount): string
     {
         return $amount / 100;
     }

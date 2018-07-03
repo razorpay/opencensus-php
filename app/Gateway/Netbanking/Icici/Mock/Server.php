@@ -97,7 +97,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
-        $responseArray = $this->createResponseArray($input);
+        $responseArray = $this->createVerifyResponseArray($input);
 
         //
         // Sending back the SI reference numbers in the response
@@ -123,7 +123,7 @@ class Server extends Base\Mock\Server
             ResponseFields::ITEM_CODE     => strtoupper($input[RequestFields::ITEM_CODE]),
 
             // If the amount is not sent, it's a registration-only emandate auth request
-            ResponseFields::AMOUNT        => $input[RequestFields::AMOUNT] ??  'null',
+            ResponseFields::AMOUNT        => $input[RequestFields::AMOUNT] ?? 'null',
             ResponseFields::CURRENCY_CODE => $input[RequestFields::CURRENCY_CODE],
             ResponseFields::PAID          => Confirmation::YES,
         ];
@@ -204,7 +204,7 @@ class Server extends Base\Mock\Server
 
     protected function createXmlResponse(array $responseArray)
     {
-        $this->content($responseArray);
+        $this->content($responseArray, 'verify');
 
         if (is_array($responseArray) === false)
         {
@@ -222,7 +222,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function createResponseArray(array $input)
+    protected function createVerifyResponseArray(array $input)
     {
         $bankingType = $this->getBankingType($input);
 
@@ -238,7 +238,7 @@ class Server extends Base\Mock\Server
             ];
         }
 
-        return [
+        $responseArray = [
             ResponseFields::ITEM_CODE    => $input[RequestFields::ITEM_CODE],
             ResponseFields::PAYMENT_ID   => $input[RequestFields::PAYMENT_ID],
             ResponseFields::CURRENCY     => $input[RequestFields::CURRENCY_CODE],
@@ -246,5 +246,18 @@ class Server extends Base\Mock\Server
             ResponseFields::AMOUNT       => $input[RequestFields::AMOUNT],
             ResponseFields::STATUS       => Status::SUCCESS,
         ];
+
+        if ((empty($input[RequestFields::SI]) === false) and
+            ($input[RequestFields::SI] = Status::Y))
+        {
+            $emandateFields = [
+                ResponseFields::STATUS          => Status::SI_REGISTRATION_SUCCESS,
+                ResponseFields::SI_REFERENCE_ID => 123123123,
+            ];
+
+            $responseArray = array_merge($responseArray, $emandateFields);
+        }
+
+        return $responseArray;
     }
 }

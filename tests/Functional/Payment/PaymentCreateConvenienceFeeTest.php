@@ -58,7 +58,13 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         {
             $this->assertEquals(0, $feesArray['tax']);
 
-            $this->assertEquals(10, $feesArray['fees']);
+            $this->assertEquals(1000, $feesArray['fees']);
+
+            $this->assertEquals(50000, $feesArray['original_amount']);
+
+            // Checkout utilizes originalAmount but not this route
+            // TODO : Remove this when checkout stops using originalAmount
+            $this->assertArrayNotHasKey('originalAmount', $feesArray);
         }
 
         return $feesArray;

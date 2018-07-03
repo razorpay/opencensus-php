@@ -14,6 +14,7 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -22,6 +23,8 @@ use RZP\Models\Currency;
 use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
+use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -36,6 +39,7 @@ use RZP\Models\Payment\Processor\Netbanking;
  * @property Merchant\Entity        $merchant
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
+ * @property PaymentLink\Entity     $paymentLink
  */
 class Entity extends Base\PublicEntity
 {
@@ -263,6 +267,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE2,
         self::ACQUIRER_DATA,
         self::TRANSFER_ID,
+        self::PAYMENT_LINK_ID,
         self::RECEIVER_ID,
         self::RECEIVER_TYPE,
         self::TRANSACTION_ID,
@@ -290,7 +295,6 @@ class Entity extends Base\PublicEntity
         self::DISPUTED,
         self::RECURRING_TYPE,
         self::ACKNOWLEDGED_AT,
-        self::PAYMENT_LINK_ID,
     ];
 
     protected $public = [
@@ -413,11 +417,11 @@ class Entity extends Base\PublicEntity
         self::VERIFY_BUCKET        => null,
         self::TERMINAL_ID          => null,
         self::TRANSFER_ID          => null,
+        self::PAYMENT_LINK_ID      => null,
         self::DISPUTED             => false,
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
-        self::PAYMENT_LINK_ID      => null,
     ];
 
     protected $amounts = [
@@ -1292,6 +1296,16 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::TRANSFER_ID));
     }
 
+    public function hasPaymentLink(): bool
+    {
+        return ($this->isAttributeNotNull(self::PAYMENT_LINK_ID));
+    }
+
+    public function getPaymentLinkId()
+    {
+        return $this->getAttribute(self::PAYMENT_LINK_ID);
+    }
+
     public function hasMetadata($key = null)
     {
         if ($key === null)
@@ -1381,6 +1395,12 @@ class Entity extends Base\PublicEntity
     public function isEmi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
+    }
+
+    public function isPinAuth()
+    {
+        return (($this->getAttribute(self::METHOD) === Payment\Method::CARD) and
+            ($this->getAttribute(self::AUTH_TYPE) === AuthType::PIN));
     }
 
     public function isUpi()
@@ -2422,6 +2442,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\Transfer\Entity', 'source');
     }
 
+    public function paymentLink()
+    {
+        return $this->belongsTo(PaymentLink\Entity::class);
+    }
+
     public function receiver()
     {
         return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID);
@@ -2456,6 +2481,30 @@ class Entity extends Base\PublicEntity
     public function discount()
     {
         return $this->hasOne('RZP\Models\Discount\Entity');
+    }
+
+    public function offers()
+    {
+        return $this->morphToMany(
+                        Offer\Entity::class,
+                        'entity',
+                        Table::ENTITY_OFFER)
+                    ->withTimestamps();
+    }
+
+    public function associateOffer(Offer\Entity $offer)
+    {
+        // Creates row in entity_offers table
+        $this->offers()->attach($offer);
+    }
+
+    /**
+     * Works cos we only associate one offer with payment
+     * @return Offer\Entity
+     */
+    public function getOffer()
+    {
+        return $this->offers->first();
     }
 
 // --------------- Relation to other entity section ends -----------------------

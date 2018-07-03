@@ -187,9 +187,18 @@ class InvoiceController extends Controller
 
         $view = 'invoice.index';
 
+        if (isset($data['invoice']) and $data['invoice']['type'] !== 'invoice') {
+            $view = 'invoice.payment_link';
+        }
+
         if (in_array($merchantId, $idsForUberFlow, true) === true)
         {
             $view = 'invoice.uber';
+        }
+
+        if (isset($data['error']) === true)
+        {
+            $view = 'public.error';
         }
 
         //
@@ -221,7 +230,7 @@ class InvoiceController extends Controller
             $data['error']['description'] = 'No pdf file found';
 
             return response()
-                        ->view('invoice.index', ['data' => $data])
+                        ->view('public.error', ['data' => $data])
                         ->setStatusCode(ResponseCodes::HTTP_BAD_REQUEST);
         }
 

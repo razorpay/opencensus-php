@@ -2,9 +2,10 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Models\Pricing;
 use RZP\Models\Transaction;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PricingTest extends TestCase
@@ -21,6 +22,15 @@ class PricingTest extends TestCase
     }
 
     public function testAddPricingPlanRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleWithDebitPinFeature()
     {
         $content = $this->createPricingPlan();
 
@@ -152,6 +162,23 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
         $this->startTest($testData);
+    }
+
+    public function testUpdatePricingPlanRule()
+    {
+        $content = $this->createPricingPlan2();
+
+        $rule = $this->getEntityById('pricing', $content['rules']['0']['id'], true);
+
+        $this->assertEquals($rule['deleted_at'], null);
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule/'. $rule['id'];
+
+        $this->startTest($testData);
+
+        $rule = Pricing\Entity::withTrashed()->findOrFail($rule['id']);
+
+        $this->assertNotNull($rule['deleted_at']);
     }
 
     public function testGetPricingPlan()
