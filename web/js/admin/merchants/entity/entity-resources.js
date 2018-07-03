@@ -356,7 +356,7 @@ export function getDetailsViewMap(model) {
       label: 'Partner',
       value: details.partner_type
         ? snakeToTitleCase(details.partner_type)
-        : _getBoolIcon(details.partner_type),
+        : _getBoolIcon(false),
     },
     {
       label: 'Marketplace Merchant',

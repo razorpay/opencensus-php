@@ -647,7 +647,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
               pendingClass="btn-pending"
               confirm={toggleSuspensionCM()}
             >
-              {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
+              {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}
               <i class="pull-right i i-power" />
               Merchant
               <span class="spin-btn" />
@@ -692,18 +692,19 @@ const ActionsList = ({ model, merchantId, actions }) => {
         </ShowWhen>
 
         {(function() {
-          const loading = isDetailsLoading || isPartnerRequestsLoading;
+          const isLoading = isDetailsLoading || isPartnerRequestsLoading;
           const action = merchant.details.partner_type ? 'Remove' : 'Mark';
           return (
             <ShowWhen>
-              <div onClick={loading ? null : actions.TogglePartnerType}>
-                {loading ? (
+              <div onClick={isLoading ? null : actions.TogglePartnerType}>
+                {isLoading ? (
                   <Fragment>
                     Fetching Partner Status <div class="dot-loader">.</div>{' '}
                   </Fragment>
                 ) : (
                   <Fragment>{action} as partner</Fragment>
                 )}
+                <i class="pull-right i-partner" />
               </div>
             </ShowWhen>
           );
