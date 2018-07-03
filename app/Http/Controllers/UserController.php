@@ -103,13 +103,6 @@ class UserController extends Controller
         return $data;
     }
 
-    public function getUserByEmail(string $email)
-    {
-        $data = $this->service()->getUserByEmail($email);
-
-        return ApiResponse::json($data);
-    }
-
     public function postResetPasswordByEmail()
     {
         $input = Request::all();

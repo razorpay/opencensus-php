@@ -338,23 +338,6 @@ class UserTest extends TestCase
         $this->assertEquals($merchants['manager'], $merchant['id']);
     }
 
-    public function testGetUserByEmail()
-    {
-        $user = $this->fixtures->create('user');
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url , $user['email']);
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->ba->appAuth();
-
-        $this->testData[__FUNCTION__]['response']['content']['id'] = $user['id'];
-
-        $this->startTest();
-    }
-
     protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)
     {
         DB::table('merchant_users')

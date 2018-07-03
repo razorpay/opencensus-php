@@ -318,23 +318,6 @@ class Service extends Base\Service
         return $data;
     }
 
-    /**
-     * Returns user by email.
-     * @param string $email
-     *
-     * @return array
-     */
-    public function getUserByEmail(string $email)
-    {
-        $user = $this->repo->user->findByEmail($email);
-
-        $responseData = [
-            'id' => $user->getId(),
-        ];
-
-        return $responseData;
-    }
-
     public function postResetPassword(array $input)
     {
         if (isset($input['email']) === true)

@@ -653,7 +653,6 @@ final class Route
         'user_login'                               => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                     => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
         'user_change_password'                     => ['put',      'users/change_password',                          'UserController@changeUserPassword'                                 ],
-        'user_fetch_email'                         => ['get',      'users/email/{email}',                            'UserController@getUserByEmail'                                     ],
         'user_edit'                                => ['put',      'users/{id}',                                     'UserController@editUser'                                           ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         // Same as user_fetch but for admin
@@ -1108,7 +1107,6 @@ final class Route
         'user_change_password',
         'user_confirm_by_data',
         'user_fetch',
-        'user_fetch_email',
         'user_login',
         'user_merchant_upgrade',
         'user_register',
@@ -1965,7 +1963,6 @@ final class Route
             'user_change_password',
             'user_fetch',
             'invitation_action',
-            'user_fetch_email',
             'merchant_admin_lead_put',
             'invitation_fetch_by_token',
             'user_resend_verification',
