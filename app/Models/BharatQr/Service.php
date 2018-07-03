@@ -43,7 +43,7 @@ class Service extends Base\Service
         {
             $this->trace->traceException($ex);
 
-            return $gatewayClass->getBharatQrResponse($input, false);
+            return $gatewayClass->getBharatQrResponse(false, $input, $ex);
         }
 
         $qrData = $gatewayResponse['qr_data'];
@@ -58,7 +58,7 @@ class Service extends Base\Service
 
         $valid = $this->core->processPayment($gatewayResponse);
 
-        $response = $gatewayClass->getBharatQrResponse($input, $valid);
+        $response = $gatewayClass->getBharatQrResponse($valid, $input);
 
         return $response;
     }

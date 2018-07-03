@@ -220,9 +220,11 @@ class Processor extends VirtualAccount\Processor
             throw new Exception\LogicException(
                 'Terminal should not be null here',
                 null,
-                ['gateway_merchant_id' => $gatewayMerchantId,
-                 'merchant_pan'        => $gatewayMpan,
-                ]);
+                [
+					'gateway_merchant_id' => $gatewayMerchantId,
+					'merchant_pan'        => $gatewayMpan,
+                ]
+            );
         }
 
         $this->terminal = $terminal;
