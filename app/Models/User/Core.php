@@ -85,8 +85,6 @@ class Core extends Base\Core
 
     public function changePassword(Entity $user, array $input)
     {
-        $input[Entity::PASSWORD] = Hash::make($input[Entity::PASSWORD]);
-
         $user->fill($input);
 
         $this->repo->saveOrFail($user);
