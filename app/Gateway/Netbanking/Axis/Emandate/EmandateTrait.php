@@ -230,9 +230,9 @@ trait EmandateTrait
     {
         $recurringStatus = null;
 
-        $gatewaySiStatus = $gatewayPayment->getReference1();
+        $gatewaySiToken = $gatewayPayment->getSIToken();
 
-        if (StatusCode::isEmandateRegistrationSuccess($gatewaySiStatus) === true)
+        if (StatusCode::isEmandateRegistrationSuccess($gatewaySiToken) === true)
         {
             $recurringStatus = Token\RecurringStatus::CONFIRMED;
         }

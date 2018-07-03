@@ -113,6 +113,17 @@ class NetbankingAxisEMandateTest extends TestCase
             ],
             $token
         );
+
+        $netbanking = $this->getLastEntity(Entity::NETBANKING, true);
+
+        $this->assertArraySelectiveEquals(
+            [
+                NetbankingEntity::STATUS   => '000',
+                NetbankingEntity::SI_TOKEN => '123123123',
+                NetbankingEntity::BANK     => 'UTIB',
+            ],
+            $netbanking
+        );
     }
 
     public function testRefundEmandateInitialPaymentWithFeeCredit()
