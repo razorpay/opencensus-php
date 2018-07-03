@@ -32,7 +32,7 @@ export default [
           Enable Partial Payment
           <a
             class="btn-link m-l"
-            href="https://razorpay.com/docs/private/partial-payments/"
+            href="https://razorpay.com/docs/payment-links/partial-payments/"
             target="_blank"
             onClick={trackHelpClick}
           >
@@ -41,7 +41,7 @@ export default [
         </span>
       ),
       _cmp: Input.Check,
-      _autoRenderImpure: true
+      _autoRenderImpure: true,
     },
   ],
   {

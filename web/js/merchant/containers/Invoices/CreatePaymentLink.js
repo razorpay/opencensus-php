@@ -323,7 +323,7 @@ export default class CreatePaymentLink extends Component {
                         Enable Partial Payments
                         <a
                           class="btn-link m-l"
-                          href="https://razorpay.com/docs/private/partial-payments/"
+                          href="https://razorpay.com/docs/payment-links/partial-payments/"
                           target="_blank"
                           onClick={trackHelpClick}
                         >
