@@ -241,6 +241,11 @@ trait EmandateTrait
             Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
         ];
     }
+
+    protected function getRecurringData(Netbanking\Entity $gatewayPayment)
+    {
+        return $this->getEmandateAcquirerData($gatewayPayment);
+    }
     //---------------Callback request helpers end-----------------
 
     //-------------- Verify request helpers --------------------------
@@ -324,7 +329,7 @@ trait EmandateTrait
 
         if ($payment[Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
         {
-            return ;
+            return;
         }
 
         $paymentAmount = $this->formatAmount($payment[Payment\Entity::AMOUNT]);
@@ -384,25 +389,6 @@ trait EmandateTrait
         }
 
         return $attributes;
-    }
-
-    protected function getRecurringData(Netbanking\Entity $gatewayPayment)
-    {
-        $siStatus = $gatewayPayment->getSIStatus();
-
-        $recurringStatus = StatusCode::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? Token\RecurringStatus::REJECTED;
-
-        // TODO: Get the failure reason mapping and
-        // display the correct failure reason here
-        $recurringFailureReason = StatusCode::getSiMessage($siStatus);
-
-        $recurringData = [
-            Token\Entity::RECURRING_STATUS         => $recurringStatus,
-            Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getSIToken(),
-            Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
-        ];
-
-        return $recurringData;
     }
 
     protected function sendEmandatePaymentVerifyRequest(Verify $verify)
