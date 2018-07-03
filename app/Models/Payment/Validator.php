@@ -132,6 +132,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $getFlowsRules = [
+        'callback'                  => 'sometimes', // JSONP
         'iin'                       => 'required|numeric|digits:6',
         '_'                         => 'sometimes|array',
     ];
