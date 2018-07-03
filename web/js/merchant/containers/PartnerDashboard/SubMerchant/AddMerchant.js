@@ -11,7 +11,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 
 import { required } from 'rzp/utils/validators';
 
-@connect(null, { create, showNotification })
+@connect(state => ({ ...state.session }), { create, showNotification })
 @reduxForm({
   form: 'addMerchant',
 })
@@ -36,8 +36,8 @@ export default class AddMerchant extends Component {
   };
 
   render() {
-    const { handleSubmit, partnerType } = this.props;
-    const emailMandatory = isEmailMandatory({ partner_type: 'fully_managed' });
+    const { handleSubmit, user } = this.props;
+    const emailMandatory = isEmailMandatory(user);
     const emailValidators = emailMandatory ? [required()] : [];
 
     return (
@@ -105,6 +105,7 @@ function isEmailMandatory(user) {
 const emailMandatoryMap = {
   bank: true,
   reseller: true,
+  pure_platform: true,
   fully_managed: false,
   aggregator: false,
 };
