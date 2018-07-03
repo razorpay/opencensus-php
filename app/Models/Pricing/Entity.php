@@ -15,6 +15,7 @@ class Entity extends Base\PublicEntity
     const FEATURE              = 'feature';
     const GATEWAY              = 'gateway';
     const PAYMENT_METHOD       = 'payment_method';
+    const AUTH_TYPE            = 'auth_type';
     const PAYMENT_METHOD_TYPE  = 'payment_method_type';
     const PAYMENT_NETWORK      = 'payment_network';
     const INTERNATIONAL        = 'international';
@@ -56,6 +57,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::PAYMENT_METHOD,
         self::PAYMENT_METHOD_TYPE,
+        self::AUTH_TYPE,
         self::PAYMENT_NETWORK,
         self::PAYMENT_ISSUER,
         self::INTERNATIONAL,
@@ -89,6 +91,7 @@ class Entity extends Base\PublicEntity
         self::FEATURE             => Feature::PAYMENT,
         self::PAYMENT_METHOD_TYPE => null,
         self::PAYMENT_NETWORK     => null,
+        self::AUTH_TYPE           => null,
         self::PAYMENT_ISSUER      => null,
         self::PERCENT_RATE        => 0,
         self::FIXED_RATE          => 0,
@@ -251,6 +254,11 @@ class Entity extends Base\PublicEntity
     public function getPaymentMethodType()
     {
         return $this->getAttribute(self::PAYMENT_METHOD_TYPE);
+    }
+
+    public function getAuthType()
+    {
+        return $this->getAttribute(self::AUTH_TYPE);
     }
 
     public function getAmountRange()

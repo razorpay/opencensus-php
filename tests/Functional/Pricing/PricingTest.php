@@ -30,6 +30,15 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddPricingPlanRuleWithDebitPinFeature()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
     public function testAddPricingPlanRuleWithReceiver()
     {
         $content = $this->createPricingPlan();

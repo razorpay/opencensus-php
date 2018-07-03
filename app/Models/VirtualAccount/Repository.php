@@ -16,6 +16,7 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::STATUS      => 'sometimes|in:active,closed,paid',
         Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:19',
+        Entity::NOTES       => 'sometimes|notes_fetch',
     ];
 
     protected $appFetchParamRules = [

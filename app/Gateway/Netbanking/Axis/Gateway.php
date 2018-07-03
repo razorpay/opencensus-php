@@ -148,10 +148,13 @@ class Gateway extends Base\Gateway
             $this->checkGatewaySuccess($verify);
         }
 
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-        $actualAmount   = number_format($verify->verifyResponseContent[ResponseFields::VERIFY_RESPONSE_AMT], 2, '.', '');
+        if ($verify->input['payment'][Payment\Entity::RECURRING] === false)
+        {
+            $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+            $actualAmount = number_format($verify->verifyResponseContent[ResponseFields::VERIFY_RESPONSE_AMT], 2, '.', '');
 
-        $this->assertAmount($expectedAmount, $actualAmount);
+            $this->assertAmount($expectedAmount, $actualAmount);
+        }
 
         //
         // If verify returns false, we throw an error as
