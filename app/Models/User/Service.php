@@ -390,7 +390,10 @@ class Service extends Base\Service
             (new Core)->changePassword($user, $changePasswordData);
 
             // Password reset via mail essentially confirms the email.
-            $this->confirm($user->getId());
+            if ($user->getConfirmedAttribute() === false)
+            {
+                (new Core)->confirm($user);
+            }
         }
 
         return ['success' => true];

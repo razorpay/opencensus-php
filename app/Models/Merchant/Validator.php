@@ -408,7 +408,7 @@ class Validator extends Base\Validator
 
         if ($merchant->isPartner() === true)
         {
-            if (($merchant->isFullyManagedTypePartner() === false) and
+            if (($merchant->isFullyManagedPartner() === false) and
                 ($merchant->isOptionalEmailAllowedAggregator() === false))
             {
                 throw new Exception\BadRequestException(

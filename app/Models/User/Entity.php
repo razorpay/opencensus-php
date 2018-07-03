@@ -130,7 +130,7 @@ class Entity extends Base\PublicEntity
                      WHEN role='owner' THEN 1
                      else 2 END";
 
-        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS, self::USER_ID, self::MERCHANT_ID)
                     ->withPivot(self::ROLE)
                     ->orderByRaw($sql, [$this->getEmail()]);
     }

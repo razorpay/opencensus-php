@@ -1038,12 +1038,12 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::PARTNER_TYPE);
     }
 
-    public function isFullyManagedTypePartner(): bool
+    public function isFullyManagedPartner(): bool
     {
         return ($this->getPartnerType() === Constants::FULLY_MANAGED);
     }
 
-    public function isPurePlatformTypePartner(): bool
+    public function isPurePlatformPartner(): bool
     {
         return ($this->getPartnerType() === Constants::PURE_PLATFORM);
     }
@@ -1425,7 +1425,7 @@ class Entity extends Base\PublicEntity
         // entity name by appending '_id' to it. When this code is called from Account\Entity,
         // it tries to look for account_id and crashes.
         //
-        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS, self::MERCHANT_ID)
+        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS, self::MERCHANT_ID, User\Entity::USER_ID)
                     ->withPivot(User\Entity::ROLE)
                     ->orderBy(self::NAME);
     }
@@ -1559,7 +1559,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PARTNER_TYPE, $partnerType);
     }
 
-    public function isNonPurePlatformTypePartner(): bool
+    public function isNonPurePlatformPartner(): bool
     {
         return (($this->isPartner() === true) and ($this->getPartnerType() !== Constants::PURE_PLATFORM));
     }

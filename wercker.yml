@@ -77,7 +77,7 @@ build:
               mkdir -p /opt/razorpay/certs/first_data
       - script:
           name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --printer=Codedungeon\\PHPUnitPrettyResultPrinter\\Printer
+          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --filter MerchantTest::testCreateSubmerchantLogin$ --printer=Codedungeon\\PHPUnitPrettyResultPrinter\\Printer
       - script:
           name: List directory
           code: ls -lah
@@ -90,6 +90,8 @@ build:
       - script:
           name: Save trace
           code: cp storage/logs/* $WERCKER_REPORT_ARTIFACTS_DIR/
+      - internal/store-container:
+          name: Save build container
 deploy:
     steps:
       - script:

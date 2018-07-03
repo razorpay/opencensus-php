@@ -2959,7 +2959,7 @@ return [
 
     'testCreateSubmerchantLogin' => [
         'request' => [
-            'url' => '/submerchant/user/10000000000044',
+            'url' => '/submerchant/user/10000000000040',
             'method' => 'POST',
             'content' => []
         ],
@@ -2971,7 +2971,7 @@ return [
 
     'testCreateSubmerchantLoginSameEmail' => [
         'request' => [
-            'url' => '/submerchant/user/10000000000044',
+            'url' => '/submerchant/user/10000000000040',
             'method' => 'POST',
             'content' => []
         ],
@@ -2992,7 +2992,7 @@ return [
 
     'testCreateSubmerchantLoginDuplicate' => [
         'request' => [
-            'url' => '/submerchant/user/10000000000044',
+            'url' => '/submerchant/user/10000000000040',
             'method' => 'POST',
             'content' => []
         ],
@@ -3013,7 +3013,7 @@ return [
 
     'testCreateLinkedAccountLogin' => [
         'request' => [
-            'url' => '/submerchant/user/10000000000044',
+            'url' => '/submerchant/user/10000000000040',
             'method' => 'POST',
             'content' => []
         ],
@@ -3034,7 +3034,7 @@ return [
 
     'testCreateSubmerchantLoginPartnerWithMarketplace' => [
         'request' => [
-            'url' => '/submerchant/user/10000000000044',
+            'url' => '/submerchant/user/10000000000040',
             'method' => 'POST',
             'content' => []
         ],

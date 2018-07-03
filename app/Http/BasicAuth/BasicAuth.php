@@ -1537,7 +1537,7 @@ class BasicAuth
         //
         if ((empty($partnerMerchant) === true) or
             ($partnerMerchant->isPartner() === false) or
-            ($partnerMerchant->isPurePlatformTypePartner() === true))
+            ($partnerMerchant->isPurePlatformPartner() === true))
         {
             return false;
         }

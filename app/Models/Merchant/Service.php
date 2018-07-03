@@ -108,7 +108,7 @@ class Service extends Base\Service
             }
             else
             {
-                if ($merchant->isPurePlatformTypePartner() === true)
+                if ($merchant->isPurePlatformPartner() === true)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
@@ -143,7 +143,7 @@ class Service extends Base\Service
 
         $subMerchantEmailIsSame = ($aggregatorMerchant->getEmail() === $subMerchant->getEmail());
 
-        if (($aggregatorMerchant->isFullyManagedTypePartner() === true) or
+        if (($aggregatorMerchant->isFullyManagedPartner() === true) or
             //Remove the following line later as aggregator isn't supposed to
             //have dashboard access eventually. This is for BC.
             ($aggregatorMerchant->isAggregatorPartner() === true) or
@@ -1954,12 +1954,13 @@ class Service extends Base\Service
 
         $aggregatorMerchant = $this->repo->merchant->findOrFailPublic($aggregatorMerchantId);
 
-        if ($aggregatorMerchant->isNonPurePlatformTypePartner() === true)
+        $isNonPurePlatformAggregator = $aggregatorMerchant->isNonPurePlatformPartner();
+
+        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchantId);
+
+        if (($isNonPurePlatformAggregator === true) and ($isPartnerMerchantMapped === true))
         {
-            if ($this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchantId) === true)
-            {
-                return;
-            }
+            return;
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
@@ -1977,13 +1978,22 @@ class Service extends Base\Service
      */
     public function isPartnerMerchantMapped(string $merchantId, string $partnerId): bool
     {
-        $partner = $this->repo->merchant->findOrFailPublic($partnerId);
-
-        $app = $this->core()->getPartnerApp($partner);
+        $app = $this->getPartnerAppByMerchantId($partnerId);
 
         $mapping = (new AccessMap\Repository)
-            ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), AccessMap\Entity::APPLICATION);
+                        ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), AccessMap\Entity::APPLICATION);
 
         return (empty($mapping) === false);
+    }
+
+    /**
+     * TODO: Check if the core function (getPartnerApp) is needed at all and remove it if not
+     * @param  string $merchantId
+     *
+     * @return null|OAuthApplication\Entity
+     */
+    public function getPartnerAppByMerchantId(string $merchantId)
+    {
+        return (new OAuthApplication\Repository)->findActivePartnerApplicationByMerchantId($merchantId);
     }
 }

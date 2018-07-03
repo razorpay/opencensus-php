@@ -2554,16 +2554,18 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
-        $this->fixtures->create('merchant',[
-            'id'     => '10000000000044',
+        $this->fixtures->create('merchant', [
+            'id'     => '10000000000040',
             'email'  => 'test1@razorpay.com',
         ]);
+
+        //$this->createMerchant(['id' => '10000000000040', 'email' => 'test1@razorpay.com']);
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
 
         $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
 
-        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000044']);
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
         $this->ba->proxyAuth();
 
@@ -2586,7 +2588,7 @@ class MerchantTest extends TestCase
     public function testCreateSubmerchantLoginSameEmail()
     {
         $this->fixtures->create('merchant',[
-            'id'     => '10000000000044',
+            'id'     => '10000000000040',
             'email'  => 'test@razorpay.com',
         ]);
 
@@ -2596,7 +2598,7 @@ class MerchantTest extends TestCase
 
         $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
 
-        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000044']);
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
         $this->ba->proxyAuth();
 
@@ -2606,29 +2608,33 @@ class MerchantTest extends TestCase
     public function testCreateSubmerchantLoginDuplicate()
     {
         $this->fixtures->create('merchant',[
-            'id'     => '10000000000044',
+            'id'     => '10000000000040',
             'email'  => 'test1@razorpay.com',
         ]);
 
         $this->createUserForMerchant('test@razorpay.com', '10000000000000');
 
-        $this->createUserForMerchant('test1@razorpay.com', '10000000000044');
+        $this->createUserForMerchant('test1@razorpay.com', '10000000000040');
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
 
         $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
 
-        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000044']);
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
         $this->ba->proxyAuth();
 
         $this->startTest();
     }
 
+    /**
+     * Creating a linked account(marketplace) login by the marketplace merchant,
+     * this should throw exception
+     */
     public function testCreateLinkedAccountLogin()
     {
         $this->fixtures->create('merchant',[
-            'id'        => '10000000000044',
+            'id'        => '10000000000040',
             'email'     => 'test@razorpay.com',
             'parent_id' => '10000000000000',
         ]);
@@ -2642,14 +2648,20 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Creating a sub-merchant(partner program) login by a partner who
+     * is also an aggregator
+     */
     public function testCreateSubmerchantLoginPartnerWithMarketplace()
     {
         Mail::fake();
 
-        $this->fixtures->create('merchant',[
-            'id'     => '10000000000044',
-            'email'  => 'test1@razorpay.com',
-        ]);
+        //$this->fixtures->create('merchant', [
+        //    'id'     => '10000000000040',
+        //    'email'  => 'test1@razorpay.com',
+        //]);
+
+        $this->createMerchant(['id' => '10000000000040', 'email' => 'test1@razorpay.com']);
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
@@ -2657,7 +2669,7 @@ class MerchantTest extends TestCase
 
         $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
 
-        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000044']);
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
         $this->ba->proxyAuth();
 
