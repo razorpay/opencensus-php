@@ -111,13 +111,7 @@ export default class RequestEntity extends Component {
         <header class="heading">
           {data.permission.description &&
             titleCase(data.permission.description)}{' '}
-          (<a
-            class="link"
-            href={`/admin/merchants/${data.entity_id}`}
-            target="_blank"
-          >
-            {data.entity_id}
-          </a>)
+          <code>{data.entity_id}</code>
           <button
             class="pull-right"
             style={{ margin: '0' }}
