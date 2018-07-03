@@ -14,6 +14,7 @@ import {
   paiseToRupees,
   getPercentage,
 } from 'rzp/utils/rzp-utils';
+import debounce from 'rzp/utils/debounce';
 import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
 import Group, { GroupItem } from 'rzp/ui/Group';
@@ -24,7 +25,7 @@ import {
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import GenericTooltip from 'rzp/ui/Tooltip';
 
-import { tabsMeta, breakdownVals } from './data';
+import { tabsMeta, breakdownVals, breakdownValsMap } from './data';
 import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import FilteringDropdown from 'merchant/components/Home/FilteringDropdown';
 import Legend from 'merchant/components/Home/Legend';
@@ -110,12 +111,15 @@ class Panel extends Component {
 
     this.state = {
       visibleGroups: this.getVisibleGroups(props.showGroupingByPtfm),
+      hideGraph: false,
     };
 
     this.handleGroupingChange = ::this.handleGroupingChange;
     this.handleBreakdownChange = ::this.handleBreakdownChange;
+    this.handleBreakdownSelectChange = ::this.handleBreakdownSelectChange;
     this.handleImageExportClick = ::this.handleImageExportClick;
     this.handleFilterChange = ::this.handleFilterChange;
+    this.handleResize = debounce(::this.handleResize, 250);
   }
 
   getVisibleGroups(showGroupingByPtfm) {
@@ -156,6 +160,12 @@ class Panel extends Component {
     return onBreakdownChange && onBreakdownChange(tabName, value);
   }
 
+  handleBreakdownSelectChange({ option: selectedBreakdown }) {
+    const { value } = selectedBreakdown;
+
+    return this.handleBreakdownChange(value);
+  }
+
   handleImageExportClick(e) {
     const a = e.target;
 
@@ -173,10 +183,35 @@ class Panel extends Component {
     }
   }
 
+  handleResize() {
+    if (!this.chartInstance || !this.chartInstance.chartInstance) {
+      return;
+    }
+
+    this.setState(
+      {
+        hideGraph: true,
+      },
+      () => {
+        this.setState({
+          hideGraph: false,
+        });
+      }
+    );
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.showGroupingByPtfm !== this.props.showGroupingByPtfm) {
       this.setVisibleGroups(nextProps.showGroupingByPtfm);
     }
+  }
+
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize);
   }
 
   render() {
@@ -330,6 +365,23 @@ class Panel extends Component {
                 );
               })}
             </BtnGroup>
+            <div className="panel-action-item time-breakdown-select">
+              <Group>
+                <GroupItem>
+                  <i className="i i-sort grouping-icon" />
+                </GroupItem>
+                <GroupItem className="time-breakdown">
+                  <PowerSelect
+                    className="react-normal-select"
+                    onChange={this.handleBreakdownSelectChange}
+                    options={breakdownVals}
+                    optionLabelPath="title"
+                    searchEnabled={false}
+                    selected={breakdownValsMap[selectedBreakdown]}
+                  />
+                </GroupItem>
+              </Group>
+            </div>
             {grouping.length > 0 && (
               <div id="keymetrics-grouping" className="panel-action-item">
                 <GroupingDropdown
@@ -369,8 +421,13 @@ class Panel extends Component {
           >
             <div className="chart-container">
               {!data.loading &&
-                data.histogram && (
-                  <Line options={chartOptions} data={getChartData} />
+                data.histogram &&
+                !this.state.hideGraph && (
+                  <Line
+                    options={chartOptions}
+                    data={getChartData}
+                    ref={node => (this.chartInstance = node)}
+                  />
                 )}
             </div>
             {!noGrouping &&

@@ -2,10 +2,10 @@ import Form from 'component/Form';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import Alert from 'component/Alert';
-import { classList } from 'common/util';
+import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
-
+import { classList } from 'common/util';
 import { activationDuration } from 'common/data';
 
 import {
@@ -75,6 +75,10 @@ function defaultFieldProps(f) {
 
   if (!f.hasOwnProperty('autoComplete')) {
     f.autoComplete = 'off';
+  }
+
+  if (!f.hasOwnProperty('size')) {
+    f.size = 'small';
   }
 }
 
@@ -156,7 +160,10 @@ export default class ActivationWizard extends React.Component {
 
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
-    // All document fields in activation form to have same footprint
+    /*
+    * All document fields in activation form to have same footprint.
+    * Adding onChange listener to all document upload fields.
+    * */
     DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(a => {
         a._cmp = Input.File;
@@ -167,18 +174,13 @@ export default class ActivationWizard extends React.Component {
         if (!a.hasOwnProperty('required')) {
           a.required = true;
         }
-      });
 
-    // Adding onChange listener to all document upload fields
-    DOCUMENT_UPLOAD_STEP &&
-      FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(
-        a =>
-          (a.onChange = (file, progressTracker) => {
-            return props.saveFile(a.name, file, progressTracker).then(() => {
-              this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
-            });
-          })
-      );
+        a.onChange = (file, progressTracker) => {
+          return props.saveFile(a.name, file, progressTracker).then(() => {
+            this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+          });
+        };
+      });
   }
 
   componentDidMount() {
@@ -823,55 +825,44 @@ export default class ActivationWizard extends React.Component {
         return ActivationField.call(this, field);
       });
 
+    let moreTabs = [];
+    if (!isFormSubmitted) {
+      moreTabs.push(
+        <li
+          key="submit-tab"
+          onClick={this.toggleSubmitLayer}
+          class={classList(
+            !this.isAllTabsValid() && 'disabled',
+            this.state.showSubmitLayer && 'active',
+            'li--submit'
+          )}
+        >
+          Submit Form
+          {!this.isAllTabsValid() && (
+            <div class="description small">Complete the form to submit</div>
+          )}
+        </li>
+      );
+    }
+
     return (
-      <div class="Activation--wizard">
+      <div class="Activation--wizard Wizard">
         {/* Activation form tabs */}
-        <aside>
-          <side-title>Activation Form</side-title>
-          {!this.isLinkedAccountForm &&
+        <ModalAsideNav
+          title="Activation Form"
+          description={
+            !this.isLinkedAccountForm &&
             !isFormSubmitted && (
               <p>Complete and submit the form to start accepting payments.</p>
-            )}
-          <ul>
-            {/* Activation form tabs */}
-            {FORM_TABS.map((t, i) => {
-              let isTabValid = this.state.tabs[i];
-              return (
-                <li
-                  class={classList(
-                    i === activeTab && !this.state.showSubmitLayer && 'active',
-                    isTabValid && 'text-success'
-                  )}
-                  key={i}
-                  data-index={i}
-                  onClick={this.changeTab}
-                >
-                  {isTabValid && <i class={'i-check text-success'} />}
-                  {t}
-                </li>
-              );
-            })}
-
-            {/* Submit form tab*/}
-            {!isFormSubmitted && (
-              <li
-                onClick={this.toggleSubmitLayer}
-                class={classList(
-                  !this.isAllTabsValid() && 'disabled',
-                  this.state.showSubmitLayer && 'active',
-                  'li--submit'
-                )}
-              >
-                Submit Form
-                {!this.isAllTabsValid() && (
-                  <div style={{ marginTop: -20, fontSize: 12 }}>
-                    Complete the form to submit
-                  </div>
-                )}
-              </li>
-            )}
-          </ul>
-        </aside>
+            )
+          }
+          tabs={FORM_TABS}
+          moreTabs={moreTabs}
+          tabsValidity={this.state.tabs}
+          tabClickHandler={this.changeTab}
+          activeTab={activeTab}
+          activeTabContdition={!this.state.showSubmitLayer}
+        />
 
         {/* Activation form Content */}
         <main
@@ -1056,7 +1047,7 @@ export default class ActivationWizard extends React.Component {
                 {isLastTab &&
                   !isFormSubmitted && (
                     <Button.Primary
-                      class={classList(!this.isAllTabsValid() && 'disabled')}
+                      disabled={!this.isAllTabsValid()}
                       onClick={this.toggleSubmitLayer}
                     >
                       Submit Form
@@ -1325,7 +1316,7 @@ class SubmitForm extends React.Component {
 
           {/* Action button */}
           <AsyncBtn.Primary
-            class={this.state.allowSubmit ? '' : 'disabled'}
+            disabled={!this.state.allowSubmit}
             onClick={this.submit}
             pendingState={'Submitting...'}
           >

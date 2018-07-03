@@ -5,6 +5,23 @@ const ROW_LUMINATE_REMOVE = 'ROW_LUMINATE_REMOVE';
 const LOCATION_UPDATE = 'LOCATION_UPDATE';
 const ENTITY_UPDATE = 'ENTITY_UPDATE';
 const SEC_ENTITY_UPDATE = 'SEC_ENTITY_UPDATE';
+const SET_ACTIVE_PAGE_NAME = 'SET_ACTIVE_PAGE_NAME';
+const TOGGLE_MOBILE_MENU = 'TOGGLE_MOBILE_MENU';
+const SET_WINDOW_WIDTH = 'SET_WINDOW_WIDTH';
+const SET_WINDOW_HEIGHT = 'SET_WINDOW_HEIGHT';
+const SET_MOBILE_RES = 'SET_MOBILE_RES';
+const RESIZE_WINDOW = 'RESIZE_WINDOW';
+
+const isMobileResolution = width => {
+  return width <= 768;
+};
+
+let initialState = {
+  luminateRowId: null,
+  windowWidth: window.outerWidth,
+  windowHeight: window.outerHeight,
+  isMobileResolution: isMobileResolution(window.outerWidth),
+};
 
 export const setBaseLocation = location => {
   return {
@@ -17,6 +34,30 @@ export const setActiveEntity = id => {
   return {
     type: ENTITY_UPDATE,
     payload: id,
+  };
+};
+
+export const setActivePageName = name => {
+  return {
+    type: SET_ACTIVE_PAGE_NAME,
+    payload: name,
+  };
+};
+
+export const toggleMobileMenu = () => {
+  return {
+    type: TOGGLE_MOBILE_MENU,
+  };
+};
+
+export const resizeWindow = () => {
+  return {
+    type: RESIZE_WINDOW,
+    payload: {
+      windowWidth: window.outerWidth,
+      windowHeight: window.outerHeight,
+      isMobileResolution: isMobileResolution(window.outerWidth),
+    },
   };
 };
 
@@ -43,10 +84,6 @@ export const luminateRow = id => {
   };
 };
 
-let initialState = {
-  luminateRowId: null,
-};
-
 export default function(state = initialState, action) {
   switch (action.type) {
     case ENTITY_UPDATE:
@@ -63,6 +100,27 @@ export default function(state = initialState, action) {
 
     case ROW_LUMINATE_REMOVE:
       return set(state, 'luminateRowId', null);
+
+    case SET_ACTIVE_PAGE_NAME:
+      return set(state, 'activePageName', action.payload);
+
+    case TOGGLE_MOBILE_MENU:
+      return set(state, 'showMobileMenu', !state.showMobileMenu);
+
+    case RESIZE_WINDOW:
+      const { windowWidth, windowHeight, isMobileResolution } = action.payload;
+
+      state = set(state, 'windowWidth', windowWidth);
+      state = set(state, 'windowHeight', windowHeight);
+      state = set(state, 'isMobileResolution', isMobileResolution);
+
+      // forcing not to show mobile menu in desktop resolution
+      state = set(
+        state,
+        'showMobileMenu',
+        !isMobileResolution ? false : state.showMobileMenu
+      );
+      return state;
 
     default:
       return state;

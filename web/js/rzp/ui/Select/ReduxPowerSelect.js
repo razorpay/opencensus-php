@@ -8,9 +8,14 @@ const ReduxPowerSelectHOC = PowerSelectComponent => props => {
     meta,
     selected,
     optionLabelPath,
+    selectedOptionLabelPath,
     optionValuePath = 'id',
     onQuickAdd,
     onOptionChange = () => {},
+    labelWhenSearchTermBlank,
+    labelWhenSearchTermValid,
+    maxSearchTermLength,
+    className,
     ...otherProps
   } = props;
 
@@ -25,10 +30,13 @@ const ReduxPowerSelectHOC = PowerSelectComponent => props => {
   return (
     <PowerSelectComponent
       {...otherProps}
-      className={`${meta.submitFailed && meta.error ? 'error' : ''}`}
+      className={`${className} ${
+        meta.submitFailed && meta.error ? 'error' : ''
+      }`}
       selected={selectedOption}
       searchIndices={searchIndices}
       optionLabelPath={optionLabelPath}
+      selectedOptionLabelPath={selectedOptionLabelPath || optionLabelPath}
       optionComponent={({ option, select }) => (
         <HighlightedOption
           option={option}
@@ -37,7 +45,17 @@ const ReduxPowerSelectHOC = PowerSelectComponent => props => {
         />
       )}
       afterOptionsComponent={select =>
-        showQuickAdd && <QuickAddComponent {...select} onClick={onQuickAdd} />
+        showQuickAdd && (
+          <QuickAddComponent
+            {...{
+              labelWhenSearchTermBlank,
+              labelWhenSearchTermValid,
+              maxSearchTermLength,
+              ...select,
+            }}
+            onClick={onQuickAdd}
+          />
+        )
       }
       onChange={({ option = '' }) => {
         // input.onChange(option[input.name] || '')

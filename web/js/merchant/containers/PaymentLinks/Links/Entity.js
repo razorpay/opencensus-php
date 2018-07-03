@@ -6,22 +6,34 @@ import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
+import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
+import { updatePLInReduxList } from 'merchant/modules/invoices/list';
+import { keysToSentence } from 'common/util';
 
-@connect(state => state.invoice, {
+@connect(state => ({ ...state.invoice, ...state.session }), {
   ...InvoiceActions,
   ...ModalActions,
   ...NotificationsActions,
+  updatePLInReduxList,
 })
 export default class InvoiceDetailContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
 
-  constructor() {
+  constructor(props) {
     super(...arguments);
     this.state = {
       statusMsg: {},
     };
+
+    if (props.user.isPaymentLinksV2Enabled) {
+      // recording new payments links creation UI form in hotjar
+      if (typeof window.hj === 'function') {
+        window.hj('trigger', 'payment_links_v2_details_open');
+        window.hj('tagRecording', ['payment_links_v2_details_open']);
+      }
+    }
   }
 
   componentWillMount() {
@@ -141,6 +153,14 @@ export default class InvoiceDetailContainer extends Component {
             });
           })
           .catch(({ errors }) => {
+            if (
+              !errors ||
+              (errors instanceof Array === true &&
+                (!errors.length || !errors[0]))
+            ) {
+              errors = 'Some network error has occurred';
+            }
+
             this.props.showNotification({
               type: 'error',
               message: errors,
@@ -164,6 +184,49 @@ export default class InvoiceDetailContainer extends Component {
     });
   };
 
+  editPaymentLink = data => {
+    return editPaymentLink(this.props.invoice.id, data)
+      .then(resp => {
+        if (resp.data) {
+          this.props.updatePLInReduxList(resp, false);
+
+          this.props.showNotification({
+            type: 'success',
+            message: `${keysToSentence(data)} updated successfully`,
+          });
+
+          return resp;
+        } else {
+          throw 'Some network issue occured';
+        }
+      })
+      .catch(({ errors }) => {
+        let err = errors;
+
+        if (Array.isArray(err)) {
+          err = [];
+
+          errors.length &&
+            errors.forEach(e => {
+              if (e && e.toLowerCase().indexOf('status code') === -1) {
+                err.push(e);
+              }
+            });
+
+          err = err.length ? err : null;
+        }
+
+        if (!err) {
+          err = `Some Network error occured`;
+        }
+
+        this.props.showNotification({
+          type: 'error',
+          message: err,
+        });
+      });
+  };
+
   render() {
     let { loading, invoice } = this.props;
     let statusMsg = this.state.statusMsg;
@@ -175,6 +238,8 @@ export default class InvoiceDetailContainer extends Component {
         statusMsg={statusMsg}
         onIssue={this.showIssueConfirmModal}
         onCancel={this.cancelInvoice}
+        editPaymentLink={this.editPaymentLink}
+        isPaymentLinksV2Enabled={this.props.user.isPaymentLinksV2Enabled}
       />
     );
   }

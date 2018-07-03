@@ -91,21 +91,30 @@ export default class PaymentLinksContainer extends ListContainer {
     let { loading, invoices, user } = this.props;
     let status = this.state.status;
 
+    const isPaymentLinksV2Enabled = user.isPaymentLinksV2Enabled;
+
     return (
       <div class="content-wrapper">
-        <ShowWhen notMyRole="support">
-          <HeaderAction>
+        <HeaderAction>
+          <ShowWhen notMyRole="support">
             <div class="btn-toolbar pull-right">
-              <button
-                class="btn btn-primary"
-                onClick={() => this.showPaymentLinkModal()}
-              >
-                <i class="i i-plus" />
-                <span>Create Payment Link</span>
-              </button>
+              {isPaymentLinksV2Enabled ? (
+                <NavLink class="btn btn-primary" to="/paymentlinks/new">
+                  <i class="i i-plus" />
+                  <span>Create Payment Link</span>
+                </NavLink>
+              ) : (
+                <button
+                  class="btn btn-primary"
+                  onClick={() => this.showPaymentLinkModal()}
+                >
+                  <i class="i i-plus" />
+                  <span>Create Payment Link</span>
+                </button>
+              )}
             </div>
-          </HeaderAction>
-        </ShowWhen>
+          </ShowWhen>
+        </HeaderAction>
 
         <InvoiceListFilter
           form="InvoiceListFilter"
@@ -124,6 +133,7 @@ export default class PaymentLinksContainer extends ListContainer {
           type="link"
           onEdit={this.showPaymentLinkModal}
           onCopy={this.onCopy}
+          isPaymentLinksV2Enabled={isPaymentLinksV2Enabled}
         />
 
         <Pager

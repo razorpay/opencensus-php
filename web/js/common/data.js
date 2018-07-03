@@ -1,7 +1,7 @@
 export const testMerchantId = '10000000000000';
 import { snakeToTitleCase } from './util';
 
-export const activationDuration = '1-2 working days';
+export const activationDuration = '4-5 working days';
 
 export const entity2Prefix = {
   account: 'acc',
@@ -66,6 +66,7 @@ export const wallets = {
   mpesa: 'Mpesa',
   paytm: 'Paytm',
   sbibuddy: 'SBI Buddy',
+  amazonpay: 'Amazon Pay',
 };
 
 export const networks = {
@@ -244,8 +245,14 @@ export const publicFeature = {
   ],
 
   featuresAkaMap: {
-    marketplace: 'Marketplace',
-    subscriptions: 'Subscriptions',
-    virtual_accounts: 'Virtual Accounts',
+    product: {
+      marketplace: 'Marketplace',
+      subscriptions: 'Subscriptions',
+      virtual_accounts: 'Virtual Accounts',
+    },
+    partner: {
+      activation: 'Partner Activation',
+      deactivation: 'Partner Deactivation',
+    },
   },
 };

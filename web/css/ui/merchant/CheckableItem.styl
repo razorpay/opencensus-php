@@ -1,0 +1,40 @@
+.CheckableItem__Container
+  border: 1px solid
+  border-color: #CFDADD
+  background-color: #FFFFFF
+  transition: background-color 0.15s ease-in-out
+  font-size: 14px
+  line-height: 14px
+  padding: 10px
+  margin-top: -1px
+  cursor: pointer
+
+.CheckableItem__Container.CheckableItem__Checked,
+.CheckableItem__Container:hover
+  background-color: #FFF9E9
+
+.CheckableItem__Text
+  margin-right: 16px
+
+.CheckableItem__Text, .CheckableItem__Tick
+  display: inline-block
+
+.CheckableItem__Tick
+  float: right
+
+.CheckableItem__Container .CheckableItem__Tick i
+  color: #CDDADD
+  transition: color 0.15s ease-in-out
+
+.CheckableItem__Container.CheckableItem__Checked .CheckableItem__Tick i,
+.CheckableItem__Container:hover .CheckableItem__Tick i
+  color: #00BB55
+
+.CheckableItem__PowerSelect
+  .PowerSelect__Option
+    padding: 0 !important
+    &:first-of-type
+      margin-top: 1px !important
+    .CheckableItem__Container
+      border-left: none
+      border-right: none

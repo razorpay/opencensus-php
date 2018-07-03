@@ -383,7 +383,7 @@ export default class TransferNew extends Component {
                         .catch(() => {});
                     }}
                   >
-                    Discard
+                    Cancel
                   </button>
                 )}
                 <AsyncButton

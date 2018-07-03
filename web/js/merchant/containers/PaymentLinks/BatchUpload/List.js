@@ -11,8 +11,8 @@ import {
 } from 'merchant/modules/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import PaymentLinksForm from './PaymentLinksForm';
-import SendAllLinks from './SendAllLinks';
+import PaymentLinksForm from '../PaymentLinksForm';
+import SendAllLinks from '../SendAllLinks';
 
 const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
 

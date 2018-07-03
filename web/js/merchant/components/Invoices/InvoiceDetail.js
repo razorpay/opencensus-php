@@ -9,6 +9,21 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { Link } from 'react-router-dom';
+import DataTable from 'rzp/ui/Table/DataTable';
+import { paymentId, amount, paidOn } from 'rzp/ui/item/pair';
+import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
+import Button, { AsyncBtn } from 'component/Button';
+
+import {
+  EditExpiry,
+  EditNotes,
+  EditReceipt,
+} from 'merchant/containers/PaymentLinks/Edit/index';
+
+import {
+  trackDetailViewEdits,
+  trackTogglePartialPayment,
+} from 'merchant/containers/PaymentLinks/Links/ga';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -48,15 +63,62 @@ const getCustomerDetail = invoice => (
   </Definition>
 );
 
+const getPaymentDetail = invoice => (
+  <Definition placeholder="--">
+    <Amount value={invoice.amount_paid} currency={invoice.currency} />
+    {invoice.partial_payment &&
+    invoice.payments &&
+    invoice.payments.items.length ? (
+      <ContentToggler>
+        <span>View Payment Details</span>
+        <div
+          className="full-width-item sub-entity-list"
+          style={{ fontSize: 14 }}
+        >
+          <DataTable
+            title="Payments"
+            progressLoader={true}
+            columns={[paymentId, paidOn, amount]}
+            items={invoice.payments.items}
+            noStripe={true}
+          />
+        </div>
+      </ContentToggler>
+    ) : (
+      <React.Fragment>
+        {invoice.payment_id && (
+          <Link to={`/payments/${invoice.payment_id}`}>
+            <code>{invoice.payment_id}</code>
+          </Link>
+        )}
+        {invoice.paid_at && (
+          <div>
+            Paid on{' '}
+            <Time value={invoice.paid_at} format="DD MMM YYYY, hh:mm a" />
+          </div>
+        )}
+      </React.Fragment>
+    )}
+  </Definition>
+);
+
 export default props => {
-  let { invoice, isLoading, statusMsg } = props;
+  let {
+    invoice,
+    isLoading,
+    statusMsg,
+    editPaymentLink,
+    isPaymentLinksV2Enabled,
+  } = props;
 
   let status = invoice.status;
-  let isDraft = status === 'draft';
-  let isIssued = status === 'issued';
-  let isPaid = status === 'paid';
-  let isCancelled = status === 'cancelled';
-  let isExpired = status === 'expired';
+  const isDraft = status === 'draft';
+  const isIssued = status === 'issued';
+  const isPaid = status === 'paid';
+  const isPartiallyPaid = status === 'partially_paid';
+  const isCancelled = status === 'cancelled';
+  const isExpired = status === 'expired';
+
   let isSmsOrEmailSent =
     invoice.sms_status === 'sent' || invoice.email_status === 'sent';
 
@@ -73,23 +135,25 @@ export default props => {
             <strong>{invoice.id}</strong>
             <ShowWhen notMyRole="support finance">
               <div class="btn-toolbar pull-right">
-                {(isDraft || isIssued) && (
-                  <button
-                    class="btn btn-primary btn-sm"
-                    onClick={props.onIssue}
-                  >
-                    {isSmsOrEmailSent ? 'Send Again' : 'Send Link'}
-                  </button>
-                )}
+                {invoice.customer_id &&
+                  (isDraft || isIssued || isPartiallyPaid) && (
+                    <button
+                      class="btn btn-primary btn-sm"
+                      onClick={props.onIssue}
+                    >
+                      {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
+                    </button>
+                  )}
 
-                {isIssued && (
-                  <button
-                    class="btn btn-default btn-sm"
-                    onClick={props.onCancel}
-                  >
-                    Cancel Link
-                  </button>
-                )}
+                {!isPaymentLinksV2Enabled &&
+                  isIssued && (
+                    <button
+                      class="btn btn-default btn-sm"
+                      onClick={props.onCancel}
+                    >
+                      Cancel Link
+                    </button>
+                  )}
               </div>
             </ShowWhen>
           </div>
@@ -110,6 +174,69 @@ export default props => {
                   pairClass="description"
                   value={invoice.description || '--'}
                 />
+
+                <EntityDetailRow
+                  label="Status"
+                  value={() => (
+                    <div>
+                      <InvoiceStatusLabel status={invoice.status} />
+                      <ShowWhen notMyRole="support finance">
+                        {isPaymentLinksV2Enabled &&
+                          isIssued && (
+                            <Button.Transparent
+                              class="Button--Link"
+                              style={{ marginLeft: 12 }}
+                              onClick={props.onCancel}
+                            >
+                              Cancel Link
+                            </Button.Transparent>
+                          )}
+                      </ShowWhen>
+                    </div>
+                  )}
+                />
+
+                <ShowWhen featureEnabled="Invoice_Partial_Payments">
+                  <React.Fragment>
+                    {do {
+                      const isPartialPayment = invoice.partial_payment;
+
+                      <EntityDetailRow
+                        label="Partial Payment"
+                        value={() => (
+                          <div>
+                            {isPartialPayment ? 'Enabled' : 'Disabled'}
+                            {isPaymentLinksV2Enabled &&
+                              isIssued && (
+                                <AsyncBtn.Transparent
+                                  onClick={() => {
+                                    const toEnablePartialPayment = +!isPartialPayment;
+                                    editPaymentLink({
+                                      partial_payment: toEnablePartialPayment,
+                                    });
+
+                                    trackTogglePartialPayment(
+                                      invoice.id,
+                                      'Toggle Partial Payment',
+                                      toEnablePartialPayment
+                                    );
+                                  }}
+                                  class="Button--Link"
+                                  style={{ marginLeft: 12 }}
+                                  pendingState={
+                                    isPartialPayment ? 'Disabling' : 'Enabling'
+                                  }
+                                >
+                                  {isPartialPayment ? 'Disable' : 'Enable'}
+                                </AsyncBtn.Transparent>
+                              )}
+                          </div>
+                        )}
+                      />;
+                    }}
+                  </React.Fragment>
+                </ShowWhen>
+
                 <EntityDetailRow
                   label="Amount"
                   value={() => (
@@ -119,49 +246,14 @@ export default props => {
                     />
                   )}
                 />
-                <EntityDetailRow
-                  label="Amount Paid"
-                  value={() => (
-                    <Amount
-                      value={invoice.amount_paid}
-                      currency={invoice.currency}
-                    />
-                  )}
-                />
                 <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                  <EntityDetailRow
-                    label="Partial Payment"
-                    value={() => (
-                      <i
-                        class={
-                          invoice.partial_payment
-                            ? 'i i-check text-success'
-                            : 'i i-close text-danger'
-                        }
-                      />
-                    )}
-                  />
+                  <EntityDetailRow label="Amount Paid">
+                    {getPaymentDetail(invoice)}
+                  </EntityDetailRow>
                 </ShowWhen>
-                <EntityDetailRow
-                  label="Status"
-                  value={() => <InvoiceStatusLabel status={invoice.status} />}
-                />
-                <EntityDetailRow
-                  label="Payment Id"
-                  value={() => {
-                    if (!invoice.payment_id) {
-                      return '--';
-                    }
-                    return (
-                      <Link to={`/payments/${invoice.payment_id}`}>
-                        <code>{invoice.payment_id}</code>
-                      </Link>
-                    );
-                  }}
-                />
 
                 <EntityDetailRow
-                  label="Payment Link"
+                  label="Link Url"
                   value={() => (
                     <CopyLink
                       url={invoice.short_url}
@@ -177,34 +269,25 @@ export default props => {
                     />
                   )}
                 />
-                <EntityDetailRow label="Receipt" value={invoice.receipt} />
                 <EntityDetailRow label="Customer Details">
                   {getCustomerDetail(invoice)}
                 </EntityDetailRow>
-                <EntityDetailRow
-                  label="Created At"
-                  value={() => <Time value={invoice.date} />}
-                />
-                <EntityDetailRow
-                  label="Paid At"
-                  value={() => (
-                    <Time
-                      value={invoice.paid_at}
-                      format="DD MMM YYYY, hh:mm a"
-                    />
-                  )}
-                />
-                <EntityDetailRow
-                  label={isExpired ? 'Expired on' : 'Expires on'}
-                  value={() => (
-                    <Time
-                      value={invoice.expire_by}
-                      format="DD MMM YYYY, hh:mm a"
-                    />
-                  )}
-                />
 
-                <NestedEntityDetailRow label="Notes" value={invoice.notes} />
+                <EntityDetailRow
+                  label="Receipt No."
+                  value={
+                    isPaymentLinksV2Enabled && isIssued
+                      ? () => (
+                          <EditReceipt
+                            value={invoice.receipt}
+                            entityId={invoice.id}
+                            editFn={editPaymentLink}
+                            trackerFn={trackDetailViewEdits}
+                          />
+                        )
+                      : invoice.receipt || '--'
+                  }
+                />
 
                 <EntityDetailRow label="Created By">
                   {!!invoice.user ? (
@@ -216,6 +299,50 @@ export default props => {
                     'API'
                   )}
                 </EntityDetailRow>
+
+                <EntityDetailRow
+                  label="Created At"
+                  value={() => <Time value={invoice.date} />}
+                />
+                <EntityDetailRow
+                  label={isExpired ? 'Expired On' : 'Expires On'}
+                  value={
+                    isPaymentLinksV2Enabled && isIssued
+                      ? () => (
+                          <EditExpiry
+                            value={invoice.expire_by}
+                            editFn={editPaymentLink}
+                            entityId={invoice.id}
+                            trackerFn={trackDetailViewEdits}
+                          />
+                        )
+                      : () =>
+                          invoice.expire_by ? (
+                            <Time
+                              value={invoice.expire_by}
+                              format="DD MMM YYYY, hh:mm a"
+                            />
+                          ) : (
+                            'No Expiry'
+                          )
+                  }
+                />
+
+                {isPaymentLinksV2Enabled ? (
+                  <EntityDetailRow
+                    label="Notes"
+                    value={() => (
+                      <EditNotes
+                        value={invoice.notes}
+                        editFn={editPaymentLink}
+                        entityId={invoice.id}
+                        trackerFn={trackDetailViewEdits}
+                      />
+                    )}
+                  />
+                ) : (
+                  <NestedEntityDetailRow label="Notes" value={invoice.notes} />
+                )}
               </div>
             </div>
           </div>

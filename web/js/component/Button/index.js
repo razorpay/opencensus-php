@@ -7,10 +7,14 @@ const TRANSPARENT_COLOR = className =>
 
 export default class Button extends React.PureComponent {
   render() {
-    let { iconBefore, iconAfter, children, ...props } = this.props;
+    let { iconBefore, iconAfter, children, onClick, ...props } = this.props;
 
     return (
-      <button {...props} class={classList(props.className, 'Button')}>
+      <button
+        {...props}
+        onClick={props.disabled ? undefined : onClick}
+        class={classList(props.className, 'Button')}
+      >
         {iconBefore && (
           <i class={'Button-icon Button-icon--before i-' + iconBefore} />
         )}
@@ -60,13 +64,19 @@ export class AsyncBtn extends React.PureComponent {
     * Only 3 props are different than Button and has to be consumed here, not sent to Button component
     * Note: onClick needs to be consumed here
     * */
-    let { children, pendingState, onClick, ...rest } = this.props;
+    let {
+      children,
+      pendingState,
+      onClick,
+      showLoader = true,
+      ...rest
+    } = this.props;
 
     if (this.state.isPending) {
       children = (
         <span class="btn-pending">
           {pendingState}
-          <span class="spin-btn white" />
+          {showLoader && <span class="spin-btn white" />}
         </span>
       );
     }
@@ -84,4 +94,8 @@ export class AsyncBtn extends React.PureComponent {
 * */
 AsyncBtn.Primary = props => (
   <AsyncBtn {...props} class={PRIMARY_COLOR(props.className)} />
+);
+
+AsyncBtn.Transparent = props => (
+  <AsyncBtn {...props} class={TRANSPARENT_COLOR(props.className)} />
 );

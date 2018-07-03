@@ -277,6 +277,7 @@ const utilMapping = {
     openwallet: 'Openwallet',
     mpesa: 'Mpesa',
     paytm: 'Paytm',
+    amazonpay: 'Amazon Pay',
   },
 };
 
@@ -301,6 +302,7 @@ const _getMethods = {
   emi: 'EMI',
   emandate: 'e-Mandate',
   mpesa: 'Mpesa',
+  amazonpay: 'Amazon Pay',
 };
 
 /*---------------------------------------- Render UI resource --------------------------------------------*/

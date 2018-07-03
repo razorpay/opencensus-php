@@ -7,12 +7,12 @@ import { matchDetail, matchModal } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 import { ModalMask } from 'component/Modal';
 
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
-import HomeNew from 'merchant/containers/Home/New';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
+import PaymentPages from 'merchant/containers/PaymentPages/Index';
 import InvoicingContainer from 'merchant/containers/Invoicing';
 import InvoicesNew from 'merchant/containers/Invoices/New';
 import Subscriptions from 'merchant/containers/Subscriptions/Index';
@@ -142,7 +142,6 @@ export default class Content extends Component {
           <Route path="/dashboard" component={Home} />
           <Redirect from="/" exact to="/dashboard" />
 
-          <Route path="/dashboard_v2" component={HomeNew} />
           <Route path="/payments" component={Transactions} />
           <Route path="/refunds" component={Transactions} />
           <Route path="/orders" component={Transactions} />
@@ -155,6 +154,11 @@ export default class Content extends Component {
           <Route path="/invoices/new" component={InvoicesNew} />
           <Route path="/items" component={InvoicingContainer} />
           <Route path="/paymentlinks" component={PaymentLinks} />
+          <ShowWhenRoute
+            path="/paymentpages"
+            component={PaymentPages}
+            featureEnabled="paymentpages"
+          />
           <Route path="/subscriptions" component={Subscriptions} />
           <Route path="/plans" component={Subscriptions} />
           {/*<Route path="/addons" component={Subscriptions} />*/}
@@ -209,6 +213,7 @@ export default class Content extends Component {
   }
 
   closeModalView = e => {
+    document.body.classList.remove('noscroll');
     this.props.history.replace(this.baseLocation.pathname);
   };
 
@@ -263,3 +268,21 @@ export default class Content extends Component {
     );
   }
 }
+
+const ShowWhenRoute = ({ component: Component, ...rest }) => (
+  <Route
+    {...rest}
+    render={props =>
+      showWhenUtil(rest) ? (
+        <Component {...rest} />
+      ) : (
+        <Redirect
+          to={{
+            pathname: '/dashboard',
+            state: { from: rest.location },
+          }}
+        />
+      )
+    }
+  />
+);

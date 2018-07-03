@@ -30,6 +30,8 @@ import {
   virtualAccountsReducer,
   virtualAccountReducer,
 } from 'merchant/modules/virtualaccounts';
+import statesReducer from 'merchant/modules/states';
+import taxesReducer from 'merchant/modules/taxes';
 
 import {
   refundBatchesReducer,
@@ -106,5 +108,7 @@ export default combineReducers({
   reversals: reversalsReducer,
   virtualaccounts: virtualAccountsReducer,
   virtualaccount: virtualAccountReducer,
+  states: statesReducer,
+  taxes: taxesReducer,
   reports: reportsReducer,
 });

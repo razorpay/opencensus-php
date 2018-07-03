@@ -329,8 +329,9 @@ class AdminController extends Controller
         if ($format === 'csv' and empty($error) === true)
         {
             //(new Admin\Service)->logDataExport($entity, $input);
+            $items = $data['items'] ?? $data;
 
-            return AppResponse::csvResponse($data['items']);
+            return AppResponse::csvResponse($items);
         }
         else
         {
