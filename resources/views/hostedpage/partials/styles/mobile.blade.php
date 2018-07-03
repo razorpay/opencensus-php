@@ -88,4 +88,14 @@
         top: -32px;
     }
 
+    #mobile-container .form-group label {
+        width: 100%;
+        margin-bottom: 4px;
+        text-align: left;
+    }
+
+    #mobile-container .form-group .form-control {
+        width: 100%;
+    }
+
 </style>

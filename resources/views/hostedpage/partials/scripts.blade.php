@@ -25,6 +25,14 @@
         }
     }
 
+    function removeForm() {
+        document.getElementById("udf_submit_btn").style.display='none';
+        editor.destroy();
+
+        document.getElementsByName('payment-form')[0].style.display = 'none';
+        document.getElementsByName('payment-form')[0].innerHTML = '';
+    }
+
     function hasClass(ele,cls) {
         return !!ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
     }

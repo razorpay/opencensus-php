@@ -22,6 +22,7 @@
 
     .form-group label, .form-group .form-control {
         vertical-align: middle;
+        color: inherit;
     }
 
     .form-group .form-control {
@@ -55,7 +56,8 @@
     }
 
     .form-group .help-block {
-        margin: 4px 0 0 160px;
+        position: absolute;
+        margin: 2px 0 0 160px;
         font-size: 12px;
     }
 

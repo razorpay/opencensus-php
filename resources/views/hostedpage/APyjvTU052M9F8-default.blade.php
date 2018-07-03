@@ -118,10 +118,11 @@
                 }
 
                 var udfData = editor.getValue();
-                document.getElementById("udf_submit_btn").style.display='none';
 
-                editor.destroy();
-                checkoutStart(window.RZP_DATA = window.RZP_DATA || {}, udfData);
+                var amountEl = document.getElementsByName('amount')[0];
+                var amount = amountEl.value;
+
+                checkoutStart(window.RZP_DATA = window.RZP_DATA || {}, Object.assign({}, udfData, {amount: amount}));
             }
 
         // UDF start
@@ -157,6 +158,8 @@
                     notes: udfData,
                     description: '#' + paymentPageObj.id,
                     handler: function(response) {
+                        removeForm();
+
                         if (globalScope.hasRedirect()) {
 
                             return globalScope.redirectToCallback(
@@ -181,7 +184,6 @@
                     },
                     callback_url: location.href,
                     theme: {
-                        close_button: false,
                     },
                     modal: {
                         confirm_close: true,
@@ -191,9 +193,9 @@
 
                 options.name = data.merchant.name;
                 options.theme.color = merchant.brand_color || '#168AFA';
-                if (merchant.image) {
-                    options.image = merchant.image;
-                }
+                options.currency = 'INR';
+
+                options.image = merchant.image;
 
                 var razorpay;
                 razorpay = window.razorpay = Razorpay(options);

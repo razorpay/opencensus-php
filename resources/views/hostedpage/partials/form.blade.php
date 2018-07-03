@@ -5,11 +5,11 @@
         </div>
     @endif
 
-    <div class="heading">
-        Enter Payment Details
-    </div>
-
     <form name="payment-form">
+        <div class="heading">
+            Enter Payment Details
+        </div>
+
         <div id="udf_parent">
             <div id="udf_container">
             </div>
