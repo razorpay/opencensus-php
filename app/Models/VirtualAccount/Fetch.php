@@ -12,6 +12,7 @@ class Fetch extends BaseFetch
             Entity::STATUS      => 'sometimes|in:active,closed,paid',
             Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:19',
             Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
+            Entity::NOTES       => 'sometimes|notes_fetch',
         ],
     ];
 
@@ -21,11 +22,20 @@ class Fetch extends BaseFetch
         ],
         AuthType::PRIVATE_AUTH => [
             Entity::STATUS,
+            Entity::NOTES,
             Entity::CUSTOMER_ID,
         ],
     ];
 
     const SIGNED_IDS = [
         Entity::CUSTOMER_ID,
+    ];
+
+    const ES_FIELDS = [
+        Entity::NOTES,
+    ];
+
+    const COMMON_FIELDS = [
+        Entity::MERCHANT_ID,
     ];
 }
