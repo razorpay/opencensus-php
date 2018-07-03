@@ -42,10 +42,6 @@ class Validator extends Base\Validator
         Entity::ISSUER,
     );
 
-    protected static $fetchPaymentFlowsRules = [
-        Entity::IIN           => 'required|numeric|digits:6',
-    ];
-
     protected static $editValidators = array(
         'edit_network',
         Entity::TYPE,

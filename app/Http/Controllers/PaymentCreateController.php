@@ -224,7 +224,7 @@ class PaymentCreateController extends Controller
             return $this->returnConvenienceFeesView($input, $data, $url);
         }
 
-        return ApiResponse::json(['input' => $input,'display' => $data]);
+        return ApiResponse::json(['input' => $input, 'display' => $data]);
     }
 
     public function postPaymentFees()
@@ -293,6 +293,13 @@ class PaymentCreateController extends Controller
         return $this->returnCallbackResponse($data);
     }
 
+    public function postOtpSubmitPrivate($id)
+    {
+        $hash = $this->route->getHashOf($id);
+
+        return $this->postOtpSubmit($id, $hash);
+    }
+
     public function postOtpSubmit($id, $hash)
     {
         $input = Request::all();
@@ -359,6 +366,28 @@ class PaymentCreateController extends Controller
             }
             else if ($data['type'] === 'otp')
             {
+                if ($data['request']['method'] === 'direct')
+                {
+                    //
+                    // For S2S headless_otp payments we return the JSON data
+                    // instead of the normal view
+                    //
+                    if ($this->app['basicauth']->isStrictPrivateAuth() === true)
+                    {
+                        $response = [
+                            'next'                => $data['next'],
+                            'razorpay_payment_id' => $data['payment_id'],
+                        ];
+
+                        return $response;
+                    }
+
+                    $response = Response::make($data['request']['content']);
+                    $response->headers->set('X-gateway', $data['gateway']);
+
+                    return $response;
+                }
+
                 $templateData = [
                    'data' => $data,
                    'cdn'  => $this->config->get('url.cdn.production')
@@ -447,7 +476,7 @@ class PaymentCreateController extends Controller
     {
         return View::make('gateway.gatewayFeesForm')
                    ->with('data', $data)
-                   ->with('input', $input)
+                   ->with('input', array_assoc_flatten($input, "%s[%s]"))
                    ->with('url', $url);
     }
 

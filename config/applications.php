@@ -10,6 +10,10 @@ return [
         'cloud'     => true,
     ],
 
+    'subscriptions' => [
+        'secret'    => env('APP_SUBSCRIPTIONS_SECRET'),
+    ],
+
     'dashboard_guest'   => [
         'secret'   => env('APP_DASHBOARD_GUEST_SECRET'),
     ],
@@ -199,5 +203,11 @@ return [
         'url'      => env('RAZORX_URL'),
         'username' => 'rzp_api',
         'secret'   => env('RAZORX_SECRET'),
+    ],
+
+    'otpelf' => [
+        'mock'    => env('OTPELF_MOCK', false),
+        'url'     => env('OTPELF_BASE_URL'),
+        'api_key' => env('OTPELF_API_KEY'),
     ],
 ];

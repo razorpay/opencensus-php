@@ -75,15 +75,15 @@ class Service
             $this->mode = $this->app['rzp.mode'];
         }
 
-        $ba             = $this->app['basicauth'];
-        $this->merchant = $ba->getMerchant();
-        $this->user     = $ba->getUser();
-
         $this->trace = $this->app['trace'];
 
         $this->repo = $this->app['repo'];
 
         $this->auth = $this->app['basicauth'];
+
+        $this->merchant = $this->auth->getMerchant();
+
+        $this->user = $this->auth->getUser();
 
         $this->slack = $this->app['slack'];
     }

@@ -2939,7 +2939,7 @@ return [
                 'email' => 'differentemail@razorpay.com'
             ],
             'server' => [
-                'HTTP_' . \RZP\Http\BasicAuth\BasicAuth::ACCOUNT_HEADER_KEY => '10000000000044',
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000044',
             ],
         ],
         'response'  => [

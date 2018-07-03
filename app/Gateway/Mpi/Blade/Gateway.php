@@ -15,8 +15,8 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Lib\Formatters\Xml;
-use RZP\Gateway\Base\Action;
 use RZP\Models\Currency\Currency;
+use RZP\Gateway\Base\Action as Action;
 use RZP\Gateway\Mpi\Base\DeviceCategory;
 
 class Gateway extends Base\Gateway
@@ -377,7 +377,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_ENROLL_RESPONSE,
             [
-                'gateway' => 'mpi_blade ',
+                'gateway' => 'mpi_blade',
                 'response' => $response->body,
                 'payment_id' => $input['payment']['id']
             ]);
@@ -407,13 +407,27 @@ class Gateway extends Base\Gateway
 
     protected function getEnrollmentRequestArray(array $input)
     {
-        $content = $this->getVEReqContent($input);
+        $traceContent = $content = $this->getVEReqContent($input);
 
         $options = $this->getRequestOptions();
 
+        unset($traceContent[VEReq::MESSAGE][VEReq::VEREQ][VEReq::PAN]);
+        unset($traceContent[VEReq::MESSAGE][VEReq::VEREQ][VEReq::MERCHANT][VEReq::PASSWORD]);
+
+        $content = Xml::create('ThreeDSecure', $content);
+
         $type = $input['card']['network'];
 
-        $request = $this->getStandardRequestArray($content, 'POST', $type, $options);
+        $traceRequest = $request = $this->getStandardRequestArray($content, 'POST', $type, $options);
+
+        $traceRequest['content'] = $traceContent;
+        unset($traceRequest['options']['hooks']);
+
+        $this->trace->info(TraceCode::GATEWAY_ENROLL_REQUEST, [
+            'gateway' => 'mpi_blade',
+            'payment_id' => $input['payment']['id'],
+            'request' => $traceRequest
+        ]);
 
         return $request;
     }
@@ -565,13 +579,6 @@ class Gateway extends Base\Gateway
         return $xml;
     }
 
-    private function generateXid(array $input)
-    {
-        $xid = str_pad($input['payment']['id'], 20, '0', STR_PAD_LEFT);
-
-        return base64_encode($xid);
-    }
-
     private function getFormattedAmount(array $payment)
     {
         $currency = Currency::getSymbol($payment['currency']);
@@ -616,16 +623,8 @@ class Gateway extends Base\Gateway
         ];
 
         $traceContent = $content;
-        unset($traceContent['Message']['VEReq']['pan']);
-        unset($traceContent['Message']['VEReq']['Merchant']['password']);
 
-        $this->trace->info(TraceCode::GATEWAY_ENROLL_REQUEST, [
-            'gateway' => 'mpi_blade',
-            'payment_id' => $input['payment']['id'],
-            'content' => $traceContent
-        ]);
-
-        return Xml::create('ThreeDSecure', $content);
+        return $content;
     }
 
     protected function getCreds()
@@ -650,35 +649,6 @@ class Gateway extends Base\Gateway
         }
 
         return $creds;
-    }
-
-    protected function getAcquirerBin(array $input)
-    {
-        $acqBin = '';
-
-        switch ($input['card']['network_code'])
-        {
-            case Card\Network::MC:
-            case Card\Network::MAES:
-                $acqBin = $this->config['live_mastercard_acq_bin'];
-                break;
-
-            case Card\Network::VISA:
-                $acqBin = $this->config['live_visa_acq_bin'];
-                break;
-
-            default:
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
-
-        }
-
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_acq_bin'];
-        }
-
-        return $acqBin;
     }
 
     protected function getMerchantId(array $input)
