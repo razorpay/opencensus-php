@@ -358,6 +358,8 @@ trait EmandateTrait
 
         $bankPaymentId = $gatewayPayment->getBankPaymentId();
 
+        $attributes = [];
+
         if (empty($bankPaymentId) === true)
         {
             $attributes[Netbanking\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REF_NO];
@@ -368,7 +370,38 @@ trait EmandateTrait
             $attributes[Netbanking\Entity::STATUS] = $content[ResponseFields::STATUS_CODE];
         }
 
-        return $attributes ?? [];
+        // If RID exists and status is registration success, set token related attributes here
+        if ((empty($content[ResponseFields::MANDATE_NUMBER]) === false) and
+            ($content[ResponseFields::STATUS_CODE] === StatusCode::SUCCESS))
+        {
+            $recurringData = [
+                Netbanking\Entity::SI_TOKEN  => $content[ResponseFields::MANDATE_NUMBER],
+                Netbanking\Entity::SI_STATUS => $content[ResponseFields::STATUS_CODE],
+            ];
+
+            $attributes = array_merge($attributes, $recurringData);
+        }
+
+        return $attributes;
+    }
+
+    protected function getRecurringData(Netbanking\Entity $gatewayPayment)
+    {
+        $siStatus = $gatewayPayment->getSIStatus();
+
+        $recurringStatus = StatusCode::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? Token\RecurringStatus::REJECTED;
+
+        // TODO: Get the failure reason mapping and
+        // display the correct failure reason here
+        $recurringFailureReason = StatusCode::getSiMessage($siStatus);
+
+        $recurringData = [
+            Token\Entity::RECURRING_STATUS         => $recurringStatus,
+            Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getSIToken(),
+            Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
+        ];
+
+        return $recurringData;
     }
 
     protected function sendEmandatePaymentVerifyRequest(Verify $verify)
