@@ -414,10 +414,6 @@ trait RequestResponseFlowTrait
             {
                 $this->convertContentToString($value);
             }
-            else if ($value === null)
-            {
-                continue;
-            }
             else
             {
                 $content[$key] = (string) $value;

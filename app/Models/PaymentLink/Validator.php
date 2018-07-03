@@ -21,7 +21,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT        => 'sometimes|nullable|mysql_unsigned_int|min:100',
+        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100',
         Entity::CURRENCY      => 'required_with:amount|nullable|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
@@ -32,7 +32,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::AMOUNT        => 'sometimes|nullable|mysql_unsigned_int|min:100',
+        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100',
         Entity::CURRENCY      => 'required_with:amount|nullable|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
@@ -40,14 +40,6 @@ class Validator extends Base\Validator
         Entity::TITLE         => 'filled|string|max:40',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
-    ];
-
-    protected static $createValidators = [
-        'amount_currency'
-    ];
-
-    protected static $editValidators = [
-        'amount_currency'
     ];
 
     protected static $sendNotificationRules = [
@@ -192,41 +184,6 @@ class Validator extends Base\Validator
                 [
                     'expected' => $paymentLinkAmount,
                     'actual'   => $paymentAmount,
-                ]);
-        }
-    }
-
-    public function validateAmountCurrency(array $input)
-    {
-        $amountExists   = array_key_exists(Entity::AMOUNT, $input);
-        $currencyExists = array_key_exists(Entity::CURRENCY, $input);
-
-        // If both amount and currency are not sent, return
-        if (($amountExists or $currencyExists) === false)
-        {
-            return;
-        }
-
-        // If only one of amount or currency are sent, fail the request
-        if (($amountExists xor $currencyExists) === true)
-        {
-            throw new BadRequestValidationFailureException(
-                'Both amount and currency fields must be sent together',
-                Entity::CURRENCY,
-                [
-                    'input' => $input
-                ]);
-        }
-
-        // When amount is not sent (or null), reject if currency is set
-        if ((isset($input[Entity::AMOUNT]) === false) and
-            (isset($input[Entity::CURRENCY]) === true))
-        {
-            throw new BadRequestValidationFailureException(
-                'The currency should be null when amount is null',
-                Entity::CURRENCY,
-                [
-                    'input' => $input
                 ]);
         }
     }
