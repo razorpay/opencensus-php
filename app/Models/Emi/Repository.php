@@ -62,4 +62,27 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function fetchIdsByBankAndNetwork($bank, $network, $durations)
+    {
+        $query = $this->newQuery();
+
+        $query->select(Entity::ID);
+
+        if ($durations)
+        {
+            $query->whereIn(Entity::DURATION, $durations);
+        }
+
+        if ($bank)
+        {
+            $query->where(Entity::BANK, '=', $bank);
+        }
+        else if ($network === Network::AMEX)
+        {
+            $query->where(Entity::NETWORK, '=', $network);
+        }
+
+        return $query->pluck('id')->toArray();
+    }
  }

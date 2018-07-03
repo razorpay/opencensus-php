@@ -40,6 +40,22 @@ class Offer extends Base
         return $offer;
     }
 
+    public function createEmiSubvention(array $attributes = [])
+    {
+        $emiSubventionAttributes = [
+            'emi_subvention' => true,
+            'emi_duration'   => ['9'],
+            'payment_network'=> 'AMEX',
+            'issuer'         => null,
+        ];
+
+        $attributes = array_merge($emiSubventionAttributes, $attributes);
+
+        $offer = $this->fixtures->create('offer', $attributes);
+
+        return $offer;
+    }
+
     public function createExpired()
     {
         $offer = $this->fixtures->create('offer:card');

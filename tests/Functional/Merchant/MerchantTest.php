@@ -1768,19 +1768,19 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->enableEmi();
+        $this->fixtures->create('emi_plan:default_emi_plans');
 
-        $emiPlan = $this->fixtures->create('emi_plan');
+        $offer = $this->fixtures->create('offer:emi_subvention');
 
-        $emiPlan = $this->fixtures->create('emi_plan', ['id' => '10101010101011']);
+        $order = $this->fixtures->order->createWithOffers([
+            $offer
+        ]);
 
-        $emiPlanId = $emiPlan['id'];
+        $this->ba->publicAuth();
 
-        $this->fixtures->create('merchant_emi_plans', ['emi_plan_id' => $emiPlanId]);
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
 
-        $response = $this->startTest();
-
-        $this->assertEquals($response['methods']['emi'], true);
+        $this->startTest();
     }
 
     public function testGetCheckoutRouteWithSavedGlobal()
