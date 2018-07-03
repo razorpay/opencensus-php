@@ -1,4 +1,17 @@
 pipeline:
+  restore_cache:
+    image: razorpay/containers:drone-s3-cache
+    restore: true
+    mount:
+      - .composer/cache
+    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    path: "/rzp/api/${DRONE_BUILD_CREATED:0:5}/"
+    secrets:
+      - aws_access_key_id
+      - aws_secret_access_key
+      - aws_region
+    when:
+      event: push
   test:
     group: A
     image: razorpay/pithos:rzp-php7.1
@@ -19,6 +32,8 @@ pipeline:
       - touch /etc/php7/conf.d/nanotime.ini
       - echo -n "extension=nanotime.so" >> /etc/php7/conf.d/nanotime.ini
       - php -m
+      - export COMPOSER_CACHE_DIR=".composer/cache"
+      - mkdir -p $COMPOSER_CACHE_DIR
       - composer config --global github-oauth.github.com $GIT_TOKEN
       - composer install --no-interaction --optimize-autoloader
       - mkdir -p /opt/razorpay/certs/first_data
@@ -41,6 +56,19 @@ pipeline:
       event:
         exclude: [deployment, pull_request]
         include: [push]
+  rebuild-cache:
+      image: razorpay/containers:drone-s3-cache
+      endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+      path: "/rzp/api/${DRONE_BUILD_CREATED:0:5}/"
+      secrets:
+        - aws_region
+        - aws_access_key_id
+        - aws_secret_access_key
+      rebuild: true
+      mount:
+        - .composer/cache
+      when:
+        event: push
   build-notify:
     image: plugins/slack
     secrets: [slack_webhook]
