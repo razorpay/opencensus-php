@@ -390,6 +390,8 @@ class NetbankingAxisEMandateTest extends TestCase
 
     public function testPaymentVerifyAmountMismatch()
     {
+        $this->markTestSkipped('for inital: amount is not received. for auto, it\'s s2s req-response');
+
         $payment = $this->payment;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
