@@ -207,12 +207,8 @@ class Service extends Base\Service
         $passwordData = [
             'password'              => $data['password'],
             'password_confirmation' => $data['password_confirmation'],
+            'old_password'          => $data['old_password'],
         ];
-
-        if (isset($data['old_password']))
-        {
-            $passwordData['old_password'] = $data['old_password'];
-        }
 
         $request = new \App\Admin\ApiRequestAny();
 
