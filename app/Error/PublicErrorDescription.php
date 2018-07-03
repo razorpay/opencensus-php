@@ -82,6 +82,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_INVALID_PIN                                  = 'Payment failed';
     const BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED                 = 'Payment failed because cardholder couldn\'t be authenticated';
     const BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE                 = 'Payment failed because cardholder couldn\'t be authenticated';
+    const BAD_REQUEST_INVALID_CARDHOLDER_NAME                                   = 'Payment failed due to invalid cardholder\'s name';
     const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED                           = 'Net banking is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED                              = 'Wallet is not supported';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED                               = 'Wallet is not provided';
