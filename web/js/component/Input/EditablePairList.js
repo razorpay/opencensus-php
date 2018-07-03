@@ -57,19 +57,25 @@ export default class EditablePairsList extends React.PureComponent {
     );
   };
 
-  removePair = pairIdx => {
+  getNewPairList(pairIdx) {
     let freshPairs = [...this.state.pairs];
     let freshKeys = [...this.state.keys];
 
     freshPairs.splice(pairIdx, 1);
     freshKeys.splice(pairIdx, 1);
 
+    return { freshPairs, freshKeys };
+  }
+
+  removePair = pairIdx => {
+    const newPairList = this.getNewPairList(pairIdx);
+
     this.setState({
-      pairs: freshPairs,
-      keys: freshKeys,
+      pairs: newPairList.freshPairs,
+      keys: newPairList.freshKeys,
     });
 
-    return freshPairs;
+    return newPairList.freshPairs;
   };
 
   /* Handle click on Delete */
@@ -82,10 +88,14 @@ export default class EditablePairsList extends React.PureComponent {
       affirmativeLabel: 'Delete',
       affirmativePendingLabel: 'Deleting',
       action: () => {
-        const freshPairs = this.removePair(pairIdx);
+        const freshPairs = this.getNewPairList(pairIdx).freshPairs;
         this.props.trackerFn('Delete Notes Confirmed');
 
-        return this.props.saveAndUpdate(freshPairs);
+        return this.props.saveAndUpdate(freshPairs).then(resp => {
+          if (resp && resp.data) {
+            this.removePair(pairIdx);
+          }
+        });
       },
     });
   };
@@ -336,7 +346,8 @@ class InputEditablePair extends React.Component {
             data-id={idx}
             style={{ marginRight: 0, marginLeft: 16 }}
             onClick={() => handleSave(this.state.pair)}
-            pendingState="Saving"
+            showLoader={false}
+            pendingState="Saving..."
           >
             Save
           </AsyncBtn.Primary>
@@ -372,7 +383,7 @@ class PairView extends React.Component {
         {deletePair && (
           <Button.Transparent
             type="button"
-            class="Btn--Link Button--danger"
+            class="Btn--Link"
             onClick={() => deletePair(idx)}
           >
             Delete

@@ -15,6 +15,11 @@ export function createPaymentLink(reqPayload) {
   reqPayload.expire_by &&
     (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
 
+  if (reqPayload.description) {
+    // It is required field. Safe check.
+    reqPayload.description = reqPayload.description.trim();
+  }
+
   /* Customer details */
   const customer = {};
   if (reqPayload.contact) {

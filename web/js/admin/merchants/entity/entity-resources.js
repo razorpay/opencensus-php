@@ -277,6 +277,7 @@ const utilMapping = {
     openwallet: 'Openwallet',
     mpesa: 'Mpesa',
     paytm: 'Paytm',
+    amazonpay: 'Amazon Pay',
   },
 };
 

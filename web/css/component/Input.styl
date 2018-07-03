@@ -13,7 +13,7 @@
     bottom: 1px
     width: 36px
     font-size: 14px
-    background-color: #EEEEEE
+    background-color: #F0F3F4
     color: #57666D
     text-align: center
     line-height: 36px
@@ -119,7 +119,7 @@
       color: $textDangerColor
 
 .Input--disabled
-  opacity: 0.5
+  opacity: 0.35
 
   label
     cursor: unset !important
@@ -230,7 +230,10 @@
   font-size: 14px
   padding: 0 12px
   &[type=checkbox], &[type=radio]
-    display: none
+    display: block
+    height: 0
+    margin: 0
+    opacity: 0
 
   &--before
     padding-left: 48px
@@ -289,6 +292,13 @@ textarea.Input-el
     transform: rotate(45deg) scale(1.5)
     margin: 0 0 0 4px
 
+:focus + .Input-checkbox
+  border-color: $primary-color
+
+:focus + .Input-checkbox--label
+  color: #22527b
+  text-decoration: underline
+
 :checked + .Input-checkbox
   background: $primary-color
   border-color: $primary-color
@@ -320,6 +330,9 @@ textarea.Input-el
   border-radius: 50%
   border: 1px solid #ccc
   transition: .2s
+
+:focus + .Input-radio
+  border-color: $primary-color
 
 :checked + .Input-radio
   background: $primary-color
@@ -415,6 +428,7 @@ textarea.Input-el
   .rdtPicker
     width: 100%
     bottom: 37px
+    padding: 8px 5%
 
   .rdtCounterSeparator
     line-height: 84px

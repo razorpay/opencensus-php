@@ -1090,85 +1090,6 @@ body.analytics-v2-active .onboarding-card-wrapper {
   min-height: 28px;
 }
 
-// Entity Detail Row
-.entity-detail-row {
-  padding: 8px;
-  border-bottom: 1px solid #ebecee;
-
-  &.clickable:hover {
-    background-color: #f7f6f6;
-    cursor: pointer;
-  }
-
-// To highlight selected row
-  &.active {
-    background-color: rgba(255,255,215,0.75);
-  }
-
-  .row-item {
-    display: inline-block;
-    vertical-align: middle;
-
-    &.content {
-      width: 93%;
-    }
-
-    &.i {
-      width: 7%;
-      text-align: center;
-      font-size: 22px;
-      padding: 10px;
-      cursor: pointer;
-    }
-  }
-
-  .detail-row {
-    display: table;
-    width: 100%;
-    margin-bottom: 4px;
-
-  // Style for 3rd row
-    &:nth-of-type(3) {
-      font-size: 13px;
-    }
-  }
-
-  .row-element {
-    display: table-cell;
-  }
-
-  .left {
-    width: 60%;
-  }
-  .right {
-    width: 40%;
-    text-align: right;
-  }
-}
-
-// Entity Detail List & Data Table
-.entity-detail-list, .data-table {
-  .list-heading {
-    background-color: #F7F8FA;
-    border-top: 1px solid #dfe0e2;
-    padding: 12px;
-
-    &:before {
-      display: table;
-      content: " ";
-    }
-
-    &:after {
-      clear: both;
-    }
-
-    .label--secondary {
-      line-height: 21px;
-      float: right;
-    }
-  }
-}
-
 div.data-table.has-panel {
   div.table-responsive {
     margin-top: 0;
@@ -1496,7 +1417,7 @@ div.feature-activation-banner {
       max-width: 250px;
       white-space: nowrap;
       text-overflow: ellipsis;
-      
+
       i.i-account {
 
         font-size: 24px;
@@ -1545,7 +1466,7 @@ div.feature-activation-banner {
 
           color: inherit;
           cursor: pointer;
-          
+
           .i.i-check {
 
             display: none;
@@ -1564,3 +1485,7 @@ div.feature-activation-banner {
   border-radius 1px
 .i-bar + .i-bar
   margin-top 4px
+
+.temp-icon-style
+  font-size: 18px
+  margin-left: -1px

@@ -1,5 +1,5 @@
 import Input from 'component/Input';
-import { trackHelpClick } from './ga';
+import { trackHelpClick } from '../ga';
 import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
 
 /* Form fields of Payment Links */
@@ -12,6 +12,7 @@ export default [
       placeholder: '0.00',
       required: true,
       addonBefore: '₹',
+      autoFocus: true,
       validator: val => {
         if (!isAmount(val)) {
           const decimal = val && val.split('.');
@@ -27,7 +28,7 @@ export default [
     {
       name: 'partial_payment',
       fieldLabel: (
-        <b>
+        <span>
           Enable Partial Payment
           <a
             class="btn-link m-l"
@@ -35,9 +36,9 @@ export default [
             target="_blank"
             onClick={trackHelpClick}
           >
-            What's this?
+            (What's this?)
           </a>
-        </b>
+        </span>
       ),
       _cmp: Input.Check,
       _autoRenderImpure: true,
@@ -139,8 +140,7 @@ export default [
         _name: 'expire_by_date',
         placeholder: 'DD-MM-YYYY',
         size: 'half_big',
-        _disabledWhen: form =>
-          form.state._name[form.state.activeTab].hasNoExpiry === '1',
+        _disabledWhen: form => form.state._name.hasNoExpiry === '1',
         addonAfter: <i class="i i-date-range" />,
 
         _cmp: Input.ToCalendar,
@@ -153,9 +153,8 @@ export default [
         name: 'expire_by',
         placeholder: '11:59PM',
         size: 'half_big',
-        _when: form => !!form.state._name[form.state.activeTab].expire_by_date,
-        _disabledWhen: form =>
-          form.state._name[form.state.activeTab].hasNoExpiry === '1',
+        _when: form => !!form.state._name.expire_by_date,
+        _disabledWhen: form => form.state._name.hasNoExpiry === '1',
         addonAfter: <i class="i i-time" />,
 
         // defaultValue: moment().endOf().unix(), // Epoch of timestamp today end. Don't set. Has to be in sync with Date(expire_by_date).

@@ -4,14 +4,11 @@ import { Route, Switch, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import PaymentLinksList from 'merchant/containers/PaymentLinks/Links/List';
 import BatchUploadList from 'merchant/containers/PaymentLinks/BatchUpload/List';
-import ReusableLinksList from 'merchant/containers/PaymentLinks/ReusableLinks/List';
 
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import Button from 'component/Button';
 
-import LocalStorageService from 'rzp/utils/localStorage';
 import { classList } from 'common/util';
-import createEvent from 'rzp/utils/event';
 
 @connect(state => {
   return {
@@ -22,19 +19,12 @@ export default class PaymentLinksContainer extends Component {
   render() {
     const { user } = this.props;
 
-    const isReusableLinksShown = this.props.user.isReusableLinksShown;
-
     return (
       <tabbed-container>
         <header id="link-header">
           <NavLink exact to="/paymentlinks">
             Payment Links
           </NavLink>
-          {isReusableLinksShown && (
-            <NavLink exact to="/paymentlinks/reusable">
-              Reusable Links
-            </NavLink>
-          )}
           <ShowWhen myRole="owner manager operations admin">
             <NavLink exact to="/paymentlinks/batchuploads">
               Batch Uploads
@@ -50,13 +40,6 @@ export default class PaymentLinksContainer extends Component {
               path="/paymentlinks/batchuploads"
               component={BatchUploadList}
             />
-
-            {isReusableLinksShown && (
-              <Route
-                path="/paymentlinks/reusable"
-                component={ReusableLinksList}
-              />
-            )}
             <Route path="/paymentlinks" component={PaymentLinksList} />
           </Switch>
         </content>

@@ -7,29 +7,32 @@ import * as NotificationsActions from 'rzp/modules/notifications';
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
 import { editPaymentLink } from 'merchant/containers/PaymentLinks/Links/model';
-import { editPLInReduxList } from 'merchant/modules/invoices/list';
+import { updatePLInReduxList } from 'merchant/modules/invoices/list';
+import { keysToSentence } from 'common/util';
 
 @connect(state => ({ ...state.invoice, ...state.session }), {
   ...InvoiceActions,
   ...ModalActions,
   ...NotificationsActions,
-  editPLInReduxList,
+  updatePLInReduxList,
 })
 export default class InvoiceDetailContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
 
-  constructor() {
+  constructor(props) {
     super(...arguments);
     this.state = {
       statusMsg: {},
     };
 
-    // recording new payments links creation UI form in hotjar
-    if (typeof window.hj === 'function') {
-      window.hj('trigger', 'payment_links_v2_details_open');
-      window.hj('tagRecording', ['payment_links_v2_details_open']);
+    if (props.user.isPaymentLinksV2Enabled) {
+      // recording new payments links creation UI form in hotjar
+      if (typeof window.hj === 'function') {
+        window.hj('trigger', 'payment_links_v2_details_open');
+        window.hj('tagRecording', ['payment_links_v2_details_open']);
+      }
     }
   }
 
@@ -150,6 +153,14 @@ export default class InvoiceDetailContainer extends Component {
             });
           })
           .catch(({ errors }) => {
+            if (
+              !errors ||
+              (errors instanceof Array === true &&
+                (!errors.length || !errors[0]))
+            ) {
+              errors = 'Some network error has occurred';
+            }
+
             this.props.showNotification({
               type: 'error',
               message: errors,
@@ -177,11 +188,11 @@ export default class InvoiceDetailContainer extends Component {
     return editPaymentLink(this.props.invoice.id, data)
       .then(resp => {
         if (resp.data) {
-          this.props.editPLInReduxList(resp);
+          this.props.updatePLInReduxList(resp, false);
 
           this.props.showNotification({
             type: 'success',
-            message: `${this.props.invoice.id} successfully Updated`,
+            message: `${keysToSentence(data)} updated successfully`,
           });
 
           return resp;

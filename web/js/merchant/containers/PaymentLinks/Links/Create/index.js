@@ -3,56 +3,37 @@ import { merchantFetch } from 'rzp/utils/ajax';
 import { withRouter } from 'react-router-dom';
 import { classList } from 'common/util';
 
+import ShowWhen from 'merchant/components/ShowWhen';
+import Alert from 'component/Alert';
 import Form from 'component/Form';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 
-import Alert from 'component/Alert';
 import { Modal, ModalContent } from 'component/Modal';
 import { ModalAsideNav } from 'component/Wizard';
-import PaymentLinksFormFields from './Links/Create';
-import ReusableLinksFormFields from './ReusableLinks/Create';
+import PaymentLinkFormFields from './Fields';
 
-import { createPaymentLink } from './Links/model';
-import { createReusableLink } from './ReusableLinks/model';
-import ShowWhen from 'merchant/components/ShowWhen';
-
-import { showNotification } from 'rzp/modules/notifications';
-
-import {
-  savePLInReduxList,
-  saveRPLInReduxList,
-} from 'merchant/modules/invoices/list';
-import { luminateRow } from 'merchant/modules/app';
 import moment from 'moment';
-import { dateCalculator, timeCalculator } from 'component/Input/Calendar';
+import { createPaymentLink } from '../model';
+import { dateCalculator } from 'component/Input/Calendar';
+import { timeCalculator } from 'component/Input/Time';
+
 import { onChangeNotes } from 'component/Input/PairList';
 
-import EarlyAccessRPL from './ReusableLinks/EarlyAccess';
-import { trackOpenCreateForm, closePaymentLinkForm } from './Links/ga';
+import { closeModal, openModal } from 'rzp/modules/modals';
+import { showNotification } from 'rzp/modules/notifications';
+import { updatePLInReduxList } from 'merchant/modules/invoices/list';
+import { luminateRow } from 'merchant/modules/app';
 
-const FORM_TABS = [
-  {
-    title: 'Payment Link',
-    desc: 'The link gets expired automatically once its paid.',
-    url: '/paymentlinks/new',
-    content: [...PaymentLinksFormFields],
-    onCreate: createPaymentLink,
-  },
-  /*
-  {
-    title: 'Reusable Link',
-    desc: 'Accept payments multiple times on a single payment link.',
-    url: '/paymentlinks/reusable/new',
-    content: [...ReusableLinksFormFields],
-    onCreate: createReusableLink,
-  },
-*/
-];
+import { trackOpenCreateForm, closePaymentLinkForm } from '../ga';
 
-/* Order as per FORM_TABS */
-const PAYMENT_LINK = 0;
-const REUSABLE_PAYMENT_LINK = 1;
+const FORM_FIELDS = {
+  title: 'Payment Link',
+  desc: 'The link gets expired automatically once its paid.',
+  url: '/paymentlinks/new',
+  content: [...PaymentLinkFormFields],
+  onCreate: createPaymentLink,
+};
 
 function defaultFieldProps(f) {
   const self = this;
@@ -98,16 +79,14 @@ function WizardFields(field) {
   }
 
   let defaultValue, key;
-  const activeTabIndx = String(this.state.activeTab);
 
   if (rest.name) {
     key = rest.name;
-    defaultValue = this.state.dirty[activeTabIndx][key]; // Form state is stored in dirty
+    defaultValue = this.state.dirty[key]; // Form state is stored in dirty
 
     key === 'expire_by' && defaultValue;
   } else if (_name) {
-    defaultValue =
-      this.state._name[activeTabIndx] && this.state._name[activeTabIndx][_name];
+    defaultValue = this.state._name[_name];
     key = _name;
   }
 
@@ -144,9 +123,10 @@ function WizardFields(field) {
 
 @withRouter
 @connect(state => state.session, {
+  updatePLInReduxList,
   showNotification,
-  savePLInReduxList,
-  saveRPLInReduxList,
+  openModal,
+  closeModal,
   luminateRow,
 })
 export default class CreateNewContainer extends React.Component {
@@ -157,33 +137,15 @@ export default class CreateNewContainer extends React.Component {
   constructor(props) {
     super(props);
 
-    let intent = PAYMENT_LINK;
     const self = this;
 
-    FORM_TABS.forEach((TAB, indx) => {
-      if (props.location.pathname === TAB.url) {
-        intent = indx;
-      }
-
-      defaultFieldProps.call(this, TAB.content); // Set the default props for fields of all tabs in Wizard
-    });
+    defaultFieldProps.call(this, FORM_FIELDS.content); // Set the default props for fields of all tabs in Wizard
 
     this.state = {
-      activeTab: intent,
-      dirty: {
-        [PAYMENT_LINK]: {},
-        [REUSABLE_PAYMENT_LINK]: {},
-      }, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
+      dirty: {}, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
       _name: {
         // Object, cuz dirty is also object
-        [PAYMENT_LINK]: {
-          hasNoExpiry: '1', // 1 => selected
-        },
-        [REUSABLE_PAYMENT_LINK]: {
-          hasNoLimit: '1', // 1 => selected
-          hasNoExpiry: '1', // 1 => selected
-          hasDesc: '0', // 0 => not-selected
-        },
+        hasNoExpiry: '1', // 1 => selected
       },
     };
 
@@ -232,8 +194,7 @@ export default class CreateNewContainer extends React.Component {
 
     let sideEffectFieldsToUpdate = {};
 
-    const activeTabIndx = String(this.state.activeTab);
-    const curDirty = this.state.dirty[activeTabIndx];
+    const curDirty = this.state.dirty;
 
     /* Step 1: */
     if (fieldName === 'contact') {
@@ -252,48 +213,42 @@ export default class CreateNewContainer extends React.Component {
     if (stateName) {
       const _newName = { ...this.state._name };
 
-      _newName[activeTabIndx][stateName] = fieldValue;
-      this.setState({ _name: _newName });
+      this.setState({
+        _name: {
+          ...this.state._name,
+          [stateName]: fieldValue,
+        },
+      });
 
       if (Object.keys(sideEffectFieldsToUpdate).length) {
-        const newDirty = { ...this.state.dirty };
-
-        newDirty[activeTabIndx] = {
-          ...newDirty[activeTabIndx],
-          ...sideEffectFieldsToUpdate,
-        };
-
         this.setState({
-          dirty: newDirty,
+          dirty: {
+            ...this.state.dirty,
+            ...sideEffectFieldsToUpdate,
+          },
         });
       }
     } else {
-      const newDirty = { ...this.state.dirty };
-
-      newDirty[activeTabIndx] = {
-        ...newDirty[activeTabIndx],
-        [fieldName]: fieldValue,
-        ...sideEffectFieldsToUpdate,
-      };
-
       this.setState({
-        dirty: newDirty,
+        dirty: {
+          ...this.state.dirty,
+          [fieldName]: fieldValue,
+          ...sideEffectFieldsToUpdate,
+        },
       });
     }
   };
 
   /* Handle change of time from time picker */
   onTimeChange(date) {
-    const activeTabIndx = String(this.state.activeTab);
-    const curDate = this.state._name[activeTabIndx].expire_by_date;
+    const curDate = this.state._name.expire_by_date;
 
     timeCalculator(date, curDate, this.updateDate);
   }
 
   /* Handle change of time from time picker */
   onDateChange(date) {
-    const activeTabIndx = String(this.state.activeTab);
-    const curExpiryByTime = this.state.dirty[activeTabIndx].expire_by;
+    const curExpiryByTime = this.state.dirty.expire_by;
 
     dateCalculator(date, curExpiryByTime, this.updateDate);
   }
@@ -302,59 +257,50 @@ export default class CreateNewContainer extends React.Component {
   updateDate = ts => {
     const newDate = moment(ts);
 
-    const activeTabIndx = String(this.state.activeTab);
-
-    /* Update expire_by */
-    const newDirty = { ...this.state.dirty };
-
-    newDirty[activeTabIndx] = {
-      ...newDirty[activeTabIndx],
-      expire_by: newDate,
-    };
-
-    /* Update expire_by_date */
-    const _newName = { ...this.state._name };
-    _newName[activeTabIndx].expire_by_date = newDate;
-
     this.setState({
-      dirty: newDirty,
-      _name: _newName,
+      // Update expire_by
+      dirty: {
+        ...this.state.dirty,
+        expire_by: newDate,
+      },
+      // Update expire_by_date
+      _name: {
+        ...this.state._name,
+        expire_by_date: newDate,
+      },
     });
   };
 
   /* Handle change of notes */
   onChangeNotes = pairs => {
-    const newDirty = { ...this.state.dirty };
-    const activeTabIndx = String(this.state.activeTab);
-
     const notes = onChangeNotes(pairs);
 
-    if (!Object.keys(notes).length) {
-      return;
-    }
-
-    newDirty[activeTabIndx] = {
-      ...newDirty[activeTabIndx],
-      notes: notes,
-    };
-
     this.setState({
-      dirty: newDirty,
+      dirty: {
+        ...this.state.dirty,
+        notes: notes,
+      },
     });
   };
 
-  changeTab = ({ target }) => {
-    const activeTabIndx = parseInt(target.getAttribute('data-index'));
-
-    this.setState({
-      activeTab: activeTabIndx,
+  openRPLShareView = (id, shortUrl, title, description) => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <RPLShareView
+          handleClose={this.props.closeModal}
+          handleAction={sendLink.bind(null, id)}
+          isNew={true}
+          showNotification={this.props.showNotification}
+          url={shortUrl}
+          title={title}
+          description={description}
+        />
+      ),
     });
-
-    this.props.history.replace(FORM_TABS[activeTabIndx].url);
   };
 
   onCreate = () => {
-    const activeTabIndx = String(this.state.activeTab);
     const IS_MODAL_VIEW = this.props.onClose;
 
     this.setState({
@@ -364,30 +310,35 @@ export default class CreateNewContainer extends React.Component {
     let notificationMSG = 'Payment link created successfully.',
       notifyMedium = [];
 
-    if (activeTabIndx == PAYMENT_LINK) {
-      if (this.state.dirty[activeTabIndx].sms_notify) {
-        notifyMedium.push('SMS');
-      }
-
-      if (this.state.dirty[activeTabIndx].email_notify) {
-        notifyMedium.push('Email');
-      }
-
-      if (notifyMedium.length > 0) {
-        notificationMSG += ' Sending via ' + notifyMedium.join(' and ');
-      }
-    } else if (activeTabIndx == REUSABLE_PAYMENT_LINK) {
-      notificationMSG = 'Reusable link created successfully.';
-      // TODO: To show popup here instead of notification
+    if (this.state.dirty.sms_notify) {
+      notifyMedium.push('SMS');
     }
 
-    const reqPayload = { ...this.state.dirty[activeTabIndx] };
-    if (this.state._name[activeTabIndx].hasNoExpiry == '1') {
+    if (this.state.dirty.email_notify) {
+      notifyMedium.push('Email');
+    }
+
+    if (notifyMedium.length > 0) {
+      notificationMSG += ' Sending via ' + notifyMedium.join(' and ');
+    }
+
+    const reqPayload = { ...this.state.dirty };
+
+    /* Removing unrequired fields */
+
+    if (this.state._name.hasNoExpiry == '1') {
       delete reqPayload.expire_by;
     }
 
-    return FORM_TABS[activeTabIndx]
-      .onCreate(reqPayload)
+    if (this.state.dirty.notes && Object.keys(this.state.dirty.notes).length) {
+      delete reqPayload.notes;
+    }
+
+    if (!this.state.dirty.receipt) {
+      delete reqPayload.receipt;
+    }
+
+    return FORM_FIELDS.onCreate(reqPayload)
       .then(resp => {
         this.setState({
           parentFormLock: false,
@@ -402,23 +353,12 @@ export default class CreateNewContainer extends React.Component {
           const entityId = resp.data.id;
 
           if (IS_MODAL_VIEW) {
-            if (activeTabIndx == PAYMENT_LINK) {
-              this.props.savePLInReduxList(resp);
-            } else if (activeTabIndx == REUSABLE_PAYMENT_LINK) {
-              this.props.saveRPLInReduxList(resp.data);
-            }
-
+            this.props.updatePLInReduxList(resp, true);
             this.props.luminateRow(entityId); // Make it promise based
 
             setTimeout(this.props.onClose, 50);
           } else {
-            let redirectUrl;
-
-            if (activeTabIndx == PAYMENT_LINK) {
-              redirectUrl = '/paymentlinks/' + entityId;
-            } else if (activeTabIndx == REUSABLE_PAYMENT_LINK) {
-              redirectUrl = '/paymentlinks/reusable/' + entityId;
-            }
+            const redirectUrl = '/paymentlinks/' + entityId;
 
             this.props.history.push(redirectUrl);
           }
@@ -443,7 +383,7 @@ export default class CreateNewContainer extends React.Component {
         }
 
         if (!err) {
-          err = `Some Network error occured`;
+          err = `Some network error has occured`;
         }
 
         this.props.showNotification({
@@ -458,7 +398,7 @@ export default class CreateNewContainer extends React.Component {
   };
 
   getFormFields() {
-    const fields = FORM_TABS[this.state.activeTab].content;
+    const fields = FORM_FIELDS.content;
 
     return fields.map((f, i) => {
       if (Array.isArray(f)) {
@@ -531,29 +471,15 @@ export default class CreateNewContainer extends React.Component {
   render() {
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
     const IS_MODAL_VIEW = this.props.onClose;
-    const { activeTab } = this.state;
-
-    let formFields;
-
-    const showEarlyAccessForm =
-      this.props.user.isPaymentLinksV2Enabled &&
-      activeTab == REUSABLE_PAYMENT_LINK;
-
-    if (activeTab == PAYMENT_LINK) {
-      formFields = this.getFormFields();
-    } else if (showEarlyAccessForm) {
-      formFields = <EarlyAccessRPL />;
-    }
+    const formFields = this.getFormFields();
 
     const content = (
       <CreateWizard
         ref={refId => (this.wizardContent = refId)}
-        activeTab={activeTab}
         submitForm={this.submitForm}
         history={this.props.history}
         mode={this.props.mode}
         content={formFields}
-        changeTab={this.changeTab}
         onChange={this.onChange}
         onCreate={this.onCreate}
         isModalView={IS_MODAL_VIEW}
@@ -562,7 +488,6 @@ export default class CreateNewContainer extends React.Component {
           closePaymentLinkForm('Cancel');
         }}
         disableSubmit={this.state.disableSubmit}
-        showEarlyAccessForm={showEarlyAccessForm}
       />
     );
 
@@ -588,72 +513,48 @@ class CreateWizard extends React.Component {
   };
 
   render() {
-    const { activeTab, disableSubmit, mode, showEarlyAccessForm } = this.props;
+    const { disableSubmit, mode } = this.props;
 
     return (
       <div class="PaymentLinks--Create Wizard">
-        {false && (
-          <ModalAsideNav
-            title="Create Link"
-            tabs={FORM_TABS}
-            tabClickHandler={this.props.changeTab}
-            activeTab={activeTab}
-          />
-        )}
-
-        <main
-          class={classList(
-            'form-container',
-            showEarlyAccessForm && 'main--full'
-          )}
-        >
-          {/* ACTIVE TAB TITLE */}
-          <main-title class="main-title">
-            CREATE {FORM_TABS[activeTab].title}
-          </main-title>
+        <main class="form-container">
+          <main-title class="main-title">Create {FORM_FIELDS.title}</main-title>
 
           {/* ALERTS */}
-          {!showEarlyAccessForm &&
-            mode === 'test' && (
-              <Alert.Warning>
-                You are creating the link in <b>Test Mode</b>. So, only test
-                payments can be made for this link.
-              </Alert.Warning>
-            )}
+          {mode === 'test' && (
+            <Alert.Warning>
+              You are creating the link in <b>Test Mode</b>. So, only test
+              payments can be made for it.
+            </Alert.Warning>
+          )}
 
           {/* FORM */}
-          {showEarlyAccessForm ? (
-            this.props.content
-          ) : (
-            <Form
-              class="PaymentLinks--Create-Form"
-              onChange={this.props.onChange}
-              layout="tabular"
-              key={FORM_TABS[activeTab].title}
-            >
-              {this.props.content}
-            </Form>
-          )}
+          <Form
+            class="PaymentLinks--Create-Form"
+            onChange={this.props.onChange}
+            layout="tabular"
+            key={FORM_FIELDS.title}
+          >
+            {this.props.content}
+          </Form>
         </main>
 
         {/* FORM FOOTER */}
-        {!showEarlyAccessForm && (
-          <footer>
-            {/* Action Button 1 */}
-            {this.props.isModalView && (
-              <Button onClick={this.props.onFormAbruptClose}>Cancel</Button>
-            )}
+        <footer>
+          {/* Action Button 1 */}
+          {this.props.isModalView && (
+            <Button onClick={this.props.onFormAbruptClose}>Cancel</Button>
+          )}
 
-            {/* Action Button 2 */}
-            <AsyncBtn.Primary
-              onClick={this.props.onCreate}
-              pendingState={'Creating...'}
-              disabled={disableSubmit}
-            >
-              Create {FORM_TABS[activeTab].title}
-            </AsyncBtn.Primary>
-          </footer>
-        )}
+          {/* Action Button 2 */}
+          <AsyncBtn.Primary
+            onClick={this.props.onCreate}
+            pendingState={'Creating...'}
+            disabled={disableSubmit}
+          >
+            Create {FORM_FIELDS.title}
+          </AsyncBtn.Primary>
+        </footer>
       </div>
     );
   }

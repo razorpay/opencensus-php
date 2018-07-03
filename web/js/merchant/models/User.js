@@ -118,17 +118,12 @@ export default class User {
   }
 
   // RPL will exist and RPL will be shown as Early Access
-  // TODO: Harcoding to true for development testing
   get isPaymentLinksV2Enabled() {
     if (this.tags) {
       return this.findTag('paymentlinks_v2');
     } else {
       return false; // Back up as always false, because RPL is dependent upon this
     }
-  }
-
-  get isReusableLinksShown() {
-    return false;
   }
 
   get enabledFeatures() {

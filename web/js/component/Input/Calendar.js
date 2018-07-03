@@ -6,7 +6,7 @@ import MonthCalendar from 'rc-calendar/lib/MonthCalendar';
 import enUS from 'rc-calendar/lib/locale/en_US';
 import { classList } from 'common/util';
 
-import { Label, inputClass, separateDomProps } from './index';
+import { Label, Error, inputClass, separateDomProps } from './index';
 
 class CalendarWrapper extends React.Component {
   state = {
@@ -93,7 +93,7 @@ class CalendarWrapper extends React.Component {
   render() {
     const state = this.state;
     const allProps = separateDomProps(this.props);
-    const { onFocus, onBlur, ...restDOMProps } = allProps.props; // onFocus and onBlur are not to be controllled by <input> here
+    const { onFocus, onBlur, className, ...restDOMProps } = allProps.props; // onFocus and onBlur are not to be controllled by <input> here
 
     let calendar;
 
@@ -138,7 +138,8 @@ class CalendarWrapper extends React.Component {
         dropdownClassName={classList(
           'Input--Calendar-content',
           this.props.placement.indexOf('top') > -1 &&
-            'Input--Calendar-content--top'
+            'Input--Calendar-content--top',
+          className
         )}
         animation="slide-up"
         disabled={this.props.disabled}
@@ -159,11 +160,11 @@ class CalendarWrapper extends React.Component {
               <input
                 id={uniqName + '-date-input'}
                 value={inputVal}
+                {...restDOMProps}
                 class={classList(
                   'ant-calendar-picker-input ant-input Input-el',
                   this.props.addonAfter && 'Input-el--after'
                 )}
-                {...restDOMProps}
               />
               {this.props.addonAfter && (
                 <span class="Input-addons  Input-addons--after">
@@ -180,7 +181,9 @@ class CalendarWrapper extends React.Component {
 
 export default class CalendarPicker extends React.Component {
   className = 'Input--Calendar';
-  state = {};
+  state = {
+    mature: this.props.mature,
+  };
 
   focus = e => {
     this.setState({ focus: true });
@@ -200,63 +203,7 @@ export default class CalendarPicker extends React.Component {
             onFocus={this.focus}
             onBlur={this.blur}
           />
-        </div>
-      </div>
-    );
-  }
-}
-
-export class TimePicker extends React.Component {
-  className = 'Input--TimePicker';
-  state = {
-    value: this.props.defaultValue, // Moment object
-  };
-
-  focus = e => {
-    this.setState({ focus: true });
-  };
-
-  blur = e => {
-    this.setState({ focus: false });
-  };
-
-  onChange = value => {
-    this.setState({ value });
-
-    this.props.onChange && this.props.onChange(value);
-  };
-
-  render() {
-    const allProps = separateDomProps(this.props);
-    const { onFocus, onBlur, ...restDOMProps } = allProps.props; // onFocus and onBlur are not to be controllled by <input> here
-
-    return (
-      <div class={inputClass(this)}>
-        <Label text={this.props.label} />
-        <div class="Input-content">
-          <div class="Input-elWrapper" tabIndex="0">
-            <Datetime
-              defaultValue={allProps.defaultValue}
-              value={this.state.value}
-              onChange={this.onChange}
-              inputProps={{
-                ...restDOMProps,
-                className: classList(
-                  'Input-el',
-                  this.props.addonAfter && 'Input-el--after'
-                ),
-              }}
-              dateFormat={false}
-              timeFormat="h:mm a"
-              onFocus={this.focus}
-              onBlur={this.blur}
-            />
-            {this.props.addonAfter && (
-              <span class="Input-addons  Input-addons--after">
-                {this.props.addonAfter}
-              </span>
-            )}
-          </div>
+          <Error text={this.props.propagatedError} />
         </div>
       </div>
     );
@@ -296,22 +243,4 @@ export function dateCalculator(date, curSelectedTS, onCalculation) {
   }
 
   onCalculation(newSelectedTS);
-}
-
-/*
- * Helper fn. to be for onChange for Input.TimePicker
- * */
-export function timeCalculator(date, curSelectedTS, onCalculation) {
-  if (date && date.target) {
-    // Check if date is not of event type
-    return;
-  }
-
-  const selectedTime = date.valueOf();
-  const dayStartTime = date.startOf('day').valueOf();
-
-  const offsetTime = selectedTime - dayStartTime; // Offset since start of day
-
-  const newSelectedTime = curSelectedTS.startOf('day').valueOf() + offsetTime;
-  onCalculation(newSelectedTime);
 }
