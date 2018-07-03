@@ -311,7 +311,8 @@ class Response
             'merchant_public_get_banks',
             'payment_cancel',
             'payment_create_jsonp',
-            'payment_get_status'
+            'payment_get_status',
+            'payment_get_flows',
         ];
 
         return (in_array($route, $jsonpRoutes));

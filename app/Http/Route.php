@@ -2044,6 +2044,11 @@ final class Route
             'setcronjob_webhook',
         ],
 
+        'subscriptions' => [
+            'invoice_create',
+            'customer_fetch_by_id',
+        ],
+
         'kotak' => [
             'bank_transfer_process',
             'bank_transfer_notify',
@@ -2095,6 +2100,7 @@ final class Route
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_methods_downtime',
+        'payment_get_flows'
     ];
 
     /**

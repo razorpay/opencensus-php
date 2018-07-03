@@ -13,7 +13,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::AMOUNT          => 'required|integer|min:0',
-        Entity::CURRENCY        => 'required|size:3|in:INR,USD',
+        Entity::CURRENCY        => 'required|string|size:3',
         Entity::RECEIPT         => 'sometimes|nullable|string|max:40',
         Entity::PAYMENT_CAPTURE => 'filled|boolean',
         Entity::CUSTOMER_ID     => 'filled|public_id|size:19',
@@ -89,13 +89,11 @@ class Validator extends Base\Validator
         $currency = $input[Entity::CURRENCY];
         $method = $input[Entity::METHOD];
 
-        if (in_array($method, [Payment\Method::NETBANKING, Payment\Method::EMANDATE], true))
+        if (($method !== Payment\Method::CARD) and
+            ($currency !== Currency::INR))
         {
-            if ($currency !== Currency::INR)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The currency should be INR when method is ' . $method);
-            }
+            throw new Exception\BadRequestValidationFailureException(
+                'The currency should be INR when method is ' . $method);
         }
     }
 
