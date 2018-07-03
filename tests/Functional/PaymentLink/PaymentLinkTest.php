@@ -37,12 +37,12 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreatePaymentLinkWithoutCurrency()
+    public function testCreatePaymentLinkWithCurrencyAndNoAmount()
     {
         $this->startTest();
     }
 
-    public function testCreatePaymentLinkWithoutAmount()
+    public function testCreatePaymentLinkWithoutAmountOrCurrency()
     {
         $this->startTest();
     }

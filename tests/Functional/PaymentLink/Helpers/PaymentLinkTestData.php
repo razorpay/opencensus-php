@@ -37,7 +37,7 @@ return [
         ],
     ],
 
-    'testCreatePaymentLinkWithoutCurrency' => [
+    'testCreatePaymentLinkWithCurrencyAndNoAmount' => [
         'request'   => [
             'url'     => '/payment_links',
             'method'  => 'post',
@@ -61,7 +61,7 @@ return [
         ],
     ],
 
-    'testCreatePaymentLinkWithoutAmount' => [
+    'testCreatePaymentLinkWithoutAmountOrCurrency' => [
         'request'  => [
             'url'     => '/payment_links',
             'method'  => 'post',
