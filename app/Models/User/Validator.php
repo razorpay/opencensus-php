@@ -2,6 +2,7 @@
 
 namespace RZP\Models\User;
 
+use Hash;
 use App;
 use RZP\Base;
 use RZP\Exception;

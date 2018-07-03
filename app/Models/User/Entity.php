@@ -71,10 +71,6 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
     ];
 
-    protected static $unsetChangePasswordInput = [
-        self::PASSWORD_CONFIRMATION
-    ];
-
     protected $generateIdOnCreate = true;
 
     protected $appends = [self::CONFIRMED];
