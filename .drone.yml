@@ -199,10 +199,10 @@ pipeline:
     secrets:
       - docker_username
       - docker_password
-      - server_url_kluster_api
-      - client_key_kluster_api
-      - server_cert_kluster_api
-      - client_cert_kluster_api
+      - server_url_kluster-api
+      - client_key_kluster-api
+      - server_cert_kluster-api
+      - client_cert_kluster-api
     user: drone
     cluster: kluster-api
     auth_mode: client-cert
