@@ -62,8 +62,7 @@ class NetbankingIciciGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                if (($iterator === 0) or
-                    ($iterator === 2))
+                if ($iterator === 0)
                 {
                     $content[ResponseFields::STATUS] = 'failed';
                 }
@@ -74,6 +73,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
+        $this->assertEquals('captured',$payment['status']);
+
         $this->assertSame(2, $iterator);
 
         $netbanking = $this->getLastEntity('netbanking', true);
@@ -82,11 +83,11 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $this->verifyPayment($payment['id']);
 
-        $this->assertSame(4, $iterator);
+        $this->assertSame(3, $iterator);
 
         $netbanking = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($netbanking['date'], '2018-06-22');
+        $this->assertNotNull($netbanking['date']);
     }
 
     /**
