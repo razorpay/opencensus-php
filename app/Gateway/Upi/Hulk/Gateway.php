@@ -553,4 +553,15 @@ class Gateway extends Base\Gateway
                 $p2p[Fields::ERROR_DESCRIPTION]);
         }
     }
+
+    /**
+     * Only called for func environment.
+     *
+     * @param string $type
+     * @return string
+     */
+    protected function getExternalMockUrl(string $type)
+    {
+        return env('UPI_HULK_URL') . '/' . $this->getRelativeUrl($type);
+    }
 }
