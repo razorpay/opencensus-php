@@ -7,17 +7,12 @@ import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
 import InvoicesList from 'merchant/components/Invoices/InvoicesList';
 import ListContainer from 'merchant/containers/ListContainer';
-import CreatePaymentLink from 'merchant/containers/Invoices/CreatePaymentLink';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
-import * as ModalActions from 'rzp/modules/modals';
-import { luminateRow } from 'merchant/modules/app';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
-  ...ModalActions,
-  luminateRow,
 })
 export default class PaymentLinksContainer extends ListContainer {
   fetchEntityList(params) {
@@ -40,26 +35,6 @@ export default class PaymentLinksContainer extends ListContainer {
 
     return notes;
   }
-
-  showPaymentLinkModal = (invoice = null) => {
-    let item = null;
-    if (invoice) {
-      item = { ...invoice };
-      item.notes = this.deserializeNotes(item.notes);
-    }
-
-    this.props.openModal({
-      component: (
-        <CreatePaymentLink
-          invoice={item}
-          onSave={invoice => {
-            this.props.luminateRow(invoice.id);
-          }}
-          closeModal={this.props.closeModal}
-        />
-      ),
-    });
-  };
 
   onSearchAnalytics = params => {
     const label = getKeysSeparatedByPipe(params);
@@ -96,13 +71,10 @@ export default class PaymentLinksContainer extends ListContainer {
         <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar pull-right">
-              <button
-                class="btn btn-primary"
-                onClick={() => this.showPaymentLinkModal()}
-              >
+              <NavLink class="btn btn-primary" to="/paymentlinks/new">
                 <i class="i i-plus" />
                 <span>Create Payment Link</span>
-              </button>
+              </NavLink>
             </div>
           </ShowWhen>
         </HeaderAction>
@@ -122,7 +94,6 @@ export default class PaymentLinksContainer extends ListContainer {
           invoices={invoices}
           isLoading={loading}
           type="link"
-          onEdit={this.showPaymentLinkModal}
           onCopy={this.onCopy}
         />
 

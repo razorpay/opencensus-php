@@ -8,10 +8,8 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 const InvoiceListItem = props => {
-  let { invoice, onEditClick, onCopy, type } = props;
+  let { invoice, onCopy } = props;
   let customer = invoice.customer_details;
-
-  const isPaymentLinksType = type === 'link';
 
   return (
     <EntityItemRow id={invoice.id}>
@@ -63,12 +61,7 @@ const InvoiceListItem = props => {
 };
 
 export default props => {
-  let {
-    type,
-    invoices,
-    isLoading,
-    onCopy = () => {},
-  } = props;
+  let { type, invoices, isLoading, onCopy = () => {} } = props;
   const isPaymentLinksType = type === 'link';
   let label = isPaymentLinksType ? 'Payment Link' : 'Invoice';
 
@@ -96,7 +89,6 @@ export default props => {
             <InvoiceListItem
               key={invoice.id}
               invoice={invoice}
-              onEditClick={() => props.onEdit(invoice)}
               onDeleteClick={() => props.onDelete(invoice)}
               onCopy={onCopy}
               type={type}
