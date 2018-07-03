@@ -42,8 +42,6 @@ class Job extends BaseJob
     protected $invoice;
     protected $core;
 
-    public $timeout = 3600;
-
     public function __construct(string $mode, string $event, string $id)
     {
         parent::__construct($mode);

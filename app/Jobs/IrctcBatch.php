@@ -32,8 +32,6 @@ class IrctcBatch extends Job
      */
     protected $batches;
 
-    public $timeout = 3600;
-
     public function __construct(string $mode, array $batches)
     {
         parent::__construct($mode);

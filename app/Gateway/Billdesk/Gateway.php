@@ -680,7 +680,7 @@ class Gateway extends Base\Gateway
         {
             $verify->apiSuccess = false;
 
-            $amountRefunded = intval($content['RefAmount']) * 100;
+            $amountRefunded = (int) ($content['RefAmount'] * 100);
 
             // Check that refund amount matches.
             if ($amountRefunded !== $verify->input['payment']['amount_refunded'])
