@@ -6,7 +6,6 @@
     "customer_name",
     "invoice_number",
     "job_number",
-    "amount",
     "service_type",
     "location"
   ],
@@ -30,11 +29,6 @@
     "job_number": {
       "type": "integer",
       "title": "Job/Quotation number"
-    },
-    "amount": {
-      "type": "integer",
-      "title": "Amount",
-      "minimum": 0
     },
     "service_type": {
       "type": "string",

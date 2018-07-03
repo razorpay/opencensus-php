@@ -1,18 +1,5 @@
 <?php
-    $canvas_bg          = '#f2f4f6';
-    $primary_color      = '#0D2366';
-    $secondary_color    = '#6F7691';
-    $tertiary_color     = '#8894BA';
-    $light_color        = '#fff';
-
-    $border_color       = 'rgba(0,0,0,0.08)';
-
-    $bg_color_1         = 'rgba(236, 241, 247, 0.28)';
-    $bg_color_2         = 'rgba(0,0,0,0.02)';
-    $bg_color_3         = '#FCFCFC;';
-
-    $footer_color1      = 'rgba(0,0,0,0.54)';
-    $footer_color2      = 'rgba(0,0,0,0.02)';
+    $border_color = 'rgba(0,0,0,0.08)';
 ?>
 
 <style>
