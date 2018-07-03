@@ -65,6 +65,7 @@
         border-right: 1px solid {{$border_color}};
     }
 
+    /* Already setting innerHTML = null. This is for elements written in partials used by both mobile-desktop layouts */
     #mobile-container .footer,
     #mobile-container #footer-section #secure-lock-icon,
     #mobile-container #contact-details {

@@ -4,7 +4,9 @@
 
 <style>
     .form-group {
+        position: relative;
         margin-bottom: 28px;
+        color: {{$secondary_color}};
     }
 
     .form-group label {
@@ -49,6 +51,32 @@
     .form-group select {
         /*-webkit-appearance: none;*/
         /*-webkit-border-radius: 2px;*/
+    }
+
+
+    .form-group .icon {
+        font-size: 16px;
+        position: absolute;
+        left: 16px;
+        line-height: 36px;
+    }
+
+    .form-group .icon + .form-control {
+        padding-left: 40px;
+    }
+
+    /* Placeholder style */
+    ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+        color: rgba(0,0,0,0.3);
+    }
+    ::-moz-placeholder { /* Firefox 19+ */
+        color: rgba(0,0,0,0.3);
+    }
+    :-ms-input-placeholder { /* IE 10+ */
+        color: rgba(0,0,0,0.3);
+    }
+    :-moz-placeholder { /* Firefox 18- */
+        color: rgba(0,0,0,0.3);
     }
 
     @media (max-width: 924px) {

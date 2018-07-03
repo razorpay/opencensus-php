@@ -92,9 +92,11 @@
         top: -32px;
     }
 
+    /* Already setting innerHTML = null. This is for elements written in partials used by both mobile-desktop layouts */
     #desktop-container #mobile-proceed-btn,
     #desktop-container #form-section #footer-section,
     #desktop-container .mobile-submit-btn,
+    #desktop-container .mobile-el,
     #desktop-container #rzp-logo {
         display: none;
     }
@@ -114,6 +116,20 @@
 
     #desktop-container #fin-logo {
         float: right;
+    }
+
+    #desktop-container .form-footer .form-group {
+        display: inline-block;
+        margin-bottom: 0;
+    }
+
+    #desktop-container .form-footer .form-control {
+        max-width: 260px;
+        height: 40px;
+    }
+
+    #desktop-container .form-group .icon {
+        line-height: 40px;
     }
 
 </style>

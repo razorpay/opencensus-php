@@ -1,5 +1,3 @@
-<script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
-
 <script>
     function initAnalytics() {
         analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
@@ -90,6 +88,8 @@
         ele && (ele.innerHTML = desc + button);
     }
 </script>
+
+<script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>
 
 <script>
     (function (globalScope) {

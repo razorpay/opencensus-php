@@ -14,12 +14,31 @@
         </div>
     </div>
 
+    {{-- Desktop button --}}
     <div class="footer form-footer">
+        <div class="form-group">
+            <span class="icon">₹</span>
+            <input type="text" class="form-control" name="amount" placeholder="Enter Amount to Pay" />
+        </div>
+
         <button type="button" class="btn" id="udf_submit_btn">
-            Proceed to Pay <span>→</span>
+            Pay Securely <span>→</span>
         </button>
     </div>
 
+
+    {{-- Element used only by mobile view --}}
+    <div class="row mobile-el">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="control-label">Amount</label>
+                <span class="icon">₹</span>
+                <input type="text" class="form-control" name="amount" placeholder="Enter Amount to Pay" />
+            </div>
+        </div>
+    </div>
+
+    {{-- Mobile Button --}}
     <button type="button" class="btn btn--full mobile-submit-btn" id="udf_submit_btn">
         <svg id="secure-lock-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
             <path d="M0 0h24v24H0z" fill="none"/>
