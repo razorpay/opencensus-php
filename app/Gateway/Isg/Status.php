@@ -10,6 +10,8 @@ class Status
 
 	const FALLBACK          = '02';
 
+	const SUCCESS           = 'Success';
+
 	protected static $statusCodeMap = [
 		self::APPROVED      => 'Transaction Approved',
 		self::NO_RECORDS    => 'Transaction Not Present',

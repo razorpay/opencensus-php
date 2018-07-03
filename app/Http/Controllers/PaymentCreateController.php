@@ -194,13 +194,16 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $retJson = false;
+        $retHtml = false;
 
-        if (isset($input['view']) and ($input['view'] === 'json'))
+        if (isset($input['view']) === true)
         {
-            unset($input['view']);
+            if ($input['view'] === 'html')
+            {
+                $retHtml = true;
+            }
 
-            $retJson = true;
+            unset($input['view']);
         }
 
         $this->setMerchantCallbackUrlIfApplicable($input);
@@ -213,14 +216,25 @@ class PaymentCreateController extends Controller
             $data[$key] = $value / 100;
         }
 
-        if ($retJson)
+        if ($retHtml === true)
         {
-            return ApiResponse::json(['input' => $input,'display' => $data]);
+            $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
+
+            return $this->returnConvenienceFeesView($input, $data, $url);
         }
 
-        $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
+        return ApiResponse::json(['input' => $input,'display' => $data]);
+    }
 
-        return $this->returnConvenienceFeesView($input, $data, $url);
+    public function postPaymentFees()
+    {
+        $json = $this->postCreatePaymentFees()->getContent();
+
+        $data = json_decode($json, true);
+
+        unset($data['input']);
+
+        return ApiResponse::json($data['display']);
     }
 
     /**

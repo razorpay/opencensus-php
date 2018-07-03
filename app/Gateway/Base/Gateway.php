@@ -315,6 +315,26 @@ class Gateway
         $this->mock = $mock;
     }
 
+	public function getBharatQrResponse($input = null, $exception, bool $valid)
+	{
+		if ($valid === true)
+		{
+			$xml = '<RESPONSE>OK</RESPONSE>';
+		}
+		else
+		{
+			$xml = '<RESPONSE>NOK</RESPONSE>';
+		}
+
+		$response = \Response::make($xml);
+
+		$response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
+
+		$response->headers->set('Cache-Control', 'no-cache');
+
+		return $response;
+	}
+
     protected function checkApiSuccess(Verify $verify)
     {
         $verify->apiSuccess = true;
@@ -631,7 +651,7 @@ class Gateway
         return $verify->getDataToTrace();
     }
 
-    public function preProcessServerCallback($input): array
+    public function preProcessServerCallback(& $input): array
     {
         return $input;
     }

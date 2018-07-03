@@ -143,7 +143,21 @@ class Reconciliation extends Base
      */
     protected function processEntries(array & $entries)
     {
+        $this->resetReconBatchAttributes();
+
         $this->gatewayReconciliator->startReconciliationV2($entries, $this->batch);
+    }
+
+    /**
+     * We are setting existing success count and failure count to 0.
+     * This is important in case when a failed batch retried, batch will have non-zero success count
+     * and failure count. We are resetting because batch file gets processed again and
+     * success count and failure count will be set again.
+     */
+    protected function resetReconBatchAttributes()
+    {
+        $this->batch->setSuccessCount(0);
+        $this->batch->setFailureCount(0);
     }
 
     protected function postProcessEntries(array & $entries)

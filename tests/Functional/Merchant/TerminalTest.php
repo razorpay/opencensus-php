@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Models\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -73,6 +74,15 @@ class TerminalTest extends TestCase
     public function testAddBharatQrTerminal()
     {
         $this->startTest();
+    }
+
+    public function testAddBharatQrTerminalWithExpected()
+    {
+        $request = $this->testData['testAddBharatQrTerminal'];
+
+        $request['request']['content']['expected'] = true;
+
+        $this->startTest($request);
     }
 
     public function testReassignBharatQrTerminal()
@@ -175,6 +185,25 @@ class TerminalTest extends TestCase
 
         $t = $this->restoreTerminal('1000HdfcShared');
         $this->assertNull($t['deleted_at']);
+    }
+
+    public function testDeleteTerminalWithSubMerchantAssigned()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal', ['gateway_recon_password' => 'boo']);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal->merchants()->attach('10000000000000');
+
+        $payment = $this->defaultAuthPayment();
+
+        $t = $this->deleteTerminal2('1000HdfcShared');
+        $this->assertNotNull($t['deleted_at']);
+
+        $dt = Terminal\Entity::withTrashed()->findOrFail($t['id']);
+
+        $this->assertEquals(0, $dt->merchants->count());
     }
 
     public function testCopyTerminal()
@@ -462,5 +491,10 @@ class TerminalTest extends TestCase
         });
 
         $this->assertFalse($terminal->reload()->isEnabled());
+    }
+
+    public function testAddAmazonPayTerminal()
+    {
+        $this->startTest();
     }
 }

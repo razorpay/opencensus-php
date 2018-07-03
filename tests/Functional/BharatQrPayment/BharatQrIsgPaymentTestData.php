@@ -1,7 +1,7 @@
 <?php
 
 use  Carbon\Carbon;
-use  RZP\Gateway\Isg\ResponseField;
+use  RZP\Gateway\Isg\Field;
 
 return [
 
@@ -17,17 +17,17 @@ return [
 		'url'     => '/payment/callback/bharatqr/isg',
 		'method'  => 'post',
 		'content' => [
-			ResponseField::PRIMARY_ID                   => 'tobeFilled',
-			ResponseField::SECONDARY_ID                 => 'reference_id',
-			ResponseField::MERCHANT_PAN                 => '4287346823986423',
-			ResponseField::TRANSACTION_ID               => 'abcde12345678910',
-			ResponseField::TRANSACTION_DATE_TIME        =>  Carbon:: now()->format('Y-m-d H:i:s'),
-			ResponseField::TRANSACTION_AMOUNT           => '100',
-			ResponseField::AUTH_CODE                    => 'ab3456',
-			ResponseField::RRN                          =>  random_int(111111111111,999999999999),
-			ResponseField::CONSUMER_PAN                 => '4126989019190088',
-			ResponseField::STATUS_CODE                  => '00',
-			ResponseField::STATUS_DESC                  => 'Transaction Approved',
+			Field::PRIMARY_ID                   => 'tobeFilled',
+			Field::SECONDARY_ID                 => 'reference_id',
+			Field::MERCHANT_PAN                 => '4403844012084006',
+			Field::TRANSACTION_ID               => '1817700802564',
+			Field::TRANSACTION_DATE_TIME        =>  Carbon:: now()->format('Y-m-d H:i:s'),
+			Field::TRANSACTION_AMOUNT           => '100.00',
+			Field::AUTH_CODE                    => 'ab3456',
+			Field::RRN                          =>  random_int(111111111111,999999999999),
+			Field::CONSUMER_PAN                 => 'F85DAA8B2DB1EFBEC19D1C908EAEA217CC233DBC6EBA091CBE0012671BB60010',
+			Field::STATUS_CODE                  => '00',
+			Field::STATUS_DESC                  => 'Transaction Approved',
 		],
 	],
 ];

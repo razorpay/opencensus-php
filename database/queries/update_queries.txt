@@ -1696,7 +1696,119 @@ WHERE `gateway_payment_id` LIKE 'p2p_%'
 # Instance killed while recon batch processing. Slack thread : https://razorpay.slack.com/archives/C6QPQKVLZ/p1527592257000322
 UPDATE batches SET processing=0 WHERE id='AGr4YbJLIM86ff';
 
+# In case of retry failed batch, old success count and failure count was not reset.
+UPDATE batches SET success_count = 19709 WHERE id = 'ABUmkq0y7qz2iB';
+
+UPDATE batches SET success_count = 19822, failure_count = 0, status = 'processed',
+failure_reason = NULL WHERE id='AH7zn9nf1rqrtR';
+
 # Set BQR Details in Sharp Terminal
 Update terminals
     SET upi = 1, mc_mpan = '1234560000000000', visa_mpan = '1234560000000001', rupay_mpan = '1234560000000002',
      vpa = 'random@razorpay' where id = '1000SharpTrmnl';
+
+update qr_code set reference = id;
+
+# Udaan data corrections, necessitated by duplicate virtual bank account numbers
+# 1. Close the undesired VA, and move the bank_transfers to the desired one
+UPDATE
+  virtual_accounts INNER JOIN bank_transfers
+  ON
+    virtual_accounts.id=bank_transfers.virtual_account_id
+  SET
+    bank_transfers.virtual_account_id='A8xTrQAiKHV3BO',
+    virtual_accounts.amount_paid=0,
+    virtual_accounts.amount_received=0,
+    virtual_accounts.status='closed'
+  WHERE bank_transfers.virtual_account_id='A8xTrPsTWeNBzx';
+# 2. Update amount fields in the desired VA
+UPDATE
+  virtual_accounts
+  SET
+    amount_paid=621400,
+    amount_received=621400
+  WHERE id='A8xTrQAiKHV3BO';
+
+# Updates created_at for merchant_requests and action_state
+UPDATE action_state
+  JOIN merchant_requests ON merchant_requests.id = action_state.entity_id
+  JOIN (
+    SELECT MIN(action_state.created_at) as created_at, action_state.entity_id as merchant_request_id
+    FROM action_state
+    WHERE action_state.name = "under_review" AND entity_type = "merchant_request"
+    GROUP BY action_state.entity_id
+  ) as ac_min ON (
+    ac_min.created_at = action_state.created_at
+    AND ac_min.merchant_request_id = action_state.entity_id
+    AND action_state.entity_type = "merchant_request"
+    AND action_state.name = "under_review")
+  JOIN (
+    SELECT SUBSTRING_INDEX(`key`, ".", 1) AS product, entity_id as merchant_id, MIN(created_at) as created_at
+    FROM settings
+    WHERE module = 'onboarding'
+    GROUP BY product, entity_id
+  ) as products ON (merchant_requests.merchant_id = products.merchant_id AND merchant_requests.name = products.product)
+  SET
+      merchant_requests.created_at = products.created_at,
+      action_state.created_at = products.created_at
+  WHERE merchant_requests.type = "product"
+
+# Updates values for old batches.processed_count
+UPDATE batches
+    SET processed_count = success_count + failure_count
+    WHERE processed_count IS NULL AND processing = 0;
+
+# Fills entity_offer (pivot table for order-offer relations) with data from existing orders
+INSERT INTO `entity_offer`
+    (`entity_id`,`entity_type`,`offer_id`,`created_at`,`updated_at`)
+    VALUES
+    ('7bQiSMEa4V9cqK','order','7b3KwTbcVZhfxt',1491466676,1491466676),
+    ...
+    ('AKRam7TzPy5Z3A','order','9okQnoDyccqfut',1528369240,1528369240);
+
+# All existing offers are chosen by merchant, and forced to be applied on payment
+UPDATE orders
+  SET force_offer=1
+  WHERE id in (
+    '7bQiSMEa4V9cqK',
+    ...
+    'AKRam7TzPy5Z3A'
+  );
+
+#Deleting from merchant_terminal mapping table where terminal has been soft deleted
+DELETE FROM merchant_terminal WHERE terminal_id = '9pzyO7B1uNjuXH';
+
+
+# Update GST tax name
+UPDATE taxes SET name = 'IGST @ 0%' WHERE id='9nDpYboKAK9j7t';
+UPDATE taxes SET name = 'IGST @ 5%' WHERE id='9nDpYciCWeNBzE';
+UPDATE taxes SET name = 'IGST @ 12%' WHERE id='9nDpYdbYNqD4Rw';
+UPDATE taxes SET name = 'IGST @ 18%' WHERE id='9nDpYf1tTUs2Vh';
+UPDATE taxes SET name = 'IGST @ 28%' WHERE id='9nDpYfqgnYW5Dx';
+UPDATE taxes SET name = 'CGST @ 0%' WHERE id='9nDpYglSpU58lc';
+UPDATE taxes SET name = 'CGST @ 2.5%' WHERE id='9nDpYhZ0d60X7V';
+UPDATE taxes SET name = 'CGST @ 5%' WHERE id='9nDpYiArP6j0qT';
+UPDATE taxes SET name = 'CGST @ 6%' WHERE id='9nDpYivRHUQQV8';
+UPDATE taxes SET name = 'CGST @ 9%' WHERE id='9nDpYjuyZsOlMK';
+UPDATE taxes SET name = 'CGST @ 12%' WHERE id='9nDpYkng64GyTa';
+UPDATE taxes SET name = 'CGST @ 14%' WHERE id='9nDpYlTs7cWM80';
+UPDATE taxes SET name = 'CGST @ 18%' WHERE id='9nDpYmPK2K2mVi';
+UPDATE taxes SET name = 'CGST @ 28%' WHERE id='9nDpYnFEoqJQ5v';
+UPDATE taxes SET name = 'SGST @ 0%' WHERE id='9nDpYnvgiGXrZh';
+UPDATE taxes SET name = 'SGST @ 2.5%' WHERE id='9nDpYoeYBsXRvC';
+UPDATE taxes SET name = 'SGST @ 5%' WHERE id='9nDpYpMRZgJEgU';
+UPDATE taxes SET name = 'SGST @ 6%' WHERE id='9nDpYpuN72gdfY';
+UPDATE taxes SET name = 'SGST @ 9%' WHERE id='9nDpYqgYcqpr8q';
+UPDATE taxes SET name = 'SGST @ 12%' WHERE id='9nDpYrIMXQTtPd';
+UPDATE taxes SET name = 'SGST @ 14%' WHERE id='9nDpYs1yK0pndD';
+UPDATE taxes SET name = 'SGST @ 18%' WHERE id='9nDpYsoU7subph';
+UPDATE taxes SET name = 'SGST @ 28%' WHERE id='9nDpYtb0S0JhMP';
+UPDATE taxes SET name = 'UTGST @ 0%' WHERE id='9nDpYuFVNQcVaU';
+UPDATE taxes SET name = 'UTGST @ 2.5%' WHERE id='9nDpYv53mqSsip';
+UPDATE taxes SET name = 'UTGST @ 5%' WHERE id='9nDpYvgwu0p8WP';
+UPDATE taxes SET name = 'UTGST @ 6%' WHERE id='9nDpYwRScK0Mz2';
+UPDATE taxes SET name = 'UTGST @ 9%' WHERE id='9nDpYxMkO0LLhz';
+UPDATE taxes SET name = 'UTGST @ 12%' WHERE id='9nDpYyC50acDzW';
+UPDATE taxes SET name = 'UTGST @ 14%' WHERE id='9nDpYz26oaOHgI';
+UPDATE taxes SET name = 'UTGST @ 18%' WHERE id='9nDpYznDzU7NKP';
+UPDATE taxes SET name = 'UTGST @ 28%' WHERE id='9nDpZ0hEw4vZky';

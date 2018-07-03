@@ -78,6 +78,7 @@ class Validator extends Base\Validator
         'recurring_token'               => 'sometimes_if:method,emandate|associative_array|filled',
         'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
         'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch',
+        'offer_id'                      => 'filled|public_id|size:20',
     ];
 
     protected static $editRules = [
@@ -537,6 +538,7 @@ class Validator extends Base\Validator
 
     protected function validateBank($input)
     {
+        // @todo: Add validation for UPI method as well for tpv
         if (($input['method'] !== Payment\Method::NETBANKING) and
             ($input['method'] !== Payment\Method::EMANDATE))
         {
@@ -549,10 +551,25 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED);
         }
 
+        $supported = false;
+        $bank = $input['bank'];
+
+        if ($input['method'] === Payment\Method::NETBANKING)
+        {
+            $supported = Payment\Processor\Netbanking::isSupportedBank($bank);
+        }
+
+        if ($input['method'] === Payment\Method::EMANDATE)
+        {
+            $supportedBanks = Payment\Gateway::getAllEMandateBanks();
+
+            $supported = in_array($bank, $supportedBanks, true);
+        }
+
         //
         // The bank is validated for emandate in `validateInitialRecurringForEmandate`
         //
-        if (Payment\Processor\Netbanking::isSupportedBank($input['bank']) === false)
+        if ($supported === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,

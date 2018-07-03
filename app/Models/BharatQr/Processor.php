@@ -7,9 +7,11 @@ use RZP\Base\Luhn;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Currency\Currency;
 use RZP\Models\QrCode\Entity as QrCode;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -21,6 +23,8 @@ class Processor extends VirtualAccount\Processor
     protected $gatewayInput;
 
     protected $callbackData;
+
+    protected $terminal;
 
     public function __construct(array $gatewayResponse, string $provider = null)
     {
@@ -63,7 +67,7 @@ class Processor extends VirtualAccount\Processor
                             // creation and use this terminal instead
                             // as the payment has already gone through
                             // this terminal.
-                            $this->setTerminalIdInCallback();
+                            $this->callbackData[Constants::RAZORPAY_TERMINAL_ID] = $this->getTerminal()->getId();
 
                             $res = $paymentProcessor->process($paymentInput, $this->callbackData);
 
@@ -90,6 +94,7 @@ class Processor extends VirtualAccount\Processor
         }
     }
 
+<<<<<<< HEAD
 	protected function setTerminalIdInCallback()
 	{
 		$gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
@@ -115,20 +120,157 @@ class Processor extends VirtualAccount\Processor
 				null,
 				['gateway_merchant_id' => $gatewayMerchantId]);
 		}
+=======
+    /**
+     * A receiver is expected if there exists an active VA
+     * to receive it or if the terminal expected is set to
+     * true. If such a VA does not exist, or exists but
+     * has been closed/paid and terminal expected is also set to
+     * false the payment is to be refunded.
+     *
+     * @param Base\PublicEntity $entity This is the receiver entity:
+     *                                  qr_code
+     *
+     * @return bool
+     */
+    protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $entity): bool
+    {
+        $this->setVirtualAccount($entity);
+
+        if ($this->virtualAccount === null)
+        {
+            return $this->handleUnknownBankReference($entity);
+        }
+
+        return true;
+    }
+
+    protected function handleUnknownBankReference(Entity $bharatQr)
+    {
+        if ($this->getTerminal()->isExpected() === false)
+        {
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
+                [
+                    'entity' => $bharatQr->toArray(),
+                ]);
+
+            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+
+            return false;
+        }
+        else
+        {
+            $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
+
+            //
+            // In case of sharp gateway merchant is not
+            // taken from terminal but from the auth itself
+            // as the test payments are made on private auth
+            //
+            if ($gateway === Payment\Gateway::SHARP)
+            {
+                $terminalMerchant = $this->merchant;
+            }
+            else
+            {
+                $terminalMerchant = $this->terminal->merchant;
+            }
+
+            if ($terminalMerchant->getId() === Account::SHARED_ACCOUNT)
+            {
+                throw new Exception\LogicException(
+                    'Bharat Qr terminal merchant with expected true can not be shared',
+                    null,
+                    ['terminal_id' => $this->terminal->getId()]);
+            }
+
+            //
+            // Here if there is no va but we received a payment and terminal
+            // expected is set to true, we need to create a virtual account and
+            // receiver with the reference received from bank.
+            //
+            $this->createAndSetVirtualAccount($terminalMerchant);
+
+            return true;
+        }
+
+    }
+
+    protected function createAndSetVirtualAccount(Merchant\Entity $merchant)
+    {
+        $input = [
+            VirtualAccount\Entity::RECEIVERS => [
+                VirtualAccount\Entity::TYPES => [
+                    VirtualAccount\Receiver::QR_CODE,
+                ],
+                VirtualAccount\Receiver::QR_CODE => [
+                    QrCode::REFERENCE => $this->gatewayInput[GatewayResponseParams::MERCHANT_REFERENCE]
+                ]
+            ],
+        ];
+
+        $this->virtualAccount = (new VirtualAccount\Core)->create($input, $merchant);
+    }
+
+    protected function getTerminal()
+    {
+        //
+        // This won't be null in case it is
+        // unexpected payment initially. We
+        // need the terminal to check if the expected
+        // is true or false. Based on this value
+        // payment is set to expected or unexpected
+        //
+        if ($this->terminal !== null)
+        {
+            return $this->terminal;
+        }
+
+    	$gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
+
+    	if (isset($this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
+	    {
+		    $gatewayMerchantId	= $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
+
+		    $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
+	    }
+	    else
+	    {
+	    	$gatewayMpan = $this->gatewayInput[GatewayResponseParams::MPAN];
+
+	    	$terminal = $this->repo->terminal->findByGatewayMpan($gateway, $gatewayMpan);
+	    }
+
+        if ($terminal === null)
+        {
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                null,
+                ['gateway_merchant_id' => $gatewayMerchantId,
+                 'merchant_pan'        => $gatewayMpan,
+                ]);
+        }
+
+        $this->terminal = $terminal;
+
+        return $terminal;
+    }
+>>>>>>> 3790b6417ddb4f8ed923385a6a93fc989f588cd2
 
 		$this->callbackData[Constants::RAZORPAY_TERMINAL_ID] = $terminal->getId();
 	}
 
 	protected function getVirtualAccountFromEntity(Base\PublicEntity $bharatQr)
     {
-        $qrCodeId = $bharatQr->getMerchantReference();
+        $merchantReference = $bharatQr->getMerchantReference();
 
         // Here we use stripSignWithoutValidation because
         // we don't want to throw exception in case it is
         // unknown id. It will be accepted as unexpected payment
-        (new QrCode)->stripSignWithoutValidation($qrCodeId);
+        (new QrCode)->stripSignWithoutValidation($merchantReference);
 
-        $qrCode = $this->repo->qr_code->find($qrCodeId);
+        $qrCode = $this->repo->qr_code->findByMerchantReference($merchantReference);
 
         if ($qrCode === null)
         {
@@ -196,11 +338,20 @@ class Processor extends VirtualAccount\Processor
 
 		$card[Card\Entity::NUMBER] = $this->getLuhnValidCardNumber();
 
+<<<<<<< HEAD
 		if (isset($this->gatewayInput[GatewayResponseParams::SENDER_NAME]) === true)
 		{
 			$cardHolderName = preg_replace("/[^ \w]+/", "",
 				$this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
 		}
+=======
+        if (isset($this->gatewayInput[GatewayResponseParams::SENDER_NAME]) === true)
+        {
+	        $cardHolderName = preg_replace("/[^ \w]+/",
+		                                   "",
+		                                    $this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
+        }
+>>>>>>> 3790b6417ddb4f8ed923385a6a93fc989f588cd2
 
 		if (empty($cardHolderName) === false)
 		{

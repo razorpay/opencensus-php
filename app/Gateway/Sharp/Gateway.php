@@ -121,19 +121,19 @@ class Gateway extends Base\Gateway
      * @throws Exception\GatewayErrorException
      * @throws Exception\RuntimeException
      */
-    public function preProcessServerCallback($body, $isBharatQr = false): array
+    public function preProcessServerCallback(& $body, $isBharatQr = false): array
     {
         $response = $body;
 
         if ($isBharatQr === true)
         {
-            $response = $this->getBharatQrResponse($body);
+            $response = $this->getQrData($body);
         }
 
         return $response;
     }
 
-    protected function getBharatQrResponse(array $input)
+    protected function getQrData(array $input)
     {
         $qrData = [
             BharatQr\GatewayResponseParams::AMOUNT                => $input[Fields::AMOUNT],

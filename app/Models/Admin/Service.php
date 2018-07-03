@@ -6,6 +6,7 @@ use Cache;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\AdminFetch;
@@ -253,5 +254,16 @@ class Service extends Base\Service
         $data = (new DailyReconStatusSummary)->generateReconSummary($input);
 
         return $data;
+    }
+
+    public function createBatch(array $input)
+    {
+        $batchCore = new Batch\Core;
+
+        $sharedMerchant = $this->repo->merchant->getSharedAccount();
+
+        $batch = $batchCore->create($input, $sharedMerchant);
+
+        return $batch->toArrayPublic();
     }
 }

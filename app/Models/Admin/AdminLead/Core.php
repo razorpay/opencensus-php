@@ -18,14 +18,16 @@ class Core extends Base\Core
         $lead = (new Entity)->generateId();
 
         $entityData = [
-            Entity::ADMIN_ID   => $admin->getId(),
-            Entity::ORG_ID     => $admin->getOrgId(),
             Entity::EMAIL      => $inviteData['contact_email'] ?? null,
             Entity::TOKEN      => str_random(40),
             Entity::FORM_DATA  => $inviteData,
         ];
 
         $lead->build($entityData);
+
+        $lead->admin()->associate($admin);
+
+        $lead->org()->associate($admin->org);
 
         $this->repo->saveOrFail($lead);
 

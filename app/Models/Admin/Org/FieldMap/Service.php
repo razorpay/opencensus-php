@@ -13,7 +13,11 @@ class Service extends Base\Service
 
         $entityMap = (new Entity)->generateId();
 
+        $org = $this->repo->org->findOrFailPublic($orgId);
+
         $entityMap->build($input);
+
+        $entityMap->org()->associate($org);
 
         $this->repo->saveOrFail($entityMap);
 

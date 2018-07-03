@@ -228,18 +228,18 @@ class Checkout
             ]);
     }
 
-    protected function fetchCustomerData(array $input, Entity $merchant)
+    protected function fetchCustomerData(array $input, Entity $merchant, $isGlobal)
     {
         $custData = null;
 
         try
         {
             //
-            // For the second 2FA in global flow also, we will have the app_token. Hence,
-            // in this usage (preferences) of getCustomerAndApp, we don't need to have
-            // the global_customer_id in the input.
+            // For the second 2FA in global flow also, we will have the
+            // app_token. Hence, in this usage (preferences) of getCustomerAndApp,
+            // we don't need to have the global_customer_id in the input.
             //
-            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant);
+            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp($input, $merchant, $isGlobal);
 
             if ($customer === null)
             {
@@ -276,7 +276,6 @@ class Checkout
             //
             if ($customer->isLocal() === true)
             {
-                // TODO: Figure out a way to tell the checkout whether it's local/global flow.
                 $custData[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
             }
         }
@@ -355,7 +354,7 @@ class Checkout
             if ((isset($input[Payment\Entity::CUSTOMER_ID])) or
                 (isset($input[Payment\Entity::APP_TOKEN])))
             {
-                $custData = $this->fetchCustomerData($input, $merchant);
+                $custData = $this->fetchCustomerData($input, $merchant, $data['global']);
 
                 if ($custData !== null)
                 {
@@ -551,14 +550,16 @@ class Checkout
         }
 
         if (($order !== null) and
-            ($order->offer !== null))
+            ($order->getOffer() !== null))
         {
+            $offer = $order->getOffer();
+
             $orderAmount = $order->getAmount();
 
-            $this->updateMethodsToEnableOnCheckout($order->offer, $data);
+            $this->updateMethodsToEnableOnCheckout($offer, $data);
 
             $data['offers'] = [
-                $order->offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount),
+                $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount),
             ];
         }
         else

@@ -294,8 +294,10 @@ class Core extends Base\Core
         $txn->setAmount($amount);
 
         $feesSplit = new Base\PublicCollection;
-
-        if ($oldTransaction === true)
+	    $fee = 0;
+	        $tax = 0;
+	        $credit=0;
+        /*if ($oldTransaction === true)
         {
             $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment)->getId();
 
@@ -312,7 +314,7 @@ class Core extends Base\Core
         else
         {
             list($credit, $fee, $tax, $feesSplit) = $this->calculatePostpaidFee($txn);
-        }
+        }*/
 
         $txn->setCredit(0);
         $txn->setDebit(0);

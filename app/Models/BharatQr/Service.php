@@ -8,8 +8,8 @@ use RZP\Models\Base;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Action;
 
 class Service extends Base\Service
 {
@@ -31,15 +31,7 @@ class Service extends Base\Service
                 'gateway' => $gateway,
             ]);
 
-        if (Payment\Gateway::isValidBharatQrGateway($gateway) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Gateway is invalid',
-                'gateway',
-                [
-                    'gateway' => $gateway
-                ]);
-        }
+        $this->validateGateway($gateway);
 
         $gatewayClass = $this->app['gateway']->gateway($gateway);
 
@@ -49,9 +41,9 @@ class Service extends Base\Service
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
+        	$this->trace->traceException($ex);
 
-            return $this->getResponse(false);
+            return $gatewayClass->getBharatQrResponse($input, $ex, false);
         }
 
         $qrData = $gatewayResponse['qr_data'];
@@ -66,31 +58,35 @@ class Service extends Base\Service
 
         $valid = $this->core->processPayment($gatewayResponse);
 
-        $response = $this->getResponse($valid);
+        $response = $gatewayClass->getBharatQrResponse($input, $valid);
 
         return $response;
     }
 
-    protected function getResponse(bool $valid)
+    protected function validateGateway(string $gateway)
     {
-        if ($valid === true)
+        if (Payment\Gateway::isValidBharatQrGateway($gateway) === false)
         {
-            $xml = '<RESPONSE>OK</RESPONSE>';
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway is invalid',
+                'gateway',
+                [
+                    'gateway' => $gateway
+                ]);
         }
-        else
+
+        //
+        // We throw a url not found exception here
+        // because test payments are not allowed
+        // on direct auth
+        //
+        if (($gateway === Payment\Gateway::SHARP) and
+            ($this->merchant === null))
         {
-            $xml = '<RESPONSE>NOK</RESPONSE>';
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
-
-        $response = \Response::make($xml);
-
-        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
-
-        $response->headers->set('Cache-Control', 'no-cache');
-
-        return $response;
     }
-
     protected function determineAndSetModeForQr(string $merchantReference, string $gateway)
     {
         // We are not using verifyIdAndSilentlyStripSign here because in case

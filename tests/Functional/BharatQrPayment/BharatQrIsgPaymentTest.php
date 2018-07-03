@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\QrPayment;
 
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Isg\Field;
+use RZP\Gateway\Isg\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -20,7 +22,7 @@ class BharatQrIsgPaymentTest extends TestCase
 
 		$this->fixtures->create('terminal:bharat_qr_isg_terminal');
 
-		$this->fixtures->merchant->addFeatures(['virtual_accounts','bharat_qr']);
+		$this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
 		$this->fixtures->merchant->activate();
 	}
@@ -46,19 +48,21 @@ class BharatQrIsgPaymentTest extends TestCase
 
 		$this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
 
-		$this->mockServerContentFunction(function(&$content, $action = null) use ($request)
+		$this->mockServerContentFunction(function (&$content, $action = null) use ($request)
 		{
 			if ($action === Action::VERIFY)
 			{
 				$content = $request['content'];
 			}
-		},$this->gateway);
+		}, $this->gateway);
 
 		$response = $this->makeRequestAndGetContent($request);
 
-		$response = $this->parseResponseXml($response['original']);
+		$responseArray = json_decode($response['original'], true);
 
-		$this->assertEquals('OK', $response[0]);
+		$this->assertEquals(Status::APPROVED, $responseArray[Field::STATUS_CODE]);
+
+		$this->assertEquals($request['content'][Field::TRANSACTION_ID], $responseArray[Field::TRANSACTION_ID]);
 
 		$bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -80,8 +84,41 @@ class BharatQrIsgPaymentTest extends TestCase
 		$this->assertEquals($bharatQr['expected'], true);
 	}
 
-	protected function parseResponseXml(string $response): array
+	public function testQrPaymentFailedVerifyCallback()
 	{
-		return (array) simplexml_load_string(trim($response));
+		$request = $this->testData["testQrPaymentProcess"];
+
+		$qrCode = $this->createVirtualAccount();
+
+		$this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
+
+		$this->mockServerContentFunction(function (&$content, $action = null) use ($request)
+		{
+			if ($action === Action::VERIFY)
+			{
+				$content = $request['content'];
+
+				$content[Field::TRANSACTION_AMOUNT] = $content[Field::TRANSACTION_AMOUNT] * 2;
+			}
+		}, $this->gateway);
+
+		$response = $this->makeRequestAndGetContent($request);
+
+		$responseArray = json_decode($response['original'], true);
+
+		$this->assertEquals(Status::NO_RECORDS, $response[Field::STATUS_CODE]);
+
+		$this->assertEquals('Amount mismatch in Verify response and callback response',
+							$responseArray[Field::STATUS_DESC]);
+
+		$bharatQr = $this->getLastEntity('bharat_qr', true);
+
+		$this->assertNull($bharatQr);
+
+		// Payment is automatically captured
+		$payment = $this->getLastEntity('payment', true);
+
+		$this->assertNull($payment);
 	}
+
 }

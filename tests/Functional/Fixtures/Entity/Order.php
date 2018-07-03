@@ -38,6 +38,40 @@ class Order extends Base
         return parent::create($attributes);
     }
 
+    public function createWithOffers($offers, array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id' => '10000000000000',
+            'currency'    => 'INR',
+            'amount'      => 100000,
+            'discount'    => true
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $order = parent::create($attributes);
+
+        $offers = is_array($offers) ? $offers : [$offers];
+
+        foreach ($offers as $offer)
+        {
+            $this->fixtures->create('entity_offer', [
+                'entity_id'   => $order->getId(),
+                'entity_type' => 'order',
+                'offer_id'    => $offer->getId(),
+            ]);
+        }
+
+        return $order;
+    }
+
+    public function createWithUndiscountedOffers($offers, array $attributes = [])
+    {
+        $attributes['discount'] = false;
+
+        return $this->createWithOffers($offers, $attributes);
+    }
+
     public function createWithUndiscountedOfferApplied(array $attributes = [])
     {
         $defaultValues = [
