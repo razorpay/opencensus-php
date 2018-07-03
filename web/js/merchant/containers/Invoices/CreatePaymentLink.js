@@ -309,32 +309,30 @@ export default class CreatePaymentLink extends Component {
                   </div>
                 </div>
 
-                <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                  <div class="form-group">
-                    <div class="col-md-8 col-md-offset-3">
-                      <div class="rzpCheckbox">
-                        <Field
-                          name="partial_payment"
-                          id="partial_payment"
-                          component="input"
-                          type="checkbox"
-                          disabled={locked}
-                        />
-                        <label for="partial_payment" class="icon i-check">
-                          Enable Partial Payments
-                          <a
-                            class="btn-link m-l"
-                            href="https://razorpay.com/docs/private/partial-payments/"
-                            target="_blank"
-                            onClick={trackHelpClick}
-                          >
-                            What's this?
-                          </a>
-                        </label>
-                      </div>
+                <div class="form-group">
+                  <div class="col-md-8 col-md-offset-3">
+                    <div class="rzpCheckbox">
+                      <Field
+                        name="partial_payment"
+                        id="partial_payment"
+                        component="input"
+                        type="checkbox"
+                        disabled={locked}
+                      />
+                      <label for="partial_payment" class="icon i-check">
+                        Enable Partial Payments
+                        <a
+                          class="btn-link m-l"
+                          href="https://razorpay.com/docs/private/partial-payments/"
+                          target="_blank"
+                          onClick={trackHelpClick}
+                        >
+                          What's this?
+                        </a>
+                      </label>
                     </div>
                   </div>
-                </ShowWhen>
+                </div>
 
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label">
