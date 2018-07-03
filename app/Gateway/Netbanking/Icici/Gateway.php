@@ -848,13 +848,6 @@ class Gateway extends Base\Gateway
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[$bankPaymentIdKey] ?? null;
         }
 
-
-        if ((empty($content[ResponseFields::PAYMENT_DATE]) === false) and
-            ($content[ResponseFields::STATUS] === Status::SUCCESS) and
-            (empty($gatewayPayment[Base\Entity::DATE]) === true))
-        {
-            $attributes[Base\Entity::DATE] = $content[ResponseFields::PAYMENT_DATE];
-        }
         // If RID exists and status is registration success, set token related attributes here
         if ((empty($content[ResponseFields::SI_REFERENCE_ID]) === false) and
             ($content[ResponseFields::STATUS] === Status::SI_REGISTRATION_SUCCESS))
