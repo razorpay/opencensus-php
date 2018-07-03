@@ -6,7 +6,7 @@ use Mail;
 use Config;
 use ApiResponse;
 use Carbon\Carbon;
-use Razorpay\OAuth\Application;
+use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -31,7 +31,6 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
-use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
@@ -96,22 +95,9 @@ class Core extends Base\Core
         bool $linkedAccount = true,
         bool $accountEntity = false)
     {
-        // We only check for email uniqueness if the email
-        // address is provided
-        if (isset($input['email']) === true)
-        {
-            $email['email'] = $input['email'];
+        $aggregatorMerchant->getValidator()->validateSubMerchantInput($input, $linkedAccount);
 
-            (new Validator)->validateInput('unique_email', $email);
-        }
-        else
-        {
-            $input['email'] = $aggregatorMerchant->getEmail();
-        }
-
-        $merchantData['name'] = $input['name'] ?? null;
-
-        (new Validator)->validateInput('edit_name', $merchantData);
+        $input['email'] = $input['email'] ?? $aggregatorMerchant->getEmail();
 
         if ($accountEntity === true)
         {
@@ -282,11 +268,13 @@ class Core extends Base\Core
         {
             $parent = $this->repo->merchant->find($parentId);
 
-            if ((empty($parent) === false) and
-                (strtolower($merchant->getEmail()) === strtolower($parent->getEmail())))
+            if ((empty($parent) === false) and (strtolower($merchant->getEmail()) === strtolower($parent->getEmail())))
             {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
-                    Merchant\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+                    Merchant\Entity::EMAIL,
+                    $input[Merchant\Entity::EMAIL]
+                );
             }
         }
 
@@ -1002,15 +990,20 @@ class Core extends Base\Core
         // Default value is required because website is a required field to create oauth applications
         $website = $merchant->getWebsite() ?? 'https://www.razorpay.com';
 
-        $logoUrl = $merchant->getLogoUrl();
-
         $appInput = [
             'name'     => $name,
             'website'  => $website,
-            'logo_url' => $logoUrl,
         ];
 
-        $app = app('authservice')->createApplication($appInput, $merchant->getId(), Application\Type::PARTNER);
+        $logoUrl = $merchant->getLogoUrl();
+
+        // Do not send the logo_url parameter if it is null. Auth service will reject it.
+        if ($logoUrl !== null)
+        {
+            $appInput['logo_url'] = $logoUrl;
+        }
+
+        $app = app('authservice')->createApplication($appInput, $merchant->getId(), OAuthApp\Type::PARTNER);
 
         return $app;
     }

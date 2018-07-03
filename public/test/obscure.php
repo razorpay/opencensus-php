@@ -154,6 +154,12 @@ function disableEmptyInputs(form) {
         </td>
     </tr>
     <tr>
+        <td colspan="40">Razorpay Partner Token:</td>
+        <td>
+            <input type="text" value="" name="partner_token">
+        </td>
+    </tr>
+    <tr>
         <td colspan='40'>Card Holder Name:</td>
         <td><input type="text" name="card[name]" size="25" value="shashank"></td>
         <!-- <td><input type="text" name="callback_url" value="<?= $callback_url ?>"></td> -->
@@ -191,6 +197,10 @@ function disableEmptyInputs(form) {
         <td><input type="text" name="order_id" size="25" value=""></td>
     </tr>
     <tr>
+        <td colspan='40'>Account Id:</td>
+        <td><input type="text" name="account_id" size="25" value=""></td>
+    </tr>
+    <tr>
         <td colspan='40'>Order Id:</td>
         <td><input type="text" name="notes[order_id]" size="25" value="3453"></td>
     </tr>
@@ -218,9 +228,17 @@ function disableEmptyInputs(form) {
             <select name="auth_type">
                 <option value="">Please Select</option>
                 <option value="pin">Card - PIN</option>
+                <option value="otp">Card - OTP</option>
                 <option value="aadhaar">eMandate - Aadhaar</option>
                 <option value="netbanking">eMandate - Netbanking</option>
             </select>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="40">Select Preferred Auth </td>
+        <td>
+            <input type="checkbox" name="preferred_auth[]" value="pin">Card - PIN<br>
+            <input type="checkbox" name="preferred_auth[]" value="otp">Card - OTP<br>
         </td>
     </tr>
     <tr>

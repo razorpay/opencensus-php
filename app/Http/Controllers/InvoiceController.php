@@ -196,6 +196,11 @@ class InvoiceController extends Controller
             $view = 'invoice.uber';
         }
 
+        if (isset($data['error']) === true)
+        {
+            $view = 'public.error';
+        }
+
         //
         // This route gets called as part of callback_url during payment
         // creation when pop-up doesn't work. We send the request parameters
@@ -225,7 +230,7 @@ class InvoiceController extends Controller
             $data['error']['description'] = 'No pdf file found';
 
             return response()
-                        ->view('invoice.index', ['data' => $data])
+                        ->view('public.error', ['data' => $data])
                         ->setStatusCode(ResponseCodes::HTTP_BAD_REQUEST);
         }
 

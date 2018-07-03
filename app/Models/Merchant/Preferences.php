@@ -34,6 +34,7 @@ class Preferences
         'A0GNi6PHlqy5zX', 'A0HuEfx39zhjr9', 'A5ONBRrNJ7dS1K',
         'A5MmRVEM3qf6QJ', 'A5OZ1qi9tgwnZB', 'A5OeZOCaeyQQ8Q',
     ];
+    const MID_CLEARTAX         = 'AGQJfLbWcmjxDX';
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here
@@ -84,6 +85,24 @@ class Preferences
     ];
 
     const X_AGGREGATOR_HEADER = 'x-aggregator';
+
+    //
+    // Skip settlements for few merchants
+    // Details in: https://github.com/razorpay/api/issues/5830
+    // Temporary, until https://github.com/razorpay/api/pull/6161
+    // is merged
+    //
+    const NO_SETTLEMENT_MIDS = [
+        self::MID_GOALWISE_NON_TPV,
+        self::MID_GOALWISE_TPV,
+        self::MID_MONEYVIEW,
+        self::MID_WEALTHY,
+        self::MID_PIGGY,
+        self::MID_PAISABAZAAR,
+        self::MID_BPCL,
+        self::MID_SRI_CHAITANYA,
+        self::MID_CLEARTAX,
+    ];
 
     public static function checkZohoHeaders(Headers $headers)
     {

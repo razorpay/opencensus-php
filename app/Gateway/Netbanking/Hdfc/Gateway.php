@@ -216,7 +216,7 @@ class Gateway extends Base\Gateway
 
             $token = $input['token'];
 
-            $emData = Fields::getEmandateRegistrationData($token, $input['payment']['id']);
+            $emData = Fields::getEmandateRegistrationData($token, $input['payment']['id'], $input['merchant']);
 
             $startDate = Carbon::createFromTimestamp($emData[Fields::START_TIMESTAMP], Timezone::IST)
                                ->format('dmY');

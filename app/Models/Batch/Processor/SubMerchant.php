@@ -123,7 +123,7 @@ class SubMerchant extends Base
         $merchantService = new Merchant\Service;
         $subMerchant     = $this->merchantCore->createSubMerchant($input, $this->merchant, false);
 
-        $merchantService->addLinkedAccountReferral($this->merchant, $subMerchant);
+        $merchantService->addSubMerchantReferral($this->merchant, $subMerchant);
 
         $merchantService->attachSubMerchantOwner($this->merchant->primaryOwner()->getId(), $subMerchant);
 

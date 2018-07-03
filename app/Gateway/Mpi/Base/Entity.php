@@ -9,6 +9,7 @@ class Entity extends Base\Entity
 {
     const ID                     = 'id';
     const ACQUIRER               = 'acquirer';
+    const GATEWAY                = 'gateway';
     const AMOUNT                 = 'amount';
     const STATUS                 = 'status';
     const CAVV                   = 'cavv';
@@ -19,9 +20,13 @@ class Entity extends Base\Entity
     const CURRENCY               = 'currency';
     const MER_ID                 = 'merID';
     const ACC_ID                 = 'accID';
+    const GATEWAY_PAYMENT_ID     = 'gateway_payment_id';
+    const RESPONSE_CODE          = 'response_code';
+    const RESPONSE_DESCRIPTION   = 'response_description';
 
     protected $fields = [
         self::ID,
+        self::GATEWAY,
         self::ENROLLED,
         self::AMOUNT,
         self::CURRENCY,
@@ -33,6 +38,9 @@ class Entity extends Base\Entity
         self::MER_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::GATEWAY_PAYMENT_ID,
+        self::RESPONSE_CODE,
+        self::RESPONSE_DESCRIPTION,
     ];
 
     protected $fillable = [
@@ -47,6 +55,9 @@ class Entity extends Base\Entity
         self::PAYMENT_ID,
         self::CURRENCY,
         self::ACC_ID,
+        self::GATEWAY_PAYMENT_ID,
+        self::RESPONSE_CODE,
+        self::RESPONSE_DESCRIPTION,
     ];
 
     protected $casts = [
@@ -97,6 +108,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ENROLLED);
     }
 
+    public function getGatewayPaymentId()
+    {
+        return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
+    }
+
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);
@@ -117,9 +133,14 @@ class Entity extends Base\Entity
         $this->setAttribute(self::CURRENCY, $currency);
     }
 
-    public function setAcquirer(sting $acquirer)
+    public function setAcquirer(string $acquirer)
     {
         $this->setAttribute(self::ACQUIRER, $acquirer);
+    }
+
+    public function setGateway(string $gateway)
+    {
+        $this->setAttribute(self::GATEWAY, $gateway);
     }
 
     public function setXid(string $xid)

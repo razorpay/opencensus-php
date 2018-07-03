@@ -394,7 +394,12 @@ class Base extends BaseModel\Core
     {
         foreach ($entries as $index => & $entry)
         {
-            $tracePayload = $this->batch->toArrayTrace([], ['row_index' => $index]);
+            $tracePayload = $this->batch->toArrayTrace(
+                [],
+                [
+                    'row_index' => $index,
+                    'row'       => $entry,
+                ]);
 
             try
             {

@@ -264,6 +264,10 @@ class ReconciliationFileTest extends TestCase
         $this->assertNotNull($updatedTransaction['gateway_fee']);
         $this->assertNotNull($updatedTransaction['gateway_service_tax']);
 
+        $updatedGatewayPayment = $this->getLastEntity('card_fss', true);
+
+        $this->assertEquals($entries[0]['payment gateway transaction id'], $updatedGatewayPayment['tranid']);
+
         $this->assertBatchStatus();
     }
 
@@ -715,9 +719,9 @@ class ReconciliationFileTest extends TestCase
         $facade['RRN']                                    = $gatewayPayment[CardFssEntity::REF];
         $facade['Auth/Approval Code']                     = $gatewayPayment[CardFssEntity::AUTH];
         $facade['payment gateway transaction id']         = $gatewayPayment[CardFssEntity::GATEWAY_TRANSACTION_ID];
-        $facade['MSF']                                    = $facade['transaction amount'] * 0.009 * (-1);
-        $facade['MSF Tax Amount']                         = $facade['MSF'] / 5.6;
-        $facade['settlement amount']                      = $facade['transaction amount'] - $facade['MSF'] - $facade['MSF Tax Amount'];
+        $facade['MSF Amount']                                    = $facade['transaction amount'] * 0.009 * (-1);
+        $facade['MSF Tax Amount']                         = $facade['MSF Amount'] / 5.6;
+        $facade['settlement amount']                      = $facade['transaction amount'] - $facade['MSF Amount'] - $facade['MSF Tax Amount'];
 
         return $facade;
     }
