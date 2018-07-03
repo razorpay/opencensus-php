@@ -66,6 +66,10 @@ class CreatePaymentLinks extends Migration
 
             $table->text(Entity::NOTES);
 
+            $table->string(Entity::HOSTED_TEMPLATE_ID, 255);
+
+            $table->string(Entity::JSONSCHEMA_ID, 255);
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
             $table->integer(Entity::DELETED_AT)

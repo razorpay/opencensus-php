@@ -90,6 +90,9 @@ class ViewSerializer extends Base\Core
     {
         $serialized = $this->paymentLink->toArrayHosted();
 
+        $serialized[Entity::HOSTED_TEMPLATE_ID] = $this->paymentLink->getHostedTemplateId();
+        $serialized[Entity::JSONSCHEMA_ID]      = $this->paymentLink->getJsonschemaId();
+
         $this->addDerivedAttributesForPaymentLink($serialized);
         $this->addFormattedAmountAttributesForPaymentLink($serialized);
         $this->addFormattedEpochAttributesForPaymentLink($serialized);

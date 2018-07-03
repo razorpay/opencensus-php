@@ -6,6 +6,7 @@ use View;
 use Request;
 use ApiResponse;
 
+use RZP\Constants\Entity as E;
 use RZP\Exception\BaseException;
 use RZP\Models\PaymentLink\Entity;
 use RZP\Http\Controllers\Traits\HasCrudMethods;
@@ -78,7 +79,9 @@ class PaymentLinkController extends Controller
             $viewPayload = $e->getError()->toPublicArray();
         }
 
-        $view = $this->service()->getHostedViewTemplate($id);
+        $hostedTemplateId = $viewPayload['data'][E::PAYMENT_LINK][Entity::HOSTED_TEMPLATE_ID] ?? null;
+
+        $view = $this->service()->getHostedViewTemplate($hostedTemplateId);
 
         return View::make($view, $viewPayload);
     }

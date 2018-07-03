@@ -76,7 +76,7 @@ class Service extends Base\Service
 
         $payload['data'] = (new ViewSerializer($paymentLink))->serializeForHosted();
 
-        $udfSchema = $this->getUdfSchemaIfDefined($id);
+        $udfSchema = $this->getUdfSchemaIfDefined($paymentLink);
 
         if (empty($udfSchema) === false)
         {
@@ -86,11 +86,16 @@ class Service extends Base\Service
         return $payload;
     }
 
-    protected function getUdfSchemaIfDefined(string $id)
+    protected function getUdfSchemaIfDefined(Entity $paymentLink)
     {
-        Entity::stripSignWithoutValidation($id);
+        $jsonSchemaId = $paymentLink->getJsonschemaId();
 
-        $schemaAccessor = new FileAccess(FileAccess::UDF_SCHEMA, $id);
+        if ($jsonSchemaId === null)
+        {
+            return null;
+        }
+
+        $schemaAccessor = new FileAccess(FileAccess::UDF_SCHEMA, $jsonSchemaId);
 
         if ($schemaAccessor->exists() === true)
         {
@@ -98,11 +103,17 @@ class Service extends Base\Service
         }
     }
 
-    public function getHostedViewTemplate(string $id)
+    public function getHostedViewTemplate(string $templateId = null)
     {
-        Entity::stripSignWithoutValidation($id);
+        $defaultView = 'payment_link.hosted';
 
-        $templateAccessor = new FileAccess(FileAccess::HOSTED_PAGE, $id);
+        // If template_id is not set, use the default view
+        if ($templateId === null)
+        {
+            return $defaultView;
+        }
+
+        $templateAccessor = new FileAccess(FileAccess::HOSTED_PAGE, $templateId);
 
         // If a custom hosted page template exists, use that
         if ($templateAccessor->exists() === true)
@@ -111,7 +122,7 @@ class Service extends Base\Service
             return $hostedPageHint . $templateAccessor->getViewName();
         }
 
-        // else return the default hosted view
-        return 'payment_link.hosted';
+        // else fallback to the default hosted view
+        return $defaultView;
     }
 }
