@@ -232,14 +232,7 @@ class Service extends Base\Service
     {
         $user = $this->user;
 
-        (new Validator)->validateInput('change_password', $input);
-
-        if (Hash::check($input[Entity::OLD_PASSWORD], $user->getPassword()) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OLD_PASSWORD_MISMATCH);
-        }
-
-        $user = (new Core)->changePassword($user, $input);
+        $user->edit($input, 'change_password');
 
         return $user->toArrayPublic();
     }
