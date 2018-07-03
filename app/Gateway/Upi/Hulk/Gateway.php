@@ -228,7 +228,7 @@ class Gateway extends Base\Gateway
      * @param $input
      * @return array
      */
-    public function preProcessServerCallback(& $input): array
+    public function preProcessServerCallback($input): array
     {
         $input[Fields::SIGNATURE] = array_get($input, 'headers.x-hulk-signature.0');
 

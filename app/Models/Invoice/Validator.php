@@ -401,39 +401,6 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateExpireBy(string $attribute, int $expireBy)
-    {
-        $now = Carbon::now(Timezone::IST);
-
-        $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
-
-        if ($expireBy < $minExpireBy->getTimestamp())
-        {
-            $message = 'expire_by should be at least ' . $minExpireBy->diffForHumans($now) . ' current time';
-
-            throw new BadRequestValidationFailureException($message);
-        }
-    }
-
-    /**
-     * For non empty receipt, validates that it's unique for given merchant across it's NON cancelled & expired items
-     * @param  string $attribute
-     * @param  string $receipt
-     * @throws BadRequestValidationFailureException
-     */
-    public function validateReceipt(string $attribute, string $receipt)
-    {
-        if (empty($receipt) === false)
-        {
-            $isDuplicateReceipt = app('repo')->invoice->isDuplicateReceipt($this->entity, $receipt);
-
-            if ($isDuplicateReceipt === true)
-            {
-                throw new BadRequestValidationFailureException("receipt must be unique for each item : {$receipt}");
-            }
-        }
-    }
-
     /**
      * Does few validations around merchant data to decide if invoice should
      * allowed to be created or not.

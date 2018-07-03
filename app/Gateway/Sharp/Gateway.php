@@ -121,7 +121,7 @@ class Gateway extends Base\Gateway
      * @throws Exception\GatewayErrorException
      * @throws Exception\RuntimeException
      */
-    public function preProcessServerCallback(& $body, $isBharatQr = false): array
+    public function preProcessServerCallback($body, $isBharatQr = false): array
     {
         $response = $body;
 

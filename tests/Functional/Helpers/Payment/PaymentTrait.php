@@ -43,7 +43,6 @@ trait PaymentTrait
     use PaymentTraitMpiEnstage;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
-    use PaymentWalletAmazonpayTrait;
 
     use RequestResponseFlowTrait
     {
