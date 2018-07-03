@@ -1,67 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 19.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="24px"
-	 height="24px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
-<g id="Header_x2F_BG" display="none">
-	<rect x="-270" y="-226" display="inline" fill="#F1F1F2" width="520" height="520"/>
-</g>
-<g id="Bounding_Boxes">
-	<g id="ui_x5F_spec_x5F_header_copy_3">
-	</g>
-	<path fill="none" d="M0,0h24v24H0V0z"/>
-</g>
-<g id="Rounded">
-	<g id="ui_x5F_spec_x5F_header_copy_5">
-	</g>
-	<g>
-		<path d="M21,4H3C1.9,4,1,4.9,1,6v13c0,1.1,0.9,2,2,2h18c1.1,0,2-0.9,2-2V6C23,4.9,22.1,4,21,4z M21,18c0,0.55-0.45,1-1,1h-8V6h8
-			c0.55,0,1,0.45,1,1V18z"/>
-		<path d="M19.25,9.5h-5.5C13.34,9.5,13,9.84,13,10.25c0,0.41,0.34,0.75,0.75,0.75h5.5c0.41,0,0.75-0.34,0.75-0.75
-			C20,9.84,19.66,9.5,19.25,9.5z"/>
-		<path d="M19.25,12h-5.5C13.34,12,13,12.34,13,12.75c0,0.41,0.34,0.75,0.75,0.75h5.5c0.41,0,0.75-0.34,0.75-0.75
-			C20,12.34,19.66,12,19.25,12z"/>
-		<path d="M19.25,14.5h-5.5c-0.41,0-0.75,0.34-0.75,0.75c0,0.41,0.34,0.75,0.75,0.75h5.5c0.41,0,0.75-0.34,0.75-0.75
-			C20,14.84,19.66,14.5,19.25,14.5z"/>
-	</g>
-</g>
-<g id="Sharp" display="none">
-	<g id="ui_x5F_spec_x5F_header_copy_4" display="inline">
-	</g>
-	<path display="inline" d="M13,12h7v1.5h-7V12z M13,9.5h7V11h-7V9.5z M13,14.5h7V16h-7V14.5z M23,4H1v17h22V4z M21,19h-9V6h9V19z"/>
-</g>
-<g id="Outline" display="none">
-	<g id="ui_x5F_spec_x5F_header" display="inline">
-	</g>
-	<g display="inline">
-		<path d="M21,4H3C1.9,4,1,4.9,1,6v13c0,1.1,0.9,2,2,2h18c1.1,0,2-0.9,2-2V6C23,4.9,22.1,4,21,4z M3,19V6h8v13H3z M21,19h-8V6h8V19z
-			"/>
-	</g>
-	<rect x="14" y="9.5" display="inline" width="6" height="1.5"/>
-	<rect x="14" y="12" display="inline" width="6" height="1.5"/>
-	<rect x="14" y="14.5" display="inline" width="6" height="1.5"/>
-</g>
-<g id="Duotone" display="none">
-	<g id="ui_x5F_spec_x5F_header_copy_2" display="inline">
-	</g>
-	<g display="inline">
-		<rect x="3" y="6" opacity="0.3" width="8" height="13"/>
-		<path d="M21,4H3C1.9,4,1,4.9,1,6v13c0,1.1,0.9,2,2,2h18c1.1,0,2-0.9,2-2V6C23,4.9,22.1,4,21,4z M11,19H3V6h8V19z M21,19h-8V6h8V19
-			z"/>
-	</g>
-	<rect x="14" y="9.5" display="inline" width="6" height="1.5"/>
-	<rect x="14" y="12" display="inline" width="6" height="1.5"/>
-	<rect x="14" y="14.5" display="inline" width="6" height="1.5"/>
-</g>
-<g id="Fill" display="none">
-	<g id="ui_x5F_spec_x5F_header_copy" display="inline">
-	</g>
-	<g display="inline">
-		<path d="M21,4H3C1.9,4,1,4.9,1,6v13c0,1.1,0.9,2,2,2h18c1.1,0,2-0.9,2-2V6C23,4.9,22.1,4,21,4z M21,19h-9V6h9V19z"/>
-		<rect x="13" y="9.5" width="7" height="1.5"/>
-		<rect x="13" y="12" width="7" height="1.5"/>
-		<rect x="13" y="14.5" width="7" height="1.5"/>
-	</g>
-</g>
-<g id="nyt_x5F_exporter_x5F_info" display="none">
-</g>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+    <title>Rectangle 5</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard" transform="translate(-1.000000, -1.000000)" fill="#000000" fill-rule="nonzero">
+            <g id="Group-6" transform="translate(1.000000, 1.000000)">
+                <path d="M15.8823529,3 L20,7.47368421 L20,18.5087719 C20,19.3289474 19.3823529,19.9925439 18.627451,19.9925439 L9.01960784,20 C8.26470588,20 7.64705882,19.3364035 7.64705882,18.5162281 L7.64705882,4.49122807 C7.64705882,3.67105263 8.26470588,3 9.01960784,3 L15.8823529,3 Z M5,5.68421053 L6.42857143,5.68421053 L6.42857143,19.1052632 L5,19.1052632 L5,5.68421053 Z M10.2941176,10.1578947 L10.2941176,11.0526316 L17.3529412,11.0526316 L17.3529412,10.1578947 L10.2941176,10.1578947 Z M10.2941176,11.9473684 L10.2941176,12.8421053 L17.3529412,12.8421053 L17.3529412,11.9473684 L10.2941176,11.9473684 Z M10.2941176,13.7368421 L10.2941176,14.6315789 L17.3529412,14.6315789 L17.3529412,13.7368421 L10.2941176,13.7368421 Z M15,4.11842105 L15,8.21929825 L18.9285714,8.21929825 L15,4.11842105 Z" id="Shape"></path>
+            </g>
+        </g>
+    </g>
 </svg>

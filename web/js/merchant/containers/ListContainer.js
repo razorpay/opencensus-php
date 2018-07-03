@@ -63,7 +63,10 @@ export default class ListContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.location.search !== nextProps.location.search) {
+    if (
+      decodeURI(this.props.location.search) !==
+      decodeURI(nextProps.location.search)
+    ) {
       this.defaultSearch(nextProps.location.search);
     }
   }
@@ -76,6 +79,12 @@ export default class ListContainer extends Component {
 
     if (params.id) {
       params.id = encodeURIComponent(params.id); // Encoding just id. Rest are query params, which is encoded while making axios request
+    }
+
+    for (let k in params) {
+      if (params.hasOwnProperty(k)) {
+        params[k] = decodeURI(params[k]);
+      }
     }
 
     // props.fetchAll is available only when model is implemented. Addons doesn't have model hence calling 'fetchList' class fn.

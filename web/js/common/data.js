@@ -245,8 +245,14 @@ export const publicFeature = {
   ],
 
   featuresAkaMap: {
-    marketplace: 'Marketplace',
-    subscriptions: 'Subscriptions',
-    virtual_accounts: 'Virtual Accounts',
+    product: {
+      marketplace: 'Marketplace',
+      subscriptions: 'Subscriptions',
+      virtual_accounts: 'Virtual Accounts',
+    },
+    partner: {
+      activation: 'Partner Activation',
+      deactivation: 'Partner Deactivation',
+    },
   },
 };

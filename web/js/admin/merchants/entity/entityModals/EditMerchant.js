@@ -90,6 +90,8 @@ export default class EditMerchant extends Component {
       }`;
     }
 
+    body.convert_currency = body.convert_currency || null;
+
     this.dropUnchangedFields(body);
 
     delete body.auto_refund_delay_type;
@@ -104,6 +106,9 @@ export default class EditMerchant extends Component {
       url: '/admin/api/live/merchants/' + this.props.merchantId,
       method: 'put',
       data: body,
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
       .then(data => {
         if (data) {
@@ -300,13 +305,14 @@ export default class EditMerchant extends Component {
             defaultValue={details.auto_capture_late_auth ? '1' : '0'}
           />
 
-          {details.convert_currency != null ? (
-            <SwitchField
-              label="Convert Currency"
-              name="convert_currency"
-              defaultValue={details.convert_currency ? '1' : '0'}
-            />
-          ) : null}
+          <SelectField
+            name="convert_currency"
+            label="Convert Currency"
+            defaultValue={details.convert_currency === false ? '0' : ''}
+          >
+            <option value="">Disabled</option>
+            <option value="0">Enabled</option>
+          </SelectField>
 
           <div class="field">
             <label>Groups</label>
