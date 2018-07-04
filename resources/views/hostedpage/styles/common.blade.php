@@ -75,13 +75,10 @@
 
     #contact-details {
         font-size: 14px;
-        float: right;
-        text-align: right;
         line-height: 32px;
     }
 
     #contact-details svg {
-        fill: {{$light_color}};
         vertical-align: middle;
         height: 16px;
     }

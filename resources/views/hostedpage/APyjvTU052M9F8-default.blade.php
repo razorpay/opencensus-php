@@ -41,11 +41,11 @@
 
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-        @include('hostedpage.partials.styles.common')
-        @include('hostedpage.partials.styles.success_animation')
-        @include('hostedpage.partials.styles.form_theme')
-        @include('hostedpage.partials.styles.desktop')
-        @include('hostedpage.partials.styles.mobile')
+        @include('hostedpage.styles.common')
+        @include('hostedpage.styles.success_animation')
+        @include('hostedpage.styles.form_theme')
+        @include('hostedpage.styles.desktop')
+        @include('hostedpage.styles.mobile')
 
         @include('hostedpage.partials.scripts')
     </head>

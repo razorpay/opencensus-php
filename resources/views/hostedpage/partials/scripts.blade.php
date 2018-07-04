@@ -106,17 +106,22 @@
         }
     }
 
+    function removeElemsWithClass(cls) {
+        var elems = document.getElementsByClassName(cls);
+
+        for (var i = 0; i < elems.length; i++) {
+            elems[i].innerHTML = ''; // To remove common elements to coexist in both views
+            elems[i].style.display = 'none'; // To remove common elements to coexist in both views
+        }
+    }
+
     function cleanHTML() {
         // Show content according to width
         if (checkIsDesktop()) {
             document.getElementById('mobile-container').innerHTML = '';
             document.getElementById('desktop-container').style.display = 'block';
 
-            var elems = document.getElementsByClassName('mobile-el');
-            for (var i = 0; i < elems.length; i++) {
-                elems[i].innerHTML = ''; // To remove common elements to coexist in both views
-                elems[i].style.display = 'none'; // To remove common elements to coexist in both views
-            }
+            removeElemsWithClass('mobile-el');
         } else {
 
             document.getElementById('desktop-container').innerHTML = '';
@@ -124,11 +129,7 @@
 
             document.body.style.overflow = 'hidden';
 
-            var elems = document.getElementsByClassName('desktop-el');
-            for (var i = 0; i < elems.length; i++) {
-                elems[i].innerHTML = ''; // To remove common elements to coexist in both views
-                elems[i].style.display = 'none'; // To remove common elements to coexist in both views
-            }
+            removeElemsWithClass('desktop-el');
         }
     }
 

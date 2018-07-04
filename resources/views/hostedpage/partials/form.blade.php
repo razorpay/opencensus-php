@@ -51,4 +51,5 @@
 
     @include('hostedpage.partials.success')
     @include('hostedpage.partials.footer')
+    @include('hostedpage.partials.contact', ['view' => 'form'])
 </div>

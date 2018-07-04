@@ -117,7 +117,12 @@
     }
 
     #desktop-container #contact-details {
-        display: block;
+        float: right;
+        text-align: right;
+    }
+
+    #desktop-container #contact-details svg {
+        fill: {{$light_color}};
     }
 
     #desktop-container #fin-logo {

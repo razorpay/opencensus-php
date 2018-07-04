@@ -1,5 +1,6 @@
 <?php
-    $border_color = 'rgba(0,0,0,0.08)';
+    $border_color       = 'rgba(0,0,0,0.08)';
+    $secondary_color    = '#6F7691';
 ?>
 
 <style>
@@ -67,8 +68,7 @@
 
     /* Already setting innerHTML = null. This is for elements written in partials used by both mobile-desktop layouts */
     #mobile-container .footer,
-    #mobile-container #footer-section #secure-lock-icon,
-    #mobile-container #contact-details {
+    #mobile-container #footer-section #secure-lock-icon {
         display: none;
     }
 
@@ -90,6 +90,14 @@
     #mobile-container #rzp-logo {
         vertical-align: bottom;
         margin-left: 4px;
+    }
+
+    #mobile-container #contact-details {
+        padding: 0 16px;
+    }
+
+    #mobile-container #contact-details svg {
+        fill: {{$secondary_color}};
     }
 
     #mobile-container #testmode-warning {
