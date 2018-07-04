@@ -23,7 +23,7 @@ class Gateway extends Base\Gateway
 {
 	protected $gateway = 'isg';
 
-	public function preProcessServerCallback(& $input, $isBharatQr = false): array
+	public function preProcessServerCallback($input, $isBharatQr = false): array
 	{
 		if ($isBharatQr === true)
 		{
@@ -180,7 +180,7 @@ class Gateway extends Base\Gateway
 
 		$expectedAmount = $this->getFormattedAmount($input['payment']['amount']);
 
-		$actualAmount = $this->getFormattedAmount($content[Field::TRANSACTION_AMOUNT]);
+		$actualAmount = $content[Field::TRANSACTION_AMOUNT];
 
 		if ($expectedAmount === $actualAmount)
 		{
@@ -261,10 +261,10 @@ class Gateway extends Base\Gateway
 
 	protected function getVerifyRequestArray($input, $gatewayPayment = null)
 	{
-		$this->determineAndSetModeForQr($input[Field::PRIMARY_ID], $this->gateway);
-
 		if ($gatewayPayment === null)
 		{
+			$this->determineAndSetModeForQr($input[Field::PRIMARY_ID], $this->gateway);
+
 			$terminal = $this->app['repo']->terminal->findByGatewayMpan($input[Field::MERCHANT_PAN], $this->gateway);
 
 			$attributes = [
@@ -284,11 +284,16 @@ class Gateway extends Base\Gateway
 				Field::TRANSACTION_AMOUNT => $this->getFormattedAmount($gatewayPayment[Entity::TRANSACTION_AMOUNT]),
 				Field::TRANSACTION_DATE   => $this->getFormattedDate($gatewayPayment[Entity::TRANSACTION_DATE_TIME],
 															        'Y-m-d'),
-				Field::TERMINAL_ID        => $input[BaseEntity::TERMINAL][TerminalEntity::GATEWAY_MERCHANT_ID],
+				Field::TERMINAL_ID        => $input[BaseEntity::TERMINAL][TerminalEntity::GATEWAY_TERMINAL_ID],
 			];
 		}
 
 		return  $this->getStandardRequestArray($attributes);
+	}
+
+	protected function getLiveSecret()
+	{
+		return $this->config['live_hash_secret'];
 	}
 
 	protected function getDecryptedString($string)
@@ -302,18 +307,18 @@ class Gateway extends Base\Gateway
 
 	protected function getEncryptedString($string)
 	{
-		$masterKey = $this->getSecret();
+		$masterKey = hex2bin($this->getGatewayInstance()->getSecret());
 
 		$aes = new AESCrypto(AES::MODE_ECB, $masterKey);
 
-		return base64_encode($aes->encryptString($string));
+		return bin2hex($aes->encryptString($string));
 	}
 
 	protected function getQrData(array $input)
 	{
-	//	$this->verifyCallback($input);
+		$this->verifyCallback($input);
 
-		$customerCardNumber = $this->getDecryptedString($input[ResponseField::CONSUMER_PAN]);
+		$customerCardNumber = $this->getDecryptedString($input[Field::CONSUMER_PAN]);
 
 		$qrData = [
 			BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[Field::TRANSACTION_AMOUNT]),
@@ -327,10 +332,6 @@ class Gateway extends Base\Gateway
 		return $qrData;
 	}
 
-	public function getSecret()
-	{
-		return $this->config['bharatqr_secret'];
-	}
 
 	protected function createGatewayPaymentEntityForQr($input)
 	{
@@ -491,7 +492,14 @@ class Gateway extends Base\Gateway
 		}
 	}
 
-	public function getBharatQrResponse($input, $ex,  $valid)
+	/*
+	 * in case of any payment notification received , we need to send status to Isg gateway, about the payment.
+	 * We get to know about the payment state by flag $valid which is set true in case of success
+	 * If the payment fails due to getting a mismatch in callback , we send them the reason through exception object
+	 * If for any other reason the BharatQr Payment is failing,  we send them generic status code as Failed.
+	 */
+
+	public function getBharatQrResponse($valid, $input = null, $ex = null)
 	{
 		$attributes = [
 			Field::TRANSACTION_ID      => $input[Field::TRANSACTION_ID],
@@ -504,13 +512,19 @@ class Gateway extends Base\Gateway
 
 			$attributes[Field::STATUS_DESC] = Status::SUCCESS;
 		}
-		else
+		else if (isset($ex) === true)
 		{
 			$attributes[Field::STATUS_CODE] = Status::NO_RECORDS;
 
 			$error = $ex->getError()->getAttributes();
 
 			$attributes[Field::STATUS_DESC] = $error['gateway_error_desc'];
+		}
+		else
+		{
+			$attributes[Field::STATUS_CODE] = Status::NO_RECORDS;
+
+			$attributes[Field::STATUS_DESC] = Status::FAILED;
 		}
 
 		$response = $this->makeJsonResponse($attributes);

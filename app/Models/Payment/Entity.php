@@ -295,7 +295,6 @@ class Entity extends Base\PublicEntity
         self::DISPUTED,
         self::RECURRING_TYPE,
         self::ACKNOWLEDGED_AT,
-        self::PAYMENT_LINK_ID,
     ];
 
     protected $public = [
@@ -423,7 +422,6 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
-        self::PAYMENT_LINK_ID      => null,
     ];
 
     protected $amounts = [

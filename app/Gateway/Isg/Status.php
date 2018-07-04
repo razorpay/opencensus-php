@@ -12,6 +12,8 @@ class Status
 
 	const SUCCESS           = 'Success';
 
+	const FAILED            = 'Failed';
+
 	protected static $statusCodeMap = [
 		self::APPROVED      => 'Transaction Approved',
 		self::NO_RECORDS    => 'Transaction Not Present',

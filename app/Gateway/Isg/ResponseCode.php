@@ -11,8 +11,8 @@ class ResponseCode
 		'E002' => 'Consumer Pan mismatch in Verify response and callback response',
 		'E003' => 'Merchant pan mismatch in Verify response and callback response',
 		'E004' => 'Status Code mismatch in Verify response and callback response',
-		'E005' => 'No records present for given transaction',
-		'E006' => 'Transaction declined',
+		'E005' => 'No records present for given transaction in Isg Gateway',
+		'E006' => 'Transaction is declined by Isg Gateway',
 	];
 	protected static $responseCodeToErrorCodeMap = [
 		'E001' => ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED,

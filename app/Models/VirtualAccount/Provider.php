@@ -14,6 +14,7 @@ use RZP\Models\BharatQr\Constants;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Gateway\Isg\Constants as Isg;
 
 class Provider
 {
@@ -242,15 +243,16 @@ class Provider
             $this->getIdentifierTlv(Tags::VISA, Terminal\Entity::VISA_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::MASTERCARD, Terminal\Entity::MC_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::RUPAY, Terminal\Entity::RUPAY_MPAN, $merchantIdentifiers),
+            Tags::MERCHANT_ACCOUNT . $this->getLengthAndValue(Isg::MERCHANT_ACCOUNT),
             $this->getBharatQrUpiTlv($merchantIdentifiers),
             $this->getBharatQrDynamicUpiTlv($qrCode, $merchantIdentifiers),
-            Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
+            Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Isg::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
             Tags::COUNTRY_CODE . $this->getLengthAndValue(Constants::COUNTRY_CODE),
-            Tags::MERCHANT_NAME . $this->getLengthAndValue(Constants::MERCHANT_NAME),
-            Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
-            Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
+            Tags::MERCHANT_NAME . $this->getLengthAndValue(Isg::MERCHANT_NAME),
+            Tags::MERCHANT_CITY . $this->getLengthAndValue(Isg::MERCHANT_CITY),
+            Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Isg::MERCHANT_PINCODE),
             $this->getBharatQrAdditionalDetailTlv($qrCode),
         ];
 
@@ -323,7 +325,7 @@ class Provider
         // In case of upi payments we need to send reference with
         // prefix. This is how they identify our payments
         //
-        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getId());
+        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue($qrCode->getId());
 
         $upiString = $rupayRidTlv . $transactionReferenceTlv;
 
@@ -334,9 +336,11 @@ class Provider
     {
         $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getId());
 
-        $additionalDetailsString = $idTlv;
+        $idTlv2 = Tags::TERMINAL_ID . $this->getLengthAndValue(Isg::ISG_TERMINAL_ID);
 
-        return Tags::ADDITIONAL_DETAIL . strlen($additionalDetailsString) . $additionalDetailsString;
+	    $additionalDetailsString = $idTlv.$idTlv2;
+
+	    return Tags::ADDITIONAL_DETAIL . strlen($additionalDetailsString) . $additionalDetailsString;
     }
 
     protected function getBharatQrAmountTlv(QrCode\Entity $qrCode)

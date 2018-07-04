@@ -368,6 +368,7 @@ class Gateway
 
     protected function getIntegerFormattedAmount(string $amount)
     {
+		// the amount sent by Isg is in rupees and string format.
         return (int) number_format(($amount * 100), 0, '.', '');
     }
 

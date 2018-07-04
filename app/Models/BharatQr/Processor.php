@@ -212,7 +212,7 @@ class Processor extends VirtualAccount\Processor
 	    {
 	    	$gatewayMpan = $this->gatewayInput[GatewayResponseParams::MPAN];
 
-	    	$terminal = $this->repo->terminal->findByGatewayMpan($gateway, $gatewayMpan);
+			$terminal = $this->repo->terminal->findByGatewayMpan($gatewayMpan, $gateway);
 	    }
 
         if ($terminal === null)

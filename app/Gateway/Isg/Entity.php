@@ -19,6 +19,7 @@ class Entity extends Base\Entity
 	const STATUS_CODE                           = 'status_code';
 	const STATUS_DESC                           = 'status_desc';
 	const TRANSACTION_DATE                      = 'transaction_date';
+	const NOTIFICATION_REF_NO                   = 'notification_ref_no';
 
 	protected $entity = 'isg';
 

@@ -70,14 +70,24 @@ class CreateIsgGateway extends Migration
 		    $table->char(ISG::STATUS_DESC, 30)
 			    ->nullable();
 
+		    $table->char(ISG::NOTIFICATION_REF_NO, 16)
+			    ->nullable();
+
 		    $table->string(ISG::CREATED_AT);
 
 		    $table->string(ISG::UPDATED_AT);
 
 		    $table->foreign(ISG::PAYMENT_ID)
-			    ->references(Payment::ID)
-			    ->on(Table::PAYMENT)
-			    ->onDelete('restrict');
+			        ->references(Payment::ID)
+			        ->on(Table::PAYMENT)
+			        ->onDelete('restrict');
+
+		    $table->foreign(ISG::REFUND_ID)
+			        ->references(Refund::ID)
+			        ->on(Table::REFUND)
+			        ->onDelete('restrict');
+
+		    $table->index(ISG::ACTION);
 
 	    });
     }

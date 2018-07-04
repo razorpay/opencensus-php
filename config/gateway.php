@@ -25,6 +25,7 @@ return [
         'first_data',
         'hdfc',
         'hitachi',
+	    'isg',
         'kotak',
         'mobikwik',
         'netbanking_hdfc',
@@ -131,6 +132,10 @@ return [
         'test_hash_secret2'    => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
         'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
+	'isg' => [
+		'test_hash_secret'        => env('ISG_GATEWAY_TEST_BHARAT_QR_SECRET'),
+		'live_hash_secret'        => env('ISG_GATEWAY_LIVE_BHARAT_QR_SECRET'),
+	],
 
     'first_data' => [
         // Test credentials
