@@ -43,6 +43,46 @@
         }
     }
 
+    function addListeners_Validators() {
+        document.getElementById('udf_submit_btn').addEventListener('click', submitForm);
+
+        document.getElementsByName('amount')[0].addEventListener('input', (function(){
+            var prettyVal;
+
+            return function(e) {
+                var value = e.target.value;
+
+                if (!value) {
+                    e.target.value = '';
+
+                    return;
+                }
+
+                var newValue = value
+                    .split('.')
+                    .slice(0, 2)
+                    .map(function(v, index) {
+                        v = v.replace(/\D/g, '');
+                        if (index) {
+                            v = v.slice(0, 2);
+                        }
+                        return v;
+                    })
+                    .join('.');
+
+                if (newValue > 5000000000) {
+                    newValue = 5000000000;
+                }
+                if (newValue) {
+                    prettyVal = newValue;
+                }
+
+                e.target.value = prettyVal;
+
+            };
+        })());
+    }
+
     function toggleMobileForm() {
         var formEl = document.getElementById('form-section');
         if (hasClass(formEl, 'slideup')) {

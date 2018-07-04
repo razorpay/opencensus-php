@@ -76,7 +76,9 @@
         <script src="https://cdn.jsdelivr.net/npm/{{'@'}}json-editor/json-editor/dist/jsoneditor.min.js"></script>
         <script>
             cleanHTML();
-            document.getElementById('udf_submit_btn').addEventListener('click', submitForm);
+
+            addListeners_Validators();
+
             window.t0 = (new Date()).getTime(); // initial time stamp
 
             var data = window.RZP_DATA.data;
