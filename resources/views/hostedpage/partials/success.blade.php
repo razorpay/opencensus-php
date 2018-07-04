@@ -1,6 +1,6 @@
 <div id="success-section">
     <div class="animoo">
-        <div class="circle circle-1"></div>
+        <div class="circle circle-1 spring"></div>
         <div class="circle circle-2"></div>
         <div class="circle circle-3"></div>
         <span class="checkmark"></span>
