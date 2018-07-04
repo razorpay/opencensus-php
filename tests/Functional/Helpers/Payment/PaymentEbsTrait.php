@@ -16,6 +16,8 @@ trait PaymentEbsTrait
 
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
+        $this->ba->directAuth();
+
         if ($mock)
         {
             $request = $this->makeFirstGatewayPaymentMockRequest(

@@ -100,6 +100,10 @@ class AdminFetch
                 'triggered_count'   => [
                     Fetch::LABEL        => 'triggered_count',
                     Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'rule_id'           => [
+                    Fetch::LABEL        => 'rule_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
                 ]
             ]
         ];

@@ -13,6 +13,7 @@ use RZP\Gateway\Enach\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -43,13 +44,24 @@ class Gateway extends Base\Gateway
         {
             $responseArrary = $e->getData();
 
-            $content[Base\Entity::ERROR_CODE] = $responseArrary['code'];
+            $content[Base\Entity::ERROR_CODE] = $responseArrary['code'] ?? null;
 
-            $content[Base\Entity::ERROR_MESSAGE] = $responseArrary['message'];
+            $content[Base\Entity::ERROR_MESSAGE] = $responseArrary['message'] ?? null;
 
-            $content[Base\Entity::GATEWAY_REFERENCE_ID] = $responseArrary['details'];
+            $content[Base\Entity::GATEWAY_REFERENCE_ID] = $responseArrary['details'] ?? null;
 
-            $this->createGatewayPaymentEntity($content, 'authorize');
+            if ($content[Base\Entity::GATEWAY_REFERENCE_ID] !== null)
+            {
+                $this->createGatewayPaymentEntity($content, 'authorize');
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_AUTH_ESIGN_FAILURE,
+                    [
+                        'response' => $content
+                    ]);
+            }
 
             throw $e;
         }

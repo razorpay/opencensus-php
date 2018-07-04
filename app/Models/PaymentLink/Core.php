@@ -15,7 +15,7 @@ use RZP\Exception\BadRequestException;
 class Core extends Base\Core
 {
     /**
-     * Elfin: Url shortener service
+     * Elfin: Url shortening service
      */
     protected $elfin;
 
@@ -149,8 +149,6 @@ class Core extends Base\Core
      *
      * @param  Entity $paymentLink
      * @param  array  $input
-     *
-     * @return array
      */
     public function sendNotification(Entity $paymentLink, array $input)
     {
@@ -173,10 +171,12 @@ class Core extends Base\Core
      *
      * @param Entity         $paymentLink
      * @param Payment\Entity $payment
+     *
+     * @throws BadRequestException
      */
     public function validateIsPaymentInitiatable(Entity $paymentLink, Payment\Entity $payment)
     {
-        // 1. Validates amount if applicable
+        // 1. Validates amount, if applicable
         $paymentLink->getValidator()->validatePaymentAmount($payment);
 
         // 2. Validates payment link is active and has payment slots available
@@ -195,6 +195,7 @@ class Core extends Base\Core
     /**
      * This method is called post a payment capture is attempted (failed or success) in Processor/Authorize. Refer below
      * cases on what this method handles.
+     *
      * @param Payment\Entity $payment
      */
     public function postPaymentCaptureAttemptProcessing(Payment\Entity $payment)
@@ -204,7 +205,7 @@ class Core extends Base\Core
         $paymentLink = $payment->paymentLink;
 
         $this->trace->info(
-            TraceCode::PAYMENT_LINK_POST_PAYMENT_CAPTURE_ATTEMPT,
+            TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS,
             [
                 'payment_id' => $payment->getId(),
                 'payment_status' => $payment->getStatus(),
@@ -336,6 +337,7 @@ class Core extends Base\Core
     /**
      * Given payment link is payable(i.e. active and not expired etc), checks if a new payment can be accepted by
      * counting existing succeeding payments (i.e. payments in created/authorized statuses).
+     *
      * @param  Entity  $paymentLink
      * @return boolean
      */
@@ -415,6 +417,7 @@ class Core extends Base\Core
 
     /**
      * Updates the status to INACTIVE, status_reason to EXPIRED of an individual expired payment link by locking it.
+     *
      * @param Entity $paymentLink
      */
     protected function expirePaymentLink(Entity $paymentLink)
@@ -438,7 +441,9 @@ class Core extends Base\Core
     }
 
     /**
-     * Initiates refund on a payment. This happens in cases as described in postPaymentCaptureAttemptProcessing() method
+     * Initiates refund on a payment. This happens in cases as described in
+     * postPaymentCaptureAttemptProcessing() method
+     *
      * @param Entity         $paymentLink
      * @param Payment\Entity $payment
      */
@@ -455,13 +460,20 @@ class Core extends Base\Core
 
         try
         {
+            //
+            // We use existing payment entity's status attribute to decide which method to call for refund.
+            // Additionally while calling the refund{X}Payment() method we pass reloaded payment entity because reload
+            // doesn't happen in the called method. This is an additional level of check for concurrent issues. The
+            // payment's refund will fail if the status has changed in between. We can't do reload before that because
+            // then condition check will happen on new status.
+            //
             if ($payment->isAuthorized() === true)
             {
-                $refund = $processor->refundAuthorizedPayment($payment);
+                $refund = $processor->refundAuthorizedPayment($payment->reload());
             }
             else if ($payment->isCaptured() === true)
             {
-                $refund = $processor->refundCapturedPayment($payment);
+                $refund = $processor->refundCapturedPayment($payment->reload());
             }
             else
             {

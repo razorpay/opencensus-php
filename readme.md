@@ -29,6 +29,7 @@
 
 * Copy over `api.razorpay.com.conf` to `/etc/apache2/sites-available/` and update the directory location where your project lies.
 * `sudo a2ensite api.razorpay.com.conf`
+* Install redis ( arch-linux : `pacman -S redis`) and enable its service (`systemctl enable --now redis.service`)
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
 

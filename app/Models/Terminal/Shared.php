@@ -69,6 +69,7 @@ class Shared
     const OPENWALLET_RAZORPAY_TERMINAL       = '100OpenwalltTl';
     const MPESA_RAZORPAY_TERMINAL            = '100VodaMpesaTl';
     const FSS_RAZORPAY_TERMINAL              = '100FssTerminal';
+    const ENSTAGE_TERMINAL                   = '100ensgageTrml';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -113,6 +114,7 @@ class Shared
         self::SBIBUDDY_RAZORPAY_TERMINAL,
         self::OPENWALLET_RAZORPAY_TERMINAL,
         self::MPESA_RAZORPAY_TERMINAL,
+        self::ENSTAGE_TERMINAL,
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -159,6 +161,7 @@ class Shared
         self::UPI_HULK_RAZORPAY_TERMINAL         => Gateway::UPI_HULK,
         self::OPENWALLET_RAZORPAY_TERMINAL       => Gateway::WALLET_OPENWALLET,
         self::MPESA_RAZORPAY_TERMINAL            => Gateway::WALLET_MPESA,
+        self::ENSTAGE_TERMINAL                   => Gateway::MPI_ENSTAGE,
     ];
 
     public static function getSharedTerminalMapping()

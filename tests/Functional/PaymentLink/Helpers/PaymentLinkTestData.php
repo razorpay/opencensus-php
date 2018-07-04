@@ -37,6 +37,52 @@ return [
         ],
     ],
 
+    'testCreatePaymentLinkWithCurrencyAndNoAmount' => [
+        'request'   => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'currency' => 'INR',
+                'title'    => 'Sample title',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount field is required when currency is present.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePaymentLinkWithoutAmountOrCurrency' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => 'Sample description'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user_id'       => User::MERCHANT_USER_ID,
+                'receipt'       => '00000000000001',
+                'amount'        => null,
+                'currency'      => null,
+                'title'         => 'Sample title',
+                'description'   => 'Sample description',
+            ],
+        ],
+    ],
+
     'testCreatePaymentLinkWithBadExpireBy' => [
         'request'  => [
             'url'     => '/payment_links',
@@ -119,6 +165,8 @@ return [
             'method'  => 'patch',
             'content' => [
                 'receipt'       => '00000000000002',
+                'amount'        => 4000,
+                'currency'      => 'INR',
                 'title'         => 'Sample test title',
                 'description'   => 'Sample test description',
                 'notes'         => [
@@ -130,12 +178,37 @@ return [
             'content' => [
                 'id'            => 'pl_100000000000pl',
                 'receipt'       => '00000000000002',
+                'amount'        => 4000,
                 'title'         => 'Sample test title',
                 'description'   => 'Sample test description',
                 'notes'         => [
                     'sample_key' => 'Sample test notes',
                 ],
             ],
+        ],
+    ],
+
+    'testUpdatePaymentLinkInvalidAmountCurrency' => [
+        'request'  => [
+            'url'     => '/payment_links/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'amount'   => null,
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount field is required when currency is present.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -225,6 +298,16 @@ return [
         'payment_link' => [
             'times_paid'        => 1,
             'total_amount_paid' => 10100,
+            'status'            => 'active',
+            'status_reason'     => null,
+        ],
+    ],
+
+    'testPaymentLinkMakePaymentWithUserDefinedAmount' => [
+        // Used to assert payment link's attributes after payment in test
+        'payment_link' => [
+            'times_paid'        => 1,
+            'total_amount_paid' => 45000,
             'status'            => 'active',
             'status_reason'     => null,
         ],
@@ -326,7 +409,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Times payable cannot be less than the number of payments already made',
+                    'description' => 'Times payable should be greater than or equal to the number of payments already made',
                 ],
             ],
             'status_code' => 400,

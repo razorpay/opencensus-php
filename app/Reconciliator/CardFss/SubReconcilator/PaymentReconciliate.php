@@ -17,12 +17,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * Row Header Names
      ******************/
 
-    const COLUMN_GATEWAY_TRANSACTION_ID   = 'payment_gateway_payment_transaction_id';
+    const COLUMN_GATEWAY_TRANSACTION_ID   = 'payment_gateway_transaction_id';
     const COLUMN_PAYMENT_ID               = 'merchant_track_id';
     const COLUMN_TRANSACTION_AMOUNT       = 'transaction_amount';
     const COLUMN_RRN                      = 'rrn';
     const COLUMN_AUTH_CODE                = 'authapproval_code';
-    const COLUMN_GATEWAY_FEE              = 'msf';
+    const COLUMN_GATEWAY_FEE              = 'msf_amount';
     const COLUMN_GATEWAY_SERVICE_TAX      = 'msf_tax_amount';
     const COLUMN_GATEWAY_SETTLED_AT       = 'settlement_date';
 
@@ -83,7 +83,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
-        if (empty($row[self::COLUMN_GATEWAY_SERVICE_TAX]) === true)
+        //
+        // Can't put empty check, because msf_tax_amount can be zero
+        //
+        if (isset($row[self::COLUMN_GATEWAY_SERVICE_TAX]) === false)
         {
             $this->reportMissingColumn($row, self::COLUMN_GATEWAY_SERVICE_TAX);
 
@@ -103,7 +106,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayFee($row)
     {
-        if (empty($row[self::COLUMN_GATEWAY_FEE]) === true)
+        //
+        // Can't put empty check, because msf can be zero
+        //
+        if (isset($row[self::COLUMN_GATEWAY_FEE]) === false)
         {
             $this->reportMissingColumn($row, self::COLUMN_GATEWAY_FEE);
 
@@ -183,6 +189,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         if (empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false)
         {
             $this->setPaymentReference1($rowDetails[BaseReconciliate::REFERENCE_NUMBER]);
+        }
+
+        if (empty($rowDetails[BaseReconciliate::AUTH_CODE]) === false)
+        {
+            $this->setPaymentReference2($rowDetails[BaseReconciliate::AUTH_CODE]);
         }
     }
 }

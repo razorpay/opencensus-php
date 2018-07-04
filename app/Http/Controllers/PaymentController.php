@@ -32,6 +32,15 @@ class PaymentController extends Controller
         return ApiResponse::json($payments);
     }
 
+    public function getPaymentFlows()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getPaymentFlows($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getVerify($id)
     {
         $data = $this->service()->verify($id);
@@ -384,6 +393,15 @@ class PaymentController extends Controller
     public function updateReceiverData()
     {
         $data = $this->service()->updateReceiverData();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postPaymentValidateVpa()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->validateVpa($input);
 
         return ApiResponse::json($data);
     }

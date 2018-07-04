@@ -38,7 +38,6 @@ class AuthTypeSorter extends Terminal\Sorter
 
             foreach ($terminals as $key => $terminal)
             {
-
                 if ($terminal->isAuthTypeEnabled($authType) === true)
                 {
                     $orderedTerminals[] = $terminal;

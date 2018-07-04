@@ -29,7 +29,8 @@ class CreatePaymentLinks extends Migration
             $table->bigInteger(Entity::AMOUNT)
                   ->nullable();
 
-            $table->string(Entity::CURRENCY, 3);
+            $table->string(Entity::CURRENCY, 3)
+                  ->nullable();
 
             $table->integer(Entity::EXPIRE_BY)
                   ->nullable();

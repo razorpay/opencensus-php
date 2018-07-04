@@ -104,7 +104,7 @@ class Repository extends Base\Repository
             'action'                => $requestData['action'],
             'amount'                => $requestData['amt'],
             'currency'              => $requestData['currencycode'],
-            'error_code'            => $error['code'],
+            'error_code2'           => $error['code'],
             'error_text'            => $error['text'],
             'enroll_result'         => $enrollResult,
             'status'                => Payment\Status::ENROLL_FAILED
@@ -198,7 +198,7 @@ class Repository extends Base\Repository
             'received'      => '1',
             'status'        => Payment\Status::AUTH_NOT_ENROLL_FAILED,
             'result'        => $result,
-            'error_code'    => $error['code'],
+            'error_code2'   => $error['code'],
             'error_text'    => $error['text']
         ];
 
@@ -222,7 +222,7 @@ class Repository extends Base\Repository
             'received'      => '1',
             'status'        => Payment\Status::AUTH_ENROLL_FAILED,
             'result'        => $result,
-            'error_code'    => $error['code'],
+            'error_code2'   => $error['code'],
             'error_text'    => $error['text']
         ];
 
@@ -239,7 +239,7 @@ class Repository extends Base\Repository
             'action'                => $request['action'],
             'amount'                => $request['amt'],
             'currency'              => $request['currencycode'],
-            'error_code'            => $error['code'],
+            'error_code2'           => $error['code'],
             'error_text'            => $error['text'],
             'status'                => Payment\Status::AUTH_RECURRING_FAILED
          ];
@@ -337,7 +337,7 @@ class Repository extends Base\Repository
             'refund_id'                 => $refundId,
             'gateway_transaction_id'    => $requestData['transid'],
             'amount'                    => $requestData['amt'],
-            'error_code'                => $error['code'],
+            'error_code2'               => $error['code'],
             'error_text'                => $errorText,
             'action'                    => $action,
             'status'                    => $status,
@@ -369,7 +369,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where('payment_id', '=', $paymentId)
                     ->where('status', '=', Payment\Status::CAPTURE_FAILED)
-                    ->where('error_code', '=', ErrorCode::GW00176)
+                    ->where('error_code2', '=', ErrorCode::GW00176)
                     ->firstOrFail();
     }
 
@@ -448,7 +448,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where('gateway_transaction_id', '=', $gatewayTxnId)
-                    ->where('error_code', '=', $error)
+                    ->where('error_code2', '=', $error)
                     ->first();
     }
 

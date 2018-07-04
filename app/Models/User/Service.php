@@ -228,11 +228,11 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function changePassword(string $id, array $input): array
+    public function changePassword(array $input): array
     {
-        $user = $this->repo->user->findOrFailPublic($id);
+        $user = $this->user;
 
-        $user = (new Core)->changePassword($user, $input);
+        $user->edit($input, 'changePassword');
 
         return $user->toArrayPublic();
     }
@@ -309,23 +309,6 @@ class Service extends Base\Service
         $data = $this->sendConfirmationMail($dashboardHeaders['user_id']);
 
         return $data;
-    }
-
-    /**
-     * Returns user by email.
-     * @param string $email
-     *
-     * @return array
-     */
-    public function getUserByEmail(string $email)
-    {
-        $user = $this->repo->user->findByEmail($email);
-
-        $responseData = [
-            'id' => $user->getId(),
-        ];
-
-        return $responseData;
     }
 
     public function postResetPassword(array $input)

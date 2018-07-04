@@ -232,6 +232,26 @@ class MerchantFeeTest extends TestCase
             'max_fee'             => null,
         ]);
 
+        $pricingRuleDebitPin = new Pricing\Entity([
+            'id'                  => '1nvp2TPMmaRLxy',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPinPlan',
+            'feature'             => 'payment',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'debit',
+            'auth_type'           => 'pin',
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'amount_range_active' => false,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 0,
+            'percent_rate'        => 200,
+            'fixed_rate'          => 0,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+        ]);
+
         $pricingRuleTwo = new Pricing\Entity([
             'id'                  => '4pmbgtgNVVDd7x',
             'plan_id'             => '1hDYlICobzOCYt',
@@ -577,6 +597,7 @@ class MerchantFeeTest extends TestCase
             $pricingPlanEmi,
             $pricingPlanEmiAmex,
             $pricingRuleCardRecurring,
+            $pricingRuleDebitPin,
         ];
 
         if ($withDefault === false)
@@ -814,6 +835,13 @@ class MerchantFeeTest extends TestCase
         $this->fee->setPricingRepo($this->getMockPricingRepo(false, true, true));
 
         $this->runMerchantTestForUpi('100', ['payment' => '1nvp2ABMasRLxx'], 'qr_code');
+    }
+
+    public function testDebitCardPinRule()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo(false, false, true));
+
+        $this->runMerchantFeeTest('301', 'Visa', ['payment' => '1nvp2TPMmaRLxy'], Card\Type::DEBIT, false, false, null, 'pin');
     }
 
     public function testDebitPaymentsWithReceiver()
@@ -1070,9 +1098,10 @@ class MerchantFeeTest extends TestCase
         $this->assertFeesAndTax($fee, $tax, $feesSplit->toArray(), $expectedFee, $expectedTax, $feeComponents);
     }
 
-    protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null)
+    protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null)
     {
-        $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational, $receiver);
+        $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational, $receiver, $authType);
+
 
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
@@ -1103,7 +1132,7 @@ class MerchantFeeTest extends TestCase
         $this->fail();
     }
 
-    protected function createPaymentEntityForCard($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null)
+    protected function createPaymentEntityForCard($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null)
     {
         $paymentArray = $this->getDefaultPaymentEntityArray();
 
@@ -1135,6 +1164,8 @@ class MerchantFeeTest extends TestCase
         $merchant = Merchant\Entity::find('10000000000000');
 
         $payment->merchant()->associate($merchant);
+
+        $payment->setAuthType($authType);
 
         return $payment;
     }

@@ -27,11 +27,11 @@ class DeviceCategory
     {
         $platform = strtolower($platform);
 
-        if (in_array($platform, self::AVAILABLE_DEVICE, true) === true)
+        if (in_array($platform, static::AVAILABLE_DEVICE, true) === true)
         {
-            return self::DEVICE_CATEGORY[$platform];
+            return static::DEVICE_CATEGORY[$platform];
         }
 
-        return self::DEVICE_CATEGORY[self::DESKTOP];
+        return static::DEVICE_CATEGORY[static::DESKTOP];
     }
 }

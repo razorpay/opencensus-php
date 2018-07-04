@@ -93,6 +93,23 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::TYPE) === Type::PRODUCT);
     }
 
+    public function isPartnerRequest(): bool
+    {
+        return ($this->getAttribute(self::TYPE) === Type::PARTNER);
+    }
+
+    public function isPartnerActivationRequest(): bool
+    {
+        return (($this->isPartnerRequest() === true) and
+            ($this->getAttribute(self::NAME) === Constants::ACTIVATION));
+    }
+
+    public function isPartnerDeactivationRequest(): bool
+    {
+        return (($this->isPartnerRequest() === true) and
+            ($this->getAttribute(self::NAME) === Constants::DEACTIVATION));
+    }
+
     public function setPublicMerchantIdAttribute(array &$attributes)
     {
         $merchantId = $this->getAttribute(self::MERCHANT_ID);

@@ -85,18 +85,6 @@ class Core extends Base\Core
 
     public function changePassword(Entity $user, array $input)
     {
-        $oldPassword = $input[Entity::OLD_PASSWORD] ?? null;
-
-        if ((empty($oldPassword) === false) and
-            (Hash::check($oldPassword, $user->getPassword()) === false))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OLD_PASSWORD_MISMATCH);
-        }
-
-        (new Validator)->validateInput('change_password', $input);
-
-        $input[Entity::PASSWORD] = Hash::make($input[Entity::PASSWORD]);
-
         $user->fill($input);
 
         $this->repo->saveOrFail($user);
