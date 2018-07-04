@@ -9,6 +9,9 @@
         <div class="heading">
             Enter Payment Details
         </div>
+        <button class="mobile-el back-btn" onclick="toggleMobileForm()" type="button">
+            Back to Description
+        </button>
 
         <div id="udf_parent">
             <div id="udf_container">

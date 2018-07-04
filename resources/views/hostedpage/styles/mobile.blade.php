@@ -1,4 +1,5 @@
 <?php
+    $primary_text       = '#528FF0';
     $border_color       = 'rgba(0,0,0,0.08)';
     $secondary_color    = '#6F7691';
 ?>
@@ -35,6 +36,19 @@
         position: absolute;
     }
 
+    #mobile-container .back-btn {
+        font-size: 12px;
+        color: {{$primary_text}};
+        background: transparent;
+        outline: none;
+        border: none;
+        position: absolute;
+        right: 0;
+        top: 2px;
+        padding: 0;
+        line-height: 24px;
+    }
+
     #mobile-container #form-section {
         height: 100vh;
         z-index: 2;
@@ -66,6 +80,14 @@
         border-right: 1px solid {{$border_color}};
     }
 
+    #mobile-container form {
+        position: relative;
+    }
+
+    #mobile-container #udf_submit_btn {
+        background-image: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 100%);
+    }
+
     /* Already setting innerHTML = null. This is for elements written in partials used by both mobile-desktop layouts */
     #mobile-container .footer,
     #mobile-container #footer-section #secure-lock-icon {
@@ -75,7 +97,7 @@
     #mobile-container #footer-section {
         border: 1px solid #dfdfdf;
         padding: 16px;
-        margin: 84px auto 28px;
+        margin: 56px auto 28px;
     }
 
     #mobile-container #footer-section img {

@@ -67,16 +67,13 @@
                     @include('hostedpage.partials.header')
                     <div>
                         @include('hostedpage.partials.description')
-                        <button class="btn btn--full" id="mobile-proceed-btn" onclick="scrollToMobileForm()">PROCEED TO PAY</button>
+                        <button class="btn btn--full" id="mobile-proceed-btn" onclick="toggleMobileForm()">PROCEED TO PAY</button>
                     </div>
                 </div>
                 @include('hostedpage.partials.form')
             </div>
         </div>
-        @if ($has_udf === true)
-            {{--<link rel="stylesheet" id="theme_stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">--}}
-            <script src="https://cdn.jsdelivr.net/npm/{{'@'}}json-editor/json-editor/dist/jsoneditor.min.js"></script>
-        @endif
+        <script src="https://cdn.jsdelivr.net/npm/{{'@'}}json-editor/json-editor/dist/jsoneditor.min.js"></script>
         <script>
             cleanHTML();
             document.getElementById('udf_submit_btn').addEventListener('click', submitUdf);

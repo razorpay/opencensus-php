@@ -32,9 +32,13 @@
         }
     }
 
-    function scrollToMobileForm() {
+    function toggleMobileForm() {
         var formEl = document.getElementById('form-section');
-        addClass(formEl, 'slideup')
+        if (hasClass(formEl, 'slideup')) {
+            removeClass(formEl, 'slideup');
+        } else {
+            addClass(formEl, 'slideup');
+        }
     }
 
     function toggleTrimDescription(toTrim) {
@@ -91,16 +95,16 @@
         return width > maxMobileWidth;
     }
 
-    function hasClass(ele,cls) {
+    function hasClass(ele ,cls) {
         return !!ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
     }
 
-    function addClass(ele,cls) {
-        if (!hasClass(ele,cls)) ele.className += " "+cls;
+    function addClass(ele, cls) {
+        if (!hasClass(ele, cls)) ele.className += " " + cls;
     }
 
-    function removeClass(ele,cls) {
-        if (hasClass(ele,cls)) {
+    function removeClass(ele, cls) {
+        if (hasClass(ele, cls)) {
             var reg = new RegExp('(\\s|^)'+cls+'(\\s|$)');
             ele.className=ele.className.replace(reg,' ');
         }
