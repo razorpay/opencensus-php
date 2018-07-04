@@ -9,22 +9,18 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import InvoicesList from 'merchant/components/Invoices/InvoicesList';
 import ListContainer from 'merchant/containers/ListContainer';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
-import CreatePaymentLink from 'merchant/containers/Invoices/CreatePaymentLink';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
-import * as ModalActions from 'rzp/modules/modals';
-import { luminateRow } from 'merchant/modules/app';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { track } from './ga';
 import { merchantFetch } from 'rzp/utils/ajax';
 
 import OnboardingInvoices from './OnboardingInvoices';
 
-@withRouter
 @connect(
   state => {
     return { ...state.invoices, ...state.session };
   },
-  { ...InvoiceActions, ...ModalActions, luminateRow }
+  { ...InvoiceActions }
 )
 export default class InvoicesListContainer extends ListContainer {
   componentWillMount() {
@@ -50,14 +46,6 @@ export default class InvoicesListContainer extends ListContainer {
     return this.props.fetchInvoices(params);
   }
 
-  editInvoice = invoice => {
-    if (invoice.type === 'link') {
-      this.showPaymentLinkModal(invoice);
-    } else {
-      this.props.history.push(`/invoices/${invoice.id}`);
-    }
-  };
-
   /* Fetch all payment pages list to find whether first-time user */
   fetchAllEntityList() {
     return merchantFetch({
@@ -82,20 +70,6 @@ export default class InvoicesListContainer extends ListContainer {
       })
       .catch(() => {});
   }
-
-  showPaymentLinkModal = (invoice = null) => {
-    this.props.openModal({
-      component: (
-        <CreatePaymentLink
-          invoice={invoice}
-          onSave={invoice => {
-            this.props.luminateRow(invoice.id);
-          }}
-          closeModal={this.props.closeModal}
-        />
-      ),
-    });
-  };
 
   onSearchAnalytics = params => {
     const label = getKeysSeparatedByPipe(params);
@@ -157,7 +131,6 @@ export default class InvoicesListContainer extends ListContainer {
           <InvoicesList
             invoices={invoices}
             isLoading={loading}
-            onEdit={this.editInvoice}
             onSearchAnalytics={this.onSearchAnalytics}
             onClearAnalytics={this.onClearAnalytics}
             onCopy={({ invoiceId }) => {

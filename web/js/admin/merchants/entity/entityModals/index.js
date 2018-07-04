@@ -13,6 +13,7 @@ export EditBankAccountDetails from './EditBankAccountDetails';
 export AutoFillActivationForm from './AutoFillActivationForm';
 export EditComment from './EditComment';
 export MarkReferred from './MarkReferred';
+export TogglePartnerType from './TogglePartnerType';
 export EditTags from './EditTags';
 export EditFeatures from './EditFeatures';
 export MerchantBatchUpload from './MerchantBatchUpload';
