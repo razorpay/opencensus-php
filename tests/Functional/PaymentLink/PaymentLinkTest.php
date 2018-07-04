@@ -162,33 +162,41 @@ class PaymentLinkTest extends TestCase
     public function testPaymentLinkMakePaymentWithUdfInvalid()
     {
         $attributes = [
-            PaymentLinkModel\Entity::ID            => '10000pludftest',
-            PaymentLinkModel\Entity::AMOUNT        => 10100,
-            PaymentLinkModel\Entity::TIMES_PAYABLE => 10,
+            PaymentLinkModel\Entity::AMOUNT            => 10100,
+            PaymentLinkModel\Entity::TIMES_PAYABLE     => 10,
+            PaymentLinkModel\Entity::UDF_JSONSCHEMA_ID => '10000pludftest',
         ];
+
         $paymentLink = $this->fixtures->create('payment_link', $attributes);
+
         $this->expectException(BadRequestValidationFailureException::class);
         $this->expectExceptionMessage('The customer_id field is invalid. The property customer_id is required');
+
         $this->makePaymentForPaymentLinkAndAssert($paymentLink);
     }
 
     public function testPaymentLinkMakePaymentWithUdf()
     {
         $attributes = [
-            PaymentLinkModel\Entity::ID            => '10000pludftest',
-            PaymentLinkModel\Entity::AMOUNT        => 10100,
-            PaymentLinkModel\Entity::TIMES_PAYABLE => 10,
+            PaymentLinkModel\Entity::AMOUNT            => 10100,
+            PaymentLinkModel\Entity::TIMES_PAYABLE     => 10,
+            PaymentLinkModel\Entity::UDF_JSONSCHEMA_ID => '10000pludftest',
         ];
+
         $paymentLink = $this->fixtures->create('payment_link', $attributes);
+
         $payment = $this->getDefaultPaymentArray();
+
         $payment[Payment\Entity::PAYMENT_LINK_ID] = $paymentLink->getPublicId();
         $payment[Payment\Entity::AMOUNT]          = $paymentLink->getAmount();
         $payment[Payment\Entity::NOTES]           = [
             'customer_id'   => '1000001',
             'customer_name' => 'Random Name',
         ];
+
         $this->doAuthAndGetPayment($payment, [Payment\Entity::STATUS => Payment\Status::CAPTURED]);
         $payment = $this->getDbLastEntity('payment');
+
         $this->assertEquals($paymentLink->getAmount(), $payment->getAmount());
         $this->assertEquals($paymentLink->getId(), $payment->getPaymentLinkId());
     }

@@ -183,14 +183,19 @@ class Core extends Base\Core
         $paymentLink->getValidator()->validatePaymentAmount($payment);
 
         // 2. Validates Payment notes (UDF values), if applicable
-        $udfSchema = new Template\UdfSchema;
-        $schema    = $udfSchema->getJSONSchema($paymentLink->getId());
+        $udfJsonschemaId = $paymentLink->getUdfJsonschemaId();
 
-        if ($schema !== null)
+        if ($udfJsonschemaId !== null)
         {
-            $paymentNotes = $payment->getNotes()->toArray();
+            $udfSchema = new Template\UdfSchema($udfJsonschemaId);
+            $schema    = $udfSchema->getSchemaDecoded();
 
-            $udfSchema->validate($paymentNotes);
+            if ($schema !== null)
+            {
+                $paymentNotes = $payment->getNotes()->toArray();
+
+                $udfSchema->validate($paymentNotes);
+            }
         }
 
         // 3. Validates payment link is active and has payment slots available
