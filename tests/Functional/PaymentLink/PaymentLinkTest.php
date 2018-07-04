@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\PaymentLink;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Queue;
 
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -38,6 +37,16 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePaymentLinkWithCurrencyAndNoAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePaymentLinkWithoutAmountOrCurrency()
+    {
+        $this->startTest();
+    }
+
     public function testCreatePaymentLinkWithBadExpireBy()
     {
         $this->startTest();
@@ -59,7 +68,14 @@ class PaymentLinkTest extends TestCase
 
     public function testUpdatePaymentLink()
     {
-        $this->createPaymentLink();
+        $this->createPaymentLink(self::TEST_PL_ID, ['amount' => 2000]);
+
+        $this->startTest();
+    }
+
+    public function testUpdatePaymentLinkInvalidAmountCurrency()
+    {
+        $this->createPaymentLink(self::TEST_PL_ID);
 
         $this->startTest();
     }
@@ -114,6 +130,29 @@ class PaymentLinkTest extends TestCase
         $paymentLink = $this->fixtures->create('payment_link', $attributes);
 
         $this->makePaymentForPaymentLinkAndAssert($paymentLink);
+
+        $this->getLastPaymentLinkEntityAndAssert($this->testData[__FUNCTION__]['payment_link']);
+    }
+
+    public function testPaymentLinkMakePaymentWithUserDefinedAmount()
+    {
+        $attributes = [
+            PaymentLinkModel\Entity::AMOUNT        => null,
+            PaymentLinkModel\Entity::CURRENCY      => null,
+            PaymentLinkModel\Entity::TIMES_PAYABLE => 10,
+        ];
+
+        $paymentLink = $this->fixtures->create('payment_link', $attributes);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment[Payment\Entity::PAYMENT_LINK_ID] = $paymentLink->getPublicId();
+        $payment[Payment\Entity::AMOUNT]          = 45000;
+
+        $this->doAuthAndGetPayment($payment, [Payment\Entity::STATUS => Payment\Status::CAPTURED]);
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals(45000, $payment->getAmount());
+        $this->assertEquals($paymentLink->getId(), $payment->getPaymentLinkId());
 
         $this->getLastPaymentLinkEntityAndAssert($this->testData[__FUNCTION__]['payment_link']);
     }
@@ -336,7 +375,7 @@ class PaymentLinkTest extends TestCase
 
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
     {
-        $attributes[PaymentLinkModel\Entity::ID] = $id;
+        $attributes[PaymentLinkModel\Entity::ID]      = $id;
         $attributes[PaymentLinkModel\Entity::USER_ID] = User::MERCHANT_USER_ID;
 
         return $this->fixtures->create('payment_link', $attributes);

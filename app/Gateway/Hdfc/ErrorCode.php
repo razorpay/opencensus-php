@@ -110,6 +110,11 @@ class ErrorCode
     const PY20007   = 'PY20007';
     const PY20085   = 'PY20085';
 
+    /**
+     * New error codes after IPAY migration
+     */
+    const IPAY0200121 = 'IPAY0200121';
+
     //
     // The error codes starting with 'RP' are our custom ones
     // to handle different error cases not covered by their
@@ -199,6 +204,13 @@ class ErrorCode
      */
     const RP00014   = 'RP00014';
 
+    /**
+     * Transaction denied due to previous capture check failure
+     * ( Validate Original Transaction )
+     */
+
+    const RP00021   = 'RP00021';
+
     public static $resultToErrorCodeMap = array(
         Result::HOST_TIMEOUT        => self::RP00004,
         Result::DENIED_BY_RISK      => self::RP00005,
@@ -213,6 +225,7 @@ class ErrorCode
         Result::NOT_SUPPORTED_IPAY  => self::RP00018,
         Result::DENIED_BY_RISK_IPAY => self::GW00256,
         Result::AUTH_ERROR_IPAY     => self::RP00020,
+        Result::DENIED_CAPTURE      => self::RP00021,
     );
 
     public static $errorMessages = array(
@@ -316,6 +329,8 @@ class ErrorCode
         self::RP00018     => 'Enroll result code is NOT SUPPORTED. This happens most probably when card network is not supported',
 
         self::RP00020     => 'Result code is AUTH ERROR. This happens mostly because card number provided is invalid',
+        self::RP00021     => 'Transaction denied due to previous capture check failure ( Validate Original Transaction )',
+        self::IPAY0200121 => 'FSSConnect Destination is down',
     );
 
     /**
@@ -416,6 +431,8 @@ class ErrorCode
         self::RP00018     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
 
         self::RP00020     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
+        self::RP00021     => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED,
+        self::IPAY0200121 => Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
     );
 
     public static $invalidErrorCode = self::RP00001;
