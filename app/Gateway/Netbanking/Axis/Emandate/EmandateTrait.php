@@ -64,7 +64,11 @@ trait EmandateTrait
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
             RequestFields::CORP_ID         => $this->getEmandateMerchantId(),
-            RequestFields::TYPE            => Constants::TYPE,
+            RequestFields::TYPE            => (
+                                                    ($this->mode === Mode::TEST) ?
+                                                    (Constants::TYPE_TEST) :
+                                                    (Constants::TYPE_LIVE)
+                                              ),
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
             RequestFields::CURRENCY        => Currency::INR,
@@ -262,7 +266,11 @@ trait EmandateTrait
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
             RequestFields::CORP_ID         => $this->getEmandateMerchantId(),
-            RequestFields::TYPE            => Constants::TYPE,
+            RequestFields::TYPE            => (
+                                                    ($this->mode === Mode::TEST) ?
+                                                    (Constants::TYPE_TEST) :
+                                                    (Constants::TYPE_LIVE)
+                                              ),
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
             RequestFields::BANK_REF_NO     => $gatewayEntity[Netbanking\Entity::BANK_PAYMENT_ID]
