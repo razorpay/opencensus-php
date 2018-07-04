@@ -699,7 +699,7 @@ class Gateway
         self::UPI_ICICI,
         self::HITACHI,
         self::SHARP,
-	    self::ISG,
+        self::ISG,
     ];
 
     public static $authTypeToEmandateGatewayMap = [
