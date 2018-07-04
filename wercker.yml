@@ -1,5 +1,5 @@
 box:
-  id: razorpay/containers:php7
+  id: razorpay/pithos:rzp-php7.1
   username: $DOCKERHUB_USER
   password: $DOCKERHUB_PASSWORD
 dev:
@@ -79,6 +79,10 @@ build:
           name: Save trace
           code: cp storage/logs/* $WERCKER_REPORT_ARTIFACTS_DIR/
 deploy:
+    box:
+      id: razorpay/containers:php7
+      username: $DOCKERHUB_USER
+      password: $DOCKERHUB_PASSWORD
     steps:
       - script:
           name: Check if branch is master on prod-api
