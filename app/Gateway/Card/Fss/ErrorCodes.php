@@ -7,6 +7,26 @@ use RZP\Error\ErrorCode;
 
 class ErrorCodes
 {
+    const RP00001   = 'RP00001';
+    const RP00002   = 'RP00002';
+    const RP00003   = 'RP00003';
+    const RP00004   = 'RP00004';
+    const RP00005   = 'RP00005';
+    const RP00006   = 'RP00006';
+    const RP00007   = 'RP00007';
+    const RP00008   = 'RP00008';
+    const RP00009   = 'RP00009';
+    const RP00010   = 'RP00010';
+    const RP00011   = 'RP00011';
+    const RP00012   = 'RP00012';
+    const RP00013   = 'RP00013';
+    const RP00014   = 'RP00014';
+    const RP00015   = 'RP00015';
+    const RP00016   = 'RP00016';
+    const RP00017   = 'RP00017';
+    const RP00018   = 'RP00018';
+    const RP00019   = 'RP00019';
+
     protected static $reasonCodes = [
         'IPAY0100001' => 'Missing error url.',
         'IPAY0100002' => 'Invalid error url.',
@@ -386,17 +406,41 @@ class ErrorCodes
         'GW00163'     => 'Invalid Address data',
         'GW00164'     => 'Invalid Zip Code data',
         'GW00183'     => 'Card Verification Digit Required',
+        'GW00254'     => 'Invalid expiration date',
+        'GW00256'     => 'Incorrect PIN',
         'GW00258'     => 'Transaction denied: Negative BIN',
         'GW00259'     => 'Transaction denied: Declined Card',
+        'GW00881'     => 'Invalid card holder name.',
         'GV00005'     => 'Certificate chain validation failed',
         'GV00006'     => 'Certificate chain validation error',
         'GV00011'     => 'Invalid expiration date',
         'PY20006'     => 'Invalid Brand',
         'PY20001'     => 'Invalid Action Type',
         'PY20002'     => 'Invalid amount',
+        'CM00002'     => 'Unknown Error',
+
+        //ErrorCodes with no proper format
+        self::RP00001 => 'Incorrect PIN',
+        self::RP00002 => 'Lost card',
+        self::RP00003 => 'Suspect Fraud',
+        self::RP00004 => 'reserved for private use',
+        self::RP00005 => 'pin tries exceeded',
+        self::RP00006 => 'not sufficient fund',
+        self::RP00007 => 'invalid expiration date',
+        self::RP00008 => 'issuer down',
+        self::RP00009 => 'reserved for private use',
+        self::RP00010 => 'tran not permitted',
+        self::RP00011 => 'no card record',
+        self::RP00012 => 'not captured',
+        self::RP00013 => 'exceeds withdrawal frequency',
+        self::RP00014 => 'null',
+        self::RP00015 => 'CAF status=0 or 9',
+        self::RP00016 => 'FAILURE',
+        self::RP00017 => 'Internal Error: java.lang.NullPointerException',
+        self::RP00018 => 'Error while connecting Payment Gateway',
     ];
 
-    protected static $errorCodeMap = [
+    public static $errorCodeMap = [
         'IPAY0100001' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
         'IPAY0100002' => ErrorCode::GATEWAY_ERROR_INVALID_CALLBACK_URL,
         'IPAY0100003' => ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
@@ -501,14 +545,38 @@ class ErrorCodes
         'GW00163' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_ADDRESS,
         'GW00164' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_ZIP,
         'GW00183' => ErrorCode::GATEWAY_ERROR_CARD_MISSING_CVV,
+        'GW00254' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
+        'GW00256' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,
         'GW00258' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN,
         'GW00259' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        'GW00881' => Errorcode::BAD_REQUEST_INVALID_CARDHOLDER_NAME,
         'GV00005' => ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
         'GV00006' => ErrorCode::GATEWAY_ERROR_CERTIFICATE_VALIDATION_FAILED,
         'GV00011' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
         'PY20006' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_BRAND,
         'PY20001' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ACTION,
         'PY20002' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
+        'CM00002' => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+
+        //Errors with no format
+        self::RP00001   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,
+        self::RP00002   => ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST,
+        self::RP00003   => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
+        self::RP00004   => ErrorCode::BAD_REQUEST_CARD_DAILY_LIMIT_REACHED,
+        self::RP00005   => ErrorCode::BAD_REQUEST_PAYMENT_PIN_ATTEMPTS_EXCEEDED,
+        self::RP00006   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
+        self::RP00007   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
+        self::RP00008   => ErrorCode::GATEWAY_ERROR_ISSUER_DOWN,
+        self::RP00009   => ErrorCode::GATEWAY_ERROR_CARD_RESTRICTED,
+        self::RP00010   => ErrorCode::GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED,
+        self::RP00011   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID,
+        self::RP00012   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::RP00013   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED,
+        self::RP00014   => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        self::RP00015   => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
+        self::RP00016   => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        self::RP00017   => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        self::RP00018   => ErrorCode::GATEWAY_ERROR_TIMED_OUT
     ];
 
     /**
@@ -520,9 +588,16 @@ class ErrorCodes
      */
     public static function getMappedCode($code = null): string
     {
-        if (isset(self::$errorCodeMap[$code]))
+        if (isset(self::$errorCodeMap[$code]) === true)
         {
             return self::$errorCodeMap[$code];
+        }
+
+        $gatewayCode = strtolower($code);
+
+        if (isset(Result::$resultToErrorCodeMap[$gatewayCode]) === true)
+        {
+            return self::$errorCodeMap[Result::$resultToErrorCodeMap[$gatewayCode]];
         }
 
         return ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
@@ -535,11 +610,18 @@ class ErrorCodes
      *
      * @return mixed|string
      */
-    public static function getErrorDesc($code = null)
+    public static function getErrorDesc($code = null): string
     {
-        if (isset(self::$reasonCodes[$code]))
+        if (isset(self::$reasonCodes[$code]) === true)
         {
             return self::$reasonCodes[$code];
+        }
+
+        $gatewayCode = strtolower($code);
+
+        if (isset(Result::$resultToErrorCodeMap[$gatewayCode]) === true)
+        {
+            return self::$reasonCodes[Result::$resultToErrorCodeMap[$gatewayCode]];
         }
 
         return 'General Error';
