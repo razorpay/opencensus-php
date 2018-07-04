@@ -47,9 +47,6 @@ spec:
           httpGet:
             path: /commit.txt
             port: 80
-            httpHeaders:
-              - name: Host
-                value: api.razorpay.com
           initialDelaySeconds: 180
           periodSeconds: 2
         name: api
@@ -60,9 +57,6 @@ spec:
           httpGet:
             path: /commit.txt
             port: 80
-            httpHeaders:
-              - name: Host
-                value: api.razorpay.com
           initialDelaySeconds: 180
           periodSeconds: 120
         resources:
