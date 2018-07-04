@@ -28,7 +28,7 @@ pipeline:
       - touch /etc/php7/conf.d/assertion.ini
       - echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini
       - echo "assert.exception=On" >> /etc/php7/conf.d/assertion.ini
-      - apk update && apk add php7-fileinfo
+      - apk update && apk add php7-fileinfo zip
       - php -m
       - export COMPOSER_CACHE_DIR=".composer/cache"
       - mkdir -p $COMPOSER_CACHE_DIR
