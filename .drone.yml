@@ -28,9 +28,7 @@ pipeline:
       - touch /etc/php7/conf.d/assertion.ini
       - echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini
       - echo "assert.exception=On" >> /etc/php7/conf.d/assertion.ini
-      - cp scripts/nanotime.* /usr/lib/php7/modules
-      - touch /etc/php7/conf.d/nanotime.ini
-      - echo -n "extension=nanotime.so" >> /etc/php7/conf.d/nanotime.ini
+      - apk update && apk add php7-fileinfo
       - php -m
       - export COMPOSER_CACHE_DIR=".composer/cache"
       - mkdir -p $COMPOSER_CACHE_DIR
