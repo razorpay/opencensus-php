@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { reduxForm } from 'redux-form';
 import { Field } from 'redux-form';
+import AsyncButton from 'react-async-button';
 
 import InputField from 'rzp/ui/Forms/InputField';
 import { required, lenientUrl } from 'rzp/utils/validators';
@@ -12,7 +13,6 @@ export default reduxForm({ form: 'editWebsiteDetails' })(
         className={`edit-website-details-form${
           onCancel ? ' has-cancel-button' : ''
         }`}
-        onSubmit={handleSubmit(onSubmit)}
       >
         <div className="form-group">
           <span class="text-muted">
@@ -56,7 +56,12 @@ export default reduxForm({ form: 'editWebsiteDetails' })(
           <button type="button" className="btn btn-default" onClick={onCancel}>
             Cancel
           </button>
-          <button className="btn btn-primary">Add Details</button>
+          <AsyncButton
+            className="btn btn-primary"
+            text="Add Details"
+            onClick={handleSubmit(onSubmit)}
+            pendingText="Please Wait..."
+          />
         </div>
       </form>
     );

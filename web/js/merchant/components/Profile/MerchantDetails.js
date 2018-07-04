@@ -101,9 +101,15 @@ export default connect(null, { openModal, closeModal })(
                   </PopoverBody>
                 </Popover>
               </small>
-              <br />
-              {!user.has_key_access && (
-                <span class="pull-right">
+            </div>
+          )}
+        />
+        <DetailRow
+          label="Business Website/App details"
+          value={() =>
+            !user.has_key_access ? (
+              !user.business_website ? (
+                <span>
                   <a
                     onClick={() =>
                       openModal({
@@ -115,9 +121,15 @@ export default connect(null, { openModal, closeModal })(
                     Add Website/App URL for Full Access
                   </a>
                 </span>
-              )}
-            </div>
-          )}
+              ) : (
+                <span class="status-label label label-info">Under Review</span>
+              )
+            ) : (
+              <a href={user.business_website} target="_blank" rel="noopener">
+                {user.business_website}
+              </a>
+            )
+          }
         />
       </div>
     );

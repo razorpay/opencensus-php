@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -53,6 +54,7 @@ export default connect(null, { openModal, closeModal })(props => {
     isLoading,
     merchantId,
     hasKeyAccess,
+    businessWebsite,
     showRollKeyModal = () => {},
     generateKey = () => {},
   } = props;
@@ -80,16 +82,25 @@ export default connect(null, { openModal, closeModal })(props => {
             emptyTableRow={
               <tr>
                 <td class="text-center empty-table" colSpan={4}>
-                  {hasKeyAccess ? (
-                    <button
-                      class="btn btn-primary"
-                      onClick={() => {
-                        generateKey(params);
-                      }}
-                    >
-                      Generate {mode} Key
-                    </button>
-                  ) : (
+                  {mode === 'Test' || hasKeyAccess ? (
+                    <React.Fragment>
+                      {!hasKeyAccess && (
+                        <p>
+                          You can generate API keys in Test Mode. For generating
+                          keys in Live Mode, you need to provide your business
+                          website/app details while filling the activation form.
+                        </p>
+                      )}
+                      <button
+                        class="btn btn-primary"
+                        onClick={() => {
+                          generateKey(params);
+                        }}
+                      >
+                        Generate {mode} Key
+                      </button>
+                    </React.Fragment>
+                  ) : !businessWebsite ? (
                     <div>
                       <p
                       >{`Please provide your Business Website/App details in order to generate API keys in ${mode} Mode`}</p>
@@ -106,6 +117,12 @@ export default connect(null, { openModal, closeModal })(props => {
                       >
                         Add Website/App URL
                       </button>
+                    </div>
+                  ) : (
+                    <div>
+                      The website/app details that you have provided are under
+                      review. You can generate API keys once the details are
+                      approved.
                     </div>
                   )}
                 </td>

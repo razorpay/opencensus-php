@@ -13,6 +13,7 @@ import EditWebsite, {
 @connect(
   state => ({
     user: state.session.user,
+    mode: state.session.mode,
   }),
   {
     updateSession,
@@ -22,9 +23,9 @@ class EditWebsiteDetails extends Component {
   onSubmit = form => {
     const { user } = this.props;
 
-    merchantFetch({
+    return merchantFetch({
       url: 'merchant/activation/update_website_details',
-      mode: 'live',
+      mode: this.props.mode,
       method: 'put',
       data: { business_website: form.business_website },
     }).then(response => {
@@ -37,8 +38,10 @@ class EditWebsiteDetails extends Component {
 
         this.props.updateSession({
           user: newUser,
-          mode: 'test',
+          mode: this.props.mode,
         });
+
+        this.props.onClose();
       }
     });
   };
