@@ -652,14 +652,13 @@ final class Route
         'user_create'                              => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                               => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                     => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
-        'user_fetch_email'                         => ['get',      'users/email/{email}',                            'UserController@getUserByEmail'                                     ],
+        'user_change_password'                     => ['put',      'users/password',                                 'UserController@changeUserPassword'                                 ],
         'user_edit'                                => ['put',      'users/{id}',                                     'UserController@editUser'                                           ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         // Same as user_fetch but for admin
         'user_fetch_admin'                         => ['get',      'users-admin/{id}',                               'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
-        'user_change_password'                     => ['put',      'users/{id}/password',                            'UserController@changeUserPassword'                                 ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
         // Tax groups and taxes
@@ -1108,7 +1107,6 @@ final class Route
         'user_change_password',
         'user_confirm_by_data',
         'user_fetch',
-        'user_fetch_email',
         'user_login',
         'user_merchant_upgrade',
         'user_register',
@@ -1965,7 +1963,6 @@ final class Route
             'user_change_password',
             'user_fetch',
             'invitation_action',
-            'user_fetch_email',
             'merchant_admin_lead_put',
             'invitation_fetch_by_token',
             'user_resend_verification',
