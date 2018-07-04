@@ -11,6 +11,8 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
+use RZP\Models\PaymentLink\Template\UdfSchema;
+use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
 
 class Core extends Base\Core
 {
@@ -413,6 +415,54 @@ class Core extends Base\Core
         $this->trace->debug(TraceCode::PAYMENT_LINK_EXPIRE_CRON_SUMMARY, $summary);
 
         return $summary;
+    }
+
+    public function getHostedViewPayload(Entity $paymentLink): array
+    {
+        $payload['data'] = (new ViewSerializer($paymentLink))->serializeForHosted();
+
+        $payload['udf_schema'] = $this->getUdfSchemaIfDefined($paymentLink);
+
+        return $payload;
+    }
+
+    public function getHostedViewTemplate(Entity $paymentLink)
+    {
+        $templateId = $paymentLink->getHostedTemplateId();
+
+        $defaultView = 'payment_link.hosted';
+
+        // If hosted_template_id is not sent, use the default view
+        if ($templateId === null)
+        {
+            return $defaultView;
+        }
+
+        $templateAccessor = new HostedTemplate($templateId);
+
+        // If a custom hosted page template exists, use that
+        if ($templateAccessor->exists() === true)
+        {
+            $hostedPageHint = 'hostedpage.';
+            return $hostedPageHint . $templateAccessor->getViewName();
+        }
+
+        // else fallback to the default hosted view
+        return $defaultView;
+    }
+
+    protected function getUdfSchemaIfDefined(Entity $paymentLink)
+    {
+        $jsonSchemaId = $paymentLink->getUdfJsonschemaId();
+
+        if ($jsonSchemaId === null)
+        {
+            return null;
+        }
+
+        $schemaAccessor = new UdfSchema($jsonSchemaId);
+
+        return $schemaAccessor->getSchema();
     }
 
     /**

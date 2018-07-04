@@ -33,7 +33,7 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION        = 'description';
     const NOTES              = 'notes';
     const HOSTED_TEMPLATE_ID = 'hosted_template_id';
-    const JSONSCHEMA_ID      = 'jsonschema_id';
+    const UDF_JSONSCHEMA_ID  = 'udf_jsonschema_id';
 
     //
     // Additional request input keys used in various other endpoint calls.
@@ -159,7 +159,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION        => null,
         self::NOTES              => [],
         self::HOSTED_TEMPLATE_ID => null,
-        self::JSONSCHEMA_ID      => null,
+        self::UDF_JSONSCHEMA_ID  => null,
     ];
 
     // -------------------------------------- Relations -------------------------------
@@ -233,9 +233,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::HOSTED_TEMPLATE_ID);
     }
 
-    public function getJsonschemaId()
+    public function getUdfJsonschemaId()
     {
-        return $this->getAttribute(self::JSONSCHEMA_ID);
+        return $this->getAttribute(self::UDF_JSONSCHEMA_ID);
     }
 
     public function isActive(): bool

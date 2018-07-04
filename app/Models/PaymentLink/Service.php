@@ -2,8 +2,12 @@
 
 namespace RZP\Models\PaymentLink;
 
+use View;
+use Request;
+
 use RZP\Models\Base;
-use RZP\Models\PaymentLink\Template\FileAccess;
+use RZP\Constants\Entity as E;
+use RZP\Exception\BaseException;
 use RZP\Models\PaymentLink\Template\Hosted;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 
@@ -72,51 +76,15 @@ class Service extends Base\Service
         return $paymentLink->toArrayPublic();
     }
 
-    public function getHostedViewPayload(string $id): array
+    public function getViewNameAndPayload(string $id)
     {
+        /** @var Entity $paymentLink */
         $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $payload['data'] = (new ViewSerializer($paymentLink))->serializeForHosted();
+        $viewPayload = $this->core->getHostedViewPayload($paymentLink);
 
-        $payload['udf_schema'] = $this->getUdfSchemaIfDefined($paymentLink);
+        $view = $this->core->getHostedViewTemplate($paymentLink);
 
-        return $payload;
-    }
-
-    protected function getUdfSchemaIfDefined(Entity $paymentLink)
-    {
-        $jsonSchemaId = $paymentLink->getJsonschemaId();
-
-        if ($jsonSchemaId === null)
-        {
-            return null;
-        }
-
-        $schemaAccessor = new UdfSchema($jsonSchemaId);
-
-        return $schemaAccessor->getSchema();
-    }
-
-    public function getHostedViewTemplate(string $templateId = null)
-    {
-        $defaultView = 'payment_link.hosted';
-
-        // If template_id is not set, use the default view
-        if ($templateId === null)
-        {
-            return $defaultView;
-        }
-
-        $templateAccessor = new Hosted($templateId);
-
-        // If a custom hosted page template exists, use that
-        if ($templateAccessor->exists() === true)
-        {
-            $hostedPageHint = 'hostedpage.';
-            return $hostedPageHint . $templateAccessor->getViewName();
-        }
-
-        // else fallback to the default hosted view
-        return $defaultView;
+        return [$view, $viewPayload];
     }
 }

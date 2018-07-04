@@ -4105,4 +4105,4 @@ ALTER TABLE payment_links
 
 ALTER TABLE payment_links
     ADD COLUMN hosted_template_id VARCHAR(255) DEFAULT NULL AFTER notes,
-    ADD COLUMN jsonschema_id VARCHAR(255) DEFAULT NULL AFTER hosted_template_id;
+    ADD COLUMN udf_jsonschema_id VARCHAR(255) DEFAULT NULL AFTER hosted_template_id;
