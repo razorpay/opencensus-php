@@ -14,7 +14,6 @@
         padding: 0 16px;
         margin: 0 auto;
         display: none;
-        position: relative;
     }
 
     #desktop-container .content {
@@ -26,10 +25,10 @@
     #desktop-container::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: -100%;
-        right: -100%;
+        width: 100%;
         height: 168px;
+        top: 0;
+        left: 0;
         background: {{$data['merchant']['brand_color']}};
         z-index: -1;
     }

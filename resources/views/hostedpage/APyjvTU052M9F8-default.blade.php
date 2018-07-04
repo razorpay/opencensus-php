@@ -51,7 +51,7 @@
     </head>
 
     <body>
-        <div class="hostedpage-container">
+        <div id="hostedpage-container">
             <!-- Desktop Container -->
             <div id="desktop-container">
                 @include('hostedpage.partials.header')

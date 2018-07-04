@@ -39,6 +39,10 @@
         display: block;
     }
 
+    #hostedpage-container {
+        position: relative;
+    }
+
     #header-section {
         padding: 24px 0;
         overflow: auto;
