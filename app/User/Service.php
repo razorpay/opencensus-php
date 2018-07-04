@@ -212,7 +212,7 @@ class Service extends Base\Service
 
         $request = new \App\Admin\ApiRequestAny();
 
-        list($error, $data) = $request->processInput($passwordData)->send("users/change_password", 'PUT');
+        list($error, $data) = $request->processInput($passwordData)->send("users/password", 'PUT');
 
         if (empty($error) === false)
         {
