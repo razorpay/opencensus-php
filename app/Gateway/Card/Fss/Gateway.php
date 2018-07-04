@@ -72,12 +72,6 @@ class Gateway extends Base\Gateway
         {
             $gatewayContent = $this->getDecryptedRequestContent($gatewayResponse[Fields::TRANDATA], $input);
 
-            if ((isset($gatewayContent[Fields::ERROR]) === true) and
-                (isset(ErrorCodes::$errorCodeMap[$gatewayContent[Fields::ERROR]]) === false))
-            {
-                $gatewayContent[Fields::ERROR] = Result::getErrorCode($gatewayContent[Fields::ERROR]);
-            }
-
             $attributes = $this->getCallbackFields($gatewayContent);
 
             $gatewayPayment->fill($attributes);
