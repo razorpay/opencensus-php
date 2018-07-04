@@ -2,6 +2,7 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Constants\Timezone;
 
 use Carbon\Carbon;
@@ -16,6 +17,22 @@ return [
         'schedule_status' => 'Y',
         'status'          => 'Y',
         'entity'          => 'netbanking',
+    ],
+
+    'testEMandateInitialPaymentLateAuth' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR_REQUEST_TIMEOUT,
+                ],
+            ],
+            'status_code' => 504,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
     ],
 
     'testEmandateInitialPaymentFailure' => [

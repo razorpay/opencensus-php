@@ -948,8 +948,42 @@ return [
             'content' => [
                 'success'          => 1,
                 'failed'           => 0,
-                'failedPaymentIds' =>[]
+                'failedPaymentIds' => [],
             ]
         ],
+    ],
+
+    "testCreateOfferValidateMerchant" => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'international'       => true,
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment method not enabled for the merchant : card',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
     ],
 ];

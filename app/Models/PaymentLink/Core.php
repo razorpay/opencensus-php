@@ -15,7 +15,7 @@ use RZP\Exception\BadRequestException;
 class Core extends Base\Core
 {
     /**
-     * Elfin: Url shortener service
+     * Elfin: Url shortening service
      */
     protected $elfin;
 
@@ -149,8 +149,6 @@ class Core extends Base\Core
      *
      * @param  Entity $paymentLink
      * @param  array  $input
-     *
-     * @return array
      */
     public function sendNotification(Entity $paymentLink, array $input)
     {
@@ -173,10 +171,12 @@ class Core extends Base\Core
      *
      * @param Entity         $paymentLink
      * @param Payment\Entity $payment
+     *
+     * @throws BadRequestException
      */
     public function validateIsPaymentInitiatable(Entity $paymentLink, Payment\Entity $payment)
     {
-        // 1. Validates amount if applicable
+        // 1. Validates amount, if applicable
         $paymentLink->getValidator()->validatePaymentAmount($payment);
 
         // 2. Validates payment link is active and has payment slots available
@@ -195,6 +195,7 @@ class Core extends Base\Core
     /**
      * This method is called post a payment capture is attempted (failed or success) in Processor/Authorize. Refer below
      * cases on what this method handles.
+     *
      * @param Payment\Entity $payment
      */
     public function postPaymentCaptureAttemptProcessing(Payment\Entity $payment)
@@ -336,6 +337,7 @@ class Core extends Base\Core
     /**
      * Given payment link is payable(i.e. active and not expired etc), checks if a new payment can be accepted by
      * counting existing succeeding payments (i.e. payments in created/authorized statuses).
+     *
      * @param  Entity  $paymentLink
      * @return boolean
      */
@@ -415,6 +417,7 @@ class Core extends Base\Core
 
     /**
      * Updates the status to INACTIVE, status_reason to EXPIRED of an individual expired payment link by locking it.
+     *
      * @param Entity $paymentLink
      */
     protected function expirePaymentLink(Entity $paymentLink)
@@ -438,7 +441,9 @@ class Core extends Base\Core
     }
 
     /**
-     * Initiates refund on a payment. This happens in cases as described in postPaymentCaptureAttemptProcessing() method
+     * Initiates refund on a payment. This happens in cases as described in
+     * postPaymentCaptureAttemptProcessing() method
+     *
      * @param Entity         $paymentLink
      * @param Payment\Entity $payment
      */

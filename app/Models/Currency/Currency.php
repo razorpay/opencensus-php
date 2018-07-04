@@ -70,6 +70,8 @@ class Currency
     const SUPPORTED_CURRENCIES = [
         self::INR,
         self::USD,
+        self::EUR,
+        self::SGD,
     ];
 
     const ISO_NUMERIC_CODES = [
@@ -109,6 +111,8 @@ class Currency
     const DENOMINATION_FACTOR = [
         self::INR => 100,
         self::USD => 100,
+        self::EUR => 100,
+        self::SGD => 100,
     ];
 
     const EXPONENT = [];
@@ -116,6 +120,8 @@ class Currency
     const SYMBOL = [
         self::INR => '₹',
         self::USD => '$',
+        self::EUR => '€',
+        self::SGD => 'S$'
     ];
 
     public static function getIsoCode(string $currency)
