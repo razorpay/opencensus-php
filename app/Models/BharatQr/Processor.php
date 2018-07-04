@@ -200,7 +200,7 @@ class Processor extends VirtualAccount\Processor
             return $this->terminal;
         }
 
-    	$gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
+		$gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
 
     	if (isset($this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
 	    {
@@ -212,7 +212,7 @@ class Processor extends VirtualAccount\Processor
 	    {
 	    	$gatewayMpan = $this->gatewayInput[GatewayResponseParams::MPAN];
 
-	    	$terminal = $this->repo->terminal->findByGatewayMpan($gateway, $gatewayMpan);
+	    	$terminal = $this->repo->terminal->findByGatewayMpan($gatewayMpan, $gateway);
 	    }
 
         if ($terminal === null)
