@@ -75,7 +75,7 @@
     #mobile-container #footer-section {
         border: 1px solid #dfdfdf;
         padding: 16px;
-        margin: 28px auto;
+        margin: 84px auto 28px;
     }
 
     #mobile-container #footer-section img {

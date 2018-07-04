@@ -3,7 +3,7 @@
         <div class="circle circle-1"></div>
         <div class="circle circle-2"></div>
         <div class="circle circle-3"></div>
-        <span></span>
+        <span class="checkmark"></span>
     </div>
     <div class="heading" style="font-size: 18px">Payment Completed</div>
     <div id="success-msg"></div>

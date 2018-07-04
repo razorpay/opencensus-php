@@ -18,7 +18,7 @@
 
     function removeForm() {
         document.getElementById("udf_submit_btn").style.display='none';
-        editor.destroy();
+        window.editor.destroy();
 
         document.getElementsByName('payment-form')[0].style.display = 'none';
         document.getElementsByName('payment-form')[0].innerHTML = '';

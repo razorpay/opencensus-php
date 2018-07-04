@@ -208,36 +208,4 @@
         bottom: 0;
         left: 0;
     }
-
-    .animoo {
-        position: relative;
-        margin: 20% auto 0;
-    }
-
-    .animoo .circle {
-        border-radius: 50%;
-        opacity: 0.03;
-        background-color: #00BB55;
-
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
-
-    .animoo, .circle-1 {
-        height: 164px;
-        width: 164px;
-    }
-
-    .circle-2 {
-        height: 134px;
-        width: 134px;
-    }
-
-    .circle-3 {
-        height: 104px;
-        width: 104px;
-    }
-
 </style>
