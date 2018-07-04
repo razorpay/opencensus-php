@@ -368,7 +368,7 @@ class Gateway
 
     protected function getIntegerFormattedAmount(string $amount)
     {
-        return (int) number_format($amount , 0, '.', '');
+        return (int) number_format(($amount * 100), 0, '.', '');
     }
 
     protected function assertPaymentId($expectedPaymentId, $actualPaymentId)

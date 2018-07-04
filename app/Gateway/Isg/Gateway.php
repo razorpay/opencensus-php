@@ -332,12 +332,6 @@ class Gateway extends Base\Gateway
 		return $qrData;
 	}
 
-	protected function getIntegerFormattedAmount(string $amount)
-	{
-		// the amount sent by Isg is in rupees and string format.
-		return (int) number_format(($amount * 100), 0, '.', '');
-	}
-
 	protected function createGatewayPaymentEntityForQr($input)
 	{
 		$attributes = $this->getAttributesFromQrResponse($input);
