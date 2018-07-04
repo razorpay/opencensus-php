@@ -400,8 +400,13 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::IINS] = json_encode(array_values($iins));
     }
 
-    protected function setEmiDurationAttribute(array $emiDurations = [])
+    protected function setEmiDurationAttribute(array $emiDurations = null)
     {
+        if (empty($emiDurations) === true)
+        {
+            $emiDurations = [];
+        }
+
         $existingEmiDuration = $this->getAttribute(self::EMI_DURATION);
 
         if ($existingEmiDuration !== null)
