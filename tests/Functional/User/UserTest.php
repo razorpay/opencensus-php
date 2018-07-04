@@ -166,7 +166,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['url'] = '/users/change_password';
+        $testData['request']['url'] = '/users/password';
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
@@ -189,7 +189,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['url'] = '/users/change_password';
+        $testData['request']['url'] = '/users/password';
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
