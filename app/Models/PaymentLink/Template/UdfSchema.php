@@ -8,7 +8,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class UdfSchema
 {
     /**
-     * @var array|null
+     * @var string|null
      */
     public $schema;
 
@@ -27,6 +27,7 @@ class UdfSchema
         $path      = resource_path('jsonschema');
         $extension = 'json';
 
+        // Initiate the file access driver
         $this->driver = new FileAccess($path, $extension, $id, $name);
 
         $this->init();
@@ -42,11 +43,25 @@ class UdfSchema
         return $this->schema;
     }
 
+    /**
+     * Return the JSON schema as an array
+     * Null, on error
+     *
+     * @return mixed
+     */
     public function getSchemaDecoded()
     {
         return json_decode($this->schema, true);
     }
 
+    /**
+     * Validate the input array sent against the JSON
+     * schema set in $this->schema
+     *
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
     public function validate(array $input = [])
     {
         $data = (object) $input;
@@ -64,6 +79,9 @@ class UdfSchema
         }
     }
 
+    /**
+     * Initialize UDF schema properties
+     */
     protected function init()
     {
         $this->schema = $this->loadSchema();

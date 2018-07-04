@@ -1,12 +1,11 @@
 {
-  "title": "Schindler Payment",
+  "title": " ",
   "type": "object",
   "required": [
     "customer_id",
     "customer_name",
     "invoice_number",
     "job_number",
-    "amount",
     "service_type",
     "location"
   ],
@@ -20,24 +19,16 @@
     "invoice_number": {
       "type": "string",
       "title": "Invoice Number",
-      "length": 100,
-      "default": ""
+      "length": 100
     },
     "customer_name": {
       "type": "string",
       "title": "Customer Name",
-      "length": 100,
-      "default": ""
+      "length": 100
     },
     "job_number": {
       "type": "integer",
-      "title": "Job/Quotation number",
-      "default": ""
-    },
-    "amount": {
-      "type": "integer",
-      "title": "Amount",
-      "minimum": 0
+      "title": "Job/Quotation number"
     },
     "service_type": {
       "type": "string",

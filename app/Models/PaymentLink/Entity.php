@@ -32,7 +32,15 @@ class Entity extends Base\PublicEntity
     const TITLE              = 'title';
     const DESCRIPTION        = 'description';
     const NOTES              = 'notes';
+
+    /**
+     * Optional attribute: allows a custom view template ID to be defined
+     */
     const HOSTED_TEMPLATE_ID = 'hosted_template_id';
+
+    /**
+     * Optional attribute: allows a UDF JSON schema to be defined
+     */
     const UDF_JSONSCHEMA_ID  = 'udf_jsonschema_id';
 
     //

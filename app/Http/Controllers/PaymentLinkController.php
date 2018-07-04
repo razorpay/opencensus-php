@@ -56,11 +56,15 @@ class PaymentLinkController extends Controller
     }
 
     /**
-     * Renders hosted view for payment link with given id
+     * Renders the hosted view for Payment link with given id
+     *
      * @param string $id
+     *
+     * @return
      */
     public function view(string $id)
     {
+        // Fetch view name and payload
         list ($view, $payload) = $this->service()->getViewNameAndPayload($id);
 
         // If request had an error string, append that to the payload separately for view to consume
