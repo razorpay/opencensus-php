@@ -6,22 +6,20 @@ class FileAccess
 {
     const DEFAULT_FILENAME = 'default';
 
-    protected $id;
-
-    protected $type;
-
-    protected $name;
-
-    protected $storagePath;
+    protected $path;
 
     protected $extension;
 
+    protected $id;
+
+    protected $name;
+
     public function __construct(string $path, string $extension, string $id, string $name = null)
     {
-        $this->storagePath = $path;
-        $this->extension   = $extension;
-        $this->id          = $id;
-        $this->name        = $name ?: self::DEFAULT_FILENAME;
+        $this->path      = $path;
+        $this->extension = $extension;
+        $this->id        = $id;
+        $this->name      = $name ?: self::DEFAULT_FILENAME;
     }
 
     public function exists(): bool
@@ -41,7 +39,7 @@ class FileAccess
 
     public function getFilePath(): string
     {
-        return $this->storagePath
+        return $this->path
                . DIRECTORY_SEPARATOR
                . $this->getFileName()
                . '.'

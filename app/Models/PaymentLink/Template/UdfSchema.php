@@ -7,8 +7,14 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class UdfSchema
 {
+    /**
+     * @var array|null
+     */
     public $schema;
 
+    /**
+     * @var FileAccess
+     */
     public $driver;
 
     /**
@@ -18,8 +24,9 @@ class UdfSchema
 
     public function __construct(string $id, string $name = null)
     {
-        $path         = resource_path('jsonschema');
-        $extension    = 'json';
+        $path      = resource_path('jsonschema');
+        $extension = 'json';
+
         $this->driver = new FileAccess($path, $extension, $id, $name);
 
         $this->init();
@@ -32,13 +39,6 @@ class UdfSchema
 
     public function getSchema()
     {
-        if ($this->driver->exists() === false)
-        {
-            return null;
-        }
-
-        $this->schema = $this->driver->get();
-
         return $this->schema;
     }
 
@@ -66,22 +66,17 @@ class UdfSchema
 
     protected function init()
     {
-        $schema = $this->getSchema();
+        $this->schema = $this->loadSchema();
+        $this->exists = ($this->schema !== null);
+    }
 
-        if ($schema !== null)
+    protected function loadSchema()
+    {
+        if ($this->driver->exists() === false)
         {
-            $this->setExists(true);
-            $this->setSchema($schema);
+            return null;
         }
-    }
 
-    protected function setSchema(string $schema = null)
-    {
-        $this->schema = $schema;
-    }
-
-    protected function setExists(bool $exists)
-    {
-        $this->exists = $exists;
+        return $this->driver->get();
     }
 }

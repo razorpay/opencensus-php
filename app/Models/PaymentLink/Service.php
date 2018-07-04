@@ -2,14 +2,7 @@
 
 namespace RZP\Models\PaymentLink;
 
-use View;
-use Request;
-
 use RZP\Models\Base;
-use RZP\Constants\Entity as E;
-use RZP\Exception\BaseException;
-use RZP\Models\PaymentLink\Template\Hosted;
-use RZP\Models\PaymentLink\Template\UdfSchema;
 
 class Service extends Base\Service
 {
