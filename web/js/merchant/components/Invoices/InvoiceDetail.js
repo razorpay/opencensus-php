@@ -103,12 +103,7 @@ const getPaymentDetail = invoice => (
 );
 
 export default props => {
-  let {
-    invoice,
-    isLoading,
-    statusMsg,
-    editPaymentLink,
-  } = props;
+  let { invoice, isLoading, statusMsg, editPaymentLink } = props;
 
   let status = invoice.status;
   const isDraft = status === 'draft';
@@ -184,45 +179,43 @@ export default props => {
                   )}
                 />
 
-                <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                  <React.Fragment>
-                    {do {
-                      const isPartialPayment = invoice.partial_payment;
+                <React.Fragment>
+                  {do {
+                    const isPartialPayment = invoice.partial_payment;
 
-                      <EntityDetailRow
-                        label="Partial Payment"
-                        value={() => (
-                          <div>
-                            {isPartialPayment ? 'Enabled' : 'Disabled'}
-                            {isIssued && (
-                              <AsyncBtn.Transparent
-                                onClick={() => {
-                                  const toEnablePartialPayment = +!isPartialPayment;
-                                  editPaymentLink({
-                                    partial_payment: toEnablePartialPayment,
-                                  });
+                    <EntityDetailRow
+                      label="Partial Payment"
+                      value={() => (
+                        <div>
+                          {isPartialPayment ? 'Enabled' : 'Disabled'}
+                          {isIssued && (
+                            <AsyncBtn.Transparent
+                              onClick={() => {
+                                const toEnablePartialPayment = +!isPartialPayment;
+                                editPaymentLink({
+                                  partial_payment: toEnablePartialPayment,
+                                });
 
-                                  trackTogglePartialPayment(
-                                    invoice.id,
-                                    'Toggle Partial Payment',
-                                    toEnablePartialPayment
-                                  );
-                                }}
-                                class="Button--Link"
-                                style={{ marginLeft: 12 }}
-                                pendingState={
-                                  isPartialPayment ? 'Disabling' : 'Enabling'
-                                }
-                              >
-                                {isPartialPayment ? 'Disable' : 'Enable'}
-                              </AsyncBtn.Transparent>
-                            )}
-                          </div>
-                        )}
-                      />;
-                    }}
-                  </React.Fragment>
-                </ShowWhen>
+                                trackTogglePartialPayment(
+                                  invoice.id,
+                                  'Toggle Partial Payment',
+                                  toEnablePartialPayment
+                                );
+                              }}
+                              class="Button--Link"
+                              style={{ marginLeft: 12 }}
+                              pendingState={
+                                isPartialPayment ? 'Disabling' : 'Enabling'
+                              }
+                            >
+                              {isPartialPayment ? 'Disable' : 'Enable'}
+                            </AsyncBtn.Transparent>
+                          )}
+                        </div>
+                      )}
+                    />;
+                  }}
+                </React.Fragment>
 
                 <EntityDetailRow
                   label="Amount"
@@ -233,11 +226,9 @@ export default props => {
                     />
                   )}
                 />
-                <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                  <EntityDetailRow label="Amount Paid">
-                    {getPaymentDetail(invoice)}
-                  </EntityDetailRow>
-                </ShowWhen>
+                <EntityDetailRow label="Amount Paid">
+                  {getPaymentDetail(invoice)}
+                </EntityDetailRow>
 
                 <EntityDetailRow
                   label="Link Url"
