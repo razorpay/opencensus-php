@@ -1,5 +1,5 @@
 box:
-  id: razorpay/pithos:rzp-php7.1
+  id: razorpay/containers:php7
   username: $DOCKERHUB_USER
   password: $DOCKERHUB_PASSWORD
 dev:
