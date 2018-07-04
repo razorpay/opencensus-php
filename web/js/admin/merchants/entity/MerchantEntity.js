@@ -695,7 +695,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
           const isLoading = isDetailsLoading || isPartnerRequestsLoading;
           const action = merchant.details.partner_type ? 'Remove' : 'Mark';
           return (
-            <ShowWhen>
+            <ShowWhen permission="edit_merchant_requests">
               <div onClick={isLoading ? null : actions.TogglePartnerType}>
                 {isLoading ? (
                   <Fragment>
