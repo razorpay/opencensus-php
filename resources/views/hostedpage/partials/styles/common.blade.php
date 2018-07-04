@@ -132,10 +132,9 @@
         outline: none;
         cursor: pointer;
         font-size: 14px;
-        padding: 10px;
+        padding: 10px 16px;
         border-radius: 2px;
         overflow: auto;
-
     }
 
     .text-underline {
@@ -157,10 +156,6 @@
 
     #secure-lock-icon {
         height: 16px;
-    }
-
-    #footer-section img {
-        height: 20px;
     }
 
     .showmore {
@@ -189,6 +184,60 @@
         border-top-left-radius: 4px;
         border-top-right-radius: 4px;
         position: relative;
+    }
+
+    #success-section {
+        text-align: center;
+        font-size: 14px;
+        color: {{$secondary_color}};
+        line-height: 20px;
+        position: relative;
+        height: 100%;
+        overflow: hidden;
+
+        display: none;
+    }
+
+    #success-section .heading {
+        margin: 20px 0;
+    }
+
+    #success-section #success-footer{
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+    }
+
+    .animoo {
+        position: relative;
+        margin: 20% auto 0;
+    }
+
+    .animoo .circle {
+        border-radius: 50%;
+        opacity: 0.03;
+        background-color: #00BB55;
+
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .animoo, .circle-1 {
+        height: 164px;
+        width: 164px;
+    }
+
+    .circle-2 {
+        height: 134px;
+        width: 134px;
+    }
+
+    .circle-3 {
+        height: 104px;
+        width: 104px;
     }
 
 </style>

@@ -74,13 +74,22 @@
 
     #mobile-container #footer-section {
         border: 1px solid #dfdfdf;
-        padding: 8px 16px;
+        padding: 16px;
         margin: 28px auto;
     }
 
     #mobile-container #footer-section img {
-        margin: 12px 0;
+        height: 18px;
+    }
+
+    #mobile-container #fin-logo {
+        margin-top: 16px;
         display: block
+    }
+
+    #mobile-container #rzp-logo {
+        vertical-align: bottom;
+        margin-left: 4px;
     }
 
     #mobile-container #testmode-warning {
@@ -96,6 +105,10 @@
 
     #mobile-container .form-group .form-control {
         width: 100%;
+    }
+
+    #mobile-container #success-section {
+        margin-bottom: 60px;
     }
 
 </style>

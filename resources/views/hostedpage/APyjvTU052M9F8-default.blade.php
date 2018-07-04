@@ -78,6 +78,7 @@
         @endif
         <script>
             cleanHTML();
+            document.getElementById('udf_submit_btn').addEventListener('click', submitUdf);
             window.t0 = (new Date()).getTime(); // initial time stamp
 
             var data = window.RZP_DATA.data;
@@ -85,66 +86,40 @@
 
             toggleTrimDescription(true);
 
-            function fullPaid(respPaymentId) {
+            function fullPaid(respPaymentId, amountPaid) {
                 if (!respPaymentId) {
                     return;
                 }
 
-                var amount = data.payment_link.amount;
-                document.getElementById('pay-title').innerHTML = 'AMOUNT PAID';
+                removeForm();
 
-                if (checkIsDesktop()) {
-                    document.getElementById('scs-box').style.display = 'block';
-                    var successNote = "You have successfully paid ₹ " + (amount/100).toFixed(2);
+                document.getElementById('success-section').style.display = 'block';
 
-                    successNote += '<div> Payment ID: ' + respPaymentId + ' </div>';
-
-                    document.getElementById('scs-msg').innerHTML = successNote;
-
-                    document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
-                } else {
-                    document.getElementById('mob-payment-btn').style.display = 'none';
-                }
+                document.getElementById('success-msg').innerHTML = 'You\'ve successfully paid ₹' + (amountPaid/100).toFixed(2);
+                document.getElementById('payment-id').innerHTML = 'Payment ID: ' + respPaymentId;
             }
         </script>
         <script>
-            function submitUdf(btn) {
-                var errors = editor.validate();
-                console.log('ERRORS...', errors);
 
-                if (errors.length) {
-                    alert("Errors in the form");
-                    return;
-                }
+            // UDF start
+            JSONEditor.defaults.languages.en.error_required = "";
+            var element = document.getElementById('udf_container');
+            var editor = new JSONEditor(element, {
+                form_name_root: "",
+                no_additional_properties: true,
+                disable_properties: true,
+                disable_edit_json: true,
+                disable_collapse: true,
+                disable_array_reorder: true,
+                disable_array_delete: true,
+                disable_array_add: true,
+                theme: "bootstrap3",
+                schema: {!! $udf_schema !!}
+            });
 
-                var udfData = editor.getValue();
+            // UDF end
 
-                var amountEl = document.getElementsByName('amount')[0];
-                var amount = amountEl.value;
-
-                checkoutStart(window.RZP_DATA = window.RZP_DATA || {}, Object.assign({}, udfData, {amount: amount}));
-            }
-
-        // UDF start
-        JSONEditor.defaults.languages.en.error_required = "";
-        var element = document.getElementById('udf_container');
-        var editor = new JSONEditor(element, {
-            form_name_root: "",
-            no_additional_properties: true,
-            disable_properties: true,
-            disable_edit_json: true,
-            disable_collapse: true,
-            disable_array_reorder: true,
-            disable_array_delete: true,
-            disable_array_add: true,
-            theme: "bootstrap3",
-            schema: {!! $udf_schema !!}
-        });
-
-        document.getElementById('udf_submit_btn').addEventListener('click', submitUdf);
-        // UDF end
-
-            function checkoutStart(globalScope, udfData) {
+            function initCheckout(globalScope, udfData) {
                 var data = globalScope.data;
 
                 var paymentPageObj = data.payment_link;
@@ -154,11 +129,11 @@
                 var options = {
                     key: data.key_id,
                     payment_link_id: paymentPageObj.id,
-                    amount: parseInt(udfData.amount * 100),
+                    amount: udfData.amount,
                     notes: udfData,
                     description: '#' + paymentPageObj.id,
                     handler: function(response) {
-                        removeForm();
+                        var amountPaid = udfData.amount;
 
                         if (globalScope.hasRedirect()) {
 
@@ -175,11 +150,11 @@
 
                             window.ga('send', 'event', 'Payment Page Hosted', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
                                 hitCallback: function() {
-                                    return fullPaid(response.razorpay_payment_id); // To display the latest payment id
+                                    return fullPaid(response.razorpay_payment_id, amountPaid); // To display the latest payment id
                                 }
                             });
                         } else {
-                            return fullPaid(response.razorpay_payment_id); // To display the latest payment id
+                            return fullPaid(response.razorpay_payment_id, amountPaid); // To display the latest payment id
                         }
                     },
                     callback_url: location.href,

@@ -1,28 +1,19 @@
 <script>
-    function initAnalytics() {
-        analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
-        analytics.track('ga', 'pageview');
-    }
+    function submitUdf(btn) {
+        var errors = editor.validate();
+        console.log('ERRORS...', errors);
 
-    function checkIsDesktop() {
-        var maxMobileWidth = {!!utf8_json_encode($max_mobile_width)!!};
-
-        var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
-        return width > maxMobileWidth;
-    }
-
-    function cleanHTML() {
-        // Show content according to width
-        if (checkIsDesktop()) {
-            document.getElementById('mobile-container').innerHTML = '';
-            document.getElementById('desktop-container').style.display = 'block';
-        } else {
-
-            document.getElementById('desktop-container').innerHTML = '';
-            document.getElementById('mobile-container').style.display = 'block';
-
-            document.body.style.overflow = 'hidden';
+        if (errors.length) {
+            alert("Errors in the form");
+            return;
         }
+
+        var udfData = editor.getValue();
+
+        var amountEl = document.getElementsByName('amount')[0];
+        var amount = parseInt(amountEl.value * 100);
+
+        initCheckout(window.RZP_DATA = window.RZP_DATA || {}, Object.assign({}, udfData, {amount: amount}));
     }
 
     function removeForm() {
@@ -31,20 +22,13 @@
 
         document.getElementsByName('payment-form')[0].style.display = 'none';
         document.getElementsByName('payment-form')[0].innerHTML = '';
-    }
 
-    function hasClass(ele,cls) {
-        return !!ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
-    }
+        document.getElementById('testmode-warning').style.display = 'none';
 
-    function addClass(ele,cls) {
-        if (!hasClass(ele,cls)) ele.className += " "+cls;
-    }
-
-    function removeClass(ele,cls) {
-        if (hasClass(ele,cls)) {
-            var reg = new RegExp('(\\s|^)'+cls+'(\\s|$)');
-            ele.className=ele.className.replace(reg,' ');
+        if (checkIsDesktop()) {
+            document.body.scrollTop = 0;
+        } else {
+            document.getElementById('form-section').scrollTop = 0;
         }
     }
 
@@ -92,6 +76,62 @@
         var ele = document.getElementById('payment-for');
         ele && (ele.innerHTML = desc + button);
     }
+</script>
+
+<script>
+    function initAnalytics() {
+        analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
+        analytics.track('ga', 'pageview');
+    }
+
+    function checkIsDesktop() {
+        var maxMobileWidth = {!!utf8_json_encode($max_mobile_width)!!};
+
+        var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+        return width > maxMobileWidth;
+    }
+
+    function hasClass(ele,cls) {
+        return !!ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
+    }
+
+    function addClass(ele,cls) {
+        if (!hasClass(ele,cls)) ele.className += " "+cls;
+    }
+
+    function removeClass(ele,cls) {
+        if (hasClass(ele,cls)) {
+            var reg = new RegExp('(\\s|^)'+cls+'(\\s|$)');
+            ele.className=ele.className.replace(reg,' ');
+        }
+    }
+
+    function cleanHTML() {
+        // Show content according to width
+        if (checkIsDesktop()) {
+            document.getElementById('mobile-container').innerHTML = '';
+            document.getElementById('desktop-container').style.display = 'block';
+
+            var elems = document.getElementsByClassName('mobile-el');
+            for (var i = 0; i < elems.length; i++) {
+                elems[i].innerHTML = ''; // To remove common elements to coexist in both views
+                elems[i].style.display = 'none'; // To remove common elements to coexist in both views
+            }
+        } else {
+
+            document.getElementById('desktop-container').innerHTML = '';
+            document.getElementById('mobile-container').style.display = 'block';
+
+            document.body.style.overflow = 'hidden';
+
+            var elems = document.getElementsByClassName('desktop-el');
+            for (var i = 0; i < elems.length; i++) {
+                elems[i].innerHTML = ''; // To remove common elements to coexist in both views
+                elems[i].style.display = 'none'; // To remove common elements to coexist in both views
+            }
+        }
+    }
+
 </script>
 
 <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>

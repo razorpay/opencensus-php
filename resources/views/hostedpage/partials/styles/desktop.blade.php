@@ -20,6 +20,7 @@
     #desktop-container .content {
         border: 1px solid {{$border_color}};
         background: {{$light_color}};
+        min-height: 540px;
     }
 
     #desktop-container::before {
@@ -111,6 +112,10 @@
         fill: {{$tertiary_color}};
     }
 
+    #desktop-container #footer-section img {
+        height: 20px;
+    }
+
     #desktop-container #contact-details {
         display: block;
     }
@@ -131,6 +136,22 @@
 
     #desktop-container .form-group .icon {
         line-height: 40px;
+    }
+
+    #desktop-container #success-section {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+    #desktop-container .animoo {
+        margin: 24% auto 0;
+    }
+
+    #desktop-container #success-section #success-footer {
+        bottom: 16px;
     }
 
 </style>
