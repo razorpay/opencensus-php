@@ -2,8 +2,8 @@
 
 namespace RZP\Models\User;
 
-use Hash;
 use App;
+use Hash;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;

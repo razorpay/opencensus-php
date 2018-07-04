@@ -652,7 +652,7 @@ final class Route
         'user_create'                              => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                               => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                     => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
-        'user_change_password'                     => ['put',      'users/change_password',                          'UserController@changeUserPassword'                                 ],
+        'user_change_password'                     => ['put',      'users/password',                                 'UserController@changeUserPassword'                                 ],
         'user_edit'                                => ['put',      'users/{id}',                                     'UserController@editUser'                                           ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         // Same as user_fetch but for admin
