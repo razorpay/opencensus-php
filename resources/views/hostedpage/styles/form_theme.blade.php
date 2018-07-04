@@ -41,18 +41,10 @@
         border: 1px solid #528FF0;
     }
 
-    .form-group select::before {
-        /*content: '&#9660;';*/
-        /*position: absolute;*/
-        /*left: 236px;*/
-        /*top: 4px;*/
-        /*font-size: 20px;*/
-        /*pointer-events: none;*/
-    }
-
     .form-group select {
-        /*-webkit-appearance: none;*/
-        /*-webkit-border-radius: 2px;*/
+        background: #fff url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAOElEQVRIiWNgGAWjYBQMf9DBwMDwnwDuoNSSBjyGN1BqOD5LqGY4NkuobjiyJTQzfBSMglFAJgAAYQgY/SW0dY0AAAAASUVORK5CYII=) no-repeat 96%;
+        -webkit-appearance: none;
+        -webkit-border-radius: 2px;
     }
 
     .form-group .help-block {
