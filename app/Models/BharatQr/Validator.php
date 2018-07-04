@@ -24,7 +24,7 @@ class Validator extends Base\Validator
         GatewayResponseParams::SENDER_NAME           => 'sometimes_if:method,card',
         GatewayResponseParams::PROVIDER_REFERENCE_ID => 'required|string',
         GatewayResponseParams::AMOUNT                => 'required|integer|min:0',
-        GatewayResponseParams::GATEWAY_MERCHANT_ID   => 'required_without:gateway_mpan|string',
+        GatewayResponseParams::GATEWAY_MERCHANT_ID   => 'required_without:mpan|string',
         GatewayResponseParams::MPAN                  => 'required_without:gateway_merchant_id|string',
     ];
 }
