@@ -141,6 +141,10 @@ deploy:
          code: |
             python scripts/post_deploy_notifier.py
 deploy-canary:
+    box:
+      id: razorpay/containers:php7
+      username: $DOCKERHUB_USER
+      password: $DOCKERHUB_PASSWORD
     steps:
       - script:
           name: Check if canary branch is up-to-date on prod-api-canary
@@ -195,6 +199,10 @@ deploy-canary:
          code: |
             python scripts/post_deploy_notifier.py
 deploy-dark:
+    box:
+      id: razorpay/containers:php7
+      username: $DOCKERHUB_USER
+      password: $DOCKERHUB_PASSWORD
     steps:
       - script:
           name: Check if dark branch is up-to-date
