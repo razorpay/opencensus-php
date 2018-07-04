@@ -2099,62 +2099,60 @@ export default class InvoicesNewContainer extends Component {
                             </button>
                           )}
                         </div>
-                        {showEditInvoiceLabelOption && (
-                          <div class="btn-group-vertical inv__actionbutton">
-                            <p>Settings</p>
-                            <label
+                        <div class="btn-group-vertical inv__actionbutton">
+                          <p>Settings</p>
+                          <label
+                            class="btn btn-default btn-block btn-lg"
+                            for="partial_payment"
+                          >
+                            <div class="row">
+                              <div class="col-xs-10">
+                                <h3>Enable Partial Payments</h3>
+                                <p>Allow accepting multiple payments</p>
+                              </div>
+                              <div
+                                class="col-xs-2"
+                                onClick={() =>
+                                  track({
+                                    eventAction: 'Enable - Partial Payment',
+                                  })
+                                }
+                              >
+                                <div class="custom-checkbox">
+                                  <Field
+                                    name="partial_payment"
+                                    id="partial_payment"
+                                    component="input"
+                                    type="checkbox"
+                                    disabled={locked}
+                                    class="Input-el"
+                                  />
+                                  <div class="Input-checkbox" />
+                                </div>
+                              </div>
+                            </div>
+                          </label>
+                          {showEditInvoiceLabelOption && (
+                            <button
                               class="btn btn-default btn-block btn-lg"
-                              for="partial_payment"
+                              onClick={this.showEditInvoiceLabelModal}
+                              type="button"
                             >
                               <div class="row">
                                 <div class="col-xs-10">
-                                  <h3>Enable Partial Payments</h3>
-                                  <p>Allow accepting multiple payments</p>
+                                  <h3>Change Invoice Label</h3>
+                                  <p>
+                                    Invoices will be issued under this label
+                                  </p>
                                 </div>
-                                <div
-                                  class="col-xs-2"
-                                  onClick={() =>
-                                    track({
-                                      eventAction: 'Enable - Partial Payment',
-                                    })
-                                  }
-                                >
-                                  <div class="custom-checkbox">
-                                    <Field
-                                      name="partial_payment"
-                                      id="partial_payment"
-                                      component="input"
-                                      type="checkbox"
-                                      disabled={locked}
-                                      class="Input-el"
-                                    />
-                                    <div class="Input-checkbox" />
-                                  </div>
-                                </div>
+                                <i
+                                  class="col-xs-2 i i-arrow-forward"
+                                  style={{ marginTop: '0.5em' }}
+                                />
                               </div>
-                            </label>
-                            {showEditInvoiceLabelOption && (
-                              <button
-                                class="btn btn-default btn-block btn-lg"
-                                onClick={this.showEditInvoiceLabelModal}
-                                type="button"
-                              >
-                                <div class="row">
-                                  <div class="col-xs-10">
-                                    <h3>Change Invoice Label</h3>
-                                    <p>
-                                      Invoices will be issued under this label
-                                    </p>
-                                  </div>
-                                  <i
-                                    class="col-xs-2 i i-arrow-forward"
-                                    style={{ marginTop: '0.5em' }}
-                                  />
-                                </div>
-                              </button>
-                            )}
-                          </div>
-                        )}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     )}
 
