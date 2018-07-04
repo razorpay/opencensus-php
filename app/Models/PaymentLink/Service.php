@@ -4,6 +4,8 @@ namespace RZP\Models\PaymentLink;
 
 use RZP\Models\Base;
 use RZP\Models\PaymentLink\Template\FileAccess;
+use RZP\Models\PaymentLink\Template\Hosted;
+use RZP\Models\PaymentLink\Template\UdfSchema;
 
 class Service extends Base\Service
 {
@@ -76,12 +78,7 @@ class Service extends Base\Service
 
         $payload['data'] = (new ViewSerializer($paymentLink))->serializeForHosted();
 
-        $udfSchema = $this->getUdfSchemaIfDefined($paymentLink);
-
-        if (empty($udfSchema) === false)
-        {
-            $payload['udf_schema'] = $udfSchema;
-        }
+        $payload['udf_schema'] = $this->getUdfSchemaIfDefined($paymentLink);
 
         return $payload;
     }
@@ -95,12 +92,9 @@ class Service extends Base\Service
             return null;
         }
 
-        $schemaAccessor = new FileAccess(FileAccess::UDF_SCHEMA, $jsonSchemaId);
+        $schemaAccessor = new UdfSchema($jsonSchemaId);
 
-        if ($schemaAccessor->exists() === true)
-        {
-            return $schemaAccessor->get();
-        }
+        return $schemaAccessor->getSchema();
     }
 
     public function getHostedViewTemplate(string $templateId = null)
@@ -113,7 +107,7 @@ class Service extends Base\Service
             return $defaultView;
         }
 
-        $templateAccessor = new FileAccess(FileAccess::HOSTED_PAGE, $templateId);
+        $templateAccessor = new Hosted($templateId);
 
         // If a custom hosted page template exists, use that
         if ($templateAccessor->exists() === true)

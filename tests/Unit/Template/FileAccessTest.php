@@ -4,45 +4,46 @@ namespace RZP\Tests\Unit\Trace;
 
 use RZP\Tests\TestCase;
 
-use RZP\Models\PaymentLink\Template\FileAccess;
+use RZP\Models\PaymentLink\Template\Hosted as TemplateHosted;
+use RZP\Models\PaymentLink\Template\UdfSchema as TemplateUdfSchema;
 
 class FileAccessTest extends TestCase
 {
     public function testGetFilePathUdfSchema()
     {
-        $accessor = new FileAccess('udf_schema', 'test');
+        $accessor = new TemplateUdfSchema('test');
 
-        $path = $accessor->getFilePath();
+        $path = $accessor->driver->getFilePath();
 
         $this->assertStringEndsWith('resources/jsonschema/test-default.json', $path);
         $this->assertTrue($accessor->exists());
 
-        $accessor = new FileAccess('udf_schema', 'test', 'custom_name');
+        $accessor = new TemplateUdfSchema('test', 'custom_name');
 
-        $path = $accessor->getFilePath();
+        $path = $accessor->driver->getFilePath();
 
         $this->assertStringEndsWith('resources/jsonschema/test-custom_name.json', $path);
     }
 
     public function testGetFilePathHostedPage()
     {
-        $accessor = new FileAccess('hosted_page', 'test');
+        $accessor = new TemplateHosted('test');
 
-        $path = $accessor->getFilePath();
+        $path = $accessor->driver->getFilePath();
 
         $this->assertStringEndsWith('resources/views/hostedpage/test-default.blade.php', $path);
     }
 
     public function testFileExistsFalse()
     {
-        $accessor = new FileAccess('udf_schema', 'test_invalid');
+        $accessor = new TemplateUdfSchema('test_invalid');
 
         $this->assertFalse($accessor->exists());
     }
 
     public function testGetUdfSchemaContent()
     {
-        $accessor = new FileAccess('udf_schema', 'test');
+        $accessor = new TemplateUdfSchema('test');
 
         $expected = [
             "title"      => "Test Schema",
@@ -69,6 +70,6 @@ class FileAccessTest extends TestCase
 
         $expectedJson = json_encode($expected, JSON_PRETTY_PRINT);
 
-        $this->assertJsonStringEqualsJsonString($expectedJson, $accessor->get());
+        $this->assertJsonStringEqualsJsonString($expectedJson, $accessor->getSchema());
     }
 }

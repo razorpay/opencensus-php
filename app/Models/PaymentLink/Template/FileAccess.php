@@ -4,15 +4,7 @@ namespace RZP\Models\PaymentLink\Template;
 
 class FileAccess
 {
-    const UDF_SCHEMA  = 'udf_schema';
-    const HOSTED_PAGE = 'hosted_page';
-
     const DEFAULT_FILENAME = 'default';
-
-    protected static $extension = [
-        self::UDF_SCHEMA  => 'json',
-        self::HOSTED_PAGE => 'blade.php',
-    ];
 
     protected $id;
 
@@ -22,11 +14,14 @@ class FileAccess
 
     protected $storagePath;
 
-    public function __construct(string $type, string $id, string $name = null)
+    protected $extension;
+
+    public function __construct(string $path, string $extension, string $id, string $name = null)
     {
-        $this->id   = $id;
-        $this->type = $type;
-        $this->name = $name ?: self::DEFAULT_FILENAME;
+        $this->storagePath = $path;
+        $this->extension   = $extension;
+        $this->id          = $id;
+        $this->name        = $name ?: self::DEFAULT_FILENAME;
     }
 
     public function exists(): bool
@@ -44,34 +39,16 @@ class FileAccess
         return file_get_contents($this->getFilePath());
     }
 
-    public function getFileBasePath()
-    {
-        $key = '';
-        switch ($this->type)
-        {
-            case self::UDF_SCHEMA:
-                $key ='jsonschema';
-                break;
-
-            case self::HOSTED_PAGE:
-                $key = 'views/hostedpage';
-                break;
-        }
-
-        return resource_path($key);
-    }
-
     public function getFilePath(): string
     {
-        $base =  $this->getFileBasePath();
-
-        return $base
+        return $this->storagePath
                . DIRECTORY_SEPARATOR
-               . $this->getViewName() . '.'
-               . self::$extension[$this->type];
+               . $this->getFileName()
+               . '.'
+               . $this->extension;
     }
 
-    public function getViewName(): string
+    public function getFileName(): string
     {
         return $this->id . '-' . $this->name;
     }

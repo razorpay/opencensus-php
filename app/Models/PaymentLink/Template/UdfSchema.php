@@ -7,20 +7,44 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class UdfSchema
 {
-    public $schema = [];
+    public $schema;
 
-    public function getJSONSchema(string $id, string $name = null)
+    public $driver;
+
+    /**
+     * @var bool
+     */
+    protected $exists = false;
+
+    public function __construct(string $id, string $name = null)
     {
-        $json = (new FileAccess(FileAccess::UDF_SCHEMA, $id, $name));
+        $path         = resource_path('jsonschema');
+        $extension    = 'json';
+        $this->driver = new FileAccess($path, $extension, $id, $name);
 
-        if ($json->exists() === false)
+        $this->init();
+    }
+
+    public function exists(): bool
+    {
+        return $this->exists;
+    }
+
+    public function getSchema()
+    {
+        if ($this->driver->exists() === false)
         {
-            return;
+            return null;
         }
 
-        $this->schema = json_decode($json->get(), true);
+        $this->schema = $this->driver->get();
 
         return $this->schema;
+    }
+
+    public function getSchemaDecoded()
+    {
+        return json_decode($this->schema, true);
     }
 
     public function validate(array $input = [])
@@ -28,7 +52,7 @@ class UdfSchema
         $data = (object) $input;
 
         $validator = new JsonSchema\Validator;
-        $validator->validate($data, $this->schema);
+        $validator->validate($data, $this->getSchemaDecoded());
 
         if ($validator->isValid() === false)
         {
@@ -38,5 +62,26 @@ class UdfSchema
 
             throw new BadRequestValidationFailureException($message);
         }
+    }
+
+    protected function init()
+    {
+        $schema = $this->getSchema();
+
+        if ($schema !== null)
+        {
+            $this->setExists(true);
+            $this->setSchema($schema);
+        }
+    }
+
+    protected function setSchema(string $schema = null)
+    {
+        $this->schema = $schema;
+    }
+
+    protected function setExists(bool $exists)
+    {
+        $this->exists = $exists;
     }
 }
