@@ -12,7 +12,7 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 const RequestExistenceMessage = ({ requestName }) => (
   <div>
-    Request for partner account {requestName} is already submitted
+    Request for Partner {requestName} is already pending
     <div>
       <button class="btn" onClick={closeModal}>
         Ok
