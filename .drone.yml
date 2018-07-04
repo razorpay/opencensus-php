@@ -34,6 +34,7 @@ pipeline:
       - php -m
       - export COMPOSER_CACHE_DIR=".composer/cache"
       - mkdir -p $COMPOSER_CACHE_DIR
+      - chmod 777 -R storage
       - composer config --global github-oauth.github.com $GIT_TOKEN
       - composer install --no-interaction --optimize-autoloader
       - mkdir -p /opt/razorpay/certs/first_data
