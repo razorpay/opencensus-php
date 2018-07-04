@@ -1,10 +1,21 @@
 <script>
-    function submitUdf(btn) {
+    function submitForm(btn) {
         var errors = editor.validate();
         console.log('ERRORS...', errors);
 
         if (errors.length) {
-            alert("Errors in the form");
+            var errorEle = document.getElementsByClassName('has-error')[0];
+            if (errorEle) {
+                var parentEle;
+                if (checkIsDesktop()) {
+                    parentEle = document.body;
+                } else {
+                    parentEle = document.getElementById('form-section');
+                }
+
+                scrollTo(parentEle, errorEle.offsetTop, 300);
+            }
+
             return;
         }
 
@@ -82,6 +93,7 @@
     }
 </script>
 
+{{-- Utilities --}}
 <script>
     function initAnalytics() {
         analytics.init(['ga', 'hotjar'], window.location.hostname.indexOf('razorpay.com') < 0);
@@ -137,6 +149,31 @@
         }
     }
 
+    function easeInOutQuad (t, b, c, d) {
+        t /= d/2;
+        if (t < 1) return c/2*t*t + b;
+        t--;
+        return -c/2 * (t*(t-2) - 1) + b;
+    }
+
+    function scrollTo(element, to, duration) {
+        var start = element.scrollTop,
+            change = to - start,
+            currentTime = 0,
+            increment = 20;
+
+        var animateScroll = function(){
+            currentTime += increment;
+            var val = easeInOutQuad(currentTime, start, change, duration);
+            element.scrollTop = val;
+
+            if(currentTime < duration) {
+                window.setTimeout(animateScroll, increment);
+            }
+        };
+
+        animateScroll();
+    }
 </script>
 
 <script src="https://cdn.razorpay.com/static/analytics/bundle.js" onload="initAnalytics()" async></script>

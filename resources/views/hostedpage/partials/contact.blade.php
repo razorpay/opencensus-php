@@ -1,3 +1,9 @@
+<?php
+ $contact = [
+     'phone' => '1800 209 5438',
+     'email' => 'schindlerindia.in@schindler.com'
+ ];
+?>
 @section('phone')
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
         <path d="M0 0h24v24H0z" fill="none"/>
@@ -18,11 +24,11 @@
             <div class="heading" style="line-height: 32px;">Contact Us</div>
             <div>
                 @yield('phone')
-                1800 282 6161
+                {{$contact['phone']}}
             </div>
             <div>
                 @yield('email')
-                support@inforsoftapps.com
+                {{$contact['email']}}
             </div>
         </div>
     @endif
@@ -31,11 +37,11 @@
     @if($view === 'header')
         <div class="desktop-el">
             <div>
-                1800 282 6161
+                {{$contact['phone']}}
                 @yield('phone')
             </div>
             <div>
-                support@inforsoftapps.com
+                {{$contact['email']}}
                 @yield('email')
             </div>
         </div>
