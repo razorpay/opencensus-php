@@ -32,8 +32,6 @@ class PaymentLinkTest extends TestCase
         parent::setUp();
 
         $this->ba->proxyAuth();
-
-        $this->enablePartialPaymentForMerchant();
     }
 
     public function testCreateBatchOfPaymentLinkType1()
@@ -467,15 +465,5 @@ class PaymentLinkTest extends TestCase
                 Header::PARTIAL_PAYMENT  => '0',
             ],
         ];
-    }
-
-    protected function enablePartialPaymentForMerchant()
-    {
-        $attribute = [
-            'name'      => FeatureConstants::INVOICE_PARTIAL_PAYMENTS,
-            'entity_id' => '10000000000000',
-        ];
-
-        $this->fixtures->merchant->addFeatures([FeatureConstants:: INVOICE_PARTIAL_PAYMENTS]);
     }
 }

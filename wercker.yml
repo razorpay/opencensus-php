@@ -1,5 +1,5 @@
 box:
-  id: razorpay/containers:php7
+  id: razorpay/pithos:rzp-php7.1
   username: $DOCKERHUB_USER
   password: $DOCKERHUB_PASSWORD
 dev:
@@ -53,18 +53,6 @@ build:
               zend.assertions=1
               assert.exception=On
       - script:
-          name: Copy nanotime extension
-          code: cp scripts/nanotime.* /usr/lib/php7/modules
-      - create-file:
-          name: Enable nanotime extension
-          filename: /etc/php7/conf.d/nanotime.ini
-          overwrite: true
-          content: |
-              extension=nanotime.so
-      - script:
-          name: List PHP extensions
-          code: php -m
-      - script:
           name: Composer set-up
           code: |
               composer config -g github-oauth.github.com $github_token
@@ -79,8 +67,8 @@ build:
           name: Run unit tests
           code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --printer=Codedungeon\\PHPUnitPrettyResultPrinter\\Printer
       - script:
-          name: List directory
-          code: ls -lah
+          name: create commit.txt
+          code: git rev-parse HEAD > public/commit.txt
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
@@ -91,6 +79,10 @@ build:
           name: Save trace
           code: cp storage/logs/* $WERCKER_REPORT_ARTIFACTS_DIR/
 deploy:
+    box:
+      id: razorpay/containers:php7
+      username: $DOCKERHUB_USER
+      password: $DOCKERHUB_PASSWORD
     steps:
       - script:
           name: Check if branch is master on prod-api
@@ -102,17 +94,11 @@ deploy:
               fi
             fi
       - script:
-          name: List directory
-          code: ls -lah
-      - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
       - script:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
-      - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
       - script:
           name: Conditionally skip canary deployment
           code: |
@@ -155,6 +141,10 @@ deploy:
          code: |
             python scripts/post_deploy_notifier.py
 deploy-canary:
+    box:
+      id: razorpay/containers:php7
+      username: $DOCKERHUB_USER
+      password: $DOCKERHUB_PASSWORD
     steps:
       - script:
           name: Check if canary branch is up-to-date on prod-api-canary
@@ -171,17 +161,11 @@ deploy-canary:
               fi
             fi
       - script:
-          name: List directory
-          code: ls -lah
-      - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
       - script:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
-      - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
       - razorpay/aws-code-deploy@0.0.25:
           key: $AWS_KEY
           secret: $AWS_SECRET
@@ -215,6 +199,10 @@ deploy-canary:
          code: |
             python scripts/post_deploy_notifier.py
 deploy-dark:
+    box:
+      id: razorpay/containers:php7
+      username: $DOCKERHUB_USER
+      password: $DOCKERHUB_PASSWORD
     steps:
       - script:
           name: Check if dark branch is up-to-date
@@ -231,17 +219,11 @@ deploy-dark:
               fi
             fi
       - script:
-          name: List directory
-          code: ls -lah
-      - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
       - script:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
-      - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
       - razorpay/aws-code-deploy@0.0.25:
           key: $AWS_KEY
           secret: $AWS_SECRET

@@ -40,6 +40,7 @@ trait PaymentTrait
     use PaymentNetbankingTrait;
     use PaymentFreechargeTrait;
     use PaymentCybersourceTrait;
+    use PaymentTraitMpiEnstage;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
 
