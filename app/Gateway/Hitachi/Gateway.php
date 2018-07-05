@@ -81,8 +81,8 @@ class Gateway extends Base\Gateway
 
         $authenticationGateway = $this->app['repo']
                                        ->mpi
-                                        ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE)
-                                       ->getGateway();
+                                       ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE)
+                                       ->getGateway() ?? 'mpi_blade';
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
