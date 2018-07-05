@@ -105,6 +105,16 @@ deploy:
             if [ "$APP_ENV" != "beta" ] && [ "$APP_ENV" != "prod" ]; then
               export SKIP_CANARY=true
             fi
+      - script:
+          name: Conditionally verify if commit matches between K8s and Asg.
+          code: |
+            if [ "$APP_ENV" == "prod" ] && [ "$CHECK_K8S_COMMIT" == "true" ]; then
+              K8S_COMMIT=`curl https://k8s-prod-api.razorpay.com/commit.txt`
+              if [ "$K8S_COMMIT" != "$WERCKER_GIT_COMMIT" ]; then
+                echo "[ERROR] Kubernetes deployments enabled. Please deploy to K8s via falcon before deploying here."
+                exit 1
+              fi
+            fi
       - razorpay/aws-code-deploy@0.0.32:
           key: $AWS_KEY
           secret: $AWS_SECRET
