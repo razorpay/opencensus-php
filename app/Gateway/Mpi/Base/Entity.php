@@ -64,7 +64,7 @@ class Entity extends Base\Entity
         self::AMOUNT      => 'int'
     ];
 
-    protected $entity = Constants\Entity::MPI_BLADE;
+    protected $entity = Constants\Entity::MPI;
 
     public $incrementing = true;
 
