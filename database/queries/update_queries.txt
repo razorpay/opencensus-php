@@ -1895,3 +1895,10 @@ UPDATE taxes SET name = 'UTGST @ 28%' WHERE id='9nDpZ0hEw4vZky';
 
 UPDATE merchants m JOIN merchant_details md ON m.id = md.merchant_id SET m.has_key_access = 1
     WHERE m.parent_id IS NULL AND md.submitted_at IS NULL AND md.submitted = 1;
+
+update merchant_details set contact_email="nirmalbedibedi@gmail.com" where merchant_id="AJc7mkeD5I5RGQ" limit 1;
+
+update merchants set email = "nirmalbedibedi@gmail.com",transaction_report_email="nirmalbedibedi@gmail.com"
+where id = "AJc7mkeD5I5RGQ" limit 1;
+
+update merchants set activated=true, live= true, activated_at = 1530631221 where id = "AOulhPe6sWw9y8" limit 1;
