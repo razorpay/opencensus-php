@@ -32,6 +32,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
 class Core extends Base\Core
@@ -804,18 +805,14 @@ class Core extends Base\Core
      */
     public function getPartnerApp(Entity $merchant)
     {
-        $validator = new Validator;
-
-        $validator->validateIsPartner($merchant);
-
         // For pure platforms, no internal partner app is created
-        $validator->validateIsNotPurePlatform($merchant);
+        (new Validator)->validateIsNonPurePlatformPartner($merchant);
 
         try
         {
             $app = (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
         }
-        catch (\Exception $ex)
+        catch (DBQueryException $ex)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
@@ -907,25 +904,7 @@ class Core extends Base\Core
 
         $partnerAppId = $partnerApp->getId();
 
-        $params = [
-            AccessMap\Entity::ENTITY_TYPE => AccessMap\Entity::APPLICATION,
-            AccessMap\Entity::ENTITY_ID   => $partnerAppId,
-        ];
-
-        $accessMap = $this->repo->merchant_access_map->fetch($params, $submerchantId);
-
-        if ($accessMap->isEmpty() === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_ALREADY_EXISTS,
-                null,
-                [
-                    Entity::MERCHANT_ID           => $submerchantId,
-                    AccessMap\Entity::ENTITY_ID   => $partnerAppId,
-                    AccessMap\Entity::ENTITY_TYPE => AccessMap\Entity::APPLICATION,
-                ]);
-        }
-
+        // If the mapping already exists, the existing entity is returned
         $accessMap = (new AccessMap\Service)->mapOAuthApplication(
             $submerchantId,
             [
@@ -950,31 +929,12 @@ class Core extends Base\Core
 
         $partnerAppId = $partnerApp->getId();
 
-        $params = [
-            AccessMap\Entity::ENTITY_TYPE => AccessMap\Entity::APPLICATION,
-            AccessMap\Entity::ENTITY_ID   => $partnerAppId,
-        ];
-
-        $accessMap = $this->repo->merchant_access_map->fetch($params, $submerchantId);
-
-        if ($accessMap->isEmpty() === true)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_FOUND,
-                null,
-                [
-                    Entity::MERCHANT_ID           => $submerchantId,
-                    AccessMap\Entity::ENTITY_ID   => $partnerAppId,
-                    AccessMap\Entity::ENTITY_TYPE => AccessMap\Entity::APPLICATION,
-                ]);
-        }
-
         $response = (new AccessMap\Service)->deleteMapOAuthApplication($submerchantId, $partnerAppId);
 
         return $response;
     }
 
-    /*
+    /**
      * @param Entity $merchant
      */
     public function createPartnerApp(Entity $merchant)

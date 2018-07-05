@@ -432,7 +432,12 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->adminAuth();
 
-        $this->startTest();
+        // If the entity already exists, the existing entity is returned
+        $accessMap = $this->getDbLastEntity('merchant_access_map');
+
+        $response = $this->startTest();
+
+        $this->assertEquals($accessMap->toArrayPublic(), $response);
     }
 
     public function testRemovePartnerAccessMap()

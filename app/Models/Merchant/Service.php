@@ -19,6 +19,7 @@ use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Schedule;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
@@ -1956,11 +1957,7 @@ class Service extends Base\Service
      */
     public function createPartnerAccessMap(string $merchantId, array $input): array
     {
-        $list = $this->getPartnerAndSubMerchant($merchantId, $input);
-
-        $partner = $list[0];
-
-        $submerchant = $list[1];
+        list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId, $input);
 
         $accessMap = $this->core()->createPartnerSubmerchantAccessMap($partner, $submerchant);
 
@@ -1975,11 +1972,7 @@ class Service extends Base\Service
      */
     public function deletePartnerAccessMap(string $merchantId, array $input): array
     {
-        $list = $this->getPartnerAndSubMerchant($merchantId, $input);
-
-        $partner = $list[0];
-
-        $submerchant = $list[1];
+        list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId, $input);
 
         $accessMap = $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
 

@@ -369,10 +369,10 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
-    public function validateIsNotPurePlatform(Entity $merchant)
+    public function validateIsNonPurePlatformPartner(Entity $merchant)
     {
-        // Block pure platforms
-        if ($merchant->isPurePlatformPartner() === true)
+        // Block non partners and pure platforms
+        if ($merchant->isNonPurePlatformTypePartner() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,

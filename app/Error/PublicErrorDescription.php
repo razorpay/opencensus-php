@@ -637,7 +637,5 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_CONTEXT_NOT_SET                                   = 'Partner context must be set';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
-    const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_FOUND                             = 'Partner submerchant could not be found';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
-    const BAD_REQUEST_PARTNER_SUBMERCHANT_ALREADY_EXISTS                        = 'Partner submerchant already exists';
 }
