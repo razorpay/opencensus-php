@@ -21,9 +21,9 @@ class Calculator extends Base\Core
         $this->offer = $offer;
     }
 
-    public function calculateDiscountedAmount(int $amount)
+    public function calculateDiscountedAmount(int $amount, $percentDiscount)
     {
-        $discount = $this->calculateDiscount($amount);
+        $discount = $this->calculateDiscount($amount, $percentDiscount);
 
         $discountedAmount = ($amount - $discount);
 
@@ -46,8 +46,13 @@ class Calculator extends Base\Core
         return $discountedAmount;
     }
 
-    public function calculateDiscount(int $amount)
+    public function calculateDiscount(int $amount, $percentDiscount)
     {
+        if ($percentDiscount !== null)
+        {
+            return $this->getPercentDiscount($amount, $percentDiscount);
+        }
+
         if (($this->offer->getMinAmount() !== null) and
             ($amount < $this->offer->getMinAmount()))
         {
@@ -74,10 +79,15 @@ class Calculator extends Base\Core
         }
         else if ($this->offer->getPercentRate() !== null)
         {
-            $discountFactor = $this->offer->getPercentRate() * $amount;
-
-            $discount = $discountFactor / 10000;
+            $discount = $this->getPercentDiscount($amount, $this->offer->getPercentRate());
         }
+
+        return $discount;
+    }
+
+    protected function getPercentDiscount(int $amount, int $percent)
+    {
+        $discount = $amount * $percent / 10000;
 
         return intval(round($discount));
     }

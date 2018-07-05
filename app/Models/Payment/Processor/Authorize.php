@@ -1266,6 +1266,8 @@ trait Authorize
 
     protected function validateOfferIfApplicable(Payment\Entity $payment, array $input)
     {
+        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
+
         $offer = $this->offer;
 
         if ($offer !== null)
@@ -2373,26 +2375,7 @@ trait Authorize
         $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
                                             $iinEntity, $emiDuration);
 
-        $emiMerchantSubvention = $this->repo->merchant_emi_plans->fetchByMerchantAndEmiPlan(
-                                                                        $payment->merchant->getId(),
-                                                                        $emiPlan->getId());
-
         $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
-
-        if ($emiMerchantSubvention !== null)
-        {
-            $amount = $payment->getAmount();
-
-            $merchantPayback = $emiPlan->getMerchantPayback();
-
-            $baseAmount = Emi\Calculator::calculateSubventedAmount($amount, $merchantPayback);
-
-            $payment->setAmountAttribute($baseAmount);
-
-            $payment->setEmiSubvention(Emi\Subvention::MERCHANT);
-        }
-
-        $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);
 
         $payment->emiPlan()->associate($emiPlan);
     }
@@ -2851,8 +2834,10 @@ trait Authorize
             return;
         }
 
+        $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
+
         $discountInput = [
-            Discount\Entity::AMOUNT => $this->offer->getDiscount($order->getAmount()),
+            Discount\Entity::AMOUNT => $discountAmount,
         ];
 
         (new Discount\Service)->create($discountInput, $payment, $this->offer);

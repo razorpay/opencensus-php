@@ -582,7 +582,7 @@ class Processor
         {
             $orderAmount = $order->getAmount();
 
-            $discountedAmount = $this->offer->getDiscountedAmount($orderAmount);
+            $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
         }
@@ -1221,8 +1221,6 @@ class Processor
         $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
-
-        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
 
         $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
 

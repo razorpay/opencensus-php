@@ -351,18 +351,46 @@ class Entity extends Base\PublicEntity
 
 // --------------------- Calculator --------------------------------------------
 
-    public function getDiscountedAmount(int $amount)
+    public function getDiscountedAmountForPayment(int $amount, $payment)
     {
-        $calculator = new Calculator($this);
+        $percentDiscount = null;
 
-        return $calculator->calculateDiscountedAmount($amount);
+        if ($this->getEmiSubvention() === true)
+        {
+            $emiPlan = $payment->emiPlan;
+
+            $percentDiscount = $emiPlan->getMerchantPayback();
+        }
+
+        return  $this->getDiscountedAmount($amount, $percentDiscount);
     }
 
-    public function getDiscount(int $amount)
+    public function getDiscountAmountForPayment(int $amount, $payment)
+    {
+        $percentDiscount = null;
+
+        if ($this->getEmiSubvention() === true)
+        {
+            $emiPlan = $payment->emiPlan;
+
+            $percentDiscount = $emiPlan->getMerchantPayback();
+        }
+
+        return  $this->getDiscount($amount, $percentDiscount);
+    }
+
+    protected function getDiscountedAmount(int $amount, $percentDiscount = null)
     {
         $calculator = new Calculator($this);
 
-        return $calculator->calculateDiscount($amount);
+        return $calculator->calculateDiscountedAmount($amount, $percentDiscount);
+    }
+
+    protected function getDiscount(int $amount, $percentDiscount = null)
+    {
+        $calculator = new Calculator($this);
+
+        return $calculator->calculateDiscount($amount, $percentDiscount);
     }
 
 // ----------------------- Setters ---------------------------------------------
@@ -463,12 +491,14 @@ class Entity extends Base\PublicEntity
             self::PAYMENT_NETWORK => $this->getAttribute(self::PAYMENT_NETWORK),
             self::ISSUER          => $this->getAttribute(self::ISSUER),
             self::DISPLAY_TEXT    => $this->getAttribute(self::DISPLAY_TEXT),
+            self::EMI_SUBVENTION  => $this->getAttribute(self::EMI_SUBVENTION),
         ];
 
         //
         // If this flag is set then amount is to be discounted by us
         //
-        if ($discount === true)
+        if (($discount === true) and
+            ($this->getAttribute(self::EMI_SUBVENTION) === false))
         {
             $data['original_amount'] = $amount;
 

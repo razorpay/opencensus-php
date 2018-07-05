@@ -127,6 +127,7 @@ class Selector extends Base\Core
                 //
                 $terminal = $this->repo->terminal->find(Shared::SHARP_RAZORPAY_TERMINAL);
 
+
                 $sortedTerminals = array($terminal);
             }
             else if (($payment->isCard() === true) and ($payment->card->isRuPay() === true))
