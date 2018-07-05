@@ -1648,11 +1648,6 @@ class Processor
         }
     }
 
-    protected function notifyDashboard($type, $entity)
-    {
-        Dashboard::send($type, $entity);
-    }
-
     protected function getMerchantBankAccount(Merchant\Entity $merchant): BankAccount\Entity
     {
         $ba = $merchant->bankAccount;
