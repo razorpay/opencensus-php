@@ -114,9 +114,4 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::MERCHANT_REFERENCE);
     }
-
-    public function getAuthenticationGateway()
-    {
-        return $this->getAttribute(self::AUTHENTICATION_GATEWAY);
     }
-}
