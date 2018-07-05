@@ -498,7 +498,7 @@ class Gateway extends Base\Gateway
 	 * If for any other reason the BharatQr Payment is failing,  we send them generic status code as Failed.
 	 */
 
-	public function getBharatQrResponse($valid, $input = null, $ex = null)
+	public function getBharatQrResponse(bool $valid, $input = null, $ex = null)
 	{
 		$attributes = [
 			Field::TRANSACTION_ID      => $input[Field::TRANSACTION_ID],
