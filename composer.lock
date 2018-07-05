@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f055eb2df3050f5cc448dffebe83a5e9",
+    "content-hash": "2efc22d6de386ac4892b4fa89808c2e8",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -2657,7 +2657,7 @@
                 {
                     "name": "Luís Otávio Cobucci Oblonczyk",
                     "email": "lcobucci@gmail.com",
-                    "role": "developer"
+                    "role": "Developer"
                 }
             ],
             "description": "A simple library to work with JSON Web Token and JSON Web Signature",
@@ -5645,16 +5645,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "2.0.12",
+            "version": "dev-logfile_permission",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "69ba90cfe4585d5e2b97ed954b9cff3a97028c64"
+                "reference": "a4bc5d404879e8c128edb4ea76d4aeca5af23f56"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/69ba90cfe4585d5e2b97ed954b9cff3a97028c64",
-                "reference": "69ba90cfe4585d5e2b97ed954b9cff3a97028c64",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/a4bc5d404879e8c128edb4ea76d4aeca5af23f56",
+                "reference": "a4bc5d404879e8c128edb4ea76d4aeca5af23f56",
                 "shasum": ""
             },
             "require": {
@@ -5714,10 +5714,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.0.12",
+                "source": "https://github.com/razorpay/trace/tree/logfile_permission",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2018-05-10T13:42:30+00:00"
+            "time": "2018-07-05T12:16:07+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -9802,6 +9802,7 @@
         "razorpay/upi-clients": 20,
         "razorpay/ufh-sdk-php": 20,
         "razorpay/hodor": 20,
+        "razorpay/trace": 20,
         "razorpay/oauth": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20
