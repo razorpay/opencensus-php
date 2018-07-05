@@ -64,7 +64,7 @@ trait EmandateTrait
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
             RequestFields::CORP_ID         => $this->getEmandateMerchantId(),
-            RequestFields::TYPE            => Constants::TYPE,
+            RequestFields::TYPE            => $this->getType(),
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
             RequestFields::CURRENCY        => Currency::INR,
@@ -217,11 +217,22 @@ trait EmandateTrait
 
     protected function getEmandateAcquirerData(Netbanking\Entity $gatewayPayment): array
     {
+        $acquirerData = [
+            'acquirer' => [
+                Payment\Entity::REFERENCE1         => $gatewayPayment->getBankPaymentId(),
+            ]
+        ];
+
+        return array_merge($acquirerData, $this->getRecurringData($gatewayPayment));
+    }
+
+    protected function getRecurringData(Netbanking\Entity $gatewayPayment)
+    {
         $recurringStatus = null;
 
-        $gatewaySiStatus = $gatewayPayment->getReference1();
+        $gatewaySiToken = $gatewayPayment->getSIToken();
 
-        if (StatusCode::isEmandateRegistrationSuccess($gatewaySiStatus) === true)
+        if (StatusCode::isEmandateRegistrationSuccess($gatewaySiToken) === true)
         {
             $recurringStatus = Token\RecurringStatus::CONFIRMED;
         }
@@ -233,9 +244,6 @@ trait EmandateTrait
         $recurringFailureReason = $gatewayPayment->getSIMessage();
 
         return [
-            'acquirer' => [
-                Payment\Entity::REFERENCE1         => $gatewayPayment->getBankPaymentId(),
-            ],
             Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getSIToken(),
             Token\Entity::RECURRING_STATUS         => $recurringStatus,
             Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
@@ -254,7 +262,7 @@ trait EmandateTrait
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
             RequestFields::CORP_ID         => $this->getEmandateMerchantId(),
-            RequestFields::TYPE            => Constants::TYPE,
+            RequestFields::TYPE            => $this->getType(),
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
             RequestFields::BANK_REF_NO     => $gatewayEntity[Netbanking\Entity::BANK_PAYMENT_ID]
@@ -322,11 +330,12 @@ trait EmandateTrait
         $payment = $verify->input['payment'];
         $token = $verify->input['token'];
 
-        $paymentAmount = ($payment[Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL) ?
-                                                                        $token[Token\Entity::MAX_AMOUNT] :
-                                                                        $payment[Payment\Entity::AMOUNT];
+        if ($payment[Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
+        {
+            return;
+        }
 
-        $paymentAmount = $this->formatAmount($paymentAmount);
+        $paymentAmount = $this->formatAmount($payment[Payment\Entity::AMOUNT]);
 
         $verifyAmount = $verify->verifyResponseContent[ResponseFields::AMOUNT] ?: '0';
 
@@ -358,6 +367,8 @@ trait EmandateTrait
 
         $bankPaymentId = $gatewayPayment->getBankPaymentId();
 
+        $attributes = [];
+
         if (empty($bankPaymentId) === true)
         {
             $attributes[Netbanking\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REF_NO];
@@ -368,7 +379,19 @@ trait EmandateTrait
             $attributes[Netbanking\Entity::STATUS] = $content[ResponseFields::STATUS_CODE];
         }
 
-        return $attributes ?? [];
+        // If RID exists and status is registration success, set token related attributes here
+        if ((empty($content[ResponseFields::MANDATE_NUMBER]) === false) and
+            ($content[ResponseFields::STATUS_CODE] === StatusCode::SUCCESS))
+        {
+            $recurringData = [
+                Netbanking\Entity::SI_TOKEN  => $content[ResponseFields::MANDATE_NUMBER],
+                Netbanking\Entity::SI_STATUS => $content[ResponseFields::STATUS_CODE],
+            ];
+
+            $attributes = array_merge($attributes, $recurringData);
+        }
+
+        return $attributes;
     }
 
     protected function sendEmandatePaymentVerifyRequest(Verify $verify)
@@ -534,6 +557,16 @@ trait EmandateTrait
         }
 
         return $this->input['terminal']['gateway_terminal_password'];
+    }
+
+    protected function getType()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return Constants::TYPE_TEST;
+        }
+
+        return Constants::TYPE_LIVE;
     }
 
     public function getEmandateMerchantId()

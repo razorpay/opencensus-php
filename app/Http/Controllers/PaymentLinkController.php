@@ -56,28 +56,26 @@ class PaymentLinkController extends Controller
     }
 
     /**
-     * Renders hosted view for payment link with given id
+     * Renders the hosted view for Payment link with given id
+     *
      * @param string $id
+     *
+     * @return
      */
     public function view(string $id)
     {
-        try
-        {
-            $viewPayload = $this->service()->getHostedViewPaylaod($id);
+        // Fetch view name and payload
+        list ($view, $payload) = $this->service()->getViewNameAndPayload($id);
 
-            // If request had an error string, append that separately too for view to consume
-            if (empty($error = Request::get(Entity::ERROR)) === false)
-            {
-                $viewPayload[Entity::ERROR] = $error;
-            }
-            // Additionally, appends all request parameters too for view to consume
-            $viewPayload[Entity::REQUEST_PARAMS] = Request::all();
-        }
-        catch (BaseException $e)
+        // If request had an error string, append that to the payload separately for view to consume
+        if (empty($error = Request::get(Entity::ERROR)) === false)
         {
-            $viewPayload = $e->getError()->toPublicArray();
+            $payload[Entity::ERROR] = $error;
         }
 
-        return View::make('payment_link.hosted', ['data' => $viewPayload]);
+        // Additionally, appends all request parameters too for view to consume
+        $payload[Entity::REQUEST_PARAMS] = Request::all();
+
+        return View::make($view, $payload);
     }
 }

@@ -73,7 +73,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean',
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'filled|in:INR',
@@ -106,7 +106,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean',
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'filled|in:INR',
@@ -134,7 +134,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean',
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'filled|in:INR',
@@ -159,7 +159,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean',
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::BILLING_START       => 'filled|epoch',
@@ -177,7 +177,7 @@ class Validator extends Base\Validator
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
-        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean',
         Entity::CALLBACK_URL        => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
@@ -355,25 +355,6 @@ class Validator extends Base\Validator
     public function validateType($attribute, $value)
     {
         Type::checkType($value);
-    }
-
-    public function validatePartialPayment($attribute, $value)
-    {
-        if ($value === '0')
-        {
-            return;
-        }
-
-        $merchant = $this->entity->merchant;
-
-        $feature = Feature\Constants::INVOICE_PARTIAL_PAYMENTS;
-
-        if ($merchant->isFeatureEnabled($feature) === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'Partial payment feature is not enabled',
-                Entity::PARTIAL_PAYMENT);
-        }
     }
 
     public function validateSupplyStateCode($attribute, $value)

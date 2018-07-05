@@ -60,6 +60,7 @@ final class Route
         'payment_redirect_callback'                => ['post',     'payments/{x_entity_id}/redirect_callback',       'PaymentCreateController@postRedirectCallback'                      ],
         'payment_refund'                           => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
+        'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_create_admin'                       => ['post',     'admin/batches',                                  'AdminController@createAdminBatch'                                  ],
@@ -128,7 +129,6 @@ final class Route
         'iin_range_upload'                         => ['post',     'iins/range/upload',                              'CardController@rangeUploadIin'                                     ],
         'iin_edit'                                 => ['put',      'iins/{id}',                                      'CardController@editIin'                                            ],
         'iin_generate_post'                        => ['post',     'iins/import/generate',                           'CardController@postIinGenerate'                                    ],
-        'fetch_payment_flows'                      => ['get',      'payment_flows',                                  'CardController@getPaymentFlows'                                    ],
         'merchant_public_get_banks'                => ['get',      'banks',                                          'MerchantController@getBanksPublic'                                 ],
         'merchant_secret'                          => ['get',      'keys/{id}/secret',                               'MerchantController@getKeySecret'                                   ],
         'merchant_get_banks'                       => ['get',      'merchants/{id}/banks',                           'MerchantController@getBanks'                                       ],
@@ -652,14 +652,13 @@ final class Route
         'user_create'                              => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                               => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                     => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
-        'user_fetch_email'                         => ['get',      'users/email/{email}',                            'UserController@getUserByEmail'                                     ],
+        'user_change_password'                     => ['put',      'users/password',                                 'UserController@changeUserPassword'                                 ],
         'user_edit'                                => ['put',      'users/{id}',                                     'UserController@editUser'                                           ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         // Same as user_fetch but for admin
         'user_fetch_admin'                         => ['get',      'users-admin/{id}',                               'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
         'user_confirm'                             => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
-        'user_change_password'                     => ['put',      'users/{id}/password',                            'UserController@changeUserPassword'                                 ],
         'user_merchant_mapping_action'             => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
         // Tax groups and taxes
@@ -838,7 +837,7 @@ final class Route
         'payment_get_status',
         'payment_callback_post',
         'payment_callback_get',
-        'fetch_payment_flows',
+        'payment_get_flows',
         'invoice_get_status',
         'invoice_send_notification',
         'invoice_get_pdf',
@@ -1108,7 +1107,6 @@ final class Route
         'user_change_password',
         'user_confirm_by_data',
         'user_fetch',
-        'user_fetch_email',
         'user_login',
         'user_merchant_upgrade',
         'user_register',
@@ -1860,12 +1858,12 @@ final class Route
         'reporting_schedule_delete'                => '*',
         'ufh_get_file_signed_url'                  => '*',
         'merchant_requests_create'                 => '*',
-        'merchant_requests_get'                    => '*',
         'merchant_requests_list'                   => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_requests_get'                    => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_requests_update'                 => Permission::EDIT_MERCHANT_REQUESTS,
         'merchant_requests_bulk_update'            => Permission::EDIT_MERCHANT_REQUESTS,
         'merchant_requests_status_log'             => Permission::VIEW_MERCHANT_REQUESTS,
+        'merchant_requests_get_feature'            => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_bank_account_change_status'      => '*',
         'merchant_activation_reviewers'            => '*',
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
@@ -1965,7 +1963,6 @@ final class Route
             'user_change_password',
             'user_fetch',
             'invitation_action',
-            'user_fetch_email',
             'merchant_admin_lead_put',
             'invitation_fetch_by_token',
             'user_resend_verification',
@@ -2044,6 +2041,11 @@ final class Route
             'setcronjob_webhook',
         ],
 
+        'subscriptions' => [
+            'invoice_create',
+            'customer_fetch_by_id',
+        ],
+
         'kotak' => [
             'bank_transfer_process',
             'bank_transfer_notify',
@@ -2095,6 +2097,7 @@ final class Route
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_methods_downtime',
+        'payment_get_flows'
     ];
 
     /**
@@ -2102,7 +2105,6 @@ final class Route
      */
     public static $routeNameToFeaturesMap = [
         'feature_dummy'                        => [Feature::DUMMY],
-        'merchant_sub_create'                  => [Feature::AGGREGATOR, Feature::MARKETPLACE],
         'customer_delete'                      => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_delete_token'                => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_fetch_tokens'                => [Feature::TOKENS, Feature::CHARGE_AT_WILL],

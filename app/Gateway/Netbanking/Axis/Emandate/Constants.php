@@ -14,7 +14,8 @@ class Constants
     const PMD             = 'AIB';
 
     // This value was set to TEST in the documentation
-    const TYPE            = 'TEST';
+    const TYPE_TEST            = 'TEST';
+    const TYPE_LIVE            = 'PRD';
 
     //
     // From the document:

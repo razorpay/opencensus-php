@@ -7,6 +7,7 @@ use RZP\Models\Payment\Refund;
 
 class Constants
 {
+    const METHOD                    = 'method';
     const TOTAL_COUNT               = 'total_count';
     const TOTAL_AMOUNT              = 'total_amount';
     const RECON_COUNT               = 'recon_count';
@@ -74,6 +75,7 @@ class Constants
 
     // Aggregate params calculated per day per gateway
     const AGGREGATE_PARAMS = [
+        self::METHOD,
         self::TOTAL_COUNT,
         self::TOTAL_AMOUNT,
         self::RECON_COUNT,

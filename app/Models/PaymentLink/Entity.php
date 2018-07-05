@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\User;
-use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -18,21 +17,31 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
     use SoftDeletes;
 
-    const MERCHANT_ID       = 'merchant_id';
-    const AMOUNT            = 'amount';
-    const CURRENCY          = 'currency';
-    const EXPIRE_BY         = 'expire_by';
-    const TIMES_PAYABLE     = 'times_payable';
-    const TIMES_PAID        = 'times_paid';
-    const TOTAL_AMOUNT_PAID = 'total_amount_paid';
-    const STATUS            = 'status';
-    const STATUS_REASON     = 'status_reason';
-    const SHORT_URL         = 'short_url';
-    const USER_ID           = 'user_id';
-    const RECEIPT           = 'receipt';
-    const TITLE             = 'title';
-    const DESCRIPTION       = 'description';
-    const NOTES             = 'notes';
+    const MERCHANT_ID        = 'merchant_id';
+    const AMOUNT             = 'amount';
+    const CURRENCY           = 'currency';
+    const EXPIRE_BY          = 'expire_by';
+    const TIMES_PAYABLE      = 'times_payable';
+    const TIMES_PAID         = 'times_paid';
+    const TOTAL_AMOUNT_PAID  = 'total_amount_paid';
+    const STATUS             = 'status';
+    const STATUS_REASON      = 'status_reason';
+    const SHORT_URL          = 'short_url';
+    const USER_ID            = 'user_id';
+    const RECEIPT            = 'receipt';
+    const TITLE              = 'title';
+    const DESCRIPTION        = 'description';
+    const NOTES              = 'notes';
+
+    /**
+     * Optional attribute: allows a custom view template ID to be defined
+     */
+    const HOSTED_TEMPLATE_ID = 'hosted_template_id';
+
+    /**
+     * Optional attribute: allows a UDF JSON schema to be defined
+     */
+    const UDF_JSONSCHEMA_ID  = 'udf_jsonschema_id';
 
     //
     // Additional request input keys used in various other endpoint calls.
@@ -55,7 +64,7 @@ class Entity extends Base\PublicEntity
     const REQUEST_PARAMS     = 'request_params';
 
     /**
-     * expiry_by has to be atleast 15 mins from current timestamp
+     * expire_by has to be atleast 15 minutes from current timestamp
      */
     const MIN_EXPIRY_SECS    = 900;
 
@@ -146,15 +155,19 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::EXPIRE_BY         => null,
-        self::TIMES_PAYABLE     => null,
-        self::TIMES_PAID        => 0,
-        self::TOTAL_AMOUNT_PAID => 0,
-        self::STATUS            => Status::ACTIVE,
-        self::STATUS_REASON     => null,
-        self::USER_ID           => null,
-        self::DESCRIPTION       => null,
-        self::NOTES             => [],
+        self::AMOUNT             => null,
+        self::CURRENCY           => null,
+        self::EXPIRE_BY          => null,
+        self::TIMES_PAYABLE      => null,
+        self::TIMES_PAID         => 0,
+        self::TOTAL_AMOUNT_PAID  => 0,
+        self::STATUS             => Status::ACTIVE,
+        self::STATUS_REASON      => null,
+        self::USER_ID            => null,
+        self::DESCRIPTION        => null,
+        self::NOTES              => [],
+        self::HOSTED_TEMPLATE_ID => null,
+        self::UDF_JSONSCHEMA_ID  => null,
     ];
 
     // -------------------------------------- Relations -------------------------------
@@ -178,9 +191,14 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------------- Getters ------------------------------
 
-    public function getAmount(): int
+    public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
     }
 
     public function getStatus(): string
@@ -216,6 +234,16 @@ class Entity extends Base\PublicEntity
     public function getTotalAmountPaid(): int
     {
         return $this->getAttribute(self::TOTAL_AMOUNT_PAID);
+    }
+
+    public function getHostedTemplateId()
+    {
+        return $this->getAttribute(self::HOSTED_TEMPLATE_ID);
+    }
+
+    public function getUdfJsonschemaId()
+    {
+        return $this->getAttribute(self::UDF_JSONSCHEMA_ID);
     }
 
     public function isActive(): bool
@@ -287,6 +315,7 @@ class Entity extends Base\PublicEntity
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------
+
     public function setStatus(string $status)
     {
         Status::checkStatus($status);
