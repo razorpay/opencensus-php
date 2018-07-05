@@ -44,6 +44,7 @@ class Server extends Base\Mock\Server
 			Field::RRN                          =>  random_int(111111111111,999999999999),
 			Field::CONSUMER_PAN                 => '4012001037141112',
 			Field::STATUS_CODE                  => '00',
+			Field::STATUS_DESC                  => 'Transaction Approved',
 		];
 
 		$attributes[Field::CONSUMER_PAN] =  $this->getEncryptedString($attributes[Field::CONSUMER_PAN]);
