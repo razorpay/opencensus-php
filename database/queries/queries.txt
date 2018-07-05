@@ -4094,3 +4094,6 @@ ALTER TABLE vpa ADD CONSTRAINT vpa_customer_id_foreign FOREIGN KEY (customer_id)
 ALTER TABLE wallet ADD CONSTRAINT wallet_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
 ALTER TABLE webhooks ADD CONSTRAINT webhooks_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
 SET SESSION foreign_key_checks = 1;
+
+ALTER TABLE hitachi
+    ADD COLUMN authentication_gateway CHAR(64) DEFAULT NULL AFTER acquirer
