@@ -108,7 +108,7 @@ deploy:
       - script:
           name: Conditionally verify if commit matches between K8s and Asg.
           code: |
-            if [ "$CHECK_K8S_COMMIT" == "true" ]; then
+            if [ "$APP_ENV" == "prod" ] && [ "$CHECK_K8S_COMMIT" == "true" ]; then
               K8S_COMMIT=`curl https://k8s-prod-api.razorpay.com/commit.txt`
               if [ "$K8S_COMMIT" != "$WERCKER_GIT_COMMIT" ]; then
                 echo "[ERROR] Kubernetes deployments enabled. Please deploy to K8s via falcon before deploying here."
