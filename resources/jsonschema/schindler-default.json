@@ -38,7 +38,7 @@
       "type": "string",
       "title": "Type Of Service",
       "enum": [
-        null,
+        "",
         "Repair",
         "Installation",
         "Maintenance"
@@ -56,7 +56,7 @@
       "type": "string",
       "title": "Location",
       "enum": [
-        null,
+        "",
         "Bangalore",
         "Mumbai",
         "New delhi"

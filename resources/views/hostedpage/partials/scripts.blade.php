@@ -74,9 +74,115 @@
             };
         })());
     }
+
+    function evalLocation(value) {
+        var formEle = document.querySelector('[data-schemapath="root.location"]').getElementsByClassName('form-group')[0];
+        var value = formEle.getElementsByTagName('select')[0].value;
+
+        if(!value) {
+            addClass(formEle, 'has-error');
+        } else {
+            removeClass(formEle, 'has-error');
+        }
+    }
+
+    function addLocationValidation() {
+        var p = document.createElement('p');
+        p.className = 'help-block errormsg';
+        p.innerHTML = 'Please select a location';
+
+        var parentEle = document.querySelector('[data-schemapath="root.location"]').getElementsByClassName('form-group')[0];
+        parentEle.append(p);
+
+        editor.watch('root.location',function(e) {
+            evalLocation();
+        });
+    }
+
+    function evalServiceType() {
+        var formEle = document.querySelector('[data-schemapath="root.service_type"]').getElementsByClassName('form-group')[0];
+        var value = formEle.getElementsByTagName('select')[0].value;
+
+        if(!value) {
+            addClass(formEle, 'has-error');
+        } else {
+            removeClass(formEle, 'has-error');
+        }
+    }
+
+    function addServiceTypeValidation() {
+        var p = document.createElement('p');
+        p.className = 'help-block errormsg';
+        p.innerHTML = 'Please select type of service';
+
+        var parentEle = document.querySelector('[data-schemapath="root.service_type"]').getElementsByClassName('form-group')[0];
+        parentEle.append(p);
+
+        editor.watch('root.service_type', function () {
+            evalServiceType();
+        });
+    }
+
 </script>
 
 <script>
+    function initCheckout(globalScope, udfData) {
+        var data = globalScope.data;
+
+        var paymentPageObj = data.payment_link;
+        var merchant = data.merchant;
+
+        // Checkout options
+        var options = {
+            key: data.key_id,
+            payment_link_id: paymentPageObj.id,
+            amount: udfData.amount,
+            notes: udfData,
+            description: '#' + paymentPageObj.id,
+            handler: function(response) {
+                var amountPaid = udfData.amount;
+
+                if (globalScope.hasRedirect()) {
+
+                    return globalScope.redirectToCallback(
+                        data.payment_link.callback_url,
+                        data.payment_link.callback_method,
+                        response
+                    );
+                }
+
+                if (window.ga && window.ga.length) {
+                    var sessionTDiff = (new Date()).getTime() - window.t0;
+                    var paymentSuccessAction = 'Payment Successful';
+
+                    window.ga('send', 'event', 'Payment Page Hosted', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
+                        hitCallback: function() {
+                            return fullPaid(response.razorpay_payment_id, amountPaid); // To display the latest payment id
+                        }
+                    });
+                } else {
+                    return fullPaid(response.razorpay_payment_id, amountPaid); // To display the latest payment id
+                }
+            },
+            theme: {
+            },
+            modal: {
+                confirm_close: true,
+                escape: false
+            }
+        };
+
+        options.name = data.merchant.name;
+        options.theme.color = merchant.brand_color || '#168AFA';
+        options.currency = 'INR';
+
+        options.image = merchant.image;
+
+        var razorpay;
+        razorpay = window.razorpay = Razorpay(options);
+        razorpay.open();
+    };
+
     function initJSONEditor() {
         if (!JSONEditor) {
             console.log('Network error has occured. Please reload the page to continue.');
@@ -110,16 +216,15 @@
                     if (value != parseInt(value)) {
                         errorMsg = 'Please enter valid number';
                     }
-                } else {
-                    if (path === 'root.customer_id') {
-                        if (schema.minimum > value) {
-                            errorMsg = 'Value must be atleast ' + schema.minimum;
-                        } else if (schema.maximum < value) {
-                            errorMsg = 'Value must be less than ' + schema.maximum;
-                        }
-                    }
                 }
 
+                if (!errorMsg && path === 'root.customer_id') {
+                    if (schema.minimum > value) {
+                        errorMsg = 'Value must be atleast ' + schema.minimum;
+                    } else if (schema.maximum < value) {
+                        errorMsg = 'Value must be less than ' + schema.maximum;
+                    }
+                }
             }
 
             if(errorMsg) {
@@ -157,6 +262,9 @@
         console.log(errors);
         var hasError;
 
+        evalServiceType(); // Just to show error;
+        evalLocation(); // Just to show error;
+
         if (errors.length) {
             editor.options.show_errors = "always";
             editor.onChange(); // Fire a change event to force revalidation
@@ -165,13 +273,8 @@
 
 
         var amountEl = document.getElementsByName('amount')[0];
-        if (evalAmountValidation(amountEl)) {
-            hasError = true;
-        }
 
-        if (document.getElementsByClassName('has-error').length) {
-            hasError = true; // Check existing errors
-        }
+        hasError = !!evalAmountValidation(amountEl) || !!document.getElementsByClassName('has-error').length; // Check existing errors
 
         window.setTimeout(function() {
             if (hasError) {
@@ -219,6 +322,8 @@
         document.getElementById('udf_submit_btn').addEventListener('click', submitForm);
 
         addAmountValidation();
+        addServiceTypeValidation();
+        addLocationValidation();
     }
 
     function fullPaid(respPaymentId, amountPaid) {

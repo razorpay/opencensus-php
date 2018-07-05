@@ -76,77 +76,13 @@
         <script src="https://cdn.jsdelivr.net/npm/{{'@'}}json-editor/json-editor/dist/jsoneditor.min.js"></script>
         <script>
             cleanHTML();
+            toggleTrimDescription(true);
+
+            var editor = initJSONEditor();
 
             addListeners_Validators();
 
             window.t0 = (new Date()).getTime(); // initial time stamp
-
-            var data = window.RZP_DATA.data;
-            var color = data.merchant.brand_color || '#168AFA';
-
-            toggleTrimDescription(true);
-        </script>
-        <script>
-
-            var editor = initJSONEditor();
-
-            function initCheckout(globalScope, udfData) {
-                var data = globalScope.data;
-
-                var paymentPageObj = data.payment_link;
-                var merchant = data.merchant;
-
-                // Checkout options
-                var options = {
-                    key: data.key_id,
-                    payment_link_id: paymentPageObj.id,
-                    amount: udfData.amount,
-                    notes: udfData,
-                    description: '#' + paymentPageObj.id,
-                    handler: function(response) {
-                        var amountPaid = udfData.amount;
-
-                        if (globalScope.hasRedirect()) {
-
-                            return globalScope.redirectToCallback(
-                                data.payment_link.callback_url,
-                                data.payment_link.callback_method,
-                                response
-                            );
-                        }
-
-                        if (window.ga && window.ga.length) {
-                            var sessionTDiff = (new Date()).getTime() - window.t0;
-                            var paymentSuccessAction = 'Payment Successful';
-
-                            window.ga('send', 'event', 'Payment Page Hosted', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
-                                hitCallback: function() {
-                                    return fullPaid(response.razorpay_payment_id, amountPaid); // To display the latest payment id
-                                }
-                            });
-                        } else {
-                            return fullPaid(response.razorpay_payment_id, amountPaid); // To display the latest payment id
-                        }
-                    },
-                    callback_url: location.href,
-                    theme: {
-                    },
-                    modal: {
-                        confirm_close: true,
-                        escape: false
-                    }
-                };
-
-                options.name = data.merchant.name;
-                options.theme.color = merchant.brand_color || '#168AFA';
-                options.currency = 'INR';
-
-                options.image = merchant.image;
-
-                var razorpay;
-                razorpay = window.razorpay = Razorpay(options);
-                razorpay.open();
-            };
         </script>
     </body>
 </html>
