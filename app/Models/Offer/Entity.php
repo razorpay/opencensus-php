@@ -498,7 +498,7 @@ class Entity extends Base\PublicEntity
         // If this flag is set then amount is to be discounted by us
         //
         if (($discount === true) and
-            ($this->getAttribute(self::EMI_SUBVENTION) === false))
+            ($this->getAttribute(self::EMI_SUBVENTION) !== true))
         {
             $data['original_amount'] = $amount;
 
