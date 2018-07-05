@@ -9,7 +9,7 @@
         <div class="heading">
             Enter Payment Details
         </div>
-        <button class="mobile-el back-btn" onclick="toggleMobileForm()" type="button">
+        <button class="mobile-el back-btn" onclick="window.RZP.toggleMobileForm()" type="button">
             Back to Description
         </button>
 

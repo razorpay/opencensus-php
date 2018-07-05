@@ -67,7 +67,7 @@
                     @include('hostedpage.partials.header')
                     <div>
                         @include('hostedpage.partials.description')
-                        <button class="btn btn--full" id="mobile-proceed-btn" onclick="toggleMobileForm()">PROCEED TO PAY</button>
+                        <button class="btn btn--full" id="mobile-proceed-btn" onclick="window.RZP.toggleMobileForm()">PROCEED TO PAY</button>
                     </div>
                 </div>
                 @include('hostedpage.partials.form')
@@ -75,12 +75,12 @@
         </div>
         <script src="https://cdn.jsdelivr.net/npm/{{'@'}}json-editor/json-editor/dist/jsoneditor.min.js"></script>
         <script>
-            cleanHTML();
-            toggleTrimDescription(true);
+            window.RZP.cleanHTML();
+            window.RZP.toggleTrimDescription(true);
 
-            var editor = initJSONEditor();
+            var editor = window.RZP.initJSONEditor();
 
-            addListeners_Validators();
+            window.RZP.addListeners_Validators();
 
             window.t0 = (new Date()).getTime(); // initial time stamp
         </script>
