@@ -3,6 +3,7 @@ import { states } from 'rzp/utils/constants';
 
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
+import Alert from 'rzp/ui/Forms/Alert';
 import { getDetailsForIFSC } from 'common/util';
 import { isValidGSTIN } from 'rzp/utils/rzp-utils';
 import {
@@ -192,45 +193,70 @@ const businessModel = [
       'Approval for international payments takes extra time to process. We will reach out to you as we may require some additional information.',
     _when: excludeFor_Indiv_NotReg,
   },
-  {
-    label: 'Link to Website/App',
-    name: 'business_website',
-    placeholder: 'Enter URL',
-    type: 'url',
-    required: false,
-    description: (
-      <React.Fragment>
-        The entered App/Website should contain:
-        <b class="shallow"> About Us</b>, <b class="shallow"> Contact</b>,{' '}
-        <b class="shallow">
-          <a
-            href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
-            target="_blank"
-          >
-            Privacy Policy
-          </a>
-        </b>,{' '}
-        <b class="shallow">
-          <a
-            href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
-            target="_blank"
-          >
-            Terms & Conditions
-          </a>
-        </b>,{' '}
-        <b class="shallow">
-          <a
-            href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
-            target="_blank"
-          >
-            Cancellation/Refund Policy
-          </a>
-        </b>{' '}
-        & <b class="shallow">Pricing</b>. (Refer these links for sample pages)
-      </React.Fragment>
-    ),
-    info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
-  },
+  [
+    {
+      label: 'Website/App URL',
+      _cmp: Input.Radio,
+      _name: 'app_type',
+      className: 'Input-vTop',
+      options: [
+        'Website/App',
+        {
+          label: 'We do not have either',
+          description: (
+            <div class="warning-svg">
+              {WarningSvg()}
+              <span>
+                You will only be able to use Payment Links, Invoices and Smart
+                Collect via dashboard. To get complete access, simply update
+                your website anytime later.
+              </span>
+            </div>
+          ),
+        },
+      ],
+    },
+    {
+      label: '',
+      name: 'business_website',
+      placeholder: 'Enter URL',
+      type: 'url',
+      required: false,
+      description: (
+        <React.Fragment>
+          The entered App/Website should contain:
+          <b class="shallow"> About Us</b>, <b class="shallow"> Contact</b>,{' '}
+          <b class="shallow">
+            <a
+              href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
+              target="_blank"
+            >
+              Privacy Policy
+            </a>
+          </b>,{' '}
+          <b class="shallow">
+            <a
+              href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
+              target="_blank"
+            >
+              Terms & Conditions
+            </a>
+          </b>,{' '}
+          <b class="shallow">
+            <a
+              href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
+              target="_blank"
+            >
+              Cancellation/Refund Policy
+            </a>
+          </b>{' '}
+          & <b class="shallow">Pricing</b>. (Refer these links for sample pages)
+        </React.Fragment>
+      ),
+      info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
+      _when: activation => activation.state.app_type !== '1',
+    },
+  ],
 ];
 
 const registrationDetails = [
