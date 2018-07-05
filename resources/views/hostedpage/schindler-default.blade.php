@@ -73,7 +73,7 @@
                 @include('hostedpage.partials.form')
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/{{'@'}}json-editor/json-editor/dist/jsoneditor.min.js"></script>
+        <script src="https://cdn.razorpay.com/static/libs/jsoneditor.min.js"></script>
         <script>
             window.RZP.cleanHTML();
             window.RZP.toggleTrimDescription(true);
