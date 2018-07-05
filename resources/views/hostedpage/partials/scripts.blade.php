@@ -78,6 +78,83 @@
             })());
         }
 
+        function addIntFieldsValidation() {
+            var formEle1 = document.querySelector('[data-schemapath="root.customer_id"]');
+            var formEle2 = document.querySelector('[data-schemapath="root.job_number"]');
+
+            var integerFieldParent = [formEle1, formEle2];
+
+            for (var i = 0; i < integerFieldParent.length; i++) {
+                integerFieldParent[i].getElementsByTagName('input')[0].addEventListener('input', (function() {
+                    var prettyVal = '';
+
+                    return function(e) {
+                        var value = e.target.value;
+
+                        if (!value) {
+                            e.target.value = '';
+
+                            return;
+                        }
+
+                        var newValue = value.replace(/\D/g, '');
+
+                        if (newValue) {
+                            prettyVal = newValue;
+                        }
+
+                        e.target.value = prettyVal;
+
+                    };
+                })());
+            }
+
+            var ele = document.querySelector('[data-validate="amount"]');
+
+            ele.addEventListener('blur', function(e) {
+                evalAmountValidation(e);
+            });
+
+            // Amount prettifier
+            document.getElementsByName('amount')[0].addEventListener('input', (function() {
+                var prettyVal = '';
+
+                return function(e) {
+                    var value = e.target.value;
+
+                    var parentEle = e.target.parentElement;
+                    if (window.RZP.hasClass(parentEle, 'has-error')) {
+                        evalAmountValidation(e);
+                    }
+
+                    if (!value) {
+                        e.target.value = '';
+
+                        return;
+                    }
+
+                    var newValue = value
+                        .split('.')
+                        .slice(0, 2)
+                        .map(function(v, index) {
+                            v = v.replace(/\D/g, '');
+                            if (index) {
+                                v = v.slice(0, 2);
+                            }
+                            return v;
+                        })
+                        .join('.');
+
+                    if (newValue) {
+                        prettyVal = newValue > 5000000000 ? 5000000000 : newValue;
+                    }
+
+                    e.target.value = prettyVal;
+
+                };
+            })());
+        }
+
         function evalLocation(value) {
             var formEle = document.querySelector('[data-schemapath="root.location"]').getElementsByClassName('form-group')[0];
             var value = formEle.getElementsByTagName('select')[0].value;
@@ -127,6 +204,7 @@
         }
 
         global.evalAmountValidation = evalAmountValidation;
+        global.addIntFieldsValidation = addIntFieldsValidation;
         global.addAmountValidation = addAmountValidation;
         global.evalLocation = evalLocation;
         global.addLocationValidation = addLocationValidation;
@@ -229,14 +307,6 @@
                             errorMsg = 'Please enter valid number';
                         }
                     }
-
-                    if (!errorMsg && path === 'root.customer_id') {
-                        if (schema.minimum > value) {
-                            errorMsg = 'Value must be atleast ' + schema.minimum;
-                        } else if (schema.maximum < value) {
-                            errorMsg = 'Value must be less than ' + schema.maximum;
-                        }
-                    }
                 }
 
                 if(errorMsg) {
@@ -247,6 +317,7 @@
                         message: errorMsg
                     });
                 }
+
                 return errors;
             });
 
@@ -333,6 +404,7 @@
             document.getElementById('udf_submit_btn').addEventListener('click', submitForm);
 
             window.RZP.addAmountValidation();
+            window.RZP.addIntFieldsValidation();
             window.RZP.addServiceTypeValidation();
             window.RZP.addLocationValidation();
         }

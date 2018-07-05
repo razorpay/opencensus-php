@@ -12,27 +12,24 @@
   "properties": {
     "customer_id": {
       "type": "string",
-      "kind": "integer",
       "title": "Customer Code/ID",
-      "minimum": 1000000,
-      "maximum": 999999999
+      "minLength": 7,
+      "maxLength": 9
     },
     "invoice_number": {
       "type": "string",
       "title": "Invoice Number",
-      "length": 100,
-      "minLength": 1
+      "maxLength": 255
     },
     "customer_name": {
       "type": "string",
       "title": "Customer Name",
-      "length": 100,
-      "minLength": 1
+      "maxLength": 255
     },
     "job_number": {
       "type": "string",
-      "kind": "integer",
-      "title": "Job/Quotation number"
+      "title": "Job/Quotation Number",
+      "maxLength": 255
     },
     "service_type": {
       "type": "string",
@@ -57,16 +54,80 @@
       "title": "Location",
       "enum": [
         "",
-        "Bangalore",
+        "Andhra Pradesh",
+        "Bangalore 1",
+        "Bangalore 2",
+        "Bihar",
+        "Chandigarh",
+        "Chattisgarh",
+        "Coimbatore",
+        "Delhi",
+        "Goa",
+        "Gujarat",
+        "Gurgaon",
+        "Guwahati",
+        "Gwalior",
+        "Haryana",
+        "Himachal Pradesh",
+        "Jharkhand",
+        "Kerela",
+        "Madhya Pradesh",
+        "Mangalore",
         "Mumbai",
-        "New delhi"
+        "Nagpur",
+        "Nashik",
+        "Navi Mumbai",
+        "Orissa",
+        "Pondicherry",
+        "Pune",
+        "Punjab",
+        "Rajasthan",
+        "Surat",
+        "Tamil,Nadu",
+        "Telangana",
+        "Uttar Pradesh",
+        "Uttaranchal",
+        "Virar",
+        "West Bengal"
       ],
       "options": {
         "enum_titles": [
           "--Select--",
-          "Bangalore",
+          "Andhra Pradesh",
+          "Bangalore 1",
+          "Bangalore 2",
+          "Bihar",
+          "Chandigarh",
+          "Chattisgarh",
+          "Coimbatore",
+          "Delhi",
+          "Goa",
+          "Gujarat",
+          "Gurgaon",
+          "Guwahati",
+          "Gwalior",
+          "Haryana",
+          "Himachal Pradesh",
+          "Jharkhand",
+          "Kerela",
+          "Madhya Pradesh",
+          "Mangalore",
           "Mumbai",
-          "New delhi"
+          "Nagpur",
+          "Nashik",
+          "Navi Mumbai",
+          "Orissa",
+          "Pondicherry",
+          "Pune",
+          "Punjab",
+          "Rajasthan",
+          "Surat",
+          "Tamil,Nadu",
+          "Telangana",
+          "Uttar Pradesh",
+          "Uttaranchal",
+          "Virar",
+          "West Bengal"
         ]
       }
     }
