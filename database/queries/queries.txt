@@ -4102,3 +4102,7 @@ SET SESSION foreign_key_checks = 1;
 # Payment link - currency nullable
 ALTER TABLE payment_links
     MODIFY COLUMN currency VARCHAR(3) DEFAULT NULL;
+
+ALTER TABLE payment_links
+    ADD COLUMN hosted_template_id VARCHAR(255) DEFAULT NULL AFTER notes,
+    ADD COLUMN udf_jsonschema_id VARCHAR(255) DEFAULT NULL AFTER hosted_template_id;
