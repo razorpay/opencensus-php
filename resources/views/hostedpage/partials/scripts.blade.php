@@ -1,11 +1,186 @@
+{{-- Helpers --}}
 <script>
+    function amountValidator(value) {
+        if(!value || value < 1) {
+            return 'Value must be at least ₹1';
+        } else if (value.toString() != Number(value).toString()) {
+            return 'Please enter valid amount';
+        } else {
+            return '';
+        }
+    }
+
+    function evalAmountValidation(e) {
+        var ele = e.target || e;
+        var errorMsg = amountValidator(ele.value);
+
+        var errorEle = ele.nextElementSibling;
+        if (hasClass(errorEle, 'errormsg')) {
+            ele.nextElementSibling.innerHTML = errorMsg;
+        }
+
+        if (errorMsg) {
+            addClass(ele.parentElement, 'has-error');
+        } else {
+            removeClass(ele.parentElement, 'has-error');
+        }
+
+        return errorMsg;
+    }
+
+    function addAmountValidation() {
+        var ele = document.querySelector('[data-validate="amount"]');
+
+        ele.addEventListener('blur', function(e) {
+            evalAmountValidation(e);
+        });
+
+        // Amount prettifier
+        document.getElementsByName('amount')[0].addEventListener('input', (function() {
+            var prettyVal;
+
+            return function(e) {
+                var value = e.target.value;
+
+                var parentEle = e.target.parentElement;
+                if (hasClass(parentEle, 'has-error')) {
+                    evalAmountValidation(e);
+                }
+
+                if (!value) {
+                    e.target.value = '';
+
+                    return;
+                }
+
+                var newValue = value
+                    .split('.')
+                    .slice(0, 2)
+                    .map(function(v, index) {
+                        v = v.replace(/\D/g, '');
+                        if (index) {
+                            v = v.slice(0, 2);
+                        }
+                        return v;
+                    })
+                    .join('.');
+
+                if (newValue) {
+                    prettyVal = newValue > 5000000000 ? 5000000000 : newValue;
+                }
+
+                e.target.value = prettyVal;
+
+            };
+        })());
+    }
+</script>
+
+<script>
+    function initJSONEditor() {
+        if (!JSONEditor) {
+            console.log('Network error has occured. Please reload the page to continue.');
+
+            return;
+        }
+
+        JSONEditor.defaults.languages.en.error_required = "";
+
+        // Custom validators must return an array of errors or an empty array if valid
+        JSONEditor.defaults.custom_validators.push(function(schema, value, path) {
+            var errors = [];
+            var defaultMsg;
+            var errorMsg;
+
+            // Default errors;
+            switch(path) {
+                case 'root.customer_id': defaultMsg = 'Please enter customer code/id'; break;
+                case 'root.customer_name': defaultMsg = 'Please enter customer name'; break;
+                case 'root.invoice_number': defaultMsg = 'Please enter invoice number'; break;
+                case 'root.job_number': defaultMsg = 'Please enter job/quotation number'; break;
+                case 'root.service_type': defaultMsg = 'Please select type of service'; break;
+                case 'root.location': defaultMsg = 'Please select a location'; break;
+                default: defaultMsg = 'Please enter valid value';
+            }
+
+            if (!value) {
+                errorMsg = defaultMsg;
+            } else {
+                if (schema.kind === 'integer') {
+                    if (value != parseInt(value)) {
+                        errorMsg = 'Please enter valid number';
+                    }
+                } else {
+                    if (path === 'root.customer_id') {
+                        if (schema.minimum > value) {
+                            errorMsg = 'Value must be atleast ' + schema.minimum;
+                        } else if (schema.maximum < value) {
+                            errorMsg = 'Value must be less than ' + schema.maximum;
+                        }
+                    }
+                }
+
+            }
+
+            if(errorMsg) {
+                // Errors must be an object with `path`, `property`, and `message`
+                errors.push({
+                    path: path,
+                    property: 'format',
+                    message: errorMsg
+                });
+            }
+            return errors;
+        });
+
+
+        var element = document.getElementById('udf_container');
+        var editor = new JSONEditor(element, {
+            form_name_root: "",
+            no_additional_properties: true,
+            disable_properties: true,
+            disable_edit_json: true,
+            disable_collapse: true,
+            disable_array_reorder: true,
+            disable_array_delete: true,
+            disable_array_add: true,
+            theme: "bootstrap3",
+            schema: {!! $udf_schema !!},
+            required_by_default: true
+        });
+
+        return editor;
+    }
+
     function submitForm(btn) {
         var errors = editor.validate();
-        console.log('ERRORS...', errors);
+        console.log(errors);
+        var hasError;
 
         if (errors.length) {
-            var errorEle = document.getElementsByClassName('has-error')[0];
-            if (errorEle) {
+            editor.options.show_errors = "always";
+            editor.onChange(); // Fire a change event to force revalidation
+            hasError = true;
+        }
+
+
+        var amountEl = document.getElementsByName('amount')[0];
+        if (evalAmountValidation(amountEl)) {
+            hasError = true;
+        }
+
+        if (document.getElementsByClassName('has-error').length) {
+            hasError = true; // Check existing errors
+        }
+
+        window.setTimeout(function() {
+            if (hasError) {
+                var errorEle = document.getElementsByClassName('has-error')[0];
+
+                if (!errorEle) {
+                    errorEle = document.querySelector('[data-schemapath="'+ errors[0].path +'"]');
+                }
+
                 var parentEle;
                 if (checkIsDesktop()) {
                     parentEle = document.body;
@@ -13,18 +188,15 @@
                     parentEle = document.getElementById('form-section');
                 }
 
-                scrollTo(parentEle, errorEle.offsetTop, 300);
+                scrollTo(parentEle, errorEle, 300);
+            } else {
+                var udfData = editor.getValue();
+                var amount = parseInt(amountEl.value * 100);
+
+                initCheckout(window.RZP_DATA = window.RZP_DATA || {}, Object.assign({}, udfData, {amount: amount}));
             }
 
-            return;
-        }
-
-        var udfData = editor.getValue();
-
-        var amountEl = document.getElementsByName('amount')[0];
-        var amount = parseInt(amountEl.value * 100);
-
-        initCheckout(window.RZP_DATA = window.RZP_DATA || {}, Object.assign({}, udfData, {amount: amount}));
+        }, 10); // If blur happens directly through click on submit btn, so 'has-error' class won't be put until delayed.
     }
 
     function removeForm() {
@@ -46,41 +218,20 @@
     function addListeners_Validators() {
         document.getElementById('udf_submit_btn').addEventListener('click', submitForm);
 
-        document.getElementsByName('amount')[0].addEventListener('input', (function(){
-            var prettyVal;
+        addAmountValidation();
+    }
 
-            return function(e) {
-                var value = e.target.value;
+    function fullPaid(respPaymentId, amountPaid) {
+        if (!respPaymentId) {
+            return;
+        }
 
-                if (!value) {
-                    e.target.value = '';
+        removeForm();
 
-                    return;
-                }
+        document.getElementById('success-section').style.display = 'block';
 
-                var newValue = value
-                    .split('.')
-                    .slice(0, 2)
-                    .map(function(v, index) {
-                        v = v.replace(/\D/g, '');
-                        if (index) {
-                            v = v.slice(0, 2);
-                        }
-                        return v;
-                    })
-                    .join('.');
-
-                if (newValue > 5000000000) {
-                    newValue = 5000000000;
-                }
-                if (newValue) {
-                    prettyVal = newValue;
-                }
-
-                e.target.value = prettyVal;
-
-            };
-        })());
+        document.getElementById('success-msg').innerHTML = 'You\'ve successfully paid ₹' + (amountPaid/100).toFixed(2);
+        document.getElementById('payment-id').innerHTML = 'Payment ID: ' + respPaymentId;
     }
 
     function toggleMobileForm() {
@@ -196,11 +347,20 @@
         return -c/2 * (t*(t-2) - 1) + b;
     }
 
-    function scrollTo(element, to, duration) {
+    function scrollTo(element, toEle, duration) {
+        if (!element || !toEle) {
+            return;
+        }
+
+        var viewportOffset = toEle.getBoundingClientRect();
+        var to = viewportOffset.top;
+
         var start = element.scrollTop,
             change = to - start,
             currentTime = 0,
             increment = 20;
+
+        duration = duration || 300;
 
         var animateScroll = function(){
             currentTime += increment;

@@ -49,6 +49,12 @@
         line-height: 24px;
     }
 
+    @media (max-width: 360px) {
+        #mobile-container .back-btn {
+            top: -20px;
+        }
+    }
+
     #mobile-container #form-section {
         height: 100vh;
         z-index: 2;
@@ -57,6 +63,10 @@
     #mobile-container #form-section {
         transition: 0.3s;
         transform: translateY(0);
+    }
+
+    #mobile-container .form-group .help-block {
+        margin-left: 0;
     }
 
     .slideup {

@@ -20,9 +20,10 @@
 
         {{-- Desktop button --}}
         <div class="footer form-footer desktop-el">
-            <div class="form-group">
+            <div class="form-group no-label">
                 <span class="icon">₹</span>
-                <input type="number" min="0" class="form-control" name="amount" placeholder="Enter Amount to Pay" />
+                <input class="form-control" name="amount" placeholder="Enter Amount to Pay" data-validate="amount" />
+                <p class="help-block errormsg"></p>
             </div>
 
             <button type="button" class="btn" id="udf_submit_btn">
@@ -37,7 +38,8 @@
                 <div class="form-group">
                     <label class="control-label">Amount</label>
                     <span class="icon">₹</span>
-                    <input type="number" min="0" class="form-control" name="amount" placeholder="Enter Amount to Pay" />
+                    <input class="form-control" name="amount" placeholder="Enter Amount to Pay" data-validate="amount"/>
+                    <p class="help-block errormsg"></p>
                 </div>
             </div>
         </div>

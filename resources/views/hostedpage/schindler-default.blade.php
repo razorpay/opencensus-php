@@ -85,39 +85,10 @@
             var color = data.merchant.brand_color || '#168AFA';
 
             toggleTrimDescription(true);
-
-            function fullPaid(respPaymentId, amountPaid) {
-                if (!respPaymentId) {
-                    return;
-                }
-
-                removeForm();
-
-                document.getElementById('success-section').style.display = 'block';
-
-                document.getElementById('success-msg').innerHTML = 'You\'ve successfully paid ₹' + (amountPaid/100).toFixed(2);
-                document.getElementById('payment-id').innerHTML = 'Payment ID: ' + respPaymentId;
-            }
         </script>
         <script>
 
-            // UDF start
-            JSONEditor.defaults.languages.en.error_required = "";
-            var element = document.getElementById('udf_container');
-            var editor = new JSONEditor(element, {
-                form_name_root: "",
-                no_additional_properties: true,
-                disable_properties: true,
-                disable_edit_json: true,
-                disable_collapse: true,
-                disable_array_reorder: true,
-                disable_array_delete: true,
-                disable_array_add: true,
-                theme: "bootstrap3",
-                schema: {!! $udf_schema !!}
-            });
-
-            // UDF end
+            var editor = initJSONEditor();
 
             function initCheckout(globalScope, udfData) {
                 var data = globalScope.data;
