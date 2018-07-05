@@ -70,7 +70,7 @@ class Gateway extends Base\Gateway
             return $authResponse;
         }
 
-        return $this->authorizeNotEnrolled($input, $authenticationGateway);
+        return $this->authorizeNotEnrolled($input);
     }
 
     public function callback(array $input)
@@ -79,13 +79,14 @@ class Gateway extends Base\Gateway
 
         $this->setCardNumberAndCvv($input);
 
-        $authenticationGateway = $this->app['repo']->mpi
-            ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE)
-            ->getGateway();
+        $authenticationGateway = $this->app['repo']
+                                       ->mpi
+                                        ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE)
+                                       ->getGateway();
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
-        $gatewayEntity = $this->authorizeEnrolled($input, $authResponse, $authenticationGateway);
+        $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
@@ -271,7 +272,7 @@ class Gateway extends Base\Gateway
         $this->checkErrorsAndThrowException($response);
     }
 
-    protected function authorizeNotEnrolled(array $input, $authenticationGateway)
+    protected function authorizeNotEnrolled(array $input)
     {
         $request = $this->getAuthorizeRequestArrayForNotEnrolled($input);
 
@@ -281,14 +282,12 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
-        $attributes[Entity::AUTHENTICATION_GATEWAY] = $authenticationGateway;
-
         $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
 
         $this->checkErrorsAndThrowException($response);
     }
 
-    protected function authorizeEnrolled(array $input, array $authResponse, $authenticationGateway)
+    protected function authorizeEnrolled(array $input, array $authResponse)
     {
         $request = $this->getAuthorizeRequestArrayForEnrolled($input, $authResponse);
 
@@ -297,8 +296,6 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
 
         $attributes = $this->getAttributesFromAuthResponse($response);
-
-        $attributes[Entity::AUTHENTICATION_GATEWAY] = $authenticationGateway;
 
         $gatewayEntity = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
 

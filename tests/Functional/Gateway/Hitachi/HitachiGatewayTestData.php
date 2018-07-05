@@ -37,7 +37,6 @@ return [
         'pAuthStatus' => null,
         'entity' => 'hitachi',
         'admin' => true,
-        'authentication_gateway' => 'mpi_blade',
     ],
 
     'testHitachiRefundEntity' => [
@@ -203,7 +202,6 @@ return [
         'pAuthStatus'            => 'Y',
         'pECI'                   => '06',
         'pALGO'                  => 2,
-        'authentication_gateway' => 'mpi_blade',
     ],
 
     'testPaymentNotEnrollEntity' => [
@@ -218,7 +216,6 @@ return [
         'pAuthStatus' => null,
         'pECI'        => null,
         'pALGO'       => null,
-        'authentication_gateway' => 'mpi_blade',
     ],
 
     'testPaymentEnrollUnavailableEntity' => [
