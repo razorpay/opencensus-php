@@ -103,7 +103,7 @@ export default connect(null, { openModal, closeModal })(props => {
                   ) : !businessWebsite ? (
                     <div>
                       <p
-                      >{`Please provide your Business Website/App details in order to generate API keys in ${mode} Mode`}</p>
+                      >{`Please provide your Business Website/App details in order to generate API keys in Live Mode`}</p>
                       <button
                         class="btn btn-primary"
                         onClick={() =>
