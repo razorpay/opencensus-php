@@ -110,6 +110,7 @@ class Validator extends Base\Validator
 
     public function validateActivateOperation()
     {
+        /** @var Entity $paymentLink */
         $paymentLink = $this->entity;
 
         if ($paymentLink->isActive() === true)
@@ -122,6 +123,7 @@ class Validator extends Base\Validator
 
     public function validateDeactivateOperation()
     {
+        /** @var Entity $paymentLink */
         $paymentLink = $this->entity;
 
         if ($paymentLink->isInactive() === true)
