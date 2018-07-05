@@ -11,6 +11,8 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
+use RZP\Models\PaymentLink\Template\UdfSchema;
+use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
 
 class Core extends Base\Core
 {
@@ -413,6 +415,80 @@ class Core extends Base\Core
         $this->trace->debug(TraceCode::PAYMENT_LINK_EXPIRE_CRON_SUMMARY, $summary);
 
         return $summary;
+    }
+
+    /**
+     * Returns an array of the payload to be consumed by the
+     * Payment link view template
+     *
+     * @param Entity $paymentLink
+     *
+     * @return array
+     */
+    public function getHostedViewPayload(Entity $paymentLink): array
+    {
+        // Fetch serialized view data for the view to consume
+        $payload['data'] = (new ViewSerializer($paymentLink))->serializeForHosted();
+
+        // Append UDF Schema as a JSON string, if defined
+        $payload['udf_schema'] = $this->getUdfSchemaIfDefined($paymentLink);
+
+        return $payload;
+    }
+
+    /**
+     * Returns the name of the Payment link view template to be used
+     *
+     * @param Entity $paymentLink
+     *
+     * @return string
+     */
+    public function getHostedViewTemplate(Entity $paymentLink): string
+    {
+        $templateId = $paymentLink->getHostedTemplateId();
+
+        // Default view name
+        $defaultView = 'payment_link.hosted';
+
+        //
+        // If hosted_template_id is not sent for the Payment link,
+        // use the default view
+        //
+        if ($templateId === null)
+        {
+            return $defaultView;
+        }
+
+        $templateAccessor = new HostedTemplate($templateId);
+
+        // If a custom hosted page template exists, use that
+        if ($templateAccessor->exists() === true)
+        {
+            $hostedPageHint = 'hostedpage.';
+            return $hostedPageHint . $templateAccessor->getViewName();
+        }
+
+        // else fallback to the default hosted view
+        return $defaultView;
+    }
+
+    /**
+     * @param Entity $paymentLink
+     *
+     * @return null|string
+     */
+    protected function getUdfSchemaIfDefined(Entity $paymentLink)
+    {
+        $jsonSchemaId = $paymentLink->getUdfJsonschemaId();
+
+        if ($jsonSchemaId === null)
+        {
+            return null;
+        }
+
+        $schemaAccessor = new UdfSchema($jsonSchemaId);
+
+        return $schemaAccessor->getSchema();
     }
 
     /**

@@ -50,11 +50,11 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function changeUserPassword(string $id)
+    public function changeUserPassword()
     {
         $input = Request::all();
 
-        $data = $this->service()->changePassword($id, $input);
+        $data = $this->service()->changePassword($input);
 
         return ApiResponse::json($data);
     }
@@ -100,13 +100,6 @@ class UserController extends Controller
         $data = $this->service()->resendVerificationMail();
 
         return $data;
-    }
-
-    public function getUserByEmail(string $email)
-    {
-        $data = $this->service()->getUserByEmail($email);
-
-        return ApiResponse::json($data);
     }
 
     public function postResetPasswordByEmail()
