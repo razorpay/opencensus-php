@@ -232,7 +232,7 @@ class Service extends Base\Service
     {
         $user = $this->user;
 
-        $user->edit($input, 'changePassword');
+        (new Core)->edit($user, $input, 'changePassword');
 
         return $user->toArrayPublic();
     }

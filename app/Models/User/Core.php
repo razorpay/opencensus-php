@@ -28,18 +28,21 @@ class Core extends Base\Core
         return $user;
     }
 
-    public function edit(Entity $user, array $input)
+    public function edit(Entity $user, array $input, $operation = 'edit')
     {
-        $user->edit($input);
+        $user->edit($input, $operation);
 
         $this->repo->saveOrFail($user);
 
-        $this->trace->info(
-            TraceCode::USER_EDIT,
-            [
-                'user_id'     => $user->getId(),
-                'input'       => $input,
-            ]);
+        if ($operation === 'edit')
+        {
+            $this->trace->info(
+                TraceCode::USER_EDIT,
+                [
+                    'user_id'     => $user->getId(),
+                    'input'       => $input
+                ]);
+        }
 
         return $user;
     }
