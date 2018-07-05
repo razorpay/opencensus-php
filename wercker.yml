@@ -112,7 +112,7 @@ deploy:
               K8S_COMMIT=`curl https://k8s-prod-api.razorpay.com/commit.txt`
               if [ "$K8S_COMMIT" != "$WERCKER_GIT_COMMIT" ]; then
                 echo "[ERROR] Kubernetes deployments enabled. Please deploy to K8s via falcon before deploying here."
-                return 1
+                exit 1
               fi
             fi
       - razorpay/aws-code-deploy@0.0.32:
