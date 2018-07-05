@@ -280,15 +280,6 @@ class Repository extends Base\Repository
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->get();
     }
-//
-//    public function findInOrgByIdOrFail(string $merchant)
-//    {
-//        $orgId = $merchant->org->getId();
-//
-//        return $this->newQuery()
-//                    ->where(Entity::ORG_ID, '=', $orgId)
-//                    ->get();
-//    }
 
     public function fetchReferredMerchants($merchantId)
     {
