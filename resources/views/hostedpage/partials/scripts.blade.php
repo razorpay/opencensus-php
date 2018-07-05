@@ -290,13 +290,11 @@
 
                 // Default errors;
                 switch(path) {
-                    case 'root.customer_id': defaultMsg = 'Please enter customer code/id'; break;
                     case 'root.customer_name': defaultMsg = 'Please enter customer name'; break;
                     case 'root.invoice_number': defaultMsg = 'Please enter invoice number'; break;
                     case 'root.job_number': defaultMsg = 'Please enter job/quotation number'; break;
                     case 'root.service_type': defaultMsg = 'Please select type of service'; break;
                     case 'root.location': defaultMsg = 'Please select a location'; break;
-                    default: defaultMsg = 'Please enter valid value';
                 }
 
                 if (!value) {
