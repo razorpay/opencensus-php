@@ -16,10 +16,11 @@ class PartnerTest extends OAuthTestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
-    const PARTNER               = 'partner';
-    const ACTIVATION            = 'activation';
-    const DEACTIVATION          = 'deactivation';
-    const DEFAULT_MERCHANT_ID   = '10000000000000';
+    const PARTNER                = 'partner';
+    const ACTIVATION             = 'activation';
+    const DEACTIVATION           = 'deactivation';
+    const DEFAULT_MERCHANT_ID    = '10000000000000';
+    const DEFAULT_SUBMERCHANT_ID = '10000000000011';
 
     public function setUp()
     {
@@ -31,13 +32,13 @@ class PartnerTest extends OAuthTestCase
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 
-        $this->allowAdminToAccessMerchant();
-
         $this->ba->privateAuth();
     }
 
     public function testMarkingMerchantAsPartner()
     {
+        $this->allowAdminToAccessPartnerMerchant();
+
         $this->ba->adminProxyAuth();
 
         $this->startTest();
@@ -48,6 +49,8 @@ class PartnerTest extends OAuthTestCase
      */
     public function testMarkingMerchantAsPartnerAgain()
     {
+        $this->allowAdminToAccessPartnerMerchant();
+
         $this->createMerchantRequest(self::ACTIVATION, true);
 
         // Using a different the merchant request id here
@@ -66,6 +69,8 @@ class PartnerTest extends OAuthTestCase
 
     public function testUnmarkingMerchantAsPartner()
     {
+        $this->allowAdminToAccessPartnerMerchant();
+
         $this->ba->adminProxyAuth();
 
         $this->startTest();
@@ -73,12 +78,16 @@ class PartnerTest extends OAuthTestCase
 
     public function testMarkingMerchantAsPartnerMissingType()
     {
+        $this->allowAdminToAccessPartnerMerchant();
+
         $this->ba->adminProxyAuth();
 
         $this->startTest();
     }
     public function testMarkingMerchantAsPartnerInvalidType()
     {
+        $this->allowAdminToAccessPartnerMerchant();
+
         $this->ba->adminProxyAuth();
 
         $this->startTest();
@@ -86,6 +95,8 @@ class PartnerTest extends OAuthTestCase
 
     public function testMarkingMerchantAsPartnerInvalidNameToType()
     {
+        $this->allowAdminToAccessPartnerMerchant();
+
         $this->ba->adminProxyAuth();
 
         $this->startTest();
@@ -351,11 +362,55 @@ class PartnerTest extends OAuthTestCase
         return $merchantRequest;
     }
 
+    /**
+     * Test that the flow raises an exception when
+     * the admin who does not have access to a submerchant tries to link it to a partner merchant.
+     */
+    public function testAddPartnerAccessMapSubmerchantAccessUnauthorized()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $this->createOAuthApplication($partnerData);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testAddPartnerAccessMap()
     {
-        $merchantId = self::DEFAULT_MERCHANT_ID;
+        $this->allowAdminToAccessPartnerMerchant();
 
-        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+        $this->allowAdminToAccessSubMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $this->createOAuthApplication($partnerData);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testAddPartnerAccessMapForDiffOrgSubmerchant()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessSubMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, ['org_id' => $org->getId()]);
 
         $partnerData = $this->getDummyPartnerAttributes();
 
@@ -369,9 +424,7 @@ class PartnerTest extends OAuthTestCase
 
     public function testAddAccessMapWithoutPartnerContext()
     {
-        $merchantId = self::DEFAULT_MERCHANT_ID;
-
-        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
         $partnerData = $this->getDummyPartnerAttributes();
 
@@ -385,9 +438,11 @@ class PartnerTest extends OAuthTestCase
 
     public function testAddAccessMapToPurePlatform()
     {
-        $merchantId = self::DEFAULT_MERCHANT_ID;
+        $this->allowAdminToAccessPartnerMerchant();
 
-        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'pure_platform']);
+        $this->allowAdminToAccessSubMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'pure_platform']);
 
         $partnerData = $this->getDummyPartnerAttributes();
 
@@ -401,6 +456,10 @@ class PartnerTest extends OAuthTestCase
 
     public function testAddAccessMapToNonPartner()
     {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessSubMerchant();
+
         $partnerData = $this->getDummyPartnerAttributes();
 
         // Create an oauth application using factory
@@ -413,9 +472,11 @@ class PartnerTest extends OAuthTestCase
 
     public function testAddPartnerAccessMapAgain()
     {
-        $merchantId = self::DEFAULT_MERCHANT_ID;
+        $this->allowAdminToAccessPartnerMerchant();
 
-        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+        $this->allowAdminToAccessSubMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
         $partnerData = $this->getDummyPartnerAttributes();
 
@@ -442,9 +503,11 @@ class PartnerTest extends OAuthTestCase
 
     public function testRemovePartnerAccessMap()
     {
-        $merchantId = self::DEFAULT_MERCHANT_ID;
+        $this->allowAdminToAccessPartnerMerchant();
 
-        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+        $this->allowAdminToAccessSubMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
         $partnerData = $this->getDummyPartnerAttributes();
 
@@ -466,9 +529,11 @@ class PartnerTest extends OAuthTestCase
 
     public function testRemoveNonExistingPartnerAccessMap()
     {
-        $merchantId = self::DEFAULT_MERCHANT_ID;
+        $this->allowAdminToAccessPartnerMerchant();
 
-        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+        $this->allowAdminToAccessSubMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
         $partnerData = $this->getDummyPartnerAttributes();
 
@@ -482,9 +547,11 @@ class PartnerTest extends OAuthTestCase
 
     public function testRemovePartnerAccessMapAgain()
     {
-        $merchantId = self::DEFAULT_MERCHANT_ID;
+        $this->allowAdminToAccessPartnerMerchant();
 
-        $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'reseller']);
+        $this->allowAdminToAccessSubMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
         $this->ba->adminAuth();
 
@@ -508,13 +575,23 @@ class PartnerTest extends OAuthTestCase
         return $attributes;
     }
 
-    protected function allowAdminToAccessMerchant()
+    protected function allowAdminToAccessMerchant(string $merchantId)
     {
-        $merchant = Merchant\Entity::find(self::DEFAULT_MERCHANT_ID);
+        $merchant = Merchant\Entity::find($merchantId);
 
         $admin = $this->ba->getAdmin();
 
         $admin->merchants()->attach($merchant);
+    }
+
+    protected function allowAdminToAccessPartnerMerchant()
+    {
+        $this->allowAdminToAccessMerchant(self::DEFAULT_MERCHANT_ID);
+    }
+
+    protected function allowAdminToAccessSubMerchant()
+    {
+        $this->allowAdminToAccessMerchant(self::DEFAULT_SUBMERCHANT_ID);
     }
 
     protected function markMerchantAsPartner(string $merchantId, string $partnerType)

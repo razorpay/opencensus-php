@@ -2005,7 +2005,28 @@ class Service extends Base\Service
                 $input);
         }
 
-        $submerchant = $this->repo->merchant->findOrFail($merchantId);
+        $ba = $this->app['basicauth'];
+
+        // The submerchant should belong to the same org as of the admin
+        $submerchant = $this->repo->merchant->findByIdAndOrgId($merchantId, $ba->getOrgId());
+
+        $admin = $ba->getAdmin();
+
+        // The current admin should have access to the submerchant before the mapping can be created / deleted
+        $hasSubmerchantAccess = (new Group\Core)->groupCheck($admin, $submerchant);
+
+        if ($hasSubmerchantAccess === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                Entity::MERCHANT_ID,
+                [
+                    'admin_id'       => $admin->getId(),
+                    'partner_id'     => $merchantId,
+                    'submerchant_id' => $submerchant->getId(),
+                ]);
+
+        }
 
         return [$partner, $submerchant];
     }

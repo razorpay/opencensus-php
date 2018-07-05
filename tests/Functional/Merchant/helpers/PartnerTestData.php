@@ -338,6 +338,30 @@ return [
         ],
     ],
 
+    'testAddPartnerAccessMapSubmerchantAccessUnauthorized' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000011/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testAddPartnerAccessMap' => [
         'request'   => [
             'url'     => '/merchants/10000000000011/access_maps',
@@ -352,6 +376,31 @@ return [
                 'merchant_id' => '10000000000011',
                 'entity_type' => 'application',
             ],
+        ],
+    ],
+
+
+    'testAddPartnerAccessMapForDiffOrgSubmerchant' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000011/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
 
