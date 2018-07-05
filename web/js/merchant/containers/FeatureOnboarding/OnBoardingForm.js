@@ -1,10 +1,10 @@
 import { Component, Fragment } from 'react';
 
-import Accordian, {
-  AccordianItem,
-  AccordianItemTitle,
-  AccordianItemContent,
-} from 'rzp/ui/Accordian';
+import Accordion, {
+  AccordionItem,
+  AccordionItemTitle,
+  AccordionItemContent,
+} from 'rzp/ui/Accordion';
 import AsyncButton from 'react-async-button';
 
 import FORM_TYPE from './Forms';
@@ -42,29 +42,29 @@ export default class OnBoardingForm extends Component {
     return (
       <Fragment>
         {WizardFormPreStep ? (
-          <Accordian expandedKey={isPreStepCompleted | 0}>
-            <AccordianItem cantBeOpened={isPreStepCompleted}>
-              <AccordianItemTitle
-                classNames={`${isPreStepCompleted ? 'text-success' : ''}`}
+          <Accordion expandedKey={isPreStepCompleted | 0}>
+            <AccordionItem cantBeOpened={isPreStepCompleted}>
+              <AccordionItemTitle
+                className={`${isPreStepCompleted ? 'text-success' : ''}`}
               >
                 {isPreStepCompleted && (
                   <i class="i i-check" style={{ marginRight: '4px' }} />
                 )}
                 Step 1: {currentForm.preStep.title}
-              </AccordianItemTitle>
-              <AccordianItemContent>
+              </AccordionItemTitle>
+              <AccordionItemContent>
                 <WizardFormPreStep disabled={isPreStepCompleted} />
-              </AccordianItemContent>
-            </AccordianItem>
-            <AccordianItem cantBeOpened={!isPreStepCompleted}>
-              <AccordianItemTitle>
+              </AccordionItemContent>
+            </AccordionItem>
+            <AccordionItem cantBeOpened={!isPreStepCompleted}>
+              <AccordionItemTitle>
                 Step 2: {currentForm.title}
-              </AccordianItemTitle>
-              <AccordianItemContent>
+              </AccordionItemTitle>
+              <AccordionItemContent>
                 {this.getWizardForm()}
-              </AccordianItemContent>
-            </AccordianItem>
-          </Accordian>
+              </AccordionItemContent>
+            </AccordionItem>
+          </Accordion>
         ) : (
           this.getWizardForm()
         )}

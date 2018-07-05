@@ -789,16 +789,16 @@ dl.rzp-definition {
   100%  { transform: rotate(360deg); }
 }
 
-/* Component: rzp/ui/Accordian */
+/* Component: rzp/ui/Accordion */
 
-.Accordian {
-  .Accordian__item {
+.Accordion {
+  .Accordion__item {
     margin-top: 16px;
-    .Accordian__content {
+    .Accordion__content {
       padding: 16px 8px 0;
       display: none;
     }
-    .Accordian__title {
+    .Accordion__title {
       background: #F6F6F6;
       padding: 10px;
       cursor: pointer;
@@ -807,7 +807,7 @@ dl.rzp-definition {
       &:hover {
         background: #efefef;
       }
-      .accordian__arrow {
+      .accordion__arrow {
         display: inline-block;
         position: absolute;
         width: 24px;
@@ -837,14 +837,14 @@ dl.rzp-definition {
     }
     
     &.open {
-      .Accordian__title > .accordian__arrow::before {
+      .Accordion__title > .accordion__arrow::before {
         transform: rotate(-45deg);
       }
 
-      .Accordian__title > .accordian__arrow::after {
+      .Accordion__title > .accordion__arrow::after {
         transform: rotate(45deg);
       }
-      .Accordian__content {
+      .Accordion__content {
         display: block;
         animation: fadein 0.25s ease-in;
       }

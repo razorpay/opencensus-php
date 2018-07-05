@@ -1,6 +1,6 @@
 import { Children, Component, cloneElement } from 'react';
 
-export default class Accordian extends Component {
+export default class Accordion extends Component {
   state = {
     items: {},
   };
@@ -43,10 +43,10 @@ export default class Accordian extends Component {
   }
 
   render() {
-    const { children, classNames } = this.props;
+    const { children, className } = this.props;
 
     return (
-      <div class={`Accordian ${classNames}`}>
+      <div class={`Accordion ${className}`}>
         {Children.map(children, (child, index) =>
           cloneElement(child, {
             uuid: index,
@@ -59,8 +59,8 @@ export default class Accordian extends Component {
   }
 }
 
-export const AccordianItem = ({
-  classNames = '',
+export const AccordionItem = ({
+  className = '',
   children,
   expanded = false,
   uuid,
@@ -70,26 +70,26 @@ export const AccordianItem = ({
   const title = children[0];
   const content = children[1];
   if (expanded) {
-    classNames += 'open';
+    className += 'open';
   }
 
   return (
-    <div class={`Accordian__item ${classNames}`}>
+    <div class={`Accordion__item ${className}`}>
       {cloneElement(title, { onClick, uuid, cantBeOpened })}
       {cloneElement(content, { cantBeOpened })}
     </div>
   );
 };
 
-export const AccordianItemTitle = ({
-  classNames = '',
+export const AccordionItemTitle = ({
+  className = '',
   children,
   onClick,
   cantBeOpened,
   uuid,
 }) => {
   const props = {
-    className: `Accordian__title ${classNames}`,
+    className: `Accordion__title ${className}`,
     'data-uuid': uuid,
   };
 
@@ -100,16 +100,16 @@ export const AccordianItemTitle = ({
   return (
     <div {...props}>
       {children}
-      {!cantBeOpened && <div class="accordian__arrow" />}
+      {!cantBeOpened && <div class="accordion__arrow" />}
     </div>
   );
 };
-export const AccordianItemContent = ({
-  classNames = '',
+export const AccordionItemContent = ({
+  className = '',
   cantBeOpened,
   children,
 }) => {
   return cantBeOpened ? null : (
-    <div class={`Accordian__content ${classNames}`}>{children}</div>
+    <div class={`Accordion__content ${className}`}>{children}</div>
   );
 };
