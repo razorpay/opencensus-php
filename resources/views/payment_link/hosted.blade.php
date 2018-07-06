@@ -33,7 +33,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
             <script>
                 var Razorpay = {
                     config: {
-                        api: '/'
+                        api: "{{ config('app.url') }}/"
                     }
                 }
             </script>
