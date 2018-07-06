@@ -83,8 +83,9 @@ class Gateway extends Base\Gateway
                           ->mpi
                           ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
 
-        $authenticationGateway = $mpiEntity ? $mpiEntity->getGateway() : Payment\Gateway::MPI_BLADE;
 
+        $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
+        
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
         $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
