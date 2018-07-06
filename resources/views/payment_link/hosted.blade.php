@@ -315,7 +315,6 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                                         @if (isset($data['merchant']))
                                             <div id="merchant">
                                                 <div id="merchant-name">{{$data['merchant']['name']}}</div>
-                                                <div id="merchant-desc">#{{$payment_page_data['id']}}</div>
                                             </div>
                                         @endif
                                     </div>
@@ -363,7 +362,6 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                             @if (isset($data['merchant']))
                                 <div id="merchant">
                                     <div id="merchant-name">{{$data['merchant']['name']}}</div>
-                                    <div id="merchant-desc">#{{$payment_page_data['id']}}</div>
                                 </div>
                             @endif
                         </div>
@@ -521,7 +519,6 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                         payment_link_id: paymentPageObj.id,
                         amount: paymentPageObj.amount,
                         // parent: '#chkout-box',
-                        description: '#' + paymentPageObj.id,
                         handler: function(response) {
                             if (globalScope.hasRedirect()) {
 
