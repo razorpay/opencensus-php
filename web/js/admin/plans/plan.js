@@ -7,6 +7,7 @@ import { notifySuccess, notifyError } from 'common/modal';
 import { deepClone } from 'common/util';
 import { cardTypes } from 'common/data';
 import { SwitchField } from 'ui/Field';
+import { isWorkflow } from 'common/util';
 
 export default class Plan extends Collection {
   constructor(props = {}) {
@@ -195,7 +196,7 @@ class Rule extends CollectionItem {
           data: this.serialize(),
         })
       ).then(data => {
-        if (data) {
+        if (data && !isWorkflow(data)) {
           notifySuccess(`Rule added for ${data.plan_name}`);
           this.collection.items.splice(-1, 0, new Rule(this.collection, data));
           return data;
@@ -210,9 +211,11 @@ class Rule extends CollectionItem {
     }
     return this.request(
       'delete',
-      adminDelete(`live/pricing/${this.collection.props.id}/rule/${this.id}`)
+      adminDelete(
+        `live/pricing/${this.collection.props.id}/rule/${this.id}/force`
+      )
     ).then(data => {
-      if (data) {
+      if (data && !isWorkflow(data)) {
         notifySuccess(data.message);
         this.collection.items.remove(this);
       }
