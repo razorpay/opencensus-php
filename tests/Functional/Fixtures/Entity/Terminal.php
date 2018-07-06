@@ -382,6 +382,16 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createDirectEnachRblTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'                        => '1EnachRblTrmnl',
+            'merchant_id'               => '10000000000000',
+        ];
+
+        return $this->createSharedEnachRblTerminal($attributes);
+    }
+
     public function createSharedPayzappTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::PAYZAPP_RAZORPAY_TERMINAL;
