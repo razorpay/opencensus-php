@@ -79,10 +79,10 @@ class Gateway extends Base\Gateway
 
         $this->setCardNumberAndCvv($input);
 
-        $authenticationGateway = $this->app['repo']
-                                       ->mpi
-                                       ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE)
-                                       ->getGateway() ?? 'mpi_blade';
+        $mpiEntity = $this->app['repo']->mpi->findByPaymentIdAndActionOrFail($input['payment']['id'],
+                                                                             Base\Action::AUTHORIZE);
+
+        $authenticationGateway = $mpiEntity->getGateway() ?? Payment\Gateway::MPI_BLADE;
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 

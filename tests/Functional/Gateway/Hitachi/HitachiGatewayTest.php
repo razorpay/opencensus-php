@@ -557,6 +557,11 @@ class HitachiGatewayTest extends TestCase
         $request = $this->makeFirstGatewayPaymentMockRequest($url, 'POST', $content[2]);
 
         $this->submitPaymentCallbackRequest($request);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+
     }
 
     public function testVerifyPaymentwithblankPrn()

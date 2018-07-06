@@ -114,4 +114,4 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::MERCHANT_REFERENCE);
     }
-    }
+}
