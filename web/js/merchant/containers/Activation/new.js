@@ -56,7 +56,7 @@ export class ActivationContainer extends React.Component {
     ]).then(([data, categories]) => {
       const someDetailsFilled = isFormTouched(data.data);
 
-      if (someDetailsFilled) {
+      if (!someDetailsFilled) {
         this.preloadWelcomeAsset();
       }
 
@@ -74,12 +74,12 @@ export class ActivationContainer extends React.Component {
 
   preloadWelcomeAsset() {
     const welcome = new Image();
-    welcome.src = 'img/activation/welcome.svg';
+    welcome.src = '/img/activation/welcome.svg';
   }
 
   preloadSuccessAsset() {
     const success = new Image();
-    success.src = 'img/activation/submit-success.svg';
+    success.src = '/img/activation/submit-success.svg';
   }
 
   updateSession(data) {
