@@ -353,7 +353,23 @@
 
             var amountEl = document.getElementsByName('amount')[0];
 
-            hasError = !!window.RZP.evalAmountValidation(amountEl) || !!document.getElementsByClassName('has-error').length; // Check existing errors
+            hasError = hasError || !!window.RZP.evalAmountValidation(amountEl) || !!document.getElementsByClassName('has-error').length; // Check existing errors
+
+            var udfData = editor.getValue();
+            var amount = amountEl.value;
+
+            // Sanity check
+            var schema = {!! $udf_schema !!};
+            if (!hasError && schema && schema.required) {
+                for (var i = 0; i < schema.required.length; i++) {
+                    var val = udfData[i];
+
+                    if (val === '' || val === null) {
+                        hasError = true;
+                        break;
+                    }
+                }
+            }
 
             window.setTimeout(function() {
                 if (hasError) {
@@ -372,9 +388,7 @@
 
                     window.RZP.scrollTo(parentEle, errorEle, 300);
                 } else {
-                    var udfData = editor.getValue();
-                    var amount = parseInt(amountEl.value * 100);
-
+                    amount = parseInt(amount * 100);
                     window.RZP.initCheckout(window.RZP_DATA = window.RZP_DATA || {}, Object.assign({}, udfData, {amount: amount}));
                 }
 
