@@ -228,7 +228,6 @@
                 payment_link_id: paymentPageObj.id,
                 amount: udfData.amount,
                 notes: udfData,
-                description: '#' + paymentPageObj.id,
                 handler: function(response) {
                     var amountPaid = udfData.amount;
 
