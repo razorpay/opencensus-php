@@ -6,8 +6,9 @@ use View;
 use Request;
 use ApiResponse;
 
-use RZP\Exception\BaseException;
+use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink\Entity;
+use RZP\Exception\BadRequestException;
 use RZP\Http\Controllers\Traits\HasCrudMethods;
 
 class PaymentLinkController extends Controller
@@ -77,5 +78,27 @@ class PaymentLinkController extends Controller
         $payload[Entity::REQUEST_PARAMS] = Request::all();
 
         return View::make($view, $payload);
+    }
+
+    /**
+     * Renders hosted view for payment link with given slug
+     * @param string $slug
+     */
+    public function viewBySlug(string $slug)
+    {
+        // Retrieves slug's metadata from Gimli which contains entity, id & mode
+        $gimli        = $this->app['elfin']->driver('gimli');
+        $slugMetadata = $gimli->expandAndGetMetadata($slug);
+
+        // Renders 404 if no metadata available(error/exception at Gimli side)
+        if ($slugMetadata === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        // Sets api's mode & invokes view()
+        $this->ba->setModeAndDbConnection($slugMetadata['mode']);
+
+        return $this->view($slugMetadata['id']);
     }
 }

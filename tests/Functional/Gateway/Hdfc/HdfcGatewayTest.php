@@ -11,6 +11,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Hdfc\Payment\Result;
 
 class HdfcGatewayTest extends TestCase
 {
@@ -583,7 +584,7 @@ class HdfcGatewayTest extends TestCase
 
     public function testPaymentFailWithFailureLongResultCode()
     {
-        $this->hdfcPaymentMockResultCode('!ERROR!-Transaction denied due to previous capture check failure ( Validate Original Transaction )', 'authorize');
+        $this->hdfcPaymentMockResultCode(Result::DENIED_CAPTURE, 'authorize');
 
         $this->makeRequestAndCatchException(
             function ()

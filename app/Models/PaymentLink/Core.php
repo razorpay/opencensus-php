@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Entity as E;
+use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
@@ -53,7 +54,7 @@ class Core extends Base\Core
 
         $paymentLink->generateId();
 
-        $this->setShortUrl($paymentLink);
+        $this->createAndSetShortUrl($paymentLink, $input[Entity::SLUG] ?? null);
 
         $this->repo->saveOrFail($paymentLink);
 
@@ -88,9 +89,26 @@ class Core extends Base\Core
             $this->repo->saveOrFail($paymentLink);
         });
 
+        $this->updateShortUrlIfApplicable($paymentLink, $input);
+
         $this->trace->info(TraceCode::PAYMENT_LINK_UPDATED, $paymentLink->toArrayPublic());
 
         return $paymentLink;
+    }
+
+    /**
+     * Attempts recreating short URL for payment link in case of new slug in patch input
+     * @param Entity $paymentLink
+     * @param array  $input
+     */
+    public function updateShortUrlIfApplicable(Entity $paymentLink, array $input)
+    {
+        if (($slug = $input[Entity::SLUG] ?? null) !== null)
+        {
+            $this->createAndSetShortUrl($paymentLink, $slug);
+
+            $this->repo->saveOrFail($paymentLink);
+        }
     }
 
     public function deactivate(Entity $paymentLink): Entity
@@ -175,13 +193,30 @@ class Core extends Base\Core
      * @param Payment\Entity $payment
      *
      * @throws BadRequestException
+     * @throws \RZP\Exception\BadRequestValidationFailureException
      */
     public function validateIsPaymentInitiatable(Entity $paymentLink, Payment\Entity $payment)
     {
         // 1. Validates amount, if applicable
         $paymentLink->getValidator()->validatePaymentAmount($payment);
 
-        // 2. Validates payment link is active and has payment slots available
+        // 2. Validates Payment notes (UDF values), if applicable
+        $udfJsonschemaId = $paymentLink->getUdfJsonschemaId();
+
+        if ($udfJsonschemaId !== null)
+        {
+            $udfSchema = new Template\UdfSchema($udfJsonschemaId);
+            $schema    = $udfSchema->getSchemaDecoded();
+
+            if ($schema !== null)
+            {
+                $paymentNotes = $payment->getNotes()->toArray();
+
+                $udfSchema->validate($paymentNotes);
+            }
+        }
+
+        // 3. Validates payment link is active and has payment slots available
         if (($paymentLink->isPayable() === false) or
             ($this->hasPaymentSlots($paymentLink) === false))
         {
@@ -209,9 +244,9 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS,
             [
-                'payment_id' => $payment->getId(),
+                'payment_id'     => $payment->getId(),
                 'payment_status' => $payment->getStatus(),
-                'payment_link' => $paymentLink->toArrayPublic(),
+                'payment_link'   => $paymentLink->toArrayPublic(),
             ]);
 
         //
@@ -362,21 +397,71 @@ class Core extends Base\Core
     }
 
     /**
-     * This method sets the short_url of a paymentLink
-     * @param Entity $paymentLink
+     * @param Entity      $paymentLink
+     * @param string|null $slug
      */
-    protected function setShortUrl(Entity $paymentLink)
+    protected function createAndSetShortUrl(Entity $paymentLink, string $slug = null)
     {
-        $url = $paymentLink->getHostedViewUrl($this->plHostedBaseUrl);
-        $shortUrl = $this->elfin->shorten($url, ['ptype' => 'link']);
+        list($url, $params, $fail) = $this->getShortenUrlRequestParams($paymentLink, $slug);
 
-        $paymentLink->setShortUrl($shortUrl);
+        try
+        {
+            $shortUrl = $this->elfin->shorten($url, $params, $fail);
+
+            $paymentLink->setShortUrl($shortUrl);
+        }
+        catch (\RZP\Exception\BaseException $e)
+        {
+            // TODO: Gimli should return 4xx & Elfin service should propagate that error to callee
+            if (str_contains($e->getDataAsString(), 'Duplicate') === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_LINK_SLUG_GENERATE_FAILED,
+                    Entity::SLUG,
+                    [
+                        Entity::SLUG => $slug,
+                    ]);
+            }
+
+            throw $e;
+        }
+    }
+
+    protected function getShortenUrlRequestParams(Entity $paymentLink, string $slug = null): array
+    {
+        // Following are default set of parameters, when there is no slug passed in input
+        // URL: https://pages.razorpay.in/pl_10000000000000/view OR https://pages.razorpay.in/AlphaNumMin4Max20Slug
+        $url = $paymentLink->getHostedViewUrl($this->plHostedBaseUrl, $slug);
+        // Fail: In case not able to shorten URL, will keep above value itself as short URL and continue with creation
+        $fail = false;
+        // Ptype: Input request for Gimli
+        $params = ['ptype' => 'link'];
+
+        // If slug is passed in input, we override above parameters in following way
+        if ($slug !== null)
+        {
+            // Fail: If failed to shorten the URL, do not continue with creation and fail
+            $fail = true;
+            // No fall back: Only use Gimli(our shortener service) and do not fall back to Bitly etc if that fails
+            $this->elfin->setNoFallback();
+            // Additional parameters/metadata which gets used later in rendering view endpoint
+            $params += [
+                'alias'          => $slug,
+                'fail_if_exists' => true,
+                'metadata'       => [
+                    'mode'   => $this->mode,
+                    'entity' => $paymentLink->getEntity(),
+                    'id'     => $paymentLink->getPublicId(),
+                ],
+            ];
+        }
+
+        return [$url, $params, $fail];
     }
 
     /**
      * Called from CRON.
      * Updates status to INACTIVE, status_reason to EXPIRED of all payment links which are active and past expire_by.
-     *
      * @return array
      */
     public function expirePaymentLinks(): array

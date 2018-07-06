@@ -952,6 +952,16 @@ class Gateway
 
         $gatewayCertPath = $certificatePath . '/' . $this->getGatewayCertDirName();
 
+        if (file_exists($gatewayCertPath) === false)
+        {
+            //
+            // We are using 077 permissions because default is 0777
+            // We want recursive generation of path for this case
+            // http://php.net/manual/en/function.mkdir.php
+            //
+            mkdir($gatewayCertPath, 0777, true);
+        }
+
         return $gatewayCertPath;
     }
 

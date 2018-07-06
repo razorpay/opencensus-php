@@ -680,6 +680,7 @@ class ErrorCode
     const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                         = 'BAD_REQUEST_INVOICE_EXPIRE_FAILED';
     const BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER                                   = 'BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER';
     const BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY                             = 'BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY';
+    const BAD_REQUEST_PAYMENT_LINK_SLUG_GENERATE_FAILED                             = 'BAD_REQUEST_PAYMENT_LINK_SLUG_GENERATE_FAILED';
 
     const BAD_REQUEST_ITEM_INACTIVE                                                 = 'BAD_REQUEST_ITEM_INACTIVE';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';

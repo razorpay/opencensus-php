@@ -31,7 +31,7 @@
                 <script>
                     var Razorpay = {
                         config: {
-                            api: '/'
+                            api: "{{ config('app.url') }}/"
                         }
                     }
                 </script>
@@ -67,113 +67,22 @@
                     @include('hostedpage.partials.header')
                     <div>
                         @include('hostedpage.partials.description')
-                        <button class="btn btn--full" id="mobile-proceed-btn" onclick="toggleMobileForm()">PROCEED TO PAY</button>
+                        <button class="btn btn--full" id="mobile-proceed-btn" onclick="window.RZP.toggleMobileForm()">PROCEED TO PAY</button>
                     </div>
                 </div>
                 @include('hostedpage.partials.form')
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/{{'@'}}json-editor/json-editor/dist/jsoneditor.min.js"></script>
+        <script src="https://cdn.razorpay.com/static/libs/jsoneditor.min.js"></script>
         <script>
-            cleanHTML();
-            document.getElementById('udf_submit_btn').addEventListener('click', submitForm);
+            window.RZP.cleanHTML();
+            window.RZP.toggleTrimDescription(true);
+
+            var editor = window.RZP.initJSONEditor();
+
+            window.RZP.addListeners_Validators();
+
             window.t0 = (new Date()).getTime(); // initial time stamp
-
-            var data = window.RZP_DATA.data;
-            var color = data.merchant.brand_color || '#168AFA';
-
-            toggleTrimDescription(true);
-
-            function fullPaid(respPaymentId, amountPaid) {
-                if (!respPaymentId) {
-                    return;
-                }
-
-                removeForm();
-
-                document.getElementById('success-section').style.display = 'block';
-
-                document.getElementById('success-msg').innerHTML = 'You\'ve successfully paid ₹' + (amountPaid/100).toFixed(2);
-                document.getElementById('payment-id').innerHTML = 'Payment ID: ' + respPaymentId;
-            }
-        </script>
-        <script>
-
-            // UDF start
-            JSONEditor.defaults.languages.en.error_required = "";
-            var element = document.getElementById('udf_container');
-            var editor = new JSONEditor(element, {
-                form_name_root: "",
-                no_additional_properties: true,
-                disable_properties: true,
-                disable_edit_json: true,
-                disable_collapse: true,
-                disable_array_reorder: true,
-                disable_array_delete: true,
-                disable_array_add: true,
-                theme: "bootstrap3",
-                schema: {!! $udf_schema !!}
-            });
-
-            // UDF end
-
-            function initCheckout(globalScope, udfData) {
-                var data = globalScope.data;
-
-                var paymentPageObj = data.payment_link;
-                var merchant = data.merchant;
-
-                // Checkout options
-                var options = {
-                    key: data.key_id,
-                    payment_link_id: paymentPageObj.id,
-                    amount: udfData.amount,
-                    notes: udfData,
-                    description: '#' + paymentPageObj.id,
-                    handler: function(response) {
-                        var amountPaid = udfData.amount;
-
-                        if (globalScope.hasRedirect()) {
-
-                            return globalScope.redirectToCallback(
-                                data.payment_link.callback_url,
-                                data.payment_link.callback_method,
-                                response
-                            );
-                        }
-
-                        if (window.ga && window.ga.length) {
-                            var sessionTDiff = (new Date()).getTime() - window.t0;
-                            var paymentSuccessAction = 'Payment Successful';
-
-                            window.ga('send', 'event', 'Payment Page Hosted', paymentSuccessAction, 'Session Duration(s)' , Math.floor(sessionTDiff/1000), {
-                                hitCallback: function() {
-                                    return fullPaid(response.razorpay_payment_id, amountPaid); // To display the latest payment id
-                                }
-                            });
-                        } else {
-                            return fullPaid(response.razorpay_payment_id, amountPaid); // To display the latest payment id
-                        }
-                    },
-                    callback_url: location.href,
-                    theme: {
-                    },
-                    modal: {
-                        confirm_close: true,
-                        escape: false
-                    }
-                };
-
-                options.name = data.merchant.name;
-                options.theme.color = merchant.brand_color || '#168AFA';
-                options.currency = 'INR';
-
-                options.image = merchant.image;
-
-                var razorpay;
-                razorpay = window.razorpay = Razorpay(options);
-                razorpay.open();
-            };
         </script>
     </body>
 </html>
