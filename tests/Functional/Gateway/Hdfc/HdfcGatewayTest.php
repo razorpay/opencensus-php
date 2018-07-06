@@ -11,6 +11,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Hdfc\Payment\Result;
 
 class HdfcGatewayTest extends TestCase
 {
@@ -353,6 +354,30 @@ class HdfcGatewayTest extends TestCase
         $this->assertNull($payment['verified']);
     }
 
+    public function testLongErrorCode()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content = [
+                    'error_code_tag'    => 'IPAY0200121',
+                    'result'            => '!ERROR!-IPAY0200121-FSSConnect Destination is down',
+                    'error_service_tag' => 'null',
+                ];
+            }
+
+            return $content;
+        });
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->doAuthPayment();
+        });
+    }
+
     public function testVerifyRefundDeniedByRiskOnGateway()
     {
         $payment = $this->doAuthAndCapturePayment();
@@ -555,6 +580,21 @@ class HdfcGatewayTest extends TestCase
         $hdfc = $this->getLastEntity('hdfc', true);
 
         $this->assertEquals($hdfc['result'], 'DENIED BY RISK');
+    }
+
+    public function testPaymentFailWithFailureLongResultCode()
+    {
+        $this->hdfcPaymentMockResultCode(Result::DENIED_CAPTURE, 'authorize');
+
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $payment = $this->doAuthAndCapturePayment();
+            });
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals($hdfc['error_code2'], 'RP00021');
     }
 
     protected function timeoutHdfcAuthorizePayment()

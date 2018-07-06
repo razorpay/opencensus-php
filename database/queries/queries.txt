@@ -3655,6 +3655,10 @@ ALTER TABLE invoices
     DROP INDEX invoices_merchant_id_receipt_unique,
     ADD INDEX invoices_merchant_id_receipt_index (merchant_id, receipt);
 
+# Adds auth_type column to pricing table
+ALTER TABLE pricing
+    ADD COLUMN auth_type VARCHAR(255) DEFAULT NULL AFTER payment_method_type;
+
 #increase error_code length for hdfc
 ALTER TABLE hdfc
     ADD COLUMN error_code2 VARCHAR(255) DEFAULT NULL AFTER error_code,
@@ -4097,3 +4101,11 @@ SET SESSION foreign_key_checks = 1;
 
 ALTER TABLE hitachi
     ADD COLUMN authentication_gateway CHAR(64) DEFAULT NULL AFTER acquirer
+
+# Payment link - currency nullable
+ALTER TABLE payment_links
+    MODIFY COLUMN currency VARCHAR(3) DEFAULT NULL;
+
+ALTER TABLE payment_links
+    ADD COLUMN hosted_template_id VARCHAR(255) DEFAULT NULL AFTER notes,
+    ADD COLUMN udf_jsonschema_id VARCHAR(255) DEFAULT NULL AFTER hosted_template_id;
