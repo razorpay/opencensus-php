@@ -525,18 +525,17 @@ class HitachiGatewayTest extends TestCase
 
     public function testPaymentFlowWhenGatewayNullinMpi()
     {
-        $this->fixtures->merchant->addFeatures(['s2s']);
-
         $payment = $this->getDefaultPaymentArray();
+
         $payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
 
         $request = [
             'method'  => 'POST',
-            'url'     => '/payments/create/redirect',
+            'url'     => '/payments/',
             'content' => $payment
         ];
 
-        $this->ba->privateAuth();
+        $this->ba->publicAuth();
 
         $response = $this->makeRequestParent($request);
 
@@ -561,7 +560,6 @@ class HitachiGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment');
 
         $this->assertEquals('authorized', $payment['status']);
-
     }
 
     public function testVerifyPaymentwithblankPrn()
