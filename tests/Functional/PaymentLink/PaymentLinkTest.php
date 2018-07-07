@@ -119,6 +119,13 @@ class PaymentLinkTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+
+        $expiredPlCount = $this->getDbEntities('payment_link')
+                               ->where(PaymentLinkModel\Entity::STATUS, PaymentLinkModel\Status::INACTIVE)
+                               ->where(PaymentLinkModel\Entity::STATUS_REASON, PaymentLinkModel\StatusReason::EXPIRED)
+                               ->count();
+
+        $this->assertEquals(2, $expiredPlCount);
     }
 
     public function testPaymentLinkMakePayment()
