@@ -29,7 +29,9 @@ class PaymentLink extends Base
 
     protected function processEntry(array & $entry)
     {
-        $input = Helpers\PaymentLink::getEntityInput($entry, $this->params);
+        $settings = $this->settingsAccessor->all()->toArray();
+
+        $input = Helpers\PaymentLink::getEntityInput($entry, array_merge($this->params, $settings));
 
         $invoice = $this->invoiceCore->create($input, $this->merchant, null, $this->batch);
 
