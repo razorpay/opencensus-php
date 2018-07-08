@@ -85,6 +85,39 @@ return [
         ]
     ],
 
+    'testEmandateRegistrationForLateAuth' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emandate_register',
+                'targets' => ['hdfc'],
+                'begin'   => Carbon::today(Timezone::IST)->timestamp,
+                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emandate@razorpay.com',
+                        'type'                => 'emandate_register',
+                        'target'              => 'hdfc',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ]
+    ],
+
     'testEmandateDebit' => [
         'request' => [
             'content' => [
