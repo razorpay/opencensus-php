@@ -588,16 +588,14 @@ class Core extends Base\Core
             {
                 $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
 
-                if ($paymentLink->isActive() === true)
+                // Continues with expiration only if current status is active and expire_by's value is past now
+                if (($paymentLink->isActive() === true) and
+                    ($paymentLink->isPastExpireBy() === true))
                 {
-                    return;
+                    $this->changeStatus($paymentLink, Status::INACTIVE, StatusReason::EXPIRED);
+
+                    $this->repo->saveOrFail($paymentLink);
                 }
-
-                // TODO: Use Core's method to do status change. That method is being added in another PR.
-                $paymentLink->setStatus(Status::INACTIVE);
-                $paymentLink->setStatusReason(StatusReason::EXPIRED);
-
-                $this->repo->saveOrFail($paymentLink);
             });
     }
 
