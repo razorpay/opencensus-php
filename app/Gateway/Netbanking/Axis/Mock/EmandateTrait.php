@@ -96,6 +96,7 @@ trait EmandateTrait
             ResponseFields::TRANS_REF_NO    => 101714472,
             ResponseFields::TRANS_EXEC_TIME => $date,
             ResponseFields::PAYMENT_MODE    => Constants::PMD,
+            ResponseFields::MANDATE_NUMBER  => 123123123,
             ResponseFields::CHECKSUM        => $input[RequestFields::CHECKSUM]
         ];
 

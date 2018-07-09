@@ -33,7 +33,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
             <script>
                 var Razorpay = {
                     config: {
-                        api: '/'
+                        api: "{{ config('app.url') }}/"
                     }
                 }
             </script>
@@ -307,7 +307,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                                 <div id="chkout-header">
                                     <div id="header-logo" class={{isset($data['merchant']['image']) ? 'visible' : ''}}>
                                         @if (isset($data['merchant']['image']))
-                                            <img src={{$data['merchant']['image']}} width="100%">
+                                            <img src="{{$data['merchant']['image']}}" width="100%" />
                                         @endif
                                     </div>
 
@@ -315,7 +315,6 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                                         @if (isset($data['merchant']))
                                             <div id="merchant">
                                                 <div id="merchant-name">{{$data['merchant']['name']}}</div>
-                                                <div id="merchant-desc">#{{$payment_page_data['id']}}</div>
                                             </div>
                                         @endif
                                     </div>
@@ -356,14 +355,13 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                     <div id="chkout-header">
                         <div id="header-logo" class={{isset($data['merchant']['image']) ? 'visible' : ''}}>
                             @if (isset($data['merchant']['image']))
-                                <img src={{$data['merchant']['image']}} width="100%">
+                                <img src="{{$data['merchant']['image']}}" width="100%">
                             @endif
                         </div>
                         <div id="header-details">
                             @if (isset($data['merchant']))
                                 <div id="merchant">
                                     <div id="merchant-name">{{$data['merchant']['name']}}</div>
-                                    <div id="merchant-desc">#{{$payment_page_data['id']}}</div>
                                 </div>
                             @endif
                         </div>
@@ -521,7 +519,6 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                         payment_link_id: paymentPageObj.id,
                         amount: paymentPageObj.amount,
                         // parent: '#chkout-box',
-                        description: '#' + paymentPageObj.id,
                         handler: function(response) {
                             if (globalScope.hasRedirect()) {
 

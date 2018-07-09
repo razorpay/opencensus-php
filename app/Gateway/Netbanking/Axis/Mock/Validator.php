@@ -41,7 +41,8 @@ class Validator extends Base\Validator
         Emandate\RequestFields::TYPE            => 'required|string|in:TEST',
         Emandate\RequestFields::REQUEST_ID      => 'required|alpha_num|size:14',
         Emandate\RequestFields::CUSTOMER_REF_NO => 'required|alpha_num|size:14',
-        Emandate\RequestFields::BANK_REF_NO     => 'required|string',
+        // When we do not get the callback, we would not have BRN and would not send it
+        Emandate\RequestFields::BANK_REF_NO     => 'sometimes|string',
         Emandate\RequestFields::CHECKSUM        => 'required|string',
     ];
 

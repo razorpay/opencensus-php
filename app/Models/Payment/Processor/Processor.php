@@ -326,7 +326,7 @@ class Processor
                 'url'     => $this->route->getUrlWithPublicAuthInQueryParam($currentRouteName),
                 'method'  => 'POST',
                 'content' => [
-                    'input' => $input,
+                    'input' => array_assoc_flatten($input, '%s[%s]'),
                     'bank_details' => $emandateMethods['emandate'][$input[Payment\Entity::BANK]],
                 ]
             ],
@@ -361,7 +361,7 @@ class Processor
                 'request' => [
                     'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
                     'method'  => 'POST',
-                    'content' => $input,
+                    'content' => array_assoc_flatten($input, '%s[%s]'),
                 ],
                 'method' => 'wallet',
                 'version' => '1',
@@ -1055,6 +1055,14 @@ class Processor
         $payment->setVerified(null);
         $payment->setVerifyBucket(0);
 
+        // If payment still doesnt exist we set verify_at as null
+        // So that this payment doesnt get picked up by any cron
+        // for verify
+        if ($payment->exists === false)
+        {
+            $payment->setVerifyAt(null);
+        }
+
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
@@ -1646,11 +1654,6 @@ class Processor
             unset($input['card'][Card\Entity::CVV]);
             unset($input['card'][Card\Entity::NUMBER]);
         }
-    }
-
-    protected function notifyDashboard($type, $entity)
-    {
-        Dashboard::send($type, $entity);
     }
 
     protected function getMerchantBankAccount(Merchant\Entity $merchant): BankAccount\Entity
