@@ -183,11 +183,32 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $payment = $this->getDbLastEntity('payment')->toArray();
 
-        $dayBeforeYesterday = Carbon::now()->subDays(2)->getTimestamp();
-
-        $this->fixtures->base->editEntity('payment', $payment['id'], ['created_at' => $dayBeforeYesterday]);
+        $this->fixtures->base->editEntity(
+            'payment',
+            $payment['id'],
+            [
+                'authorized_at' => null,
+                'status'        => 'created',
+            ]
+        );
 
         $this->ba->adminAuth();
+
+        $testData = $this->testData['testEmandateRegistrationForLateAuthFailure'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $dayBeforeYesterday = Carbon::now()->subDays(2)->getTimestamp();
+
+        $this->fixtures->base->editEntity(
+            'payment',
+            $payment['id'],
+            [
+                'created_at'    => $dayBeforeYesterday,
+                'authorized_at' => Carbon::now()->getTimestamp(),
+                'status'        => 'authorized',
+            ]
+        );
 
         $content = $this->startTest();
 
