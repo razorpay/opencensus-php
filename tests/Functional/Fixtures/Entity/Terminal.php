@@ -1831,7 +1831,7 @@ class Terminal extends Base
         $defaultValues = [
             'id'                    => $termId,
             'merchant_id'           => '100000Razorpay',
-            'gateway'               => 'csbk',
+            'gateway'               => 'netbanking_csb',
             'card'                  => 0,
             'netbanking'            => 1,
             'tpv'                   => 1,
