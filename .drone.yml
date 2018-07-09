@@ -47,12 +47,12 @@ pipeline:
     pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
-      - DB_LIVE_HOST=livedb
-      - DB_TEST_HOST=testdb
+      - DB_LIVE_HOST=livedb2
+      - DB_TEST_HOST=testdb2
       - DB_AUTH_HOST=authdb
-      - REDIS_HOST=redis
-      - ES_HOST=elasticsearch
-      - ES_AUDIT_HOST=elasticsearch
+      - REDIS_HOST=redis2
+      - ES_HOST=elasticsearch2
+      - ES_AUDIT_HOST=elasticsearch2
     commands:
       - cp ./environment/.env.drone ./environment/.env.testing
       - touch /etc/php7/conf.d/assertion.ini
@@ -138,6 +138,24 @@ services:
       event:
         exclude: [deployment, pull_request]
         include: [push]
+  livedb2:
+    image: mysql:5.7
+    environment:
+      - MYSQL_DATABASE=api
+      - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  testdb2:
+    image: mysql:5.7
+    environment:
+      - MYSQL_DATABASE=api_test
+      - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   authdb:
     image: mysql:5.7
     environment:
@@ -153,7 +171,19 @@ services:
       event:
         exclude: [deployment, pull_request]
         include: [push]
+  redis2:
+    image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   elasticsearch:
+    image: elasticsearch:5.2-alpine
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  elasticsearch2:
     image: elasticsearch:5.2-alpine
     when:
       event:
