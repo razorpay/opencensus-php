@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Entity as E;
+use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
@@ -42,7 +43,7 @@ class Core extends Base\Core
      *
      * @return Entity
      * @throws BadRequestException
-     * @throws \RZP\Exception\BaseException
+     * @throws BaseException
      */
     public function create(array $input, Merchant\Entity $merchant, User\Entity $user = null): Entity
     {
@@ -69,6 +70,8 @@ class Core extends Base\Core
      * @param  array  $input
      *
      * @return Entity
+     * @throws BadRequestException
+     * @throws BaseException
      */
     public function update(Entity $paymentLink, array $input): Entity
     {
@@ -104,7 +107,7 @@ class Core extends Base\Core
      * @param array  $input
      *
      * @throws BadRequestException
-     * @throws \RZP\Exception\BaseException
+     * @throws BaseException
      */
     public function updateShortUrlIfApplicable(Entity $paymentLink, array $input)
     {
@@ -406,7 +409,7 @@ class Core extends Base\Core
      * @param string|null $slug
      *
      * @throws BadRequestException
-     * @throws \RZP\Exception\BaseException
+     * @throws BaseException
      */
     protected function createAndSetShortUrl(Entity $paymentLink, string $slug = null)
     {
@@ -418,7 +421,7 @@ class Core extends Base\Core
 
             $paymentLink->setShortUrl($shortUrl);
         }
-        catch (\RZP\Exception\BaseException $e)
+        catch (BaseException $e)
         {
             // TODO: Gimli should return 4xx & Elfin service should propagate that error to callee
             if (str_contains($e->getDataAsString(), 'Duplicate') === true)
