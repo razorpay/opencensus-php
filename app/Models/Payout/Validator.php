@@ -31,7 +31,7 @@ class Validator extends Base\Validator
 
     protected static $merchantRules = [
         Entity::MERCHANT_ID    => 'required|string|size:14',
-        Entity::AMOUNT         => 'sometimes|integer|max:500000000',
+        Entity::AMOUNT         => 'sometimes|integer|max:800000000',
         Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
         Entity::MODULO         => 'sometimes|integer|min:100',
         Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'

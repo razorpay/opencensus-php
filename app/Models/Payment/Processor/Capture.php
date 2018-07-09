@@ -527,11 +527,6 @@ trait Capture
         $this->triggerPaymentCapturedEvents();
 
         $this->notifyPaymentCaptured();
-
-        //
-        // Analytics
-        //
-        $this->notifyDashboard('payment', $this->payment);
     }
 
     /**

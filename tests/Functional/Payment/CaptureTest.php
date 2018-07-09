@@ -60,8 +60,6 @@ class CaptureTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->mockDashboardRequest();
-
         $this->startTest();
 
         $payment = $this->getLastEntity('payment', true);
@@ -84,8 +82,6 @@ class CaptureTest extends TestCase
         }
 
         $this->ba->adminAuth();
-
-        $this->mockDashboardRequest($count);
 
         $this->startBulkTest($payments);
 
@@ -1221,24 +1217,6 @@ class CaptureTest extends TestCase
             if (isset($this->payment['amount']))
                 $amount = $this->payment['amount'];
         }
-    }
-
-    protected function mockDashboardRequest($times = 1)
-    {
-        $config = $this->config->get('applications.dashboard');
-
-        if ($config['pretend'] === false)
-        {
-            return;
-        }
-
-        $dashboard = Mockery::mock('RZP\Dashboard\DashboardServiceProvider');
-
-        $this->app->instance('dashboard', $dashboard);
-
-        $dashboard->shouldReceive('queueRecord')
-              ->times($times)
-              ->with('payment', Mockery::type('RZP\Models\\Base\\PublicEntity'));
     }
 
     /**

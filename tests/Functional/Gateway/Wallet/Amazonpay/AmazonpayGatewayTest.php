@@ -104,6 +104,24 @@ class AmazonpayGatewayTest extends TestCase
         $this->assertNotNull($wallet[WalletEntity::DATE]);
     }
 
+    public function testPaymentAmountPrecisionCheck()
+    {
+        $this->payment['amount'] = 52080;
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(Wallet::AMAZONPAY, $payment[Payment\Entity::WALLET]);
+
+        $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
+
+        // Wallet does not have casting
+        $this->assertSame('52080', $wallet['amount']);
+
+        // Payment has casting to integer
+        $this->assertSame(52080, $payment['amount']);
+    }
+
     /**
      * The case where the callback response signature is a mismatch from the calculated one.
      */

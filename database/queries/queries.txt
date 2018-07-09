@@ -3655,6 +3655,10 @@ ALTER TABLE invoices
     DROP INDEX invoices_merchant_id_receipt_unique,
     ADD INDEX invoices_merchant_id_receipt_index (merchant_id, receipt);
 
+# Adds auth_type column to pricing table
+ALTER TABLE pricing
+    ADD COLUMN auth_type VARCHAR(255) DEFAULT NULL AFTER payment_method_type;
+
 #increase error_code length for hdfc
 ALTER TABLE hdfc
     ADD COLUMN error_code2 VARCHAR(255) DEFAULT NULL AFTER error_code,
@@ -4094,3 +4098,16 @@ ALTER TABLE vpa ADD CONSTRAINT vpa_customer_id_foreign FOREIGN KEY (customer_id)
 ALTER TABLE wallet ADD CONSTRAINT wallet_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
 ALTER TABLE webhooks ADD CONSTRAINT webhooks_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
 SET SESSION foreign_key_checks = 1;
+
+# Payment link - currency nullable
+ALTER TABLE payment_links
+    MODIFY COLUMN currency VARCHAR(3) DEFAULT NULL;
+
+ALTER TABLE payment_links
+    ADD COLUMN hosted_template_id VARCHAR(255) DEFAULT NULL AFTER notes,
+    ADD COLUMN udf_jsonschema_id VARCHAR(255) DEFAULT NULL AFTER hosted_template_id;
+
+ALTER TABLE payments
+    CHANGE reference10 verify_at INTEGER UNSIGNED DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
+
