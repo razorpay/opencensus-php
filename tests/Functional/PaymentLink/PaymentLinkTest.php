@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\PaymentLink;
 
 use Carbon\Carbon;
 
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink;
@@ -16,6 +15,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\PaymentLink as PaymentLinkModel;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class PaymentLinkTest extends TestCase
 {
@@ -119,6 +119,13 @@ class PaymentLinkTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+
+        $expiredPlCount = $this->getDbEntities('payment_link')
+                               ->where(PaymentLinkModel\Entity::STATUS, PaymentLinkModel\Status::INACTIVE)
+                               ->where(PaymentLinkModel\Entity::STATUS_REASON, PaymentLinkModel\StatusReason::EXPIRED)
+                               ->count();
+
+        $this->assertEquals(2, $expiredPlCount);
     }
 
     public function testPaymentLinkMakePayment()
@@ -132,6 +139,39 @@ class PaymentLinkTest extends TestCase
 
         $this->makePaymentForPaymentLinkAndAssert($paymentLink);
 
+        $this->getLastPaymentLinkEntityAndAssert($this->testData[__FUNCTION__]['payment_link']);
+    }
+
+    public function testPaymentLinkMakePaymentCustomerFeeBearer()
+    {
+        $attributes = [
+            PaymentLinkModel\Entity::AMOUNT        => 12000,
+            PaymentLinkModel\Entity::TIMES_PAYABLE => 10,
+        ];
+
+        $paymentLink = $this->fixtures->create('payment_link', $attributes);
+
+        // Enable customer fee_bearer model
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment[Payment\Entity::AMOUNT] = $paymentLink->getAmount();
+
+        $fees = $this->createAndGetFeesForPayment($payment);
+        $fee  = $fees['input']['fee'];
+
+        $payment[Payment\Entity::PAYMENT_LINK_ID] = $paymentLink->getPublicId();
+        $payment[Payment\Entity::AMOUNT]          = $paymentLink->getAmount() + $fee;
+        $payment[Payment\Entity::FEE]             = $fee;
+
+        $this->doAuthAndGetPayment($payment, [Payment\Entity::STATUS => Payment\Status::CAPTURED]);
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals($paymentLink->getAmount() + $fee, $payment->getAmount());
+        $this->assertEquals($paymentLink->getId(), $payment->getPaymentLinkId());
+
+        // total_amount_paid must be equal to amount and not amount+fee
         $this->getLastPaymentLinkEntityAndAssert($this->testData[__FUNCTION__]['payment_link']);
     }
 

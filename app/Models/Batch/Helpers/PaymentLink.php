@@ -26,11 +26,11 @@ class PaymentLink
      * of api request.
      *
      * @param array $entry
-     * @param array $params
+     * @param array $params - Additional parameters besides $entry(file row), e.g. batch configuration/request values
      *
      * @return array
      */
-    public static function getEntityInput(array & $entry, array & $params): array
+    public static function getEntityInput(array & $entry, array $params): array
     {
         // Set partial_payment attribute to false if field comes as null from excel file.
         $partialPayment = array_get($entry, Batch\Header::PARTIAL_PAYMENT);
