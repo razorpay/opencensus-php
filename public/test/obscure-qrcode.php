@@ -5,7 +5,7 @@ $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
 $key_id = 'rzp_test_1DP5mmOlF5G5ag';
 $secret = 'thisissupersecret';
 
-$private_url ='http://' .$key_id.':'.$secret.'@'.$baseurl;
+$private_url ='https://' .$key_id.':'.$secret.'@'.$baseurl;
 ?>
 <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
         crossorigin="anonymous"></script>
