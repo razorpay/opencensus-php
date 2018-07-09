@@ -1017,4 +1017,11 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fetchSubmerchants()
+    {
+        $response = $this->service()->fetchSubmerchants();
+
+        return ApiResponse::json($response);
+    }
 }

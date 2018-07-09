@@ -987,4 +987,15 @@ class Core extends Base\Core
 
         return $app;
     }
+
+    public function fetchSubmerchants(Entity $partner)
+    {
+        $partnerApp = $this->getPartnerApp($partner);
+
+        $accessMaps = $this->repo
+                           ->merchant
+                           ->fetchSubmerchantsByPartnerAppId($partnerApp->getId());
+
+        return $accessMaps;
+    }
 }

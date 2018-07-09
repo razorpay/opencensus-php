@@ -1957,7 +1957,9 @@ class Service extends Base\Service
      */
     public function createPartnerAccessMap(string $merchantId, array $input): array
     {
-        list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId, $input);
+        $partner = $this->fetchPartner();
+
+        $submerchant = $this->fetchSubmerchant($merchantId);
 
         $accessMap = $this->core()->createPartnerSubmerchantAccessMap($partner, $submerchant);
 
@@ -1972,21 +1974,29 @@ class Service extends Base\Service
      */
     public function deletePartnerAccessMap(string $merchantId, array $input): array
     {
-        list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId, $input);
+        $partner = $this->fetchPartner();
+
+        $submerchant = $this->fetchSubmerchant($merchantId);
 
         $accessMap = $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
 
         return $accessMap;
     }
 
+    public function fetchSubmerchants(): array
+    {
+        $partner = $this->fetchPartner();
+
+        $merchants = $this->core()->fetchSubmerchants($partner);
+
+        return $merchants->toArrayPublic();
+    }
+
     /**
-     * @param string $merchantId
-     * @param array  $input
-     *
-     * @return array
+     * @return Entity
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function getPartnerAndSubMerchant(string $merchantId, array $input): array
+    protected function fetchPartner(): Entity
     {
         //
         // In the context of partners and submerchants -
@@ -2001,14 +2011,18 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_PARTNER_CONTEXT_NOT_SET,
-                Entity::MERCHANT_ID,
-                $input);
+                Entity::MERCHANT_ID);
         }
 
+        return $partner;
+    }
+
+    protected function fetchSubmerchant($submerchantId): Entity
+    {
         $ba = $this->app['basicauth'];
 
         // The submerchant should belong to the same org as of the admin
-        $submerchant = $this->repo->merchant->findByIdAndOrgId($merchantId, $ba->getOrgId());
+        $submerchant = $this->repo->merchant->findByIdAndOrgId($submerchantId, $ba->getOrgId());
 
         $admin = $ba->getAdmin();
 
@@ -2022,12 +2036,11 @@ class Service extends Base\Service
                 Entity::MERCHANT_ID,
                 [
                     'admin_id'       => $admin->getId(),
-                    'partner_id'     => $merchantId,
+                    'partner_id'     => $submerchantId,
                     'submerchant_id' => $submerchant->getId(),
                 ]);
-
         }
 
-        return [$partner, $submerchant];
+        return $submerchant;
     }
 }
