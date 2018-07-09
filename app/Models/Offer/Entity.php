@@ -111,6 +111,8 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT,
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
+        self::EMI_SUBVENTION,
+        self::EMI_DURATIONS,
         self::MAX_PAYMENT_COUNT,
         self::LINKED_OFFER_IDS,
         self::PROCESSING_TIME,
@@ -122,8 +124,6 @@ class Entity extends Base\PublicEntity
         self::DISPLAY_TEXT,
         self::ERROR_MESSAGE,
         self::TERMS,
-        self::EMI_SUBVENTION,
-        self::EMI_DURATIONS,
     ];
 
 
@@ -170,6 +170,8 @@ class Entity extends Base\PublicEntity
         self::PERCENT_RATE,
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
+        self::EMI_SUBVENTION,
+        self::EMI_DURATIONS,
         self::MIN_AMOUNT,
         self::MAX_PAYMENT_COUNT,
         self::LINKED_OFFER_IDS,
@@ -182,8 +184,6 @@ class Entity extends Base\PublicEntity
         self::BLOCK,
         self::CHECKOUT_DISPLAY,
         self::TERMS,
-        self::EMI_SUBVENTION,
-        self::EMI_DURATIONS,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
