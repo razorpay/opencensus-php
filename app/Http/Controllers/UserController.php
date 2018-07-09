@@ -59,13 +59,18 @@ class UserController extends Controller
                 'user'                  => json_encode($details),
                 'org'                   => json_encode($org),
                 'api_host'              => ApiUrl::getApiBaseUrl(),
+                'is_la_account'         => true,
             ];
         }
 
         $data['cdnDashboardUrl'] = \Config::get('app.cdn_dashboard_url');
 
         // $data is used to run diferent pieces of JS
-        return view('merchant.index', $data);
+        if (isset($data['is_la_account']) === true) {
+            return view('merchant.la', $data);
+        } else {
+            return view('merchant.index', $data);
+        }
     }
 
     /**
