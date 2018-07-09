@@ -629,8 +629,8 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Methods',
-      children: () =>
-        Object.keys(_getMethods).map(method => (
+      children: () => {
+        let methodRows = Object.keys(_getMethods).map(method => (
           <EntityRow
             key={method}
             label={_getMethods[method]}
@@ -638,7 +638,21 @@ export function getDetailsViewMap(model) {
               details.methods ? _getBoolIcon(details.methods[method]) : '-'
             }
           />
-        )),
+        ));
+
+        if (details.methods) {
+          let disabledBanks = details.methods.disabled_banks;
+          methodRows.push(
+            <EntityRow
+              key="disabled_banks"
+              label="Disabled Banks"
+              value={disabledBanks.length ? disabledBanks : '--'}
+            />
+          );
+        }
+
+        return methodRows;
+      },
     },
     {
       label: 'Suspended',
