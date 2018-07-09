@@ -485,11 +485,9 @@ class Gateway extends Base\Gateway
      */
     protected function getDataFromEncryptedResponse(array $input)
     {
-        // rawurldecode because sometimes the data contains '+' which gets converted
-        // to whitespace when using urldecode and subsequently the decryption fails
-        $encryptedString = rawurldecode($input['gateway'][ResponseFields::ENCRYPTED_STRING]);
+        $encryptedString = $input['gateway'][ResponseFields::ENCRYPTED_STRING];
 
-        $crypto = $this->getEncryptor();
+        $crypto = $this->getEncryptor(true);
 
         $decryptedString = $crypto->decryptString($encryptedString);
 
@@ -499,29 +497,18 @@ class Gateway extends Base\Gateway
         // which will fail. So, falling back to the old key so that those with decryption failures
         // fallback to using the old one and after a day we'll remove this.
         if (($decryptedString === false) or
-            (isset($content[RequestFields::MERCHANT_REFERENCE]) === false))
+            (isset($response[RequestFields::MERCHANT_REFERENCE]) === false))
         {
-            $crypto = $this->getEncryptor(true);
+            $crypto = $this->getEncryptor();
 
-            $encryptedString = $input['gateway'][ResponseFields::ENCRYPTED_STRING];
+            // rawurldecode because sometimes the data contains '+' which gets converted
+            // to whitespace when using urldecode and subsequently the decryption fails
+            $encryptedString = rawurldecode($input['gateway'][ResponseFields::ENCRYPTED_STRING]);
 
             $decryptedString = $crypto->decryptString($encryptedString);
 
-            if ($decryptedString === false)
-            {
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_RESPONSE_ENCRYPTION_FAILED,
-                    null,
-                    null,
-                    [
-                        'encrypted_data' => $encryptedString,
-                        'gateway'        => 'netbanking_axis',
-                        'payment_id'     => $input['payment']['id']
-                    ]);
-            }
+            parse_str($decryptedString, $response);
         }
-
-        parse_str($decryptedString, $response);
 
         $this->checkDecryptionFailure($encryptedString, $response, $input);
 
@@ -530,7 +517,7 @@ class Gateway extends Base\Gateway
 
     protected function checkDecryptionFailure(string $encryptedString, array $content, array $input)
     {
-        if (empty($content) === true)
+        if (isset($content[RequestFields::MERCHANT_REFERENCE]) === false)
         {
             $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE,
                 ['encrypted_string' => $encryptedString,
