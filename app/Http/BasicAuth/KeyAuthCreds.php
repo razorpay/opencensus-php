@@ -105,7 +105,13 @@ class KeyAuthCreds extends AuthCreds
 
     protected function fetchKey($keyId)
     {
-        $this->key = $this->repo->key->find($keyId);
+        //
+        // If key entity has already been resolved in request.ctx use that to avoid another redis call.
+        // Ideally if key entity is not resolved in request.ctx then probably key id doesn't exists in http request.
+        // But to be on safe side, in case some cases are not handled in request.ctx and keyId exists here in this flow
+        // continue with cache(fallback db query).
+        //
+        $this->key = $this->reqCtx->getKeyEntity() ?: $this->repo->key->find($keyId);
 
         return $this->key;
     }

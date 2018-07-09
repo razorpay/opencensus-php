@@ -158,6 +158,11 @@ final class RequestContext
         return $this->key;
     }
 
+    public function getKeyEntity()
+    {
+        return $this->keyEntity;
+    }
+
     public function getSecret()
     {
         return $this->secret;
@@ -266,6 +271,21 @@ final class RequestContext
         $this->repo               = $this->app['repo'];
         $this->isRunningUnitTests = $this->app->runningUnitTests();
         $this->applications       = $this->app['config']->get('applications');
+        $this->route              = null;
+        $this->key                = null;
+        $this->secret             = null;
+        $this->mode               = null;
+        $this->auth               = null;
+        $this->keyWithoutPrefix   = null;
+        $this->keyId              = null;
+        $this->keyEntity          = null;
+        $this->mid                = null;
+        $this->oauthClientId      = null;
+        $this->oauthPublicToken   = null;
+        $this->bearerToken        = null;
+        $this->internalAppName    = null;
+        $this->adminEmail         = null;
+        $this->proxy              = false;
     }
 
     /**

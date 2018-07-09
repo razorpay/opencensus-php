@@ -26,25 +26,9 @@ class InvoiceMetricTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->exactly(7))
+        $mock->expects($this->exactly(5))
              ->method('count')
              ->withConsecutive(
-                [
-                    'eloquent_cache_misses_total',
-                    1,
-                    [
-                        'version' => 'v1',
-                        'entity'  => 'key',
-                    ],
-                ],
-                [
-                    'eloquent_cache_writes_total',
-                    1,
-                    [
-                        'version' => 'v1',
-                        'entity'  => 'key',
-                    ],
-                ],
                 [
                     'eloquent_cache_misses_total',
                     1,
@@ -101,25 +85,9 @@ class InvoiceMetricTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->exactly(12))
+        $mock->expects($this->exactly(10))
              ->method('count')
              ->withConsecutive(
-                [
-                    'eloquent_cache_misses_total',
-                    1,
-                    [
-                        'version' => 'v1',
-                        'entity'  => 'key',
-                    ],
-                ],
-                [
-                    'eloquent_cache_writes_total',
-                    1,
-                    [
-                        'version' => 'v1',
-                        'entity'  => 'key',
-                    ],
-                ],
                 [
                     'eloquent_cache_misses_total',
                     1,

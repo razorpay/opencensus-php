@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Redis;
 
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestContext;
 use RZP\Foundation\Application;
 use RZP\Exception\BlockException;
 use RZP\Exception\ThrottleException;
