@@ -10,7 +10,6 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Entity as E;
-use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
@@ -42,6 +41,8 @@ class Core extends Base\Core
      * @param  User\Entity     $user
      *
      * @return Entity
+     * @throws BadRequestException
+     * @throws \RZP\Exception\BaseException
      */
     public function create(array $input, Merchant\Entity $merchant, User\Entity $user = null): Entity
     {
@@ -98,8 +99,12 @@ class Core extends Base\Core
 
     /**
      * Attempts recreating short URL for payment link in case of new slug in patch input
+     *
      * @param Entity $paymentLink
      * @param array  $input
+     *
+     * @throws BadRequestException
+     * @throws \RZP\Exception\BaseException
      */
     public function updateShortUrlIfApplicable(Entity $paymentLink, array $input)
     {
@@ -294,12 +299,12 @@ class Core extends Base\Core
     {
         //
         // Caller of this function must be wrapped in a database txn because we are updating entity's attributes &
-        // status which are shared in multiple payment process & entity operation in parallel.
+        // status which are shared in multiple payment process and entity operation in parallel.
         //
         $this->repo->assertTransactionActive();
 
         $paymentLink->incrementTimesPaid();
-        $paymentLink->incrementTotalAmountPaidBy($payment->getAmount());
+        $paymentLink->incrementTotalAmountPaidBy($payment->getAdjustedAmountWrtCustFeeBearer());
 
         if ($paymentLink->isTimesPayableExhausted() === true)
         {
@@ -324,7 +329,7 @@ class Core extends Base\Core
      * - will be marked complete if times_payable post update is equal to times_paid
      *
      * Currently there is no other cases. Expire by edits will not affect this because that must already by at least
-     * 15 mins in future (validated via Validator method during build).
+     * 15 minutes in future (validated via Validator method during build).
      *
      * @param Entity $paymentLink
      */
@@ -399,6 +404,9 @@ class Core extends Base\Core
     /**
      * @param Entity      $paymentLink
      * @param string|null $slug
+     *
+     * @throws BadRequestException
+     * @throws \RZP\Exception\BaseException
      */
     protected function createAndSetShortUrl(Entity $paymentLink, string $slug = null)
     {
@@ -642,7 +650,10 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Logger::CRITICAL, TraceCode::PAYMENT_LINK_PAYMENT_REFUND_ERROR, $tracePayload);
+            $this->trace->traceException(
+                $e,
+                Logger::CRITICAL,
+                TraceCode::PAYMENT_LINK_PAYMENT_REFUND_ERROR, $tracePayload);
         }
 
         $tracePayload = array_merge($tracePayload, [E::REFUND => optional($refund)->toArrayPublic()]);
