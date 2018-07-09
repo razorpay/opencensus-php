@@ -97,7 +97,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $content = $this->getDataFromEncryptedResponse($input['gateway'], $input);
+            $content = $this->getDataFromEncryptedResponse($input);
         }
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -151,7 +151,12 @@ class Gateway extends Base\Gateway
         if ($verify->input['payment'][Payment\Entity::RECURRING] === false)
         {
             $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-            $actualAmount = number_format($verify->verifyResponseContent[ResponseFields::VERIFY_RESPONSE_AMT], 2, '.', '');
+
+            $actualAmount = number_format(
+                $verify->verifyResponseContent[ResponseFields::VERIFY_RESPONSE_AMT],
+                2,
+                '.',
+                '');
 
             $this->assertAmount($expectedAmount, $actualAmount);
         }
@@ -208,6 +213,15 @@ class Gateway extends Base\Gateway
                 'payment_id'    => $verify->input['payment']['id'],
                 'status_code'   => $response->status_code
             ]);
+    }
+
+    public function getEncryptor($useOldKey = false): AESCrypto
+    {
+        $this->useOldKey = $useOldKey;
+
+        $masterKey = $this->getSecret();
+
+        return new AESCrypto($masterKey);
     }
 
     public function getCorporateVerifyContent(array $content)
@@ -460,11 +474,45 @@ class Gateway extends Base\Gateway
         return $queryString;
     }
 
-    protected function getDataFromEncryptedResponse(array $encryptedResponse, array $input)
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\GatewayErrorException
+     */
+    protected function getDataFromEncryptedResponse(array $input)
     {
-        $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
+        // rawurldecode because sometimes the data contains '+' which gets converted
+        // to whitespace when using urldecode and subsequently the decryption fails
+        $encryptedString = rawurldecode($input['gateway'][ResponseFields::ENCRYPTED_STRING]);
 
-        $decryptedString = $this->decryptString($encryptedString);
+        $crypto = $this->getEncryptor();
+
+        $decryptedString = $crypto->decryptString($encryptedString);
+
+        // After deployment, the callbacks will be using the new key to decrypt
+        // which will fail. So, falling back to the old key so that those with decryption failures
+        // fallback to using the old one and after a day we'll remove this.
+        if ($decryptedString === false)
+        {
+            $crypto = $this->getEncryptor(true);
+
+            $encryptedString = $input['gateway'][ResponseFields::ENCRYPTED_STRING];
+
+            $decryptedString = $crypto->decryptString($encryptedString);
+
+            if ($decryptedString === false)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_RESPONSE_ENCRYPTION_FAILED,
+                    null,
+                    null,
+                    [
+                        'encrypted_data' => $encryptedString,
+                        'gateway'        => 'netbanking_axis',
+                        'payment_id'     => $input['payment']['id']
+                    ]);
+            }
+        }
 
         parse_str($decryptedString, $response);
 
@@ -730,6 +778,17 @@ class Gateway extends Base\Gateway
 
         if ($this->isRetailBanking() === true)
         {
+            if ($this->action === Action::VERIFY)
+            {
+                return $this->config['verify_live_hash_secret'];
+            }
+
+            if ((isset($this->useOldKey) === true) and
+                ($this->useOldKey === true))
+            {
+                return $this->config['live_hash_secret_old'];
+            }
+
             return $this->config['live_hash_secret'];
         }
         else if ($this->isCorporateBanking() === true)
@@ -755,6 +814,17 @@ class Gateway extends Base\Gateway
 
         if ($this->isRetailBanking() === true)
         {
+            if ($this->action === Action::VERIFY)
+            {
+                return $this->config['verify_test_hash_secret'];
+            }
+
+            if ((isset($this->useOldKey) === true) and
+                ($this->useOldKey === true))
+            {
+                return $this->config['test_hash_secret_old'];
+            }
+
             return $this->config['test_hash_secret'];
         }
         else if ($this->isCorporateBanking() === true)
