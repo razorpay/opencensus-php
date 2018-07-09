@@ -96,7 +96,7 @@ return [
                 'receipt'        => 'rcptid42',
                 'method'         => 'netbanking',
                 'bank'           => 'CSBK',
-                'account_number' => '04030403040304',
+                'account_number' => '040304030403041234',
             ],
             'method'    => 'POST',
             'url'       => '/orders',

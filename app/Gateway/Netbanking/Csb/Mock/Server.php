@@ -153,6 +153,10 @@ class Server extends Base\Mock\Server
 
         unset($request[RequestFields::CHECKSUM]);
 
+        unset($request[RequestFields::NARRATION]);
+
+        unset($request[RequestFields::ACCOUNT_NUM]);
+
         $generatedCheckSum = $this->getChecksum($request);
 
         $this->compareHashes($checkSum, $generatedCheckSum);
