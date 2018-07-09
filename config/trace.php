@@ -53,6 +53,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'additional_handlers' => [
-        MetricsHandler::class,
+        // Todo: Temporarily disabled, waiting for a fix to be done metrics handler
+        // MetricsHandler::class,
     ],
 ];

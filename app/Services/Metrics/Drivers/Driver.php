@@ -84,7 +84,7 @@ abstract class Driver
             $ec2->allowDummy();
         }
 
-        // Must use getMultiple() method because that only usage the cache
+        // Must use getMultiple() method because that only uses the cache
         $dimensions['instance'] = $ec2->getMultiple(['LocalIpv4'])['LocalIpv4'] ?? 'other';
 
         return $dimensions;
