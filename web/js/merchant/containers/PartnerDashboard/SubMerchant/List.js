@@ -1,7 +1,10 @@
-import { Component, Fragment } from 'react';
+import { Fragment } from 'react';
 import { connect } from 'react-redux';
 
+import ListContainer from 'merchant/containers/ListContainer';
+
 import { openModal, closeModal } from 'rzp/modules/modals';
+import { fetchSubmerchants as fetchAll } from 'rzp/modules/collection';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import StatsCard from 'rzp/ui/StatsCard';
@@ -34,7 +37,7 @@ const activationStatus = {
       Activation Status <i class="i-info-circle" />
     </Fragment>
   ),
-  value: item => item.activation_status,
+  value: item => (item.activated ? 'Activated' : 'Not Activated'),
 };
 
 const switchMerchant = {
@@ -42,8 +45,12 @@ const switchMerchant = {
   value: () => 'Partnership Removed',
 };
 
-@connect(null, { fetchAll, openModal, closeModal })
-export default class SubMerchantsList extends Component {
+@connect(state => ({ ...state.submerchants }), {
+  fetchAll,
+  openModal,
+  closeModal,
+})
+export default class SubMerchantsList extends ListContainer {
   state = {};
 
   handleAddMerchant = () => {
@@ -92,7 +99,6 @@ export default class SubMerchantsList extends Component {
             count={this.state.count}
             skip={this.state.skip}
             paginate={this.paginate}
-            items={sampleResponse}
             columns={[
               name,
               id,
@@ -101,41 +107,15 @@ export default class SubMerchantsList extends Component {
               activationStatus,
               switchMerchant,
             ]}
+            {...this.props}
+            /* since result does not have "acc_" appended to it */
+            items={this.props.items.map(item => ({
+              ...item,
+              id: `acc_${item.id}`,
+            }))}
           />
         </div>
       </div>
     );
   }
 }
-
-function fetchAll() {}
-
-var sampleResponse = [
-  {
-    id: 'acc_abc1234561',
-    name: 'Chai Time',
-    email: 'submerchant@razorpay.com',
-    created_at: 1528373839,
-    activation_status: 'Not Submitted',
-  },
-  {
-    id: 'acc_abc1234562',
-    name: 'Swiggy',
-    email: 'submerchant1@razorpay.com',
-    created_at: 1528373839,
-    activation_status: 'Rejected',
-  },
-  {
-    id: 'acc_abc1234563',
-    name: 'Fassos',
-    email: 'submerchant2@razorpay.com',
-    created_at: 1528373839,
-  },
-  {
-    id: 'acc_abc1234564',
-    name: 'Big Basket',
-    email: 'submerchant3@razorpay.com',
-    created_at: 1528373839,
-    activation_status: 'Submitted',
-  },
-];

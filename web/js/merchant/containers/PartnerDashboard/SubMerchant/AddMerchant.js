@@ -3,17 +3,38 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
+import { create } from 'merchant/modules/submerchant';
+import { showNotification } from 'rzp/modules/notifications';
+
 import ModalHeader from 'rzp/ui/ModalHeader';
 import InputField from 'rzp/ui/Forms/InputField';
 
 import { required } from 'rzp/utils/validators';
 
-@connect(null)
+@connect(null, { create, showNotification })
 @reduxForm({
   form: 'addMerchant',
 })
 export default class AddMerchant extends Component {
-  addNewMerchant = () => {};
+  addNewMerchant = params => {
+    return this.props
+      .create(params)
+      .then(data => {
+        if (data) {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Submerchant created successfull',
+          });
+        }
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
+  };
+
   render() {
     const { handleSubmit, partnerType } = this.props;
     const emailMandatory = isEmailMandatory({ partner_type: 'fully_managed' });

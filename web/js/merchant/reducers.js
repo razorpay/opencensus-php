@@ -48,6 +48,7 @@ import {
   refundsReducer,
   settlementsReducer,
   disputesReducer,
+  submerchantsReducer,
 } from 'rzp/modules/collection';
 
 import {
@@ -107,4 +108,5 @@ export default combineReducers({
   virtualaccounts: virtualAccountsReducer,
   virtualaccount: virtualAccountReducer,
   reports: reportsReducer,
+  submerchants: submerchantsReducer,
 });
