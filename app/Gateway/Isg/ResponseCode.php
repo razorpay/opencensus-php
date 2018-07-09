@@ -6,34 +6,34 @@ use RZP\Error\ErrorCode;
 
 class ResponseCode
 {
-	protected static $map = [
-		'E001' => 'Amount mismatch in Verify response and callback response',
-		'E002' => 'Consumer Pan mismatch in Verify response and callback response',
-		'E003' => 'Merchant pan mismatch in Verify response and callback response',
-		'E004' => 'Status Code mismatch in Verify response and callback response',
-		'E005' => 'No records present for given transaction in Isg Gateway',
-		'E006' => 'Transaction is declined by Isg Gateway',
-	];
-	protected static $responseCodeToErrorCodeMap = [
-		'E001' => ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED,
-		'E002' => ErrorCode::GATEWAY_ERROR_CONSUMER_PAN_TAMPERED,
-		'E003' => ErrorCode::GATEWAY_ERROR_MERCHANT_PAN_TAMPERED,
-		'E004' => ErrorCode::GATEWAY_ERROR_STATUS_CODE_MISMATCH,
-		'E005' => ErrorCode::GATEWAY_ERROR_TRANSACTION_MOT_PRESENT,
-		'E006' => ErrorCode::GATEWAY_ERROR_TRANSACTION_DECLINED,
-	];
-	public static function getErrorCode(string $code)
-	{
-		if (isset(self::$map[$code]) === true)
-		{
-			return self::$responseCodeToErrorCodeMap[$code];
-		}
-	}
-	public static function getResponseCodeMessage(string $code)
-	{
-		if (isset(self::$map[$code]) === true)
-		{
-			return self::$map[$code];
-		}
-	}
+    protected static $map = [
+        'E001' => 'Amount mismatch in Verify response and callback response',
+        'E002' => 'Consumer Pan mismatch in Verify response and callback response',
+        'E003' => 'Merchant pan mismatch in Verify response and callback response',
+        'E004' => 'Status Code mismatch in Verify response and callback response',
+        'E005' => 'No records present for given transaction in Isg Gateway',
+        'E006' => 'Transaction is declined by Isg Gateway',
+    ];
+    protected static $responseCodeToErrorCodeMap = [
+        'E001' => ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED,
+        'E002' => ErrorCode::GATEWAY_ERROR_CONSUMER_PAN_TAMPERED,
+        'E003' => ErrorCode::GATEWAY_ERROR_MERCHANT_PAN_TAMPERED,
+        'E004' => ErrorCode::GATEWAY_ERROR_STATUS_CODE_MISMATCH,
+        'E005' => ErrorCode::GATEWAY_ERROR_TRANSACTION_MOT_PRESENT,
+        'E006' => ErrorCode::GATEWAY_ERROR_TRANSACTION_DECLINED,
+    ];
+    public static function getErrorCode(string $code)
+    {
+        if (isset(self::$map[$code]) === true)
+        {
+            return self::$responseCodeToErrorCodeMap[$code];
+        }
+    }
+    public static function getResponseCodeMessage(string $code)
+    {
+        if (isset(self::$map[$code]) === true)
+        {
+            return self::$map[$code];
+        }
+    }
 }

@@ -104,7 +104,7 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::REFERENCE]) === false)
         {
-            $this->setReference($this->getId());
+            $this->setReference(strtoupper($this->getId()));
         }
     }
 

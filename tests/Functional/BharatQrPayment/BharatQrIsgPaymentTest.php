@@ -46,6 +46,8 @@ class BharatQrIsgPaymentTest extends TestCase
 
 		$qrCode = $this->createVirtualAccount();
 
+		$this->ba->directAuth();
+
 		$this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
 
 		$this->mockServerContentFunction(function (&$content, $action = null) use ($request)

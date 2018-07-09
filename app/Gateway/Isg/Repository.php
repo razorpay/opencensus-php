@@ -7,5 +7,5 @@ use RZP\Models\Terminal\Repository as Terminal;
 
 class Repository extends Base\Repository
 {
-	protected $entity = 'isg';
+    protected $entity = 'isg';
 }
