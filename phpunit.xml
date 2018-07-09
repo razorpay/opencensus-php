@@ -17,10 +17,14 @@
             Following ES related tests are failing on wercker.
             To be removed asap after debug.
           -->
+          <exclude>./tests/Functional/Payment/</exclude>
           <exclude>./tests/Functional/Merchant/MerchantEsCreateTest.php</exclude>
           <exclude>./tests/Functional/Merchant/MerchantEsFetchTest.php</exclude>
           <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
 
+      </testsuite>
+      <testsuite name="Payment Test Suite">
+          <directory>./tests/Functional/Payment/</directory>
       </testsuite>
   </testsuites>
   <listeners>
