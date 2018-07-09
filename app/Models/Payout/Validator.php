@@ -25,7 +25,7 @@ class Validator extends Base\Validator
     protected static $merchantPayoutRules = [
         Entity::PURPOSE         => 'required|string|max:30|in:settlement',
         Entity::METHOD          => 'required|string',
-        Entity::AMOUNT          => 'required|integer|max:500000000',
+        Entity::AMOUNT          => 'required|integer|max:800000000',
         Entity::CURRENCY        => 'required|size:3',
     ];
 

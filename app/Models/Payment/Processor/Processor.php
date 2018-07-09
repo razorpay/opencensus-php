@@ -1055,6 +1055,14 @@ class Processor
         $payment->setVerified(null);
         $payment->setVerifyBucket(0);
 
+        // If payment still doesnt exist we set verify_at as null
+        // So that this payment doesnt get picked up by any cron
+        // for verify
+        if ($payment->exists === false)
+        {
+            $payment->setVerifyAt(null);
+        }
+
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);

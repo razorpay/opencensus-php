@@ -45,6 +45,39 @@ class Verify extends Base\Core
         7 => 345600,    // 4 Day
     ];
 
+    /***
+     * For all the payments which are in failed state,
+     * verify for the payment will run once and then will
+     * take a wait for the time according to the bucket
+     * specified below for next verify.
+     *
+     * Initially, verify_at for any payment is set as created_at + 120
+     * Hence any payment in failed or created state is picked up after 2 min of
+     * creation and then we keep on adding wait time to verify_at.
+     *
+     * Hence a failed payment can have bucket update as :
+     * CURR :- adding same wait time as the current bucket to verify_at in
+     *         case of verify needs to be called in same bucket again ex:-
+     *         gateway return error code for retry again or verify is blocked
+     *         and needs to be retried
+     * NEXT :- adding wait time corresponding to next verify_bucket to verify_at
+     *         when gateway return verify status as success so verify can be moved to
+     *         next bucket
+     * LAST :- We set verify_bucket >= 8 hence verify_at is set to null. This is used
+     *         when we know for sure that payment doesn't need to be verified again.
+     *         For example gateway returns payment status code as failed due to insufficient funds.
+     */
+    protected static $updateWaitBoundaries = [
+        0 => 600,       // 10 Minutes
+        1 => 1200,      // 20 Minutes
+        2 => 3600,      // 60 Minutes
+        3 => 14400,     // 4 Hours
+        4 => 43200,     // 10 Hours
+        5 => 57600,     // 16 Hours
+        6 => 86400,     // 24 Hours
+        7 => 129600,    // 36 Hours
+    ];
+
     /**
      * This is used for naming the redis lock key.
      * It's named as {payment_id}_verify.
@@ -122,6 +155,12 @@ class Verify extends Base\Core
      * This should be used when we want to disable verify for a given payment
      */
     const LAST = 'last';
+
+    /**
+     * Constant to signify that Verify Bucket should remain same
+     * This should be used when we want to retry the payment in same bucket
+     */
+    const CURR = 'curr';
 
     /**
      * Minimum duration a payment should be old before it gets picked up
@@ -202,6 +241,7 @@ class Verify extends Base\Core
      */
     public function verifyPaymentsWithFilter(string $filter, array $bucketFilter, string $gateway = null)
     {
+        // TODO :- Remove all the time boundary based checks from the query once we move to verify_at based query
         $verifyFetchStartTime = time();
 
         $timeBoundary = $this->getStartAndEndTimeForVerify($filter);
@@ -569,10 +609,12 @@ class Verify extends Base\Core
             {
                 case Action::BLOCK:
                     $this->blockGatewayForVerify($payment->getGateway());
+                    $this->updateVerifyBucket($payment, $filter, self::CURR);
 
                     break;
 
                 case Action::RETRY:
+                    $this->updateVerifyBucket($payment, $filter, self::CURR);
 
                     break;
 
@@ -759,6 +801,17 @@ class Verify extends Base\Core
         {
             $nextVerifyBucket = $this->getPaymentVerifyBucket($payment, $filter, $param);
 
+            if ($nextVerifyBucket >= count(self::$failureStartBoundary))
+            {
+                $verifyAt = null;
+            }
+            else
+            {
+                $verifyAt = time() + self::$updateWaitBoundaries[$nextVerifyBucket];
+            }
+
+            $payment->setVerifyAt($verifyAt);
+
             $payment->setVerifyBucket($nextVerifyBucket);
 
             $this->repo->saveOrFail($payment);
@@ -871,6 +924,7 @@ class Verify extends Base\Core
         string $filter,
         string $param = self::NEXT)
     {
+        // TODO : Migrate to new commented getPaymentVerifyBucket Function once we migrate fetch query to verify_at
         // For Payment having verified as error,
         // verify bucket should be 0
         if ($filter === Filter::VERIFY_ERROR)
@@ -902,6 +956,10 @@ class Verify extends Base\Core
                 $currentVerifyBucket = count($boundaries);
                 break;
 
+            case self::CURR:
+                $currentVerifyBucket = $payment->getVerifyBucket() - 1;
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Invalid param for setting verify bucket');
@@ -911,6 +969,49 @@ class Verify extends Base\Core
 
         return $nextVerifyBucket;
     }
+
+//    protected function getPaymentVerifyBucket(
+//        Payment\Entity $payment,
+//        string $filter,
+//        string $param = self::NEXT)
+//    {
+//        // For Payment having verified as error,
+//        // verify bucket should be 0
+//        if ($filter === Filter::VERIFY_ERROR)
+//        {
+//            return 0;
+//        }
+//
+//        $diff = Carbon::now()->getTimestamp() - $payment->getCreatedAt();
+//        // Payments which are less than X minutes old should always be picked by cron
+//        // Payments older than X minutes should follow the bucket logic
+//        if (($filter === Filter::PAYMENTS_CREATED) and ($diff < self::CREATED_MAX_TIME))
+//        {
+//            return 0;
+//        }
+//
+//
+//        switch ($param)
+//        {
+//            case self::NEXT:
+//                $nextVerifyBucket = $payment->getVerifyBucket() + 1;
+//                break;
+//
+//            case self::LAST:
+//                $nextVerifyBucket = count(self::$updateWaitBoundaries);
+//                break;
+//
+//            case self::CURR:
+//                $nextVerifyBucket = $payment->getVerifyBucket();
+//                break;
+//
+//            default:
+//                throw new Exception\LogicException(
+//                    'Invalid param for setting verify bucket');
+//        }
+//
+//        return $nextVerifyBucket;
+//    }
 
     /**
      * @param string $filter filter for which boundary has to be returned
