@@ -18,6 +18,8 @@
             To be removed asap after debug.
           -->
           <exclude>./tests/Functional/Payment/</exclude>
+          <exclude>./tests/Functional/Gateway/</exclude>
+          <exclude>./tests/Functional/Subscription/</exclude>
           <exclude>./tests/Functional/Merchant/MerchantEsCreateTest.php</exclude>
           <exclude>./tests/Functional/Merchant/MerchantEsFetchTest.php</exclude>
           <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
@@ -25,6 +27,8 @@
       </testsuite>
       <testsuite name="Payment Test Suite">
           <directory>./tests/Functional/Payment/</directory>
+          <directory>./tests/Functional/Gateway/</directory>
+          <directory>./tests/Functional/Subscription/</directory>
       </testsuite>
   </testsuites>
   <listeners>
