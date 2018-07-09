@@ -17,21 +17,31 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
     use SoftDeletes;
 
-    const MERCHANT_ID       = 'merchant_id';
-    const AMOUNT            = 'amount';
-    const CURRENCY          = 'currency';
-    const EXPIRE_BY         = 'expire_by';
-    const TIMES_PAYABLE     = 'times_payable';
-    const TIMES_PAID        = 'times_paid';
-    const TOTAL_AMOUNT_PAID = 'total_amount_paid';
-    const STATUS            = 'status';
-    const STATUS_REASON     = 'status_reason';
-    const SHORT_URL         = 'short_url';
-    const USER_ID           = 'user_id';
-    const RECEIPT           = 'receipt';
-    const TITLE             = 'title';
-    const DESCRIPTION       = 'description';
-    const NOTES             = 'notes';
+    const MERCHANT_ID        = 'merchant_id';
+    const AMOUNT             = 'amount';
+    const CURRENCY           = 'currency';
+    const EXPIRE_BY          = 'expire_by';
+    const TIMES_PAYABLE      = 'times_payable';
+    const TIMES_PAID         = 'times_paid';
+    const TOTAL_AMOUNT_PAID  = 'total_amount_paid';
+    const STATUS             = 'status';
+    const STATUS_REASON      = 'status_reason';
+    const SHORT_URL          = 'short_url';
+    const USER_ID            = 'user_id';
+    const RECEIPT            = 'receipt';
+    const TITLE              = 'title';
+    const DESCRIPTION        = 'description';
+    const NOTES              = 'notes';
+
+    /**
+     * Optional attribute: allows a custom view template ID to be defined
+     */
+    const HOSTED_TEMPLATE_ID = 'hosted_template_id';
+
+    /**
+     * Optional attribute: allows a UDF JSON schema to be defined
+     */
+    const UDF_JSONSCHEMA_ID  = 'udf_jsonschema_id';
 
     //
     // Additional request input keys used in various other endpoint calls.
@@ -43,6 +53,7 @@ class Entity extends Base\PublicEntity
     const CONTACT           = 'contact';
     const EMAIL             = 'email';
     const USER              = 'user';
+    const SLUG              = 'slug';
 
     // Additional general usage input/output constants for the module
     const PAYMENT_ID         = 'payment_id';
@@ -145,17 +156,19 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::AMOUNT            => null,
-        self::CURRENCY          => null,
-        self::EXPIRE_BY         => null,
-        self::TIMES_PAYABLE     => null,
-        self::TIMES_PAID        => 0,
-        self::TOTAL_AMOUNT_PAID => 0,
-        self::STATUS            => Status::ACTIVE,
-        self::STATUS_REASON     => null,
-        self::USER_ID           => null,
-        self::DESCRIPTION       => null,
-        self::NOTES             => [],
+        self::AMOUNT             => null,
+        self::CURRENCY           => null,
+        self::EXPIRE_BY          => null,
+        self::TIMES_PAYABLE      => null,
+        self::TIMES_PAID         => 0,
+        self::TOTAL_AMOUNT_PAID  => 0,
+        self::STATUS             => Status::ACTIVE,
+        self::STATUS_REASON      => null,
+        self::USER_ID            => null,
+        self::DESCRIPTION        => null,
+        self::NOTES              => [],
+        self::HOSTED_TEMPLATE_ID => null,
+        self::UDF_JSONSCHEMA_ID  => null,
     ];
 
     // -------------------------------------- Relations -------------------------------
@@ -224,6 +237,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOTAL_AMOUNT_PAID);
     }
 
+    public function getHostedTemplateId()
+    {
+        return $this->getAttribute(self::HOSTED_TEMPLATE_ID);
+    }
+
+    public function getUdfJsonschemaId()
+    {
+        return $this->getAttribute(self::UDF_JSONSCHEMA_ID);
+    }
+
     public function isActive(): bool
     {
         return ($this->getStatus() === Status::ACTIVE);
@@ -278,16 +301,18 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Payment link's hosted view long url is of the following format -
-     * https://api.razorpay.com/v1/payment_links/v1/:id/view
+     * Payment link's hosted view long url is one of the following formats:
+     * - https://pages.razorpay.in/pl_10000000000000/view
+     * - https://pages.razorpay.in/AlphaNumMin4Max20Slug
+     * Notice the suffix in 1nd kind of route(when there is no slug), we need this distinction for routes to work.
      *
-     * @param  string $plHostedBaseUrl
-     *
+     * @param  string      $plHostedBaseUrl
+     * @param  string|null $slug
      * @return string
      */
-    public function getHostedViewUrl(string $plHostedBaseUrl): string
+    public function getHostedViewUrl(string $plHostedBaseUrl, string $slug = null): string
     {
-        return $plHostedBaseUrl . '/v1/payment_links/' . $this->getPublicId() . '/view';
+        return $plHostedBaseUrl . '/' . ($slug === null ? $this->getPublicId() . '/view' : $slug);
     }
 
     // -------------------------------------- End Getters -----------------------------

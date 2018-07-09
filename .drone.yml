@@ -1,7 +1,21 @@
 pipeline:
+  restore_cache:
+    image: razorpay/containers:drone-s3-cache
+    restore: true
+    mount:
+      - .composer/cache
+    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+    path: "/rzp/api/${DRONE_BUILD_CREATED:0:5}/"
+    secrets:
+      - aws_access_key_id
+      - aws_secret_access_key
+      - aws_region
+    when:
+      event: push
   test:
     group: A
-    image: razorpay/containers:php7
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
     environment:
       - DB_LIVE_HOST=livedb
@@ -15,14 +29,14 @@ pipeline:
       - touch /etc/php7/conf.d/assertion.ini
       - echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini
       - echo "assert.exception=On" >> /etc/php7/conf.d/assertion.ini
-      - cp scripts/nanotime.* /usr/lib/php7/modules
-      - touch /etc/php7/conf.d/nanotime.ini
-      - echo -n "extension=nanotime.so" >> /etc/php7/conf.d/nanotime.ini
       - php -m
+      - export COMPOSER_CACHE_DIR=".composer/cache"
+      - mkdir -p $COMPOSER_CACHE_DIR
+      - chmod 777 -R storage
       - composer config --global github-oauth.github.com $GIT_TOKEN
       - composer install --no-interaction --optimize-autoloader
       - mkdir -p /opt/razorpay/certs/first_data
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --debug --verbose
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --debug --verbose --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -41,6 +55,19 @@ pipeline:
       event:
         exclude: [deployment, pull_request]
         include: [push]
+  rebuild-cache:
+      image: razorpay/containers:drone-s3-cache
+      endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
+      path: "/rzp/api/${DRONE_BUILD_CREATED:0:5}/"
+      secrets:
+        - aws_region
+        - aws_access_key_id
+        - aws_secret_access_key
+      rebuild: true
+      mount:
+        - .composer/cache
+      when:
+        event: push
   build-notify:
     image: plugins/slack
     secrets: [slack_webhook]
@@ -153,26 +180,40 @@ pipeline:
     user: drone
     cluster: stage
     auth_mode: client-cert
-    deployment:
+    kind: daemonset
+    daemonset:
       - api-web
-      - api-sqs-batch
-      - api-sqs-emails
-      - api-sqs-es-sync
-      - api-sqs-gen-live
-      - api-sqs-gen-test
-      - api-sqs-invoice-email
-      - api-sqs-invoice-reports
-      - api-sqs-main
-      - api-sqs-subscription-charge
-      - api-sqs-webhooks-failure
-      - api-sqs-webhooks-live
-      - api-sqs-webhooks-test
     repo: razorpay/api
     namespace: echo
     tag:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: stage-echo
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-prod-api:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_klusterapi
+      - client_key_klusterapi
+      - server_cert_klusterapi
+      - client_cert_klusterapi
+    user: drone
+    cluster: kluster-api
+    auth_mode: client-cert
+    kind: daemonset
+    daemonset:
+      - api-web
+    repo: razorpay/api
+    namespace: api
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: prod-api
       event:
         exclude: [push]
         include: [deployment]

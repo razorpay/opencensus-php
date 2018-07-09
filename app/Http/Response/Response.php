@@ -5,6 +5,7 @@ namespace RZP\Http\Response;
 use App;
 use View;
 use Request;
+use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 
@@ -174,6 +175,10 @@ class Response
         else if ($this->isCheckoutRoute($route))
         {
             return $this->generateCheckoutView($data);
+        }
+        else if ($this->isViewRoute($route))
+        {
+            return $this->generateDefaultErrorView($data);
         }
 
         return $this->json($data, $status);
@@ -377,5 +382,27 @@ class Response
     protected function getCurrentRouteName()
     {
         return $this->route->getCurrentRouteName();
+    }
+
+    /**
+     * Returns true if given route is expected to render a view(always)
+     * @param  string $route
+     * @return bool
+     */
+    protected function isViewRoute(string $route = null): bool
+    {
+        return in_array($route, Route::$publicView, true);
+    }
+
+    /**
+     * Generates and renders a fallback minimal error view
+     * @param  array $data
+     * @return \Illuminate\Http\Response
+     */
+    protected function generateDefaultErrorView(array $data)
+    {
+        $response = \View::make('public.error', ['data' => $data]);
+
+        return \Response::make($response);
     }
 }

@@ -436,11 +436,6 @@ class Gateway extends Base\Gateway
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
-        if (file_exists($gatewayCertPath) === false)
-        {
-            mkdir($gatewayCertPath);
-        }
-
         $clientCertPath = $gatewayCertPath . '/' .
                           $this->getClientCertificateName();
 
@@ -467,11 +462,6 @@ class Gateway extends Base\Gateway
     protected function getClientSslKey()
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
-
-        if (file_exists($gatewayCertPath) === false)
-        {
-            mkdir($gatewayCertPath);
-        }
 
         $clientCertPath = $gatewayCertPath . '/' .
                           $this->getClientSslKeyName();
