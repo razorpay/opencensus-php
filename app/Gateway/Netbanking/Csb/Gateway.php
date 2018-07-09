@@ -405,6 +405,13 @@ class Gateway extends Base\Gateway
 
         $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
 
+        if ($input['merchant']->isTPVRequired())
+        {
+            $content[RequestFields::ACCOUNT_NUM] = $input['order']['account_number'];
+        }
+
+        $content[RequestFields::NARRATION] = substr($input['merchant']->getFilteredDba(), 0, 20);
+
         $request = $this->getStandardRequestArray($content);
 
         $this->traceGatewayPaymentRequest(
