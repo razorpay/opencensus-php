@@ -3,13 +3,13 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
-use RZP\Trace\TraceCode;
-use RZP\Base\Validator;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Base\Validator;
+use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Processor\Netbanking;
 
