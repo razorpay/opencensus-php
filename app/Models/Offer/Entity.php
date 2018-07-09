@@ -41,7 +41,7 @@ class Entity extends Base\PublicEntity
      * For example if offer is applicable for 3,6 months then
      * emi_duration will be set to {3,6}
      */
-    const EMI_DURATION        = 'emi_duration';
+    const EMI_DURATIONS       = 'emi_durations';
 
     /**
      * For card payments, this indicates the maximum number of payments
@@ -123,7 +123,7 @@ class Entity extends Base\PublicEntity
         self::ERROR_MESSAGE,
         self::TERMS,
         self::EMI_SUBVENTION,
-        self::EMI_DURATION,
+        self::EMI_DURATIONS,
     ];
 
 
@@ -183,7 +183,7 @@ class Entity extends Base\PublicEntity
         self::CHECKOUT_DISPLAY,
         self::TERMS,
         self::EMI_SUBVENTION,
-        self::EMI_DURATION,
+        self::EMI_DURATIONS,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -195,7 +195,7 @@ class Entity extends Base\PublicEntity
         self::TYPE             => self::DEFERRED,
         self::ERROR_MESSAGE    => self::DEFAULT_ERROR_MESSAGE,
         self::EMI_SUBVENTION   => null,
-        self::EMI_DURATION     => null,
+        self::EMI_DURATIONS    => null,
     ];
 
     protected $publicSetters = [

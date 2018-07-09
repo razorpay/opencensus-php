@@ -3702,4 +3702,4 @@ SET sql_log_bin = 1;
 
 ALTER table offers
     ADD COLUMN emi_subvention tinyint DEFAULT NULL AFTER flat_cashback,
-    ADD COLUMN emi_duration TEXT DEFAULT NULL AFTER emi_subvention;
+    ADD COLUMN emi_duration varchar(255) DEFAULT NULL AFTER emi_subvention;
