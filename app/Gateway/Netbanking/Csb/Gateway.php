@@ -408,8 +408,9 @@ class Gateway extends Base\Gateway
         if ($input['merchant']->isTPVRequired())
         {
             $content[RequestFields::ACCOUNT_NUM] = $input['order']['account_number'];
-            $content[RequestFields::NARRATION] = $input['payment']['description'];
         }
+
+        $content[RequestFields::NARRATION] = $input['merchant']['name'];
 
         $request = $this->getStandardRequestArray($content);
 
