@@ -410,7 +410,7 @@ class Gateway extends Base\Gateway
             $content[RequestFields::ACCOUNT_NUM] = $input['order']['account_number'];
         }
 
-        $content[RequestFields::NARRATION] = $input['merchant']['billing_label'];
+        $content[RequestFields::NARRATION] = substr($input['merchant']->getFilteredDba(), 0, 20);
 
         $request = $this->getStandardRequestArray($content);
 
