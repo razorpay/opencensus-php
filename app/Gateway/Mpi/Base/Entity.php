@@ -64,7 +64,7 @@ class Entity extends Base\Entity
         self::AMOUNT      => 'int'
     ];
 
-    protected $entity = Constants\Entity::MPI_BLADE;
+    protected $entity = Constants\Entity::MPI;
 
     public $incrementing = true;
 
@@ -101,6 +101,11 @@ class Entity extends Base\Entity
     public function getXid()
     {
         return $this->getAttribute(self::XID);
+    }
+
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
     }
 
     public function getEnrolled()

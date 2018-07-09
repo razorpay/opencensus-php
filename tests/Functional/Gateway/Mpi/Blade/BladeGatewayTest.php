@@ -60,6 +60,10 @@ class BladeGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertNull($payment['approval_code']);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
     }
 
     public function testSuccessful13DigitPanForNonEnrolledCard()
@@ -89,6 +93,10 @@ class BladeGatewayTest extends TestCase
             $this->testData['testSuccessful13DigitPanTxn'], $txn);
 
         $payment = $this->getLastEntity('payment', true);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
 
         $this->assertNull($payment['approval_code']);
     }
