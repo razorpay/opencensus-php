@@ -4111,3 +4111,5 @@ ALTER TABLE payments
     CHANGE reference10 verify_at INTEGER UNSIGNED DEFAULT NULL,
     ALGORITHM=INPLACE, LOCK=NONE;
 
+ALTER TABLE batches
+    ADD INDEX batches_subtype_index (`sub_type`);

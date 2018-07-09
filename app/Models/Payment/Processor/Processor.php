@@ -1221,7 +1221,7 @@ class Processor
 
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
-        if ($this->merchant->isFeeBearerCustomer())
+        if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $this->verifyProvidedFee($payment, $input);
         }
@@ -1386,8 +1386,10 @@ class Processor
      * amount and verify that it's the same as received from checkout.
      *
      * @param Payment\Entity $payment
-     * @param $input
+     * @param                $input
+     *
      * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestException
      */
     protected function verifyProvidedFee(Payment\Entity $payment, array $input)
     {

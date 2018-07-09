@@ -12,7 +12,7 @@ pipeline:
       - aws_region
     when:
       event: push
-  test:
+  test_default:
     group: A
     image: razorpay/pithos:rzp-php7.1
     pull: true
@@ -36,7 +36,36 @@ pipeline:
       - composer config --global github-oauth.github.com $GIT_TOKEN
       - composer install --no-interaction --optimize-autoloader
       - mkdir -p /opt/razorpay/certs/first_data
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --debug --verbose --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --debug --testsuite "Application Test Suite" --verbose --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  test_payments:
+    group: A
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=livedb2
+      - DB_TEST_HOST=testdb2
+      - DB_AUTH_HOST=authdb
+      - REDIS_HOST=redis2
+      - ES_HOST=elasticsearch2
+      - ES_AUDIT_HOST=elasticsearch2
+    commands:
+      - cp ./environment/.env.drone ./environment/.env.testing
+      - touch /etc/php7/conf.d/assertion.ini
+      - echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini
+      - echo "assert.exception=On" >> /etc/php7/conf.d/assertion.ini
+      - php -m
+      - export COMPOSER_CACHE_DIR=".composer/cache"
+      - mkdir -p $COMPOSER_CACHE_DIR
+      - chmod 777 -R storage
+      - composer config --global github-oauth.github.com $GIT_TOKEN
+      - composer install --no-interaction --optimize-autoloader
+      - mkdir -p /opt/razorpay/certs/first_data
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --debug --testsuite "Payment Test Suite" --verbose --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -109,6 +138,24 @@ services:
       event:
         exclude: [deployment, pull_request]
         include: [push]
+  livedb2:
+    image: mysql:5.7
+    environment:
+      - MYSQL_DATABASE=api
+      - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  testdb2:
+    image: mysql:5.7
+    environment:
+      - MYSQL_DATABASE=api_test
+      - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   authdb:
     image: mysql:5.7
     environment:
@@ -124,7 +171,19 @@ services:
       event:
         exclude: [deployment, pull_request]
         include: [push]
+  redis2:
+    image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   elasticsearch:
+    image: elasticsearch:5.2-alpine
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  elasticsearch2:
     image: elasticsearch:5.2-alpine
     when:
       event:

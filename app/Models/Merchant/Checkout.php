@@ -508,6 +508,12 @@ class Checkout
 
         $data['version'] = 1;
 
+        //
+        // When using Keyless auth, checkout has no way to identify the request mode
+        // Adding mode to the preferences response for this
+        //
+        $data['mode'] = $mode;
+
         // Magic checkout is displayed for the merchant based on true or false
         $data['magic'] = $merchant->isFeatureEnabled(Feature\Constants::MAGIC);
 
