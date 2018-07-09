@@ -136,11 +136,15 @@ class Server extends Base\Mock\Server
     {
         $data = $input[RequestFields::POST_DATA];
 
+        unset($input[RequestFields::POST_DATA]);
+
         $base64DecodedRequestString = base64_decode($data);
 
         $requestArray = explode('|', $base64DecodedRequestString);
 
-        return array_combine($this->getAuthorizeRequestFields(), $requestArray);
+        $decryptedResponseArray = array_combine($this->getAuthorizeRequestFields(), $requestArray);
+
+        return array_merge($input, $decryptedResponseArray);
     }
 
     protected function verifyChecksum(array $request)

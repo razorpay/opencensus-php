@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
+use RZP\Trace\TraceCode;
 use RZP\Base\Validator;
 use RZP\Exception;
 use RZP\Http\Route;
