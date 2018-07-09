@@ -357,6 +357,7 @@ final class RequestContext
         // initializing all the request context variables. For e.g. in case of invalid keyId, keyEntity would just be
         // null. It's up to next layers - Authenticate to throw errors etc.
         //
+        app()['rzp.mode'] = $this->mode;
         $this->keyEntity = $this->repo->key->connection($this->mode)->find($this->keyId);
         $this->mid = optional($this->keyEntity)->getMerchantId();
     }
