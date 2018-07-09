@@ -303,6 +303,11 @@ class Server extends Base\Mock\Server
     {
         if ($this->bankingType === BankingType::RETAIL)
         {
+            if ($this->action === Action::VERIFY)
+            {
+                return $this->config['verify_test_hash_secret'];
+            }
+
             return $this->config['test_hash_secret'];
         }
         else

@@ -32,6 +32,8 @@ class Gateway extends Base\Gateway
 
     protected $sortRequestContent = false;
 
+    protected $useOldKey = false;
+
     protected $map = [
         RequestFields::AMOUNT             => Base\Entity::AMOUNT,
         RequestFields::MERCHANT_REFERENCE => Base\Entity::PAYMENT_ID,
@@ -430,6 +432,8 @@ class Gateway extends Base\Gateway
 
         $stringToEncrypt = $this->prepareStringToEncrypt($data);
 
+        $this->useOldKey = true;
+
         return $this->encryptString($stringToEncrypt);
     }
 
@@ -489,10 +493,13 @@ class Gateway extends Base\Gateway
 
         $decryptedString = $crypto->decryptString($encryptedString);
 
+        parse_str($decryptedString, $response);
+
         // After deployment, the callbacks will be using the new key to decrypt
         // which will fail. So, falling back to the old key so that those with decryption failures
         // fallback to using the old one and after a day we'll remove this.
-        if ($decryptedString === false)
+        if (($decryptedString === false) or
+            (isset($content[RequestFields::MERCHANT_REFERENCE]) === false))
         {
             $crypto = $this->getEncryptor(true);
 
@@ -783,13 +790,12 @@ class Gateway extends Base\Gateway
                 return $this->config['verify_live_hash_secret'];
             }
 
-            if ((isset($this->useOldKey) === true) and
-                ($this->useOldKey === true))
+            if ($this->useOldKey === true)
             {
-                return $this->config['live_hash_secret_old'];
+                return $this->config['live_hash_secret'];
             }
 
-            return $this->config['live_hash_secret'];
+            return $this->config['live_hash_secret_new'];
         }
         else if ($this->isCorporateBanking() === true)
         {
@@ -819,13 +825,12 @@ class Gateway extends Base\Gateway
                 return $this->config['verify_test_hash_secret'];
             }
 
-            if ((isset($this->useOldKey) === true) and
-                ($this->useOldKey === true))
+            if ($this->useOldKey === true)
             {
-                return $this->config['test_hash_secret_old'];
+                return $this->config['test_hash_secret'];
             }
 
-            return $this->config['test_hash_secret'];
+            return $this->config['test_hash_secret_new'];
         }
         else if ($this->isCorporateBanking() === true)
         {

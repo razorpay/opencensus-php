@@ -438,10 +438,10 @@ return [
 
     'netbanking_axis' => [
         // retail netbanking
-        'live_hash_secret'                  => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_NEW'),
-        'live_hash_secret_old'              => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
-        'test_hash_secret'                  => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_NEW'),
-        'test_hash_secret_old'              => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret'                  => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
+        'live_hash_secret_new'              => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_NEW'),
+        'test_hash_secret'                  => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret_new'              => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_NEW'),
         'test_merchant_id'                  => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
         'verify_live_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_VERIFY_LIVE_HASH_SECRET'),
         'verify_test_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_VERIFY_TEST_HASH_SECRET'),
