@@ -4106,3 +4106,8 @@ ALTER TABLE payment_links
 ALTER TABLE payment_links
     ADD COLUMN hosted_template_id VARCHAR(255) DEFAULT NULL AFTER notes,
     ADD COLUMN udf_jsonschema_id VARCHAR(255) DEFAULT NULL AFTER hosted_template_id;
+
+ALTER TABLE payments
+    CHANGE reference10 verify_at INTEGER UNSIGNED DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
+
