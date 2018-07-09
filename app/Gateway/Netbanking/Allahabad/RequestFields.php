@@ -12,12 +12,11 @@ class RequestFields
     const PRODUCT_REF_NUMBER   = 'PRN';
     const AMOUNT               = 'AMT';
     const CURRENCY             = 'CRN';
+    const RETURN_URL           = 'RU';
+    const CG                   = 'CG';
+    const LANGUAGE_ID          = 'USER_LANG_ID';
+    const USER_TYPE            = 'UserType';
+    const APP_TYPE             = 'AppType';
     const MERCHANT_CODE        = 'MeCode';
     const ACCOUNT_NUMBER       = 'Account';
-    const RETURN_URL           = 'RU';
-    const APP_TYPE             = 'AppType';
-    const LANGUAGE_ID          = 'USER_LANG_ID';
-    const CG                   = 'CG';
-    const USER_TYPE            = 'UserType';
-
 }
