@@ -597,5 +597,25 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
         ],
     ],
+
+    'testFetchPartnerAccessMap' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => '10000000000011',
+                        'entity' => 'merchant',
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];
 
