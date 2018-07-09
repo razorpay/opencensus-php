@@ -2,8 +2,8 @@
 
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
 
-$key_id = 'rzp_test_1DP5mmOlF5G5ag';
-$secret = 'thisissupersecret';
+$key_id = 'rzp_test_31cETDqwMgCBoj';
+$secret = 'YMz3Em9sN741qd5vJO3xarpK';
 
 $private_url ='https://' .$key_id.':'.$secret.'@'.$baseurl;
 ?>
