@@ -108,8 +108,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::NAME,
         self::TYPE,
-        self::SUB_TYPE,
-        self::GATEWAY,
         self::STATUS,
         self::TOTAL_COUNT,
         self::SUCCESS_COUNT,
