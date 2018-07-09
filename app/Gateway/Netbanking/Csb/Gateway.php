@@ -410,7 +410,7 @@ class Gateway extends Base\Gateway
             $content[RequestFields::ACCOUNT_NUM] = $input['order']['account_number'];
         }
 
-        $content[RequestFields::NARRATION] = $input['merchant']['name'];
+        $content[RequestFields::NARRATION] = $input['merchant']['billing_label'];
 
         $request = $this->getStandardRequestArray($content);
 
