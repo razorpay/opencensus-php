@@ -110,7 +110,7 @@ class Gateway extends Base\Gateway
             Field::TRANSACTION_AMOUNT => $input[Field::TRANSACTION_AMOUNT],
         ];
 
-        $this->getStandardRequestArray($attributes);
+        return $this->getStandardRequestArray($attributes);
     }
 
     protected function checkStatusCodeAndDescription($response, $input)
@@ -291,7 +291,7 @@ class Gateway extends Base\Gateway
         $verify->verifyResponseContent = $responseArray;
     }
 
-    protected function getVerifyRequestArray($input, $gatewayPayment = null)
+    protected function getVerifyRequestArray($input, $gatewayPayment)
     {
         $attributes = [
             Field::TRANSACTION_ID     => $gatewayPayment[Entity::TRANSACTION_ID],
@@ -489,9 +489,9 @@ class Gateway extends Base\Gateway
             $this->trace->info(
                 $traceCode,
                 [
-                    'response' => $response,
-                    'gateway' => $this->gateway,
-                    'payment_id' => $input['payment']['id'],
+                    'response'      => $response,
+                    'gateway'       => $this->gateway,
+                    'payment_id'    => $input['payment']['id'],
                 ]);
         }
         else
