@@ -338,9 +338,9 @@ class Provider
 
         $idTlv2 = Tags::TERMINAL_ID . $this->getLengthAndValue(Isg::ISG_TERMINAL_ID);
 
-	    $additionalDetailsString = $idTlv.$idTlv2;
+        $additionalDetailsString = $idTlv.$idTlv2;
 
-	    return Tags::ADDITIONAL_DETAIL . strlen($additionalDetailsString) . $additionalDetailsString;
+        return Tags::ADDITIONAL_DETAIL . strlen($additionalDetailsString) . $additionalDetailsString;
     }
 
     protected function getBharatQrAmountTlv(QrCode\Entity $qrCode)

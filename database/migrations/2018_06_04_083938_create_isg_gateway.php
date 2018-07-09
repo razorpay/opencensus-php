@@ -17,79 +17,79 @@ class CreateIsgGateway extends Migration
      */
     public function up()
     {
-	    Schema::create(Table::ISG, function(Blueprint $table)
-	    {
-		    $table->engine = 'InnoDB';
+        Schema::create(Table::ISG, function(Blueprint $table)
+        {
+            $table->engine = 'InnoDB';
 
-		    $table->increments(ISG::ID);
+            $table->increments(ISG::ID);
 
-		    $table->char(ISG::PAYMENT_ID, Payment::ID_LENGTH);
+            $table->char(ISG::PAYMENT_ID, Payment::ID_LENGTH);
 
-		    $table->char(ISG::REFUND_ID, Refund::ID_LENGTH)
-			    ->nullable();
+            $table->char(ISG::REFUND_ID, Refund::ID_LENGTH)
+                ->nullable();
 
-		    $table->char(ISG::ACTION, 10)
-			    ->nullable();
+            $table->char(ISG::ACTION, 10)
+                ->nullable();
 
-		    $table->integer(ISG::RECEIVED)
-			    ->default(0);
+            $table->integer(ISG::RECEIVED)
+                ->default(0);
 
-		    $table->string(ISG::MERCHANT_REFERENCE)
-			    ->nullable();
+            $table->string(ISG::MERCHANT_REFERENCE)
+                ->nullable();
 
-		    $table->string(ISG::SECONDARY_ID)
-			    ->nullable();
+            $table->string(ISG::SECONDARY_ID)
+                ->nullable();
 
-		    $table->char(ISG::MERCHANT_PAN, 16)
-			    ->nullable();
+            $table->char(ISG::MERCHANT_PAN, 16)
+                ->nullable();
 
-		    $table->char(ISG::TRANSACTION_ID, 16)
-			    ->nullable();
+            $table->char(ISG::TRANSACTION_ID, 16)
+                ->nullable();
 
-		    $table->dateTime(ISG::TRANSACTION_DATE_TIME)
-			    ->nullable();
+            $table->dateTime(ISG::TRANSACTION_DATE_TIME)
+                ->nullable();
 
-		    $table->integer(ISG::TRANSACTION_AMOUNT)
-			     ->nullable();
+            $table->integer(ISG::TRANSACTION_AMOUNT)
+                 ->nullable();
 
-		    $table->char(ISG::AUTH_CODE, 6)
-		        ->nullable();
+            $table->char(ISG::AUTH_CODE, 6)
+                ->nullable();
 
-		    $table->char(ISG::RRN, 12)
-			    ->nullable();
+            $table->char(ISG::RRN, 12)
+                ->nullable();
 
-		    $table->integer(ISG::TIP_AMOUNT)
-			    ->nullable();
+            $table->integer(ISG::TIP_AMOUNT)
+                ->nullable();
 
-		    $table->string(ISG::CONSUMER_PAN)
-			    ->nullable();
+            $table->string(ISG::CONSUMER_PAN)
+                ->nullable();
 
-		    $table->char(ISG::STATUS_CODE, 2)
-			    ->nullable();
+            $table->char(ISG::STATUS_CODE, 2)
+                ->nullable();
 
-		    $table->char(ISG::STATUS_DESC, 30)
-			    ->nullable();
+            $table->char(ISG::STATUS_DESC, 30)
+                ->nullable();
 
-		    $table->char(ISG::NOTIFICATION_REF_NO, 16)
-			    ->nullable();
+            $table->char(ISG::NOTIFICATION_REF_NO, 16)
+                ->nullable();
 
-		    $table->string(ISG::CREATED_AT);
+            $table->string(ISG::CREATED_AT);
 
-		    $table->string(ISG::UPDATED_AT);
+            $table->string(ISG::UPDATED_AT);
 
-		    $table->foreign(ISG::PAYMENT_ID)
-			        ->references(Payment::ID)
-			        ->on(Table::PAYMENT)
-			        ->onDelete('restrict');
+            $table->foreign(ISG::PAYMENT_ID)
+                    ->references(Payment::ID)
+                    ->on(Table::PAYMENT)
+                    ->onDelete('restrict');
 
-		    $table->foreign(ISG::REFUND_ID)
-			        ->references(Refund::ID)
-			        ->on(Table::REFUND)
-			        ->onDelete('restrict');
+            $table->foreign(ISG::REFUND_ID)
+                    ->references(Refund::ID)
+                    ->on(Table::REFUND)
+                    ->onDelete('restrict');
 
-		    $table->index(ISG::ACTION);
+            $table->index(ISG::ACTION);
 
-	    });
+        });
     }
 
     /**

@@ -460,12 +460,12 @@ class Gateway
             Network::MC,
             Network::RUPAY,
         ],
-	    self::ISG => [
-		    Network::VISA,
-		    Network::MC,
-		    Network::RUPAY,
+        self::ISG => [
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
         ],
-	];
+    ];
 
     public static $cardNetworkRecurringMap = [
         self::HITACHI => [

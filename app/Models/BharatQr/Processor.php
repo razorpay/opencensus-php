@@ -16,7 +16,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\QrCode\Entity as QrCode;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
-class Processor extends VirtualAccount\Processor
+class   Processor extends VirtualAccount\Processor
 {
     const RANDOM_CARD_PADDING = '00000';
 
@@ -200,20 +200,20 @@ class Processor extends VirtualAccount\Processor
             return $this->terminal;
         }
 
-		$gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
+        $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
 
-    	if (isset($this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
-	    {
-		    $gatewayMerchantId	= $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
+        if (isset($this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
+        {
+            $gatewayMerchantId    = $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
 
-		    $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
-	    }
-	    else
-	    {
-	    	$gatewayMpan = $this->gatewayInput[GatewayResponseParams::MPAN];
+            $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
+        }
+        else
+        {
+            $gatewayMpan = $this->gatewayInput[GatewayResponseParams::MPAN];
 
-			$terminal = $this->repo->terminal->findByGatewayMpan($gatewayMpan, $gateway);
-	    }
+            $terminal = $this->repo->terminal->findByGatewayMpan($gatewayMpan, $gateway);
+        }
 
         if ($terminal === null)
         {
@@ -221,8 +221,8 @@ class Processor extends VirtualAccount\Processor
                 'Terminal should not be null here',
                 null,
                 [
-					'gateway_merchant_id' => $gatewayMerchantId,
-					'merchant_pan'        => $gatewayMpan,
+                    'gateway_merchant_id' => $gatewayMerchantId,
+                    'merchant_pan'        => $gatewayMpan,
                 ]
             );
         }
@@ -312,9 +312,9 @@ class Processor extends VirtualAccount\Processor
 
         if (isset($this->gatewayInput[GatewayResponseParams::SENDER_NAME]) === true)
         {
-	        $cardHolderName = preg_replace("/[^ \w]+/",
-		                                   "",
-		                                    $this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
+            $cardHolderName = preg_replace("/[^ \w]+/",
+                                           "",
+                                            $this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
         }
 
         if (empty($cardHolderName) === false)
