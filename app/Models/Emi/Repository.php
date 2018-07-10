@@ -42,7 +42,7 @@ class Repository extends Base\Repository
         return $query->firstOrFail();
     }
 
-    public function fetchByBankOrNetwork($bank, $network, $durations)
+    public function fetchByDurationsAndBankOrNetwork($bank, $network, $durations)
     {
         $query = $this->newQuery();
 
@@ -51,7 +51,7 @@ class Repository extends Base\Repository
             $query->whereIn(Entity::DURATION, $durations);
         }
 
-        if ($bank)
+        if (empty($bank) === false)
         {
             $query->where(Entity::BANK, '=', $bank);
         }

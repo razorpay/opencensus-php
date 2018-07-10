@@ -344,15 +344,14 @@ class Validator extends Base\Validator
 
     protected function validateEmiDurations(string $attribute, array $emiDurations)
     {
-        $validDurations = [3,6,9,12,18,24];
+        $validDurations = Emi\Entity::VALID_DURATIONS;
 
-        foreach($emiDurations as $emiDuration)
+        $diff = array_diff($emiDurations, $validDurations);
+
+        if (empty($diff) === false)
         {
-            if (in_array($emiDuration, $validDurations, true) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    "Invalid emi duration given $emiDuration");
-            }
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid emi durations given " . implode(", ", $diff));
         }
     }
 }

@@ -781,7 +781,7 @@ return [
                 'payment_method'      => 'emi',
                 'payment_network'     => 'AMEX',
                 'emi_subvention'      => true,
-                'emi_durations'       => [3,7],
+                'emi_durations'       => [3, 7, 5],
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
@@ -795,7 +795,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid emi duration given 7'
+                    'description' => 'Invalid emi durations given 7, 5'
                 ]
             ],
             'status_code' => 400,
