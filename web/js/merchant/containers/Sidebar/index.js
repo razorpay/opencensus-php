@@ -116,7 +116,7 @@ export default class Sidebar extends Component {
     let { user, config, logoURL } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
-
+    const isPartner = !!user.partner_type;
     return (
       <div class="sidebar">
         <section class="brand-logo">
@@ -187,18 +187,23 @@ export default class Sidebar extends Component {
                     </Link>
                   )}
                 </ShowWhen>
+                {isPartner && (
+                  <ShowWhen myRole="owner manager admin">
+                    <MainNavLink
+                      label="Partner Dashboard"
+                      icon="i i-chart text-info"
+                      to="/submerchants"
+                      exact
+                    />
+                    <div class="divider" />
+                  </ShowWhen>
+                )}
                 <MainNavLink
                   label="Home"
                   icon="i i-chart text-info"
                   to="/dashboard"
                   exact
                   notMyRole="sellerapp support"
-                />
-                <MainNavLink
-                  label="Partner Dashboard"
-                  icon="i i-chart text-info"
-                  to="/submerchants"
-                  exact
                 />
                 <MainNavLink
                   label="Transactions"
