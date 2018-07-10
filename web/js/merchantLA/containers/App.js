@@ -9,12 +9,11 @@ import ReactIdle from 'rzp/ui/ReactIdle';
 import LocalStorageService from 'rzp/utils/localStorage';
 import debounce from 'rzp/utils/debounce';
 import Sidebar from 'merchantLA/containers/Sidebar';
-import HeaderNav from 'merchant/components/HeaderNav';
+import HeaderNav from 'merchantLA/components/HeaderNav';
 import Content from 'merchantLA/components/Content';
 import Footer from 'merchant/components/Footer';
 import MerchantTour from 'merchant/containers/MerchantTour';
 import IdleWarningDialog from 'merchant/components/IdleWarningDialog';
-import LogoutDialog from 'merchant/components/LogoutDialog';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
@@ -284,20 +283,6 @@ export default class App extends Component {
     }
   };
 
-  switchMerchant = merchant => {
-    this.props
-      .switchMerchant(merchant.id)
-      .then(() => {
-        location.reload();
-      })
-      .catch(({ errors }) => {
-        this.props.showNotification({
-          type: 'error',
-          message: errors,
-        });
-      });
-  };
-
   lock = () => {
     let email = this.props.user.user.email;
 
@@ -341,9 +326,7 @@ export default class App extends Component {
           user={user}
           mode={mode}
           modeFormatted={modeFormatted}
-          showGSTModal={this.showGSTModal}
           onSwitchMode={this.switchMode}
-          onSwitchMerchant={this.switchMerchant}
           showMobileNav={this.props.windowWidth < 950}
         />
         <Sidebar
