@@ -118,7 +118,7 @@ export default class Sidebar extends Component {
                     isPending={isReportsPending}
                   />
                   <MainNavLink
-                    label="My Account"
+                    label="Account Settings"
                     icon="i i-account text-primary"
                     to={routes.account}
                   />

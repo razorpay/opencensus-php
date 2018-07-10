@@ -7,18 +7,13 @@ import { matchDetail, matchModal } from 'merchantLA/routes';
 import Slider from 'rzp/ui/Slider';
 import { ModalMask } from 'component/Modal';
 
-import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
-import Home from 'merchant/containers/Home/Index';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
+import Home from 'merchantLA/containers/Home/Index';
 import Transfers from 'merchantLA/containers/Marketplace/Transfers/List';
 import Reversals from 'merchantLA/containers/Marketplace/Reversals/List';
 import Settlements from 'merchantLA/containers/Settlements/List';
 import Reports from 'merchant/containers/Reports';
 import MyAccount from 'merchantLA/containers/MyAccount';
-
-// Below will be removed with old navigation removal
-import RefundsList from 'merchant/containers/Refunds/List';
-import BatchUpload from 'merchant/containers/Refunds/BatchUpload';
-import BatchUploads from 'merchant/containers/Refunds/BatchList';
 
 import ErrorBoundary from 'common/ErrorBoundary';
 
@@ -28,54 +23,6 @@ import {
   setSecActiveEntity,
 } from 'merchant/modules/app';
 import { openSlider } from 'rzp/modules/slider';
-
-// Can be removed with old navigation removal
-const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
-  return (
-    <tabbed-container>
-      <header id={headerId}>
-        <NavLink to={to}>{navLabel}</NavLink>
-      </header>
-      <content>
-        <Route path={path || to} component={component} />
-      </content>
-    </tabbed-container>
-  );
-};
-
-// Can be removed with old navigation removal
-const RefundsTabbedContainer = () => {
-  return (
-    <tabbed-container>
-      <header id="transactions-header">
-        <NavLink to="/refunds" exact>
-          Refunds
-        </NavLink>
-        <ShowWhen
-          featureEnabled="Batchrefunds"
-          myRole="owner manager operations admin finance"
-        >
-          <NavLink
-            to="/refunds/batchuploads"
-            isActive={(match, { pathname }) =>
-              pathname === '/refunds/batchupload' ||
-              pathname === '/refunds/batchuploads'
-            }
-          >
-            Batch Refunds
-          </NavLink>
-        </ShowWhen>
-      </header>
-      <content>
-        <Switch>
-          <Route path="/refunds/batchupload" component={BatchUpload} />
-          <Route path="/refunds/batchuploads" component={BatchUploads} />
-          <Route path="/refunds" component={RefundsList} />
-        </Switch>
-      </content>
-    </tabbed-container>
-  );
-};
 
 @withRouter
 @connect(null, {

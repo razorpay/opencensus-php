@@ -34,7 +34,7 @@ export default connect(null, { openModal, closeModal })(
         />
 
         <DetailRow
-          label="Registrated By"
+          label="Registered By"
           value={() => (
             <span>
               <b class="text--secondary">{user.parent_name}</b> (Merchant ID:{' '}
