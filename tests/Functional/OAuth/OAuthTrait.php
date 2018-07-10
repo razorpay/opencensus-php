@@ -24,6 +24,7 @@ trait OAuthTrait
         factory(Client\Entity::class)->create(
             [
                 'application_id' => $application->id,
+                'redirect_url'   => ['http://www.example.com'],
                 'environment'    => 'dev'
             ]);
 
