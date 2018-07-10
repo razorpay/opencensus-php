@@ -1,0 +1,22 @@
+{
+  "title": "Test Schema",
+  "type": "object",
+  "required": [
+    "customer_id",
+    "customer_name"
+  ],
+  "properties": {
+    "customer_id": {
+      "type": "integer",
+      "title": "Customer Code/ID",
+      "minimum": 1000000,
+      "maximum": 999999999
+    },
+    "customer_name": {
+      "type": "string",
+      "title": "Customer Name",
+      "length": 100,
+      "default": ""
+    }
+  }
+}

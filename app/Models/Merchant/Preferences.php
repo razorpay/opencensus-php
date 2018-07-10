@@ -35,6 +35,7 @@ class Preferences
         'A5MmRVEM3qf6QJ', 'A5OZ1qi9tgwnZB', 'A5OeZOCaeyQQ8Q',
     ];
     const MID_CLEARTAX         = 'AGQJfLbWcmjxDX';
+    const MID_APARTMENTADDA    = '9NVPPQuTqF4cYx';
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here
@@ -102,6 +103,7 @@ class Preferences
         self::MID_BPCL,
         self::MID_SRI_CHAITANYA,
         self::MID_CLEARTAX,
+        self::MID_APARTMENTADDA,
     ];
 
     public static function checkZohoHeaders(Headers $headers)

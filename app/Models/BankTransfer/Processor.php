@@ -8,11 +8,12 @@ use Cache;
 use Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
-use RZP\Models\Currency\Currency;
-use RZP\Trace\TraceCode;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Currency\Currency;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -73,6 +74,8 @@ class Processor extends VirtualAccount\Processor
      */
     protected function processPayment(Base\PublicEntity $bankTransfer)
     {
+        $this->checkIfAccountIsBlocked($bankTransfer);
+
         if ($bankTransfer->isExpected() === false)
         {
             if ($this->checkReservedAccount($bankTransfer) === true)
@@ -123,6 +126,49 @@ class Processor extends VirtualAccount\Processor
         }
 
         return $bankTransfer;
+    }
+
+    protected function checkIfAccountIsBlocked(Base\PublicEntity $bankTransfer)
+    {
+        $payeeAccount = $bankTransfer->getPayeeAccount();
+
+        //
+        // Cases of duplicate VAs. Payments to these accounts are to be
+        // blocked till the cases are resolved with the merchants.
+        //
+        // Throwing this exception will cause it to be traced critical,
+        // and a slack notification sent to #tech_va_logs
+        //
+        $blockedAccounts = [
+            '2223330048089327',
+            '2223330004373571',
+            '2223330035064789',
+            '2223330035727499',
+            '2223330036078115',
+            '2223330051029132',
+            '2223330053833583',
+            '2223330058630167',
+            '2223330062713538',
+            '2223330066512545',
+            '2223330098769820',
+            '2223330001094652',
+            '2223330015368288',
+            '2223330022707272',
+            '2223330024009748',
+            '2223330024620707',
+            '2223330036226710',
+            '2223330036538719',
+            '2223330066361910',
+            '22233300678743457',
+            '2223330082601751',
+            '2223330093686538',
+            '2223330098561246',
+        ];
+
+        if (in_array($payeeAccount, $blockedAccounts, true) === true)
+        {
+            throw new LogicException('Payment made to blocked account', null, $bankTransfer->toArray());
+        }
     }
 
     /**

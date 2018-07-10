@@ -50,6 +50,46 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
     }
 
+    public function testCallbackFailedDueDateMismatch()
+    {
+        $boundaryTime = Carbon::create(2018, 6, 21, 23, 58, 00,Timezone::IST);
+
+        Carbon::setTestNow($boundaryTime);
+
+        $iterator = 0;
+
+        $this->mockServerContentFunction(function(& $content, $action) use (& $iterator)
+        {
+            if ($action === 'verify')
+            {
+                if ($iterator === 0)
+                {
+                    $content[ResponseFields::STATUS] = 'failed';
+                }
+
+                $iterator++;
+            }
+        });
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->assertEquals('captured',$payment['status']);
+
+        $this->assertSame(2, $iterator);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->fixtures->edit('netbanking', $netbanking['id'], ['date' => null]);
+
+        $this->verifyPayment($payment['id']);
+
+        $this->assertSame(3, $iterator);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertNotNull($netbanking['date']);
+    }
+
     /**
      * Backward compatibility test
      **/
@@ -252,6 +292,10 @@ class NetbankingIciciGatewayTest extends TestCase
             {
                 $this->verifyPayment($payment['razorpay_payment_id']);
             });
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertNull($netbanking['date']);
     }
 
     public function testEmptyVerifyResponse()

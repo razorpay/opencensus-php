@@ -230,4 +230,9 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::SI_MSG);
     }
+
+    public function getDate()
+    {
+        return $this->getAttribute(self::DATE);
+    }
 }

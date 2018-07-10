@@ -108,8 +108,11 @@ class Base extends BaseModel\Core
 
     public function setParams(array $params = null)
     {
+        //
+        // TODO: Remove this method, $params member variable and it's usage in queue class.
         // To maintain backward compatibility with old queue jobs.
         // Old queue job will have $params as null in Job\Batch class.
+        //
 
         $this->params = $params ?: [];
 

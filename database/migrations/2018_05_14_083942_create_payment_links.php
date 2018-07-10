@@ -29,7 +29,8 @@ class CreatePaymentLinks extends Migration
             $table->bigInteger(Entity::AMOUNT)
                   ->nullable();
 
-            $table->string(Entity::CURRENCY, 3);
+            $table->string(Entity::CURRENCY, 3)
+                  ->nullable();
 
             $table->integer(Entity::EXPIRE_BY)
                   ->nullable();
@@ -64,6 +65,12 @@ class CreatePaymentLinks extends Migration
                   ->nullable();
 
             $table->text(Entity::NOTES);
+
+            $table->string(Entity::HOSTED_TEMPLATE_ID, 255)
+                  ->nullable();
+
+            $table->string(Entity::UDF_JSONSCHEMA_ID, 255)
+                  ->nullable();
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);

@@ -87,6 +87,7 @@ final class Result
     const NOT_APPROVED_IPAY   = 'NOT+APPROVED';
     const DENIED_BY_RISK_IPAY = 'DENIED+BY+RISK';
     const HOST_TIMEOUT_IPAY   = 'HOST+TIMEOUT';
+    const DENIED_CAPTURE      = 'Transaction denied due to previous capture check failure ( Validate Original Transaction )';
 
     protected static $successResultCodes = array(
         self::APPROVED,

@@ -79,7 +79,6 @@ class KeylessPublicAuthTest extends TestCase
         $this->startTest();
     }
 
-
     public function testPaymentCreateWithXEntityIdInInputWhenKeyExists()
     {
         $this->fixtures->key->edit('TheTestAuthKey', ['expired_at' => null]);
