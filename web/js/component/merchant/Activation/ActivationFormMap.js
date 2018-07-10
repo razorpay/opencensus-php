@@ -3,13 +3,13 @@ import { states } from 'rzp/utils/constants';
 
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
-import Alert from 'rzp/ui/Forms/Alert';
 import { getDetailsForIFSC } from 'common/util';
 import { isValidGSTIN } from 'rzp/utils/rzp-utils';
 import {
   validateCIN,
   validateIFSC,
   validatePANCard,
+  isUrlLenient,
 } from 'rzp/utils/validators';
 
 // This is as per the value saved in BE database
@@ -197,8 +197,8 @@ const businessModel = [
     {
       label: 'Website/App URL',
       _cmp: Input.Radio,
-      _name: 'app_type',
-      className: 'Input-vTop',
+      _name: 'has_url',
+      className: 'Input--vTop',
       options: [
         'Website/App',
         {
@@ -221,7 +221,11 @@ const businessModel = [
       name: 'business_website',
       placeholder: 'Enter URL',
       type: 'url',
-      required: false,
+      validator: value => {
+        if (!isUrlLenient(value)) {
+          return 'Please enter a valid url';
+        }
+      },
       description: (
         <React.Fragment>
           The entered App/Website should contain:
@@ -254,7 +258,7 @@ const businessModel = [
         </React.Fragment>
       ),
       info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
-      _when: activation => activation.state.app_type !== '1',
+      _when: activation => activation.state.has_url !== '1',
     },
   ],
 ];

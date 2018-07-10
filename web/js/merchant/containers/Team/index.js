@@ -24,10 +24,9 @@ import User from './User';
 )
 export default class TeamContainer extends Component {
   componentWillMount() {
-    if(this.props.merchant.userRole === 'owner') {
+    if (this.props.merchant.userRole === 'owner') {
       this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
     }
-
   }
 
   render() {
@@ -37,61 +36,66 @@ export default class TeamContainer extends Component {
       user => user.email !== this.props.merchant.email
     );
 
-    return (
-        this.props.merchant.userRole === 'owner' ? (
-        <div>
-          <HeaderAction>
-            <div class="btn-toolbar pull-right">
-              <a
-                class="btn btn-link"
-                href="https://docs.razorpay.com/v1/page/team-support"
-                target="_blank"
-              >
-                Documentation &nbsp;
-                <i class="icon icon-external-link" />
-              </a>
-            </div>
-          </HeaderAction>
+    return this.props.merchant.userRole === 'owner' ? (
+      <div>
+        <HeaderAction>
+          <div class="btn-toolbar pull-right">
+            <a
+              class="btn btn-link"
+              href="https://docs.razorpay.com/v1/page/team-support"
+              target="_blank"
+            >
+              Documentation &nbsp;
+              <i class="icon icon-external-link" />
+            </a>
+          </div>
+        </HeaderAction>
 
-          <div class="content-wrapper content-sm">
-            <NewInvitation />
+        <div class="content-wrapper content-sm">
+          <NewInvitation />
 
-            {otherUsers.length
-              ? <div>
-                <div class="panel-heading">Team Members</div>
-                <table class="table table-noborder">
-                  <tbody>
-                  {otherUsers.map(user =>
+          {otherUsers.length ? (
+            <div>
+              <div class="panel-heading">
+                <b>Team Members</b>
+              </div>
+              <table class="table table-noborder" style={{ margin: '0 12px' }}>
+                <tbody>
+                  {otherUsers.map(user => (
                     <User
                       key={user.id}
                       user={user}
                       form={`editUser_${user.id}`}
                     />
-                  )}
-                  </tbody>
-                </table>
-              </div>
-              : null}
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
 
-            {invitations.length
-              ? <div>
-                <div class="panel-heading">Pending Invitations</div>
-                <table class="table table-noborder">
-                  <tbody>
-                  {invitations.map(invite =>
+          {!!otherUsers.length && <div class="section-divide" />}
+
+          {invitations.length ? (
+            <div>
+              <div class="panel-heading">
+                <b>Pending Invitations</b>
+              </div>
+              <table class="table table-noborder" style={{ margin: '0 12px' }}>
+                <tbody>
+                  {invitations.map(invite => (
                     <Invitation
                       key={invite.id}
                       invite={invite}
                       form={`editInvitation_${invite.id}`}
                     />
-                  )}
-                  </tbody>
-                </table>
-              </div>
-              : null}
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
         </div>
-      ) :
+      </div>
+    ) : (
       <Redirect to="/profile" />
     );
   }
