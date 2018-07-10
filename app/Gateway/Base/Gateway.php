@@ -321,25 +321,25 @@ class Gateway
      * else the value of $valid will be true and we will send the respective response to gateway.
      */
 
-	public function getBharatQrResponse(bool $valid, $input = null, $exception = null)
-	{
-		if ($valid === true)
-		{
-			$xml = '<RESPONSE>OK</RESPONSE>';
-		}
-		else
-		{
-			$xml = '<RESPONSE>NOK</RESPONSE>';
-		}
+    public function getBharatQrResponse(bool $valid, $input = null, $exception = null)
+    {
+        if ($valid === true)
+        {
+            $xml = '<RESPONSE>OK</RESPONSE>';
+        }
+        else
+        {
+            $xml = '<RESPONSE>NOK</RESPONSE>';
+        }
 
-		$response = \Response::make($xml);
+        $response = \Response::make($xml);
 
-		$response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
+        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
 
-		$response->headers->set('Cache-Control', 'no-cache');
+        $response->headers->set('Cache-Control', 'no-cache');
 
-		return $response;
-	}
+        return $response;
+    }
 
     protected function checkApiSuccess(Verify $verify)
     {
