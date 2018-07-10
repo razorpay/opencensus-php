@@ -37,7 +37,7 @@ class EnachRblGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('terminal:shared_enach_rbl_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_enach_rbl_terminal');
         $this->fixtures->create(Entity::CUSTOMER);
 
         $this->fixtures->merchant->enableEmandate();
@@ -419,6 +419,74 @@ class EnachRblGatewayTest extends TestCase
             ],
             $enach
         );
+    }
+
+    public function testDebitFileReconciliationTerminalsCheck()
+    {
+        $payment = $this->makeDebitPayment();
+
+        $fileStatuses = [
+            'status'     => 'PAID',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        /*
+         * Creating a direct terminal for enach, now $payment should go
+         * on shared terminal and $payment2 should go on the direct terminal
+        */
+        $this->fixtures->create('terminal:direct_enach_rbl_terminal');
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('1000EnachRblTl', $payment['terminal_id']);
+
+        $payment2 = $this->makeDebitPayment();
+
+        $batch = $this->makeBatchDebitPayment($payment2, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment2 = $this->getDbEntityById('payment', $payment2['id']);
+
+        $this->assertEquals('1EnachRblTrmnl', $payment2['terminal_id']);
+    }
+
+    public function testDebitFileReconciliationDirectTerminal()
+    {
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        $this->fixtures->create('terminal:direct_enach_rbl_terminal');
+
+        $payment = $this->makeDebitPayment();
+
+        $this->assertEquals('1EnachRblTrmnl', $payment['terminal_id']);
+    }
+
+    public function testDebitFileReconciliationNoTerminals()
+    {
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'UTIB0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        }, \RZP\Exception\RuntimeException::class, 'Terminal should not be null');
     }
 
     protected function makeDebitPayment()

@@ -45,7 +45,7 @@ class HdfcGatewayAuthTest extends TestCase
 
         $hdfc = $this->getLastEntity('hdfc', true);
 
-        $this->assertEquals('RP00013', $hdfc['error_code']);
+        $this->assertEquals('RP00013', $hdfc['error_code2']);
     }
 
     public function testCreditCardSuccess()

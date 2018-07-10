@@ -42,7 +42,7 @@ class Entity extends Base\PublicEntity
      * For example if offer is applicable for 3,6 months then
      * emi_duration will be set to {3,6}
      */
-    const EMI_DURATION        = 'emi_duration';
+    const EMI_DURATIONS       = 'emi_durations';
 
     /**
      * For card payments, this indicates the maximum number of payments
@@ -112,6 +112,8 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT,
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
+        self::EMI_SUBVENTION,
+        self::EMI_DURATIONS,
         self::MAX_PAYMENT_COUNT,
         self::LINKED_OFFER_IDS,
         self::PROCESSING_TIME,
@@ -123,8 +125,6 @@ class Entity extends Base\PublicEntity
         self::DISPLAY_TEXT,
         self::ERROR_MESSAGE,
         self::TERMS,
-        self::EMI_SUBVENTION,
-        self::EMI_DURATION,
     ];
 
 
@@ -171,6 +171,8 @@ class Entity extends Base\PublicEntity
         self::PERCENT_RATE,
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
+        self::EMI_SUBVENTION,
+        self::EMI_DURATIONS,
         self::MIN_AMOUNT,
         self::MAX_PAYMENT_COUNT,
         self::LINKED_OFFER_IDS,
@@ -183,8 +185,6 @@ class Entity extends Base\PublicEntity
         self::BLOCK,
         self::CHECKOUT_DISPLAY,
         self::TERMS,
-        self::EMI_SUBVENTION,
-        self::EMI_DURATION,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -196,7 +196,7 @@ class Entity extends Base\PublicEntity
         self::TYPE             => self::DEFERRED,
         self::ERROR_MESSAGE    => self::DEFAULT_ERROR_MESSAGE,
         self::EMI_SUBVENTION   => null,
-        self::EMI_DURATION     => null,
+        self::EMI_DURATIONS    => null,
     ];
 
     protected $publicSetters = [
@@ -211,7 +211,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::EMI_DURATION       => 'array',
+        self::EMI_DURATIONS      => 'array',
         self::EMI_SUBVENTION     => 'boolean',
         self::IINS               => 'array',
         self::INTERNATIONAL      => 'boolean',
@@ -314,9 +314,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IINS);
     }
 
-    public function getEmiDuration()
+    public function getEmiDurations()
     {
-        return $this->getAttribute(self::EMI_DURATION);
+        return $this->getAttribute(self::EMI_DURATIONS);
     }
 
     public function getStartsAt()
@@ -400,21 +400,21 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::IINS] = json_encode(array_values($iins));
     }
 
-    protected function setEmiDurationAttribute(array $emiDurations = null)
+    protected function setEmiDurationsAttribute($emiDurations)
     {
         if (empty($emiDurations) === true)
         {
             $emiDurations = [];
         }
 
-        $existingEmiDuration = $this->getAttribute(self::EMI_DURATION);
+        $existingEmiDuration = $this->getAttribute(self::EMI_DURATIONS);
 
         if ($existingEmiDuration !== null)
         {
             $emiDurations = array_unique(array_merge($existingEmiDuration, $emiDurations));
         }
 
-        $this->attributes[self::EMI_DURATION] = json_encode(array_values($emiDurations));
+        $this->attributes[self::EMI_DURATIONS] = json_encode(array_values($emiDurations));
     }
 
     protected function setLinkedOfferIdsAttribute(array $linkedOfferIds)
@@ -447,7 +447,7 @@ class Entity extends Base\PublicEntity
 
         $network = $input[self::PAYMENT_NETWORK] ?? null;
 
-        $emiDurations = $input[self::EMI_DURATION] ?? null;
+        $emiDurations = $input[self::EMI_DURATIONS] ?? null;
 
         $minAmount = $input[self::MIN_AMOUNT] ?? (new Emi\Core)->calculateMinAmountForPlans($bank, $network, $emiDurations);
 

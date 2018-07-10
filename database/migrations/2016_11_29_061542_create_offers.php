@@ -73,7 +73,7 @@ class CreateOffers extends Migration
             $table->tinyInteger(Offer::EMI_SUBVENTION)
                   ->nullable();
 
-            $table->text(Offer::EMI_DURATION)
+            $table->string(Offer::EMI_DURATIONS)
                   ->nullable();
 
             $table->integer(Offer::MAX_PAYMENT_COUNT)

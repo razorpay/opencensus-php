@@ -47,7 +47,7 @@ class Validator extends Base\Validator
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
         Entity::TERMS               => 'required|string',
         Entity::EMI_SUBVENTION      => 'sometimes_if:payment_method,emi|boolean',
-        Entity::EMI_DURATION        => 'sometimes_if:emi_subvention,1',
+        Entity::EMI_DURATIONS       => 'sometimes_if:emi_subvention,1',
 
     ];
 
@@ -57,7 +57,7 @@ class Validator extends Base\Validator
         Entity::ISSUER              => 'required_without:payment_network',
         Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX',
         Entity::EMI_SUBVENTION      => 'required|boolean|in:1',
-        Entity::EMI_DURATION        => 'sometimes|array|custom',
+        Entity::EMI_DURATIONS       => 'sometimes|array|custom',
         // Not validating these params as they have been validated.
         Entity::MIN_AMOUNT          => 'filled',
         Entity::MAX_PAYMENT_COUNT   => 'filled',
@@ -331,7 +331,7 @@ class Validator extends Base\Validator
 
         $network = $input[Entity::PAYMENT_NETWORK] ?? null;
 
-        $emiDurations = $input[Entity::EMI_DURATION] ?? null;
+        $emiDurations = $input[Entity::EMI_DURATIONS] ?? null;
 
         $requiredMinAmount = (new Emi\Core)->calculateMinAmountForPlans($bank, $network, $emiDurations);
 
@@ -342,17 +342,16 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateEmiDuration(string $attribute, array $emiDurations)
+    protected function validateEmiDurations(string $attribute, array $emiDurations)
     {
-        $validDurations = [3,6,9,12,18,24];
+        $validDurations = Emi\Entity::VALID_DURATIONS;
 
-        foreach($emiDurations as $emiDuration)
+        $diff = array_diff($emiDurations, $validDurations);
+
+        if (empty($diff) === false)
         {
-            if (in_array($emiDuration, $validDurations, true) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    "Invalid emi duration given $emiDuration");
-            }
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid emi durations given " . implode(", ", $diff));
         }
     }
 }

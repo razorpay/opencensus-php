@@ -19,6 +19,7 @@ class Core extends Base\Core
      * @param boolean         $partialPayment
      *
      * @return Entity
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function create(
         array $input,

@@ -73,6 +73,8 @@ class OffersTest extends TestCase
 
     public function testCreateWalletOffer()
     {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
         $this->startTest();
     }
 
@@ -83,6 +85,8 @@ class OffersTest extends TestCase
 
     public function testCreateFlatCashbackOffer()
     {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
         $this->startTest();
     }
 
@@ -110,6 +114,8 @@ class OffersTest extends TestCase
 
     public function testCreateWalletOfferWithInvalidWallet()
     {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
         $this->startTest();
     }
 
@@ -120,6 +126,8 @@ class OffersTest extends TestCase
 
     public function testCreateOfferWithInvalidPaymentMethod()
     {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
         $this->startTest();
     }
 
@@ -140,6 +148,8 @@ class OffersTest extends TestCase
 
     public function testCreateEmiSubventionOffer()
     {
+        $this->fixtures->merchant->enableEmi();
+
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $this->startTest();
@@ -154,6 +164,8 @@ class OffersTest extends TestCase
 
     public function testEmiSubventionWithDuration()
     {
+        $this->fixtures->merchant->enableEmi();
+
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $this->startTest();
@@ -279,6 +291,13 @@ class OffersTest extends TestCase
         $this->ba->appAuth();
 
         $this->testData[__FUNCTION__]['response']['content'] = [$offer->getPublicId()];
+
+        $this->startTest();
+    }
+
+    public function testCreateOfferValidateMerchant()
+    {
+        $this->fixtures->merchant->disableCard('10000000000000');
 
         $this->startTest();
     }

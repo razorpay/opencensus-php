@@ -44,7 +44,7 @@ class Offer extends Base
     {
         $emiSubventionAttributes = [
             'emi_subvention' => true,
-            'emi_duration'   => ['9'],
+            'emi_durations'  => ['9'],
             'payment_network'=> 'AMEX',
             'issuer'         => null,
         ];

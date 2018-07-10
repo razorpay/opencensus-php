@@ -1365,6 +1365,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'mode'  => 'test',
                 'magic' => false,
             ],
         ],

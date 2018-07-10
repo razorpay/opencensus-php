@@ -1173,7 +1173,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(20, $banks);
+        $this->assertCount(21, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }

@@ -161,9 +161,9 @@ class Service extends Base\Service
 
                 $network = $offer->getPaymentNetwork();
 
-                $duration = $offer->getEmiDuration();
+                $durations = $offer->getEmiDurations();
 
-                $emiPlanIds = $this->repo->emi_plan->fetchIdsByBankAndNetwork($bank, $network, $duration);
+                $emiPlanIds = $this->repo->emi_plan->fetchIdsByDurationAndBankOrNetwork($bank, $network, $durations);
 
                 $emiPlanIds = array_fill_keys($emiPlanIds, $offer->getPublicId());
 

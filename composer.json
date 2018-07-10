@@ -43,11 +43,13 @@
         "bacon/bacon-qr-code": "1.0.3",
         "watson/rememberable": "^2.0",
         "razorpay/hodor": "dev-master",
-        "razorpay/trace": "~2.0",
+        "razorpay/trace": "dev-logfile_permission",
         "razorpay/oauth": "dev-master",
         "fideloper/proxy": "~3.0",
         "nojacko/email-validator": "^1.1",
-        "datadog/php-datadogstatsd": "^1.0"
+        "datadog/php-datadogstatsd": "^1.0",
+        "symfony/dom-crawler": "3.*",
+        "justinrainbow/json-schema": "^5.2"
     },
     "repositories": [
         {
@@ -87,7 +89,6 @@
         "codacy/coverage": "dev-master",
         "tijsverkoyen/css-to-inline-styles": "2.*",
         "php-http/mock-client": "^0.3.3",
-        "symfony/dom-crawler": "3.*",
         "phpunit/phpunit": "^6.2",
         "symfony/phpunit-bridge": "3.3.*@dev",
         "codedungeon/phpunit-result-printer": "^0.5.4",

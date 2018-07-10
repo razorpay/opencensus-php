@@ -3,8 +3,8 @@
 namespace RZP\Mail\Admin;
 
 use RZP\Constants\MailTags;
-use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
+use RZP\Mail\Base\Constants;
 
 class NotifyWebsiteDetailSubmission extends Mailable
 {
@@ -19,9 +19,8 @@ class NotifyWebsiteDetailSubmission extends Mailable
 
     protected function addRecipients()
     {
-        $toEmail = Constants::MAIL_ADDRESSES[Constants::ACTIVATION];
-
-        $toName = Constants::HEADERS[Constants::ACTIVATION];
+        $toEmail = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+        $toName  = Constants::HEADERS[Constants::SUPPORT];
 
         $this->to($toEmail, $toName);
 
@@ -38,8 +37,7 @@ class NotifyWebsiteDetailSubmission extends Mailable
     protected function addSender()
     {
         $fromEmail = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
-
-        $fromName = Constants::HEADERS[Constants::SUPPORT];
+        $fromName  = Constants::HEADERS[Constants::SUPPORT];
 
         $this->from($fromEmail, $fromName);
 

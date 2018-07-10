@@ -750,7 +750,7 @@ return [
                 'payment_method'      => 'emi',
                 'payment_network'     => 'AMEX',
                 'emi_subvention'      => true,
-                'emi_duration'        => [9],
+                'emi_durations'       => [9],
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
@@ -781,7 +781,7 @@ return [
                 'payment_method'      => 'emi',
                 'payment_network'     => 'AMEX',
                 'emi_subvention'      => true,
-                'emi_duration'        => [3,7],
+                'emi_durations'       => [3, 7, 5],
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
@@ -795,7 +795,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid emi duration given 7'
+                    'description' => 'Invalid emi durations given 7, 5'
                 ]
             ],
             'status_code' => 400,
@@ -1073,8 +1073,42 @@ return [
             'content' => [
                 'success'          => 1,
                 'failed'           => 0,
-                'failedPaymentIds' =>[]
+                'failedPaymentIds' => [],
             ]
         ],
+    ],
+
+    "testCreateOfferValidateMerchant" => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'international'       => true,
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment method not enabled for the merchant : card',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
     ],
 ];
