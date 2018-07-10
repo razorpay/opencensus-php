@@ -31,6 +31,18 @@ class Entity extends Base\PublicEntity
     const MAX_CASHBACK        = 'max_cashback';
     const FLAT_CASHBACK       = 'flat_cashback';
 
+    //This flag denotes if the offer is a no cost emi offer.
+    const EMI_SUBVENTION      = 'emi_subvention';
+
+    /**
+     * This tells for what duration emi the offer is applicable.
+     * It can have multiple emi durations. It will be stored in
+     * serialized format.
+     * For example if offer is applicable for 3,6 months then
+     * emi_duration will be set to {3,6}
+     */
+    const EMI_DURATIONS       = 'emi_durations';
+
     /**
      * For card payments, this indicates the maximum number of payments
      * allowed on a card for the offer
@@ -99,6 +111,8 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT,
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
+        self::EMI_SUBVENTION,
+        self::EMI_DURATIONS,
         self::MAX_PAYMENT_COUNT,
         self::LINKED_OFFER_IDS,
         self::PROCESSING_TIME,
@@ -112,6 +126,8 @@ class Entity extends Base\PublicEntity
         self::TERMS,
     ];
 
+
+    //TODO: ADD emi duration and emi subvention in public array.
     protected $public = [
         self::ID,
         self::ENTITY,
@@ -154,6 +170,8 @@ class Entity extends Base\PublicEntity
         self::PERCENT_RATE,
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
+        self::EMI_SUBVENTION,
+        self::EMI_DURATIONS,
         self::MIN_AMOUNT,
         self::MAX_PAYMENT_COUNT,
         self::LINKED_OFFER_IDS,
@@ -176,6 +194,8 @@ class Entity extends Base\PublicEntity
         self::CHECKOUT_DISPLAY => 0,
         self::TYPE             => self::DEFERRED,
         self::ERROR_MESSAGE    => self::DEFAULT_ERROR_MESSAGE,
+        self::EMI_SUBVENTION   => null,
+        self::EMI_DURATIONS    => null,
     ];
 
     protected $publicSetters = [
