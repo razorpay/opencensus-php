@@ -287,6 +287,11 @@ return [
                 'assignable'  => true,
                 'workflow'    => true
             ],
+            Permission::UPDATE_PRICING_PLAN => [
+                'description' => 'update pricing plan',
+                'assignable'  => true,
+                'workflow'    => true
+            ],
             Permission::DELETE_PRICING_PLAN_RULES => [
                 'description' => 'delete pricing plan rules',
                 'assignable'  => true,
