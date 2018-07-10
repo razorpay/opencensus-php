@@ -435,7 +435,6 @@ class NetbankingAxisGatewayTest extends TestCase
      */
     public function testAuthFailedVerifyNullResponse()
     {
-
         $this->testFailedAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -453,7 +452,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifyNullResponse');
+        $this->assertTestResponse($gatewayPayment);
     }
 
     // Auth fails but verify shows success

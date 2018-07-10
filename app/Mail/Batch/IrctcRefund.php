@@ -14,6 +14,7 @@ class IrctcRefund extends Base
         '8ST00QgEPT14cE' => 'refundvalidation_RZP_BRDS_',
         '8YPFnW5UOM91H7' => 'refundvalidation_RZRPAY_BRDS_',
         '8byazTDARv4Io0' => 'refundvalidation_',
+        'default'        => 'refundvalidation_',
     ];
 
     protected static $mailTag     = MailTags::BATCH_IRCTC_REFUNDS_FILE;
@@ -42,7 +43,7 @@ class IrctcRefund extends Base
     {
         $time = Carbon::yesterday(Timezone::IST)->format('Ymd');
 
-        $prefix = self::FILE_PREFIX[$this->merchant['id']];
+        $prefix = self::FILE_PREFIX[$this->merchant['id']] ?? self::FILE_PREFIX['default'];
 
         $name = $prefix . $time . '_V1';
 
