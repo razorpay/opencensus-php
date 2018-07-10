@@ -36,7 +36,7 @@ pipeline:
       - composer config --global github-oauth.github.com $GIT_TOKEN
       - composer install --no-interaction --optimize-autoloader
       - mkdir -p /opt/razorpay/certs/first_data
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --debug --testsuite "Application Test Suite" --verbose --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Application Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -65,7 +65,7 @@ pipeline:
       - composer config --global github-oauth.github.com $GIT_TOKEN
       - composer install --no-interaction --optimize-autoloader
       - mkdir -p /opt/razorpay/certs/first_data
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --debug --testsuite "Payment Test Suite" --verbose --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Payment Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
