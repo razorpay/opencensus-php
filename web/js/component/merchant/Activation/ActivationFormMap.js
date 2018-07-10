@@ -270,7 +270,8 @@ const registrationDetails = [
     validator: validateCIN,
     required: true, // It's mandatory only for certain orgs
     maxLength: '21',
-    info: 'Example : U67190TN014PTC096978',
+    className: 'Input--capitalize',
+    info: 'Example : U67190TN2014PTC096978',
     _when: activation => {
       const currentBusinessType =
         activation.state.dirty.business_type ||
@@ -287,6 +288,7 @@ const registrationDetails = [
     name: 'company_cin',
     required: true, // It's mandatory only for LLP
     info: 'Example : AAB-2933',
+    className: 'Input--capitalize',
     _when: activation =>
       activation.props.data.business_type &&
       LLPIN_BusinessTypes.indexOf(
@@ -297,6 +299,7 @@ const registrationDetails = [
     label: 'Company PAN Number',
     name: 'company_pan',
     placeholder: 'PAN Number',
+    className: 'Input--capitalize',
     info:
       'Mandatory for Companies. PAN details should be of the mentioned business only.',
     validator: validatePANCard,
@@ -308,7 +311,7 @@ const registrationDetails = [
       name: 'promoter_pan',
       placeholder: 'PAN Number',
       validator: validatePANCard,
-      className: 'Input--vTop',
+      className: 'Input--vTop Input--capitalize',
     },
     {
       label: 'PAN Owner Name',
@@ -394,7 +397,7 @@ const registrationDetails = [
       _name: 'has_gstin',
       label: 'GSTIN',
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
-      className: 'Input--vTop',
+      className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
       _when: excludeFor_Indiv_NotReg,
       description: function() {
@@ -464,9 +467,9 @@ const bankAccountFields = [
         const bankAccountNumber = this.state.dirty.bank_account_number;
         const accountNo = this.state.account_no;
 
-        const isMatching = bankAccountNumber && bankAccountNumber == accountNo;
+        const isMatching = bankAccountNumber == accountNo;
 
-        if ((!!bankAccountNumber && !accountNo) || !isMatching) {
+        if (!!bankAccountNumber && (!accountNo || !isMatching)) {
           document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
         }
       },

@@ -6,7 +6,7 @@ export default ({ to, icon, title, description, className }) => (
     {icon && <i class={classList('i', icon, 'icon-card')} />}
     <i class="i i-chevron-right" />
     <div>
-      {title}
+      <span>{title}</span>
       <p>{description}</p>
     </div>
   </Link>

@@ -90,6 +90,9 @@
   .Input-elWrapper
     width: 100%;
 
+.Input--capitalize .Input-el
+  text-transform: uppercase
+
 .Input--pair
   .Input-pair
     position: relative
@@ -391,15 +394,19 @@ textarea.Input-el
 .Input-el
   &::-webkit-input-placeholder /* Chrome/Opera/Safari */
     opacity: 0.8
+    text-transform: initial
 
   &::-moz-placeholder /* Firefox 19+ */
     opacity: 0.8
+    text-transform: initial
 
   &:-ms-input-placeholder /* IE 10+ */
     opacity: 0.8
+    text-transform: initial
 
   &:-moz-placeholder /* Firefox 18- */
     opacity: 0.8
+    text-transform: initial
 
 /* Calendar picker styles */
 .Input--Calendar-content
