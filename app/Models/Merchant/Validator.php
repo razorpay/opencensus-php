@@ -364,6 +364,66 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Submerchant creation without providing an email explicitly is only allowed if
+     * 1. The partner is of type fully-managed
+     * 2. The partner is of type aggregator and has the feature allowing optional emails
+     * 3. The merchant is not a partner but has aggregator feature (for backward compatibility)
+     *
+     * @param  array $input
+     * @param  bool  $linkedAccount
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateSubMerchantInput(array $input, bool $linkedAccount)
+    {
+        if (empty($input['email']) === true)
+        {
+            $this->validateEmptyEmailFlow($input, $linkedAccount);
+        }
+        else
+        {
+            $this->validateInput('unique_email', array_only($input, 'email'));
+        }
+
+        $this->validateInput('edit_name', array_only($input, 'name'));
+    }
+
+    protected function validateEmptyEmailFlow(array $input, bool $linkedAccount)
+    {
+        /** @var Entity $merchant */
+        $merchant = $this->entity;
+
+        //
+        // Allow empty email if
+        // 1. Marketplace is making linked account create request
+        // 2. Else, a. Is a partner that is allowed optional email
+        //          b. Is not a partner but has aggregator feature.
+        //
+        if (($merchant->isMarketplace() and $linkedAccount) === true)
+        {
+            return;
+        }
+
+        if ($merchant->isPartner() === true)
+        {
+            if (($merchant->isFullyManagedTypePartner() === false) and
+                ($merchant->isOptionalEmailAllowedAggregator() === false))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUBMERCHANT_WITHOUT_EMAIL_NOT_ALLOWED);
+            }
+        }
+        else
+        {
+            if ($merchant->hasAggregatorFeature() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUBMERCHANT_WITHOUT_EMAIL_NOT_ALLOWED);
+            }
+        }
+    }
+
     protected function validateCsvEmail($input)
     {
         if (empty($input[Entity::TRANSACTION_REPORT_EMAIL]) === true)

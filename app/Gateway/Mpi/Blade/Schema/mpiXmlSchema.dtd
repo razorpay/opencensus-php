@@ -72,6 +72,11 @@ critical (true | false) #REQUIRED >
 <!ELEMENT version (#PCDATA)>
 <!ELEMENT xid (#PCDATA)>
 <!--
+DTD elements for Extension
+-->
+<!ELEMENT adsindicator (#PCDATA)>
+<!ELEMENT authenticationAction (#PCDATA)>
+<!--
 **********************************************************************
 DTD for XML Signatures
 http://www.w3.org/TR/2001/CR-xmldsig-core-20010419

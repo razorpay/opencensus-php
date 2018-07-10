@@ -210,11 +210,11 @@ class Event
         self::SUBSCRIPTION_CANCELLED    => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_COMPLETED    => Feature\Constants::SUBSCRIPTIONS,
         // self::SUBSCRIPTION_EXPIRED      => Feature\Constants::SUBSCRIPTIONS,
-        self::INVOICE_PARTIALLY_PAID    => Feature\Constants::INVOICE_PARTIAL_PAYMENTS,
         self::TOKEN_CONFIRMED           => Feature\Constants::CHARGE_AT_WILL,
         self::TOKEN_REJECTED            => Feature\Constants::CHARGE_AT_WILL,
         self::VIRTUAL_ACCOUNT_CREDITED  => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::VIRTUAL_ACCOUNT_CREATED   => Feature\Constants::VIRTUAL_ACCOUNTS,
+        self::SETTLEMENT_PROCESSED      => Feature\Constants::MARKETPLACE,
     ];
 
     /**

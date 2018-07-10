@@ -30,6 +30,9 @@ class CreateBladeTable extends Migration
             $table->char(Mpi::ACQUIRER, 10)
                   ->nullable();
 
+            $table->char(Mpi::GATEWAY, 64)
+                  ->nullable();
+
             $table->string(Mpi::PAYMENT_ID, Payment::ID_LENGTH);
 
             $table->char(Mpi::REFUND_ID, Refund::ID_LENGTH)
@@ -61,6 +64,15 @@ class CreateBladeTable extends Migration
             $table->char(Mpi::ECI, 2)
                   ->nullable();
 
+            $table->string(Mpi::GATEWAY_PAYMENT_ID)
+                  ->nullable();
+
+            $table->string(Mpi::RESPONSE_CODE)
+                  ->nullable();
+
+            $table->string(Mpi::RESPONSE_DESCRIPTION)
+                  ->nullable();
+
             $table->integer(Mpi::RECEIVED)
                   ->default(0);
 
@@ -77,6 +89,7 @@ class CreateBladeTable extends Migration
             $table->index(Mpi::RECEIVED);
             $table->index(Mpi::CREATED_AT);
             $table->index(Mpi::REFUND_ID);
+            $table->index(Mpi::GATEWAY_PAYMENT_ID);
         });
     }
 

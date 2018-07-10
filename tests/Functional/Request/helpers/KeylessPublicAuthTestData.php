@@ -94,6 +94,7 @@ return [
         'response' => [
             // Asserts that besides, normal response order object is also coming in the 200 response
             'content' => [
+                'mode'  => 'live',
                 'order' => [
                     'partial_payment' => false,
                     'amount'          => 1000000,

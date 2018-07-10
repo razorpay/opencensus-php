@@ -107,8 +107,7 @@ class Entity extends Base\PublicEntity
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
-    // From 10 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
-    const REFERENCE10           = 'reference10';
+    // From 11 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
     const REFERENCE11           = 'reference11';
     const REFERENCE12           = 'reference12';
     const REFERENCE13           = 'reference13';
@@ -121,6 +120,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_CAPTURED      = 'gateway_captured';
     // This is the bucket for the next verify and not the current verify.
     const VERIFY_BUCKET         = 'verify_bucket';
+    const VERIFY_AT             = 'verify_at';
     const CALLBACK_URL          = 'callback_url';
     const TAX                   = 'tax';
     const OTP_ATTEMPTS          = 'otp_attempts';
@@ -279,6 +279,7 @@ class Entity extends Base\PublicEntity
         self::VERIFIED,
         self::GATEWAY_CAPTURED,
         self::VERIFY_BUCKET,
+        self::VERIFY_AT,
         self::CALLBACK_URL,
         self::RECURRING,
         self::SAVE,
@@ -377,13 +378,15 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         'recurring',
         self::METADATA,
+        self::VERIFY_AT,
     ];
 
     protected $dates = [
         self::UPDATED_AT,
         self::CREATED_AT,
         self::AUTHORIZED_AT,
-        self::CAPTURED_AT
+        self::CAPTURED_AT,
+        self::VERIFY_AT,
     ];
 
     protected $hiddenInReport = [self::ACQUIRER_DATA];
@@ -695,6 +698,14 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function generateVerifyAt($input)
+    {
+        // We want to set verify at as created at + 120
+        // so that for payments with status = created
+        // we can pick them after 2 min for verify.
+        $this->setVerifyAt(time() + 120);
+    }
+
     // --------------------- Generators Ends ---------------------------------------
 
     // ----------------------- Setters ---------------------------------------------
@@ -877,6 +888,11 @@ class Entity extends Base\PublicEntity
     public function setVerifyBucket($verifyBucket = 0)
     {
         $this->setAttribute(self::VERIFY_BUCKET, $verifyBucket);
+    }
+
+    public function setVerifyAt($verifyAt)
+    {
+        $this->setAttribute(self::VERIFY_AT, $verifyAt);
     }
 
     public function setVerified($verified)
@@ -1397,6 +1413,12 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
     }
 
+    public function isPinAuth()
+    {
+        return (($this->getAttribute(self::METHOD) === Payment\Method::CARD) and
+            ($this->getAttribute(self::AUTH_TYPE) === AuthType::PIN));
+    }
+
     public function isUpi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
@@ -1778,6 +1800,11 @@ class Entity extends Base\PublicEntity
     public function getVerifyBucket()
     {
         return $this->getAttribute(self::VERIFY_BUCKET);
+    }
+
+    public function getVerifyAt()
+    {
+        return $this->getAttribute(self::VERIFY_AT);
     }
 
     public function getTerminalId()

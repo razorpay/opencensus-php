@@ -1,9 +1,3 @@
-<?php
-
-$error_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 16.538l-4.592-4.548 4.546-4.587-1.416-1.403-4.545 4.589-4.588-4.543-1.405 1.405 4.593 4.552-4.547 4.592 1.405 1.405 4.555-4.596 4.591 4.55 1.403-1.416z"/></svg>';
-
-?>
-
 <!doctype html>
 <html>
 <head>
@@ -246,54 +240,43 @@ $error_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" vi
     }(window.RZP_DATA = window.RZP_DATA || {}));
 </script>
 
-@if (isset($data['error']))
-    <div id="failure" class="card">
-        {!! $error_icon !!}
-        <h2>Error</h2>
-        <p>{{$data['error']['description']}}. Please contact the merchant for assistance.</p>
-    </div>
-@else
-    <div id="invoice-status-container" class={{$data['invoice']['status']}}>
-        <script src="{{$data['invoicejs_url']}}"></script>
-        <div id="invoice-container"></div>
-        <script type="text/javascript">
-            (function (globalScope) {
+<div id="invoice-status-container" class={{$data['invoice']['status']}}>
+    <script src="{{$data['invoicejs_url']}}"></script>
+    <div id="invoice-container"></div>
+    <script type="text/javascript">
+        (function (globalScope) {
 
-                var data = globalScope.data;
+            var data = globalScope.data;
 
-                RazorpayInvoice({
-                    parentElement: "#invoice-container",
-                    data: data,
-                    paymentResponseHandler: function(response) {
+            RazorpayInvoice({
+                parentElement: "#invoice-container",
+                data: data,
+                paymentResponseHandler: function(response) {
 
-                        if (globalScope.hasRedirect()) {
+                    if (globalScope.hasRedirect()) {
 
-                            return globalScope.redirectToCallback(
-                                data.invoice.callback_url,
-                                data.invoice.callback_method,
-                                response
-                            );
-                        }
-
-                        if (data.invoice.partial_payment) {
-                            window.location.reload()
-                        } else {
-                            let invoice = data.invoice;
-                            invoice.amount_due_formatted = '0.00';
-                            invoice.amount_paid_formatted = invoice.amount_formatted;
-                            invoice.status = 'paid';
-                            invoice.is_paid = true;
-                            this.rerender(data)
-                        }
-                        data.invoice.status = 'paid';
-                        data.invoice.is_paid = true;
-                        this.rerender(data)
+                        return globalScope.redirectToCallback(
+                            data.invoice.callback_url,
+                            data.invoice.callback_method,
+                            response
+                        );
                     }
-                });
-            }(window.RZP_DATA = window.RZP_DATA || {}));
-        </script>
-    </div>
-@endif
+
+                    if (response.razorpay_invoice_status === 'paid') {
+                        let invoice = data.invoice;
+                        invoice.amount_due_formatted = '0.00';
+                        invoice.amount_paid_formatted = invoice.amount_formatted;
+                        invoice.status = 'paid';
+                        invoice.is_paid = true;
+                        this.rerender(data);
+                    } else {
+                        window.location.reload()
+                    }
+                }
+            });
+        }(window.RZP_DATA = window.RZP_DATA || {}));
+    </script>
+</div>
 
 <script>
 

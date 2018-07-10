@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\User;
 
 use DB;
 use Mail;
+use Hash;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Hashing\BcryptHasher;
 use RZP\Mail\User\AccountVerification;
@@ -44,9 +45,7 @@ class UserTest extends TestCase
 
     public function testLogin()
     {
-        $password = (new BcryptHasher)->make('hello123');
-
-        $user = $this->fixtures->create('user', ['password' => $password]);
+        $user = $this->fixtures->create('user', ['password' => 'hello123']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -64,9 +63,7 @@ class UserTest extends TestCase
 
     public function testFailedLogin()
     {
-        $password = (new BcryptHasher)->make('hello123');
-
-        $user = $this->fixtures->create('user', ['password' => $password]);
+        $user = $this->fixtures->create('user', ['password' => 'hello123']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -157,18 +154,19 @@ class UserTest extends TestCase
 
     public function testChangePassword()
     {
-        $user = $this->fixtures->create('user');
+        $user = $this->fixtures->create('user', ['password' => '12345']);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
             'password'              => 'hello123',
-            'password_confirmation' => 'hello123'
+            'password_confirmation' => 'hello123',
+            'old_password'          => '12345',
         ];
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['url'] = '/users/' . $user['id'] . '/password';
+        $testData['request']['url'] = '/users/password';
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
@@ -179,18 +177,19 @@ class UserTest extends TestCase
 
     public function testChangeInvalidPassword()
     {
-        $user = $this->fixtures->create('user');
+        $user = $this->fixtures->create('user', ['password' => '12345']);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
             'password'              => 'hello1234',
-            'password_confirmation' => 'hello123'
+            'password_confirmation' => 'hello123',
+            'old_password'          => '12345',
         ];
 
         $testData['request']['content'] = $content;
 
-        $testData['request']['url'] = '/users/' . $user['id'] . '/password';
+        $testData['request']['url'] = '/users/password';
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
@@ -329,23 +328,6 @@ class UserTest extends TestCase
         $this->assertEquals(count($merchants), 2);
 
         $this->assertEquals($merchants['manager'], $merchant['id']);
-    }
-
-    public function testGetUserByEmail()
-    {
-        $user = $this->fixtures->create('user');
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url , $user['email']);
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->ba->appAuth();
-
-        $this->testData[__FUNCTION__]['response']['content']['id'] = $user['id'];
-
-        $this->startTest();
     }
 
     protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)

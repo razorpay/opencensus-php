@@ -264,6 +264,10 @@ trait Authorize
                 $errorCode = Hdfc\ErrorCode::RP00020;
                 break;
 
+            case Payment\Result::DENIED_CAPTURE:
+                $errorCode = Hdfc\ErrorCode::RP00021;
+                break;
+
             case '':
                 $errorCode = Hdfc\ErrorCode::RP00002;
                 break;

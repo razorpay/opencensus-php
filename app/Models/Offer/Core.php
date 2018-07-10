@@ -29,6 +29,8 @@ class Core extends Base\Core
 
         $offer = $offer->build($input);
 
+        $this->validateMerchant($merchant, $input);
+
         $this->checkConflictingOffers($offer);
 
         $this->repo->saveOrFail($offer);
@@ -264,6 +266,29 @@ class Core extends Base\Core
                     'merchant_id'       => $merchant->getId(),
                     'non_existing_iins' => array_values($nonExistingIins),
                 ]);
+        }
+    }
+
+    protected function validateMerchant(Merchant\Entity $merchant, array & $input)
+    {
+        if($merchant->isShared() === true)
+        {
+            return;
+        }
+
+        if(empty($input[Entity::PAYMENT_METHOD]) === true)
+        {
+            return;
+        }
+
+        $merchantPaymentMethods = $merchant->methods;
+
+        $method = $input[Entity::PAYMENT_METHOD];
+
+        if($merchantPaymentMethods->isMethodEnabled($method) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Payment method not enabled for the merchant : $method", Entity::PAYMENT_METHOD);
         }
     }
 }
