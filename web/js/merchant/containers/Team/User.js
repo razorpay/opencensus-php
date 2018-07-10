@@ -78,6 +78,7 @@ export default class EditUser extends Component {
         <td>{user.name}</td>
         <td>
           <Field name="role" component="select" class="form-control">
+            {user.role === 'owner' && <option value="owner">Owner</option>}
             {Object.keys(ROLES).map(role => (
               <option key={role} value={role}>
                 {ROLES[role].label}
