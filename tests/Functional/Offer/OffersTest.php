@@ -148,6 +148,8 @@ class OffersTest extends TestCase
 
     public function testCreateEmiSubventionOffer()
     {
+        $this->fixtures->merchant->enableEmi();
+
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $this->startTest();
@@ -162,6 +164,8 @@ class OffersTest extends TestCase
 
     public function testEmiSubventionWithDuration()
     {
+        $this->fixtures->merchant->enableEmi();
+
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $this->startTest();

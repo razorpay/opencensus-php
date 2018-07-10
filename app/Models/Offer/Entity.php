@@ -211,7 +211,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::EMI_DURATION       => 'array',
+        self::EMI_DURATIONS      => 'array',
         self::EMI_SUBVENTION     => 'boolean',
         self::IINS               => 'array',
         self::INTERNATIONAL      => 'boolean',
@@ -309,9 +309,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IINS);
     }
 
-    public function getEmiDuration()
+    public function getEmiDurations()
     {
-        return $this->getAttribute(self::EMI_DURATION);
+        return $this->getAttribute(self::EMI_DURATIONS);
     }
 
     public function getStartsAt()
@@ -395,9 +395,9 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::IINS] = json_encode(array_values($iins));
     }
 
-    protected function setEmiDurationAttribute($emiDurations)
+    protected function setEmiDurationsAttribute($emiDurations)
     {
-        $existingEmiDuration = $this->getAttribute(self::EMI_DURATION);
+        $existingEmiDuration = $this->getAttribute(self::EMI_DURATIONS);
 
         $emiDurations = [];
 
@@ -406,7 +406,7 @@ class Entity extends Base\PublicEntity
             $emiDurations = array_unique(array_merge($existingEmiDuration, $emiDurations));
         }
 
-        $this->attributes[self::EMI_DURATION] = json_encode(array_values($emiDurations));
+        $this->attributes[self::EMI_DURATIONS] = json_encode(array_values($emiDurations));
     }
 
     protected function setLinkedOfferIdsAttribute(array $linkedOfferIds)
@@ -439,7 +439,7 @@ class Entity extends Base\PublicEntity
 
         $network = $input[self::PAYMENT_NETWORK] ?? null;
 
-        $emiDurations = $input[self::EMI_DURATION] ?? null;
+        $emiDurations = $input[self::EMI_DURATIONS] ?? null;
 
         $minAmount = $input[self::MIN_AMOUNT] ?? (new Emi\Core)->calculateMinAmountForPlans($bank, $network, $emiDurations);
 
