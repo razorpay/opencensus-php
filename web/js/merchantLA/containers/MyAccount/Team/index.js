@@ -5,11 +5,14 @@ import { Redirect } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import { fetchTeamDetails } from 'rzp/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import NewInvitation from './NewInvitation';
+import Invitation from './Invitation';
 import User from './User';
 
 @connect(
   state => {
     return {
+      invitations: state.team.invitations,
       users: state.team.users,
       merchant: state.session.user,
     };
@@ -27,6 +30,7 @@ export default class TeamContainer extends Component {
   }
 
   render() {
+    let invitations = this.props.invitations;
     let users = this.props.users;
     let otherUsers = users.filter(
       user => user.email !== this.props.merchant.email
@@ -48,16 +52,41 @@ export default class TeamContainer extends Component {
         </HeaderAction>
 
         <div class="content-wrapper content-sm">
+          <NewInvitation />
+
           {otherUsers.length ? (
             <div>
-              <div class="panel-heading">Team Members</div>
-              <table class="table table-noborder">
+              <div class="panel-heading">
+                <b>Team Members</b>
+              </div>
+              <table class="table table-noborder" style={{ margin: '0 12px' }}>
                 <tbody>
                   {otherUsers.map(user => (
                     <User
                       key={user.id}
                       user={user}
                       form={`editUser_${user.id}`}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+
+          {!!otherUsers.length && <div class="section-divide" />}
+
+          {invitations.length ? (
+            <div>
+              <div class="panel-heading">
+                <b>Pending Invitations</b>
+              </div>
+              <table class="table table-noborder" style={{ margin: '0 12px' }}>
+                <tbody>
+                  {invitations.map(invite => (
+                    <Invitation
+                      key={invite.id}
+                      invite={invite}
+                      form={`editInvitation_${invite.id}`}
                     />
                   ))}
                 </tbody>
