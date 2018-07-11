@@ -53,11 +53,11 @@ class Repository extends Base\Repository
 
         if (empty($bank) === false)
         {
-            $query->where(Entity::BANK, '=', $bank);
+            $query->where(Entity::BANK, $bank);
         }
         else if ($network === Network::AMEX)
         {
-            $query->where(Entity::NETWORK, '=', $network);
+            $query->where(Entity::NETWORK, $network);
         }
 
         return $query->get();

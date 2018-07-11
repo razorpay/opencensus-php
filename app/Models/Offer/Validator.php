@@ -46,9 +46,6 @@ class Validator extends Base\Validator
         Entity::DISPLAY_TEXT        => 'filled|string|max:255',
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
         Entity::TERMS               => 'required|string',
-        Entity::EMI_SUBVENTION      => 'sometimes_if:payment_method,emi|boolean',
-        Entity::EMI_DURATIONS       => 'sometimes_if:emi_subvention,1',
-
     ];
 
     protected static $emiSubventionRules = [
