@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Carbon\Carbon;
 
+use JMS\Serializer\Tests\Fixtures\Discriminator\Car;
 use RZP\Constants\Timezone;
 
 class Offer extends Base
@@ -34,6 +35,25 @@ class Offer extends Base
         ];
 
         $attributes = array_merge($walletAttributes, $attributes);
+
+        $offer = $this->fixtures->create('offer', $attributes);
+
+        return $offer;
+    }
+
+    public function createEmiSubvention(array $attributes = [])
+    {
+        $emiSubventionAttributes = [
+            'payment_method' => 'emi',
+            'emi_subvention' => true,
+            'emi_durations'  => [9],
+            'payment_network'=> 'AMEX',
+            'issuer'         => null,
+            'min_amount'     => 316389,
+            'percent_rate'   => null,
+        ];
+
+        $attributes = array_merge($emiSubventionAttributes, $attributes);
 
         $offer = $this->fixtures->create('offer', $attributes);
 

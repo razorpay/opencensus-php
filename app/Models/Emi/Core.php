@@ -23,7 +23,12 @@ class Core extends Base\Core
 
         $minForEachPlan = array_map(function($emiPlan) {
                               return Calculator::calculateMinAmount($emiPlan['min_amount'], $emiPlan['merchant_payback']);
-                              }, $emiPlans->toArray());
+                          }, $emiPlans->toArray());
+
+        if (empty($minForEachPlan) === true)
+        {
+            return 0;
+        }
 
         return max($minForEachPlan);
     }

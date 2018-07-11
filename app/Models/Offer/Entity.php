@@ -325,6 +325,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IINS);
     }
 
+    public function getEmiSubvention()
+    {
+        return $this->getAttribute(self::EMI_SUBVENTION);
+    }
+
     public function getEmiDurations()
     {
         return $this->getAttribute(self::EMI_DURATIONS);
