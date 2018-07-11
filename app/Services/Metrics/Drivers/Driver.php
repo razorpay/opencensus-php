@@ -110,4 +110,11 @@ abstract class Driver
      * @param  array  $dimensions
      */
     abstract public function histogram(string $metric, float $value, array $dimensions = []);
+
+    /**
+     * @param  string $metric
+     * @param  float  $value
+     * @param  array  $dimensions
+     */
+    abstract public function summary(string $metric, float $value, array $dimensions = []);
 }

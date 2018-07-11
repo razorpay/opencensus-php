@@ -68,7 +68,7 @@ class InvoiceMetricTest extends TestCase
                 ]);
 
         $mock->expects($this->once())
-             ->method('histogram')
+             ->method('summary')
              ->withConsecutive(
                 [
                     'http_request_duration_microseconds',
@@ -187,7 +187,7 @@ class InvoiceMetricTest extends TestCase
                 ]);
 
         $mock->expects($this->once())
-             ->method('histogram')
+             ->method('summary')
              ->withConsecutive(
                 [
                     'http_request_duration_microseconds',
@@ -201,7 +201,7 @@ class InvoiceMetricTest extends TestCase
     protected function createMetricsMock()
     {
         $mock = $this->getMockBuilder(Metrics::class)
-                     ->setMethods(['count', 'gauge', 'histogram'])
+                     ->setMethods(['count', 'gauge', 'summary'])
                      ->getMock();
 
         $this->app->instance('metrics', $mock);
