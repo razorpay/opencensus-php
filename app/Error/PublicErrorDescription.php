@@ -546,6 +546,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_OFFER_DURATION                                    = 'Offer end date must be later than offer start date';
     const BAD_REQUEST_OFFER_ALREADY_EXISTS                                      = 'Offer already exists. Please check the values and try again';
     const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK           = 'Flat cashback cannot be combined wih percent rate or max cashback in an offer';
+    const BAD_REQUEST_MAX_CASHBACK_WITHOUT_PERCENT_RATE                         = 'Max cashback should be combined wih percent rate';
     const BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER                              = 'Iins can only be editable for card offer';
     const BAD_REQUEST_OFFER_ALREADY_DEACTIVATED                                 = 'Offer has already been deactivated';
     const BAD_REQUEST_INVALID_PERMISSIONS_USAGE                                 = 'Combination of permissions used or assigned are invalid. Contact Razorpay Support';

@@ -110,6 +110,11 @@ class AuthService
         return $this->sendRequest('tokens/partner', Requests::POST, $input);
     }
 
+    public function createOAuthMigrationToken(array $input) : array
+    {
+        return $this->sendRequest('tokens/internal', Requests::POST, $input);
+    }
+
     protected function sendRequest(
         string $url,
         string $method,

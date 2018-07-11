@@ -1266,6 +1266,8 @@ trait Authorize
 
     protected function validateOfferIfApplicable(Payment\Entity $payment, array $input)
     {
+        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
+
         $offer = $this->offer;
 
         if ($offer !== null)
