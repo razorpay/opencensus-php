@@ -352,44 +352,6 @@ return [
             ],
         ],
     ],
-
-    'testFailedLoginOauth' => [
-        'request' => [
-            'url' => '/admin/oauth_login',
-            'method' => 'post',
-            'content' => [
-                'email' => 'test@email.com',
-                'oauth_access_token' => 'test oauth token',
-                'oauth_provider_id'  => 'test oauth provider id',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_AUTHENTICATION_FAILED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
-        ],
-    ],
-    'testGetAdminByEmailOnAppAuth' => [
-        'request' => [
-            'url'     => '/admins/get-multiple-app-auth?email=testadmin@rzp.com',
-            'method'  => 'get',
-            'content' => [],
-        ],
-        'response' => [
-            'content'   => [
-                'name'  => 'test admin app auth'
-            ],
-            'status_code' => 200,
-        ],
-    ],
     'testSelfEditAdminFailed' => [
         'request' => [
             'url' => '/admin/%s',

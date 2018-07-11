@@ -2,12 +2,11 @@
 
 namespace RZP\Tests\Functional\Admin;
 
-use Cache;
-use Carbon\Carbon;
 use Hash;
 use Mail;
+use Cache;
 use Mockery;
-
+use Carbon\Carbon;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
@@ -369,8 +368,8 @@ class AdminTest extends TestCase
     public function testLoginOauth()
     {
         $admin = $this->fixtures->create('admin', [
-            'org_id' => $this->orgId,
-            'email' => 'test@email.com',
+            'org_id'             => Org::RZP_ORG,
+            'email'              => 'test@email.com',
             'oauth_access_token' => 'test oauth token',
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
@@ -378,24 +377,6 @@ class AdminTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
-    }
-
-    public function testFailedLoginOauth()
-    {
-        $admin = $this->fixtures->create('admin', [
-            'org_id' => $this->orgId,
-            'email' => 'test@email.com',
-            'oauth_access_token' => 'test oauth token 2',
-            'oauth_provider_id'  => 'test oauth provider id',
-        ]);
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-
-        $admin = $this->getEntityById('admin', $admin->getId(), true);
-
-        $this->assertEquals($admin['failed_attempts'], 1);
     }
 
     public function testSelfEditAdminFailed()
@@ -753,19 +734,6 @@ class AdminTest extends TestCase
         }
 
         $this->assertArrayNotHaskey($adminToken->getId(), $remainingTokenIds);
-    }
-
-    public function testGetAdminByEmailOnAppAuth()
-    {
-        $admin = $this->fixtures->create('admin', [
-            Admin\Entity::ORG_ID  => $this->orgId,
-            Admin\Entity::EMAIL   => 'testadmin@rzp.com',
-            Admin\Entity::NAME    => 'test admin app auth',
-        ]);
-
-        $this->ba->appAuth();
-
-        $result = $this->startTest();
     }
 
     public function testCreateAdminWithoutPassword()
