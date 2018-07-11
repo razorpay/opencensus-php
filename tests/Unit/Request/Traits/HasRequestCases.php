@@ -4,6 +4,7 @@ namespace RZP\Tests\Unit\Request\Traits;
 
 use Illuminate\Http\Request;
 
+use RZP\Http\RequestContext;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 
@@ -36,10 +37,25 @@ trait HasRequestCases
      * @param  mixed  $args,...
      * @return Request
      */
-    protected function invokeRequestCase(string $case, ...$args)
+    protected function invokeRequestCase(string $case, ...$args): Request
     {
         $func = 'mock' . ucfirst($case);
         return $this->$func(...$args);
+    }
+
+    /**
+     * Invokes mocker method for given request case. Additionally, binds new request context object.
+     * @param  string $case
+     * @param  mixed  $args,...
+     * @return Request
+     */
+    protected function invokeRequestCaseAndBindNewContext(string $case, ...$args): Request
+    {
+        $mock = $this->invokeRequestCase($case, ...$args);
+
+        $this->app->instance('request.ctx', new RequestContext($this->app));
+
+        return $mock;
     }
 
     protected function mockPublicRouteWithKeyInHeaders(
