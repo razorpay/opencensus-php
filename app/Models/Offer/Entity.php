@@ -229,6 +229,22 @@ class Entity extends Base\PublicEntity
         self::LINKED_OFFER_IDS   => 'array',
     ];
 
+    public function build(array $input = [], string $operation = 'create')
+    {
+        if (isset($input[self::EMI_SUBVENTION]) === true)
+        {
+            $operation = 'emiSubvention';
+        }
+
+        $this->getValidator()->validateInput($operation, $input);
+
+        $this->generate($input);
+
+        $this->fill($input);
+
+        return $this;
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -397,13 +413,13 @@ class Entity extends Base\PublicEntity
 
     protected function setEmiDurationsAttribute($emiDurations)
     {
-        $existingEmiDuration = $this->getAttribute(self::EMI_DURATIONS);
+        $existingEmiDurations = $this->getAttribute(self::EMI_DURATIONS);
 
-        $emiDurations = [];
+        $emiDurations = $emiDurations ?: [];
 
-        if ($existingEmiDuration !== null)
+        if (empty($existingEmiDurations) === false)
         {
-            $emiDurations = array_unique(array_merge($existingEmiDuration, $emiDurations));
+            $emiDurations = array_unique(array_merge($existingEmiDurations, $emiDurations));
         }
 
         $this->attributes[self::EMI_DURATIONS] = json_encode(array_values($emiDurations));
@@ -439,9 +455,9 @@ class Entity extends Base\PublicEntity
 
         $network = $input[self::PAYMENT_NETWORK] ?? null;
 
-        $emiDurations = $input[self::EMI_DURATIONS] ?? null;
+        $emiDurations = $input[self::EMI_DURATIONS] ?? [];
 
-        $minAmount = $input[self::MIN_AMOUNT] ?? (new Emi\Core)->calculateMinAmountForPlans($bank, $network, $emiDurations);
+        $minAmount = $input[self::MIN_AMOUNT] ?? (new Emi\Core)->calculateMinAmountForPlans($emiDurations, $bank, $network);
 
         $this->setAttribute(self::MIN_AMOUNT, $minAmount);
     }

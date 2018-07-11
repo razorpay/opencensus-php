@@ -42,11 +42,11 @@ class Repository extends Base\Repository
         return $query->firstOrFail();
     }
 
-    public function fetchByDurationsAndBankOrNetwork($bank, $network, $durations)
+    public function fetchByDurationsAndBankOrNetwork(array $durations = [], string $bank = null, string $network = null)
     {
         $query = $this->newQuery();
 
-        if ($durations)
+        if (empty($durations) === false)
         {
             $query->whereIn(Entity::DURATION, $durations);
         }

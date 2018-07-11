@@ -17,22 +17,14 @@ class Core extends Base\Core
         return $emiPlan;
     }
 
-    public function calculateMinAmountForPlans($bank, $network, $durations)
+    public function calculateMinAmountForPlans(array $durations = [], string $bank = null, string $network = null)
     {
-        $emiPlans = $this->repo->emi_plan->fetchByDurationsAndBankOrNetwork($bank, $network, $durations);
+        $emiPlans = $this->repo->emi_plan->fetchByDurationsAndBankOrNetwork($durations, $bank, $network);
 
-        $min = 0;
+        $minForEachPlan = array_map(function($emiPlan) {
+                              return Calculator::calculateMinAmount($emiPlan['min_amount'], $emiPlan['merchant_payback']);
+                              }, $emiPlans->toArray());
 
-        foreach ($emiPlans as $emiPlan)
-        {
-            $amount = Calculator::calculateMinAmount($emiPlan->getMinAmount(), $emiPlan->getMerchantPayback());
-
-            if ($min < $amount)
-            {
-                $min = $amount;
-            }
-        }
-
-        return $min;
+        return max($minForEachPlan);
     }
 }

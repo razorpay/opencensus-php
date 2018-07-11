@@ -732,7 +732,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Min amount required for these emi subvention is 319149'
+                    'description' => 'Min amount required for this emi subvention is 319149'
                 ]
             ],
             'status_code' => 400,
