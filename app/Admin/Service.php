@@ -90,7 +90,9 @@ class Service extends Base\Service
 
         // This is oAuth based login
 
-        $request = new Admin\ApiRequestAny();
+        $request = new Admin\ApiRequestAny(
+            ["client_type" => "internal"]
+        );
 
         list($error, $data) = $request->send("admin/oauth_login?$input", 'POST');
 
@@ -113,54 +115,31 @@ class Service extends Base\Service
             return App::abort(404);
         }
 
-        // Fetch the admin with the email
-        $request = new Admin\ApiRequestAny(['process_input' => false]);
+        // 1. Login the user to dashboard. Have to make an API call
+        // to login the user and get an admin_token
 
-        list($error, $admin) = $request->send("admins/get-multiple-app-auth?email={$result->email}", 'GET');
+        $oAuthLoginInput = [
+            'email'                 => $result->email,
+            'oauth_access_token'    => $token->getAccessToken(),
+            'oauth_provider_id'     => $result->id,
+        ];
 
-        if ($admin)
+        try
         {
-            $updateData = http_build_query([
-                'oauth_access_token'    => $token->getAccessToken(),
-                'oauth_provider_id'     => $result->id
-            ]);
+            $data = $this->oAuthLogin($oAuthLoginInput);
 
-            // 1. Save the data (oauth token and provider) to API
-            $request = new Admin\ApiRequestAny(['process_input' => false]);
-
-            list($error, $updatedAdmin) = $request->send("admin-app-auth/{$admin['id']}?$updateData", 'PUT');
-
-            // 2. Login the user to dashboard. Have to make an API call
-            // to login the user and get an admin_token
-
-            $oAuthLoginInput = [
-                'email'                 => $updatedAdmin['email'],
-                'oauth_access_token'    => $token->getAccessToken(),
-                'oauth_provider_id'     => $result->id,
-            ];
-
-            try
-            {
-                $data = $this->oAuthLogin($oAuthLoginInput);
-
-                Session::put(config('auth.guards.api.session_key'), $data);
-            }
-            catch (\Razorpay\Api\Errors\BadRequestError $e)
-            {
-                $error[] = $e->getMessage();
-            }
-
-            $traceData = [
-                'email'     => $admin['email'],
-                'org_id'    => $admin['org_id'],
-            ];
-
-            $this->trace->info(TraceCode::ADMIN_LOGIN, $traceData);
+            Session::put(config('auth.guards.api.session_key'), $data);
         }
-        else
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
-            $error[] = 'This email is not registered.';
+            $error[] = $e->getMessage();
         }
+
+        $traceData = [
+            'email'     => $result->email,
+        ];
+
+        $this->trace->info(TraceCode::ADMIN_LOGIN, $traceData);
 
         return $error;
     }
