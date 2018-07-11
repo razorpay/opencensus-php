@@ -140,7 +140,7 @@ class InvoiceMetricTest extends TestCase
                     [
                         'async_job_connection' => 'sync',
                         'async_job_queue'      => 'sync',
-                        'async_job_name'       => 'RZP\Jobs\EsSync',
+                        'async_job_name'       => 'RZP_Jobs_EsSync',
                     ],
                 ],
                 // [
@@ -163,7 +163,7 @@ class InvoiceMetricTest extends TestCase
                     [
                         'async_job_connection' => 'sync',
                         'async_job_queue'      => 'sync',
-                        'async_job_name'       => 'RZP\Jobs\EsSync',
+                        'async_job_name'       => 'RZP_Jobs_EsSync',
                     ],
                 ],
                 // [

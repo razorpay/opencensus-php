@@ -44,4 +44,5 @@ class Metric
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';
+    const LABEL_NONE_VALUE                      = 'none';
 }
