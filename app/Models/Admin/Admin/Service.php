@@ -231,20 +231,23 @@ class Service extends Base\Service
 
         $validator->validateInput('o_auth_login', $input);
 
+        $orgId = $this->auth->getOrgId();
         // Get the admin record
-        $admin = $this->repo->admin->findByEmail($input['email']);
+        $admin = $this->getAdminFromEmail($orgId, $input['email']);
 
-        if (($admin->getOAuthAccessToken() === $input['oauth_access_token']) and
-            ($admin->getOAuthProviderID() === $input['oauth_provider_id']))
-        {
-            $data = $this->generateLoginToken($admin);
+        // store access token and provider id.
+        $oauthData = [
+            'oauth_access_token' => $input['oauth_access_token'],
+            'oauth_provider_id'  => $input['oauth_provider_id'],
+        ];
 
-            $this->fireAdminAction($admin, Action::LOGIN_OAUTH);
+        $this->core()->edit($admin, $oauthData);
 
-            return $data;
-        }
+        $data = $this->generateLoginToken($admin);
 
-        $this->handleAuthFailure($admin, Action::LOGIN_FAIL_OAUTH);
+        $this->fireAdminAction($admin, Action::LOGIN_OAUTH);
+
+        return $data;
     }
 
     /**
