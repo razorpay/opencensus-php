@@ -33,8 +33,8 @@ class Role
         self::OWNER,
         self::MANAGER,
         self::OPERATIONS,
+        self::FINANCE,
         self::ADMIN,
-        self::SELLERAPP,
     ];
 
     public static function exists(string $action): bool

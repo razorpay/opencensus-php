@@ -3,12 +3,13 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
-use RZP\Base\Validator;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Base\Validator;
+use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Processor\Netbanking;
 
@@ -343,5 +344,20 @@ class Server extends Base\Core
     protected function getSignedPaymentId($pid)
     {
         return Payment\Entity::getSignedId($pid);
+    }
+
+    protected function compareHashes($actual, $generated)
+    {
+        if (hash_equals($actual, $generated) === false)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
+                [
+                    'actual'    => $actual,
+                    'generated' => $generated
+                ]);
+
+            throw new Exception\RuntimeException('Failed checksum verification');
+        }
     }
 }

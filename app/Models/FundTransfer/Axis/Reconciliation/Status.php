@@ -2,7 +2,6 @@
 
 namespace RZP\Models\FundTransfer\Axis\Reconciliation;
 
-use RZP\Models\FundTransfer\Axis\Headings;
 use RZP\Models\FundTransfer\Base\Reconciliation\Status as BaseStatus;
 
 class Status extends BaseStatus
@@ -21,7 +20,12 @@ class Status extends BaseStatus
     const CHANNEL_REJECT_AUTH   = 'Channel Reject Auth';
 
     // Merchant level error
-    const RETURNSETTLED     = 'ReturnSettled';
+    const RETURNSETTLED         = 'ReturnSettled';
+
+    // Failure Remarks
+    const NOFUNDSAVAILABLE        = 'NOFUNDSAVAILABLE';
+    const NO_FUNDS_AVAILABLE      = 'No Funds available';
+    const BANKIDENTIFIERINCORRECT = 'BankIdentifierIncorrect';
 
 
     public static function getSuccessfulStatus(): array
@@ -43,6 +47,20 @@ class Status extends BaseStatus
             self::RETURNMRKDFRBULK,
             self::RETURNSETTLED,
             self::CHANNEL_REJECT_AUTH,
+        ];
+    }
+
+    public static function getCriticalErrorStatus(): array
+    {
+        return [];
+    }
+
+    public static function getCriticalErrorRemarks(): array
+    {
+        return [
+            self::NOFUNDSAVAILABLE,
+            self::NO_FUNDS_AVAILABLE,
+            self::BANKIDENTIFIERINCORRECT
         ];
     }
 }

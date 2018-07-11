@@ -17,6 +17,10 @@ class Validator extends Base\Validator
     const INVALID_CLARIFICATION_MODE_MESSAGE            = 'Invalid clarification mode';
     const INVALID_FILE_NON_NGO_ORGANISATION_TYPE        = 'Invalid file for non NGO organisation type';
     const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
+    const INVALID_BUSINESS_CATEGORY                     = 'Invalid business category';
+    const INVALID_BUSINESS_SUBCATEGORY                  = 'Invalid business subcategory';
+    const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
+    const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
 
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
@@ -39,11 +43,13 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
-        Entity::GSTIN                           => 'sometimes|string|size:15',
+        Entity::GSTIN                           => 'sometimes|string|size:15|nullable',
         Entity::P_GSTIN                         => 'sometimes|string|size:15',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
+        Entity::BUSINESS_CATEGORY               => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY            => 'sometimes|max:255|custom',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::TRANSACTION_VALUE               => 'filled|numeric|min:0|max:10000000',
         Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
@@ -90,7 +96,7 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
         Entity::CONTACT_LANDLINE                => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
-        Entity::BUSINESS_NAME                   => 'sometimes|max:255',
+        Entity::BUSINESS_NAME                   => 'filled|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|max:255',
         Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|url',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
@@ -105,11 +111,13 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
-        Entity::GSTIN                           => 'sometimes|string|size:15',
+        Entity::GSTIN                           => 'sometimes|string|size:15|nullable',
         Entity::P_GSTIN                         => 'sometimes|string|size:15',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
+        Entity::BUSINESS_CATEGORY               => 'sometimes|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY            => 'sometimes|max:255|custom',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::TRANSACTION_VALUE               => 'filled|numeric|min:0|max:10000000',
         Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
@@ -180,8 +188,23 @@ class Validator extends Base\Validator
         'clarification_mode',
     ];
 
+    protected static $createValidators = [
+        'business_subcategory_for_category',
+    ];
+
+    protected static $editValidators = [
+        'business_subcategory_for_category',
+    ];
+
     protected static $websiteDetailsRules = [
         Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
+    ];
+
+    protected static $patchMerchantDetailsRules = [
+        Entity::BUSINESS_OPERATION_ADDRESS => 'filled|max:255',
+        Entity::BUSINESS_OPERATION_STATE   => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_CITY    => 'filled|alpha_space|max:255',
+        Entity::BUSINESS_OPERATION_PIN     => 'filled|max:15'
     ];
 
     protected static $bulkAssignReviewerRules = [
@@ -266,9 +289,95 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateBusinessCategory(string $attribute, string $businessCategory)
+    {
+        if (isset(BusinessCategory::SUBCATEGORY_MAP[$businessCategory]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_BUSINESS_CATEGORY . ': ' . $businessCategory,
+                Entity::BUSINESS_CATEGORY,
+                [
+                    Entity::BUSINESS_CATEGORY => $businessCategory
+                ]);
+        }
+    }
+
+    public function validateBusinessSubcategory(string $attribute, $businessSubcategory)
+    {
+        if ((isset($businessSubcategory) === true) and
+            (BusinessSubcategory::isValidSubcategory($businessSubcategory) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_BUSINESS_SUBCATEGORY . ': ' . $businessSubcategory,
+                Entity::BUSINESS_SUBCATEGORY,
+                [
+                    Entity::BUSINESS_SUBCATEGORY => $businessSubcategory
+                ]);
+        }
+    }
+
+    public function validateBusinessSubcategoryForCategory(array $input)
+    {
+        // If category and subcategory are not set
+        if ((isset($input[Entity::BUSINESS_CATEGORY]) === false) and
+            (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false))
+        {
+            return;
+        }
+
+        $category    = array_key_exists(Entity::BUSINESS_CATEGORY, $input) ?
+                        $input[Entity::BUSINESS_CATEGORY] : $this->entity->getBusinessCategory();
+
+        $subcategory = array_key_exists(Entity::BUSINESS_SUBCATEGORY, $input) ?
+                        $input[Entity::BUSINESS_SUBCATEGORY] : $this->entity->getBusinessSubcategory();
+
+        // If category is `null`
+        if (isset($category) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY . ': ' . $subcategory,
+                Entity::BUSINESS_CATEGORY,
+                [
+                    Entity::BUSINESS_SUBCATEGORY => $subcategory,
+                ]);
+        }
+
+        $subcategoryMap     = BusinessCategory::SUBCATEGORY_MAP;
+
+        $validSubcategories = array_keys($subcategoryMap[$category][BusinessCategory::SUBCATEGORIES]);
+
+        $isError            = false;
+
+        // If category is `others` and subcategory is not `null`
+        if (($category === BusinessCategory::OTHERS) and
+            (isset($subcategory) === true))
+        {
+            $isError = true;
+        }
+
+        // If category is not `others` and subcategory is not valid
+        if (($category !== BusinessCategory::OTHERS) and
+            (in_array($subcategory, $validSubcategories, true) === false))
+        {
+            $isError = true;
+        }
+
+        if ($isError === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY . ': ' . $category,
+                Entity::BUSINESS_SUBCATEGORY,
+                [
+                    Entity::BUSINESS_CATEGORY    => $category,
+                    Entity::BUSINESS_SUBCATEGORY => $subcategory,
+                ]);
+        }
+    }
+
     public function validateForm12aUrl($attribute, $value)
     {
-        if ($this->entity->getBusinessType() !== BusinessType::NGO)
+        $form12aBusinessTypes = [BusinessType::SOCIETY, BusinessType::TRUST, BusinessType::NGO];
+        if (in_array($this->entity->getBusinessType(), $form12aBusinessTypes, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_FILE_NON_NGO_ORGANISATION_TYPE);
         }
@@ -276,7 +385,8 @@ class Validator extends Base\Validator
 
     public function validateForm80gUrl($attribute, $value)
     {
-        if ($this->entity->getBusinessType() !== BusinessType::NGO)
+        $form80gBusinessTypes = [BusinessType::SOCIETY, BusinessType::TRUST, BusinessType::NGO];
+        if (in_array($this->entity->getBusinessType(), $form80gBusinessTypes, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_FILE_NON_NGO_ORGANISATION_TYPE);
         }

@@ -132,6 +132,15 @@ class AdminController extends Controller
         return ApiResponse::json([], $responseStatus);
     }
 
+    public function postSetCronJobCallback()
+    {
+        $input = Request::all();
+
+        $this->service()->processSetCronJobCallback($input);
+
+        return ApiResponse::json([]);
+    }
+
     public function updateEntityTax($entity)
     {
         $input = Request::all();
@@ -166,6 +175,15 @@ class AdminController extends Controller
         $input = Request::all();
 
         $data = $this->service()->fetchReconciliationSummary($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createAdminBatch()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createBatch($input);
 
         return ApiResponse::json($data);
     }

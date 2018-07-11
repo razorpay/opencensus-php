@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Gateway\File;
 
-use RZP\Models\Payment\Gateway;
 use RZP\Mail\Base\Constants as MailConstants;
 
 class Constants
@@ -17,13 +16,16 @@ class Constants
     const RBL              = 'rbl';
     const SCBL             = 'scbl';
     const UPI_ICICI        = 'upi_icici';
+    const UPI_MINDGATE     = 'upi_mindgate';
     const AIRTEL_MONEY     = 'airtel_money';
+    const CSB              = 'csb';
     const AXIS_MIGS        = 'axis_migs';
     const ICIC_FIRST_DATA  = 'icic_first_data';
     const HDFC_CYBERSOURCE = 'hdfc_cybersource';
     const AXIS_CYBERSOURCE = 'axis_cybersource';
     const HDFC_FSS         = 'hdfc_fss';
     const ENACH_RBL        = 'enach_rbl';
+    const OBC              = 'obc';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -31,7 +33,8 @@ class Constants
     const SUPPORTED_TARGETS = [
         Type::REFUND => [
             self::HDFC,
-            self::ICICI
+            self::ICICI,
+            self::CSB,
         ],
         Type::CLAIM => [
         ],
@@ -49,9 +52,12 @@ class Constants
             self::BOB,
             self::RBL,
             self::INDUSIND,
+            self::OBC,
+            self::CSB
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
+            self::ENACH_RBL,
         ],
         Type::EMANDATE_DEBIT => [
             self::HDFC,
@@ -61,6 +67,7 @@ class Constants
         Type::REFUND_FAILED => [
             'All',
             self::UPI_ICICI,
+            self::UPI_MINDGATE,
             self::AIRTEL_MONEY,
             self::AXIS_MIGS,
             self::ICIC_FIRST_DATA,
@@ -93,10 +100,13 @@ class Constants
             self::FEDERAL  => ['federal.netbanking.refunds@razorpay.com'],
             self::BOB      => ['bob.netbanking.refunds@razorpay.com'],
             self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
+            self::OBC      => ['obc.netbanking.refunds@razorpay.com'],
+            self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [
-            self::HDFC => ['hdfc.emandate@razorpay.com'],
+            self::HDFC      => ['hdfc.emandate@razorpay.com'],
+            self::ENACH_RBL => ['rbl.emandate@razorpay.com'],
         ],
 
         Type::EMANDATE_DEBIT => [
@@ -115,6 +125,7 @@ class Constants
 
         Type::REFUND_FAILED => [
             self::UPI_ICICI        => ['supportteam@razorpay.com'],
+            self::UPI_MINDGATE     => ['supportteam@razorpay.com'],
             self::AIRTEL_MONEY     => ['supportteam@razorpay.com'],
             self::AXIS_MIGS        => ['supportteam@razorpay.com'],
             self::ICIC_FIRST_DATA  => ['supportteam@razorpay.com'],

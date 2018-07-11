@@ -140,6 +140,127 @@ return [
         ]
     ],
 
+    'testAddBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'ratn',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'mc_mpan'                   => '1234567880123456',
+                'visa_mpan'                 => '1234567890123456',
+                'rupay_mpan'                => '1234567890123456',
+                'category'                  => '4567',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr'     => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'ratn',
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'mc_mpan'             => '1234567880123456',
+                'visa_mpan'           => '1234567890123456',
+                'rupay_mpan'          => '1234567890123456',
+                'category'            => 4567,
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testReassignBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'ratn',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'mc_mpan'                   => '4287346423986423',
+                'visa_mpan'                 => '5287346853986423',
+                'rupay_mpan'                => '6287346823986423',
+                'category'                  => '4567',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr'     => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+        ],
+    ],
+
+    'testAddUpiBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_icici',
+                'gateway_merchant_id'       => '12345',
+                'vpa'                       => 'rzpbqr@icici',
+                'upi'                       => true,
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr'     => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id' => '12345',
+                'vpa'                 => 'rzpbqr@icici',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testReassignUpiBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'             => 'upi_icici',
+                'gateway_merchant_id' => '12345',
+                'vpa'                 => 'random@icici',
+                'upi'                 => true,
+                'type'                => [
+                    'bharat_qr'       => '1',
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+        ],
+    ],
+
     'testReassignTerminalForSameGateway' => [
         'request' => [
             'content' => [
@@ -171,23 +292,23 @@ return [
     ],
 
     'testAssignTerminalForDifferentGateway' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'gateway' => 'atom',
-                'card' => 0,
-                'gateway_merchant_id' => '12345',
-                'gateway_terminal_id' => '12345678',
-                'gateway_terminal_password' => ''
+                'gateway'               => 'atom',
+                'netbanking'            => 1,
+                'gateway_merchant_id'   => '12345',
+                'gateway_secure_secret' => 'random_secret',
+                'gateway_access_code'   => 'random_access_code',
+                'network_category'      => 'ecommerce',
             ],
-            'url' => '/merchants/10000000000000/terminals',
-            'method' => 'POST'
+            'url'     => '/merchants/10000000000000/terminals',
+            'method'  => 'POST'
         ],
         'response' => [
-              'content' => [
-                'gateway' => 'atom',
-                'gateway_merchant_id' => '12345',
-                'gateway_terminal_id' => '12345678',
-                'enabled'             => true,
+            'content' => [
+                'gateway'               => 'atom',
+                'gateway_merchant_id'   => '12345',
+                'enabled'               => true,
             ]
         ],
     ],
@@ -272,6 +393,36 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
+    ],
+
+    'testCreateHitachiDebitRecurringTerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'             => 'hitachi',
+                'gateway_acquirer'    => 'ratn',
+                'card'                => 1,
+                'type'                => [
+                    'recurring_non_3ds' => '1',
+                    'recurring_3ds'     => '1',
+                    'debit_recurring'   => '1',
+                ],
+                'gateway_merchant_id' => 'random',
+                'gateway_terminal_id' => '12345678',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway' => 'hitachi',
+                'card'    => true,
+                'type'    => [
+                    'recurring_3ds',
+                    'recurring_non_3ds',
+                    'debit_recurring',
+                ],
+                'enabled' => true,
+            ],
+        ],
     ],
 
     'testCreateTpvTerminalWithInvalidMethod' => [
@@ -630,5 +781,39 @@ return [
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
             'gateway_error_code'  => 'GW00154',
         ],
+    ],
+    'testEditWalletAirtelmoneyTerminalWithNotRequiredFields' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED ,
+        ],
+    ],
+
+    'testAddAmazonPayTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_amazonpay',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_password' => '12345678',
+                'gateway_access_code'       => '1234567880123456',
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway'                   => 'wallet_amazonpay',
+                'gateway_merchant_id'       => '12345',
+                'enabled'                   => true
+            ]
+        ]
     ],
 ];

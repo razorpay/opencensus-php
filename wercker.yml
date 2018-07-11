@@ -1,5 +1,5 @@
 box:
-  id: razorpay/containers:php7
+  id: razorpay/pithos:rzp-php7.1
   username: $DOCKERHUB_USER
   password: $DOCKERHUB_PASSWORD
 dev:
@@ -9,7 +9,7 @@ dev:
 build:
     services:
       - id: mysql
-        tag: latest
+        tag: 5.7
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: root
@@ -22,11 +22,6 @@ build:
           code: cp ./environment/.env.wercker ./environment/.env.testing
       - add-ssh-key:
           keyname: RZP_API
-      - create-file:
-          name: Create api_sqlite.db
-          filename: api_sqlite.db
-          overwrite: true
-          content:
       - script:
           name: Export ES env var to API environment variables
           code: >
@@ -58,18 +53,6 @@ build:
               zend.assertions=1
               assert.exception=On
       - script:
-          name: Copy nanotime extension
-          code: cp scripts/nanotime.* /usr/lib/php7/modules
-      - create-file:
-          name: Enable nanotime extension
-          filename: /etc/php7/conf.d/nanotime.ini
-          overwrite: true
-          content: |
-              extension=nanotime.so
-      - script:
-          name: List PHP extensions
-          code: php -m
-      - script:
           name: Composer set-up
           code: |
               composer config -g github-oauth.github.com $github_token
@@ -84,8 +67,8 @@ build:
           name: Run unit tests
           code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --printer=Codedungeon\\PHPUnitPrettyResultPrinter\\Printer
       - script:
-          name: List directory
-          code: ls -lah
+          name: create commit.txt
+          code: git rev-parse HEAD > public/commit.txt
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
@@ -96,6 +79,10 @@ build:
           name: Save trace
           code: cp storage/logs/* $WERCKER_REPORT_ARTIFACTS_DIR/
 deploy:
+    box:
+      id: razorpay/containers:php7
+      username: $DOCKERHUB_USER
+      password: $DOCKERHUB_PASSWORD
     steps:
       - script:
           name: Check if branch is master on prod-api
@@ -107,22 +94,26 @@ deploy:
               fi
             fi
       - script:
-          name: List directory
-          code: ls -lah
-      - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
       - script:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
       - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
-      - script:
           name: Conditionally skip canary deployment
           code: |
             if [ "$APP_ENV" != "beta" ] && [ "$APP_ENV" != "prod" ]; then
               export SKIP_CANARY=true
+            fi
+      - script:
+          name: Conditionally verify if commit matches between K8s and Asg.
+          code: |
+            if [ "$APP_ENV" == "prod" ] && [ "$CHECK_K8S_COMMIT" == "true" ]; then
+              K8S_COMMIT=`curl https://k8s-prod-api.razorpay.com/commit.txt`
+              if [ "$K8S_COMMIT" != "$WERCKER_GIT_COMMIT" ]; then
+                echo "[ERROR] Kubernetes deployments enabled. Please deploy to K8s via falcon before deploying here."
+                exit 1
+              fi
             fi
       - razorpay/aws-code-deploy@0.0.32:
           key: $AWS_KEY
@@ -160,33 +151,28 @@ deploy:
          code: |
             python scripts/post_deploy_notifier.py
 deploy-canary:
+    box:
+      id: razorpay/containers:php7
+      username: $DOCKERHUB_USER
+      password: $DOCKERHUB_PASSWORD
     steps:
       - script:
           name: Check if canary branch is up-to-date on prod-api-canary
           code: |
             MASTER=$(git rev-parse master)
             if [ "$APP_ENV" == "prod" ] && [ "$CANARY" == "true" ]; then
-              if [ "$WERCKER_GIT_BRANCH" != "canary" ]; then
-                echo "[ERROR] Cannot deploy a non-canary branch to prod-canary instance"
+              if [ "$WERCKER_GIT_BRANCH" != "canary" ] && [ "$WERCKER_GIT_BRANCH" != "master" ]; then
+                echo "[ERROR] Cannot deploy a non-canary/non-master branch to prod-canary"
                 exit 1
               fi
-              if [ ! -n $(git rev-list HEAD | grep $MASTER) ]; then
-                echo "[ERROR] Cannot deploy outdated branch to prod-canary"
-                exit 1
-              fi
+              ( git rev-list HEAD | grep $MASTER ) || ( echo "[ERROR] Cannot deploy outdated branch to prod-canary" && exit 1)
             fi
-      - script:
-          name: List directory
-          code: ls -lah
       - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
       - script:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
-      - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
       - razorpay/aws-code-deploy@0.0.25:
           key: $AWS_KEY
           secret: $AWS_SECRET
@@ -220,6 +206,10 @@ deploy-canary:
          code: |
             python scripts/post_deploy_notifier.py
 deploy-dark:
+    box:
+      id: razorpay/containers:php7
+      username: $DOCKERHUB_USER
+      password: $DOCKERHUB_PASSWORD
     steps:
       - script:
           name: Check if dark branch is up-to-date
@@ -236,17 +226,11 @@ deploy-dark:
               fi
             fi
       - script:
-          name: List directory
-          code: ls -lah
-      - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
       - script:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
-      - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
       - razorpay/aws-code-deploy@0.0.25:
           key: $AWS_KEY
           secret: $AWS_SECRET

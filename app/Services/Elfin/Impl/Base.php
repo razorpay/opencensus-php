@@ -8,9 +8,17 @@ use RZP\Exception;
 
 abstract class Base
 {
-    abstract public function shorten(string $url, bool $fail = false);
+    /**
+     * Shorten given url
+     * @param  string       $url
+     * @param  array        $input
+     * @param  bool|boolean $fail - If fail is passed as true it'll bubble up ex.
+     * @return string
+     * @throws \Throwable
+     */
+    abstract public function shorten(string $url, array $input = [], bool $fail = false);
 
-    protected function makeRequestAndValidateHeader(string $api, array $headers, $params)
+    protected function makeRequestAndValidateHeader(string $api, array $headers, $params = [])
     {
         $res = Requests::post($api, $headers, $params);
 

@@ -3,7 +3,6 @@
 namespace RZP\Models\Batch\Helpers;
 
 use RZP\Models\Merchant;
-use RZP\Models\BankAccount;
 use RZP\Models\Batch\Header;
 use RZP\Models\Merchant\Detail\Entity as MDEntity;
 
@@ -55,25 +54,12 @@ class SubMerchant
             MDEntity::BUSINESS_OPERATION_PIN      => $e[Header::OPERATIONAL_PINCODE],
             MDEntity::BUSINESS_DOE                => $e[Header::DOE],
             MDEntity::GSTIN                       => $e[Header::GSTIN],
-            MDEntity::TRANSACTION_VOLUME          => $e[Header::EXPECTED_ANNUAL_VOLUME],
-            MDEntity::TRANSACTION_VALUE           => $e[Header::AVG_TRANSACTION_VALUE],
             MDEntity::PROMOTER_PAN                => $e[Header::PROMOTER_PAN],
             MDEntity::PROMOTER_PAN_NAME           => $e[Header::PROMOTER_PAN_NAME],
             MDEntity::BUSINESS_WEBSITE            => $e[Header::WEBSITE_URL],
-            MDEntity::WEBSITE_ABOUT               => $e[Header::WEBSITE_ABOUT],
-            MDEntity::WEBSITE_CONTACT             => $e[Header::WEBSITE_CONTACT],
-            MDEntity::WEBSITE_PRIVACY             => $e[Header::WEBSITE_PRIVACY],
-            MDEntity::WEBSITE_PRICING             => $e[Header::WEBSITE_PRICING],
-            MDEntity::WEBSITE_REFUND              => $e[Header::WEBSITE_REFUND],
-            MDEntity::WEBSITE_TERMS               => $e[Header::WEBSITE_TERMS],
             MDEntity::BANK_ACCOUNT_NAME           => $e[Header::BANK_ACCOUNT_NAME],
             MDEntity::BANK_BRANCH_IFSC            => $e[Header::BANK_BRANCH_IFSC],
             MDEntity::BANK_ACCOUNT_NUMBER         => $e[Header::BANK_ACCOUNT_NUMBER],
-            MDEntity::BANK_ACCOUNT_TYPE           => $e[Header::BANK_ACCOUNT_TYPE],
-            MDEntity::BANK_BENEFICIARY_ADDRESS1   => $e[Header::BANK_ACCOUNT_ADDRESS_1],
-            MDEntity::BANK_BENEFICIARY_CITY       => $e[Header::BANK_ACCOUNT_CITY],
-            MDEntity::BANK_BENEFICIARY_STATE      => $e[Header::BANK_ACCOUNT_STATE],
-            MDEntity::BANK_BENEFICIARY_PIN        => $e[Header::BANK_ACCOUNT_PINCODE],
         ];
     }
 }

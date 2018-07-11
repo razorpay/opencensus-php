@@ -96,13 +96,19 @@ class Selector extends Base\Core
 
     public function select()
     {
-        $allTerminals = $this->getTerminals();
+        $allTerminals = $this->repo->useSlave(function ()
+        {
+            return $this->getTerminals();
+        });
 
         $verbose = $this->isVerboseLogEnabled();
 
         $this->traceTerminals($allTerminals, 'Terminals fetched from db', $verbose);
 
-        $applicableRules = (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
+        $applicableRules = $this->repo->useSlave(function ()
+        {
+            return (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
+        });
 
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
 
@@ -178,8 +184,7 @@ class Selector extends Base\Core
         // Fetch terminals for both the current merchant and the shared Merchant
         $merchantTerminals = $this->repo
                                   ->terminal
-                                  ->getTerminalsForMerchantAndSharedMerchant(
-                                                        $this->input['merchant']);
+                                  ->getTerminalsForMerchantAndSharedMerchant($this->input['merchant']);
 
         $payment = $this->input['payment'];
 

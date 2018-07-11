@@ -698,23 +698,25 @@ return [
     ],
 
     'testEditMerchantConfig' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'brand_color' => '00bcd4',
-                'handle'      => 'LOLO',
+                'brand_color'         => '00bcd4',
+                'handle'              => 'LOLO',
+                'invoice_label_field' => 'business_name',
             ],
-            'url' => '/account/config',
-            'method' => 'put',
-            'server' => [
+            'url'     => '/account/config',
+            'method'  => 'put',
+            'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
         ],
         'response' => [
             'content' => [
-                'id'          => '10000000000000',
-                'brand_color' => '#00BCD4',
-                'handle'      => 'LOLO',
+                'id'                  => '10000000000000',
+                'brand_color'         => '#00BCD4',
+                'handle'              => 'LOLO',
+                'invoice_label_field' => 'business_name',
             ]
         ]
     ],
@@ -737,6 +739,29 @@ return [
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantInvalidInvoiceNameField' => [
+        'request'   => [
+            'content' => [
+                'invoice_label_field' => 'random',
+            ],
+            'url'     => '/account/config',
+            'method'  => 'put',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected invoice label field is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -1340,6 +1365,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'mode'  => 'test',
                 'magic' => false,
             ],
         ],
@@ -1415,6 +1441,34 @@ return [
                         'payment_method'  => 'wallet',
                         'issuer'          => 'olamoney',
                         'display_text'    => 'Merchant specific offer',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithMultipleOrderOffers' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => null
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name' => 'Test Offer',
+                        'payment_method' => 'card',
+                        'payment_network' => 'VISA',
+                        'issuer' => 'HDFC',
+                    ],
+                    [
+                        'name' => 'Test Offer',
+                        'payment_method' => 'card',
+                        'payment_network' => 'VISA',
+                        'issuer' => 'HDFC',
                     ]
                 ]
             ],
@@ -1642,6 +1696,36 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithEmiOffer' => [
+        'request' => [
+            'url'    => null,
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity'         => 'methods',
+                    'card'           => true,
+                    'credit_card'    => true,
+                    'debit_card'     => true,
+                    'emi'            => true,
+                    'emi_plans'      => [],
+                    'emi_options'    => [],
+                    'emi_subvention' => 'customer'
+                    ],
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'emi',
+                        'display_text'    => 'Some display text',
+                        'original_amount' => 100000,
+                        'amount'          => 100000,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithAllCardGeatewayDowntime' => [
         'request' => [
             'url' => '/preferences',
@@ -1728,7 +1812,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 29,
+                'count' => 15,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1762,27 +1846,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'DCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'DCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'DEUT',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'DBSS',
                         ],
                     ],
@@ -1797,21 +1860,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'IBKL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'JSBP',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'KVBL',
                         ],
                     ],
                     [
@@ -1825,63 +1874,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'PMCB',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBBJ',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBHY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBIN',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBMY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'STBP',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBTR',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'SCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SIBL',
                         ],
                     ],
                     [
@@ -1896,13 +1889,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SYNB',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'TMBL',
                         ],
                     ],
                     [
@@ -1946,7 +1932,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 30,
+                'count' => 16,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1987,27 +1973,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'DCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'DCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'DEUT',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'DBSS',
                         ],
                     ],
@@ -2022,21 +1987,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'IBKL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'JSBP',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'KVBL',
                         ],
                     ],
                     [
@@ -2050,63 +2001,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'PMCB',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBBJ',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBHY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBIN',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBMY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'STBP',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBTR',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'SCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SIBL',
                         ],
                     ],
                     [
@@ -2121,13 +2016,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'SYNB',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'TMBL',
                         ],
                     ],
                     [
@@ -2355,27 +2243,13 @@ return [
                                 'BBKM',
                                 'BKDN',
                                 'COSB',
-                                'DCBL',
-                                'DCBL',
-                                'DEUT',
                                 'DBSS',
                                 'IDFB',
-                                'IBKL',
                                 'JSBP',
-                                'KVBL',
                                 'NKGS',
-                                'PMCB',
-                                'SBBJ',
-                                'SBHY',
-                                'SBIN',
-                                'SBMY',
-                                'STBP',
-                                'SBTR',
                                 'SCBL',
-                                'SIBL',
                                 'SVCB',
                                 'SYNB',
-                                'TMBL',
                                 'TNSC',
                                 'BARB_C',
                                 'PUNB_C',
@@ -3066,7 +2940,7 @@ return [
                 'email' => 'differentemail@razorpay.com'
             ],
             'server' => [
-                'HTTP_' . \RZP\Http\BasicAuth\BasicAuth::ACCOUNT_HEADER_KEY => '10000000000044',
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000044',
             ],
         ],
         'response'  => [
@@ -3082,5 +2956,19 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
         ],
-    ]
+    ],
+
+    'testOfferCheckoutPreferences' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => null
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

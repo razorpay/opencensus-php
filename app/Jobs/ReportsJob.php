@@ -2,19 +2,12 @@
 
 namespace RZP\Jobs;
 
-use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Report\Types\BasicEntityReport;
 
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
-class ReportsJob extends Job implements ShouldQueue
+class ReportsJob extends Job
 {
-    use InteractsWithQueue, SerializesModels;
-
     const MAX_ALLOWED_ATTEMPTS = 5;
     const RELEASE_WAIT_SECS    = 300;
 
@@ -26,6 +19,8 @@ class ReportsJob extends Job implements ShouldQueue
     protected $entity;
 
     protected $merchantId;
+
+    public $timeout = 300;
 
     /**
      * Create a new job instance.

@@ -15,9 +15,13 @@ use RZP\Models\Settlement\Holidays;
 
 class BeneficiaryFile extends Base\Core
 {
-    public function generate(string $channel): array
+    public function generate(array $input, string $channel): array
     {
-        $bankAccounts = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt();
+        (new Validator)->validateInput('merchant_beneficiary_register', $input);
+
+        $merchantIds = $input['merchant_ids'] ?? [];
+
+        $bankAccounts = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt($merchantIds);
 
         $result = $this->generateBeneficiaryFile($bankAccounts, $channel);
 
@@ -55,16 +59,24 @@ class BeneficiaryFile extends Base\Core
 
         $newBeneficiaryCount = $bankAccounts->count();
 
-        $message = "Merchant Beneficiary file generated. Beneficiary added since".
-            " last report is ". $newBeneficiaryCount;
-
-        $this->app['slack']->queue($message, [], ['channel' => Config::get('slack.channels.settlements')]);
-
         $this->trace->info(
             TraceCode::MERCHANT_BENEFICIARY_FILE_GENERATE,
             ['new_beneficiaries_added' => $newBeneficiaryCount]);
 
         $result = $this->generateBeneficiaryFile($bankAccounts, $channel, $input);
+
+        // should notify after beneficiary file is generated.
+        $message = "Merchant Beneficiary file generated. Beneficiary added since".
+            " last report is ". $newBeneficiaryCount;
+
+        $this->app['slack']->queue(
+            $message,
+            [
+                'channel' => $channel,
+            ],
+            [
+                'channel' => Config::get('slack.channels.settlements')
+            ]);
 
         return $result;
     }

@@ -392,4 +392,8 @@ return [
             ],
         ],
     ],
+
+    E::NODAL_STATEMENT => [],
+
+    E::PAYMENT_LINK => [],
 ];

@@ -50,6 +50,7 @@ class Netbanking
     const ACCOUNT_NUMBER_LENGTHS = [
         IFSC::UTIB => 15,
         IFSC::FDRL => 14,
+        IFSC::CSBK => 18,
     ];
 
     protected static $self = [
@@ -62,13 +63,16 @@ class Netbanking
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::ORBC,
+        IFSC::CSBK,
         self::PUNB_R,
         self::BARB_R,
     ];
 
     protected static $selfCorp = [
         self::ICIC_C,
-        self::UTIB_C
+        self::UTIB_C,
+        self::BARB_C
     ];
 
     protected static $selfTPV = [
@@ -78,18 +82,19 @@ class Netbanking
         IFSC::UTIB,
         IFSC::FDRL,
         IFSC::RATN,
-        // IFSC::INDB,
+        IFSC::INDB,
+        IFSC::CSBK,
     ];
 
     protected static $paytm = array(
         IFSC::CITI,
         IFSC::CIUB,
-        IFSC::CSBK,
+        // IFSC::CSBK,
         // IFSC::FDRL,
         IFSC::HDFC,
         IFSC::ICIC,
         IFSC::IDIB,
-        IFSC::INDB,
+        // IFSC::INDB,
         IFSC::IOBA,
         IFSC::JAKA,
         IFSC::KKBK,
@@ -114,7 +119,6 @@ class Netbanking
         IFSC::CNRB,
         IFSC::CORP,
         IFSC::COSB,
-        IFSC::CSBK,
         IFSC::DCBL,
         IFSC::DCBL,
         IFSC::DEUT,
@@ -123,9 +127,8 @@ class Netbanking
         IFSC::IDFB,
         // IFSC::FDRL,
         IFSC::IBKL,
-        IFSC::ICIC,
         IFSC::IDIB,
-        IFSC::INDB,
+        // IFSC::INDB,
         IFSC::IOBA,
         IFSC::JAKA,
         IFSC::JSBP,
@@ -134,10 +137,10 @@ class Netbanking
         IFSC::KVBL,
         IFSC::MAHB,
         IFSC::NKGS,
-        IFSC::ORBC,
+        // IFSC::ORBC,
         IFSC::PMCB,
         IFSC::PSIB,
-        IFSC::RATN,
+        // IFSC::RATN,
         IFSC::SBBJ,
         IFSC::SBHY,
         IFSC::SBIN,
@@ -157,7 +160,7 @@ class Netbanking
         IFSC::UTIB,
         IFSC::VIJB,
         IFSC::YESB,
-        self::BARB_R,
+        // self::BARB_R,
         self::PUNB_R,
         self::LAVB_R,
         self::BARB_C,
@@ -166,19 +169,16 @@ class Netbanking
     ];
 
     protected static $billdeskCorp = [
-        self::ICIC_C,
     ];
 
     protected static $billdeskTPV = [
-        IFSC::ALLA,
         IFSC::ANDB,
         IFSC::CIUB,
         IFSC::CORP,
         IFSC::IBKL,
-        IFSC::INDB,
+        // IFSC::INDB,
         IFSC::KVBL,
         self::LAVB_R,
-        IFSC::ICIC,
         IFSC::UTIB,
         IFSC::BKID,
         IFSC::SBBJ,
@@ -190,15 +190,51 @@ class Netbanking
     ];
 
     protected static $atom = [
-        IFSC::UTIB,
+        IFSC::ANDB,
         IFSC::BKID,
         IFSC::MAHB,
         IFSC::CNRB,
-        IFSC::CSBK,
         IFSC::CBIN,
-        IFSC::CITI,
-        IFSC::CIUB,
         IFSC::CORP,
+        IFSC::DCBL,
+        IFSC::DEUT,
+        IFSC::DLXB,
+        IFSC::ESFB,
+        // IFSC::FDRL,
+        IFSC::IBKL,
+        IFSC::IDIB,
+        IFSC::IOBA,
+        // IFSC::INDB,
+        IFSC::JAKA,
+        IFSC::KARB,
+        IFSC::KVBL,
+        self::LAVB_R,
+        // IFSC::ORBC,
+        IFSC::PMCB,
+        IFSC::PSIB,
+        self::PUNB_R,
+        // IFSC::RATN,
+        IFSC::SRCB,
+        IFSC::SIBL,
+        IFSC::SBIN,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBMY,
+        IFSC::STBP,
+        IFSC::SBTR,
+        IFSC::TMBL,
+        IFSC::UCBA,
+        IFSC::UBIN,
+        IFSC::UTBI,
+        IFSC::VIJB,
+    ];
+
+    protected static $atomTPV = [
+        IFSC::UTIB,
+        IFSC::BKID,
+        IFSC::MAHB,
+        IFSC::CSBK,
+        IFSC::CIUB,
         IFSC::DCBL,
         IFSC::DEUT,
         IFSC::DLXB,
@@ -207,44 +243,34 @@ class Netbanking
         IFSC::ICIC,
         IFSC::IBKL,
         IFSC::IDIB,
-        IFSC::IOBA,
         IFSC::INDB,
         IFSC::JAKA,
         IFSC::KARB,
         IFSC::KVBL,
         IFSC::KKBK,
-        self::LAVB_R,
+        IFSC::LAVB,
+        IFSC::SRCB,
         IFSC::SIBL,
-        // IFSC::SBBJ,
-        IFSC::SBHY,
         IFSC::SBIN,
-        // IFSC::SBMY,
-        IFSC::STBP,
-        // IFSC::SBTR,
-        IFSC::UCBA,
-        IFSC::UBIN,
-        IFSC::VIJB,
+        IFSC::TMBL,
         IFSC::YESB,
     ];
-
-    protected static $atomTPV = [];
 
     protected static $ebs = [
         IFSC::ANDB,
         IFSC::CBIN,
         IFSC::CNRB,
         IFSC::CORP,
-        IFSC::CSBK,
         IFSC::DLXB,
         // IFSC::FDRL,
         IFSC::IDIB,
         IFSC::IOBA,
-        IFSC::INDB,
+        // IFSC::INDB,
         IFSC::JAKA,
         IFSC::KARB,
         IFSC::KKBK,
         IFSC::MAHB,
-        IFSC::ORBC,
+        // IFSC::ORBC,
         IFSC::PSIB,
         IFSC::SRCB,
         IFSC::UBIN,
@@ -270,15 +296,13 @@ class Netbanking
         */
     ];
 
-    protected static $defaultDisabled = [
-        IFSC::AIRP,
-    ];
+    protected static $defaultDisabled = [];
 
     protected static $ebsTPV = [];
 
     public static function isSupportedBank($bank)
     {
-        return (in_array($bank, self::getAllBanks()));
+        return (in_array($bank, self::getAllBanks(), true));
     }
 
     /**
@@ -496,7 +520,7 @@ class Netbanking
         return in_array($issuer, $gatewayExclusiveBanks, true) === true;
     }
 
-    public static function isCorporateTerminalRequired($bank)
+    public static function isCorporateBank($bank)
     {
         $corpExclusiveBank = array_merge(self::$selfCorp, self::$billdeskCorp);
 

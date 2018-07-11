@@ -4,8 +4,8 @@ namespace RZP\Gateway\Enach\Rbl;
 
 class Status
 {
-    const DEBIT_SUCCESS = '';
-    const DEBIT_REJECT  = 'reject';
+    const DEBIT_SUCCESS = 'paid';
+    const DEBIT_REJECT  = 'bounce';
 
     const ACKNOWLEDGE_SUCCESS = 'true';
     const ACKNOWLEDGE_FAILURE = 'false';
@@ -31,6 +31,6 @@ class Status
     {
         $status = strtolower($status);
 
-        return ($status !== self::DEBIT_REJECT);
+        return ($status === self::DEBIT_SUCCESS);
     }
 }

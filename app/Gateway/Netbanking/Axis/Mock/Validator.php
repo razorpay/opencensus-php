@@ -41,15 +41,17 @@ class Validator extends Base\Validator
         Emandate\RequestFields::TYPE            => 'required|string|in:TEST',
         Emandate\RequestFields::REQUEST_ID      => 'required|alpha_num|size:14',
         Emandate\RequestFields::CUSTOMER_REF_NO => 'required|alpha_num|size:14',
-        Emandate\RequestFields::BANK_REF_NO     => 'required|string',
+        // When we do not get the callback, we would not have BRN and would not send it
+        Emandate\RequestFields::BANK_REF_NO     => 'sometimes|string',
         Emandate\RequestFields::CHECKSUM        => 'required|string',
     ];
 
     protected static $verifyRules = [
         RequestFields::VERIFY_PAYEE_ID          => 'required|string',
-        RequestFields::VERIFY_ITC               => 'required|string',
-        RequestFields::VERIFY_PRN               => 'required|string|size:14',
-        RequestFields::VERIFY_AMT               => 'required|numeric',
-        RequestFields::VERIFY_DATE              => 'required|date_format:Y-m-d',
+        RequestFields::VERIFY_ITC               => 'sometimes|string',
+        RequestFields::VERIFY_PRN               => 'sometimes|string|size:14',
+        RequestFields::VERIFY_AMT               => 'sometimes|numeric',
+        RequestFields::VERIFY_DATE              => 'sometimes|date_format:Y-m-d',
+        RequestFields::VERIFY_ENCDATA           => 'sometimes|string',
     ];
 }

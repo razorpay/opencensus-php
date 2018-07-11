@@ -24,7 +24,7 @@ app/Reconciliator/*                                     prashanth.yv@razorpay.co
 app/Gateway/*                                           vivek.kumar@razorpay.com
 app/Gateway/Aeps/*                                      albin.george@razorpay.com                               vivek.kumar@razorpay.com
 app/Gateway/Amex/*                                      priyanshu.chhazed@razorpay.com                          vivek.kumar@razorpay.com
-# app/Gateway/Atom/*
+app/Gateway/Atom/*                                      shubham.badkur@razorpay.com                             harman.singh@razorpay.com               vivek.kumar@razorpay.com
 # app/Gateway/AxisGenius/*
 app/Gateway/AxisMigs/*                                  vivek.kumar@razorpay.com
 app/Gateway/Billdesk/*                                  vivek.kumar@razorpay.com

@@ -3,45 +3,38 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use Request;
 
 class ItemController extends Controller
 {
     public function createItem()
     {
-        $input = Request::all();
-
-        $item = $this->service()->create($input);
+        $item = $this->service()->create($this->input);
 
         return ApiResponse::json($item);
     }
 
-    public function getItem($id)
+    public function getItem(string $id)
     {
-        $item = $this->service()->fetch($id);
+        $item = $this->service()->fetch($id, $this->input);
 
         return ApiResponse::json($item);
     }
 
     public function getItems()
     {
-        $input = Request::all();
-
-        $items = $this->service()->fetchMultiple($input);
+        $items = $this->service()->fetchMultiple($this->input);
 
         return ApiResponse::json($items);
     }
 
-    public function updateItem($id)
+    public function updateItem(string $id)
     {
-        $input = Request::all();
-
-        $item = $this->service()->update($id, $input);
+        $item = $this->service()->update($id, $this->input);
 
         return ApiResponse::json($item);
     }
 
-    public function deleteItem($id)
+    public function deleteItem(string $id)
     {
         $response = $this->service()->delete($id);
 

@@ -260,7 +260,7 @@ class PaymentCreateTest extends TestCase
         $expireBy = Carbon::now(Timezone::IST)->addDays(10)->getTimestamp();
 
         $payment['recurring_token'] = [
-            'max_amount' => 2000,
+            'max_amount' => 3000,
             'expire_by' => $expireBy,
         ];
 
@@ -271,9 +271,11 @@ class PaymentCreateTest extends TestCase
         $payment['token'] = $paymentEntity['token_id'];
         unset($payment['bank_account'], $payment['auth_type']);
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => 2000]);
-        $payment['amount'] = 2000;
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
+        $payment['amount'] = 3000;
         $payment['order_id'] = $order->getPublicId();
+        // basically, recurring_token max_amount should not matter
+        // here because this is second recurring payment
         $payment['recurring_token']['max_amount'] = 1000;
 
         //
@@ -284,7 +286,7 @@ class PaymentCreateTest extends TestCase
 
         $token = $this->getEntityById('token', $paymentEntity['token_id'], true);
 
-        $this->assertEquals(2000, $token['max_amount']);
+        $this->assertEquals(3000, $token['max_amount']);
     }
 
     public function testSecondRecurringWithMissingBankAccountDetailsAndAuthType()
@@ -304,8 +306,8 @@ class PaymentCreateTest extends TestCase
         $payment['token'] = $paymentEntity['token_id'];
         unset($payment['bank_account'], $payment['auth_type']);
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => 2000]);
-        $payment['amount'] = 2000;
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
+        $payment['amount'] = 3000;
         $payment['order_id'] = $order->getPublicId();
 
         //

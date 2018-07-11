@@ -31,7 +31,7 @@ class FeeCalculator
     // '29' - Karnataka's state code
     const RZP_GST_STATE_CODE = '29';
 
-    const RZP_STATE = 'karnataka';
+    const RZP_STATE = 'KA';
 
     const CARD_TAX_CUT_OFF = 200000;
 
@@ -111,7 +111,11 @@ class FeeCalculator
         if (($this->entity->merchant->isFeeBearerCustomer() === false) and
             ($amount !== 0))
         {
-            if ($totalFees > $amount)
+            list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();
+
+            if (($totalFees > $amount) and
+                ($amountCredits <= 0) and
+                ($totalFees > $feeCredits))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
@@ -124,6 +128,17 @@ class FeeCalculator
         }
 
         return [$totalFees, $totalTaxes];
+    }
+
+    protected function getAvailableAmountOrFeeCredits()
+    {
+        $merchantBalance = $this->entity->merchant->balance;
+
+        $amountCredits = $merchantBalance->getAmountCredits();
+
+        $feeCredits = $merchantBalance->getFeeCredits();
+
+        return [$amountCredits, $feeCredits];
     }
 
     public static function getTaxRate()
@@ -331,6 +346,16 @@ class FeeCalculator
 
     protected function getRelevantPricingRuleForUPI($rules)
     {
+        $payment = $this->entity;
+
+        $receiverType = $payment->getReceiverType();
+
+        $filters1 = [
+            [Pricing\Entity::RECEIVER_TYPE, $receiverType, true, null],
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters1);
+
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
@@ -459,11 +484,17 @@ class FeeCalculator
 
         $international = $payment->isInternational();
 
+        $receiverType = $payment->getReceiverType();
+
+        $authType = $payment->getAuthType();
+
         $network = Card\Network::getCode($payment->card->getNetwork());
 
         // Current Implementation
+        // * Filter based on receiver type
         // * Filter based on international
         // * Filter based on Network
+        // * Filter based on Auth Type
         // * If its amex, then stop
         // * Filter based on Card Type
         // * Filter based on AmountRange
@@ -471,10 +502,15 @@ class FeeCalculator
 
         // Structure is as follows:
         // Field name, Field value, Choose default (true/false), default value
-        $filters1 = array(
+
+        // The sequence should not be changed as it changes the behaviour.
+        // Right now if the receiver_type is present it needs to be selected no
+        // matter what otherwise default type is used
+        $filters1 = [
+            [Pricing\Entity::RECEIVER_TYPE,         $receiverType,  false,  null    ],
             [Pricing\Entity::INTERNATIONAL,         $international, false,  false   ],
             [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
-        );
+        ];
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
 
@@ -487,6 +523,7 @@ class FeeCalculator
 
         $filters2 = array(
             [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      true,   null    ],
+            [Pricing\Entity::AUTH_TYPE,             $authType,      true,   null    ],
         );
 
         $rules = $this->applyFiltersOnRules($rules, $filters2);
@@ -694,16 +731,17 @@ class FeeCalculator
         return $verbose;
     }
 
-    protected function createFeeBreakup($name, $percent, $amount, $pricingRuleId = null)
+    protected function createFeeBreakup($name, $percent, $amount, $pricingRule = null)
     {
         $params = [
-            Transaction\FeeBreakup\Entity::NAME                 => $name,
-            Transaction\FeeBreakup\Entity::PERCENTAGE           => $percent,
-            Transaction\FeeBreakup\Entity::AMOUNT               => $amount,
-            Transaction\FeeBreakup\Entity::PRICING_RULE_ID      => $pricingRuleId,
+            Transaction\FeeBreakup\Entity::NAME       => $name,
+            Transaction\FeeBreakup\Entity::PERCENTAGE => $percent,
+            Transaction\FeeBreakup\Entity::AMOUNT     => $amount,
         ];
 
         $feeBreakup = (new Transaction\FeeBreakup\Entity)->build($params);
+
+        $feeBreakup->pricingRule()->associate($pricingRule);
 
         return $feeBreakup;
     }
@@ -726,7 +764,7 @@ class FeeCalculator
                                 $rule->getFeature(),
                                 null,
                                 $fee,
-                                $rule->getId());
+                                $rule);
 
         $this->feesSplit->push($rzpFee);
 
@@ -819,7 +857,9 @@ class FeeCalculator
         }
         else if (empty($registeredBusinessStateCode) === false)
         {
-            $intraStateGstApplicable = (strtolower($registeredBusinessStateCode) === self::RZP_STATE);
+            $merchantStateCode = substr($registeredBusinessStateCode, 0, 2);
+
+            $intraStateGstApplicable = (strtoupper($merchantStateCode) === self::RZP_STATE);
         }
 
         if ($intraStateGstApplicable === true)

@@ -55,6 +55,21 @@ class Service extends Base\Service
         return (new Core)->saveMerchantDetails($input, $this->merchant);
     }
 
+    /**
+     * This function is used to patch merchant details fields
+     * @param array $input
+     *
+     * @return array
+     */
+    public function patchMerchantDetails(array $input): array
+    {
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $merchantDetails = (new Core)->patchMerchantDetails($merchantDetails, $input);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
     public function uploadActivationFileAdmin(string $merchantId, array $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
@@ -101,6 +116,9 @@ class Service extends Base\Service
         $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
 
         $this->repo->saveOrFail($merchantDetails);
+
+        // Previous $response would become stale while simulataneous uploads. So prepare fresh response.
+        $response = $core->createResponse($merchantDetails);
 
         return $response;
     }
@@ -320,6 +338,16 @@ class Service extends Base\Service
         $merchantDetails = (new Core)->updateWebsiteDetails($merchantDetails, $input);
 
         return $merchantDetails->toArrayPublic();
+    }
+
+    /**
+     * This function is used for getting business categories subcategories list
+     *
+     * @return array
+     */
+    public function getBusinessCategories(): array
+    {
+        return BusinessCategory::SUBCATEGORY_MAP;
     }
 
     public function getRejectionReasons()
@@ -545,16 +573,16 @@ class Service extends Base\Service
             throw new Exception\RuntimeException('Missing Permission');
         }
 
-        $admins = new Base\Collection;
+        $admins = [];
 
         foreach ($permission->roles as $role)
         {
             foreach ($role->admins as $roleAdmin)
             {
-                $admins->push($roleAdmin->toArrayPublic());
+                $admins[] = $roleAdmin->toArrayPublic();
             }
         }
 
-        return $admins;
+        return multidim_array_unique($admins, Admin\Admin\Entity::ID);
     }
 }

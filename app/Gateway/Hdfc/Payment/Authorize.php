@@ -244,6 +244,29 @@ trait Authorize
             case Payment\Result::CANCELED:
                 $errorCode = Hdfc\ErrorCode::RP00011;
                 break;
+            case Payment\Result::NOT_APPROVED_IPAY:
+                $errorCode = Hdfc\ErrorCode::RP00016;
+                break;
+
+            case Payment\Result::NOT_CAPTURED_IPAY:
+                $errorCode = Hdfc\ErrorCode::RP00017;
+                break;
+
+            case Payment\Result::HOST_TIMEOUT_IPAY:
+                $errorCode = Hdfc\ErrorCode::RP00015;
+                break;
+
+            case Payment\Result::DENIED_BY_RISK_IPAY:
+                $errorCode = Hdfc\ErrorCode::GW00256;
+                break;
+
+            case Payment\Result::AUTH_ERROR_IPAY:
+                $errorCode = Hdfc\ErrorCode::RP00020;
+                break;
+
+            case Payment\Result::DENIED_CAPTURE:
+                $errorCode = Hdfc\ErrorCode::RP00021;
+                break;
 
             case '':
                 $errorCode = Hdfc\ErrorCode::RP00002;

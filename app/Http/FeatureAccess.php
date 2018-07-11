@@ -70,6 +70,7 @@ class FeatureAccess
      */
     public function verifyFeatureAccess($authReturn, string $bearerToken = null)
     {
+        // If the previous calls have thrown an error, just forward the same error
         if ($authReturn !== null)
         {
             return $authReturn;

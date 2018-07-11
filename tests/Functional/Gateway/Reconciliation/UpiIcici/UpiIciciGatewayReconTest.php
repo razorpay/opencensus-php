@@ -5,17 +5,18 @@ use Illuminate\Http\UploadedFile;
 
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Models\Base\PublicEntity;
 use RZP\Constants\Timezone;
+use RZP\Models\Batch\Status;
+use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
 class UpiIciciGatewayReconTest extends TestCase
 {
     use ReconTrait;
-    use PaymentTrait;
+    use BatchTestTrait;
 
     /**
      * @var array
@@ -49,11 +50,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile, 'UpiIcici');
-
-        // We assert that all 3 payments were reconciled
-        $this->assertEquals(3, $response['total_count']);
-        $this->assertEquals(3, $response['success_count']);
+        $this->reconcile($uploadedFile, 'UpiIcici');
 
         $refunds = $this->getEntities('refund', [], true);
 
@@ -70,6 +67,8 @@ class UpiIciciGatewayReconTest extends TestCase
             // We hardcode 04-12-2017 05:09 PM in the upi icici reconciliator class
             $this->assertEquals(1512387540, $transaction['gateway_settled_at']);
         }
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testReconRefundAmountValidationFailure()
@@ -98,11 +97,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile, 'UpiIcici');
-
-        // We assert that all 3 payments were reconciled
-        $this->assertEquals(3, $response['total_count']);
-        $this->assertEquals(3, $response['failure_count']);
+        $this->reconcile($uploadedFile, 'UpiIcici');
 
         $refunds = $this->getEntities('refund', [], true);
 
@@ -156,11 +151,7 @@ class UpiIciciGatewayReconTest extends TestCase
         // The refund id's sent across in the recon file will not be found in the DB.
         // This will force refund recon to create new refunds to reconcile.
         //
-        $response = $this->reconcile($uploadedFile, 'UpiIcici');
-
-        // We assert that all 3 payments were reconciled
-        $this->assertEquals(3, $response['total_count']);
-        $this->assertEquals(3, $response['success_count']);
+        $this->reconcile($uploadedFile, 'UpiIcici');
 
         $refunds = $this->getEntities('refund', [], true);
 
@@ -195,11 +186,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile, 'UpiIcici');
-
-        // We assert that all 3 payments were reconciled
-        $this->assertEquals(3, $response['total_count']);
-        $this->assertEquals(3, $response['success_count']);
+        $this->reconcile($uploadedFile, 'UpiIcici');
 
         $payments = $this->getEntities('payment', [], true);
 
@@ -213,6 +200,8 @@ class UpiIciciGatewayReconTest extends TestCase
 
             $this->assertNotNull($transaction['reconciled_at']);
         }
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testPaymentIdAbsentReconciliation()
@@ -296,11 +285,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile, 'UpiIcici');
-
-        // We assert that the 1 payment was not reconciled
-        $this->assertEquals(1, $response['total_count']);
-        $this->assertEquals(1, $response['failure_count']);
+        $this->reconcile($uploadedFile, 'UpiIcici');
 
         $payment = $this->getLastEntity('payment', true);
 

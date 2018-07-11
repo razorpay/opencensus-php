@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Helpers\Reconciliator;
 
+use Excel;
 use Mockery;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
@@ -42,7 +43,9 @@ trait ReconTrait
             ],
         ];
 
-        return $this->makeRequestAndGetContent($request)[0];
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content[0] ?? $content;
     }
 
     protected function setMockRecon($recon, $gateway = null)
@@ -54,6 +57,8 @@ trait ReconTrait
 
     protected function mockReconContentFunction($closure, $gateway = null, array $input = [])
     {
+        $gateway = $gateway ?: $this->gateway;
+
         $recon = $this->mockRecon($gateway, $input)
                       ->shouldReceive('content')
                       ->andReturnUsing($closure)
@@ -75,17 +80,25 @@ trait ReconTrait
 
     protected function makePaymentsSince(int $createdAt, int $count = 3)
     {
-        for ($i = 0; $i < $count; $i++)
-        {
-            $payments[] = $this->createPayment();
-        }
+        return array_reduce(
+                array_fill(0, $count, 0),
+                function($carry, $item) use ($createdAt)
+                {
+                    $payment = $this->createPayment();
 
-        foreach ($payments as $payment)
-        {
-            $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
-        }
+                    $this->fixtures->edit(
+                        'payment',
+                        $payment,
+                        [
+                            'created_at'    => $createdAt,
+                            'authorized_at' => $createdAt + 10
+                        ]);
 
-        return $payments;
+                    $carry[] = $payment;
+
+                    return $carry;
+                },
+                []);
     }
 
     private function createPayment()
@@ -102,12 +115,40 @@ trait ReconTrait
 
         $payment = $this->fixtures->create('payment', $attributes);
 
-        $transaction = $this->fixtures->create('transaction', ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
+        $transaction = $this->fixtures->create(
+            'transaction',
+            [
+                'entity_id'   => $payment->getId(),
+                'merchant_id' => '10000000000000',
+            ]
+        );
 
         $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
 
         $this->fixtures->create($this->method, ['payment_id' => $payment->getId()]);
 
         return $payment->getId();
+    }
+
+    protected function getExcelString($name, $sheets)
+    {
+        $excel = Excel::create(
+            $name,
+            function ($excel) use ($sheets)
+            {
+                foreach ($sheets as $sheetName => $data)
+                {
+                    $excel->sheet(
+                        $sheetName,
+                        function ($sheet) use ($data)
+                        {
+                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
+                        }
+                    );
+                }
+            }
+        );
+
+        return $excel->string('xlsx');
     }
 }

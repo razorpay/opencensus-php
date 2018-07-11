@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\DispatchRouter;
 use RZP\Models\Base\PublicCollection;
 use RZP\Jobs\GatewayFile as GatewayFileJob;
 
@@ -15,7 +14,9 @@ class Core extends Base\Core
     /**
      * Creates a gateway file entity with input provided and processes it.
      *
-     * @param  array        $input input data
+     * @param  array $input input data
+     *
+     * @return PublicCollection
      */
     public function create(array $input): PublicCollection
     {
@@ -110,8 +111,6 @@ class Core extends Base\Core
      */
     protected function processAsync(Entity $gatewayFile)
     {
-        $gatewayFileJob = new GatewayFileJob($gatewayFile->getId(), $this->mode);
-
-        (new DispatchRouter)->dispatchOn($gatewayFileJob, DispatchRouter::GATEWAY_FILE);
+        GatewayFileJob::dispatch($gatewayFile->getId(), $this->mode);
     }
 }

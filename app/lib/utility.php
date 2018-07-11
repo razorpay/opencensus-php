@@ -42,16 +42,16 @@ if (! function_exists('array_merge_intersect'))
 
 if (! function_exists('array_assoc_flatten'))
 {
-    function array_assoc_flatten(array $array, $parent_key = null)
+    function array_assoc_flatten(array $array, string $separatorFormat = "%s.%s", $parent_key = null)
     {
         $return = array();
 
         foreach ($array as $key => $value)
         {
-            $key = ($parent_key === null) ? $key : $parent_key . '.' . $key;
+            $key = ($parent_key === null) ? $key : sprintf($separatorFormat, $parent_key, $key);
             if (is_array($value))
             {
-                $tmp = array_assoc_flatten($value, $key);
+                $tmp = array_assoc_flatten($value, $separatorFormat, $key);
                 $return = array_merge($return, $tmp);
             }
             else
@@ -441,5 +441,92 @@ if (! function_exists('get_key_from_subarray_match'))
         }
 
         return null;
+    }
+}
+
+if (! function_exists('epoch_format'))
+{
+    /**
+     * Formats given epoch to human readable string representation. Currently returns in one specific format only.
+     * @param  int    $epoch
+     * @return string
+     */
+    function epoch_format(int $epoch): string
+    {
+        return date('M d, Y (h:i A)', $epoch);
+    }
+}
+
+if (! function_exists('multidim_array_unique'))
+{
+    /**
+     * Removes the duplicate array values based on a column key
+     * @param  array    $input
+     * @param  string   $column
+     * @return array
+     */
+    function multidim_array_unique(array $input, string $column): array
+    {
+        $result = [];
+
+        foreach ($input as $v)
+        {
+            $colVal = $v[$column];
+
+            if (isset($result[$colVal]) === false)
+            {
+                $result[$colVal] = $v;
+            }
+        }
+
+        return array_values($result);
+    }
+
+    /**
+     * Sorts the given multi dimensional array based on a key
+     *
+     * @param array $array
+     * @param string $key
+     */
+    function sortMultiDimensionalArray(array & $array, string $key, int $sortOrder = SORT_DESC)
+    {
+        foreach ($array as & $item)
+        {
+            array_multisort(array_map(function ($element) use ($key)
+            {
+                return $element[$key];
+            }, $item), $sortOrder, $item);
+
+        }
+    }
+}
+
+if (! function_exists('money_format_IN'))
+{
+    /**
+     * Formats a number as a Indian currency string.
+     * Refs:
+     * - http://php.net/manual/en/function.money-format.php (Locales files/settings not available on production!)
+     * - https://blog.revathskumar.com/2014/11/regex-comma-seperated-indian-currency-format.html
+     * @param  string $number - Must be string representation of number, e.g. '-123.45'/'123'/'123.00' etc.
+     * @return string
+     */
+    function money_format_IN(string $number): string
+    {
+        return preg_replace('/(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?/', '\\1,', $number);
+    }
+}
+
+if (! function_exists('amount_format_IN'))
+{
+    /**
+     * Formats paise amount as a Indian currency string.
+     *
+     * @param  int|null $amount
+     * @return string
+     */
+    function amount_format_IN(int $amount = null): string
+    {
+        return money_format_IN(number_format($amount / 100, 2, '.', ''));
     }
 }

@@ -38,6 +38,11 @@ class RecurringStatus
         self::REJECTED,
     ];
 
+    protected static $timestampedStatuses = [
+        self::CONFIRMED,
+        self::REJECTED,
+    ];
+
     public static function isRecurringStatusValid($recurringStatus): bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($recurringStatus)));
@@ -59,5 +64,15 @@ class RecurringStatus
     public static function isFinalStatus($recurringStatus): bool
     {
         return (in_array($recurringStatus, self::$finalStatuses, true) === true);
+    }
+
+    public static function isTimestampedStatus($recurringStatus): bool
+    {
+        return (in_array($recurringStatus, self::$timestampedStatuses, true) === true);
+    }
+
+    public static function isWebhookStatus($recurringStatus): bool
+    {
+        return (in_array($recurringStatus, self::$webhookStatuses, true) === true);
     }
 }

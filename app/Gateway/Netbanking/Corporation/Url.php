@@ -6,8 +6,8 @@ class Url
 {
     // TODO: Add live domain later
     const LIVE_DOMAIN   = '';
-    const TEST_DOMAIN   = 'http://210.212.195.74:7777';
+    const TEST_DOMAIN   = 'https://202.62.247.116';
 
-    const AUTHORIZE     = '/RetailBank/OLT';
-    const VERIFY        = '/RetailBank/OLTDVER';
+    const AUTHORIZE     = '/corp/OLT';
+    const VERIFY        = '/corp/OLTDVER';
 }

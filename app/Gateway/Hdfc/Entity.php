@@ -6,7 +6,7 @@ use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {
-    protected $fields = array(
+    protected $fields = [
         'id',
         'payment_id',
         'refund_id',
@@ -25,12 +25,13 @@ class Entity extends Base\Entity
         'avr',
         'arn_no',
         'postdate',
-        'error_code',
+        'error_code2',
         'error_text',
         'created_at',
-        'updated_at');
+        'updated_at'
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         'payment_id',
         'refund_id',
         'gateway_transaction_id',
@@ -47,15 +48,15 @@ class Entity extends Base\Entity
         'ref',
         'avr',
         'postdate',
-        'error_code',
+        'error_code2',
         'error_text',
-    );
+    ];
 
     protected $entity = 'hdfc';
 
     public $incrementing = true;
 
-    protected $guarded = array();
+    protected $guarded = [];
 
     public function payment()
     {
@@ -74,7 +75,7 @@ class Entity extends Base\Entity
 
     public function getErrorCode()
     {
-        return $this->getAttribute('error_code');
+        return $this->getAttribute('error_code2');
     }
 
     public function getResult()

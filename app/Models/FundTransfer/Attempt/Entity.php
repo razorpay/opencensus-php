@@ -2,9 +2,8 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
-use RZP\Constants\Entity as E;
 use RZP\Models\Base;
-use RZP\Models\BankAccount;
+use RZP\Constants\Entity as E;
 use RZP\Models\Settlement\Channel;
 
 class Entity extends Base\PublicEntity
@@ -85,6 +84,10 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
     ];
 
+    protected $ignoredRelations = [
+        'source',
+    ];
+
     /**
      * Generate ID with all characters in upper-case
      * for ICICI, because their Recon file has the ID
@@ -132,6 +135,11 @@ class Entity extends Base\PublicEntity
     }
 
     // ------------------------------- getters ---------------------------------
+
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
+    }
 
     public function getRemarks()
     {
@@ -198,9 +206,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MODE);
     }
 
+    public function getCmsRefNo()
+    {
+        return $this->getAttribute(self::CMS_REF_NO);
+    }
+
     public function isRefund()
     {
         return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
+    }
+
+    public function getDateTime()
+    {
+        return $this->getAttribute(self::DATE_TIME);
     }
 
     // ------------------------------- setters ---------------------------------

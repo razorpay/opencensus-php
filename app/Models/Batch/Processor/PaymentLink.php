@@ -14,6 +14,12 @@ class PaymentLink extends Base
      */
     protected $invoiceCore;
 
+    /**
+     * Todo: Fix this hack! Remove this temp variable and logic around it with something better.
+     * @var bool
+     */
+    protected $usesNewPlHeader = false;
+
     public function __construct(Entity $batch)
     {
         parent::__construct($batch);
@@ -23,7 +29,9 @@ class PaymentLink extends Base
 
     protected function processEntry(array & $entry)
     {
-        $input = Helpers\PaymentLink::getEntityInput($entry, $this->params);
+        $settings = $this->settingsAccessor->all()->toArray();
+
+        $input = Helpers\PaymentLink::getEntityInput($entry, array_merge($this->params, $settings));
 
         $invoice = $this->invoiceCore->create($input, $this->merchant, null, $this->batch);
 
@@ -45,5 +53,80 @@ class PaymentLink extends Base
         $totalCount  = count($entries);
 
         $this->batch->setTotalCount($totalCount);
+    }
+
+    //
+    // Todo: Fix this hack!
+    // Following methods of base are being overridden to support a new header value
+    // in backward compatible way for payment link type batch.
+    // We need to come up with better approach, product & implementation is being discussed.
+    //
+
+    public function getHeadings(): array
+    {
+        return $this->updateHeaderValuesIfApplies(parent::getHeadings());
+    }
+
+    public function getOutputFileHeadings(): array
+    {
+        return $this->updateHeaderValuesIfApplies(parent::getOutputFileHeadings());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function parseFileAndCleanEntries(string $filePath): array
+    {
+        $entries = parent::parseFileAndCleanEntries($filePath);
+
+        $this->setUsesNewPlHeaderFlagIfApplicable(array_keys(current($entries) ?: []));
+
+        return $entries;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function parseTextFile(string $file, string $delimiter = '~')
+    {
+        //
+        // CSV optionally can contain header. When it does we need to set proper header version so that the read
+        // associative array is proper. Here, reads the first line to set the header version.
+        //
+        $this->setUsesNewPlHeaderFlagIfApplicable(explode($delimiter, trim(fgets(fopen($file, 'r')))));
+
+        return parent::parseTextFile($file, $delimiter);
+    }
+
+    /**
+     * If headings has a new specific value, sets a flag to be used later in below method.
+     * @param bool|array $headings
+     */
+    protected function setUsesNewPlHeaderFlagIfApplicable($headings)
+    {
+        if (empty($headings) === true)
+        {
+            return;
+        }
+
+        if (in_array(Header::AMOUNT_IN_PAISE, $headings, true) === true)
+        {
+            $this->usesNewPlHeader = true;
+        }
+    }
+
+    /**
+     * Update the existing header values for specific type in specific case (when a flag is set).
+     * @param  array $headings
+     * @return array
+     */
+    protected function updateHeaderValuesIfApplies(array $headings)
+    {
+        if ($this->usesNewPlHeader === true)
+        {
+            return array_replace($headings, [4 => Header::AMOUNT_IN_PAISE]);
+        }
+
+        return $headings;
     }
 }

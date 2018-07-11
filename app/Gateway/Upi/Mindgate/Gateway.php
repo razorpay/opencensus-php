@@ -60,6 +60,8 @@ class Gateway extends Base\Gateway
         ResponseFields::UPI_TXN_ID        => Entity::GATEWAY_PAYMENT_ID,
         // NPCI provided RRN for the transaction
         ResponseFields::NPCI_UPI_TXN_ID   => Entity::NPCI_REFERENCE_ID,
+        ResponseFields::ACCOUNT_NUMBER    => Entity::ACCOUNT_NUMBER,
+        ResponseFields::IFSC_CODE         => Entity::IFSC,
     ];
 
     /**
@@ -82,7 +84,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-        $this->validateVpa($input);
+        $this->validateVpa($input['payment']);
 
         parent::action($input, Action::AUTHORIZE);
 
@@ -140,7 +142,7 @@ class Gateway extends Base\Gateway
      * We need to validate that the user's VPA is valid before proceeding with the payment
      * @param array $input
      */
-    private function validateVpa(array $input)
+    public function validateVpa(array $input)
     {
         parent::action($input, Action::VALIDATE_VPA);
 
@@ -207,7 +209,11 @@ class Gateway extends Base\Gateway
     {
         $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY];
 
-        return $this->parseGatewayResponse($encryptedResponse, Action::CALLBACK);
+        $response = $this->parseGatewayResponse($encryptedResponse, Action::CALLBACK);
+
+        $bankDetails = $this->parseBankAccountDetails($response[ResponseFields::BANK_REFERENCE]);
+
+        return array_merge($response, $bankDetails);
     }
 
     /**
@@ -252,7 +258,6 @@ class Gateway extends Base\Gateway
 
         return $result;
     }
-
     /**
      * Handles the S2S callback
      * @param  array $input
@@ -274,7 +279,8 @@ class Gateway extends Base\Gateway
         assertTrue($input['payment']['id'] === $content[ResponseFields::PAYMENT_ID]);
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-        $actualAmount   = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+
+        $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
@@ -288,6 +294,33 @@ class Gateway extends Base\Gateway
                 Payment\Entity::VPA => $gatewayPayment->getVpa()
             ]
         ];
+    }
+
+    protected function parseBankAccountDetails($bankReference)
+    {
+        $fields = constant(__NAMESPACE__ . '\ResponseFields::BANK_DETAILS');
+
+        $values = explode(ResponseFields::BANK_REFERENCE_SEPARATOR, $bankReference);
+
+        $bankReferenceArray = [];
+
+        $index = 0;
+
+        if (empty($values) === false)
+        {
+            foreach ($fields as $key)
+            {
+                if ($values[$index] !== ResponseFields::NO_BANK_DETAIL)
+                {
+                    $bankReferenceArray[$key] = $values[$index];
+                }
+
+                $index++;
+            }
+
+        }
+
+        return $bankReferenceArray;
     }
 
     protected function updateGatewayPaymentResponse($payment, array $response)
@@ -549,6 +582,10 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseGatewayResponse($response->body, Action::VERIFY);
 
+        $bankDetails = $this->parseBankAccountDetails($content[ResponseFields::BANK_REFERENCE]);
+
+        $content = array_merge($content, $bankDetails);
+
         $verify->verifyResponse = $this->response;
 
         $verify->verifyResponseBody = $this->response->body;
@@ -585,7 +622,7 @@ class Gateway extends Base\Gateway
         $data = [
             $this->getMerchantId(),
             random_alpha_string(10),
-            $input['payment']['vpa'],
+            $input['vpa'],
             'T'
         ];
 

@@ -359,7 +359,7 @@ class MerchantController extends Controller
 
     public function getMerchantBeneficiaryFile($channel)
     {
-        $data = $this->service()->getMerchantBeneficiaryFile($channel);
+        $data = $this->service()->getMerchantBeneficiaryFile($this->input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -538,6 +538,13 @@ class MerchantController extends Controller
         return ApiResponse::json($input);
     }
 
+    public function getDummyRazorX()
+    {
+        $response = $this->service()->getDummyRazorX();
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantsNotifyHoliday()
     {
         $input = Request::all();
@@ -590,7 +597,7 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateMerchantFeatures($id)
+    public function updateMerchantFeatures()
     {
         $input = Request::all();
 
@@ -599,7 +606,7 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMerchantFeatures($id)
+    public function getMerchantFeatures()
     {
         $data = $this->service()->getMerchantFeatures();
 
@@ -641,14 +648,6 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
-
-    public function deleteCreditsLog(Credits\Service $service, $mid, $id)
-    {
-        $data = $service->deleteCreditsLog($mid, $id);
-
-        return ApiResponse::json($data);
-    }
-
 // --------------------- End Credits API Handlers -----------------------------------------
 
 
@@ -778,6 +777,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getBusinessCategories()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getBusinessCategories();
+
+        return ApiResponse::json($response);
+    }
+
     public function updateKeyAccess(string $id)
     {
         $input = Request::all();
@@ -854,6 +860,15 @@ class MerchantController extends Controller
     public function getMerchantDetails()
     {
         $response = $this->service()->getMerchantDetails();
+
+        return ApiResponse::json($response);
+    }
+
+    public function patchMerchantDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->patchMerchantDetails($input);
 
         return ApiResponse::json($response);
     }
@@ -966,5 +981,12 @@ class MerchantController extends Controller
         $response = $this->service(E::MERCHANT_DETAIL)->getMerchantActivationReviewers();
 
         return ApiResponse::json($response);
+    }
+
+    public function updateMerchantAccessMapFromTokens()
+    {
+        $data = (new AccessMap\Service)->updateMapFromTokens();
+
+        return ApiResponse::json($data);
     }
 }

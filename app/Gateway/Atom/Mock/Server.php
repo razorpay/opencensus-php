@@ -2,50 +2,265 @@
 
 namespace RZP\Gateway\Atom\Mock;
 
-use RZP\Models\Card;
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Exception;
-use RZP\Gateway\Atom;
-use RZP\Gateway\Atom\Mock;
 use RZP\Gateway\Base;
-use RZP\Models\Payment;
+use RZP\Constants\Mode;
+use RZP\Constants\HashAlgo;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Atom\Status;
+use RZP\Gateway\Atom\AuthRequestFields;
+use RZP\Gateway\Atom\AuthResponseFields;
+use RZP\Gateway\Atom\VerifyRequestFields;
+use RZP\Gateway\Atom\RefundRequestFields;
+use RZP\Gateway\Atom\RefundResponseFields;
+use RZP\Gateway\Atom\VerifyResponseFields;
 
 class Server extends Base\Mock\Server
 {
-    public function atomPaymentChooseOrg($input)
+    public function __construct()
     {
-        $this->checkReferer();
+        parent::__construct();
 
-        $this->verifyTxn1stStageInput($input);
-
-        $atom = $this->repo->atom->findByToken($input['token']);
-
-        $merchant = $this->app['basicauth']->getMerchant();
-
-        $paymentId = $atom->getKey();
-
-        $payment = $this->repo->payment->findByIdAndMerchant(
-                                            $paymentId, $merchant);
-
-        $data['url'] = $this->getRzpPaymentPageUrl();
-
-        $data['tempTxnId'] = $input['tempTxnId'];
-        $data['method'] = $payment['method'];
-
-        return $data;
+        $this->config = $this->app['config']->get('gateway.atom');
     }
 
     public function authorize($input)
     {
-        $tempTxnId = random_integer(9);
-        $token = $this->generateToken();
-        $ttype = $input['ttype'];
-        $url = $this->getSecondRequestUrl($ttype);
+        $request = [
+            'url'     => $this->route->getUrl('mock_atom_payment'),
+            'content' => $input,
+            'method'  => 'post',
+        ];
 
-        $xml = $this->formInitiatePaymentXml($tempTxnId, $token, $ttype, $url);
+        $this->request($request);
+
+        return $this->makePostResponse($request);
+    }
+
+    public function bank($input)
+    {
+        parent::authorize($input);
+
+        $this->validateActionInput($input, 'authorize');
+
+        $this->verifySecureHash($input);
+
+        $content = $this->createCallbackResponseArray($input);
+
+        $callbackUrl = $input[AuthRequestFields::RETURN_URL] . '?' .
+                       http_build_query($content);
+
+        return $callbackUrl;
+    }
+
+    public function refund($input)
+    {
+        parent::refund($input);
+
+        $this->validateActionInput($input, 'refund');
+
+        $response = $this->getRefundResponseData($input);
+
+        $response = array_flip($response);
+
+        $xml = new \SimpleXMLElement('<Refund/>');
+
+        array_walk_recursive($response, array ($xml, 'addChild'));
+
+        $response = $xml->asXML();
+
+        return $this->makeResponse($response);
+    }
+
+    public function verify($input)
+    {
+        parent::verify($input);
+
+        $this->validateActionInput($input, 'verify');
+
+        $response = $this->getVerifyResponseData($input);
+
+        $xml = $this->getVerifyResponseXml($response);
 
         return $this->makeResponse($xml);
+    }
+
+    protected function getRefundResponseData($input)
+    {
+        $content = [
+            RefundResponseFields::MERCHANT_ID    => $input[RefundRequestFields::MERCHANT_ID],
+            RefundResponseFields::TRANSACTION_ID => $input[RefundRequestFields::GATEWAY_TRANSACTION_ID],
+            RefundResponseFields::AMOUNT         => $input[RefundRequestFields::REFUND_AMOUNT],
+            RefundResponseFields::STATUS_CODE    => Status::REFUND_SUCCESS,
+            RefundResponseFields::STATUS_MESSAGE => 'Full Refund initiated successfully',
+        ];
+
+        $this->content($content, 'refund');
+
+        return $content;
+    }
+
+    protected function verifySecureHash(array $content)
+    {
+        $actual = $this->getHashValueFromContent($content);
+
+        $generated = $this->generateHash($content);
+
+        $this->compareHashes($actual, $generated);
+    }
+
+    protected function createCallbackResponseArray($input)
+    {
+        $this->action = Action::CALLBACK;
+
+        $response = [
+            AuthResponseFields::GATEWAY_PAYMENT_ID  => (string) mt_rand(1111111, 9999999),
+            AuthResponseFields::TRANSACTION_ID      => $input[AuthRequestFields::TRANSACTION_ID],
+            AuthResponseFields::AMOUNT              => $input[AuthRequestFields::AMOUNT],
+            AuthResponseFields::SURCHARGE           => '0',
+            AuthResponseFields::PRODUCT_ID          => $input[AuthRequestFields::PRODUCT_ID],
+            AuthResponseFields::DATE                => $input[AuthRequestFields::DATE],
+            AuthResponseFields::BANK_TRANSACTION_ID => (string) mt_rand(11111111, 99999999),
+            AuthResponseFields::STATUS_CODE         => Status::SUCCESS,
+            AuthResponseFields::CLIENT_CODE         => $input[AuthRequestFields::CLIENT_CODE],
+            AuthResponseFields::BANK_NAME           => 'Atom Bank',
+            AuthResponseFields::DISCRIMINATOR       => 'NB',
+        ];
+
+        $this->content($response, 'callback');
+
+        $response[AuthResponseFields::SIGNATURE] = $this->generateHash($response, 'response');
+
+        $this->content($response, 'hash');
+
+        return $response;
+    }
+
+    protected function generateHash($content, $type = 'request')
+    {
+        $hashString = $this->getStringToHash($content, '', $type);
+
+        return $this->getHashOfString($hashString, $type);
+    }
+
+    protected function getStringToHash($data, $glue = '', $type = 'request')
+    {
+        switch ($this->action)
+        {
+            case Action::AUTHORIZE:
+                $data = $this->getCallbackRequestHashArray($data);
+                break;
+
+            case Action::CALLBACK:
+                $data = $this->getCallbackResponseHashArray($data);
+                break;
+
+            default:
+                throw new Exception\RuntimeException('Action not set correctly');
+        }
+
+        return implode($glue, $data);
+    }
+
+    public function getCallbackResponseHashArray($response)
+    {
+        $hashArray = [
+            $response[AuthResponseFields::GATEWAY_PAYMENT_ID],
+            $response[AuthResponseFields::TRANSACTION_ID],
+            $response[AuthResponseFields::STATUS_CODE],
+            $response[AuthResponseFields::PRODUCT_ID],
+            $response[AuthResponseFields::DISCRIMINATOR],
+            $response[AuthResponseFields::AMOUNT],
+            $response[AuthResponseFields::BANK_TRANSACTION_ID],
+        ];
+
+        return $hashArray;
+    }
+
+    public function getHashOfString($string, $type = 'request')
+    {
+        $secret = $this->getSecret($type);
+
+        return hash_hmac(HashAlgo::SHA512, $string, $secret);
+    }
+
+    public function getSecret()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestSecret();
+        }
+        else
+        {
+            return $this->getLiveSecret();
+        }
+    }
+
+    public function getTestSecret()
+    {
+        assert ($this->mode === Mode::TEST);
+
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $secret = $this->config['test_authorize_hash_secret'];
+        }
+        else
+        {
+            $secret = $this->config['test_callback_hash_secret'];
+        }
+
+        return $secret;
+    }
+
+    public function getLiveSecret()
+    {
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $secret = $this->config['live_authorize_hash_secret'];
+        }
+        else if ($this->action === Action::CALLBACK)
+        {
+            $secret = $this->config['live_hash_secret'];
+        }
+
+
+        return $secret;
+    }
+
+    protected function getCallbackRequestHashArray($content)
+    {
+        $hashArray = [
+            $content[AuthRequestFields::LOGIN],
+            $content[AuthRequestFields::PASSWORD],
+            $content[AuthRequestFields::TRANSACTION_TYPE],
+            $content[AuthRequestFields::PRODUCT_ID],
+            $content[AuthRequestFields::TRANSACTION_ID],
+            $content[AuthRequestFields::AMOUNT],
+            $content[AuthRequestFields::TRANSACTION_CURRENCY],
+        ];
+
+        return $hashArray;
+    }
+
+
+    protected function compareHashes($actual, $generated)
+    {
+        if (hash_equals($actual, $generated) === false)
+        {
+            throw new Exception\RuntimeException('Failed checksum verification');
+        }
+    }
+
+    protected function getHashValueFromContent(array $content)
+    {
+        switch ($this->action)
+        {
+            case Action::AUTHORIZE:
+                return $content[AuthRequestFields::SIGNATURE];
+
+            default:
+                throw new Exception\RuntimeException('Action not set correctly');
+        }
     }
 
     protected function makeResponse($xml)
@@ -58,208 +273,37 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function getSecondRequestUrl($ttype)
+    public function getVerifyResponseData($input)
     {
-        return $this->route->getUrlWithPublicAuth('mock_atom_choose_org');
+        $response = [
+            VerifyResponseFields::MERCHANT_ID            => $input[VerifyRequestFields::MERCHANT_ID],
+            VerifyResponseFields::TRANSACTION_ID         => $input[VerifyRequestFields::TRANSACTION_ID],
+            VerifyResponseFields::AMOUNT                 => $input[VerifyRequestFields::AMOUNT],
+            VerifyResponseFields::STATUS                 => 'SUCCESS',
+            VerifyResponseFields::BANK_TRANSACTION_ID    => (string) mt_rand(11111111, 99999999),
+            VerifyResponseFields::BANK_NAME              => 'random_bank_name',
+            VerifyResponseFields::GATEWAY_TRANSACTION_ID => (string) mt_rand(1111111, 9999999),
+        ];
+
+        $this->content($response);
+
+        return $response;
     }
 
-    protected function getRzpPaymentPageUrl()
+    public function getVerifyResponseXml($response)
     {
-        $url = $this->route->getUrlWithPublicAuth('mock_atom_rzp_payment');
-
-        return $url;
-    }
-
-    protected function getRzpPaymentPageSubmitUrl()
-    {
-        $url = $this->route->getUrlWithPublicAuth('mock_atom_rzp_payment_submit');
-
-        return $url;
-    }
-
-    public function setInput($input)
-    {
-        $this->input = $input;
-    }
-
-    public function capture($input)
-    {
-        parent::capture($input);
-    }
-
-    public function atomRzpPayment($input)
-    {
-        $this->checkReferer();
-
-        // For net-banking, show the bank choice auto-submit page
-        // For card show random stuff
-
-        $atom = $this->getAtomPaymentByTempTxnId($input['tempTxnId']);
-
-        $payment = $this->repo->payment->findOrFail($atom['id']);
-
-        $bankTxnId = random_integer(6);
-
-        $amount = $payment['amount'] / 100;
-        if (is_int($amount))
-            $amount .= '.00';
-
-        $data = array(
-            'tempTxnId' => $input['tempTxnId'],
-            'ITC' => $bankTxnId,
-            'BID' => $bankTxnId . '1',
-            'amount' => $amount,
-            'url' => $this->getRzpPaymentPageSubmitUrl(),
-            'clientCode' => '007');
-
-        return $data;
-    }
-
-    public function atomRzpPaymentPageSubmit($input)
-    {
-        $this->checkReferer();
-
-        $tempTxnId = $input['tempTxnId'];
-
-        $success = $input['success'];
-        $success = ($success === 'S') ? 'Ok' : $success;
-
-        $atom = $this->getAtomPaymentByTempTxnId($input['tempTxnId']);
-
-        $paymentId = $atom['id'];
-
-        $payment = $this->repo->payment->findOrFail($paymentId);
-        $method = $payment['method'];
-        $card = null;
-
-        $publicId = $payment->getPublicId();
-        $merchantCallbackUrl = $this->formMerchantCallbackUrl($publicId);
-
-        $time = Carbon::now(Timezone::IST)->format('D M d H:i:s \G\M\T+05:30 Y');
-
-        $data = array(
-            'mmp_txn'       => $tempTxnId,
-            'mer_txn'       => $payment->getPublicId(),
-            'amt'           => $payment->getAmount() / 100 . '00',
-            'prod'          => 'NSE',
-            'date'          => $time,
-            'bank_txn'      => $tempTxnId.'1',
-            'f_code'        => $success,
-            'clientcode'    => '123',
-            'bank_name'     => 'Razorpay Bank',
-            'udf9'          => '',
-            'desc'          => 'abcdef',
-            'surcharge'     => '0.0',
-            'CardNumber'    => '');
-
-        if ($method === 'netbanking')
-        {
-            $data['discriminator'] = 'NB';
-            $data['CardNumber'] = '';
-        }
-        else if ($method === 'card')
-        {
-            $data['discriminator'] = 'DC';
-
-            $card = $this->repo->card->fetchForPayment($payment);
-
-            if ($card->getType() === Card\Type::CREDIT)
-            {
-                $data['discriminator'] = 'CC';
-            }
-
-            $xx = str_repeat('X', $card['length'] - 10);
-            $data['CardNumber'] = $card['iin'] . $xx . $card['last4'];
-        }
-
-        $x = range(1,6);
-        foreach ($x as $n)
-        {
-            $data['udf'.$n] = 'null';
-        }
-
-        return array($merchantCallbackUrl, $data);
-    }
-
-    public function verify($input)
-    {
-        $id = $input['merchanttxnid'];
-        $merchantId = $input['merchantid'];
-        $amt = $input['amt'];
-
-        $publicId = $id;
-
-        $id = Atom\Entity::verifyIdAndStripSign($id);
-        $payment = $this->repo->atom->find($id);
-
-        $status = (bool) $payment['success'];
-        $verified = ($status) ? 'SUCCESS' : 'FAILED';
-
-        $bid = null;
-        if ($status)
-        {
-            $bid = $payment['bank_payment_id'];
-        }
-
         $xml = '
         <?xml version="1.0" encoding="UTF-8" ?>
             <VerifyOutput
-                MerchantID="'.$merchantId.'"
-                MerchantTxnID="'.$publicId.'"
-                AMT="'.$amt.'"
-                VERIFIED="'.$verified.'"
-                BID="'.$bid.'"
-                bankname="'.$payment['bank_name'].'"
-                atomtxnId="'.$payment['gateway_payment_id'].'"
+                MerchantID="' . $response[VerifyResponseFields::MERCHANT_ID] . '"
+                MerchantTxnID="' . $response[VerifyResponseFields::TRANSACTION_ID] . '"
+                AMT="' . $response[VerifyResponseFields::AMOUNT] . '"
+                VERIFIED="' . $response[VerifyResponseFields::STATUS] . '"
+                BID="' . $response[VerifyResponseFields::BANK_TRANSACTION_ID] . '"
+                bankname="' . $response[VerifyResponseFields::BANK_NAME] . '"
+                atomtxnId="' . $response[VerifyResponseFields::GATEWAY_TRANSACTION_ID] . '"
             />';
 
-        return $this->makeResponse($xml);
-    }
-
-    protected function formMerchantCallbackUrl($paymentPublicId)
-    {
-        $callbackUrl = $this->route->getPublicCallbackUrlWithHash($paymentPublicId);
-
-        return $callbackUrl;
-    }
-
-    public function verifyTxn1stStageInput($input)
-    {
-        return [];
-    }
-
-    protected function getAtomPaymentByTempTxnId($tempTxnId)
-    {
-        return $this->repo->atom->findByGatewayPaymentId($tempTxnId);
-    }
-
-    protected function generateAtomToken()
-    {
-        $token = bin2hex(random_bytes(46/2));
-        $token .= 'z'.'%3D';
-
-        return $token;
-    }
-
-    protected function formInitiatePaymentXml($tempTxnId, $token, $ttype, $url)
-    {
-        $str = ''.
-        '<?xml version="1.0" encoding="UTF-8"?>
-            <MMP><MERCHANT><RESPONSE>
-                <url>'.$url.'</url>
-                <param name="ttype">'.$ttype.'</param>
-                <param name="tempTxnId">'.$tempTxnId.'</param>
-                <param name="token">'.$token.'</param>
-                <param name="txnStage">1</param>
-            </RESPONSE></MERCHANT></MMP>';
-
-        return $str;
-    }
-
-    protected function generateToken()
-    {
-        $token = \RZP\Models\Base\UniqueIdEntity::generateUniqueId();
-
-        return $token;
+        return $xml;
     }
 }

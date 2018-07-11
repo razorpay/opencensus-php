@@ -138,6 +138,8 @@ return array(
         'reconciliation'       => 'C1GNPHC07',
         // reconciliation 2
         'reconciliation2'      => 'C847BUR61',
+        // reconciliation_info
+        'reconciliation_info'  => 'CAP0K6S5U',
         // transactions_risky
         'risky'                => 'C0RL2C917',
         // settlements
@@ -167,5 +169,5 @@ return array(
 
     // Use non-default connection for slack,
     // if set to null, it will use the default connection
-    'queue' => env('SECONDARY_QUEUE_DRIVER', null),
+    'queue' => env('SLACK_QUEUE_DRIVER', null),
 );

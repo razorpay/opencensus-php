@@ -9,11 +9,6 @@ return [
     // Set of sample settings
     // It doesn't need to be full setting hash, just enough to assert cases
     'settings' => [
-        // Empty/missing settings case: Picks defaults hard-coded value in code
-        'none' => [
-            [],
-            [],
-        ],
         // Global settings for live mode for private auth
         'global_1' => [
             [

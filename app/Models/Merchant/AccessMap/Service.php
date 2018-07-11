@@ -50,4 +50,9 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    public function updateMapFromTokens()
+    {
+        return (new Core)->updateMapFromTokens();
+    }
 }

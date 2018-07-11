@@ -73,6 +73,8 @@ class OffersTest extends TestCase
 
     public function testCreateWalletOffer()
     {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
         $this->startTest();
     }
 
@@ -83,6 +85,8 @@ class OffersTest extends TestCase
 
     public function testCreateFlatCashbackOffer()
     {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
         $this->startTest();
     }
 
@@ -110,6 +114,8 @@ class OffersTest extends TestCase
 
     public function testCreateWalletOfferWithInvalidWallet()
     {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
         $this->startTest();
     }
 
@@ -120,6 +126,8 @@ class OffersTest extends TestCase
 
     public function testCreateOfferWithInvalidPaymentMethod()
     {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+
         $this->startTest();
     }
 
@@ -134,6 +142,27 @@ class OffersTest extends TestCase
     }
 
     public function testCreateOfferWithInvalidOfferPeriod()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateOfferWithCorporateOrRetailIssuer()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateOfferValidateMaxCashback()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateOfferInternationalEmi()
+    {
+        $this->fixtures->merchant->enableEmi();
+        $this->startTest();
+    }
+
+    public function testCreateOfferValidateMethodType()
     {
         $this->startTest();
     }
@@ -254,6 +283,28 @@ class OffersTest extends TestCase
 
         $this->testData[__FUNCTION__]['response']['content'] = [$offer->getPublicId()];
 
+        $this->startTest();
+    }
+
+    public function testCreateOfferValidateMerchant()
+    {
+        $this->fixtures->merchant->disableCard('10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testCreateCardOfferWithInvalidIinLength()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateCardOfferWithInvalidFullNetworkName()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateOfferMinAmount()
+    {
         $this->startTest();
     }
 }

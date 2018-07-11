@@ -9,7 +9,7 @@ use RZP\Models\Base\PublicCollection;
 class HdfcFss extends Base
 {
     const GATEWAY            = Payment\Gateway::HDFC;
-    const ACQUIRER         =  Payment\Gateway::ACQUIRER_HDFC;
+    const ACQUIRER           = Payment\Gateway::ACQUIRER_HDFC;
     const EXTENSION          = FileStore\Format::XLSX;
     const FILE_NAME          = 'Hdfc_FSS_Failed_Refunds';
     const FILE_TYPE          = FileStore\Type::HDFC_FSS_FAILED_REFUND;
@@ -52,13 +52,15 @@ class HdfcFss extends Base
         {
             $formattedData[] = [
                 self::SR_NO              => $index + 1,
+                // Mecode needs to populated manually from the sheet
+                self::MECODE             => '',
                 self::TERMINAL_ID        => $row['terminal']['gateway_terminal_id'],
                 self::CARD_NUMBER        => $this->getCardNumber($row['card']['iin'], $row['card']['last4']),
                 self::TRANSACTION_DATE   => $this->getFormattedDate($row['payment']['created_at'], 'd/m/Y'),
                 self::TARNSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
                 self::REFUND_ID          => $row['refund']['id'],
                 self::PAYMENT_ID         => $row['payment']['id'],
-                self::APPROVAL_CODE      => $row['payment']['approval_code'],
+                self::APPROVAL_CODE      => $row['payment']['reference2'],
                 self::REFUND_AMOUNT     => $this->getFormattedAmount($row['refund']['amount']),
             ];
         }

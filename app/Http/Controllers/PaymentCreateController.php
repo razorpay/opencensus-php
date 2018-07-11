@@ -9,6 +9,7 @@ use Request;
 use App;
 use View;
 
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 
@@ -194,13 +195,16 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        $retJson = false;
+        $retHtml = false;
 
-        if (isset($input['view']) and ($input['view'] === 'json'))
+        if (isset($input['view']) === true)
         {
-            unset($input['view']);
+            if ($input['view'] === 'html')
+            {
+                $retHtml = true;
+            }
 
-            $retJson = true;
+            unset($input['view']);
         }
 
         $this->setMerchantCallbackUrlIfApplicable($input);
@@ -213,14 +217,27 @@ class PaymentCreateController extends Controller
             $data[$key] = $value / 100;
         }
 
-        if ($retJson)
+        if ($retHtml === true)
         {
-            return ApiResponse::json(['input' => $input,'display' => $data]);
+            $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
+
+            return $this->returnConvenienceFeesView($input, $data, $url);
         }
 
-        $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
+        return ApiResponse::json(['input' => $input, 'display' => $data]);
+    }
 
-        return $this->returnConvenienceFeesView($input, $data, $url);
+    public function postPaymentFees()
+    {
+        $input = Request::all();
+
+        $this->setMerchantCallbackUrlIfApplicable($input);
+
+        $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
+
+        unset($data['originalAmount']);
+
+        return ApiResponse::json($data);
     }
 
     /**
@@ -274,6 +291,13 @@ class PaymentCreateController extends Controller
         $data = $this->service(E::PAYMENT)->callback($id, $hash, $input);
 
         return $this->returnCallbackResponse($data);
+    }
+
+    public function postOtpSubmitPrivate($id)
+    {
+        $hash = $this->route->getHashOf($id);
+
+        return $this->postOtpSubmit($id, $hash);
     }
 
     public function postOtpSubmit($id, $hash)
@@ -342,6 +366,28 @@ class PaymentCreateController extends Controller
             }
             else if ($data['type'] === 'otp')
             {
+                if ($data['request']['method'] === 'direct')
+                {
+                    //
+                    // For S2S headless_otp payments we return the JSON data
+                    // instead of the normal view
+                    //
+                    if ($this->app['basicauth']->isStrictPrivateAuth() === true)
+                    {
+                        $response = [
+                            'next'                => $data['next'],
+                            'razorpay_payment_id' => $data['payment_id'],
+                        ];
+
+                        return $response;
+                    }
+
+                    $response = Response::make($data['request']['content']);
+                    $response->headers->set('X-gateway', $data['gateway']);
+
+                    return $response;
+                }
+
                 $templateData = [
                    'data' => $data,
                    'cdn'  => $this->config->get('url.cdn.production')
@@ -364,15 +410,27 @@ class PaymentCreateController extends Controller
                 return View::make('gateway.gatewayAsyncForm')
                            ->with('data', $templateData);
             }
-            else if ($data['type'] === 'wallet')
+            else if ($data['type'] === 'respawn')
             {
-                return View::make('gateway.gatewayWalletForm')
-                           ->with('data', $data);
-            }
-            else if ($data['type'] === 'emandate')
-            {
-                return View::make('emandate.form')
-                           ->with('data', $data);
+                if ($data['method'] === 'wallet')
+                {
+                    return View::make('gateway.gatewayWalletForm')
+                               ->with('data', $data);
+                }
+                else if ($data['method'] === 'emandate')
+                {
+                    return View::make('emandate.form')
+                               ->with('data', $data);
+                }
+                else if ($data['method'] === 'upi')
+                {
+                    return View::make('gateway.gatewayUpiForm')
+                               ->with('data', [
+                                    'key'  => $this->ba->getPublicKey(),
+                                    'data' => $data,
+                                    'cdn'  => $this->config->get('url.cdn.production')
+                               ]);
+                }
             }
             else
             {
@@ -391,6 +449,7 @@ class PaymentCreateController extends Controller
         $postFormData = $data;
         $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
         $postFormData['name'] = $merchant->getBillingLabel();
+        $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
 
         return View::make('gateway.gatewayPostForm')
                    ->with('data', $postFormData);
@@ -417,7 +476,7 @@ class PaymentCreateController extends Controller
     {
         return View::make('gateway.gatewayFeesForm')
                    ->with('data', $data)
-                   ->with('input', $input)
+                   ->with('input', array_assoc_flatten($input, "%s[%s]"))
                    ->with('url', $url);
     }
 

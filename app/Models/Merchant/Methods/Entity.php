@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const PAYZAPP           = 'payzapp';
     const PAYUMONEY         = 'payumoney';
     const AIRTELMONEY       = 'airtelmoney';
+    const AMAZONPAY         = 'amazonpay';
     const FREECHARGE        = 'freecharge';
     const JIOMONEY          = 'jiomoney';
     const SBIBUDDY          = 'sbibuddy';
@@ -43,7 +44,6 @@ class Entity extends Base\PublicEntity
     protected $revisionCreationsEnabled = true;
 
     protected $fillable = [
-        self::MERCHANT_ID,
         self::AMEX,
         self::DISABLED_BANKS,
         self::PAYTM,
@@ -65,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::BANK_TRANSFER,
+        self::AMAZONPAY,
     ];
 
     protected $visible = [
@@ -91,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::BANK_TRANSFER,
+        self::AMAZONPAY,
     ];
 
     protected $public = [
@@ -118,6 +120,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT_CARD,
         self::ENTITY,
         self::BANK_TRANSFER,
+        self::AMAZONPAY,
     ];
 
     protected $defaults = array(
@@ -143,6 +146,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT_CARD    => true,
         self::DEBIT_CARD     => true,
         self::BANK_TRANSFER  => true,
+        self::AMAZONPAY      => false,
     );
 
     protected $wallets = array(
@@ -152,6 +156,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY,
         self::OLAMONEY,
         self::AIRTELMONEY,
+        self::AMAZONPAY,
         self::FREECHARGE,
         self::JIOMONEY,
         self::SBIBUDDY,
@@ -174,6 +179,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY,
         self::OLAMONEY,
         self::AIRTELMONEY,
+        self::AMAZONPAY,
         self::FREECHARGE,
         self::MPESA,
     ];
@@ -190,6 +196,7 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP       => 'bool',
         self::PAYUMONEY     => 'bool',
         self::AIRTELMONEY   => 'bool',
+        self::AMAZONPAY     => 'bool',
         self::FREECHARGE    => 'bool',
         self::JIOMONEY      => 'bool',
         self::SBIBUDDY      => 'bool',
@@ -294,6 +301,11 @@ class Entity extends Base\PublicEntity
     public function isAirtelmoneyEnabled()
     {
         return $this->getAttribute(self::AIRTELMONEY);
+    }
+
+    public function isAmazonpayEnabled()
+    {
+        return $this->getAttribute(self::AMAZONPAY);
     }
 
     public function isMpesaEnabled()
@@ -414,6 +426,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AIRTELMONEY);
     }
 
+    public function getAmazonpay()
+    {
+        return $this->getAttribute(self::AMAZONPAY);
+    }
+
     public function getFreecharge()
     {
         return $this->getAttribute(self::FREECHARGE);
@@ -501,6 +518,11 @@ class Entity extends Base\PublicEntity
     public function setAirtelmoney($value)
     {
         $this->setAttribute(self::AIRTELMONEY, $value);
+    }
+
+    public function setAmazonpay($value)
+    {
+        $this->setAttribute(self::AMAZONPAY, $value);
     }
 
     public function setFreecharge($value)

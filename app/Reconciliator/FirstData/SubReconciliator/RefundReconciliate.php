@@ -41,13 +41,13 @@ class RefundReconciliate extends Base\RefundReconciliate
         }
         catch (DbQueryException $ex)
         {
-            $this->trace->error(
-                TraceCode::RECON_ALERT,
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
                 [
                     'info_code' => 'REFUND_ABSENT',
                     'message'   => 'Refund not found. Skipping',
                     'row'       => $row,
-                    'gateway'   => get_called_class()
+                    'gateway'   => $this->gateway
                 ]);
 
             $this->setFailUnprocessedRow(false);
@@ -63,7 +63,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'info_code' => 'REVERSE_ENTITY_FOUND',
                     'message'   => 'Reversal entity. Skipping.',
                     'row'       => $row,
-                    'gateway'   => get_called_class()
+                    'gateway'   => $this->gateway
                 ]);
 
             $this->setFailUnprocessedRow(false);
@@ -217,11 +217,12 @@ class RefundReconciliate extends Base\RefundReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
                     'message'           => 'Refund amount mismatch',
                     'expected_amount'   => $this->refund->getBaseAmount(),
                     'currency'          => $this->refund->getCurrency(),
                     'row'               => $row,
-                    'gateway'           => get_called_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             return false;

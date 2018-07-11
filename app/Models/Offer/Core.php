@@ -4,6 +4,7 @@ namespace RZP\Models\Offer;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -27,6 +28,8 @@ class Core extends Base\Core
         $offer->merchant()->associate($merchant);
 
         $offer = $offer->build($input);
+
+        $this->validateMerchant($merchant, $input);
 
         $this->checkConflictingOffers($offer);
 
@@ -76,37 +79,24 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function validateOfferApplicableOnPayment(Payment\Entity $payment)
+    public function validateOfferApplicableOnPayment(Entity $offer, Payment\Entity $payment)
     {
-        if ($payment->getApiOrderId() === null)
-        {
-            return;
-        }
+        $verbose = true;
 
-        $order = $this->repo->order->fetchForPayment($payment);
+        $checker = new Checker($offer, $verbose);
 
-        if (($order === null) or
-            ($order->hasOffer() === false))
-        {
-            return;
-        }
-
-        $appliedOffer = $order->offer;
-
-        $offerChecker = new Checker($appliedOffer, true);
-
-        if ($offerChecker->checkOfferApplicableOnPayment($payment) === false)
+        if ($checker->checkApplicabilityForPayment($payment) === false)
         {
             $this->trace->info(
                 TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT,
                 [
                     'payment_id' => $payment->getId(),
-                    'offer_id'   => $appliedOffer->getId()
+                    'offer_id'   => $offer->getId()
                 ]);
 
-            if ($appliedOffer->shouldBlockPayment() === true)
+            if ($offer->shouldBlockPayment() === true)
             {
-                $errorMessage = $appliedOffer->getErrorMessage();
+                $errorMessage = $offer->getErrorMessage();
 
                 throw new Exception\BadRequestValidationFailureException($errorMessage);
             }
@@ -116,7 +106,7 @@ class Core extends Base\Core
             TraceCode::OFFER_APPLIED_ON_PAYMENT,
             [
                 'payment_id' => $payment->getId(),
-                'offer_id'   => $appliedOffer->getId()
+                'offer_id'   => $offer->getId()
             ]);
     }
 
@@ -156,6 +146,26 @@ class Core extends Base\Core
         }
 
         return $applicableOffers;
+    }
+
+    public function fetchAndValidateOfferForOrder(string $id, Order\Entity $order)
+    {
+        $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $verbose = true;
+
+        $checker = new Checker($offer, $verbose);
+
+        if ($checker->checkApplicabilityOnOrder($order) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+            [
+                'offer_id' => $offer->getPublicId(),
+                'order_id' => $order->getPublicId(),
+            ]);
+        }
+
+        return $offer;
     }
 
     public function fetchSharedOffers()
@@ -256,6 +266,29 @@ class Core extends Base\Core
                     'merchant_id'       => $merchant->getId(),
                     'non_existing_iins' => array_values($nonExistingIins),
                 ]);
+        }
+    }
+
+    protected function validateMerchant(Merchant\Entity $merchant, array & $input)
+    {
+        if($merchant->isShared() === true)
+        {
+            return;
+        }
+
+        if(empty($input[Entity::PAYMENT_METHOD]) === true)
+        {
+            return;
+        }
+
+        $merchantPaymentMethods = $merchant->methods;
+
+        $method = $input[Entity::PAYMENT_METHOD];
+
+        if($merchantPaymentMethods->isMethodEnabled($method) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Payment method not enabled for the merchant : $method", Entity::PAYMENT_METHOD);
         }
     }
 }

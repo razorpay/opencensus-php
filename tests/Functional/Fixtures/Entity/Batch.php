@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Models\FileStore;
 use RZP\Models\Batch\Type;
+use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Status;
 use RZP\Models\Batch\Header;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
@@ -61,6 +63,34 @@ class Batch extends Base
     {
          return $this->createBatchEntityWithStatus($attributes, Status::PROCESSED, 3, 1, 0);
     }
+
+    public function createReconWithFailedStatus(array $fileRows = [])
+    {
+        $params = [
+            Entity::GATEWAY         => 'FirstData',
+            Entity::TYPE            => Type::RECONCILIATION,
+            Entity::STATUS          => Status::FAILED,
+            Entity::SUCCESS_COUNT   => 0,
+            Entity::FAILURE_COUNT   => 1,
+            Entity::FAILURE_REASON  => 'Did not get the reconciliation type for the row in combined reconciliation.',
+        ];
+
+        $batch = $this->fixtures->create('batch', $params);
+
+        $this->writeToExcelFile($fileRows, $batch->getId(), self::INPUT_FILE_DIR);
+
+        $this->fixtures->create(
+            'file_store',
+            [
+                'entity_id' => $batch->getId(),
+                'type'      => FileStore\Type::RECONCILIATION_BATCH_INPUT,
+                'name'      => 'batch/upload/' . $batch->getFileKey(),
+                'location'  => 'batch/upload/' . $batch->getFileKeyWithExt(),
+            ]);
+
+        return $batch;
+    }
+
 
     public function create(array $attributes = array())
     {

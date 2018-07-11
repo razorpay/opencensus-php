@@ -27,6 +27,28 @@ return [
             ]
         ]
     ],
+    'testGatewayFetchDowntimes' => [
+        'request' => [
+            'content' => [
+            ],
+            'method' => 'GET',
+            'url' => '/gateway/downtimes'
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'collection',
+                'count'       => 1,
+                'items'       => [
+                    [
+                        'comment'     => 'Test Reason',
+                        'method'      => 'netbanking',
+                        'issuer'      => 'HDFC',
+                        'reason_code' => 'LOW_SUCCESS_RATE'
+                    ]
+                ]
+            ]
+        ]
+    ],
     'testGatewayCreateDowntimeNetbankingPartial' => [
         'request' => [
             'content' => [

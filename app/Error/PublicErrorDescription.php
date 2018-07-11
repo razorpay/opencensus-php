@@ -202,8 +202,12 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                              = 'The api key provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET                           = 'The api secret provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID                           = 'The Account ID provided is invalid';
+    const BAD_REQUEST_UNAUTHORIZED_INVALID_KEY_TYPE                             = 'The key passed is not of a valid type';
+    const BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED                                  = 'The partner is not allowed the requested access';
+    const BAD_REQUEST_PARTNER_ACCOUNT_ID_REQUIRED                               = 'Account id is required with partner credentials';
+    const BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER                                = 'The partner does not have access to the merchant';
     const BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING                            = 'Unauthorized Action';
-    const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                          = 'Please provide api secret';
+    const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                          = 'Please provide secret for authentication';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE                  = 'Please do not provide your secret on public sided requests';
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED                         = 'Please provide your Razorpay Api Key Id';
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED                              = 'The api key provided by you has expired and cannot be used. Please use correct key and secret.';
@@ -262,13 +266,16 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED                             = 'The merchant has no pricing assigned';
     const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED                              = 'The merchant keys have already been created';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED                  = 'The merchant keys cannot be created since account is not activated yet.';
+    const BAD_REQUEST_MERCHANT_NO_KEY_ACCESS                                    = 'You are not allowed to perform this operation';
     const BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND                            = 'The merchant has not yet provided his bank account details';
     const BAD_REQUEST_MERCHANT_BANK_ACCOUNT_ALREADY_PROVIDED                    = 'The merchant already has provided a bank account';
-    const BAD_REQUEST_MERCHANT_NOT_AGGREGRATOR                                  = 'The merchant is not an aggregator';
+    const BAD_REQUEST_CANNOT_ADD_SUBMERCHANT                                    = 'The merchant cannot add a sub-merchant';
+    const BAD_REQUEST_SUBMERCHANT_WITHOUT_EMAIL_NOT_ALLOWED                     = 'The merchant cannot add a sub-merchant without providing email';
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                        = 'Max terminal count limit reached for this merchant';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                = 'A record with same gateway merchant id (mid) exists';
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY                      = 'A terminal for this gateway for this merchant already exists';
     const BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT                    = 'This operation is not allowed for test accounts';
+    const BAD_REQUEST_FIELD_ALREADY_EXISTS                                      = 'A terminal with the same field exists';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
@@ -312,6 +319,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_TXN_NOT_PUSHED_TO_NET_BANKING                     = 'Transaction was not posted to Net Banking.';
     const BAD_REQUEST_PAYMENT_TXN_REJECTED_FROM_NET_BANKING                     = 'Transaction was not posted to Net Banking.';
     const BAD_REQUEST_PAYMENT_VOID_NOT_SUPPORTED                                = 'Void is not supported for refund transaction on this endpoint.';
+    const BAD_REQUEST_PAYMENT_INVALID_WITHDRAWER_DATA                           = 'Payment failed because of invalid account withdrawer';
     const BAD_REQUEST_INVALID_PARAMETERS                                        = 'One or more fields have invalid data';
     const BAD_REQUEST_PAYMENT_PARTIAL_AMOUNT_APPROVED                           = 'Payment declined because partial amount was approved';
     const BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT  = 'Recurring payments on international cards not supported for merchant.';
@@ -319,12 +327,24 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                      = 'Order does not exist.';
     const BAD_REQUEST_ORDER_EXISTS                                              = 'This order already exists in the gateway database.';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
+    const BAD_REQUEST_ORDER_MULTIPLE_OFFERS                                     = 'Multiple offers cannot be applied on a single order.';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
+    const BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN                                = 'Token expired or invalid';
     const BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING                  = 'Token should not be passed in first E-mandate recurring payment';
     const BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING              = 'Token is not confirmed for recurring payments';
     const BAD_REQUEST_VALIDATION_FAILURE                                        = 'Validation Failure';
+    const BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN                         = 'Payment failed because account withdrawal are frozen';
+    const BAD_REQUEST_PAYMENT_INVALID_ACCOUNT                                   = 'Payment failed because of invalid account';
+    const BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION                = 'E-Mandate registration cancelled by the customer';
+    const BAD_REQUEST_INVALID_ACCOUNT_HOLDER_NAME                               = 'The account holder name is invalid';
+    const BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER                             = 'Payment cancelled by customer';
+    const BAD_REQUEST_PAYMENT_ACCOUNT_MAX_LIMIT_EXCEEDED                        = 'Payment failed because account limit exceeded';
+    const BAD_REQUEST_PAYMENT_KYC_PENDING                                       = 'Payment failed because account KYC pending';
+
     const BAD_REQUEST_EMANDATE_REGISTRATION_FAILED                              = 'E-mandate registration failed';
+    const BAD_REQUEST_EMANDATE_INVALID_AADHAAR_BANK_ACCOUNT_MAPPING             = 'EMandate registration failed because of invalid aadhaar bank account mapping';
+    const BAD_REQUEST_EMANDATE_AADHAAR_NOT_MAPPED                               = 'EMandate aadhaar not mapped';
 
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
@@ -446,6 +466,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED                              = 'The uploaded file is already processed';
     const BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING                               = 'The uploaded file is being processed';
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another operation on the batch is in progress';
+    const BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS                      = 'Request failed because another operation of lambda is in progress';
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                   = 'The uploaded file exceeds the number of entries allowed';
     const BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE                        = 'Batch stats are not available for this batch type';
 
@@ -462,16 +483,14 @@ class PublicErrorDescription
     const BAD_REQUEST_BANK_REQUIRED_WITH_ACCOUNT_NUMBER                         = 'Bank code should be provided in input if account number is sent';
 
     const BAD_REQUEST_PASSWORD_EXPIRED                                          = 'Account password has expired. Please contact administrator';
-    const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                 = 'Duplicate value for receipt in invoice';
     const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                     = 'Invoice expiry failed as payment exists or is in progress for this invoice.';
     const BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER                               = 'Invoices disabled because fee bearer is customer';
     const BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY                         = 'Some/all payment links of given batch has been issued already';
     const BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY                          = 'Notification for this batch has already been sent';
+    const BAD_REQUEST_PAYMENT_LINK_SLUG_GENERATE_FAILED                         = 'Failed to create link with given slug, please try a different value';
 
-    const BAD_REQUEST_API_KEY_NOT_PRESENT                                       = 'The operation cannot be performed without an API key being generated';
     const BAD_REQUEST_ITEM_INACTIVE                                             = 'Item cannot be used as it is inactive';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                     = 'You can not edit/delete an item with which invoices have been created already';
-    const BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE                                    = 'Can only reuse an item of the same item type';
     const BAD_REQUEST_INVALID_ITEM_TAX_DETAILS                                  = 'Tax details provided for line item is invalid';
     const BAD_REQUEST_LINK_TYPE_HAS_NO_TAXATION                                 = 'Payment link does not support taxation';
 
@@ -528,6 +547,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_OFFER_DURATION                                    = 'Offer end date must be later than offer start date';
     const BAD_REQUEST_OFFER_ALREADY_EXISTS                                      = 'Offer already exists. Please check the values and try again';
     const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK           = 'Flat cashback cannot be combined wih percent rate or max cashback in an offer';
+    const BAD_REQUEST_MAX_CASHBACK_WITHOUT_PERCENT_RATE                         = 'Max cashback should be combined wih percent rate';
     const BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER                              = 'Iins can only be editable for card offer';
     const BAD_REQUEST_OFFER_ALREADY_DEACTIVATED                                 = 'Offer has already been deactivated';
     const BAD_REQUEST_INVALID_PERMISSIONS_USAGE                                 = 'Combination of permissions used or assigned are invalid. Contact Razorpay Support';
@@ -601,8 +621,20 @@ class PublicErrorDescription
 
     const BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT                       = 'Merchant does not have enough balance for negative adjustment';
 
+    const BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE                                  = 'Payment cannot be made on this payment link';
+    const BAD_REQUEST_PAYMENT_LINK_PAYMENT_AMOUNT_MISMATCH                      = 'Payment amount provided does not match amount expected for the payment link';
+
     const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                               = 'No data present for gateway file processing in the given time period';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                       = 'Error occurred trying to create file';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE                          = 'Error occurred while sending file';
     const SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS                  = 'Combined file not sent as claims is lesser than refunds';
+
+    const BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME                             = 'The merchant request name is invalid';
+    const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                      = 'The merchant request submissions are missing';
+
+    const BAD_REQUEST_PARTNER_TYPE_INVALID                                      = 'Partner type is invalid';
+    const BAD_REQUEST_PARTNER_TYPE_REQUIRED                                     = 'Partner type is required';
+    const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
+    const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
+    const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
 }

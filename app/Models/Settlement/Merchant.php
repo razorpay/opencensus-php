@@ -5,19 +5,20 @@ namespace RZP\Models\Settlement;
 use App;
 use Carbon\Carbon;
 
-use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
 use RZP\Models;
-use RZP\Models\Base;
 use RZP\Exception;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
-use RZP\Models\BankAccount;
-use RZP\Models\Transaction;
-use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
-use RZP\Models\Settlement;
-use RZP\Models\Settlement\Details as SetlDetails;
-use RZP\Models\Settlement\Details\Component as SetlComponent;
+use RZP\Models\Base;
+use RZP\Models\Payout;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement;
+use RZP\Models\BankAccount;
+use RZP\Constants\Timezone;
+use RZP\Models\Transaction;
+use RZP\Models\Settlement\Details as SetlDetails;
+use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Models\Settlement\Details\Component as SetlComponent;
 
 class Merchant
 {
@@ -25,6 +26,7 @@ class Merchant
     protected $amount;
     protected $apiFee;
     protected $setl;
+    protected $payout;
     protected $setlTransaction;
     protected $bankTransferAtpt;
     protected $txns;
@@ -62,8 +64,6 @@ class Merchant
     {
         $this->setl = $setl;
 
-        $this->txns = $this->setl->setlTransactions;
-
         $this->updateSettlementEntity();
 
         $this->setl->incrementAttempts();
@@ -74,6 +74,33 @@ class Merchant
         $this->createSettlementAttemptEntity();
 
         return [$this->setl, $this->bankTransferAtpt];
+    }
+
+    public function retryFailedPayout(Payout\Entity $payout): Payout\Entity
+    {
+        $this->payout = $payout;
+
+        $this->payout->reload();
+
+        if ($this->payout->getStatus() !== Payout\Status::FAILED)
+        {
+            throw new Exception\RuntimeException(
+                'Invalid Payout.',
+                [
+                    'id'     => $this->payout->getId(),
+                    'status' => $this->payout->getStatus()
+                ]);
+        }
+
+        $this->resetPayoutEntity();
+
+        $this->payout->incrementAttempts();
+
+        $this->repo->saveOrFail($this->payout);
+
+        $this->createPayoutAttemptEntity();
+
+        return $this->payout;
     }
 
     public function settle(
@@ -337,15 +364,40 @@ class Merchant
         $this->setl = $setl;
     }
 
+    protected function resetPayoutEntity()
+    {
+        // set the settlement status back to created, and other fields to null
+        $this->payout->setStatus(Status::CREATED);
+        $this->payout->setFailureReason(null);
+        $this->payout->setUtr(null);
+        $this->payout->setRemarks(null);
+        $this->payout->batchFundTransfer()->dissociate();
+    }
+
     protected function createSettlementAttemptEntity(int $initiateAt = null)
+    {
+        $this->createFundTransferAttempt($this->setl, $this->bankAccount, $initiateAt);
+    }
+
+    protected function createPayoutAttemptEntity(int $initiateAt = null)
+    {
+        $bankAccount = $this->payout->destination;
+
+        $this->createFundTransferAttempt($this->payout, $bankAccount, $initiateAt);
+    }
+
+    protected function createFundTransferAttempt(
+        Base\Entity $source,
+        BankAccount\Entity $bankAccount,
+        int $initiateAt = null)
     {
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $fundTransferAttempt->merchant()->associate($this->merchant);
 
-        $fundTransferAttempt->source()->associate($this->setl);
+        $fundTransferAttempt->source()->associate($source);
 
-        $fundTransferAttempt->bankAccount()->associate($this->bankAccount);
+        $fundTransferAttempt->bankAccount()->associate($bankAccount);
 
         $initiateAt = ($initiateAt ?: Carbon::now(Timezone::IST)->getTimestamp());
 

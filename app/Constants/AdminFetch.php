@@ -4,6 +4,7 @@ namespace RZP\Constants;
 
 use RZP\Base\Fetch;
 use RZP\Models\Dispute;
+use RZP\Models\Settlement\Channel;
 
 /**
  * Class AdminFetch
@@ -17,6 +18,95 @@ class AdminFetch
     public static function fields()
     {
         return Fetch::getCommonFields();
+    }
+
+    public static function externalEntities()
+    {
+        return [
+            Entity::REPORTING_LOGS => [
+                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+            ],
+            Entity::REPORTING_CONFIGS => [
+                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+            ],
+            Entity::REPORTING_SCHEDULES => [
+                'merchant_id'       => Fetch::FIELD_MERCHANT_ID
+            ],
+            Entity::SHIELD_RULES => [
+                'is_active'         => [
+                    Fetch::LABEL        => 'active',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        '0',
+                        '1',
+                    ],
+                ],
+                'action'            => [
+                    Fetch::LABEL        => 'action',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'block',
+                        'review',
+                        'allow'
+                    ]
+                ],
+                'ruleset'           => [
+                    Fetch::LABEL        => 'ruleset',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ]
+            ],
+            Entity::SHIELD_RULE_ANALYTICS => [
+                'entity_id'         => [
+                    Fetch::LABEL        => 'entity_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'email'             => [
+                    Fetch::LABEL        => 'email',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'contact'           => [
+                    Fetch::LABEL        => 'contact',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'card_iin'          => [
+                    Fetch::LABEL        => 'card_iin',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'action'            => [
+                    Fetch::LABEL        => 'action',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'block',
+                        'review',
+                        'allow'
+                    ]
+                ],
+                'ruleset'           => [
+                    Fetch::LABEL        => 'ruleset',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'ip'                => [
+                    Fetch::LABEL        => 'ip',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'card_hash'         => [
+                    Fetch::LABEL        => 'card_hash',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'triggered_count'   => [
+                    Fetch::LABEL        => 'triggered_count',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'rule_id'           => [
+                    Fetch::LABEL        => 'rule_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ]
+            ]
+        ];
     }
 
     public static function entities()
@@ -61,6 +151,23 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
+            Entity::ATOM => [
+                'payment_id'         => Fetch::FIELD_PAYMENT_ID,
+                'refund_id'          => Fetch::FIELD_REFUND_ID,
+                'bank_payment_id'    => [
+                    Fetch::LABEL => 'Bank Payment Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'gateway_payment_id' => [
+                    Fetch::LABEL => 'Gateway Payment Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'received'           => [
+                    Fetch::LABEL => 'Received',
+                    Fetch::TYPE  => Fetch::TYPE_BOOLEAN
+                ],
             ],
 
             Entity::AXIS_GENIUS => [
@@ -188,11 +295,35 @@ class AdminFetch
                     Fetch::LABEL  => 'Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
-                        'all',
                         'payment_link',
                         'refund',
+                        'emandate',
+                        'reconciliation',
                         'irctc_refund',
-                        'irctc_settlement'
+                        'irctc_settlement',
+                        'linked_account',
+                        'virtual_bank_account',
+                        'recurring_charge',
+                        'payout',
+                        'sub_merchant',
+                        'direct_debit',
+                    ],
+                ],
+                'sub_type' => [
+                    Fetch::LABEL  => 'Sub Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'acknowledge',
+                        'debit',
+                        'register',
+                    ],
+                ],
+                'gateway' => [
+                    Fetch::LABEL  => 'Gateway',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'enach_rbl',
+                        'hdfc'
                     ],
                 ],
             ],
@@ -210,6 +341,11 @@ class AdminFetch
                 'date' => [
                     Fetch::LABEL  => 'Date',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                       Fetch::LABEL  => 'Channel',
+                       Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                       Fetch::VALUES => Channel::getChannels()
                 ],
             ],
 
@@ -536,6 +672,11 @@ class AdminFetch
                     Fetch::LABEL  => 'UTR',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getChannels()
+                ],
             ],
 
             Entity::GATEWAY_DOWNTIME => [
@@ -555,6 +696,8 @@ class AdminFetch
                         'emi',
                         'refund',
                         'combined',
+                        'emandate_debit',
+                        'emandate_register',
                     ],
                 ],
                 'status' => [
@@ -569,7 +712,7 @@ class AdminFetch
                     ],
                 ],
                 'target' => [
-                    Fetch::LABEL  => 'Type',
+                    Fetch::LABEL  => 'Target',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
                         'rbl',
@@ -969,6 +1112,13 @@ class AdminFetch
                 ],
             ],
 
+            Entity::NODAL_STATEMENT => [
+                'q'  => [
+                    Fetch::LABEL  => 'Search Query',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::OFFER => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
@@ -1065,6 +1215,10 @@ class AdminFetch
                     Fetch::LABEL  => 'Order Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'payment_link_id' => [
+                    Fetch::LABEL => 'Payment Link Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
                 'refund_status' => [
                     Fetch::LABEL  => 'Refund Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
@@ -1113,6 +1267,43 @@ class AdminFetch
                     ],
                 ],
                 'wallet' => Fetch::FIELD_WALLET,
+                'vpa' => [
+                    Fetch::LABEL  => 'VPA',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::PAYMENT_LINK => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'active',
+                        'inactive',
+                    ],
+                ],
+                'status_reason' => [
+                    Fetch::LABEL  => 'Status Reason',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'expired',
+                        'deactivated',
+                        'completed',
+                    ],
+                ],
+                'user_id' => [
+                    Fetch::LABEL => 'User Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'receipt' => [
+                    Fetch::LABEL => 'Receipt',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'title' => [
+                    Fetch::LABEL => 'Title',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::PAYOUT => [
@@ -1254,6 +1445,7 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
                         'created',
+                        'initiated',
                         'failed',
                         'processed',
                     ],
@@ -1265,6 +1457,11 @@ class AdminFetch
                 'utr' => [
                     Fetch::LABEL  => 'UTR',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getChannels()
                 ],
             ],
 

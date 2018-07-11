@@ -100,8 +100,8 @@ class MerchantRequestTest extends TestCase
 
         $this->assertArraySelectiveEquals($this->testData[__FUNCTION__]['response']['content'], $response);
 
-        $this->assertEquals($fileStoreData['id'],
-                            'file_'. $response[Request\Constants::SUBMISSIONS][Feature\Constants::VENDOR_AGREEMENT]);
+        $this->assertEquals($fileStoreData['location'],
+                            $response[Request\Constants::SUBMISSIONS][Feature\Constants::VENDOR_AGREEMENT]);
     }
 
     public function testCreateMerchantRequestWithErrors()
@@ -142,6 +142,23 @@ class MerchantRequestTest extends TestCase
     {
         $this->ba->adminAuth();
 
+        $this->startTest();
+    }
+
+    protected function bulkUpdateMerchantRequestsTimestampsOnce()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkUpdateMerchantRequestsTimestamps()
+    {
+        $this->ba->adminAuth();
+
+        $this->bulkUpdateMerchantRequestsTimestampsOnce();
+
+        // Update timestamp again
         $this->startTest();
     }
 

@@ -19,7 +19,7 @@ class PdfGenerator extends Base\Core
 
     const INVOICE_PDF_TEMPLATES_KEY = 'invoices.pdf.templates';
 
-    const CACHE_DEFAULT_TTL         = 900; // In seconds (=15 min)
+    const CACHE_DEFAULT_TTL         = 15; // In minutes
 
     const TEMPLATE_FILE             = 'template_file';
     const CSS_FILE                  = 'css_file';
@@ -84,7 +84,7 @@ class PdfGenerator extends Base\Core
             'footer-font-size'  => '9',
             'footer-center'     => 'Page [page] of [topage]',
             'dpi'               => 290,
-            'zoom'              => 1.28,
+            'zoom'              => 1,
             'ignoreWarnings'    => false,
             'encoding'          => 'UTF-8',
         ];

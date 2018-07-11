@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Artisan;
 
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
@@ -20,6 +21,26 @@ class Merchant extends Base
         $this->fixtures->create('merchant:api_fee_account');
 
         $this->setUpHiemdallHierarcyForRazorpayOrg();
+    }
+
+    public function create(array $attributes = [])
+    {
+        $merchant = parent::create($attributes);
+
+        if (isset($attributes[MerchantEntity::ORG_ID]) === true)
+        {
+            $org = OrgEntity::find($attributes[MerchantEntity::ORG_ID]);
+        }
+        else
+        {
+            $org = OrgEntity::find('100000razorpay');
+        }
+
+        $merchant->org()->associate($org);
+
+        $merchant->saveOrFail();
+
+        return $merchant;
     }
 
     public function createDefaultTestMerchant()
@@ -207,6 +228,12 @@ class Merchant extends Base
         $detailsAttributes = array_merge(['merchant_id' => $id], $detailsAttributes);
 
         $merchant = $this->fixtures->create('merchant', $attributes);
+
+        $org = OrgEntity::find($orgId);
+
+        $merchant->org()->associate($org);
+
+        $merchant->saveOrFail();
 
         $this->fixtures->create('merchant_detail:sane', $detailsAttributes);
 
@@ -485,6 +512,11 @@ class Merchant extends Base
     public function editCategory2($category, $id = '10000000000000')
     {
         return $this->edit($id, ['category2' => $category]);
+    }
+
+    public function setHasKeyAccess(bool $hasKeyAccess, string $id = '10000000000000')
+    {
+        return $this->edit($id, ['has_key_access' => $hasKeyAccess]);
     }
 
     public function editPricingPlanId($planId, $id = '10000000000000')

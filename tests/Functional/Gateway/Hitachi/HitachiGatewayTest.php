@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Hitachi;
 use RZP\Models\Card;
 use RZP\Gateway\Hitachi;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\Blade\Mock\CardNumber;
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class HitachiGatewayTest extends TestCase
@@ -521,6 +521,45 @@ class HitachiGatewayTest extends TestCase
                     ]
                 ]);
             });
+    }
+
+    public function testPaymentFlowWhenGatewayNullinMpi()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/',
+            'content' => $payment
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getFormDataFromResponse($response->getContent(), 'http://localhost');
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertEquals('created', $payment['status']);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->fixtures->edit('mpi', $mpi['id'], ['gateway' => null]);
+
+        $url = 'https://api.razorpay.com/v1/gateway/acs/mpi_blade';
+
+        $this->ba->publicAuth();
+
+        $request = $this->makeFirstGatewayPaymentMockRequest($url, 'POST', $content[2]);
+
+        $this->submitPaymentCallbackRequest($request);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
     }
 
     public function testVerifyPaymentwithblankPrn()

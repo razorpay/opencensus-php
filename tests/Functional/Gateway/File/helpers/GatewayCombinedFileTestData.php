@@ -93,8 +93,7 @@ return [
                 'admin' => true,
                 'items' => [
                     [
-                        'status'              => 'acknowledged',
-                        'comments'            => 'Combined file not sent as claims is lesser than refunds',
+                        'status'              => 'file_sent',
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,

@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const STATUS                    = 'status';
     const PROCESSING                = 'processing';
     const TOTAL_COUNT               = 'total_count';
+    const PROCESSED_COUNT           = 'processed_count';
     const SUCCESS_COUNT             = 'success_count';
     const FAILURE_COUNT             = 'failure_count';
     const ATTEMPTS                  = 'attempts';
@@ -36,6 +37,11 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON            = 'failure_reason';
 
     /**
+     * Derived attribute: holds percentage of rows processed
+     */
+    const PROCESSED_PERCENTAGE      = 'processed_percentage';
+
+    /**
      * Constants used in migration file.
      */
     const STATUS_LENGTH             = 20;
@@ -51,6 +57,7 @@ class Entity extends Base\PublicEntity
     const OUTPUT_FILE_PREFIX        = 'batch/download/';
     const VALIDATED_FILE_PREFIX     = 'batch/validated/';
     const CONFIG                    = 'config';
+    const APPLICATION_ID            = 'application_id';
 
     /**
      * Constants used for batch stats api
@@ -61,6 +68,8 @@ class Entity extends Base\PublicEntity
      * Constant used for batch multiple fetch api to include settings
      */
     const WITH_CONFIG               = 'with_config';
+
+    const TOKEN = 'token';
 
     protected static $sign = 'batch';
 
@@ -103,6 +112,8 @@ class Entity extends Base\PublicEntity
         self::TOTAL_COUNT,
         self::SUCCESS_COUNT,
         self::FAILURE_COUNT,
+        self::PROCESSED_COUNT,
+        self::PROCESSED_PERCENTAGE,
         self::ATTEMPTS,
         self::AMOUNT,
         self::PROCESSED_AMOUNT,
@@ -115,6 +126,7 @@ class Entity extends Base\PublicEntity
         self::STATUS              => Status::CREATED,
         self::PROCESSING          => 0,
         self::TOTAL_COUNT         => 0,
+        self::PROCESSED_COUNT     => 0,
         self::SUCCESS_COUNT       => 0,
         self::FAILURE_COUNT       => 0,
         self::AMOUNT              => null,
@@ -129,12 +141,24 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::TOTAL_COUNT      => 'int',
+        self::PROCESSED_COUNT  => 'int',
         self::SUCCESS_COUNT    => 'int',
         self::FAILURE_COUNT    => 'int',
         self::AMOUNT           => 'int',
         self::PROCESSED_AMOUNT => 'int',
         self::ATTEMPTS         => 'int',
         self::PROCESSING       => 'bool',
+    ];
+
+    protected $appends = [
+        self::PROCESSED_PERCENTAGE,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::PROCESSED_COUNT,
+        self::PROCESSED_PERCENTAGE,
     ];
 
     /**
@@ -326,6 +350,22 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOTAL_COUNT);
     }
 
+    public function getAttempts(): int
+    {
+        return $this->getAttribute(self::ATTEMPTS);
+    }
+
+    // TODO: Add type hint after deployed
+    public function getProcessedCount()
+    {
+        return $this->getAttribute(self::PROCESSED_COUNT);
+    }
+
+    public function getProcessedPercentage(): int
+    {
+        return $this->getAttribute(self::PROCESSED_PERCENTAGE);
+    }
+
     public function isPaymentLinkType(): bool
     {
         return ($this->getType() === Type::PAYMENT_LINK);
@@ -396,6 +436,19 @@ class Entity extends Base\PublicEntity
         return $this->createdByFileUpload;
     }
 
+    public function toArrayTrace(array $fields = [], array $extra = []): array
+    {
+        // Always merges ID and MERCHANT_ID to trace fields
+        $fields = array_merge($fields, [self::ID, self::MERCHANT_ID]);
+
+        return array_merge($this->only($fields), $extra);
+    }
+
+    public function toArrayTraceAll(): array
+    {
+        return $this->attributesToArray();
+    }
+
     // ----------------------- End  Getters --------------------------
 
     // ----------------------- Setters -------------------------------
@@ -431,6 +484,17 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    /**
+     * At the time of retrying failed batch we temporarily set status to null so
+     * that processer code will continue and evaluate new status and set at the end.
+     * Note that null is not a valid status and if processor failed to evaluate &
+     * set new status entity save will fail (which is expected & good).
+     */
+    public function setStatusNull()
+    {
+        $this->setAttribute(self::STATUS, null);
+    }
+
     public function setProcessing(bool $value)
     {
         $this->setAttribute(self::PROCESSING, $value);
@@ -458,7 +522,21 @@ class Entity extends Base\PublicEntity
 
     public function incrementAttempts()
     {
-        $this->increment(self::ATTEMPTS);
+        $attempts = $this->getAttribute(self::ATTEMPTS);
+
+        $this->setAttribute(self::ATTEMPTS, $attempts + 1);
+    }
+
+    public function incrementProcessedCount()
+    {
+        $attempts = $this->getAttribute(self::PROCESSED_COUNT);
+
+        $this->setAttribute(self::PROCESSED_COUNT, $attempts + 1);
+    }
+
+    public function unsetProcessedCount()
+    {
+        $this->setAttribute(self::PROCESSED_COUNT, 0);
     }
 
     public function setFailureReason(string $failureReason)
@@ -482,4 +560,40 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- End Setters ---------------------------
+
+    // ----------------------- Appends -------------------------------
+
+    /**
+     * Gets derived attribute, currently only exposed on admin auth (via corresponding public setter method)
+     * @return int
+     */
+    public function getProcessedPercentageAttribute(): int
+    {
+        $processedCount = $this->getProcessedCount();
+        $totalCount     = $this->getTotalCount();
+
+        return ($totalCount !== 0) ? (($processedCount / $totalCount) * 100) : 0;
+    }
+
+    // ----------------------- End Appends ---------------------------
+
+    // ----------------------- Public Setters ------------------------
+
+    public function setPublicProcessedCountAttribute(array & $output)
+    {
+        if (app('basicauth')->isAdminAuth() === false)
+        {
+            unset($output[self::PROCESSED_COUNT]);
+        }
+    }
+
+    public function setPublicProcessedPercentageAttribute(array & $output)
+    {
+        if (app('basicauth')->isAdminAuth() === false)
+        {
+            unset($output[self::PROCESSED_PERCENTAGE]);
+        }
+    }
+
+    // ----------------------- End Public Setters --------------------
 }

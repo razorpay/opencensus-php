@@ -3,7 +3,6 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Models\Base;
-use RZP\Models\Pricing;
 use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
@@ -17,6 +16,10 @@ class Core extends Base\Core
         $rule->getValidator()->validateRuleDoesNotMatch($plan);
 
         $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
+
+        $this->app['workflow']
+            ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
+            ->handle((new \stdClass), $rule);
 
         $this->repo->saveOrFail($rule);
 
@@ -40,6 +43,46 @@ class Core extends Base\Core
         $this->repo->saveOrFail($rule);
 
         return $this->createPlanFromRule($rule);
+    }
+
+    /**
+     * Duplicate the existing rule, update its properties from input and create it as a new rule.
+     * Soft delete the previous rule.
+     */
+    public function editPlanRule(String $planId, String $ruleId, array $input): Entity
+    {
+        $rule = $this->repo->pricing->getPricingPlanRule($planId, $ruleId);
+
+        $newRule = $rule->replicate();
+
+        $plan = $this->repo->pricing->getPricingPlanById($planId);
+
+        $planWithoutOldRule = $plan->reject(function($existingRule) use ($rule) {
+            return $existingRule->getId() === $rule->getId();
+        });
+
+        $newRule->edit($input, 'editPlanRule');
+
+        $newRule = $newRule->generateId();
+
+        $newRule->getValidator()->validateRuleDoesNotMatch($planWithoutOldRule);
+
+        $newRule->setAuditAction(Action::CREATE_UPDATE_PRICING_PLAN_RULE);
+
+        $this->app['workflow']
+             ->setEntityAndId($rule->getEntity(), $planId)
+             ->handle($rule, $newRule);
+
+        $newRule = $this->repo->transactionOnLiveAndTest(function() use ($rule, $newRule)
+        {
+            $this->repo->pricing->deletePlanRuleForce($rule->getPlanId(), $rule->getId());
+
+            $this->repo->saveOrFail($newRule);
+
+            return $newRule;
+        });
+
+        return $newRule;
     }
 
     public function createPricing(array $input)

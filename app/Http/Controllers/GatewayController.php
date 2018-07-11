@@ -15,6 +15,7 @@ use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Netbanking\Corporation;
 use RZP\Models\Gateway\Priority as GatewayPriority;
+use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 
 class GatewayController extends Controller
 {
@@ -134,6 +135,14 @@ class GatewayController extends Controller
 
                 break;
 
+            case Gateway::UPI_HULK:
+                $input['headers'] = Request::header();
+                $input['raw'] = Request::getContent();
+
+                $data = $this->processServerCallback($input, Gateway::UPI_HULK);
+
+                break;
+
         }
 
         // $input['gateway'] = $gateway;
@@ -234,6 +243,49 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
+    public function callbackAmazonpay()
+    {
+        $input = Request::all();
+
+        $this->app['trace']->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway' => Gateway::WALLET_AMAZONPAY,
+                'input'   => $input,
+            ]);
+
+        $paymentId = $input[AmazonResponse::SELLER_ORDER_ID];
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        if (empty($mode) === true)
+        {
+            throw new Exception\LogicException(
+                'Payment id not found in either database',
+                null,
+                [
+                    'gateway'    => Gateway::WALLET_AMAZONPAY,
+                    'payment_id' => $paymentId,
+                ]);
+        }
+
+        \Database\DefaultConnection::set($mode);
+
+        $this->app['basicauth']->setMode($mode);
+
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
+        $publicPaymentId = $payment->getPublicId();
+
+        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
+        $publicKey = $keys->first()->getPublicKey($mode);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+
+        $query = http_build_query($input);
+
+        return Redirect::to($url . '?'. $query);
+    }
+
     protected function getNetbankingEntityAndModeByTraceId($traceId)
     {
         $app = $this->app;
@@ -256,6 +308,16 @@ class GatewayController extends Controller
         }
 
         return ['nb' => $nb, 'mode' => $mode];
+    }
+
+    /**
+     * Fetches list of all active downtimes as of now
+     */
+    public function getGatewayDowntimes(Downtime\Service $service)
+    {
+        $data = $service->getGatewayDowntimeDataForDashboard();
+
+        return ApiResponse::json($data);
     }
 
     /**

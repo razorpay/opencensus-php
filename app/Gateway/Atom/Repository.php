@@ -2,25 +2,22 @@
 
 namespace RZP\Gateway\Atom;
 
-use RZP\Exception;
-use RZP\Gateway\Atom;
 use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'atom';
 
-    public function findByToken($token)
-    {
-        return $this->newQuery()
-                    ->where('token', '=', $token)
-                    ->first();
-    }
+    protected $appFetchParamRules = [
+        Entity::PAYMENT_ID         => 'sometimes|string|min:14|max:18',
+        Entity::REFUND_ID          => 'sometimes|string|min:14|max:18',
+        Entity::BANK_PAYMENT_ID    => 'sometimes|string',
+        Entity::GATEWAY_PAYMENT_ID => 'sometimes|string',
+        Entity::RECEIVED           => 'sometimes|boolean',
+    ];
 
-    public function findByGatewayPaymentId($gatewayTxnId)
-    {
-        return $this->newQuery()
-                    ->where('gateway_payment_id', '=', $gatewayTxnId)
-                    ->first();
-    }
+    protected $signedIds = [
+        Entity::PAYMENT_ID,
+        Entity::REFUND_ID,
+    ];
 }

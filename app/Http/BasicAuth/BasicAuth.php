@@ -5,6 +5,10 @@ namespace RZP\Http\BasicAuth;
 use Crypt;
 use Config;
 use ApiResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
+use Razorpay\OAuth\Client as OAuthClient;
+use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Exception;
 use RZP\Http\Route;
@@ -14,9 +18,10 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use Illuminate\Routing\Router;
+use RZP\Http\RequestHeader;
 use RZP\Base\RepositoryManager;
 use RZP\Models\User\Entity as User;
+use RZP\Models\Merchant\Account\Entity as Account;
 
 /**
  * Class BasicAuth
@@ -46,24 +51,29 @@ use RZP\Models\User\Entity as User;
  */
 class BasicAuth
 {
-    const HMAC_ALGO = 'sha256';
-
-    /**
-     * To support Account Auth: Allows API requests to be served under the
-     * scope of a merchant ID that is sent as the value to this header
-     *
-     * On Privilege auth                - set to any merchant ID
-     * On admin auth                    - set to any merchant under the current org
-     * For private auth (marketplace)   - set to any linked account under the merchant
-     */
-    const ACCOUNT_HEADER_KEY = 'X-Razorpay-Account';
+    const HMAC_ALGO               = 'sha256';
 
     /**
      * Dashboard headers are prefixed with following literal.
      */
     const DASHBOARD_HEADER_PREFIX = 'x-dashboard';
 
-    const ADMIN_TOKEN_HEADER = 'X-Admin-Token';
+    const ADMIN_TOKEN_HEADER      = 'X-Admin-Token';
+
+    /**
+     * Callback key in the partner token flow looks like this:
+     * rzp_test_1DP5mmOlF5G5ag~rzp_partner_ACIg2tb8NySnuh
+     *
+     * Delimiter used is defined in this const.
+     */
+    const PARTNER_CALLBACK_KEY_DELIMITER = '~';
+
+    const KEY                     = 'key';
+    const KEY_ID                  = 'key_id';
+    const ACCOUNT_ID              = 'account_id';
+    const SECRET                  = 'secret';
+    const PUBLIC_KEY              = 'public_key';
+    const AUTH_TYPE               = 'auth_type';
 
     /**
      * The application instance.
@@ -75,23 +85,28 @@ class BasicAuth
     /**
      * OAuth's registered client id.
      *
-     * @var string
+     * @var string|null
      */
     protected $oauthClientId;
 
     /**
      * OAuth application id
      *
-     * @var string
+     * @var string|null
      */
     protected $applicationId;
 
     /**
      * OAuth's access token (public) id.
      *
-     * @var string
+     * @var string|null
      */
     protected $accessTokenId;
+
+    /**
+     * @var string|null
+     */
+    protected $partnerMerchantId;
 
     /**
      * Key and secret sent by client for
@@ -102,10 +117,10 @@ class BasicAuth
      * @var array
      */
     private $creds = [
-        'key'           => '',
-        'public_key'    => '',
-        'secret'        => '',
-        'account_id'    => '',
+        self::KEY           => '',
+        self::PUBLIC_KEY    => '',
+        self::SECRET        => '',
+        self::ACCOUNT_ID    => '',
     ];
 
     /**
@@ -113,6 +128,17 @@ class BasicAuth
      * @var Key\Entity
      */
     private $key = null;
+
+    /**
+     * Used to identify partner flows
+     * @var bool
+     */
+    private $isPartnerAuth = false;
+
+    /**
+     * @var AuthCreds
+     */
+    public $authCreds = null;
 
     /**
      * Merchant who is being authenticated
@@ -223,23 +249,9 @@ class BasicAuth
      */
     protected $dashboardHeaders = array();
 
-    /**
-     * Contains valid lengths of key.
-     * rzp_mode            = 3 + 1 + 4
-     * rzp_mode_admin      = 3 + 1 + 4 + 1 + 5
-     * rzp_mode_keyId      = 3 + 1 + 4 + 1 + 24
-     * rzp_mode_merchantId = 3 + 1 + 4 + 1 + 14
-     *
-     * NOTE: key length 29 is used for OAuth public tokens,
-     * hence DO NOT add 29 as a valid length for basicAuth
-     *
-     * @var array
-     */
-    public static $validKeyLengths = [
-        8, 14, 23, 33
-    ];
-
     protected $adminOrgId  = null;
+
+    protected $adminToken;
 
     protected $orgId       = null;
 
@@ -251,6 +263,29 @@ class BasicAuth
      * @var \RZP\Models\User\Entity | null
      */
     protected $user        = null;
+
+    /**
+     * @var boolean
+     */
+    protected $keylessPublicAuth = false;
+
+    /**
+     * The entity id with which keyless public auth happened
+     * @var string
+     */
+    protected $keylessXEntityId;
+
+    /**
+     * Partner token parts received in the callback flow
+     * Sample:
+     * [
+     *  'key' => 'rzp_test_partner_1DP5mmOlF5G5ag'
+     *  'account_id' => 'acc_ACIg2tb8NySnuh'
+     * ]
+     *
+     * @var array
+     */
+    public $partnerAuthCallbackData = [];
 
     public function __construct($app)
     {
@@ -287,10 +322,6 @@ class BasicAuth
             return ApiResponse::httpAuthExpected();
         }
 
-        $this->creds['secret'] = $secret;
-
-        $this->creds['public_key'] = $key;
-
         $keyError = $this->checkAndSetKeyId($key);
 
         if ($keyError !== null)
@@ -298,30 +329,38 @@ class BasicAuth
             return $keyError;
         }
 
-        // Fetch ID sent in the account auth header
-        $accountId = $this->request->headers->get(self::ACCOUNT_HEADER_KEY);
+        $this->authCreds->creds[self::SECRET] = $secret;
 
-        return $this->checkAndSetAccountId($accountId);
+        $this->authCreds->creds[self::PUBLIC_KEY] = $key;
+
+        return $this->checkAndSetAccountId();
     }
 
     public function checkAndSetKeyId($key)
     {
-        if (($this->verifyKeyLength($key) === false) or
-            ($this->verifyKeyPrefix($key) === false) or
-            ($this->verifyAndSetMode($key) === false))
-        {
-            return $this->invalidApiKey();
-        }
+        $this->checkAndSetCreds($key);
 
-        $keyId = substr($key, 9);
+        return $this->authCreds->validateAndSetKeyId($key);
+    }
 
-        if ($keyId === false)
-        {
-            $this->creds['key'] = '';
-            return;
-        }
+    /**
+     * This function checks if it's API key auth or client auth
+     * and sets the context and initializes authCreds accordingly
+     * The authCreds class holds all the actual credential details.
+     *
+     * @param string $key
+     */
+    protected function checkAndSetCreds(string $key)
+    {
+        $keyRegex = '/^rzp_(test|live)_(partner)_[a-zA-Z0-9]{14}$/';
 
-        $this->creds['key'] = $keyId;
+        $validPartnerKey = (preg_match($keyRegex, $key, $matches) === 1);
+
+        $this->isPartnerAuth = $validPartnerKey ?? false;
+
+        $authCredsClass = $validPartnerKey ? ClientAuthCreds::class : KeyAuthCreds::class;
+
+        $this->authCreds = new $authCredsClass($this->app, $key);
     }
 
     /**
@@ -330,12 +369,51 @@ class BasicAuth
      * @param  string|null      $accountId
      * @return ApiResponse|null
      */
-    protected function checkAndSetAccountId($accountId)
+    protected function checkAndSetAccountId(string $accountId = null)
+    {
+        $accountId = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
+
+        if (empty($accountId) === true)
+        {
+            $accountId = $this->request->input('account_id');
+
+            if (empty($accountId) === true)
+            {
+                return null;
+            }
+
+            $this->removeRequestKey(self::ACCOUNT_ID);
+        }
+
+        if ($this->verifyAccountId($accountId) === false)
+        {
+            return $this->invalidAccountId($accountId);
+        }
+
+        $this->authCreds->creds[self::ACCOUNT_ID] = $accountId;
+
+        $callbackKey = $this->getCallbackKeyWithAccountId($accountId);
+
+        $this->authCreds->setPublicKey($callbackKey);
+
+        return null;
+    }
+
+    protected function getCallbackKeyWithAccountId(string $accountId): string
+    {
+        return $this->getPublicKey() . self::PARTNER_CALLBACK_KEY_DELIMITER . Account::getSignedId($accountId);
+    }
+
+    /**
+     * Verify and set account id in $this->authCreds->creds[] and set callback key
+     *
+     * @param  string|null      $accountId
+     * @return ApiResponse|null
+     */
+    protected function checkAndSetPartnerExtraInput(string $accountId = null)
     {
         if ($accountId === null)
         {
-            $this->creds['account_id'] = '';
-
             return null;
         }
 
@@ -344,9 +422,94 @@ class BasicAuth
             return $this->invalidAccountId($accountId);
         }
 
-        $this->creds['account_id'] = $accountId;
+        $callbackKey = $this->getCallbackKeyWithAccountId($accountId);
+
+        $this->authCreds->creds[self::ACCOUNT_ID] = Account::verifyIdAndSilentlyStripSign($accountId);
+
+        $this->authCreds->setPublicKey($callbackKey);
 
         return null;
+    }
+
+    /**
+     * Tests if a given request has the partner token callback key
+     *
+     * Sample callback key for partner tokens:
+     * rzp_partner_test_10000000000000
+     *
+     * @return bool
+     */
+    public function hasPartnerAuthCallbackKey(): bool
+    {
+        $key = $this->getKeyForNonBasicAuthTokens();
+
+        $matches = [];
+
+        // Sample token: rzp_test_partner_1DP5mmOlF5G5ag~acc_ACIg2tb8NySnuh
+        $keyRegex = '/^(rzp_(test|live)_partner_[a-zA-Z0-9]{14})~(acc_[a-zA-Z0-9]{14})$/';
+
+        $validCallbackKey = (preg_match($keyRegex, $key, $matches) === 1);
+
+        if ($validCallbackKey === true)
+        {
+            $this->partnerAuthCallbackData = [
+                self::KEY           => $matches[1],
+                self::ACCOUNT_ID    => $matches[3],
+            ];
+
+            //
+            // If the request was authenticated with key_id sent in the request params
+            // we remove the key_id attribute before proceeding
+            //
+            $this->removeRequestKey(self::KEY_ID);
+        }
+
+        return $validCallbackKey;
+    }
+
+    /**
+     * Handles public callback auth when a partner token is used
+     */
+    public function handlePartnerAuthOnPublicCallback()
+    {
+        $this->setType(Type::PUBLIC_AUTH);
+
+        $data = $this->partnerAuthCallbackData;
+
+        $key       = $data[self::KEY];
+        $accountId = $data[self::ACCOUNT_ID];
+
+        $this->authCreds->creds[self::KEY]        = $key;
+        $this->authCreds->creds[self::ACCOUNT_ID] = Account::verifyIdAndSilentlyStripSign($accountId);
+
+        if ($this->checkAndSetKeyId($key) !== null)
+        {
+            return $this->authCreds->invalidApiKey();
+        }
+
+        $response = $this->authCreds->verifyKeyExistenceAndNotExpired();
+
+        if ($response !== true)
+        {
+            return $response;
+        }
+
+        $this->authCreds->setPublicKey($key);
+        $this->authCreds->fetchAndSetMerchantAndCheckLive();
+
+        $error = $this->checkAndSetPartnerExtraInput($accountId);
+
+        if ($error !== null)
+        {
+            return $error;
+        };
+
+        $error = $this->checkAndSetPartnerMerchantScope();
+
+        if ($error !== null)
+        {
+            return $error;
+        };
     }
 
 // --------------------- Basic Auths -------------------------------------------
@@ -362,23 +525,34 @@ class BasicAuth
             return $res;
         }
 
-        if ($this->isKeyExisting() === true)
+        /**
+         * Looks for basic auth api key first then client credentials
+         * which are used like api key in case of partner accessing
+         * on behalf of sub-merchant. The partner-merchant mapping is
+         * verified at a later point.
+         */
+        if ($this->authCreds->isKeyExisting() === true)
         {
-            $response = $this->verifyKeyNotExpired();
+            $response = $this->authCreds->verifyKeyNotExpired();
+
+            if ($response === true)
+            {
+                $response = $this->authCreds->verifySecret();
+            }
 
             if ($response !== true)
             {
                 return $response;
             }
 
-            $response = $this->verifySecret();
+            $error = $this->checkAndSetAccountScope();
 
-            if ($response === true)
+            if ($error !== null)
             {
-                return $this->checkAndSetAccountScope();
+                return $error;
             }
 
-            return $response;
+            return $this->checkAndSetPartnerMerchantScope();
         }
         else if ($this->verifyInternalAppAsProxy() === true)
         {
@@ -391,7 +565,7 @@ class BasicAuth
             return $this->checkAndSetAccountScope();
         }
 
-        return $this->invalidApiKey();
+        return $this->authCreds->invalidApiKey();
     }
 
     /**
@@ -402,47 +576,111 @@ class BasicAuth
     {
         $this->setType(Type::PUBLIC_AUTH);
 
-        $key = $this->request->input('key_id');
+        $keyId = $this->request->input(self::KEY_ID);
 
-        if ($key === null)
+        // Note: Attempts keyless auth in case when key_id request input exists
+        // but is not set (i.e. is empty).
+        if ((empty($keyId) === true) and (empty($this->request->getUser()) === true))
         {
-            $res = $this->setCredentials();
-
-            if ($res !== null)
-            {
-                return $res;
-            }
+            return $this->keylessPublicAuth();
         }
         else
         {
-            $res = $this->setKeyFromQueryParams();
+            return $this->keyPublicAuth();
+        }
+    }
 
-            if ($res !== null)
-            {
-                return $res;
-            }
+    public function oauthPublicTokenAuth(string $token = null)
+    {
+        $this->setType(Type::PUBLIC_AUTH);
+
+        $this->authCreds = new KeyAuthCreds($this->app, $token);
+
+        $this->authCreds->setPublicKey($token);
+    }
+
+    public function setAuthCreds(AuthCreds $authCreds)
+    {
+        $this->authCreds = $authCreds;
+    }
+
+    /**
+     * Handles keyless auth on public routes. Ref; KeylessPublicAuth.php
+     *
+     * @return mixed
+     * @throws Exception\BadRequestException
+     */
+    public function keylessPublicAuth()
+    {
+        // Attempts to retrieve merchant and other attributes for ba via key less public auth approach
+        list($mode, $merchant, $entityId) = (new KeylessPublicAuth)->retrieveModeMerchantAndXEntityId();
+
+        // If we fail to retrieve merchant, return http auth expected exception
+        if (($mode === null) or ($merchant === null) or ($entityId === null))
+        {
+            return ApiResponse::httpAuthExpected();
         }
 
-        $response = $this->verifyKeyExistence();
+        $this->setKeylessPublicAuthAttributes($entityId);
+
+        // Sets the key instance if it exists, gets used in forming signature for payment authorize response
+        $key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
+
+        $this->authCreds = new KeyAuthCreds($this->app);
+
+        $this->authCreds->setKeyEntity($key);
+
+        $this->authCreds->setModeAndDbConnection($mode);
+
+        $this->authCreds->setAndCheckMerchantActivatedForLive($merchant);
+
+        // Removes key_id from request if it existed with empty values
+        $this->removeRequestKey(self::KEY_ID);
+    }
+
+    /**
+     * Handles auth on public routes using public key id
+     * @return mixed
+     */
+    public function keyPublicAuth()
+    {
+        if ($this->request->has(self::KEY_ID) === true)
+        {
+            $res = $this->setKeyFromQueryParams();
+        }
+        else
+        {
+            $res = $this->setCredentials();
+        }
+
+        // If there was any error response, return
+        if ($res !== null)
+        {
+            return $res;
+        }
+
+        // Else continues with verifying key existence etc.. and sets all the instance variables accordingly
+        $response = $this->authCreds->verifyKeyExistenceAndNotExpired();
 
         if ($response !== true)
         {
             return $response;
         }
 
-        if (($this->getSecret() !== '') and
-            ($this->getSecret() !== null))
+        // Verify that no secret is being sent for public auth requests
+        if (($this->authCreds->getSecret() !== '') and ($this->authCreds->getSecret() !== null))
         {
-            return ApiResponse::generateErrorResponse(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
+            return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
         }
 
-        $this->fetchMerchantOfKey($this->key);
+        $this->authCreds->fetchAndSetMerchantAndCheckLive();
+
+        return $this->checkAndSetPartnerMerchantScope();
     }
 
     public function directAuth()
     {
-        $key = $this->request->input('key_id');
+        $key = $this->request->input(self::KEY_ID);
 
         if (empty($key) === false)
         {
@@ -466,8 +704,7 @@ class BasicAuth
         }
 
         // Check key is blank and it's an internal app
-        if (($this->isKeyBlank()) and
-            ($this->verifyInternalApp()))
+        if (($this->isKeyBlank()) and ($this->verifyInternalApp()))
         {
             // It's an internal auth. We check whether dashboard
             // merchant header is set. In that case, it's coming
@@ -525,6 +762,12 @@ class BasicAuth
         return ApiResponse::routeNotFound();
     }
 
+    protected function setKeylessPublicAuthAttributes(string $entityId)
+    {
+        $this->keylessPublicAuth = true;
+        $this->keylessXEntityId  = $entityId;
+    }
+
     /**
      * The return values will be those of:
      *
@@ -553,7 +796,7 @@ class BasicAuth
                 return;
             }
 
-            return $this->invalidApiKey();
+            return $this->authCreds->invalidApiKey();
         }
 
         // `Route::$admin` contains routes that should strictly
@@ -563,7 +806,7 @@ class BasicAuth
 
         if (in_array($currentRoute, Route::$admin, true) === true)
         {
-            return $this->invalidApiKey();
+            return $this->authCreds->invalidApiKey();
         }
     }
 
@@ -578,14 +821,14 @@ class BasicAuth
             return $res;
         }
 
-        $response = $this->verifyKeyExistence();
+        $response = $this->authCreds->verifyKeyExistenceAndNotExpired();
 
         if ($response !== true)
         {
             return $response;
         }
 
-        $this->fetchMerchantOfKey($this->key);
+        $this->authCreds->fetchAndSetMerchantAndCheckLive();
 
         $response = $this->verifyDeviceToken();
 
@@ -605,7 +848,7 @@ class BasicAuth
     {
         $this->setType(Type::PUBLIC_AUTH);
 
-        $key = $this->router->current()->parameter('key');
+        $key = $this->router->current()->parameter(self::KEY);
 
         if ($key === null)
         {
@@ -615,35 +858,34 @@ class BasicAuth
                 return $res;
         }
 
-        $this->creds['secret'] = null;
-        $this->creds['public_key'] = $key;
+        $this->authCreds->creds[self::SECRET] = null;
+        $this->authCreds->creds[self::PUBLIC_KEY] = $key;
 
         // If key is wrong in formatting or something, send error back
         if ($this->checkAndSetKeyId($key) !== null)
         {
-            return $this->invalidApiKey();
+            return $this->authCreds->invalidApiKey();
         }
 
-        if ($this->verifyKeyExistence() !== true)
+        if ($this->authCreds->verifyKeyExistenceAndNotExpired() !== true)
         {
-            return $this->invalidApiKey();
+            return $this->authCreds->invalidApiKey();
         }
 
-        $response = $this->verifyKeyNotExpired();
+        $response = $this->authCreds->verifyKeyNotExpired();
 
         if ($response !== true)
         {
             return $response;
         }
 
-        if (($this->getSecret() !== '') and
-            ($this->getSecret() !== null))
+        if (($this->getSecret() !== '') and ($this->getSecret() !== null))
         {
             return ApiResponse::generateErrorResponse(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
         }
 
-        $this->fetchMerchantOfKey($this->key);
+        $this->authCreds->fetchAndSetMerchantAndCheckLive();
     }
 
 // --------------------- Basic Auths Ends --------------------------------------
@@ -654,129 +896,11 @@ class BasicAuth
     {
         try
         {
-            Merchant\Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+            Account::verifyIdAndSilentlyStripSign($accountId);
         }
         catch (\Exception $e)
         {
             return false;
-        }
-
-        return true;
-    }
-
-    protected function verifyKeyLength($key)
-    {
-        $keyLen = strlen($key);
-
-        return in_array($keyLen, static::$validKeyLengths);
-    }
-
-    protected function verifyKeyPrefix($key)
-    {
-        return (substr($key, 0, 4) === 'rzp_');
-    }
-
-    protected function verifyAndSetMode($key)
-    {
-        $mode = substr($key, 4, 4);
-
-        if ($mode === Mode::LIVE)
-        {
-            $this->setMode(Mode::LIVE);
-        }
-        else if ($mode === Mode::TEST)
-        {
-            $this->setMode(Mode::TEST);
-        }
-        else
-        {
-            return false;
-        }
-
-        if ((strlen($key) > 8) and
-            (substr($key, 8, 1) !== '_'))
-        {
-            return false;
-        }
-
-        \Database\DefaultConnection::set($mode);
-
-        return true;
-    }
-
-    /**
-     * Verify key exists by fetching it
-     * @return boolean
-     */
-    protected function verifyKeyExistence()
-    {
-        if ($this->isKeyExisting() === false)
-        {
-            return $this->invalidApiKey();
-        }
-
-        return $this->verifyKeyNotExpired();
-    }
-
-    protected function isKeyExisting()
-    {
-        $keyId = $this->getKey();
-
-        if ($keyId === '')
-        {
-            return false;
-        }
-
-        //
-        // For keys sent by merchants, make sure they exist in db.
-        //
-        $key = $this->fetchKey($keyId);
-
-        return ($key !== null);
-    }
-
-    /**
-     * Used for private/secret authentication.
-     * These requests are expected to originate
-     * from merchant's server
-     *
-     * @return bool|Response
-     */
-    protected function verifySecret()
-    {
-        $keyEntity = $this->key;
-
-        $secret = $this->getSecret();
-
-        if ($secret === '')
-        {
-            $this->trace->info(
-                TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, ['key_id' => $this->getKey()]);
-
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
-        }
-
-        if (Crypt::decrypt($keyEntity->getSecret()) !== $secret)
-        {
-            $this->trace->info(
-                TraceCode::BAD_REQUEST_INVALID_API_SECRET, ['key_id' => $this->getKey()]);
-
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
-        }
-
-        $this->fetchMerchantOfKey($keyEntity);
-
-        return true;
-    }
-
-    protected function verifyKeyNotExpired()
-    {
-        if ($this->key->isExpired() === true)
-        {
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED);
         }
 
         return true;
@@ -797,10 +921,9 @@ class BasicAuth
         if ($deviceToken === '')
         {
             $this->trace->info(
-                TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, ['key_id' => $this->getKey()]);
+                TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, [self::KEY_ID => $this->getKey()]);
 
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
         }
 
         $device = $this->repo->device->findByAuthToken($deviceToken);
@@ -810,11 +933,9 @@ class BasicAuth
         if (($device === null) or
             ($keyEntity->merchant->getId() !== $device->merchant->getId()))
         {
-            $this->trace->info(
-                TraceCode::BAD_REQUEST_INVALID_API_SECRET, ['key_id' => $this->getKey()]);
+            $this->trace->info(TraceCode::BAD_REQUEST_INVALID_API_SECRET, [self::KEY_ID => $this->getKey()]);
 
-            return ApiResponse::unauthorized(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
         }
     }
 
@@ -840,14 +961,14 @@ class BasicAuth
         }
 
         // The key in case of app proxy will be the merchant id
-        $merchantId = $this->getKey();
+        $merchantId = $this->authCreds->getKey();
 
         $merchant = $this->repo->merchant->find($merchantId);
 
-        $this->setMerchant($merchant);
+        $this->authCreds->setMerchant($merchant);
 
         // If merchant id isn't found, then return false.
-        return ($this->merchant !== null);
+        return ($merchant !== null);
     }
 
     /**
@@ -957,7 +1078,7 @@ class BasicAuth
 
     protected function verifyInternalAppSecret()
     {
-        $secret = $this->getSecret();
+        $secret = $this->authCreds->getSecret();
 
         $internalApps = $this->internalAppConfigs;
 
@@ -965,8 +1086,8 @@ class BasicAuth
 
         foreach ($internalApps as $name => $info)
         {
-            if ((isset($info['secret'])) and
-                ($info['secret'] === $secret))
+            if ((isset($info[self::SECRET])) and
+                ($info[self::SECRET] === $secret))
             {
                 $verify = true;
 
@@ -992,27 +1113,74 @@ class BasicAuth
 
     protected function getKey()
     {
-        return $this->creds['key'];
+        return $this->creds[self::KEY];
     }
 
     private function getSecret()
     {
-        return $this->creds['secret'];
+        return $this->creds[self::SECRET];
     }
 
-    protected function getAccountId()
+    public function getAccountId()
     {
-        return $this->creds['account_id'];
+        $authCreds = $this->authCreds;
+
+        if ((empty($authCreds) === false))
+        {
+            $this->creds[self::ACCOUNT_ID] = $this->authCreds->creds[AuthCreds::ACCOUNT_ID];
+        }
+
+        return $this->creds[self::ACCOUNT_ID];
     }
 
     public function getMode()
     {
+        $authCreds = $this->authCreds;
+
+        if ((empty($authCreds) === false))
+        {
+            $this->mode = $authCreds->getMode();
+        }
+
         return $this->mode;
+    }
+
+    public function getKeyEntity()
+    {
+        if ($this->isPartnerAuth() === true)
+        {
+            return;
+        }
+
+        return $this->authCreds->getKeyEntity();
+    }
+
+    public function getKeylessXEntityId()
+    {
+        return $this->keylessXEntityId;
     }
 
     public function getMerchant()
     {
+        $authCreds = $this->authCreds;
+
+        if ((empty($authCreds) === false))
+        {
+            $this->merchant = $authCreds->getMerchant();
+        }
         return $this->merchant;
+    }
+
+    public function getMerchantId()
+    {
+        $merchant = $this->getMerchant();
+
+        if (empty($merchant) === true)
+        {
+            return null;
+        }
+
+        return $merchant->getId();
     }
 
     public function getDevice()
@@ -1035,16 +1203,6 @@ class BasicAuth
         return $this->adminOrgId;
     }
 
-    public function getMerchantId()
-    {
-        if ($this->getMerchant() === null)
-        {
-            return null;
-        }
-
-        return $this->merchant->getKey();
-    }
-
     public function getAccessTokenId()
     {
         return $this->accessTokenId;
@@ -1055,19 +1213,21 @@ class BasicAuth
         return $this->oauthClientId;
     }
 
-    public function getMerchantIdOfKey()
+    public function getPartnerMerchantId()
     {
-        if ($this->key === null)
-        {
-            return null;
-        }
-
-        return $this->key->getMerchantId();
+        return $this->partnerMerchantId;
     }
 
     public function getPublicKey()
     {
-        return $this->creds['public_key'];
+        $authCreds = $this->authCreds;
+
+        if ((empty($authCreds) === false))
+        {
+            $this->creds[self::PUBLIC_KEY] = $authCreds->creds[AuthCreds::PUBLIC_KEY];
+        }
+
+        return $this->creds[self::PUBLIC_KEY];
     }
 
     public function getAuthType()
@@ -1082,14 +1242,12 @@ class BasicAuth
 
     public function isDashboardApp()
     {
-        return ($this->internalApp === 'dashboard');
+        return ($this->getInternalApp() === 'dashboard');
     }
 
     public function isCron()
     {
-        $cron = ($this->internalApp === 'cron');
-
-        return $cron;
+        return ($this->getInternalApp() === 'cron');
     }
 
     public function getOAuthApplicationId()
@@ -1103,7 +1261,15 @@ class BasicAuth
 
     public function setMode(string $mode)
     {
-        $this->mode = $mode;
+        $authCreds = $this->authCreds;
+
+        if ((empty($authCreds) === false))
+        {
+            $this->authCreds->setMode($mode);
+
+            $this->mode = $this->authCreds->getMode();
+        }
+
         $this->app['rzp.mode'] = $mode;
     }
 
@@ -1112,19 +1278,6 @@ class BasicAuth
         $this->setMode($mode);
 
         \Database\DefaultConnection::set($mode);
-    }
-
-    /**
-     * Sets $merchant instance var value by given $merchantId.
-     * Called by OAuth flow. OAuth server response contains the same($merchantId).
-     *
-     * @param string $merchantId
-     */
-    public function setMerchantById(string $merchantId)
-    {
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-        $this->setMerchant($merchant);
     }
 
     public function setAccessTokenId(string $tokenId)
@@ -1142,6 +1295,11 @@ class BasicAuth
         $this->applicationId = $applicationId;
     }
 
+    public function setPartnerMerchantId(string $merchantId)
+    {
+        $this->partnerMerchantId = $merchantId;
+    }
+
     public function setMerchant($merchant)
     {
         if ($merchant !== null)
@@ -1149,7 +1307,27 @@ class BasicAuth
             $this->setOrgId($merchant->org->getPublicId());
         }
 
-        $this->merchant = $merchant;
+        $authCreds = $this->authCreds;
+
+        if ((empty($authCreds) === false))
+        {
+            $this->authCreds->setMerchant($merchant);
+
+            $this->merchant = $this->authCreds->getMerchant();
+        }
+    }
+
+    /**
+     * Sets $merchant instance var value by given $merchantId.
+     * Called by OAuth flow. OAuth server response contains the same($merchantId).
+     *
+     * @param string $merchantId
+     */
+    public function setMerchantById(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->setMerchant($merchant);
     }
 
     protected function setType($type)
@@ -1164,7 +1342,7 @@ class BasicAuth
 
     public function setPublicKey(string $publicKey)
     {
-        $this->creds['public_key'] = $publicKey;
+        $this->creds[self::PUBLIC_KEY] = $publicKey;
     }
 
     protected function setProxyTrue()
@@ -1179,7 +1357,7 @@ class BasicAuth
         $this->appAuth = true;
     }
 
-// --------------------- Setters Ends ------------------------------------------
+    // --------------------- Setters Ends ---------------------
 
     public function isProxyAuth()
     {
@@ -1196,9 +1374,19 @@ class BasicAuth
         return $this->isAdmin;
     }
 
+    public function isPartnerAuth()
+    {
+        return $this->isPartnerAuth;
+    }
+
     public function isPublicAuth()
     {
         return ($this->type === Type::PUBLIC_AUTH);
+    }
+
+    public function isKeylessPublicAuth()
+    {
+        return (($this->isPublicAuth() === true) and ($this->keylessPublicAuth === true));
     }
 
     public function isPrivateAuth()
@@ -1229,7 +1417,7 @@ class BasicAuth
     protected function setKeyFromQueryParams()
     {
         // Get key from input params
-        $key = $this->request->input('key_id');
+        $key = $this->request->input(self::KEY_ID);
 
         // If not provided, then send error asking for it
         if (($key === null) or
@@ -1240,38 +1428,19 @@ class BasicAuth
 
         $this->viaQueryParams = true;
 
-        $this->creds['secret'] = null;
-        $this->creds['public_key'] = $key;
-
         // Remove 'key_id' from query params
-        $this->request->query->remove('key_id');
-        $this->request->request->remove('key_id');
+        $this->removeRequestKey(self::KEY_ID);
 
         // If key is wrong in formatting or something, send error back
         if ($this->checkAndSetKeyId($key) !== null)
         {
             return $this->invalidApiKey();
         }
-    }
 
-    protected function fetchKey($keyId)
-    {
-        $this->key = $this->repo->key->find($keyId);
+        $this->authCreds->creds[self::SECRET] = null;
+        $this->authCreds->creds[self::PUBLIC_KEY] = $key;
 
-        return $this->key;
-    }
-
-    protected function fetchMerchantOfKey($key)
-    {
-        $merchantId = $key->getMerchantId();
-
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-        $this->setMerchant($merchant);
-
-        $this->checkMerchantActivatedForLive();
-
-        return $this->merchant;
+        return $this->checkAndSetAccountId();
     }
 
     protected function fetchAdminToken($token)
@@ -1291,14 +1460,12 @@ class BasicAuth
      */
     protected function checkAndSetAccountScope()
     {
-        if ($this->isAccountAuthAllowed() === false)
+        if (($this->isAccountAuthAllowed() === false) or ($this->isPartnerAuth() === true))
         {
-            return;
+            return null;
         }
 
-        $account = $this->repo
-                        ->merchant
-                        ->find($this->getAccountId());
+        $account = $this->repo->merchant->find($this->getAccountId());
 
         if (($account === null) or
             ($this->validateAccountForCurrentAuthType($account) === false))
@@ -1306,7 +1473,95 @@ class BasicAuth
             return $this->invalidAccountId($this->getAccountId());
         }
 
-        $this->setMerchant($account);
+        $this->authCreds->setMerchant($account);
+    }
+
+    /**
+     * 1. Check if merchant is marked as a partner
+     * 2. Set partner merchant id in the auth context
+     * 3. Fetch sub-merchant token from header
+     * 4. Set current merchant as sub-merchant
+     * 5. Check sub-merchant activated for live (We don't
+     *    care about partner merchant activation here.)
+     *
+     * @return null
+     */
+    protected function checkAndSetPartnerMerchantScope()
+    {
+        if ($this->isPartnerAuth === false)
+        {
+            return;
+        }
+
+        $accountId = $this->getAccountId();
+
+        if ($accountId === '')
+        {
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_PARTNER_ACCOUNT_ID_REQUIRED);
+        }
+
+        if ($this->isPartnerAuthAllowed() === false)
+        {
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED);
+        }
+
+        $account = $this->repo
+                        ->merchant
+                        ->find($accountId);
+
+        if (empty($account) === true)
+        {
+            return $this->invalidAccountId($accountId);
+        }
+
+        $this->setPartnerMerchantId($this->authCreds->getMerchant()->getId());
+
+        $this->authCreds->setAndCheckMerchantActivatedForLive($account);
+
+        if ($this->isPartnerMerchantMapped($this->authCreds->getMerchant()->getId(), $this->getPartnerMerchantId()) === false)
+        {
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
+        }
+    }
+
+    protected function isPartnerMerchantMapped(string $merchantId, string $partnerId)
+    {
+        $app = (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($partnerId);
+
+        $mapping = (new Merchant\AccessMap\Repository)
+                        ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), 'application');
+
+        return (empty($mapping) === false);
+    }
+
+    protected function isPartnerAuthAllowed(): bool
+    {
+        $partnerMerchant = $this->authCreds->getMerchant();
+        //
+        // $this->merchant needs to have been set, and have been marked
+        // as non pure-platform type partner
+        //
+        if ((empty($partnerMerchant) === true) or
+            ($partnerMerchant->isPartner() === false) or
+            ($partnerMerchant->isPurePlatformTypePartner() === true))
+        {
+            return false;
+        }
+
+        // Only allow partner token auth on public and private auth, no proxy
+        if (($this->isStrictPrivateAuth() === false) and
+            ($this->isPublicAuth() === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function setAndCheckMerchantActivatedForLive(Merchant\Entity $merchant)
+    {
+        $this->setMerchant($merchant);
+        $this->checkMerchantActivatedForLive();
     }
 
     public function checkMerchantActivatedForLive()
@@ -1328,10 +1583,9 @@ class BasicAuth
     protected function invalidApiKey()
     {
         $this->trace->info(
-            TraceCode::BAD_REQUEST_INVALID_API_KEY, ['key_id' => $this->getKey()]);
+            TraceCode::BAD_REQUEST_INVALID_API_KEY, [self::KEY_ID => $this->getKey()]);
 
-        return ApiResponse::unauthorized(
-            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
+        return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 
     protected function invalidAccountId(string $accountId)
@@ -1339,28 +1593,58 @@ class BasicAuth
         $this->trace->info(
             TraceCode::BAD_REQUEST_INVALID_ACCOUNT_HEADER,
             [
-                'auth_type'     => $this->getAuthType(),
-                'key_id'        => $this->getKey(),
-                'account_id'    => $accountId,
+                self::AUTH_TYPE  => $this->getAuthType(),
+                self::KEY_ID     => $this->authCreds->getKey(),
+                self::ACCOUNT_ID => $accountId,
             ]);
 
-        return ApiResponse::unauthorized(
-            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID);
+        return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID);
     }
 
     protected function isKeyBlank()
     {
-        return ($this->getKey() === '');
+        return ($this->authCreds->creds['key'] === '');
     }
 
+    /**
+     * The secret used for signing can be one of the following:
+     * 1. Api key secret for key auth
+     * 2. OAuth app's client secret for Bearer/PublicOAuthToken auth
+     * 3. Dummy partner app's client secret for partner auth
+     *
+     * @param  $str
+     *
+     * @return string
+     *
+     * @throws Exception\LogicException
+     */
     public function sign($str)
     {
-        if ($this->key === null)
+        $key = $this->getKeyEntity();
+
+        if (($key === null) and ($this->isPartnerAuth() === false) and ($this->oauthClientId === null))
         {
             throw new Exception\LogicException('Key cannot be null here');
         }
 
-        $secret = Crypt::decrypt($this->key->getSecret());
+        if (empty($this->oauthClientId) === false)
+        {
+            $client = (new OAuthClient\Repository)->findOrFailPublic($this->oauthClientId);
+        }
+
+        if (empty($client) === true and ($this->isPartnerAuth() === true))
+        {
+            $client = $this->authCreds->getPartnerClient();
+        }
+
+        if (empty($client) === false)
+        {
+            $secret = $client->getSecret();
+        }
+        else
+        {
+            $secret = Crypt::decrypt($key->getSecret());
+        }
 
         return hash_hmac(self::HMAC_ALGO, $str, $secret);
     }
@@ -1395,7 +1679,8 @@ class BasicAuth
 
         // For Private auth requests - $this->merchant should be set
         if (($this->isPrivateAuth() === true) and
-            (empty($this->merchant) === false))
+            (empty($this->authCreds->getMerchant()) === false) and
+            ($this->authCreds->getMerchant()->isMarketplace() === true))
         {
             return true;
         }
@@ -1426,7 +1711,7 @@ class BasicAuth
         switch ($authType)
         {
             case Type::PRIVATE_AUTH:
-                return ($account->getParentId() === $this->getMerchant()->getId());
+                return ($account->getParentId() === $this->authCreds->getMerchant()->getId());
 
             case Type::PRIVILEGE_AUTH:
                 return true;
@@ -1550,5 +1835,27 @@ class BasicAuth
 
             $this->setUser($user);
         }
+    }
+
+    public function getKeyForNonBasicAuthTokens()
+    {
+        // Check `key_id` first, else fallback to BasicAuth user
+        $keyParam = $this->request->input(self::KEY_ID);
+        $key      = $keyParam ?? $this->request->getUser();
+
+        // For callback routes, gets the key from route parameter
+        $route = $this->router->currentRouteName();
+        if ((empty($key) === true) and (in_array($route, Route::$publicCallback, true) === true))
+        {
+            $key = $this->router->current()->parameter(self::KEY);
+        }
+
+        return $key;
+    }
+
+    public function removeRequestKey(string $key)
+    {
+        $this->request->query->remove($key);
+        $this->request->request->remove($key);
     }
 }

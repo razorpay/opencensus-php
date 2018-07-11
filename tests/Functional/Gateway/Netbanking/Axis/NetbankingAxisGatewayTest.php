@@ -65,6 +65,20 @@ class NetbankingAxisGatewayTest extends TestCase
         });
     }
 
+    public function testVerifyAmountMismatch()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockAmountMismatch();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthAndCapturePayment($this->payment);
+            });
+    }
+
     public function testTpvPayment()
     {
         $this->fixtures->create('terminal:shared_netbanking_axis_tpv_terminal');
@@ -180,7 +194,7 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
     }
 
-    public function testVerifyDisabledForCorporatePayments()
+    public function testVerifyForCorporatePayments()
     {
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
         $this->fixtures->merchant->addFeatures('corporate_banks');
@@ -189,18 +203,11 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment['id']);
-            });
+        $this->verifyPayment($payment['id']);
 
         $payment = $this->getLastEntity('payment', true);
 
-        assert($payment['verified'] === null);
+        assert($payment['verified'] === 1);
     }
 
     public function testTpvVerifyPayment()
@@ -428,7 +435,6 @@ class NetbankingAxisGatewayTest extends TestCase
      */
     public function testAuthFailedVerifyNullResponse()
     {
-
         $this->testFailedAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -446,7 +452,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifyNullResponse');
+        $this->assertTestResponse($gatewayPayment);
     }
 
     // Auth fails but verify shows success
@@ -722,5 +728,17 @@ class NetbankingAxisGatewayTest extends TestCase
 
         // Fire s2s callback request
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function mockAmountMismatch()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content[ResponseFields::STATUS]              = ResponseFields::PAYMENT_STATUS;
+                $content[ResponseFields::VERIFY_RESPONSE_AMT] = '10.00';
+            }
+        });
     }
 }

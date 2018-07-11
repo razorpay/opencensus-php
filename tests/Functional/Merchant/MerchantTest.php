@@ -61,6 +61,8 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->fixtures->merchant->setHasKeyAccess(true, '1X4hRFHFx4UiXt');
+
         $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt');
 
         $this->startTest();
@@ -520,6 +522,15 @@ class MerchantTest extends TestCase
     }
 
     public function testEditMerchantInvalidBrandColor()
+    {
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantInvalidInvoiceNameField()
     {
         $this->createMerchant();
 
@@ -1579,6 +1590,25 @@ class MerchantTest extends TestCase
             'starts_at'        => $startsAt,
         ]);
 
+        $response = $this->startTest();
+
+        $this->assertStringStartsWith('offer_', $response['offers'][0]['id']);
+    }
+
+    public function testGetCheckoutPreferencesWithMultipleOrderOffers()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $this->ba->publicAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
         $this->startTest();
     }
 
@@ -1603,8 +1633,8 @@ class MerchantTest extends TestCase
             $fixtureData['starts_at'] = $startsAt;
 
             $offer = $this->fixtures->create('offer', $fixtureData);
-            $order = $this->fixtures->create('order:with_undiscounted_offer_applied', [
-                'offer_id' => $offer->getId()
+            $order = $this->fixtures->order->createWithUndiscountedOffers($offer, [
+                'force_offer' => true,
             ]);
 
             $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
@@ -1634,14 +1664,156 @@ class MerchantTest extends TestCase
             $fixtureData['starts_at'] = $startsAt;
 
             $offer = $this->fixtures->create('offer', $fixtureData);
-            $order = $this->fixtures->create('order:with_offer_applied', [
-                'offer_id' => $offer->getId()
-            ]);
+            $order = $this->fixtures->order->createWithOffers($offer);
 
             $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 
             $this->runRequestResponseFlow($data);
         }
+    }
+
+    public function testGetCheckoutPreferencesWithOrderInActiveOffer()
+    {
+        $this->ba->publicAuth();
+
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],
+            'active' => 0
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer);
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('offers', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithOrderExpiredOffer()
+    {
+        $this->ba->publicAuth();
+
+        $offer = $this->fixtures->create('offer:expired', ['iins' => ['401200'],
+            'active' => 0
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer);
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('offers', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithOrderForceOfferExpired()
+    {
+        $this->ba->publicAuth();
+
+        $offer = $this->fixtures->create('offer:expired', ['iins' => ['401200'],
+            'active' => 0
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer,[
+            'force_offer' => true,
+        ]);
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('offers', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithMultipleOrderOffersInActive()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],
+            'active' => 0
+        ]);
+
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],
+            'active' => 1]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertNotNull($response['offers']);
+
+        $this->assertEquals(1, count($response['offers']));
+
+        $this->assertEquals('offer_' . $offer2->getId(), $response['offers']['0']['id']);
+    }
+
+    public function testGetCheckoutPreferencesWithMultipleOrderOffersExpired()
+    {
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $endsAt = Carbon::now(Timezone::IST)->timestamp;
+
+        $offer1 = $this->fixtures->create('offer:expired', ['iins' => ['401200']]);
+
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertNotNull($response['offers']);
+
+        $this->assertEquals(1, count($response['offers']));
+
+        $this->assertEquals('offer_' . $offer2->getId(), $response['offers']['0']['id']);
+    }
+
+    public function testGetCheckoutPreferencesWithEmiOffer()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->enableEmi();
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $offer = $this->fixtures->create('offer', [
+            'payment_method' => 'emi',
+            'error_message'  => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+            'display_text'   => 'Some display text',
+            'percent_rate'   => 5000,
+            'min_amount'     => 200000,
+            'terms'          => 'Some terms',
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer);
+
+        $testData['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testGetCheckoutRouteWithSavedLocal()
@@ -1977,7 +2149,7 @@ class MerchantTest extends TestCase
 
         $request = [
             'url'       => '/merchants/beneficiary/file/kotak',
-            'method'    => 'get',
+            'method'    => 'post',
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -2056,7 +2228,7 @@ class MerchantTest extends TestCase
 
         $request = [
             'url'       => '/merchants/beneficiary/file/axis',
-            'method'    => 'get',
+            'method'    => 'post',
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -2085,7 +2257,43 @@ class MerchantTest extends TestCase
 
         $request = [
             'url'       => '/merchants/beneficiary/file/icici',
-            'method'    => 'get',
+            'method'    => 'post',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(Channel::ICICI, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class);
+    }
+
+    public function testBeneficiaryRegisterForMerchant()
+    {
+        Mail::fake();
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->create();
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/icici',
+            'method'    => 'post',
+            'content'   => [
+                'merchant_ids' => [
+                    '10000000000000'
+                ]
+            ]
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -2376,7 +2584,7 @@ class MerchantTest extends TestCase
 
         $this->fixtures->create('customer');
 
-        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $response = $this->makePreferencesRouteRequest();
 

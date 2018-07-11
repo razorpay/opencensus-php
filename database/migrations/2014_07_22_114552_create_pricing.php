@@ -36,6 +36,9 @@ class CreatePricing extends Migration
             $table->string(Pricing::PAYMENT_METHOD_TYPE)
                   ->nullable();
 
+            $table->string(Pricing::AUTH_TYPE)
+                  ->nullable();
+
             $table->string(Pricing::PAYMENT_NETWORK)
                   ->nullable();
 
@@ -48,6 +51,9 @@ class CreatePricing extends Migration
 
             $table->tinyInteger(Pricing::INTERNATIONAL)
                   ->default(0);
+
+            $table->string(Pricing::RECEIVER_TYPE)
+                  ->nullable();
 
             $table->tinyInteger(Pricing::AMOUNT_RANGE_ACTIVE)
                   ->default(0);

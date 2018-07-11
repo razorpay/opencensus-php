@@ -41,7 +41,7 @@ class Core extends Base\Core
      * Removes old line item taxes and creates new with given input.
      *
      * When handling updates on line item we decided we'll just delete old
-     * relations and create if input contains any of the tax_id or tax_group_id.
+     * relations and create if input contains any of the tax_id or tax_ids or tax_group_id.
      *
      * @param LineItem\Entity $lineItem
      * @param array           $input
@@ -133,7 +133,8 @@ class Core extends Base\Core
         Tax\Entity $tax,
         Tax\Group\Entity $taxGroup = null)
     {
-        $taxAmount = Calculator::getTaxAmount($lineItem, $taxableAmount, $tax);
+        $taxAmountFloat = Calculator::getTaxAmount($lineItem, $taxableAmount, $tax);
+        $taxAmount = (int) round($taxAmountFloat);
 
         $input = [
             Entity::NAME       => $tax->getName(),

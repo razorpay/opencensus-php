@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
+use Lib\Gstin;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 
 use RZP\Base;
 use RZP\Models\Batch;
@@ -12,6 +12,7 @@ use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
+use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -25,6 +26,7 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Validator extends Base\Validator
 {
+    //
     // We have rules on create and update for the two status: DRAFT, ISSUED.
     // Eg. In ISSUED state, you cannot update amount of the invoice. There are
     //     rules to accommodate such requirements. This way it's good to manage and
@@ -34,6 +36,7 @@ class Validator extends Base\Validator
     // - Create invoice in ISSUED status
     // - Update invoice when it's in DRAFT status
     // - Update invoice when it's in ISSUED status
+    //
 
     const CREATE_DRAFT  = 'createDraft';
     const CREATE_ISSUED = 'createIssued';
@@ -62,7 +65,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::VIEW_LESS           => 'filled|in:1',
         Entity::SOURCE              => 'filled|string|max:32|custom',
@@ -70,7 +73,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean',
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'filled|in:INR',
@@ -78,6 +81,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::DRAFT               => 'filled|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::SUPPLY_STATE_CODE   => 'filled|string|custom',
         Entity::CALLBACK_URL        => 'filled|url',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
@@ -94,7 +98,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::VIEW_LESS           => 'filled|in:1',
         Entity::SOURCE              => 'filled|string|max:32|custom',
@@ -102,7 +106,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean',
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'filled|in:INR',
@@ -110,6 +114,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::DRAFT               => 'filled|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::SUPPLY_STATE_CODE   => 'filled|string|custom',
         Entity::CALLBACK_URL        => 'filled|url',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
@@ -121,7 +126,7 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::VIEW_LESS           => 'filled|in:1',
         Entity::SOURCE              => 'filled|string|max:32|custom',
@@ -129,7 +134,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean',
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'filled|in:INR',
@@ -137,6 +142,7 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'filled|epoch',
         Entity::DRAFT               => 'filled|in:0',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::SUPPLY_STATE_CODE   => 'filled|string|custom',
         Entity::CALLBACK_URL        => 'filled|url',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
@@ -148,18 +154,19 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|sequential_array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean',
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::BILLING_START       => 'filled|epoch',
         Entity::BILLING_END         => 'filled|epoch',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::DRAFT               => 'filled|boolean',
+        Entity::SUPPLY_STATE_CODE   => 'sometimes|nullable|custom',
         Entity::CALLBACK_URL        => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
@@ -168,11 +175,28 @@ class Validator extends Base\Validator
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
-        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
-        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean',
         Entity::CALLBACK_URL        => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
+    ];
+
+    protected static $editPaidRules = [
+        Entity::NOTES               => 'sometimes|notes',
+    ];
+
+    protected static $editPartiallyPaidRules = [
+        Entity::NOTES               => 'sometimes|notes',
+        Entity::EXPIRE_BY           => 'sometimes|epoch|nullable|custom',
+    ];
+
+    protected static $editExpiredRules = [
+        Entity::NOTES               => 'sometimes|notes',
+    ];
+
+    protected static $editCancelledRules = [
+        Entity::NOTES               => 'sometimes|notes',
     ];
 
     protected static $notifyInvoicesOfBatchRules = [
@@ -188,8 +212,8 @@ class Validator extends Base\Validator
      */
     protected static $editCustomerDetailsRules = [
         Customer\Entity::NAME                => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
-        Customer\Entity::EMAIL               => 'sometimes|email',
-        Customer\Entity::CONTACT             => 'sometimes|contact_syntax',
+        Customer\Entity::EMAIL               => 'sometimes|nullable|email',
+        Customer\Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
         Customer\Entity::GSTIN               => 'sometimes|nullable|gstin',
         Customer\Entity::BILLING_ADDRESS_ID  => 'sometimes|public_id|size:19|nullable',
         Customer\Entity::SHIPPING_ADDRESS_ID => 'sometimes|public_id|size:19|nullable',
@@ -333,22 +357,47 @@ class Validator extends Base\Validator
         Type::checkType($value);
     }
 
-    public function validatePartialPayment($attribute, $value)
+    public function validateSupplyStateCode($attribute, $value)
     {
-        if ($value === '0')
-        {
-            return;
-        }
-
-        $merchant = $this->entity->merchant;
-
-        $feature = Feature\Constants::INVOICE_PARTIAL_PAYMENTS;
-
-        if ($merchant->isFeatureEnabled($feature) === false)
+        if (Gstin::isValidStateCode($value) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Partial payment feature is not enabled',
-                Entity::PARTIAL_PAYMENT);
+                'Supply state code is not valid',
+                Entity::SUPPLY_STATE_CODE,
+                [Entity::SUPPLY_STATE_CODE => $value]);
+        }
+    }
+
+    public function validateExpireBy(string $attribute, int $expireBy)
+    {
+        $now = Carbon::now(Timezone::IST);
+
+        $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
+
+        if ($expireBy < $minExpireBy->getTimestamp())
+        {
+            $message = 'expire_by should be at least ' . $minExpireBy->diffForHumans($now) . ' current time';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+    /**
+     * For non empty receipt, validates that it's unique for given merchant across it's NON cancelled & expired items
+     * @param  string $attribute
+     * @param  string $receipt
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateReceipt(string $attribute, string $receipt)
+    {
+        if (empty($receipt) === false)
+        {
+            $isDuplicateReceipt = app('repo')->invoice->isDuplicateReceipt($this->entity, $receipt);
+
+            if ($isDuplicateReceipt === true)
+            {
+                throw new BadRequestValidationFailureException("receipt must be unique for each item : {$receipt}");
+            }
         }
     }
 
@@ -362,54 +411,13 @@ class Validator extends Base\Validator
      */
     public function validateMerchantSpecificData()
     {
-        $invoice = $this->entity;
+        $invoice  = $this->entity;
         $merchant = $invoice->merchant;
 
-        $this->validateMerchantHasKeys($merchant);
         $this->validateMerchantIsNotFeeBearer($merchant, $invoice);
     }
 
-    /**
-     * Validates if merchant has API keys generated in advance before using
-     * invoices.
-     * This is done because hosted page (invoice payment) will not load
-     * and will throw an exception if Invoice gets created without
-     * merchant having API keys.
-     *
-     * @param Merchant\Entity $merchant
-     *
-     * @throws BadRequestException
-     */
-    protected function validateMerchantHasKeys(Merchant\Entity $merchant)
-    {
-        //
-        // Validates if merchant has API keys generated in advance before using
-        // invoices.
-        // This is done because hosted page (invoice payment) will not load
-        // and will throw an exception if Invoice gets created without
-        // merchant having API keys.
-        //
-
-        $keys = $merchant->keys->filter(
-                    function($key, $index)
-                    {
-                        return ($key->isExpiredOrExpiring() === false);
-                    });
-
-        if ($keys->count() === 0)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
-                null,
-                [
-                    'merchant_id' => $merchant->getId(),
-                ]);
-        }
-    }
-
-    protected function validateMerchantIsNotFeeBearer(
-        Merchant\Entity $merchant,
-        Entity $invoice)
+    protected function validateMerchantIsNotFeeBearer(Merchant\Entity $merchant, Entity $invoice)
     {
         //
         // If merchant is a customer-fee-bearer client, for now don't allow
@@ -481,6 +489,17 @@ class Validator extends Base\Validator
         switch ($operation)
         {
             case 'update':
+                $allowedStatuses = [
+                    Status::DRAFT,
+                    Status::ISSUED,
+                    Status::PAID,
+                    Status::PARTIALLY_PAID,
+                    Status::EXPIRED,
+                    Status::CANCELLED,
+                ];
+
+                break;
+
             case 'cancelInvoice':
                 $allowedStatuses = [
                     Status::DRAFT,
@@ -567,21 +586,9 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
-        // If expired_by is not set at all, nothing to validate.
-        if ($invoice->getExpireBy() === null)
+        if ($invoice->getExpireBy() !== null)
         {
-            return;
-        }
-
-        $now = Carbon::now(Timezone::IST);
-        $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
-
-        if ($invoice->getExpireBy() < $minExpireBy->getTimestamp())
-        {
-            $message = 'expire_by should be at least ' .
-                        $minExpireBy->diffForHumans($now) . ' the time of issue.';
-
-            throw new BadRequestValidationFailureException($message);
+            $this->validateExpireBy(Entity::EXPIRE_BY, $invoice->getExpireBy());
         }
     }
 
@@ -615,27 +622,26 @@ class Validator extends Base\Validator
     public function validateInvoiceViewable()
     {
         $invoice = $this->entity;
+        $id      = $invoice->getPublicId();
+        $label   = $invoice->getTypeLabel();
 
-        $id    = $invoice->getPublicId();
-        $label = $invoice->getTypeLabel();
+        //
+        // We have two views - invoice.js and api's blade for invoices & payment links respectively. Unfortunately,
+        // in cases of non-issued status invoice they expect either an exception(rendered as standard minimal error
+        // view) or full entity(rendered as designed torn page with partial entity details) and hence following logic.
+        //
 
-        $newViewEnabled          = (in_array('Hostedplv2', $invoice->merchant->liveTagNames(), true) === true);
-        $isLinkAndNewViewEnabled = (($invoice->isTypeLink() === true) and ($newViewEnabled === true));
-
+        // Draft: All views expect exception
         if ($invoice->isDraft() === true)
         {
             throw new BadRequestValidationFailureException("$label with id $id is not issued yet");
         }
-        else if (($invoice->isCancelled() === true) and ($isLinkAndNewViewEnabled === false))
+        // Canceled: Link view shows torn page with details & invoice view expects exception
+        else if (($invoice->isCancelled() === true) and ($invoice->isTypeInvoice() === true))
         {
             throw new BadRequestValidationFailureException("$label with id $id is cancelled");
         }
-        else if (($invoice->isExpired() === true) and
-                 ($invoice->isTypeInvoice() === false) and
-                 ($isLinkAndNewViewEnabled === false))
-        {
-            throw new BadRequestValidationFailureException("$label with id $id is expired");
-        }
+        // Expired: All views show custom torn or some kind of page and need data
     }
 
     public function validateMaxAllowedLineItems()
@@ -712,7 +718,8 @@ class Validator extends Base\Validator
         $lineItemsCount = $invoice->lineItems()->count();
         $description    = $invoice->getDescription();
 
-        if (($lineItemsCount === 0) and ($description === null))
+        // For description need to do blank() check as it is 'sometimes' in Validator.
+        if (($lineItemsCount === 0) and (blank($description) === true))
         {
             throw new BadRequestValidationFailureException('description is required.');
         }

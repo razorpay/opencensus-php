@@ -1451,6 +1451,44 @@ update emi_plans set deleted_at = now() where subvention = 'merchant';
 
 update emi_plans set merchant_payback = ROUND(10000 * (duration * rate/120000 * POWER(1 + rate/120000 , duration) - POWER(1 + rate/120000, duration) + 1)/ (duration * rate/120000 * POWER(1 + rate/120000, duration)));
 
+# Fixes Billdesk gateway entities not having RefundId due to timeout
+UPDATE billdesk SET RefundId = 'LIOB60395687721' WHERE id = 4339949;
+
+UPDATE billdesk SET RefundId = 'LIDB60246568321' WHERE id = 4268955;
+
+UPDATE billdesk SET RefundId = 'LSBI60189051851' WHERE id = 4268957;
+
+UPDATE billdesk SET RefundId = 'LSBI58831040621' WHERE id = 4268956;
+
+UPDATE billdesk SET RefundId = 'LSBI60302883511' WHERE id = 4304097;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 12th, 13th, 15th and 16th feb 2018
+UPDATE billdesk SET RefundId = 'LSBI60426759831' WHERE id = 4371771;
+
+UPDATE billdesk SET RefundId = 'LSBI60487988231' WHERE id = 4371770;
+
+UPDATE billdesk SET RefundId = 'LSBI60388482901' WHERE id = 4371769;
+
+UPDATE billdesk SET RefundId = 'LSBI58981094251' WHERE id = 4386880;
+
+UPDATE billdesk SET RefundId = 'LSBI59572036921' WHERE id = 4386881;
+
+UPDATE billdesk SET RefundId = 'LSBI60494628531' WHERE id = 4386878;
+
+UPDATE billdesk SET RefundId = 'LSBI60397644501' WHERE id = 4418733;
+
+UPDATE billdesk SET RefundId = 'LSBI60614342151' WHERE id = 4434789;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 19th, 21st and 24th feb 2018
+
+UPDATE billdesk SET RefundId = 'LSBI60621693771' where id = 4486140;
+
+UPDATE billdesk SET RefundId = 'LSBI60626715061' where id = 4517431;
+
+UPDATE billdesk SET RefundId = 'LSBI60666512181' where id = 4517433;
+
+UPDATE billdesk SET RefundId = 'LSBI60817499101' where id = 4566865;
+
 // setting it to max int (jan 19 2038)
 // between nov 1st 2017 and feb 5th 2018
 UPDATE tokens SET expired_at = 2147483647 WHERE method='netbanking' AND recurring_status IS NOT NULL AND created_at > 1506796200 AND created_at <= 1517853630;
@@ -1557,6 +1595,20 @@ JOIN `merchant_details` md ON m.`id` = md.`merchant_id`
 SET m.`has_key_access` = 1
 WHERE m.`parent_id` IS NULL AND md.`submitted_at` IS NOT NULL;
 
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 31st Dec,
+2nd Jan, 12th Jan and 18th Jan 2018
+UPDATE billdesk SET RefundId = 'LIDB59589218521' where id = 3864123;
+UPDATE billdesk SET RefundId = 'LSCB59274689931' where id = 3673857;
+UPDATE billdesk SET RefundId = 'LSBI59036151081' where id = 3652282;
+UPDATE billdesk SET RefundId = 'JSBI58313047741' where id = 3959944;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 26th Feb
+UPDATE billdesk SET RefundId = 'LSBI60804118011' where id = 4597986;
+UPDATE billdesk SET RefundId = 'LSBI60766806491' where id = 4597987;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 17th March
+UPDATE billdesk SET RefundId = 'LSBI61344050641' where id = 4928793;
+
 # Delete workflow for 'delete workflow'
 UPDATE workflows SET deleted_at = UNIX_TIMESTAMP(NOW()) WHERE id = '9R2zfkFxFdMDH4';
 
@@ -1584,11 +1636,30 @@ UPDATE batches SET status = 'processed', failure_reason = NULL where id = '9mgXm
 
 UPDATE batches SET status = 'processed', failure_reason = NULL where id = '9mjTnhhc1GygE1';
 
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 20th and 27th March
+UPDATE billdesk SET RefundId = 'LIOB59657245361' where id = 4975025;
+UPDATE billdesk SET RefundId = 'LSBI61364483171' where id = 5107344;
+
 https://razorpay.slack.com/archives/C0SG9Q7TM/p1522674619000397
 UPDATE refunds SET status='failed', gateway_refunded = 0 WHERE id in ('8fUtGcrig5clJ6', '8fUsm1am4FYOO7')
 
 https://razorpay.slack.com/archives/C3BPZHG8P/p1523020215000036
 UPDATE terminals SET gateway_acquirer = 'ratn' where id in ('92Ay2pCOmk80iq', '9IjdmbQNKKJ7Uz');
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 28th March
+UPDATE billdesk SET RefundId = 'LSBI61681169661' where id = 5124664;
+UPDATE billdesk SET RefundId = 'LSBI61664326211' where id = 5124663;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 4th, 6th April, 8th
+UPDATE billdesk SET RefundId = 'LSBI61725923291' where id = 5236928;
+UPDATE billdesk SET RefundId = 'LSBI61778418671' where id = 5259946;
+UPDATE billdesk SET RefundId = 'LSBI61911634051' where id = 5323641;
+UPDATE billdesk SET RefundId = 'LSBI61961442842' where id = 5323640;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 13th, 17th, 18th April
+UPDATE billdesk SET RefundId = 'LYBK62042059162' where id = 5429674;
+UPDATE billdesk SET RefundId = 'LSBI58935554231' where id = 5521908;
+UPDATE billdesk SET RefundId = 'LSBI61947875451' where id = 5537165;
 
 UPDATE tokens set recurring_failure_reason = 'signed Content does not tally with data mandate' where id = '9tWADFziLif7gI'
 UPDATE tokens set recurring_failure_reason = 'signed Content does not tally with data mandate' where id = '9trR4PM6G0MxDf'
@@ -1636,3 +1707,214 @@ VALUES
 	('9nDpYz26oaOHgI','100000Razorpay','UTGST 14%','percentage',1400,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
 	('9nDpYznDzU7NKP','100000Razorpay','UTGST 18%','percentage',1800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL),
 	('9nDpZ0hEw4vZky','100000Razorpay','UTGST 28%','percentage',2800,UNIX_TIMESTAMP(),UNIX_TIMESTAMP(),NULL);
+
+# Updates a user's name on urgent request. Currently there is no flow for same via Dashboard interface
+# Run on production live & test databases
+UPDATE users SET name = 'Nomi J Augustine' WHERE id = '8BpBceh6pcJ8ut' LIMIT 1;
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout for 21st, 27th
+UPDATE billdesk SET RefundId = 'LIDB61055712201' where id = 5571954;
+UPDATE billdesk SET RefundId = 'LSBI61963071281' where id = 5602394;
+UPDATE billdesk SET RefundId = 'LICI59942489131' where id = 5612095;
+UPDATE billdesk SET RefundId = 'NSBI62396573641' where id = 5634122;
+UPDATE billdesk SET RefundId = 'NSBI62383857621' where id = 5645171;
+UPDATE billdesk SET RefundId = 'NSCB62553044431' where id = 5674197;
+UPDATE billdesk SET RefundId = 'LIOB62027806862' where id = 5692026;
+
+# Update reference2 got in recon file,
+UPDATE payments
+    SET reference2 = '91905' where id = '9eQjCOsHAtD1eS';
+
+UPDATE payments
+    SET reference2 = '1399E2' where id = '95IR6TKf4uuxlM'
+
+UPDATE payments
+    SET reference2 = '030913' where id = '9uKJiXh3PaDcYw';
+
+# Failed batch was retried but status was not updated due to code bug.
+# Fixed with https://github.com/razorpay/api/pull/8262
+UPDATE batches SET status = 'processed', failure_reason = NULL where id = 'AApDFev3MSDXV6';
+
+UPDATE bank_accounts
+SET    deleted_at = now()
+WHERE  id IN ( '6P2UjB7AZkp3h5', '7wptZXq8xk3Hhi', '9qIJjdfTUc048v', '9yak56TeQGngUL',
+               '9ydP7CUH5NZKJD', '9ye7NdsrzsBCca', '9yeCgEHREYw6VD', '9yg47GwA1reCst',
+               '9yikr4b1q8TTyk', '9yld7KUXWIvMmq', '9ylxUgAWGDOunb', '9zoHLO2ivuzAHg',
+               '9zpwAtI6jbZeop', '9zr6qGoJp83bOP', '9zsqzHsJO1cafw', '9zxEyNqcKkexri',
+               'A0EkarVUb4y9h6', 'A0dqgDL5oGXFPg', 'A0jeJl8lqux5Xg', 'A0kZ6k485rb2PP',
+               'A10r1vVjVj4OmC', 'A16T8UZzbTbqRI', 'A1VQtjDmLkvNqV', 'A1VXx8msDGrJk6',
+               'A1VhzewBKQLswZ', 'A1ViEtLmVgQWMR', 'A1ViwC7YGjlUbb', 'A1yZLoNRz6XEIy',
+               'A2gCHd9ae6IffC', 'A2hG5NvwOU1kdp', 'A2hPL3m1AbxD3O', 'A2i5Q0Mb1DQQ9r',
+               'A2xD4L8yGCFqFJ', 'A35xgVyZ63DKlu', 'A36PlJHBwUvFzZ', 'A36SwMlR0i1dRD',
+               'A3M24zOvDJNKgO', 'A3MtZXUTYXxMk0', 'A3UgaOGi9AyrGJ', 'A3UmwkMfpQFsgH',
+               'A4EWOHBm2p2rHf', 'A4efVcTsWfFbly', 'A5PYXT8lEyiNp1', 'A5TjJOgQpAvpSD',
+               'A5mYqqLUwbe5xT', 'A6AJNCzJFb1a9f', 'A6DIpygf1Vt66h', 'A6E3l4AfNlF2lk',
+               'A6FLjkHqHk01xT', 'A6FMiT5izXikbt', 'A6apTx9dmDmF83', 'A6aqSwbIhUslGQ',
+               'A6arDl0wwwds3D', 'A7MVCY5zOegGQ0', 'A7h1HCuWhuE6qB', 'A894C2t1U3gJwq',
+               'A89Q9ehP4c29ay', 'A8Dkkq0zImHQhe', 'A8U3Esrz88wjU2', 'A8X8Gm29WZCdJH',
+               'A8bsJrEkWALzqF', 'AArsGstS2RaWTK' );
+
+# Copies items.tax_rate to line_items.tax_rate for existing entities. Now line_items has tax_rate too.
+UPDATE line_items l
+       LEFT JOIN items i
+              ON l.item_id = i.id
+SET    l.tax_rate = i.tax_rate
+WHERE  l.tax_rate IS NULL
+       AND i.tax_rate IS NOT NULL;
+
+# Update UPI type for hulk payments
+UPDATE upi
+SET `type` = 'collect'
+WHERE `gateway_payment_id` LIKE 'p2p_%'
+  AND `type` = 'pull';
+
+UPDATE upi
+SET `type` = 'pay'
+WHERE `gateway_payment_id` LIKE 'p2p_%'
+  AND `type` = 'push';
+
+# Instance killed while recon batch processing. Slack thread : https://razorpay.slack.com/archives/C6QPQKVLZ/p1527592257000322
+UPDATE batches SET processing=0 WHERE id='AGr4YbJLIM86ff';
+
+# In case of retry failed batch, old success count and failure count was not reset.
+UPDATE batches SET success_count = 19709 WHERE id = 'ABUmkq0y7qz2iB';
+
+UPDATE batches SET success_count = 19822, failure_count = 0, status = 'processed',
+failure_reason = NULL WHERE id='AH7zn9nf1rqrtR';
+
+# Set BQR Details in Sharp Terminal
+Update terminals
+    SET upi = 1, mc_mpan = '1234560000000000', visa_mpan = '1234560000000001', rupay_mpan = '1234560000000002',
+     vpa = 'random@razorpay' where id = '1000SharpTrmnl';
+
+update qr_code set reference = id;
+
+# Udaan data corrections, necessitated by duplicate virtual bank account numbers
+# 1. Close the undesired VA, and move the bank_transfers to the desired one
+UPDATE
+  virtual_accounts INNER JOIN bank_transfers
+  ON
+    virtual_accounts.id=bank_transfers.virtual_account_id
+  SET
+    bank_transfers.virtual_account_id='A8xTrQAiKHV3BO',
+    virtual_accounts.amount_paid=0,
+    virtual_accounts.amount_received=0,
+    virtual_accounts.status='closed'
+  WHERE bank_transfers.virtual_account_id='A8xTrPsTWeNBzx';
+# 2. Update amount fields in the desired VA
+UPDATE
+  virtual_accounts
+  SET
+    amount_paid=621400,
+    amount_received=621400
+  WHERE id='A8xTrQAiKHV3BO';
+
+# Updates created_at for merchant_requests and action_state
+UPDATE action_state
+  JOIN merchant_requests ON merchant_requests.id = action_state.entity_id
+  JOIN (
+    SELECT MIN(action_state.created_at) as created_at, action_state.entity_id as merchant_request_id
+    FROM action_state
+    WHERE action_state.name = "under_review" AND entity_type = "merchant_request"
+    GROUP BY action_state.entity_id
+  ) as ac_min ON (
+    ac_min.created_at = action_state.created_at
+    AND ac_min.merchant_request_id = action_state.entity_id
+    AND action_state.entity_type = "merchant_request"
+    AND action_state.name = "under_review")
+  JOIN (
+    SELECT SUBSTRING_INDEX(`key`, ".", 1) AS product, entity_id as merchant_id, MIN(created_at) as created_at
+    FROM settings
+    WHERE module = 'onboarding'
+    GROUP BY product, entity_id
+  ) as products ON (merchant_requests.merchant_id = products.merchant_id AND merchant_requests.name = products.product)
+  SET
+      merchant_requests.created_at = products.created_at,
+      action_state.created_at = products.created_at
+  WHERE merchant_requests.type = "product"
+
+# Updates values for old batches.processed_count
+UPDATE batches
+    SET processed_count = success_count + failure_count
+    WHERE processed_count IS NULL AND processing = 0;
+
+# Fills entity_offer (pivot table for order-offer relations) with data from existing orders
+INSERT INTO `entity_offer`
+    (`entity_id`,`entity_type`,`offer_id`,`created_at`,`updated_at`)
+    VALUES
+    ('7bQiSMEa4V9cqK','order','7b3KwTbcVZhfxt',1491466676,1491466676),
+    ...
+    ('AKRam7TzPy5Z3A','order','9okQnoDyccqfut',1528369240,1528369240);
+
+# All existing offers are chosen by merchant, and forced to be applied on payment
+UPDATE orders
+  SET force_offer=1
+  WHERE id in (
+    '7bQiSMEa4V9cqK',
+    ...
+    'AKRam7TzPy5Z3A'
+  );
+
+#Deleting from merchant_terminal mapping table where terminal has been soft deleted
+DELETE FROM merchant_terminal WHERE terminal_id = '9pzyO7B1uNjuXH';
+
+
+# Update GST tax name
+UPDATE taxes SET name = 'IGST @ 0%' WHERE id='9nDpYboKAK9j7t';
+UPDATE taxes SET name = 'IGST @ 5%' WHERE id='9nDpYciCWeNBzE';
+UPDATE taxes SET name = 'IGST @ 12%' WHERE id='9nDpYdbYNqD4Rw';
+UPDATE taxes SET name = 'IGST @ 18%' WHERE id='9nDpYf1tTUs2Vh';
+UPDATE taxes SET name = 'IGST @ 28%' WHERE id='9nDpYfqgnYW5Dx';
+UPDATE taxes SET name = 'CGST @ 0%' WHERE id='9nDpYglSpU58lc';
+UPDATE taxes SET name = 'CGST @ 2.5%' WHERE id='9nDpYhZ0d60X7V';
+UPDATE taxes SET name = 'CGST @ 5%' WHERE id='9nDpYiArP6j0qT';
+UPDATE taxes SET name = 'CGST @ 6%' WHERE id='9nDpYivRHUQQV8';
+UPDATE taxes SET name = 'CGST @ 9%' WHERE id='9nDpYjuyZsOlMK';
+UPDATE taxes SET name = 'CGST @ 12%' WHERE id='9nDpYkng64GyTa';
+UPDATE taxes SET name = 'CGST @ 14%' WHERE id='9nDpYlTs7cWM80';
+UPDATE taxes SET name = 'CGST @ 18%' WHERE id='9nDpYmPK2K2mVi';
+UPDATE taxes SET name = 'CGST @ 28%' WHERE id='9nDpYnFEoqJQ5v';
+UPDATE taxes SET name = 'SGST @ 0%' WHERE id='9nDpYnvgiGXrZh';
+UPDATE taxes SET name = 'SGST @ 2.5%' WHERE id='9nDpYoeYBsXRvC';
+UPDATE taxes SET name = 'SGST @ 5%' WHERE id='9nDpYpMRZgJEgU';
+UPDATE taxes SET name = 'SGST @ 6%' WHERE id='9nDpYpuN72gdfY';
+UPDATE taxes SET name = 'SGST @ 9%' WHERE id='9nDpYqgYcqpr8q';
+UPDATE taxes SET name = 'SGST @ 12%' WHERE id='9nDpYrIMXQTtPd';
+UPDATE taxes SET name = 'SGST @ 14%' WHERE id='9nDpYs1yK0pndD';
+UPDATE taxes SET name = 'SGST @ 18%' WHERE id='9nDpYsoU7subph';
+UPDATE taxes SET name = 'SGST @ 28%' WHERE id='9nDpYtb0S0JhMP';
+UPDATE taxes SET name = 'UTGST @ 0%' WHERE id='9nDpYuFVNQcVaU';
+UPDATE taxes SET name = 'UTGST @ 2.5%' WHERE id='9nDpYv53mqSsip';
+UPDATE taxes SET name = 'UTGST @ 5%' WHERE id='9nDpYvgwu0p8WP';
+UPDATE taxes SET name = 'UTGST @ 6%' WHERE id='9nDpYwRScK0Mz2';
+UPDATE taxes SET name = 'UTGST @ 9%' WHERE id='9nDpYxMkO0LLhz';
+UPDATE taxes SET name = 'UTGST @ 12%' WHERE id='9nDpYyC50acDzW';
+UPDATE taxes SET name = 'UTGST @ 14%' WHERE id='9nDpYz26oaOHgI';
+UPDATE taxes SET name = 'UTGST @ 18%' WHERE id='9nDpYznDzU7NKP';
+UPDATE taxes SET name = 'UTGST @ 28%' WHERE id='9nDpZ0hEw4vZky';
+
+# Update tokens and gateway tokens for emandate icici and axis
+UPDATE gateway_tokens SET recurring = 1 WHERE token_id IN ("ALyXAWMsRH0bI4", "ALz3rT7xtSl4m7", "ALzOXggmxD5xaO", "ALzcuslEjuQ7lP", "AM0MqCaixmQMtA", "AM3iKbRVQsIVJu", "AM3rmsQj6Vx4jt", "AM3yvHUDEgt8Uv", "AM4Aqfe8W0VmHX", "AM4FJkOVEH4p7i", "AM4K1r7hEy5rHa", "AM4TywZplJjlRF", "AM4eUoIUPEy47n", "AM4svjs3yJkNe5", "AM7ke16PcQyraH", "AM9DHhcsORshUr", "AMHuO3OqsUZjyu", "AMLNBX1zwybzJF", "AMLRXa7keJEXhM", "AMLsUsAycMObce", "AMMEnSxgxDub28", "AMMF6dM4dVMs6f", "AMOFhVtUpUseqf", "AMOJqaYruL5eDd", "AQ1JeyjLK3p58k", "AQ1y0xMU3QyjEG", "AQ3A7iwtUx4Fnk", "AQEsZPuLPlRYx7", "AQHYxW7Ylcs98a", "AQHauGA4MDaUu6", "AQHfM2ZVflghHO", "AQI37fGj5fgNvk", "AQJBmkSGOvSFKg", "AQKYmQbpgYASa9", "AQLmGIVOUdZdHY", "AQM2BEzln7432s", "AQM80Unw3Ju367", "AQMN8t8jTPSJR5", "AQMTdRovp8qEna", "AQMkQ1ugrZkNe0", "AQMlRPYX40IQGx", "AQN15lH3HB8B7I", "AQNl246cVCyiar", "AQO1v3yQVDHbE7", "AQOk2OCQo0Dv51", "AQOx9VR2K1oB92", "AQR2CWaaCZ90nd", "AQR4UdzAmviCOz", "AQR5lhHeW4axoF", "AQRDcBMLJINWPs", "AQRLeGnSvyggRb", "AQS6LY006ODubB", "AQSABKTmuYXZf7", "AQSRqglZi9bgYK", "AQSmXbyTcJTASR", "AQStyKL8JrHSn9", "AQUQ0NjH31zLIu", "AQX8ruuRCPaZQd", "AQhQDS28xXkNc6", "AQiSRvyzgTMCAT", "AQiWpxp4IFbs4Y", "AQion0yFF9zAMH", "AQitv5tVR1geIt", "AQj4bhEb31x9Fi", "AQmHtocjlCkbKM", "AQmNw5SkhnniS9", "AQnhYZ5l7X5ItT", "AQo7a8OTDILoEp", "AQoAMry4pd718I", "AQoL5FCaHeSSEN", "AQojsQaIHhXx18", "AQop1uvkeVlHHI", "AQp4RR22pc8Xwo", "AQq9AGynfalT9j", "AQqHl0vzXO99vm", "AQsVCU2GZjQu5o", "AR7B62ZHB8iizq", "AR7FrFM03Qzpb3", "AR7h615sqMu4by", "AR7k6OfE6C2TQh", "AR7rZqU7OQJYm7", "AR7tyX3P2ONfnd", "AR7x1SPdSGurAX", "AR87XNypVZoHJD", "AR8QwHRUBJUI6A", "AR8dVeGRcAucB6", "ARBnDJirzGIYpc", "ARBxYsdo8XD5wy", "ARCJ4zTwFmoc1T", "ARCNhTq1X7Dvln", "ARCPrQ552IQh8L", "ARCkwzNx4hytL6", "ARCmx6MMStEOjE", "ARCqycysXCn0gi", "ARDgpjsK5o79UQ", "ARECNuQVQh3hBS", "AREELH6jZrBG9k", "ARFQeRJq8f7czu", "ARFUK9VpmDpxRP", "ARTp9vuljYcQKC", "ARTpvTORUe7cCO", "ARTvPR1p9KwzBe", "ARUVFzKYkaRrAV", "ARUZjPCVwS9xi2", "ARUi0xljopXs3N", "ARVeSO89eLUzxC", "ARVgPuFpxT3L6i", "ARWvCN0tqUC6jA", "ARX3Tymmg0Lf9o", "ARXENOHFc6dfPn", "ARXIILYJo68tVi", "ARXINTWuCMifM1", "ARXRIkr0iudmg6", "ARXVufCfNxozyl", "ARXZGwEJLXZ03I", "ARXxv0pD5rSiLB", "ARYfz2fGeRfAMG", "ARZm6AF7Sf2e4s", "ARZnofBGLnhjAo", "ARZrWplFWIKMxA", "ARabzBRQwyGHyE", "ARafcLnYlINw0J", "ARbd0nvk9jpd4n", "ARca7XskaUtmNF", "ARcclKZkpVltxo", "ARcdm0hb6GGzA6", "ARch5FuuzR5MUt", "ARcjBGijLVf6is", "ARcjf0vRZxfpZX", "ARcllhkfLHwh40", "ARcu89ltep4zoR", "ARczb3uF9Ei3aD", "ARev3onhGVT89U", "ARi7NV4CAkLLRk", "ARop0pOcQMgQpu", "ARou4dPHAZILwb", "ARqAbQXs1VBYeN") LIMIT 137;
+
+UPDATE tokens SET gateway_token = "1401609835133", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "A1sPKIwyWtkYnR" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1907909941269", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "A7oSkEEWVjrXcC" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1725210014082", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "AB0EpxG0osqCll" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1127310033620", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "AC54fqHh9gmKBF" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1273310163736", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "AHuJVOMX1WiYf3" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1289310225125", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "AKEb2kMVi1GAZv" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1690610228271", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "AKQ55jvblTZPfg" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1036710228829", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "AKjyQHrPwx3wnf" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1579910291311", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "ANwmd8QklQ9o7O" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1072110347715", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "AQJB9XHdtCNxsh" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1076210357497", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "AR7wpM2H4Wnd6I" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1000024663", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "ARCMfJlq5Hf5y8" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1000024693", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "ARFv32AE4bfk0F" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1381910358427", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "ARUaIpstnfIrnk" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1137410367276", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "ARZU8U88h8fbew" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1065410378244", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "ARvWWtNwYpZhbm" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1743610416356", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "AT6CGQhXgevIXU" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1742810456961", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "AUIwjQU3inCm8d" AND method = "emandate" LIMIT 1;
+UPDATE tokens SET gateway_token = "1448110472721", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "AUjwPPSHN5Xs6q" AND method = "emandate" LIMIT 1;
+
+UPDATE gateway_tokens SET recurring = 1, updated_at = UNIX_TIMESTAMP() WHERE token_id IN ("A1sPKIwyWtkYnR", "A7oSkEEWVjrXcC", "AB0EpxG0osqCll", "AC54fqHh9gmKBF", "AHuJVOMX1WiYf3", "AKEb2kMVi1GAZv", "AKQ55jvblTZPfg", "AKjyQHrPwx3wnf", "ANwmd8QklQ9o7O", "AQJB9XHdtCNxsh", "AR7wpM2H4Wnd6I", "ARCMfJlq5Hf5y8", "ARFv32AE4bfk0F", "ARUaIpstnfIrnk", "ARZU8U88h8fbew", "ARvWWtNwYpZhbm", "AT6CGQhXgevIXU", "AUIwjQU3inCm8d", "AUjwPPSHN5Xs6q") LIMIT 19;
+

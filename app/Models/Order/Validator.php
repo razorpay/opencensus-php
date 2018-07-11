@@ -13,16 +13,18 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::AMOUNT          => 'required|integer|min:0',
-        Entity::CURRENCY        => 'required|size:3|in:INR,USD',
+        Entity::CURRENCY        => 'required|string|size:3',
         Entity::RECEIPT         => 'sometimes|nullable|string|max:40',
         Entity::PAYMENT_CAPTURE => 'filled|boolean',
-        Entity::CUSTOMER_ID     => 'sometimes|filled',
+        Entity::CUSTOMER_ID     => 'filled|public_id|size:19',
         Entity::NOTES           => 'sometimes|notes',
         Entity::METHOD          => 'sometimes|in:netbanking,emandate,upi',
-        Entity::BANK            => 'sometimes|filled',
-        Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
+        Entity::BANK            => 'filled',
+        Entity::ACCOUNT_NUMBER  => 'filled|string|max:50|min:5',
         Entity::DISCOUNT        => 'sometimes|boolean',
-        Entity::OFFER_ID        => 'sometimes|string|size:20',
+        Entity::OFFERS          => 'sometimes|array',
+        Entity::OFFERS . '*'    => 'filled|public_id|size:20',
+        Entity::FORCE_OFFER     => 'filled|boolean',
     );
 
     protected static $createValidators = [
@@ -31,7 +33,7 @@ class Validator extends Base\Validator
         Entity::BANK,
         'method_fee_bearer',
         Entity::CURRENCY,
-        'offer',
+        Entity::DISCOUNT,
     ];
 
     protected function validateAmount($input)
@@ -87,13 +89,11 @@ class Validator extends Base\Validator
         $currency = $input[Entity::CURRENCY];
         $method = $input[Entity::METHOD];
 
-        if (in_array($method, [Payment\Method::NETBANKING, Payment\Method::EMANDATE], true))
+        if (($method !== Payment\Method::CARD) and
+            ($currency !== Currency::INR))
         {
-            if ($currency !== Currency::INR)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The currency should be INR when method is ' . $method);
-            }
+            throw new Exception\BadRequestValidationFailureException(
+                'The currency should be INR when method is ' . $method);
         }
     }
 
@@ -177,7 +177,11 @@ class Validator extends Base\Validator
         if (($isOrderPaid === true) or ($isOrderAuthorized === true))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID,
+                null,
+                [
+                    'order_id' => $order->getId(),
+                ]);
         }
     }
 
@@ -407,18 +411,18 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateOffer($input)
+    protected function validateDiscount($input)
     {
         if (isset($input[Entity::DISCOUNT]) === false)
         {
             return;
         }
 
-        if (($input[Entity::DISCOUNT] === true) and
-            (isset($input[Entity::OFFER_ID]) === false))
+        if ((boolval($input[Entity::DISCOUNT]) === true) and
+            (empty($input[Entity::OFFERS]) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'Discount without offer_id is not supported');
+                    'Discount without offers is not supported');
         }
     }
 }

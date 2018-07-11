@@ -278,10 +278,20 @@ class Gateway extends Base\Gateway
                 $requestContent[Fields::UDF5]      = strtolower(Constants::TRACK_ID);
                 $requestContent[Fields::BANK_CODE] = BankCodes::getBankCodeByIfsc($input[E::CARD][Card\Entity::ISSUER]);
 
+                if ($this->action === Action::REFUND)
+                {
+                    $requestContent[Fields::PASSWORD] = $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
+                }
+
                 if ($this->mode === Mode::TEST)
                 {
                     $requestContent[Fields::ID]         = $this->config['fss']['merchant_id'];
                     $requestContent[Fields::UDF3]       = $this->config['fss']['merchant_id'];
+
+                    if ($this->action === Action::REFUND)
+                    {
+                        $requestContent[Fields::PASSWORD] = $this->config['fss']['terminal_password'];
+                    }
                 }
 
                 break;
@@ -409,6 +419,15 @@ class Gateway extends Base\Gateway
             default:
                 break;
         }
+
+        // Trace payment decrypted data as string because if their
+        // is any error in data format we can get to know about this.
+        $this->traceGatewayData([
+                                    'gateway_data' => $decryptedString,
+                                    'payment_id'   => $input['payment']['id'],
+                                    'gateway'      => $this->gateway,
+                                ],
+                                TraceCode::GATEWAY_PAYMENT_CALLBACK);
 
         $decryptedResult = Utility::createResponseArray($decryptedString);
 

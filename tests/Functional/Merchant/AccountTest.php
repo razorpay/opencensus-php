@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Merchant;
+namespace RZP\Tests\Functional\Merchant\Account;
 
 use Mail;
 

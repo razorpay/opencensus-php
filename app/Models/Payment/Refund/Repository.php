@@ -257,6 +257,39 @@ class Repository extends Base\Repository
         return $refunds;
     }
 
+    public function fetchRefundsForGatewaysBetweenTimestamps($type, $gatewayCodes, $from, $to, $gateway)
+    {
+        $attrs = $this->dbColumn('*');
+
+        $query = $this->newQuery();
+
+        $refunds = $query->select($attrs)->join(
+            $this->repo->payment->getTableName(),
+            function ($join) use ($from, $to, $type, $gatewayCodes, $gateway)
+            {
+                $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
+                $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+                $rBaseAmount = $this->dbColumn(Refund\Entity::BASE_AMOUNT);
+
+                $pRepo        = $this->repo->payment;
+                $pId          = $pRepo->dbColumn(Payment\Entity::ID);
+                $pType        = $pRepo->dbColumn($type);
+                $pGateway     = $pRepo->dbColumn(Payment\Entity::GATEWAY);
+                $gatewayCodes = (array) $gatewayCodes;
+
+                $join->on($rPaymentId, '=', $pId)
+                     ->where($rCreatedAt, '>=', $from)
+                     ->where($rCreatedAt, '<=', $to)
+                     ->whereIn($pType, $gatewayCodes)
+                     ->where($pGateway, '=', $gateway)
+                     ->where($rBaseAmount, '!=', 0);
+            })
+            ->with('payment')
+            ->get();
+
+        return $refunds;
+    }
+
     public function fetchFailedRefundsForGatewayBetweenTimestamps($from, $to, $gateway)
     {
         $refundAttrs = $this->dbColumn('*');
@@ -318,6 +351,8 @@ class Repository extends Base\Repository
 
         $terminalAcquirerAttr = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
 
+        $paymentCreatedBefore = Carbon::now()->subSeconds($timerange)->timestamp;
+
         return $this->newQuery()
                     ->select($refundAttributes)
                     ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
@@ -328,8 +363,10 @@ class Repository extends Base\Repository
                     ->where($refundCreatedAt, '>=', $from)
                     ->where($refundCreatedAt, '<=', $to)
                     ->where($paymentGateway, '=', $gateway)
-                    ->where($paymentMethod, '=', 'card')
-                    ->whereRaw($refundCreatedAt . '-' .  $paymentCreatedAt . '>=' . $timerange)
+                    ->whereIn($paymentMethod, [Payment\Method::CARD, Payment\Method::EMI])
+                    // Doesn't matter when the refund was created, since payment is older.
+                    // API can not process it, thus picking refund only based on payment date
+                    ->where($paymentCreatedAt, '<=', $paymentCreatedBefore)
                     ->with(['payment'])
                     ->get();
     }
@@ -685,5 +722,19 @@ class Repository extends Base\Repository
                     ->where(Refund\Entity::RECEIPT, '=', $receipt)
                     ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
                     ->first();
+    }
+
+    public function getAliasesForRefundsDbColumns($params): array
+    {
+        $dbColumns = [];
+
+        foreach ($params as $param)
+        {
+            $dbColumn = $this->repo->refund->dbColumn($param);
+
+            $dbColumns[] = $dbColumn . ' as refund_'. $param;
+        }
+
+        return $dbColumns;
     }
 }

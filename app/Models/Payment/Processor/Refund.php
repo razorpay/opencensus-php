@@ -323,7 +323,7 @@ trait Refund
         });
     }
 
-    public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, $amount)
+    public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, array $input)
     {
         //
         // Check if a refund already exists.
@@ -335,8 +335,6 @@ trait Refund
         {
             return $refund;
         }
-
-        $input = ['amount' => (string) $amount];
 
         // No refund existed so fire a new one.
         return $this->refundCapturedPayment($payment, $input, $batch);
@@ -544,7 +542,17 @@ trait Refund
                 return true;
             }
 
-            $this->callGatewayFunction(Payment\Action::REFUND, $data);
+            //
+            // In case of emandate payments, the amount is 0.
+            // For non-emandate payments also, if the refund amount
+            // is 0, we don't have to send it to the gateway at
+            // all since there's no money to be refunded here as
+            // such. We can just mark it as processed.
+            //
+            if ($this->refund->getAmount() !== 0)
+            {
+                $this->callGatewayFunction(Payment\Action::REFUND, $data);
+            }
 
             $this->refund->setStatusProcessed();
 
@@ -582,7 +590,10 @@ trait Refund
 
         try
         {
-            $this->callGatewayFunction(Payment\Action::REVERSE, $data);
+            if ($this->refund->getAmount() !== 0)
+            {
+                $this->callGatewayFunction(Payment\Action::REVERSE, $data);
+            }
 
             $this->refund->setStatusProcessed();
 
@@ -733,7 +744,6 @@ trait Refund
 
     protected function callRefundFunction($payment, $data)
     {
-        // @todo: Handle zero payment refund case
         if ($this->shouldHitGatewayForRefund($payment) === true)
         {
             return $this->callGatewayRefundFunction($payment, $data);
@@ -1012,7 +1022,7 @@ trait Refund
         return null;
     }
 
-    protected function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
+    public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
     {
         $this->validatePaymentForRefund($payment);
 
@@ -1093,8 +1103,6 @@ trait Refund
         $notifier = new Notify($payment);
         $notifier->addRefund($this->refund);
         $notifier->trigger(Payment\Event::REFUNDED);
-
-        $this->notifyDashboard('refund', $this->refund);
     }
 
     protected function createRefundOnApiSeparately(

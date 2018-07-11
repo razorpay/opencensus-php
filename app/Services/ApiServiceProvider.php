@@ -4,9 +4,11 @@ namespace RZP\Services;
 
 use RZP;
 use Swift_Mailer;
+use Illuminate\Database\Connection;
 use Http\Mock\Client as MockHttplug;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
 use RZP\Models\Batch;
 use RZP\Models\Order;
@@ -23,11 +25,12 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
-use RZP\Models\VirtualAccount;
 use RZP\Models\Admin as Admin;
+use RZP\Models\VirtualAccount;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
+use RZP\Base\Database\MySqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\Merchant\Request as MerchantRequest;
@@ -109,6 +112,15 @@ class ApiServiceProvider extends BaseServiceProvider
             return new TokenEx($app);
         });
 
+        $this->app->singleton('card.otpelf', function($app)
+        {
+            $mock = $app['config']->get('applications.otpelf.mock');
+
+            $implementation = $mock ? Mock\OtpElf::class : OtpElf::class;
+
+            return new $implementation($app);
+        });
+
         $this->app->singleton('authservice', function($app)
         {
             return new AuthService($app);
@@ -143,7 +155,7 @@ class ApiServiceProvider extends BaseServiceProvider
                 return new Mock\HarvesterClient($app);
             }
 
-            return new HarvesterClient($app);
+            return new Harvester\HarvesterClient($app);
         });
 
         $this->app->singleton('ufh.service', function ($app)
@@ -197,6 +209,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerGeolocation();
 
         $this->registerPincodeSearch();
+
+        $this->registerDatabaseConnection();
     }
 
     /**
@@ -467,7 +481,23 @@ class ApiServiceProvider extends BaseServiceProvider
 
             $implementation = $mock ? Mock\ShieldClient::class : ShieldClient::class;
 
-            return new $implementation($app);
+            return new $implementation;
+        });
+    }
+
+    protected function registerDatabaseConnection()
+    {
+        Connection::resolverFor('mysql', function ($connection, $database, $prefix, $config) {
+            //
+            // If the connection config has lag_check configuration set use the
+            // custom MySqlConnection class. If no, then we use the default connection class.
+            //
+            if (isset($config['lag_check']) === true)
+            {
+                return new MySqlConnection($connection, $database, $prefix, $config);
+            }
+
+            return new IlluminateMySqlConnection($connection, $database, $prefix, $config);
         });
     }
 }

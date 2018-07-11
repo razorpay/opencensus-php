@@ -37,11 +37,32 @@ class Core extends Base\Core
     {
         $feature = (new Entity)->build($input);
 
+        $entityType = $input[Entity::ENTITY_TYPE];
+
+        $entityId = $input[Entity::ENTITY_ID];
+
+        //
+        // These entity types are owned by api, hence we validate their existence
+        // here before associating.
+        //
+        if (in_array($entityType, [Constants::MERCHANT, Constants::ACCOUNT], true) === true)
+        {
+            $entity = $this->repo->merchant->findOrFailPublic($entityId);
+
+            $feature->entity()->associate($entity);
+        }
+        //
+        // Features for other entity types which are external to api, aren't checked
+        // for existence.
+        //
+        else
+        {
+            $feature->setEntityId($entityId);
+
+            $feature->setEntityType($entityType);
+        }
+
         $feature->generateId();
-
-        $entityType = $feature->getEntityType();
-
-        $entityId = $feature->getEntityId();
 
         $existingFeatures = $this->repo->feature->fetchByEntityTypeAndEntityId($entityType, $entityId);
 
@@ -65,9 +86,7 @@ class Core extends Base\Core
 
         $this->notifyFeatureUpdateOnSlack($feature);
 
-        $merchantId = $input['entity_id'];
-
-        $this->notifyMerchantOfFeatureActivationIfApplicable($merchantId, $feature, $shouldSync);
+        $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);
 
         return $feature;
     }
@@ -105,21 +124,29 @@ class Core extends Base\Core
     /**
      * Notify the merchant of feature Activation by email if applicable based on mode, feature type and sync status.
      *
-     * @param string $merchantId
+     * @param string $entityType
+     * @param string $entityId
      * @param Entity $feature
      * @param bool   $shouldSync
      */
     public function notifyMerchantOfFeatureActivationIfApplicable(
-        string $merchantId,
+        string $entityType,
+        string $entityId,
         Entity $feature,
         bool $shouldSync)
     {
+        // We currently do not notify the applications of the feature activation
+        if ($entityType !== Constants::MERCHANT)
+        {
+            return;
+        }
+
         $isLiveMode = $this->isLiveMode();
 
         if (($feature->isProductFeature() === true) and
             (($shouldSync === true) or ($isLiveMode === true)))
         {
-            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+            $merchant = $this->repo->merchant->findOrFailPublic($entityId);
 
             $visibleFeatures = Constants::$visibleFeaturesMap;
             $featureName     = $feature->getName();
@@ -137,7 +164,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::FEATURE_ENABLED_MERCHANT_NOTIFIED,
                 [
-                    PublicEntity::MERCHANT_ID => $merchantId,
+                    PublicEntity::MERCHANT_ID => $entityId,
                     Entity::SHOULD_SYNC       => $shouldSync,
                     Mode::LIVE                => $isLiveMode,
                     Entity::NEW_FEATURE       => $feature,
@@ -149,7 +176,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED,
                 [
-                    PublicEntity::MERCHANT_ID => $merchantId,
+                    PublicEntity::MERCHANT_ID => $entityId,
                     Entity::SHOULD_SYNC       => $shouldSync,
                     Mode::LIVE                => $isLiveMode,
                     Entity::NEW_FEATURE       => $feature,
@@ -468,32 +495,33 @@ class Core extends Base\Core
 
         $question = Constants::VENDOR_AGREEMENT;
 
+        $replacementVariable = null;
+
+        //
+        // Adding multiple key checks since this function can be called with response of a single feature submissions
+        // or responses of all submissions fetched together, which causes the responses array to be either without
+        // key of feature name or keyed by feature name respectively in both cases.
+        //
         if (isset($response[$featureName][$question]) === true)
         {
             $fileId = $response[$featureName][$question];
 
-            // TODO :: replace its usage with the one from FileStore\Core
-            $fileUrl = $this->getSignedUrl($fileId, $merchant->getId());
-
-            $response[$featureName][$question] = $fileUrl;
+            $replacementVariable = &$response[$featureName][$question];
         }
-    }
 
-    /**
-     * @param string $fileStoreId
-     * @param string $merchantId
-     *
-     * @return mixed
-     */
-    protected function getSignedUrl(string $fileStoreId, string $merchantId)
-    {
-        $accessor = new FileStore\Accessor;
+        if (isset($response[$question]) === true)
+        {
+            $fileId = $response[$question];
 
-        $signedUrls = $accessor->id($fileStoreId)
-                               ->merchantId($merchantId)
-                               ->getSignedUrl();
+            $replacementVariable = &$response[$question];
+        }
 
-        return $signedUrls[$fileStoreId];
+        if (empty($replacementVariable) === false)
+        {
+            $fileUrl = (new FileStore\Core)->getSignedUrl($fileId, $merchant->getId());
+
+            $replacementVariable = $fileUrl;
+        }
     }
 
     /**

@@ -13,15 +13,19 @@ class DailyReconStatusSummary extends Mailable
 {
     protected $data;
 
-    protected $gateways;
+    protected $emails;
 
     protected $params;
 
-    const RECIPIENT_EMAILS_MAP = ['pgrecon@razorpay.com', 'kajol.nigam@razorpay.com'];
+    protected $gateways;
 
-    public function __construct(array $gateways,array $params, array $data)
+    const RECIPIENT_EMAILS_MAP = ['pgrecon.reports@razorpay.com'];
+
+    public function __construct(array $emails, array $gateways, array $params, array $data)
     {
         parent::__construct();
+
+        $this->emails = (empty($emails) === false) ? $emails : self::RECIPIENT_EMAILS_MAP;
 
         $this->gateways = $gateways;
 
@@ -32,7 +36,7 @@ class DailyReconStatusSummary extends Mailable
 
     protected function addRecipients()
     {
-        $to = self::RECIPIENT_EMAILS_MAP;
+        $to = $this->emails;
 
         $this->to($to);
 
@@ -63,80 +67,14 @@ class DailyReconStatusSummary extends Mailable
 
     protected function addMailData()
     {
-        $message = '';
-
-        foreach ($this->data as $entity => $data) {
-
-            foreach ($data as $date => $gatewayData) {
-
-                $message .= '<b>' . $entity . ' Reconciliation summary for '.$date.' - </b><br /><br />';
-
-                $message .= $this->getTabularFormattedReconSummary($gatewayData);
-
-            }
-        }
-
-        $mailData['body'] = $message;
+        $mailData = [
+            'summary' => $this->data,
+            'params'  => $this->params
+        ];
 
         $this->with($mailData);
 
         return $this;
-    }
-
-    protected function getTabularFormattedReconSummary(array $reconData)
-    {
-        $message = '<table border="1">';
-
-        $message .= '<th>Gateway</th>';
-
-        //
-        // Set the headers of the tables as params
-        //
-        foreach ($this->params as $param)
-        {
-            $message .= '<th>' . $param . '</th>';
-        }
-
-
-        foreach ($reconData as $date => $gatewayData)
-        {
-            $message .= '<tr><td>' . $gatewayData['gateway'] . '</td>';
-
-            foreach ($this->params as $param)
-            {
-
-                $message .= '<td>' . ($gatewayData[$param] ?? 0) . '</td>';
-            }
-
-            $message .= '</tr>';
-        }
-
-        $message .= '</table><br />';
-
-        return $message;
-    }
-
-    protected function getTableFormattedEntites(array $reconData)
-    {
-        $message = '<table border="1">';
-
-        $message .= '<th>Gateway</th><th>Entity ID</th><th>Created At</th>';
-
-        foreach ($reconData as $gateway => $gatewayData)
-        {
-            foreach ($gatewayData as $entityId => $createdAt)
-            {
-                $message .= '<tr> <td>' . $gateway . '</td>';
-
-                $message .=  '<td>' . $entityId . '</td><td>' . $createdAt . '</td>';
-
-                $message .= '</tr>';
-            }
-        }
-
-        $message .= '</table><br />';
-
-        return $message;
     }
 
     protected function addHeaders()
@@ -153,7 +91,23 @@ class DailyReconStatusSummary extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.message');
+        $this->view('emails.reconciliation.daily_recon_summary');
+
+        return $this;
+    }
+
+    protected function addAttachments()
+    {
+        foreach ($this->data as $entity => $data)
+        {
+            if (empty($data['unreconciled_data_file']) === false)
+            {
+                foreach ($data['unreconciled_data_file'] as $file)
+                {
+                    $this->attach($file['url'], ['as' => $file['name']]);
+                }
+            }
+        }
 
         return $this;
     }

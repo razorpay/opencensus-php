@@ -3,12 +3,14 @@
 namespace RZP\Models\Merchant\Request;
 
 use Mail;
+
 use RZP\Exception;
 use RZP\Base\Common;
 use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\State\Reason;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\RequestRejection;
@@ -26,7 +28,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function create(array $input)
+    public function create(array $input, Merchant\Entity $merchant)
     {
         $submissions = $input[Constants::SUBMISSIONS] ?? [];
 
@@ -38,17 +40,15 @@ class Core extends Base\Core
 
         $request->build($input);
 
+        $request->merchant()->associate($merchant);
+
         $this->repo->transactionOnLiveAndTest(function() use($request, $input, $submissions)
         {
             $this->repo->saveOrFail($request);
 
             $this->createState(Status::UNDER_REVIEW, $request, $request->merchant);
 
-            if (($request->isProductRequest() === true) and
-                (empty($submissions) === false))
-            {
-                (new Feature\Core)->postOnboardingSubmissions($request->merchant, $submissions, $input[Entity::NAME]);
-            }
+            $this->postSubmissions($request, $input, $submissions);
         });
 
         return $request;
@@ -75,14 +75,20 @@ class Core extends Base\Core
      * @param string       $state
      * @param Entity       $request
      * @param PublicEntity $maker
+     * @param int          $statusDate
      *
      * @return State\Entity
      */
-    protected function createState(string $state, Entity $request, PublicEntity $maker)
+    protected function createState(string $state, Entity $request, PublicEntity $maker, int $statusDate = null)
     {
         $params = [
             State\Entity::NAME => $state,
         ];
+
+        if ($statusDate !== null)
+        {
+            $params[State\Entity::CREATED_AT] = $statusDate;
+        }
 
         $stateObj = (new State\Core)->createForMakerAndEntity($params, $maker, $request);
 
@@ -105,11 +111,13 @@ class Core extends Base\Core
      */
     public function changeStatus(Entity $request, array $input, $useWorkflow = true, $validateStatusChange = true)
     {
-        // Ignore workflows if not a product request
-        if ($request->isProductRequest() === false)
-        {
-            $useWorkflow = false;
-        }
+        $statusDate = $input[State\Entity::CREATED_AT] ?? null;
+
+        //
+        // Unset this because state's created at is not a part of the merchant request entity
+        // @todo: Remove the flow where the created_at is taken from the input - Bulk update merchant requests flow
+        //
+        unset($input[State\Entity::CREATED_AT]);
 
         $request->getValidator()->validateInput('change_status', $input);
 
@@ -144,7 +152,8 @@ class Core extends Base\Core
             $status,
             $rejectionReason,
             $useWorkflow,
-            $needsClarificationText)
+            $needsClarificationText,
+            $statusDate)
         {
             if ($useWorkflow === true)
             {
@@ -159,7 +168,7 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($request);
 
-            $stateEntity = $this->createState($status, $request, $admin);
+            $stateEntity = $this->createState($status, $request, $admin, $statusDate);
 
             //
             // `addFeatureIfNotEnabled` involves saving on both live and test, and the functions called above act
@@ -190,7 +199,6 @@ class Core extends Base\Core
             switch ($status)
             {
                 case Status::REJECTED:
-
                     if (empty($rejectionReason) === false)
                     {
                         (new Reason\Core)->addRejectionReasons([$rejectionReason], $stateEntity);
@@ -201,13 +209,11 @@ class Core extends Base\Core
                     break;
 
                 case Status::ACTIVATED:
-
-                    $this->addFeatureIfNotEnabled($request);
+                    $this->activated($request);
 
                     break;
 
                 case Status::NEEDS_CLARIFICATION:
-
                     if (empty($needsClarificationText) === false)
                     {
                         $this->sendNeedsClarificationEmail($request, $needsClarificationText);
@@ -218,6 +224,40 @@ class Core extends Base\Core
         });
 
         return $request;
+    }
+
+    /**
+     * Handles request activation flow
+     *
+     * @param Entity $request
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function activated(Entity $request)
+    {
+        switch (true)
+        {
+            case $request->isProductRequest():
+                $this->addFeatureIfNotEnabled($request);
+                break;
+
+            case $request->isPartnerActivationRequest():
+                (new Merchant\Core)->markAsPartner($request);
+                break;
+
+            case $request->isPartnerDeactivationRequest():
+                (new Merchant\Core)->unmarkAsPartner($request->merchant);
+                break;
+
+            default:
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME,
+                    Entity::NAME,
+                    [
+                        Entity::ID   => $request->getId(),
+                        Entity::NAME => $request->getName(),
+                    ]);
+        }
     }
 
     /**
@@ -295,18 +335,20 @@ class Core extends Base\Core
             Entity::TYPE => $input[Entity::TYPE]
         ];
 
+        $merchantId = $merchant->getId();
+
         $request = $this->repo
                         ->merchant_request
-                        ->fetch($fetchInput, $merchant->getId())
+                        ->fetch($fetchInput, $merchantId)
                         ->first();
 
         if (empty($request) === true)
         {
-            $input[Entity::MERCHANT_ID] = $merchant->getId();
+            $input[Entity::MERCHANT_ID] = $merchantId;
 
             $input[Entity::STATUS]      = Status::UNDER_REVIEW;
 
-            $request = $this->create($input);
+            $request = $this->create($input, $merchant);
         }
 
         return $request;
@@ -344,6 +386,7 @@ class Core extends Base\Core
      * @param string          $feature
      * @param string          $type
      * @param string          $requestStatus
+     * @param int             $statusDate
      *
      * @return Entity
      */
@@ -351,13 +394,34 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         string $feature,
         string $type,
-        string $requestStatus)
+        string $requestStatus,
+        int $statusDate = null)
     {
         $request = $this->findOrCreateMerchantRequest($merchant, [Entity::NAME => $feature, Entity::TYPE => $type]);
 
         if ($request->getStatus() !== $requestStatus)
         {
-            $request = $this->changeStatus($request, [Entity::STATUS => $requestStatus], false, false);
+            $request = $this->changeStatus(
+                            $request,
+                            [
+                                Entity::STATUS     => $requestStatus,
+                                Entity::CREATED_AT => $statusDate,
+                            ],
+                            false,
+                            false);
+        }
+        else if ($statusDate !== null)
+        {
+            //
+            // If the status is changed the date is handled in the above code block under the if condition
+            // If only the created_at date has to be updated (status unchanged), it is handled here.
+            //
+
+            $stateEntity = $this->repo->state->findLastMerchantRequestState($request);
+
+            $stateEntity->setCreatedAt($statusDate);
+
+            $this->repo->saveOrFail($stateEntity);
         }
 
         return $request;
@@ -455,6 +519,13 @@ class Core extends Base\Core
                 [$merchantRequest->getName()]);
         }
 
+        if ($merchantRequest->isPartnerRequest() === true)
+        {
+            $merchantCore = new Merchant\Core;
+
+            $returnData[Constants::SUBMISSIONS] = $merchantCore->getPartnerSubmissions($merchantRequest);
+        }
+
         return $returnData;
     }
 
@@ -523,15 +594,36 @@ class Core extends Base\Core
      */
     public function createMerchantRequest(array $input): Entity
     {
-        $validator = new Validator;
+        (new Validator)->validateCreateMerchantRequest($input);
 
-        $validator->validateInput('create_merchant_request', $input);
+        $type = $input[Entity::TYPE];
 
-        $validator->validateSubmissionsForProductType($input);
+        //
+        // @todo: Once the product activation requests are migrated to the merchant requests table,
+        // remove the flow with findOrCreateMerchantRequest function. Create a new request every time.
+        //
+        if ($type === Type::PRODUCT)
+        {
+            $request = $this->findOrCreateMerchantRequest($this->merchant, $input);
 
-        $validator->validateTypeAndProduct($input[Entity::TYPE], $input[Entity::NAME]);
+            return $request;
+        }
 
-        return $this->findOrCreateMerchantRequest($this->merchant, $input);
+        //
+        // Force set the database connection and mode to live.
+        // @todo Instead of forcing live connection, block requests from test connection
+        //
+        if (in_array($type, Type::$liveModeRequestTypes, true) === true)
+        {
+            $liveMode = $this->app['basicauth']->getLiveConnection();
+
+            // Sets the mode for the request, and database connection
+            $this->setModeAndDefaultConnection($liveMode);
+        }
+
+        $request = $this->create($input, $this->merchant);
+
+        return $request;
     }
 
     /**
@@ -556,6 +648,20 @@ class Core extends Base\Core
             {
                 try
                 {
+                    // The timestamp when the request status was updated
+                    $statusDate = (int) ($request[State\Entity::CREATED_AT] ?? null);
+
+                    if ((isset($request[State\Entity::CREATED_AT]) === true) and ($statusDate <= 0))
+                    {
+                        throw new Exception\LogicException(
+                            'The timestamp must be a valid epoch',
+                            null,
+                            [
+                                Entity::MERCHANT_ID      => $merchantId,
+                                State\Entity::CREATED_AT => $statusDate,
+                            ]);
+                    }
+
                     if (empty($merchant) === true)
                     {
                         throw new Exception\LogicException('Unknown Merchant, hence feature not updated');
@@ -565,7 +671,8 @@ class Core extends Base\Core
                         $merchant,
                         $request[Entity::NAME],
                         $request[Entity::TYPE],
-                        $request[Entity::STATUS]
+                        $request[Entity::STATUS],
+                        $statusDate
                     );
 
                     if (empty($response) === true)
@@ -680,5 +787,25 @@ class Core extends Base\Core
         $requestNeedsClarificationEmail = new RequestNeedsClarification($data);
 
         Mail::queue($requestNeedsClarificationEmail);
+    }
+
+    protected function postSubmissions(Entity $request, array $input, array $submissions)
+    {
+        if (empty($submissions) === true)
+        {
+            return;
+        }
+
+        switch (true)
+        {
+            case $request->isProductRequest():
+                (new Feature\Core)->postOnboardingSubmissions($request->merchant, $submissions, $input[Entity::NAME]);
+                break;
+
+            // Partner deactivation requests do not have any submissions to store
+            case $request->isPartnerActivationRequest():
+                (new Merchant\Core)->postPartnerSubmissions($request, $submissions);
+                break;
+        }
     }
 }

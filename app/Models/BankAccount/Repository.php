@@ -15,13 +15,13 @@ class Repository extends Base\Repository
 
     const WITH_TRASHED = 'deleted';
 
-    protected $appFetchParamRules = array(
+    protected $appFetchParamRules = [
         Entity::ACCOUNT_NUMBER  => 'sometimes|alpha_num',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         self::WITH_TRASHED      => 'sometimes|in:0,1',
         Entity::TYPE            => 'sometimes|in:customer,merchant',
         Entity::ENTITY_ID       => 'sometimes|alpha_num'
-    );
+    ];
 
     public function getBankAccount($merchant)
     {
@@ -29,6 +29,15 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_ID, '=', $merchant->getId())
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->first();
+    }
+
+    public function getBankAccountsForMerchants(array $mids, $columns = ['*'])
+    {
+        return $this->newQuery()
+                    ->select($columns)
+                    ->whereIn(Entity::ENTITY_ID, $mids)
+                    ->where(Entity::TYPE, Type::MERCHANT)
+                    ->get();
     }
 
     /**
@@ -82,18 +91,15 @@ class Repository extends Base\Repository
     public function findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode = null)
     {
         $virtualAccountId     = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
-        $virtualAccountStatus = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::STATUS);
 
         $bankAccountEntityId = $this->dbColumn(Entity::ENTITY_ID);
-        $bankAccountType     = $this->dbColumn(Entity::TYPE);
         $bankAccountData     = $this->dbColumn('*');
 
         $query = $this->newQuery()
                       ->select($bankAccountData)
                       ->join(Table::VIRTUAL_ACCOUNT, $bankAccountEntityId, '=', $virtualAccountId)
                       ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                      ->where(Entity::TYPE, '=', Type::VIRTUAL_ACCOUNT)
-                      ->where($virtualAccountStatus, '=', VirtualAccount\Status::ACTIVE);
+                      ->where(Entity::TYPE, '=', Type::VIRTUAL_ACCOUNT);
 
         if ($bankCode !== null)
         {
@@ -142,13 +148,19 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getAllActivatedMerchantAccountsOrderedByCreatedAt()
+    public function getAllActivatedMerchantAccountsOrderedByCreatedAt(array $merchantIds)
     {
-        return $this->newQuery()
-                    ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
-                    ->with(['source', 'source.merchantDetail'])
-                    ->oldest()
-                    ->get();
+        $query = $this->newQuery()
+                      ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
+                      ->with(['source', 'source.merchantDetail'])
+                      ->oldest();
+
+        if (empty($merchantIds) === false)
+        {
+            $query->whereIn(BankAccount\Entity::MERCHANT_ID, $merchantIds);
+        }
+
+        return $query->get();
     }
 
     public function getMerchantBankAccountsBetweenTimestamp($from, $to)

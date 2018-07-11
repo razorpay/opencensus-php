@@ -3,6 +3,7 @@
 namespace RZP\Http\Middleware;
 
 use Closure;
+use ApiResponse;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Error\ErrorCode;
@@ -38,10 +39,11 @@ class Workflow
         Permission::CREATE_PRICING_PLAN,
         Permission::CREATE_DISPUTE,
         Permission::EDIT_MERCHANT_BANK_DETAIL,
-        Permission::EDIT_MERCHANT_INVOICE_GSTIN,
+        Permission::MERCHANT_INVOICE_EDIT,
         Permission::CREATE_ADMIN,
         Permission::DELETE_ADMIN,
         Permission::EDIT_MERCHANT_REQUESTS,
+        Permission::UPDATE_PRICING_PLAN,
     ];
 
     protected $app;
@@ -135,7 +137,11 @@ class Workflow
              ->setEntity($entity)
              ->setPermission($permission);
 
-        return $this->app['workflow']->trigger();
+        // Workflow service returns array value
+        $response = $this->app['workflow']->trigger();
+
+        // Middleware must return instance of Response class
+        return ApiResponse::json($response);
     }
 
     private function getRoutePermission($routeName)

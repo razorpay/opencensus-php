@@ -25,6 +25,8 @@ class Core extends Base\Core
 
         $terminal = (new Entity)->build($input);
 
+        $terminal->merchant()->associate($merchant);
+
         $this->validateExistingTerminal($terminal);
 
         $this->repo->saveOrFail($terminal);
@@ -41,7 +43,9 @@ class Core extends Base\Core
                 'merchant_id' => $merchantId,
             ]);
 
-        $this->repo->terminal->removeMerchantFromTerminal($terminal, $merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->repo->terminal->removeMerchantFromTerminal($terminal, $merchant);
 
         return $terminal;
     }
@@ -58,7 +62,9 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL);
         }
 
-        $this->repo->terminal->addMerchantToTerminal($terminal, $merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->repo->terminal->addMerchantToTerminal($terminal, $merchant);
 
         $this->trace->info(
             TraceCode::TERMINAL_ADD_MERCHANT,
@@ -134,11 +140,11 @@ class Core extends Base\Core
 
     public function edit($terminal, $input)
     {
-        $this->validateExistingTerminal($terminal);
-
         if ((isset($input['restore'])) and
             ($input['restore'] === '1'))
         {
+            $this->validateExistingTerminal($terminal);
+
             $terminal->restoreOrFail();
         }
         else
@@ -151,6 +157,8 @@ class Core extends Base\Core
                 ]);
 
             $terminal->edit($input);
+
+            $this->validateExistingTerminal($terminal);
 
             $this->repo->saveOrFail($terminal);
         }
@@ -188,6 +196,8 @@ class Core extends Base\Core
         $terminal->getValidator()->validateExistingTerminalsCount($existingTerminals);
 
         $this->validateExistingTerminalGatewayMerchantId($terminal);
+
+        $this->validateExistingMpan($terminal);
     }
 
     public function createTerminalsInTestMode($merchant)
@@ -305,6 +315,8 @@ class Core extends Base\Core
 
         $existingTerminals = $this->repo->terminal->fetch($params);
 
+        // This check if this terminal is same as what
+        // we are trying to edit
         if ($existingTerminals->count() === 1)
         {
             $existingTerminal = $existingTerminals[0];
@@ -318,8 +330,82 @@ class Core extends Base\Core
         if ($existingTerminals->count() !== 0)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS,
+                ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
                 Entity::GATEWAY_MERCHANT_ID);
+        }
+    }
+
+    protected function validateExistingMpan(Entity $terminal)
+    {
+        $bharatQrNetworks = Payment\Gateway::getBharatQrCardNetworks();
+
+        foreach ($bharatQrNetworks as $bharatQrNetwork)
+        {
+            $mpanAttr = strtolower($bharatQrNetwork) . '_mpan';
+
+            if (empty($terminal[$mpanAttr]) === false)
+            {
+                $params =  [$mpanAttr => $terminal[$mpanAttr]];
+
+                $this->checkIfExists($params, $terminal, $mpanAttr);
+            }
+        }
+
+        if (empty($terminal->getVpa()) === false)
+        {
+            $params =  [Entity::VPA => $terminal->getVpa()];
+
+            $this->checkIfExists($params, $terminal, Entity::VPA);
+        }
+    }
+
+    protected function checkIfExists($params, Entity $terminal, string $field)
+    {
+        $existingTerminals = $this->repo->terminal->fetch($params);
+
+        // This check if this terminal is same as what
+        // we are trying to edit
+        if ($existingTerminals->count() === 1)
+        {
+            $existingTerminal = $existingTerminals[0];
+
+            if ($existingTerminal->getId() === $terminal->getId())
+            {
+                return;
+            }
+        }
+
+        //
+        // This condition in need in two cases.
+        // Add terminal and edit terminal.
+        //
+        // In case we are adding terminal assume we
+        // are trying to add master card mpan. If already
+        // terminal exists with the same mpan it will go to
+        // first condition where count is 1. Since id of new terminal
+        // is not generated yet it will be null. So the function
+        // won't return from equal id condition. And It will
+        // reach here. If the count is not equal to 0 it
+        // will throw exception.
+        //
+        // In case we are editing terminal, and we are trying to
+        // set the master card mpan to something for which terminal
+        // already exists the count will be again 1 when we fetch from
+        // repository. Now the id of terminal which we fetched and id
+        // of terminal which we are trying to edit will be different.
+        // so again it wouldn't return from the condition and will
+        // reach here and it will throw exception.
+        //
+        // In case we are trying to edit the lets say visa mpan.
+        // Now when we are checking for master card mpan repo will
+        // return same terminal which we are trying to edit. so it will
+        // return from id equality check.
+        //
+        if ($existingTerminals->count() !== 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
+                $field);
         }
     }
 

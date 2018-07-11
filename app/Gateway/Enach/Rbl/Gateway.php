@@ -10,8 +10,10 @@ use RZP\Constants\Mode;
 use phpseclib\Crypt\AES;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Enach\Base;
+use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -23,7 +25,48 @@ class Gateway extends Base\Gateway
 
         $input['gateway'] = $this->getGatewayInput($input);
 
-        return $this->callAuthenticationGateway($input);
+        $content = [
+            Base\Entity::REGISTRATION_DATE => $input['gateway']['next_working_dt']->getTimestamp()
+        ];
+
+        try
+        {
+            $authenticationResponse = $this->callAuthenticationGateway($input);
+
+            $content[Base\Entity::GATEWAY_REFERENCE_ID] = $authenticationResponse['content']['reference_id'];
+
+            $this->createGatewayPaymentEntity($content, 'authorize');
+
+            unset($authenticationResponse['content']['reference_id']);
+        }
+
+        catch (Exception\GatewayErrorException $e)
+        {
+            $responseArrary = $e->getData();
+
+            $content[Base\Entity::ERROR_CODE] = $responseArrary['code'] ?? null;
+
+            $content[Base\Entity::ERROR_MESSAGE] = $responseArrary['message'] ?? null;
+
+            $content[Base\Entity::GATEWAY_REFERENCE_ID] = $responseArrary['details'] ?? null;
+
+            if ($content[Base\Entity::GATEWAY_REFERENCE_ID] !== null)
+            {
+                $this->createGatewayPaymentEntity($content, 'authorize');
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_AUTH_ESIGN_FAILURE,
+                    [
+                        'response' => $content
+                    ]);
+            }
+
+            throw $e;
+        }
+
+        return $authenticationResponse;
     }
 
     public function callback(array $input)
@@ -32,7 +75,12 @@ class Gateway extends Base\Gateway
 
         $authResponse = $this->callAuthenticationGateway($input);
 
-        $this->createGatewayPaymentEntity($authResponse, 'authorize');
+        $enach = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'],
+            Action::AUTHORIZE
+        );
+
+        $this->updateGatewayPaymentEntity($enach, $authResponse, false);
 
         $data = [];
 

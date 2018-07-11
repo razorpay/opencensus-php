@@ -6,62 +6,73 @@ use RZP\Models\Merchant\Detail as MerchantDetail;
 
 class Constants
 {
-    const ENTITY_IDS                    = 'entity_ids';
-    const NAMES                         = 'names';
-    const DUMMY                         = 'dummy';
-    const WEBHOOKS                      = 'webhooks';
-    const AGGREGATOR                    = 'aggregator';
-    const TOKENS                        = 'tokens';
-    const S2SWALLET                     = 's2swallet';
-    const S2SUPI                        = 's2supi';
-    const S2SAEPS                       = 's2saeps';
-    const SETL_REPORT                   = 'setl_report';
-    const NOFLASHCHECKOUT               = 'noflashcheckout';
-    const RECURRING                     = 'recurring';
-    const S2S                           = 's2s';
-    const INVOICE                       = 'invoice';
-    const NOZEROPRICING                 = 'nozeropricing';
-    const REVERSE                       = 'reverse';
-    const BROKING_REPORT                = 'broking_report';
-    const DSP_REPORT                    = 'dsp_report';
-    const RPP_REPORT                    = 'rpp_report';
-    const AGGREGATOR_REPORT             = 'aggregator_report';
-    const PAYMENT_EMAIL_FETCH           = 'payment_email_fetch';
-    const CREATED_FLOW                  = 'created_flow';
-    const PAYOUT                        = 'payout';
-    const OPENWALLET                    = 'openwallet';
-    const MARKETPLACE                   = 'marketplace';
-    const EMAIL_OPTIONAL                = 'email_optional';
-    const CONTACT_OPTIONAL              = 'contact_optional';
-    const SUBSCRIPTIONS                 = 'subscriptions';
-    const ZOHO                          = 'zoho';
-    const EXPOSE_DOWNTIMES              = 'expose_downtimes';
-    const PAYMENT_FAILURE_EMAIL         = 'payment_failure_email';
-    const VIRTUAL_ACCOUNTS              = 'virtual_accounts';
-    const INVOICE_PARTIAL_PAYMENTS      = 'invoice_partial_payments';
-    const HIDE_DOWNTIMES                = 'hide_downtimes';
-    const OLD_CREDITS_FLOW              = 'old_credits_flow';
-    const CHARGE_AT_WILL                = 'charge_at_will';
-    const E_MANDATE                     = 'e_mandate';
-    const EMI_MERCHANT_SUBVENTION       = 'emi_merchant_subvention';
-    const FSS_RISK_UDF                  = 'fss_risk_udf';
-    const RULE_FILTER                   = 'rule_filter';
-    const TPV                           = 'tpv';
-    const IRCTC_REPORT                  = 'irctc_report';
-    const DISABLE_MAESTRO               = 'disable_maestro';
-    const DISABLE_RUPAY                 = 'disable_rupay';
-    const BLOCK_INTERNATIONAL_RECURRING = 'block_intl_recurring';
-    const BHARAT_QR                     = 'bharat_qr';
-    const MOBIKWIK_OFFERS               = 'mobikwik_offers';
-    const ALLOW_DC_RECURRING            = 'allow_dc_recurring';
-    const SKIP_HOLD_FUNDS_ON_PAYOUT     = 'skip_hold_funds_on_payout';
-    const REPORT_V2                     = 'report_v2';
-    const CORPORATE_BANKS               = 'corporate_banks';
-    const MAGIC                         = 'magic';
-    const NEW_ANALYTICS                 = 'new_analytics';
-    const DAILY_SETTLEMENT              = 'daily_settlement';
-    const DISABLE_UPI_INTENT            = 'disable_upi_intent';
-    const ALLOW_S2S_APPS                = 'allow_s2s_apps';
+    const ENTITY_IDS                      = 'entity_ids';
+    const NAMES                           = 'names';
+    const DUMMY                           = 'dummy';
+    const WEBHOOKS                        = 'webhooks';
+    const AGGREGATOR                      = 'aggregator';
+    const TOKENS                          = 'tokens';
+    const S2SWALLET                       = 's2swallet';
+    const S2SUPI                          = 's2supi';
+    const S2SAEPS                         = 's2saeps';
+    const SETL_REPORT                     = 'setl_report';
+    const NOFLASHCHECKOUT                 = 'noflashcheckout';
+    const RECURRING                       = 'recurring';
+    const S2S                             = 's2s';
+    const INVOICE                         = 'invoice';
+    const NOZEROPRICING                   = 'nozeropricing';
+    const REVERSE                         = 'reverse';
+    const BROKING_REPORT                  = 'broking_report';
+    const DSP_REPORT                      = 'dsp_report';
+    const RPP_REPORT                      = 'rpp_report';
+    const AGGREGATOR_REPORT               = 'aggregator_report';
+    const PAYMENT_EMAIL_FETCH             = 'payment_email_fetch';
+    const CREATED_FLOW                    = 'created_flow';
+    const PAYOUT                          = 'payout';
+    const OPENWALLET                      = 'openwallet';
+    const MARKETPLACE                     = 'marketplace';
+    const EMAIL_OPTIONAL                  = 'email_optional';
+    const CONTACT_OPTIONAL                = 'contact_optional';
+    const SUBSCRIPTIONS                   = 'subscriptions';
+    const ZOHO                            = 'zoho';
+    const EXPOSE_DOWNTIMES                = 'expose_downtimes';
+    const PAYMENT_FAILURE_EMAIL           = 'payment_failure_email';
+    const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
+    const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
+    const HIDE_DOWNTIMES                  = 'hide_downtimes';
+    const OLD_CREDITS_FLOW                = 'old_credits_flow';
+    const CHARGE_AT_WILL                  = 'charge_at_will';
+    const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
+    const FSS_RISK_UDF                    = 'fss_risk_udf';
+    const RULE_FILTER                     = 'rule_filter';
+    const TPV                             = 'tpv';
+    const IRCTC_REPORT                    = 'irctc_report';
+    const DISABLE_MAESTRO                 = 'disable_maestro';
+    const DISABLE_RUPAY                   = 'disable_rupay';
+    const BLOCK_INTERNATIONAL_RECURRING   = 'block_intl_recurring';
+    const BHARAT_QR                       = 'bharat_qr';
+    const MOBIKWIK_OFFERS                 = 'mobikwik_offers';
+    const ALLOW_DC_RECURRING              = 'allow_dc_recurring';
+    const ALLOW_ALL_DC_RECURRING          = 'allow_all_dc_recurring';
+    const SKIP_HOLD_FUNDS_ON_PAYOUT       = 'skip_hold_funds_on_payout';
+    const REPORT_V2                       = 'report_v2';
+    const CORPORATE_BANKS                 = 'corporate_banks';
+    const MAGIC                           = 'magic';
+    const NEW_ANALYTICS                   = 'new_analytics';
+    const DAILY_SETTLEMENT                = 'daily_settlement';
+    const DISABLE_UPI_INTENT              = 'disable_upi_intent';
+    const DIRECT_DEBIT                    = 'direct_debit';
+    const ALLOW_S2S_APPS                  = 'allow_s2s_apps';
+    const UPI_PLUS                        = 'upi_plus';
+    const FSS_IPAY                        = 'fss_ipay';
+    const EXPOSE_CARD_EXPIRY              = 'expose_card_expiry';
+    const EXPOSE_CARD_IIN                 = 'expose_card_iin';
+    const S2S_OPTIONAL_DATA               = 's2s_optional_data';
+    const PARTNER                         = 'partner';
+    const OTPELF                          = 'otpelf';
+    const PAYMENT_NOBRANDING              = 'payment_nobranding';
+    const ENABLE_VPA_VALIDATE             = 'enable_vpa_validate';
+    const ALLOW_SUBMERCHANT_WITHOUT_EMAIL = 'allow_sub_without_email';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -79,6 +90,11 @@ class Constants
         self::SUBSCRIPTIONS,
     ];
 
+    public static $debitRecurringFeatures = [
+        self::ALLOW_ALL_DC_RECURRING,
+        self::ALLOW_DC_RECURRING
+    ];
+
     // TODO: Use this instead of allFeatures once in final code change pr
     /**
      * This map defines the feature's value when it is added through an incoming request (add/remove feature request).
@@ -91,62 +107,73 @@ class Constants
      * @var array
      */
     public static $featureValueMap = [
-        self::DUMMY                         => true,
-        self::WEBHOOKS                      => true,
-        self::AGGREGATOR                    => true,
-        self::TOKENS                        => true,
-        self::S2SWALLET                     => true,
-        self::S2SUPI                        => true,
-        self::S2SAEPS                       => true,
-        self::NOFLASHCHECKOUT               => true,
-        self::RECURRING                     => true,
-        self::S2S                           => true,
-        self::INVOICE                       => true,
-        self::NOZEROPRICING                 => false,
-        self::REVERSE                       => true,
-        self::BROKING_REPORT                => true,
-        self::DSP_REPORT                    => true,
-        self::RPP_REPORT                    => true,
-        self::AGGREGATOR_REPORT             => true,
-        self::PAYMENT_EMAIL_FETCH           => true,
-        self::CREATED_FLOW                  => true,
-        self::PAYOUT                        => true,
-        self::OPENWALLET                    => true,
-        self::MARKETPLACE                   => true,
-        self::EMAIL_OPTIONAL                => true,
-        self::CONTACT_OPTIONAL              => true,
-        self::SUBSCRIPTIONS                 => true,
-        self::ZOHO                          => true,
-        self::EXPOSE_DOWNTIMES              => true,
-        self::PAYMENT_FAILURE_EMAIL         => true,
-        self::VIRTUAL_ACCOUNTS              => true,
-        self::INVOICE_PARTIAL_PAYMENTS      => true,
-        self::HIDE_DOWNTIMES                => true,
-        self::OLD_CREDITS_FLOW              => true,
-        self::CHARGE_AT_WILL                => true,
-        self::E_MANDATE                     => true,
-        self::EMI_MERCHANT_SUBVENTION       => true,
-        self::FSS_RISK_UDF                  => true,
-        self::RULE_FILTER                   => true,
-        self::TPV                           => true,
-        self::IRCTC_REPORT                  => true,
-        self::DISABLE_MAESTRO               => true,
-        self::DISABLE_RUPAY                 => true,
-        self::BLOCK_INTERNATIONAL_RECURRING => false,
-        self::BHARAT_QR                     => true,
-        self::MOBIKWIK_OFFERS               => true,
-        self::ALLOW_DC_RECURRING            => true,
-        self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
-        self::REPORT_V2                     => true,
-        self::CORPORATE_BANKS               => true,
-        self::ORDER_ID_MANDATORY            => true,
-        self::ORDER_RECEIPT_UNIQUE          => true,
-        self::MAGIC                         => true,
-        self::NEW_ANALYTICS                 => true,
-        self::DAILY_SETTLEMENT              => true,
-        self::DISABLE_UPI_INTENT            => true,
-        self::ATM_PIN_AUTH                  => true,
-        self::ALLOW_S2S_APPS                => true,
+        self::DUMMY                           => true,
+        self::WEBHOOKS                        => true,
+        self::AGGREGATOR                      => true,
+        self::TOKENS                          => true,
+        self::S2SWALLET                       => true,
+        self::S2SUPI                          => true,
+        self::S2SAEPS                         => true,
+        self::NOFLASHCHECKOUT                 => true,
+        self::RECURRING                       => true,
+        self::S2S                             => true,
+        self::INVOICE                         => true,
+        self::NOZEROPRICING                   => false,
+        self::REVERSE                         => true,
+        self::BROKING_REPORT                  => true,
+        self::DSP_REPORT                      => true,
+        self::RPP_REPORT                      => true,
+        self::AGGREGATOR_REPORT               => true,
+        self::PAYMENT_EMAIL_FETCH             => true,
+        self::CREATED_FLOW                    => true,
+        self::PAYOUT                          => true,
+        self::OPENWALLET                      => true,
+        self::MARKETPLACE                     => true,
+        self::EMAIL_OPTIONAL                  => true,
+        self::CONTACT_OPTIONAL                => true,
+        self::SUBSCRIPTIONS                   => true,
+        self::ZOHO                            => true,
+        self::EXPOSE_DOWNTIMES                => true,
+        self::PAYMENT_FAILURE_EMAIL           => true,
+        self::VIRTUAL_ACCOUNTS                => true,
+        self::INVOICE_PARTIAL_PAYMENTS        => true,
+        self::HIDE_DOWNTIMES                  => true,
+        self::OLD_CREDITS_FLOW                => true,
+        self::CHARGE_AT_WILL                  => true,
+        self::EMI_MERCHANT_SUBVENTION         => true,
+        self::FSS_RISK_UDF                    => true,
+        self::RULE_FILTER                     => true,
+        self::TPV                             => true,
+        self::IRCTC_REPORT                    => true,
+        self::DISABLE_MAESTRO                 => true,
+        self::DISABLE_RUPAY                   => true,
+        self::BLOCK_INTERNATIONAL_RECURRING   => false,
+        self::BHARAT_QR                       => true,
+        self::MOBIKWIK_OFFERS                 => true,
+        self::ALLOW_DC_RECURRING              => true,
+        self::ALLOW_ALL_DC_RECURRING          => true,
+        self::SKIP_HOLD_FUNDS_ON_PAYOUT       => true,
+        self::REPORT_V2                       => true,
+        self::CORPORATE_BANKS                 => true,
+        self::ORDER_ID_MANDATORY              => true,
+        self::ORDER_RECEIPT_UNIQUE            => true,
+        self::MAGIC                           => true,
+        self::NEW_ANALYTICS                   => true,
+        self::DAILY_SETTLEMENT                => true,
+        self::DISABLE_UPI_INTENT              => true,
+        self::ATM_PIN_AUTH                    => true,
+        self::ALLOW_S2S_APPS                  => true,
+        self::UPI_PLUS                        => true,
+        self::FSS_IPAY                        => true,
+        self::DIRECT_DEBIT                    => true,
+        self::EXPOSE_CARD_EXPIRY              => true,
+        self::EXPOSE_CARD_IIN                 => true,
+        self::S2S_OPTIONAL_DATA               => true,
+        self::PARTNER                         => true,
+        self::PAYMENT_NOBRANDING              => true,
+        self::OTPELF                          => true,
+        self::ENABLE_VPA_VALIDATE             => true,
+        self::ALLOW_SUBMERCHANT_WITHOUT_EMAIL => true,
     ];
 
     // Entity type constants
@@ -217,11 +244,6 @@ class Constants
             'display_name'  => 'Report V2',
             'documentation' => ''
         ],
-        self::E_MANDATE => [
-            'feature'   => self::E_MANDATE,
-            'display_name'  => 'E-Mandate',
-            'documentation' => '',
-        ]
     ];
 
     /*

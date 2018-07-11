@@ -27,9 +27,10 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::NAME                => 'sometimes|filled|string|max:50',
         Entity::PAYMENT_METHOD      => 'filled|alpha|custom',
-        Entity::PAYMENT_METHOD_TYPE => 'filled|in:debit,credit',
+        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emi|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'filled|alpha',
-        Entity::ISSUER              => 'filled|alpha|custom',
+        Entity::ISSUER              => 'filled|string|custom',
+        Entity::INTERNATIONAL       => 'sometimes_if:payment_method,card,emi|boolean',
         Entity::IINS                => 'filled|array',
         Entity::PERCENT_RATE        => 'filled|integer|min:0|max:10000',
         Entity::MAX_CASHBACK        => 'filled|integer|min:0',
@@ -53,6 +54,7 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_COUNT  => 'filled|integer|min:1',
         Entity::LINKED_OFFER_IDS   => 'filled|array',
         Entity::ACTIVE             => 'filled|in:0',
+        Entity::ENDS_AT            => 'filled|epoch',
         Entity::DISPLAY_TEXT       => 'filled|string|max:255',
         Entity::ERROR_MESSAGE      => 'filled|string|max:255',
         Entity::TERMS              => 'filled|string'
@@ -66,21 +68,22 @@ class Validator extends Base\Validator
         Entity::FLAT_CASHBACK,
         Entity::MAX_PAYMENT_COUNT,
         Entity::LINKED_OFFER_IDS,
+        Entity::MAX_CASHBACK,
     ];
 
     protected static $editValidators = [
         Entity::IINS,
         Entity::MAX_PAYMENT_COUNT,
-        Entity::LINKED_OFFER_IDS
+        Entity::LINKED_OFFER_IDS,
     ];
 
     protected function validatePaymentNetwork(array $input)
     {
-        $network = $input[Entity::PAYMENT_NETWORK] ?? null;
+        $networkCode = $input[Entity::PAYMENT_NETWORK] ?? null;
 
         $method = $input[Entity::PAYMENT_METHOD] ?? null;
 
-        if (empty($network) === true)
+        if (empty($networkCode) === true)
         {
             return;
         }
@@ -92,13 +95,13 @@ class Validator extends Base\Validator
                 "Payment network should be sent only for card offers");
         }
 
-        if (Network::isValidNetwork($network) === false)
+        if (Network::isValidNetworkCode($networkCode) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Payment network for card should be a valid card network');
+                'Payment network for card should be a valid card network code');
         }
 
-        if (Network::isUnsupportedNetwork($network) === true)
+        if (Network::isUnsupportedNetwork($networkCode) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'This card payment network is not supported');
@@ -160,12 +163,38 @@ class Validator extends Base\Validator
 
     protected function validateFlatCashback(array $input)
     {
-        if ((isset($input[Entity::FLAT_CASHBACK]) === true) and
-            ((isset($input[Entity::PERCENT_RATE]) === true) or
-             (isset($input[Entity::MAX_CASHBACK]) === true)))
+        if (isset($input[Entity::FLAT_CASHBACK]) === false)
+        {
+            return;
+        }
+
+        if ((isset($input[Entity::PERCENT_RATE]) === true) or
+             (isset($input[Entity::MAX_CASHBACK]) === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK);
+        }
+
+        if ((isset($input[Entity::MIN_AMOUNT]) === true) and
+            ($input[Entity::FLAT_CASHBACK] > $input[Entity::MIN_AMOUNT]))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Flat cashback cannot be greater than minimum amount', null, [
+                    Entity::FLAT_CASHBACK => $input[Entity::FLAT_CASHBACK],
+                    Entity::MIN_AMOUNT    => $input[Entity::MIN_AMOUNT],
+                ]);
+        }
+    }
+
+    protected function validateMaxCashback(array $input)
+    {
+        if ((isset($input[Entity::MAX_CASHBACK]) === true) and
+            (isset($input[Entity::PERCENT_RATE]) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MAX_CASHBACK_WITHOUT_PERCENT_RATE, null, [
+                    'attributes' => Entity::PERCENT_RATE,
+                ]);
         }
     }
 
@@ -190,7 +219,7 @@ class Validator extends Base\Validator
         if (is_associative_array($iins) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                        'Iins should be a valid array');
+                'IINs should be a valid array');
         }
 
         $paymentMethod = $input[Entity::PAYMENT_METHOD] ?? $this->entity->getPaymentMethod();
@@ -205,7 +234,18 @@ class Validator extends Base\Validator
         if (in_array($paymentMethod, $allowedPaymentMethods, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Iins can be only edited for card / emi offer');
+                'IINs can be only edited for card / emi offer');
+        }
+
+        $invalidIin = array_first($iins, function ($iin)
+        {
+            return strlen($iin) != 6;
+        });
+
+        if (empty($invalidIin) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid IIN : All IINs should have exactly 6 digits');
         }
     }
 
@@ -245,7 +285,7 @@ class Validator extends Base\Validator
         if (is_associative_array($linkedOfferIds) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                        'linked_offer_ids should be a valid array');
+                'linked_offer_ids should be a valid array');
         }
 
         // Checks if the offer on which we are linking offer ids has the max_payment_count attribute
@@ -254,8 +294,7 @@ class Validator extends Base\Validator
         if (empty($maxPaymentCount) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                        'linked_offer_ids can only be set for offer with max_payment_count');
-
+                'linked_offer_ids can only be set for offer with max_payment_count');
         }
 
         // Checks if all the linked offer ids belong to the merchant
@@ -266,7 +305,7 @@ class Validator extends Base\Validator
         if (empty($result) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                        'Linked offer ids submitted are not valid');
+                'Linked offer ids submitted are not valid');
         }
     }
 }

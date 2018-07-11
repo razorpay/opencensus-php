@@ -36,6 +36,9 @@ class Event
     const SETTLEMENT_PROCESSED      = 'settlement.processed';
     const VIRTUAL_ACCOUNT_CREDITED  = 'virtual_account.credited';
     const VIRTUAL_ACCOUNT_CREATED   = 'virtual_account.created';
+    const PAYMENT_DISPUTE_WON       = 'payment.dispute.won';
+    const PAYMENT_DISPUTE_LOST      = 'payment.dispute.lost';
+    const PAYMENT_DISPUTE_CLOSED    = 'payment.dispute.closed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -62,6 +65,9 @@ class Event
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
+        self::PAYMENT_DISPUTE_WON,
+        self::PAYMENT_DISPUTE_LOST,
+        self::PAYMENT_DISPUTE_CLOSED,
     ];
 
     /**
@@ -94,6 +100,9 @@ class Event
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
+        self::PAYMENT_DISPUTE_WON,
+        self::PAYMENT_DISPUTE_LOST,
+        self::PAYMENT_DISPUTE_CLOSED,
     ];
 
     protected static $bitPosition = [
@@ -121,6 +130,9 @@ class Event
         self::PAYMENT_DISPUTE_CREATED   => 22,
         self::VIRTUAL_ACCOUNT_CREDITED  => 23,
         self::VIRTUAL_ACCOUNT_CREATED   => 24,
+        self::PAYMENT_DISPUTE_WON       => 25,
+        self::PAYMENT_DISPUTE_LOST      => 26,
+        self::PAYMENT_DISPUTE_CLOSED    => 27,
     ];
 
     /**
@@ -153,6 +165,9 @@ class Event
         self::SETTLEMENT_PROCESSED,
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
+        self::PAYMENT_DISPUTE_WON,
+        self::PAYMENT_DISPUTE_LOST,
+        self::PAYMENT_DISPUTE_CLOSED,
     ];
 
     /**
@@ -182,6 +197,9 @@ class Event
         self::TOKEN_CONFIRMED           => Entity::TOKEN,
         self::TOKEN_REJECTED            => Entity::TOKEN,
         self::SETTLEMENT_PROCESSED      => Entity::SETTLEMENT,
+        self::PAYMENT_DISPUTE_WON       => Entity::DISPUTE,
+        self::PAYMENT_DISPUTE_LOST      => Entity::DISPUTE,
+        self::PAYMENT_DISPUTE_CLOSED    => Entity::DISPUTE,
     ];
 
     public static $eventsToFeatureMap = [
@@ -192,11 +210,11 @@ class Event
         self::SUBSCRIPTION_CANCELLED    => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_COMPLETED    => Feature\Constants::SUBSCRIPTIONS,
         // self::SUBSCRIPTION_EXPIRED      => Feature\Constants::SUBSCRIPTIONS,
-        self::INVOICE_PARTIALLY_PAID    => Feature\Constants::INVOICE_PARTIAL_PAYMENTS,
-        self::TOKEN_CONFIRMED           => Feature\Constants::E_MANDATE,
-        self::TOKEN_REJECTED            => Feature\Constants::E_MANDATE,
+        self::TOKEN_CONFIRMED           => Feature\Constants::CHARGE_AT_WILL,
+        self::TOKEN_REJECTED            => Feature\Constants::CHARGE_AT_WILL,
         self::VIRTUAL_ACCOUNT_CREDITED  => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::VIRTUAL_ACCOUNT_CREATED   => Feature\Constants::VIRTUAL_ACCOUNTS,
+        self::SETTLEMENT_PROCESSED      => Feature\Constants::MARKETPLACE,
     ];
 
     /**

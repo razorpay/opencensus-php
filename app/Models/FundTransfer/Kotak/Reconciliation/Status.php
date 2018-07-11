@@ -3,7 +3,6 @@
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation;
 
 use RZP\Models\FundTransfer\Base\Reconciliation\Status as BaseStatus;
-use RZP\Models\FundTransfer\Kotak\Headings;
 
 class Status extends BaseStatus
 {
@@ -12,9 +11,7 @@ class Status extends BaseStatus
 
     public static function getSuccessfulStatus(): array
     {
-        return [
-            self::PROCESSED
-        ];
+        return [];
     }
 
     public static function getFailureStatus(): array
@@ -22,5 +19,15 @@ class Status extends BaseStatus
         return [
             self::CANCELLED
         ];
+    }
+
+    public static function getCriticalErrorStatus(): array
+    {
+        return [];
+    }
+
+    public static function getCriticalErrorRemarks(): array
+    {
+        return [];
     }
 }

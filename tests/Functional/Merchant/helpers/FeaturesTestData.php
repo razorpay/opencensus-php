@@ -11,7 +11,7 @@ return [
             'content' => [
                 'features'      => [ ],
             ],
-            'url' => '/merchants/10000000000000/features',
+            'url' => '/merchants/me/features',
             'method' => 'post',
             'server' => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -338,7 +338,7 @@ return [
 
     'testGetFeaturesAsMerchant' => [
         'request' => [
-            'url' => '/merchants/10000000000000/features',
+            'url' => '/merchants/me/features',
             'method' => 'get'
         ],
         'response' => [
@@ -378,7 +378,7 @@ return [
                 ],
                 'optout_reason' => 'some reason'
             ],
-            'url' => '/merchants/10000000000000/features',
+            'url' => '/merchants/me/features',
             'method' => 'post',
             'server' => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -398,7 +398,7 @@ return [
                     'dummy' => '1'
                 ]
             ],
-            'url' => '/merchants/10000000000000/features',
+            'url' => '/merchants/me/features',
             'method' => 'post'
         ],
         'response' => [
@@ -489,7 +489,7 @@ return [
                     'marketplace' => '1',
                 ]
             ],
-            'url' => '/merchants/10000000000000/features',
+            'url' => '/merchants/me/features',
             'method' => 'post',
             'server' => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -615,7 +615,6 @@ return [
                     'hide_downtimes',
                     'old_credits_flow',
                     'charge_at_will',
-                    'e_mandate',
                     'emi_merchant_subvention',
                     'fss_risk_udf',
                     'rule_filter',
@@ -770,6 +769,29 @@ return [
                 ]
             ],
             'status_code' => 400,
+        ],
+    ],
+
+    'testAddNonVisibleFeatureToAccount' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/accounts/me/features',
+            'content' => [
+                'names' => ['dummy'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
         ],
     ],
 ];

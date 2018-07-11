@@ -3,9 +3,12 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Airtel;
 
 use Carbon\Carbon;
+use RZP\Gateway\Base\Action;
 use RZP\Models\Terminal\Options;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Gateway\Netbanking\Airtel\AuthFields;
+use RZP\Gateway\Netbanking\Base\Entity;
 
 class NetbankingAirtelGatewayTest extends TestCase
 {
@@ -41,6 +44,24 @@ class NetbankingAirtelGatewayTest extends TestCase
 
         $this->assertTrue(filter_var($gatewayPayment['bank_payment_id'],
             FILTER_VALIDATE_INT) !== false);
+    }
+
+    public function testAmountTampering()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'callback')
+            {
+                $content['TRAN_AMT'] = '100';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
     }
 
     public function testPaymentVerify()
@@ -247,6 +268,27 @@ class NetbankingAirtelGatewayTest extends TestCase
         $refund = $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
 
         $this->assertSame($refund['payment_id'], $payment['razorpay_payment_id']);
+    }
+
+    public function testPaymentCallbackLongErrorMessage()
+    {
+	    $errorMessage = str_random(280);
+
+		$this->mockServerContentFunction(function(&$content, $action = null) use($errorMessage)
+			{
+				if ($action === Action::CALLBACK)
+				{
+					$content[AuthFields::MSG] = $errorMessage;
+				}
+			});
+
+	    $this->doAuthPayment($this->payment);
+
+	    $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+	    $expectedErrorMessage = substr($errorMessage, 0, 255);
+
+	    $this->assertEquals($expectedErrorMessage, $gatewayEntity[Entity::ERROR_MESSAGE]);
     }
 
     protected function mockSetVerifyTransactionId()

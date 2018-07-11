@@ -3471,7 +3471,656 @@ ALTER TABLE enach
 ALTER TABLE invoices
     ADD COLUMN customer_shipping_addr_id CHAR(14) DEFAULT NULL AFTER customer_billing_addr_id,
     ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
+    
+ALTER TABLE enach
+    ADD COLUMN registration_date INTEGER UNSIGNED AFTER registration_status,
+    ADD INDEX enach_registration_date_index (registration_date);
 
+//Atom Entity refactor
+
+ALTER TABLE atom DROP FOREIGN KEY atom_id_foreign;
+
+ALTER TABLE atom DROP PRIMARY KEY;
+
+ALTER TABLE atom CHANGE id payment_id CHAR(14);
+
+ALTER TABLE atom ADD id int(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST;
+
+ALTER TABLE atom ADD CONSTRAINT atom_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments(id);
+
+ALTER TABLE atom
+    ADD COLUMN refund_id CHAR(14) DEFAULT NULL AFTER payment_id,
+    ADD COLUMN action VARCHAR(64) AFTER refund_id,
+    ADD COLUMN received TINYINT(1) NOT NULL DEFAULT 0 AFTER action,
+    ADD COLUMN amount VARCHAR(10) NOT NULL DEFAULT 0 AFTER received,
+    ADD COLUMN status VARCHAR(64) DEFAULT NULL AFTER amount,
+    ADD COLUMN account_number VARCHAR(50) DEFAULT NULL AFTER status,
+    ADD COLUMN error_code VARCHAR(255) DEFAULT NULL AFTER method,
+    ADD INDEX atom_bank_payment_id_index (bank_payment_id),
+    ADD CONSTRAINT atom_refund_id_foreign FOREIGN KEY (refund_id) REFERENCES refunds(id),
+    MODIFY COLUMN gateway_payment_id int(11) DEFAULT NULL,
+    MODIFY COLUMN token char(75) DEFAULT NULL,
+    MODIFY COLUMN `payment_id` char(14) NOT NULL;
+
+ALTER TABLE atom MODIFY COLUMN gateway_payment_id VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE `merchant_details`
+    ADD COLUMN `business_category` VARCHAR(255) DEFAULT NULL AFTER `company_pan_name`,
+    ADD COLUMN `business_subcategory` VARCHAR(255) DEFAULT NULL AFTER `business_category`;
+
+ALTER TABLE payments drop foreign key payments_app_id_foreign,
+                     rename index payments_app_id_foreign TO payments_receiver_id_index,
+                     change app_id receiver_id varchar(14),
+                     change reference8 receiver_type varchar(255);
+
+# Renaming to batch_id
+ALTER TABLE payments
+    CHANGE reference7 batch_id VARCHAR(255);
+
+ALTER TABLE settlements
+    ADD INDEX settlements_channel_index (channel);
+
+ALTER TABLE pricing
+    ADD COLUMN receiver_type varchar(255) DEFAULT NULL AFTER international;
+
+# Invoice GST changes
+ALTER TABLE merchants
+    ADD COLUMN invoice_label_field varchar(50) DEFAULT NULL AFTER logo_url;
+
+ALTER TABLE invoices
+    ADD COLUMN merchant_label varchar(255) DEFAULT NULL AFTER customer_gstin;
+
+ALTER TABLE terminals
+    ADD COLUMN mastercard_mpan varchar(16) DEFAULT NULL after gateway_client_certificate,
+    ADD COLUMN visa_mpan varchar(16) DEFAULT NULL after mastercard_mpan,
+    ADD COLUMN rupay_mpan varchar(16) DEFAULT NULL after visa_mpan,
+    ADD COLUMN vpa varchar(255) DEFAULT NULL after rupay_mpan,
+    ADD INDEX terminals_mastercard_mpan_index (mastercard_mpan),
+    ADD INDEX terminals_visa_mpan_index (visa_mpan),
+    ADD INDEX terminals_rupay_mpan_index (rupay_mpan),
+    ADD INDEX terminals_vpa_index (vpa);
+
+ALTER TABLE terminals
+    CHANGE mastercard_mpan mc_mpan varchar(16),
+    rename index terminals_mastercard_mpan_index to terminals_mc_mpan_index;
+
+ALTER TABLE terminals
+    ADD COLUMN gateway_terminal_password2 text DEFAULT NULL AFTER gateway_terminal_password,
+    ADD COLUMN gateway_secure_secret2 VARCHAR(255) DEFAULT NULL AFTER gateway_secure_secret;
+
+ALTER TABLE payments
+    ADD INDEX `payments_merchant_id_captured_at_index` (merchant_id, captured_at);
+
+ALTER TABLE invoices
+    ADD COLUMN supply_state_code CHAR(4) DEFAULT NULL AFTER merchant_label;
+
+ALTER TABLE card_fss MODIFY COLUMN status VARCHAR(255) DEFAULT NULL;
+
+DROP INDEX `card_fss_status_index` on `card_fss`; CREATE INDEX `card_fss_status_index` ON card_fss (status(50));
+
+ALTER TABLE line_items
+    ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
+
+Alter table terminals
+    Modify column type integer default '1';
+
+ALTER TABLE invoices
+    ADD COLUMN merchant_gstin VARCHAR(20) DEFAULT NULL AFTER customer_gstin;
+
+ALTER TABLE webhooks
+    ADD COLUMN disable_on_failure TINYINT(1) NOT NULL DEFAULT 1 AFTER active;
+
+ALTER TABLE offers
+    ADD COLUMN international TINYINT(1) DEFAULT NULL AFTER issuer;
+
+ALTER TABLE terminals
+    ADD COLUMN expected BOOLEAN DEFAULT 0 NOT NULL after corporate;
+
+ALTER TABLE qr_code
+    ADD COLUMN reference varchar(255) DEFAULT NULL after merchant_id,
+    ADD INDEX `qr_code_reference_index` (reference),
+    MODIFY COLUMN qr_string TEXT DEFAULT NULL,
+    MODIFY COLUMN short_url varchar(255) DEFAULT NULL;
+
+ALTER TABLE orders
+    ADD COLUMN reference1 TINYINT(1) NULL AFTER authorized,
+    ADD COLUMN reference2 TINYINT(1) NULL AFTER reference1,
+    ADD COLUMN reference3 TINYINT(4) NULL AFTER reference2,
+    ADD COLUMN reference4 INT(11) UNSIGNED DEFAULT NULL AFTER reference3,
+    ADD COLUMN reference5 BIGINT UNSIGNED DEFAULT NULL AFTER reference4,
+    ADD COLUMN reference6 BIGINT UNSIGNED DEFAULT NULL AFTER reference5,
+    ADD COLUMN reference7 VARCHAR(14) DEFAULT NULL AFTER reference6,
+    ADD COLUMN reference8 VARCHAR(14) DEFAULT NULL AFTER reference7,
+    ADD COLUMN reference9 VARCHAR(255) DEFAULT NULL AFTER reference8,
+    ADD COLUMN reference10 VARCHAR(255) DEFAULT NULL AFTER reference9;
+
+# Add attempts to payouts
+ALTER TABLE payouts
+    ADD COLUMN attempts integer default 1 not null after channel;
+
+# Amazon Pay is added as wallet
+ALTER TABLE merchant_banks
+    ADD COLUMN amazonpay TINYINT(1) NOT NULL DEFAULT 0 AFTER airtelmoney;
+
+ALTER TABLE batches
+    ADD COLUMN processed_count INTEGER UNSIGNED DEFAULT NULL AFTER total_count;
+
+ALTER TABLE tokens
+    ADD COLUMN confirmed_at INTEGER UNSIGNED DEFAULT NULL AFTER recurring_failure_reason,
+    ADD COLUMN rejected_at INTEGER UNSIGNED DEFAULT NULL AFTER confirmed_at,
+    ADD COLUMN initiated_at INTEGER UNSIGNED DEFAULT NULL AFTER rejected_at,
+    ADD COLUMN acknowledged_at INTEGER UNSIGNED DEFAULT NULL AFTER initiated_at,
+    ADD INDEX `tokens_confirmed_at_index` (confirmed_at);
+    ADD INDEX `tokens_rejected_at_index` (rejected_at);
+    ADD INDEX `tokens_initiated_at_index` (initiated_at);
+    ADD INDEX `tokens_acknowledged_at_index` (acknowledged_at);
+
+# Renames the reference1 column and adds a default value
+ALTER TABLE orders
+    CHANGE reference1 force_offer TINYINT(1),
+    ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE merchants
+    ADD COLUMN partner_type VARCHAR(255) DEFAULT NULL AFTER has_key_access;
+
+# Corrects unique index on entity_offer
+ALTER TABLE entity_offer
+  DROP INDEX entity_offer_entity_id_entity_type_unique,
+  ADD UNIQUE INDEX entity_offer_entity_id_entity_type_offer_id_unique (entity_id, entity_type, offer_id);
+
+# Adds payment_link_id column and few more blank columns of various types for future usage
+# Creates index on payment_link_id
+ALTER TABLE payments
+    ADD COLUMN payment_link_id CHAR(14) DEFAULT NULL AFTER transfer_id,
+    ADD COLUMN reference10 INT(10) UNSIGNED DEFAULT NULL AFTER acknowledged_at,
+    ADD COLUMN reference11 INT(10) UNSIGNED DEFAULT NULL AFTER reference10,
+    ADD COLUMN reference12 BIGINT(20) UNSIGNED DEFAULT NULL AFTER reference11,
+    ADD COLUMN reference13 CHAR(14) DEFAULT NULL AFTER reference12,
+    ADD COLUMN reference14 CHAR(14) DEFAULT NULL AFTER reference13,
+    ADD COLUMN reference15 VARCHAR(255) DEFAULT NULL AFTER reference14,
+    ADD COLUMN reference16 VARCHAR(255) DEFAULT NULL AFTER reference15,
+    ADD COLUMN reference17 TEXT AFTER reference16,
+    ADD INDEX payments_payment_link_id_index (payment_link_id);
+
+ALTER TABLE gateway_rules
+    ADD COLUMN recurring TINYINT(1) DEFAULT NULL AFTER method,
+    ADD COLUMN flow VARCHAR(64) DEFAULT NULL AFTER recurring;
+
+ALTER TABLE virtual_accounts
+    ADD INDEX virtual_accounts_qr_code_id_index (qr_code_id);
+
+# Removes database unique constraints for merchant_id and receipt uniqueness
+# Adds index on merchant_id, receipt for fast lookup
+ALTER TABLE invoices
+    DROP INDEX invoices_merchant_id_receipt_unique,
+    ADD INDEX invoices_merchant_id_receipt_index (merchant_id, receipt);
+
+# Adds auth_type column to pricing table
+ALTER TABLE pricing
+    ADD COLUMN auth_type VARCHAR(255) DEFAULT NULL AFTER payment_method_type;
+
+#increase error_code length for hdfc
+ALTER TABLE hdfc
+    ADD COLUMN error_code2 VARCHAR(255) DEFAULT NULL AFTER error_code,
+    ADD COLUMN reference1 VARCHAR(255) DEFAULT NULL AFTER arn_no,
+    ADD COLUMN reference2 VARCHAR(255) DEFAULT NULL AFTER reference1,
+    ADD COLUMN reference3 VARCHAR(255) DEFAULT NULL AFTER reference2,
+    ADD COLUMN reference4 VARCHAR(255) DEFAULT NULL AFTER reference3,
+    ADD COLUMN reference5 INT(11) UNSIGNED DEFAULT NULL AFTER reference4,
+    ADD COLUMN reference6 BIGINT UNSIGNED DEFAULT NULL AFTER reference5;
+
+# Below queries to be run only on prod db.
+# Removes foreign key constraints for heimdall entities
+# Turn off binlog for the session on master db
+SET sql_log_bin = 0
+ALTER TABLE action_checker DROP FOREIGN KEY action_checker_action_id_foreign;
+ALTER TABLE action_checker DROP FOREIGN KEY action_checker_admin_id_foreign;
+ALTER TABLE action_checker DROP FOREIGN KEY action_checker_step_id_foreign;
+ALTER TABLE action_comments DROP FOREIGN KEY action_comments_action_id_foreign;
+ALTER TABLE action_comments DROP FOREIGN KEY action_comments_admin_id_foreign;
+ALTER TABLE action_state DROP FOREIGN KEY action_state_action_id_foreign;
+ALTER TABLE action_state DROP FOREIGN KEY action_state_admin_id_foreign;
+ALTER TABLE action_state_reasons DROP FOREIGN KEY action_state_reasons_state_id_foreign;
+ALTER TABLE admin_leads DROP FOREIGN KEY admin_leads_admin_id_foreign;
+ALTER TABLE admin_leads DROP FOREIGN KEY admin_leads_merchant_id_foreign;
+ALTER TABLE admin_leads DROP FOREIGN KEY admin_leads_org_id_foreign;
+ALTER TABLE admin_tokens DROP FOREIGN KEY admin_tokens_admin_id_foreign;
+ALTER TABLE admins DROP FOREIGN KEY admins_org_id_foreign;
+ALTER TABLE roles DROP FOREIGN KEY roles_org_id_foreign;
+ALTER TABLE workflow_actions DROP FOREIGN KEY workflow_actions_admin_id_foreign;
+ALTER TABLE workflow_actions DROP FOREIGN KEY workflow_actions_org_id_foreign;
+ALTER TABLE workflow_actions DROP FOREIGN KEY workflow_actions_permission_id_foreign;
+ALTER TABLE workflow_actions DROP FOREIGN KEY workflow_actions_state_changer_id_foreign;
+ALTER TABLE workflow_actions DROP FOREIGN KEY workflow_actions_state_changer_role_id_foreign;
+ALTER TABLE workflow_actions DROP FOREIGN KEY workflow_actions_workflow_id_foreign;
+ALTER TABLE workflow_permissions DROP FOREIGN KEY workflow_permissions_permission_id_foreign;
+ALTER TABLE workflow_permissions DROP FOREIGN KEY workflow_permissions_workflow_id_foreign;
+ALTER TABLE workflow_steps DROP FOREIGN KEY workflow_steps_role_id_foreign;
+ALTER TABLE workflow_steps DROP FOREIGN KEY workflow_steps_workflow_id_foreign;
+ALTER TABLE workflows DROP FOREIGN KEY workflows_org_id_foreign;
+SET sql_log_bin = 1;
+
+# Once above has executed, on each replica apart from redash login and execute the same command.
+# Doing it this way, so that there is no time in which redash replica does not have fk constraints.
+
+ALTER TABLE blade
+    ADD COLUMN gateway CHAR(64) DEFAULT NULL AFTER acquirer,
+    ADD COLUMN gateway_payment_id VARCHAR(255) DEFAULT NULL AFTER eci,
+    ADD COLUMN response_code VARCHAR(255) DEFAULT NULL AFTER gateway_payment_id,
+    ADD COLUMN response_description VARCHAR(255) DEFAULT NULL AFTER response_code,
+    ADD INDEX `blade_gateway_payment_id_index` (gateway_payment_id);
+
+# Run these on master
+ALTER TABLE addons DROP FOREIGN KEY addons_invoice_id_foreign;
+ALTER TABLE addons DROP FOREIGN KEY addons_item_id_foreign;
+ALTER TABLE addons DROP FOREIGN KEY addons_merchant_id_foreign;
+ALTER TABLE addons DROP FOREIGN KEY addons_subscription_id_foreign;
+ALTER TABLE adjustment DROP FOREIGN KEY adjustment_merchant_id_foreign;
+ALTER TABLE adjustment DROP FOREIGN KEY adjustment_settlement_id_foreign;
+ALTER TABLE adjustment DROP FOREIGN KEY adjustment_transaction_id_foreign;
+ALTER TABLE aeps DROP FOREIGN KEY aeps_payment_id_foreign;
+ALTER TABLE atom DROP FOREIGN KEY atom_payment_id_foreign;
+ALTER TABLE atom DROP FOREIGN KEY atom_refund_id_foreign;
+ALTER TABLE axis DROP FOREIGN KEY axis_payment_id_foreign;
+ALTER TABLE axis DROP FOREIGN KEY axis_terminal_id_foreign;
+ALTER TABLE balance DROP FOREIGN KEY balance_id_foreign;
+ALTER TABLE bank_accounts DROP FOREIGN KEY bank_accounts_merchant_id_foreign;
+ALTER TABLE bank_transfers DROP FOREIGN KEY bank_transfer_payer_bank_account_id_foreign;
+ALTER TABLE bank_transfers DROP FOREIGN KEY bank_transfers_merchant_id_foreign;
+ALTER TABLE bank_transfers DROP FOREIGN KEY bank_transfers_payment_id_foreign;
+ALTER TABLE bank_transfers DROP FOREIGN KEY bank_transfers_virtual_account_id_foreign;
+ALTER TABLE batches DROP FOREIGN KEY batches_merchant_id_foreign;
+ALTER TABLE bharat_qr DROP FOREIGN KEY bharat_qr_payment_id_foreign;
+ALTER TABLE bharat_qr DROP FOREIGN KEY bharat_qr_virtual_account_id_foreign;
+ALTER TABLE billdesk DROP FOREIGN KEY billdesk_payment_id_foreign;
+ALTER TABLE blade DROP FOREIGN KEY blade_payment_id_foreign;
+ALTER TABLE cards DROP FOREIGN KEY cards_global_card_id_foreign;
+ALTER TABLE cards DROP FOREIGN KEY cards_merchant_id_foreign;
+ALTER TABLE coupons DROP FOREIGN KEY coupons_merchant_id_foreign;
+ALTER TABLE credit_transaction DROP FOREIGN KEY credit_transaction_credits_id_foreign;
+ALTER TABLE credit_transaction DROP FOREIGN KEY credit_transaction_transaction_id_foreign;
+ALTER TABLE credits DROP FOREIGN KEY credits_merchant_id_foreign;
+ALTER TABLE credits DROP FOREIGN KEY credits_promotion_id_foreign;
+ALTER TABLE customer_apps DROP FOREIGN KEY customer_apps_customer_id_foreign;
+ALTER TABLE customer_apps DROP FOREIGN KEY customer_apps_merchant_id_foreign;
+ALTER TABLE customer_balance DROP FOREIGN KEY customer_balance_customer_id_foreign;
+ALTER TABLE customer_balance DROP FOREIGN KEY customer_balance_merchant_id_foreign;
+ALTER TABLE customer_transactions DROP FOREIGN KEY customer_transactions_customer_id_foreign;
+ALTER TABLE customer_transactions DROP FOREIGN KEY customer_transactions_merchant_id_foreign;
+ALTER TABLE customers DROP FOREIGN KEY customers_global_customer_id_foreign;
+ALTER TABLE customers DROP FOREIGN KEY customers_merchant_id_foreign;
+ALTER TABLE cybersource DROP FOREIGN KEY cybersource_payment_id_foreign;
+ALTER TABLE daily_settlements DROP FOREIGN KEY daily_settlements_excel_file_id_foreign;
+ALTER TABLE daily_settlements DROP FOREIGN KEY daily_settlements_txt_file_id_foreign;
+ALTER TABLE devices DROP FOREIGN KEY devices_customer_id_foreign;
+ALTER TABLE discounts DROP FOREIGN KEY discounts_offer_id_foreign;
+ALTER TABLE discounts DROP FOREIGN KEY discounts_order_id_foreign;
+ALTER TABLE discounts DROP FOREIGN KEY discounts_payment_id_foreign;
+ALTER TABLE dispute_files DROP FOREIGN KEY dispute_files_dispute_id_foreign;
+ALTER TABLE disputes DROP FOREIGN KEY disputes_merchant_id_foreign;
+ALTER TABLE disputes DROP FOREIGN KEY disputes_parent_id_foreign;
+ALTER TABLE disputes DROP FOREIGN KEY disputes_payment_id_foreign;
+ALTER TABLE disputes DROP FOREIGN KEY disputes_reason_id_foreign;
+ALTER TABLE disputes DROP FOREIGN KEY disputes_transaction_id_foreign;
+ALTER TABLE ebs DROP FOREIGN KEY ebs_payment_id_foreign;
+ALTER TABLE enach DROP FOREIGN KEY enach_payment_id_foreign;
+ALTER TABLE entity_offer DROP FOREIGN KEY entity_offer_offer_id_foreign;
+ALTER TABLE fees_breakup DROP FOREIGN KEY fees_breakup_pricing_rule_id_foreign;
+ALTER TABLE fees_breakup DROP FOREIGN KEY fees_breakup_transaction_id_foreign;
+ALTER TABLE files DROP FOREIGN KEY files_merchant_id_foreign;
+ALTER TABLE first_data DROP FOREIGN KEY first_data_payment_id_foreign;
+ALTER TABLE fund_transfer_attempts DROP FOREIGN KEY fund_transfer_attempts_batch_fund_transfer_id_foreign;
+ALTER TABLE fund_transfer_attempts DROP FOREIGN KEY fund_transfer_attempts_merchant_id_foreign;
+ALTER TABLE gateway_downtimes DROP FOREIGN KEY gateway_downtimes_terminal_id_foreign;
+ALTER TABLE gateway_rules DROP FOREIGN KEY gateway_rules_merchant_id_foreign;
+ALTER TABLE gateway_tokens DROP FOREIGN KEY gateway_tokens_merchant_id_foreign;
+ALTER TABLE gateway_tokens DROP FOREIGN KEY gateway_tokens_terminal_id_foreign;
+ALTER TABLE gateway_tokens DROP FOREIGN KEY gateway_tokens_token_id_foreign;
+ALTER TABLE groups DROP FOREIGN KEY groups_org_id_foreign;
+ALTER TABLE hdfc DROP FOREIGN KEY hdfc_payment_id_foreign;
+ALTER TABLE hitachi DROP FOREIGN KEY hitachi_payment_id_foreign;
+ALTER TABLE invitations DROP FOREIGN KEY invitations_merchant_id_foreign;
+ALTER TABLE invitations DROP FOREIGN KEY invitations_user_id_foreign;
+ALTER TABLE invoices DROP FOREIGN KEY invoices_batch_id_foreign;
+ALTER TABLE invoices DROP FOREIGN KEY invoices_customer_address_foreign;
+ALTER TABLE invoices DROP FOREIGN KEY invoices_customer_billing_addr_id_foreign;
+ALTER TABLE invoices DROP FOREIGN KEY invoices_customer_id_foreign;
+ALTER TABLE invoices DROP FOREIGN KEY invoices_customer_shipping_addr_id_foreign;
+ALTER TABLE invoices DROP FOREIGN KEY invoices_merchant_id_foreign;
+ALTER TABLE invoices DROP FOREIGN KEY invoices_order_id_foreign;
+ALTER TABLE invoices DROP FOREIGN KEY invoices_subscription_id_foreign;
+ALTER TABLE invoices DROP FOREIGN KEY invoices_user_id_foreign;
+ALTER TABLE items DROP FOREIGN KEY items_merchant_id_foreign;
+ALTER TABLE items DROP FOREIGN KEY items_tax_group_id_foreign;
+ALTER TABLE items DROP FOREIGN KEY items_tax_id_foreign;
+ALTER TABLE keys DROP FOREIGN KEY keys_merchant_id_foreign;
+ALTER TABLE kotak DROP FOREIGN KEY kotak_payment_id_foreign;
+ALTER TABLE line_item_taxes DROP FOREIGN KEY line_item_taxes_group_id_foreign;
+ALTER TABLE line_item_taxes DROP FOREIGN KEY line_item_taxes_tax_id_foreign;
+ALTER TABLE line_items DROP FOREIGN KEY line_items_item_id_foreign;
+ALTER TABLE line_items DROP FOREIGN KEY line_items_merchant_id_foreign;
+ALTER TABLE login_attempts DROP FOREIGN KEY login_attempts_admin_id_foreign;
+ALTER TABLE merchant_access_map DROP FOREIGN KEY merchant_access_map_merchant_id_foreign;
+ALTER TABLE merchant_banks DROP FOREIGN KEY merchant_banks_merchant_id_foreign;
+ALTER TABLE merchant_details DROP FOREIGN KEY merchant_details_merchant_id_foreign;
+ALTER TABLE merchant_emi_plans DROP FOREIGN KEY merchant_emi_plans_emi_plan_id_foreign;
+ALTER TABLE merchant_emi_plans DROP FOREIGN KEY merchant_emi_plans_merchant_id_foreign;
+ALTER TABLE merchant_invoice DROP FOREIGN KEY merchant_invoice_merchant_id_foreign;
+ALTER TABLE merchant_map DROP FOREIGN KEY merchant_map_merchant_id_foreign;
+ALTER TABLE merchant_promotion DROP FOREIGN KEY merchant_promotion_merchant_id_foreign;
+ALTER TABLE merchant_promotion DROP FOREIGN KEY merchant_promotion_promotion_id_foreign;
+ALTER TABLE merchant_terminal DROP FOREIGN KEY merchant_terminal_merchant_id_foreign;
+ALTER TABLE merchant_terminal DROP FOREIGN KEY merchant_terminal_terminal_id_foreign;
+ALTER TABLE merchant_users DROP FOREIGN KEY merchant_users_merchant_id_foreign;
+ALTER TABLE merchant_users DROP FOREIGN KEY merchant_users_user_id_foreign;
+ALTER TABLE merchants DROP FOREIGN KEY merchants_org_id_foreign;
+ALTER TABLE merchants DROP FOREIGN KEY merchants_parent_id_foreign;
+ALTER TABLE merchants DROP FOREIGN KEY merchants_settlement_schedule_id_foreign;
+ALTER TABLE mobikwik DROP FOREIGN KEY mobikwik_payment_id_foreign;
+ALTER TABLE netbanking DROP FOREIGN KEY netbanking_payment_id_foreign;
+ALTER TABLE offers DROP FOREIGN KEY offers_merchant_id_foreign;
+ALTER TABLE orders DROP FOREIGN KEY orders_customer_id_foreign;
+ALTER TABLE orders DROP FOREIGN KEY orders_merchant_id_foreign;
+ALTER TABLE org_field_map DROP FOREIGN KEY org_field_map_org_id_foreign;
+ALTER TABLE org_hostname DROP FOREIGN KEY org_hostname_org_id_foreign;
+ALTER TABLE p2p DROP FOREIGN KEY p2p_merchant_id_foreign;
+ALTER TABLE payment_analytics DROP FOREIGN KEY payment_analytics_merchant_id_foreign;
+ALTER TABLE payment_analytics DROP FOREIGN KEY payment_analytics_payment_id_foreign;
+ALTER TABLE payment_links DROP FOREIGN KEY payment_links_merchant_id_foreign;
+ALTER TABLE payments DROP FOREIGN KEY payments_card_id_foreign;
+ALTER TABLE payments DROP FOREIGN KEY payments_customer_id_foreign;
+ALTER TABLE payments DROP FOREIGN KEY payments_emi_plan_id_foreign;
+ALTER TABLE payments DROP FOREIGN KEY payments_global_token_id_foreign;
+ALTER TABLE payments DROP FOREIGN KEY payments_invoice_id_foreign;
+ALTER TABLE payments DROP FOREIGN KEY payments_merchant_id_foreign;
+ALTER TABLE payments DROP FOREIGN KEY payments_order_id_foreign;
+ALTER TABLE payments DROP FOREIGN KEY payments_subscription_id_foreign;
+ALTER TABLE payments DROP FOREIGN KEY payments_terminal_id_foreign;
+ALTER TABLE payments DROP FOREIGN KEY payments_token_id_foreign;
+ALTER TABLE payments DROP FOREIGN KEY payments_transaction_id_foreign;
+ALTER TABLE payments DROP FOREIGN KEY payments_transfer_id_foreign;
+ALTER TABLE payouts DROP FOREIGN KEY payouts_batch_fund_transfer_id_foreign;
+ALTER TABLE payouts DROP FOREIGN KEY payouts_batch_settlement_id_foreign;
+ALTER TABLE payouts DROP FOREIGN KEY payouts_customer_id_foreign;
+ALTER TABLE payouts DROP FOREIGN KEY payouts_merchant_id_foreign;
+ALTER TABLE payouts DROP FOREIGN KEY payouts_payment_id_foreign;
+ALTER TABLE payouts DROP FOREIGN KEY payouts_transaction_id_foreign;
+ALTER TABLE paytm DROP FOREIGN KEY paytm_payment_id_foreign;
+ALTER TABLE plans DROP FOREIGN KEY plans_item_id_foreign;
+ALTER TABLE plans DROP FOREIGN KEY plans_merchant_id_foreign;
+ALTER TABLE promotions DROP FOREIGN KEY promotions_schedule_id_foreign;
+ALTER TABLE qr_code DROP FOREIGN KEY qr_code_merchant_id_foreign;
+ALTER TABLE refunds DROP FOREIGN KEY refunds_batch_fund_transfer_id_foreign;
+ALTER TABLE refunds DROP FOREIGN KEY refunds_batch_id_foreign;
+ALTER TABLE refunds DROP FOREIGN KEY refunds_merchant_id_foreign;
+ALTER TABLE refunds DROP FOREIGN KEY refunds_payment_id_foreign;
+ALTER TABLE refunds DROP FOREIGN KEY refunds_transaction_id_foreign;
+ALTER TABLE reports DROP FOREIGN KEY report_file_id_foreign;
+ALTER TABLE reports DROP FOREIGN KEY reports_merchant_id_foreign;
+ALTER TABLE reversals DROP FOREIGN KEY reversals_merchant_id_foreign;
+ALTER TABLE reversals DROP FOREIGN KEY reversals_transaction_id_foreign;
+ALTER TABLE reversals DROP FOREIGN KEY reversals_transfer_id_foreign;
+ALTER TABLE risk DROP FOREIGN KEY risk_merchant_id_foreign;
+ALTER TABLE risk DROP FOREIGN KEY risk_payment_id_foreign;
+ALTER TABLE sbiepay DROP FOREIGN KEY sbiepay_payment_id_foreign;
+ALTER TABLE schedule_tasks DROP FOREIGN KEY schedule_tasks_merchant_id_foreign;
+ALTER TABLE schedule_tasks DROP FOREIGN KEY schedule_tasks_schedule_id_foreign;
+ALTER TABLE schedules DROP FOREIGN KEY schedules_merchant_id_foreign;
+ALTER TABLE settlement_details DROP FOREIGN KEY settlement_details_merchant_id_foreign;
+ALTER TABLE settlement_details DROP FOREIGN KEY settlement_details_settlement_id_foreign;
+ALTER TABLE settlements DROP FOREIGN KEY settlements_bank_account_id_foreign;
+ALTER TABLE settlements DROP FOREIGN KEY settlements_batch_fund_transfer_id_foreign;
+ALTER TABLE settlements DROP FOREIGN KEY settlements_batch_settlement_id_foreign;
+ALTER TABLE settlements DROP FOREIGN KEY settlements_merchant_id_foreign;
+ALTER TABLE settlements DROP FOREIGN KEY settlements_transaction_id_foreign;
+ALTER TABLE subscriptions DROP FOREIGN KEY subscriptions_customer_id_foreign;
+ALTER TABLE subscriptions DROP FOREIGN KEY subscriptions_merchant_id_foreign;
+ALTER TABLE subscriptions DROP FOREIGN KEY subscriptions_plan_id_foreign;
+ALTER TABLE subscriptions DROP FOREIGN KEY subscriptions_schedule_id_foreign;
+ALTER TABLE subscriptions DROP FOREIGN KEY subscriptions_token_id_foreign;
+ALTER TABLE tagging_tags DROP FOREIGN KEY tagging_tags_tag_group_id_foreign;
+ALTER TABLE tax_groups DROP FOREIGN KEY tax_groups_merchant_id_foreign;
+ALTER TABLE taxes DROP FOREIGN KEY taxes_merchant_id_foreign;
+ALTER TABLE terminal_analytics DROP FOREIGN KEY terminal_analytics_payment_id_foreign;
+ALTER TABLE terminal_analytics DROP FOREIGN KEY terminal_analytics_terminal_id_foreign;
+ALTER TABLE terminals DROP FOREIGN KEY terminals_merchant_id_foreign;
+ALTER TABLE tokens DROP FOREIGN KEY token_terminal_id_foreign;
+ALTER TABLE tokens DROP FOREIGN KEY tokens_card_id_foreign;
+ALTER TABLE tokens DROP FOREIGN KEY tokens_customer_id_foreign;
+ALTER TABLE tokens DROP FOREIGN KEY tokens_merchant_id_foreign;
+ALTER TABLE transactions DROP FOREIGN KEY transactions_merchant_id_foreign;
+ALTER TABLE transactions DROP FOREIGN KEY transactions_settlement_id_foreign;
+ALTER TABLE transfers DROP FOREIGN KEY transfers_merchant_id_foreign;
+ALTER TABLE transfers DROP FOREIGN KEY transfers_recipient_settlement_id_foreign;
+ALTER TABLE transfers DROP FOREIGN KEY transfers_transaction_id_foreign;
+ALTER TABLE upi DROP FOREIGN KEY upi_payment_id_foreign;
+ALTER TABLE virtual_accounts DROP FOREIGN KEY virtual_accounts_bank_account_id_foreign;
+ALTER TABLE virtual_accounts DROP FOREIGN KEY virtual_accounts_customer_id_foreign;
+ALTER TABLE virtual_accounts DROP FOREIGN KEY virtual_accounts_merchant_id_foreign;
+ALTER TABLE virtual_accounts DROP FOREIGN KEY virtual_accounts_qr_code_id_foreign;
+ALTER TABLE vpa DROP FOREIGN KEY vpa_bank_account_id_foreign;
+ALTER TABLE vpa DROP FOREIGN KEY vpa_customer_id_foreign;
+ALTER TABLE wallet DROP FOREIGN KEY wallet_payment_id_foreign;
+ALTER TABLE webhooks DROP FOREIGN KEY webhooks_merchant_id_foreign;
+
+
+# Disable read_only flag on redash db and run these
+SET SESSION foreign_key_checks = 0;
+ALTER TABLE addons ADD CONSTRAINT addons_invoice_id_foreign FOREIGN KEY (invoice_id) REFERENCES invoices (id);
+ALTER TABLE addons ADD CONSTRAINT addons_item_id_foreign FOREIGN KEY (item_id) REFERENCES items (id);
+ALTER TABLE addons ADD CONSTRAINT addons_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE addons ADD CONSTRAINT addons_subscription_id_foreign FOREIGN KEY (subscription_id) REFERENCES subscriptions (id);
+ALTER TABLE adjustment ADD CONSTRAINT adjustment_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE adjustment ADD CONSTRAINT adjustment_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements (id);
+ALTER TABLE adjustment ADD CONSTRAINT adjustment_transaction_id_foreign FOREIGN KEY (transaction_id) REFERENCES transactions (id);
+ALTER TABLE aeps ADD CONSTRAINT aeps_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE atom ADD CONSTRAINT atom_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE atom ADD CONSTRAINT atom_refund_id_foreign FOREIGN KEY (refund_id) REFERENCES refunds (id);
+ALTER TABLE axis ADD CONSTRAINT axis_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE axis ADD CONSTRAINT axis_terminal_id_foreign FOREIGN KEY (terminal_id) REFERENCES terminals (id);
+ALTER TABLE balance ADD CONSTRAINT balance_id_foreign FOREIGN KEY (id) REFERENCES merchants (id);
+ALTER TABLE bank_accounts ADD CONSTRAINT bank_accounts_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE bank_transfers ADD CONSTRAINT bank_transfer_payer_bank_account_id_foreign FOREIGN KEY (payer_bank_account_id) REFERENCES bank_accounts (id);
+ALTER TABLE bank_transfers ADD CONSTRAINT bank_transfers_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE bank_transfers ADD CONSTRAINT bank_transfers_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE bank_transfers ADD CONSTRAINT bank_transfers_virtual_account_id_foreign FOREIGN KEY (virtual_account_id) REFERENCES virtual_accounts (id);
+ALTER TABLE batches ADD CONSTRAINT batches_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE bharat_qr ADD CONSTRAINT bharat_qr_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE bharat_qr ADD CONSTRAINT bharat_qr_virtual_account_id_foreign FOREIGN KEY (virtual_account_id) REFERENCES virtual_accounts (id);
+ALTER TABLE billdesk ADD CONSTRAINT billdesk_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE blade ADD CONSTRAINT blade_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE cards ADD CONSTRAINT cards_global_card_id_foreign FOREIGN KEY (global_card_id) REFERENCES cards (id);
+ALTER TABLE cards ADD CONSTRAINT cards_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE coupons ADD CONSTRAINT coupons_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE credit_transaction ADD CONSTRAINT credit_transaction_credits_id_foreign FOREIGN KEY (credits_id) REFERENCES credits (id);
+ALTER TABLE credit_transaction ADD CONSTRAINT credit_transaction_transaction_id_foreign FOREIGN KEY (transaction_id) REFERENCES transactions (id);
+ALTER TABLE credits ADD CONSTRAINT credits_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE credits ADD CONSTRAINT credits_promotion_id_foreign FOREIGN KEY (promotion_id) REFERENCES promotions (id);
+ALTER TABLE customer_apps ADD CONSTRAINT customer_apps_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE customer_apps ADD CONSTRAINT customer_apps_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE customer_balance ADD CONSTRAINT customer_balance_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE customer_balance ADD CONSTRAINT customer_balance_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE customer_transactions ADD CONSTRAINT customer_transactions_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE customer_transactions ADD CONSTRAINT customer_transactions_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE customers ADD CONSTRAINT customers_global_customer_id_foreign FOREIGN KEY (global_customer_id) REFERENCES customers (id);
+ALTER TABLE customers ADD CONSTRAINT customers_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE cybersource ADD CONSTRAINT cybersource_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE daily_settlements ADD CONSTRAINT daily_settlements_excel_file_id_foreign FOREIGN KEY (excel_file_id) REFERENCES files (id);
+ALTER TABLE daily_settlements ADD CONSTRAINT daily_settlements_txt_file_id_foreign FOREIGN KEY (txt_file_id) REFERENCES files (id);
+ALTER TABLE devices ADD CONSTRAINT devices_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE discounts ADD CONSTRAINT discounts_offer_id_foreign FOREIGN KEY (offer_id) REFERENCES offers (id);
+ALTER TABLE discounts ADD CONSTRAINT discounts_order_id_foreign FOREIGN KEY (order_id) REFERENCES orders (id);
+ALTER TABLE discounts ADD CONSTRAINT discounts_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE dispute_files ADD CONSTRAINT dispute_files_dispute_id_foreign FOREIGN KEY (dispute_id) REFERENCES disputes (id);
+ALTER TABLE disputes ADD CONSTRAINT disputes_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE disputes ADD CONSTRAINT disputes_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES disputes (id);
+ALTER TABLE disputes ADD CONSTRAINT disputes_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE disputes ADD CONSTRAINT disputes_reason_id_foreign FOREIGN KEY (reason_id) REFERENCES dispute_reasons (id);
+ALTER TABLE disputes ADD CONSTRAINT disputes_transaction_id_foreign FOREIGN KEY (transaction_id) REFERENCES transactions (id);
+ALTER TABLE ebs ADD CONSTRAINT ebs_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE enach ADD CONSTRAINT enach_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE entity_offer ADD CONSTRAINT entity_offer_offer_id_foreign FOREIGN KEY (offer_id) REFERENCES offers (id);
+ALTER TABLE fees_breakup ADD CONSTRAINT fees_breakup_pricing_rule_id_foreign FOREIGN KEY (pricing_rule_id) REFERENCES pricing (id);
+ALTER TABLE fees_breakup ADD CONSTRAINT fees_breakup_transaction_id_foreign FOREIGN KEY (transaction_id) REFERENCES transactions (id);
+ALTER TABLE files ADD CONSTRAINT files_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE first_data ADD CONSTRAINT first_data_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE fund_transfer_attempts ADD CONSTRAINT fund_transfer_attempts_batch_fund_transfer_id_foreign FOREIGN KEY (batch_fund_transfer_id) REFERENCES daily_settlements (id);
+ALTER TABLE fund_transfer_attempts ADD CONSTRAINT fund_transfer_attempts_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE gateway_downtimes ADD CONSTRAINT gateway_downtimes_terminal_id_foreign FOREIGN KEY (terminal_id) REFERENCES terminals (id);
+ALTER TABLE gateway_rules ADD CONSTRAINT gateway_rules_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE gateway_tokens ADD CONSTRAINT gateway_tokens_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE gateway_tokens ADD CONSTRAINT gateway_tokens_terminal_id_foreign FOREIGN KEY (terminal_id) REFERENCES terminals (id);
+ALTER TABLE gateway_tokens ADD CONSTRAINT gateway_tokens_token_id_foreign FOREIGN KEY (token_id) REFERENCES tokens (id);
+ALTER TABLE groups ADD CONSTRAINT groups_org_id_foreign FOREIGN KEY (org_id) REFERENCES orgs (id);
+ALTER TABLE hdfc ADD CONSTRAINT hdfc_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE hitachi ADD CONSTRAINT hitachi_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE invitations ADD CONSTRAINT invitations_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE invitations ADD CONSTRAINT invitations_user_id_foreign FOREIGN KEY (user_id) REFERENCES users (id);
+ALTER TABLE invoices ADD CONSTRAINT invoices_batch_id_foreign FOREIGN KEY (batch_id) REFERENCES batches (id);
+ALTER TABLE invoices ADD CONSTRAINT invoices_customer_address_foreign FOREIGN KEY (customer_address) REFERENCES addresses (id);
+ALTER TABLE invoices ADD CONSTRAINT invoices_customer_billing_addr_id_foreign FOREIGN KEY (customer_billing_addr_id) REFERENCES addresses (id);
+ALTER TABLE invoices ADD CONSTRAINT invoices_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE invoices ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
+ALTER TABLE invoices ADD CONSTRAINT invoices_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE invoices ADD CONSTRAINT invoices_order_id_foreign FOREIGN KEY (order_id) REFERENCES orders (id);
+ALTER TABLE invoices ADD CONSTRAINT invoices_subscription_id_foreign FOREIGN KEY (subscription_id) REFERENCES subscriptions (id);
+ALTER TABLE invoices ADD CONSTRAINT invoices_user_id_foreign FOREIGN KEY (user_id) REFERENCES users (id);
+ALTER TABLE items ADD CONSTRAINT items_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE items ADD CONSTRAINT items_tax_group_id_foreign FOREIGN KEY (tax_group_id) REFERENCES tax_groups (id);
+ALTER TABLE items ADD CONSTRAINT items_tax_id_foreign FOREIGN KEY (tax_id) REFERENCES taxes (id);
+ALTER TABLE keys ADD CONSTRAINT keys_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE kotak ADD CONSTRAINT kotak_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE line_item_taxes ADD CONSTRAINT line_item_taxes_group_id_foreign FOREIGN KEY (group_id) REFERENCES tax_groups (id);
+ALTER TABLE line_item_taxes ADD CONSTRAINT line_item_taxes_tax_id_foreign FOREIGN KEY (tax_id) REFERENCES taxes (id);
+ALTER TABLE line_items ADD CONSTRAINT line_items_item_id_foreign FOREIGN KEY (item_id) REFERENCES items (id);
+ALTER TABLE line_items ADD CONSTRAINT line_items_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE login_attempts ADD CONSTRAINT login_attempts_admin_id_foreign FOREIGN KEY (admin_id) REFERENCES admins (id);
+ALTER TABLE merchant_access_map ADD CONSTRAINT merchant_access_map_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE merchant_banks ADD CONSTRAINT merchant_banks_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE merchant_details ADD CONSTRAINT merchant_details_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE merchant_emi_plans ADD CONSTRAINT merchant_emi_plans_emi_plan_id_foreign FOREIGN KEY (emi_plan_id) REFERENCES emi_plans (id);
+ALTER TABLE merchant_emi_plans ADD CONSTRAINT merchant_emi_plans_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE merchant_invoice ADD CONSTRAINT merchant_invoice_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE merchant_map ADD CONSTRAINT merchant_map_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE merchant_promotion ADD CONSTRAINT merchant_promotion_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE merchant_promotion ADD CONSTRAINT merchant_promotion_promotion_id_foreign FOREIGN KEY (promotion_id) REFERENCES promotions (id);
+ALTER TABLE merchant_terminal ADD CONSTRAINT merchant_terminal_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE merchant_terminal ADD CONSTRAINT merchant_terminal_terminal_id_foreign FOREIGN KEY (terminal_id) REFERENCES terminals (id);
+ALTER TABLE merchant_users ADD CONSTRAINT merchant_users_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE merchant_users ADD CONSTRAINT merchant_users_user_id_foreign FOREIGN KEY (user_id) REFERENCES users (id);
+ALTER TABLE merchants ADD CONSTRAINT merchants_org_id_foreign FOREIGN KEY (org_id) REFERENCES orgs (id);
+ALTER TABLE merchants ADD CONSTRAINT merchants_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES merchants (id);
+ALTER TABLE merchants ADD CONSTRAINT merchants_settlement_schedule_id_foreign FOREIGN KEY (settlement_schedule_id) REFERENCES schedules (id);
+ALTER TABLE mobikwik ADD CONSTRAINT mobikwik_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE netbanking ADD CONSTRAINT netbanking_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE offers ADD CONSTRAINT offers_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE orders ADD CONSTRAINT orders_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE orders ADD CONSTRAINT orders_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE org_field_map ADD CONSTRAINT org_field_map_org_id_foreign FOREIGN KEY (org_id) REFERENCES orgs (id);
+ALTER TABLE org_hostname ADD CONSTRAINT org_hostname_org_id_foreign FOREIGN KEY (org_id) REFERENCES orgs (id);
+ALTER TABLE p2p ADD CONSTRAINT p2p_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE payment_analytics ADD CONSTRAINT payment_analytics_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE payment_analytics ADD CONSTRAINT payment_analytics_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE payment_links ADD CONSTRAINT payment_links_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE payments ADD CONSTRAINT payments_card_id_foreign FOREIGN KEY (card_id) REFERENCES cards (id);
+ALTER TABLE payments ADD CONSTRAINT payments_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE payments ADD CONSTRAINT payments_emi_plan_id_foreign FOREIGN KEY (emi_plan_id) REFERENCES emi_plans (id);
+ALTER TABLE payments ADD CONSTRAINT payments_global_token_id_foreign FOREIGN KEY (global_token_id) REFERENCES tokens (id);
+ALTER TABLE payments ADD CONSTRAINT payments_invoice_id_foreign FOREIGN KEY (invoice_id) REFERENCES invoices (id);
+ALTER TABLE payments ADD CONSTRAINT payments_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE payments ADD CONSTRAINT payments_order_id_foreign FOREIGN KEY (order_id) REFERENCES orders (id);
+ALTER TABLE payments ADD CONSTRAINT payments_subscription_id_foreign FOREIGN KEY (subscription_id) REFERENCES subscriptions (id);
+ALTER TABLE payments ADD CONSTRAINT payments_terminal_id_foreign FOREIGN KEY (terminal_id) REFERENCES terminals (id);
+ALTER TABLE payments ADD CONSTRAINT payments_token_id_foreign FOREIGN KEY (token_id) REFERENCES tokens (id);
+ALTER TABLE payments ADD CONSTRAINT payments_transaction_id_foreign FOREIGN KEY (transaction_id) REFERENCES transactions (id);
+ALTER TABLE payments ADD CONSTRAINT payments_transfer_id_foreign FOREIGN KEY (transfer_id) REFERENCES transfers (id);
+ALTER TABLE payouts ADD CONSTRAINT payouts_batch_fund_transfer_id_foreign FOREIGN KEY (batch_fund_transfer_id) REFERENCES daily_settlements (id);
+ALTER TABLE payouts ADD CONSTRAINT payouts_batch_settlement_id_foreign FOREIGN KEY (batch_settlement_id) REFERENCES daily_settlements (id);
+ALTER TABLE payouts ADD CONSTRAINT payouts_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE payouts ADD CONSTRAINT payouts_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE payouts ADD CONSTRAINT payouts_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE payouts ADD CONSTRAINT payouts_transaction_id_foreign FOREIGN KEY (transaction_id) REFERENCES transactions (id);
+ALTER TABLE paytm ADD CONSTRAINT paytm_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE plans ADD CONSTRAINT plans_item_id_foreign FOREIGN KEY (item_id) REFERENCES items (id);
+ALTER TABLE plans ADD CONSTRAINT plans_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE promotions ADD CONSTRAINT promotions_schedule_id_foreign FOREIGN KEY (schedule_id) REFERENCES schedules (id);
+ALTER TABLE qr_code ADD CONSTRAINT qr_code_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE refunds ADD CONSTRAINT refunds_batch_fund_transfer_id_foreign FOREIGN KEY (batch_fund_transfer_id) REFERENCES daily_settlements (id);
+ALTER TABLE refunds ADD CONSTRAINT refunds_batch_id_foreign FOREIGN KEY (batch_id) REFERENCES batches (id);
+ALTER TABLE refunds ADD CONSTRAINT refunds_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE refunds ADD CONSTRAINT refunds_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE refunds ADD CONSTRAINT refunds_transaction_id_foreign FOREIGN KEY (transaction_id) REFERENCES transactions (id);
+ALTER TABLE reports ADD CONSTRAINT report_file_id_foreign FOREIGN KEY (file_id) REFERENCES files (id);
+ALTER TABLE reports ADD CONSTRAINT reports_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE reversals ADD CONSTRAINT reversals_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE reversals ADD CONSTRAINT reversals_transaction_id_foreign FOREIGN KEY (transaction_id) REFERENCES transactions (id);
+ALTER TABLE reversals ADD CONSTRAINT reversals_transfer_id_foreign FOREIGN KEY (transfer_id) REFERENCES transfers (id);
+ALTER TABLE risk ADD CONSTRAINT risk_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE risk ADD CONSTRAINT risk_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE sbiepay ADD CONSTRAINT sbiepay_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE schedule_tasks ADD CONSTRAINT schedule_tasks_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE schedule_tasks ADD CONSTRAINT schedule_tasks_schedule_id_foreign FOREIGN KEY (schedule_id) REFERENCES schedules (id);
+ALTER TABLE schedules ADD CONSTRAINT schedules_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE settlement_details ADD CONSTRAINT settlement_details_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE settlement_details ADD CONSTRAINT settlement_details_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements (id);
+ALTER TABLE settlements ADD CONSTRAINT settlements_bank_account_id_foreign FOREIGN KEY (bank_account_id) REFERENCES bank_accounts (id);
+ALTER TABLE settlements ADD CONSTRAINT settlements_batch_fund_transfer_id_foreign FOREIGN KEY (batch_fund_transfer_id) REFERENCES daily_settlements (id);
+ALTER TABLE settlements ADD CONSTRAINT settlements_batch_settlement_id_foreign FOREIGN KEY (batch_settlement_id) REFERENCES daily_settlements (id);
+ALTER TABLE settlements ADD CONSTRAINT settlements_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE settlements ADD CONSTRAINT settlements_transaction_id_foreign FOREIGN KEY (transaction_id) REFERENCES transactions (id);
+ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_plan_id_foreign FOREIGN KEY (plan_id) REFERENCES plans (id);
+ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_schedule_id_foreign FOREIGN KEY (schedule_id) REFERENCES schedules (id);
+ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_token_id_foreign FOREIGN KEY (token_id) REFERENCES tokens (id);
+ALTER TABLE tagging_tags ADD CONSTRAINT tagging_tags_tag_group_id_foreign FOREIGN KEY (tag_group_id) REFERENCES tagging_tag_groups (id);
+ALTER TABLE tax_groups ADD CONSTRAINT tax_groups_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE taxes ADD CONSTRAINT taxes_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE terminal_analytics ADD CONSTRAINT terminal_analytics_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE terminal_analytics ADD CONSTRAINT terminal_analytics_terminal_id_foreign FOREIGN KEY (terminal_id) REFERENCES terminals (id);
+ALTER TABLE terminals ADD CONSTRAINT terminals_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE tokens ADD CONSTRAINT token_terminal_id_foreign FOREIGN KEY (terminal_id) REFERENCES terminals (id);
+ALTER TABLE tokens ADD CONSTRAINT tokens_card_id_foreign FOREIGN KEY (card_id) REFERENCES cards (id);
+ALTER TABLE tokens ADD CONSTRAINT tokens_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE tokens ADD CONSTRAINT tokens_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE transactions ADD CONSTRAINT transactions_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE transactions ADD CONSTRAINT transactions_settlement_id_foreign FOREIGN KEY (settlement_id) REFERENCES settlements (id);
+ALTER TABLE transfers ADD CONSTRAINT transfers_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE transfers ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY (recipient_settlement_id) REFERENCES settlements (id);
+ALTER TABLE transfers ADD CONSTRAINT transfers_transaction_id_foreign FOREIGN KEY (transaction_id) REFERENCES transactions (id);
+ALTER TABLE upi ADD CONSTRAINT upi_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE virtual_accounts ADD CONSTRAINT virtual_accounts_bank_account_id_foreign FOREIGN KEY (bank_account_id) REFERENCES bank_accounts (id);
+ALTER TABLE virtual_accounts ADD CONSTRAINT virtual_accounts_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE virtual_accounts ADD CONSTRAINT virtual_accounts_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE virtual_accounts ADD CONSTRAINT virtual_accounts_qr_code_id_foreign FOREIGN KEY (qr_code_id) REFERENCES qr_code (id);
+ALTER TABLE vpa ADD CONSTRAINT vpa_bank_account_id_foreign FOREIGN KEY (bank_account_id) REFERENCES bank_accounts (id);
+ALTER TABLE vpa ADD CONSTRAINT vpa_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
+ALTER TABLE wallet ADD CONSTRAINT wallet_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
+ALTER TABLE webhooks ADD CONSTRAINT webhooks_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+SET SESSION foreign_key_checks = 1;
+
+ALTER TABLE hitachi
+    ADD COLUMN authentication_gateway CHAR(64) DEFAULT NULL AFTER acquirer
+
+# Payment link - currency nullable
+ALTER TABLE payment_links
+    MODIFY COLUMN currency VARCHAR(3) DEFAULT NULL;
+
+ALTER TABLE payment_links
+    ADD COLUMN hosted_template_id VARCHAR(255) DEFAULT NULL AFTER notes,
+    ADD COLUMN udf_jsonschema_id VARCHAR(255) DEFAULT NULL AFTER hosted_template_id;
+
+ALTER TABLE payments
+    CHANGE reference10 verify_at INTEGER UNSIGNED DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE batches
+    ADD INDEX batches_subtype_index (`sub_type`);
+
+ALTER table offers
+    ADD COLUMN emi_subvention tinyint DEFAULT NULL AFTER flat_cashback,
+    ADD COLUMN emi_durations varchar(255) DEFAULT NULL AFTER emi_subvention;
+    
 ALTER TABLE refunds
     ADD COLUMN error_code VARCHAR(128) DEFAULT NULL AFTER status,
     ADD COLUMN internal_error_code VARCHAR(255) DEFAULT NULL AFTER error_code,

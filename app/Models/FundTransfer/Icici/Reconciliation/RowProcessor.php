@@ -16,7 +16,7 @@ class RowProcessor extends BaseRowProcessor
     const PAYMENT_DATE      = 'payment_date';
     const CMS_REF_NO        = 'cms_ref_no';
 
-    protected function parseRow()
+    protected function processRow()
     {
         $bankStatus = $this->getNullOnEmpty(Headings::STATUS);
 
@@ -60,8 +60,12 @@ class RowProcessor extends BaseRowProcessor
 
         $currentStatus = $this->reconEntity->getStatus();
 
-        if ((in_array($currentBankStatusCode, Status::SUCCESS_STATUS, true) === true) and
-            ($newBankStatusCode === Status::CANCELLED))
+        $successStatuses = Status::getSuccessfulStatus();
+
+        $flipStatus = Status::getFlipStatus();
+
+        if ((in_array($currentBankStatusCode, $successStatuses, true) === true) and
+            (in_array($newBankStatusCode, $flipStatus, true) === true))
         {
             $this->reconEntity->setStatus(Attempt\Status::INITIATED);
         }

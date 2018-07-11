@@ -5,6 +5,7 @@ namespace RZP\Http\Response;
 use App;
 use View;
 use Request;
+use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 
@@ -175,6 +176,10 @@ class Response
         {
             return $this->generateCheckoutView($data);
         }
+        else if ($this->isViewRoute($route))
+        {
+            return $this->generateDefaultErrorView($data);
+        }
 
         return $this->json($data, $status);
     }
@@ -311,7 +316,8 @@ class Response
             'merchant_public_get_banks',
             'payment_cancel',
             'payment_create_jsonp',
-            'payment_get_status'
+            'payment_get_status',
+            'payment_get_flows',
         ];
 
         return (in_array($route, $jsonpRoutes));
@@ -326,6 +332,7 @@ class Response
             'payment_otp_resend',
             'payment_topup_ajax',
             'merchant_methods_downtime',
+            'customer_create_token_public',
         ];
 
         if (in_array($route, $routes, true) === true)
@@ -375,5 +382,27 @@ class Response
     protected function getCurrentRouteName()
     {
         return $this->route->getCurrentRouteName();
+    }
+
+    /**
+     * Returns true if given route is expected to render a view(always)
+     * @param  string $route
+     * @return bool
+     */
+    protected function isViewRoute(string $route = null): bool
+    {
+        return in_array($route, Route::$publicView, true);
+    }
+
+    /**
+     * Generates and renders a fallback minimal error view
+     * @param  array $data
+     * @return \Illuminate\Http\Response
+     */
+    protected function generateDefaultErrorView(array $data)
+    {
+        $response = \View::make('public.error', ['data' => $data]);
+
+        return \Response::make($response);
     }
 }

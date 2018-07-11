@@ -95,7 +95,7 @@ trait Callback
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
 
-                $isCorporatePayment = $payment->terminal->isCorporate();
+                $isCorporatePayment = $payment->isCorporateNetbanking();
 
                 // In case of non - corporate payments, this case is fine.
                 // In case of corporate and payment already having been authorized
@@ -221,6 +221,8 @@ trait Callback
             $input['s2s'] = true;
         }
 
+        $this->preProcessGatewayCallback($input);
+
         try
         {
             $data = $this->callGatewayCallback($input);
@@ -253,7 +255,7 @@ trait Callback
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
 
-                $isCorporatePayment = $payment->terminal->isCorporate();
+                $isCorporatePayment = $payment->isCorporateNetbanking();
 
                 //
                 // In case of non - corporate payments, this case is fine.
@@ -318,6 +320,17 @@ trait Callback
         }
     }
 
+    protected function preProcessGatewayCallback(array &$input)
+    {
+        $payment = $this->payment;
+
+        if (($payment->isMethodCardOrEmi() === true) and
+            ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP))
+        {
+            $input['gateway'] = $this->submitHeadlessOtp($payment, $input['gateway']);
+        }
+    }
+
     protected function postPaymentOtpCallbackProcessing(array &$input, $data)
     {
         $payment = $this->payment;
@@ -371,7 +384,7 @@ trait Callback
 
         $status = $payment->getStatus();
 
-        $isCorporatePayment = $payment->terminal->isCorporate();
+        $isCorporatePayment = $payment->isCorporateNetbanking();
 
         // In case of corporate payments, process this.
         if (($status !== Status::CREATED) and

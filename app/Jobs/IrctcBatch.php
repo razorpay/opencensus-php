@@ -2,9 +2,6 @@
 
 namespace RZP\Jobs;
 
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch as BatchModel;
 
@@ -15,14 +12,17 @@ use RZP\Models\Batch as BatchModel;
  * we are to execute 2 batches in sequence. And so from elsewhere we push a job
  * containing 2 batch ids in their order of execution which get processed here.
  */
-class IrctcBatch extends Job implements ShouldQueue
+class IrctcBatch extends Job
 {
-    use InteractsWithQueue;
-
     const BATCH_ORDER = [
         BatchModel\Type::IRCTC_REFUND,
         BatchModel\Type::IRCTC_SETTLEMENT
     ];
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $queueConfigKey = 'batch';
 
     /**
      * Associative array with key as batch type and value
@@ -31,6 +31,8 @@ class IrctcBatch extends Job implements ShouldQueue
      * @var array
      */
     protected $batches;
+
+    public $timeout = 3600;
 
     public function __construct(string $mode, array $batches)
     {

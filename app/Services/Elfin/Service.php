@@ -64,17 +64,23 @@ class Service extends Impl\Base
         return $this->services;
     }
 
+    public function setNoFallback()
+    {
+        $this->allowFallback = false;
+    }
+
     /**
      * Shorten given url.
      *
      * @param string       $url
+     * @param array        $input
      * @param bool|boolean $fail - If fail is passed as true it'll bubble up ex.
      *
      * @return string
      * @throws \Throwable
      * @throws null
      */
-    public function shorten(string $url, bool $fail = false)
+    public function shorten(string $url, array $input = [], bool $fail = false)
     {
         $e = null;
 
@@ -82,7 +88,7 @@ class Service extends Impl\Base
         {
             try
             {
-                return $this->driver($service)->shorten($url);
+                return $this->driver($service)->shorten($url, $input, $fail);
             }
             /**
              * Catching \Throwable as it is the base most interface and covers
@@ -119,7 +125,7 @@ class Service extends Impl\Base
      * @return Impl\Base
      * @throws Exception\RuntimeException
      */
-    protected function driver(string $service)
+    public function driver(string $service)
     {
         if (isset($this->drivers[$service]) === false)
         {

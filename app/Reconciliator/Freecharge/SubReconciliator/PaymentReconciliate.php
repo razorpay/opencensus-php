@@ -13,13 +13,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID      = 'Order Id';
-    const COLUMN_SERVICE_TAX     = 'Service Tax';
-    const COLUMN_SB_CESS         = 'Swachh Bharat Cess';
-    const COLUMN_KK_CESS         = 'Krishi Kalyan Cess';
-    const COLUMN_FEE             = 'Net Deduction';
-    const COLUMN_PAYMENT_AMOUNT  = 'Total Transaction Amount';
-    const COLUMN_SETTLED_AT      = 'Settlement Date';
+    const COLUMN_PAYMENT_ID      = 'order_id';
+    const COLUMN_SERVICE_TAX     = ['service_tax', 'gstservice_tax'];
+    const COLUMN_SB_CESS         = 'swachh_bharat_cess';
+    const COLUMN_KK_CESS         = 'krishi_kalyan_cess';
+    const COLUMN_FEE             = 'net_deduction';
+    const COLUMN_PAYMENT_AMOUNT  = 'total_transaction_amount';
+    const COLUMN_SETTLED_AT      = 'settlement_date';
 
     const SETTLEMENT_DATE_FORMAT = 'jS F Y';
 
@@ -34,49 +34,79 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
-        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
+        $serviceTax = null;
 
-        if (empty($row[self::COLUMN_SB_CESS]) === false)
+        //
+        // In new MIS files, we are getting GST with
+        // column name GST/Service Tax
+        //
+        $serviceTaxColumn = array_first(self::COLUMN_SERVICE_TAX, function ($cst) use ($row)
         {
-            $sbCess = floatval($row[self::COLUMN_SB_CESS]) * 100;
+            return (isset($row[$cst]) === true);
+        });
 
-            $serviceTax += $sbCess;
+        if ($serviceTaxColumn === null)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_SERVICE_TAX[0]);
+
+            return null;
         }
 
-        if (empty($row[self::COLUMN_KK_CESS]) === false)
-        {
-            $kkCess = floatval($row[self::COLUMN_KK_CESS]) * 100;
+        $serviceTax = $row[$serviceTaxColumn];
 
-            $serviceTax += $kkCess;
-        }
+        // Convert service tax into basic unit of currency (ex: paise)
+        $serviceTax = Base\Helper::getIntegerFormattedAmount($serviceTax);
 
-        return intval(round($serviceTax));
+        $sbCess = $this->getSbCess($row);
+        $kkCess = $this->getKkCess($row);
+
+        $serviceTax += $sbCess + $kkCess;
+
+        return $serviceTax;
+    }
+
+    protected function getSbCess(array $row)
+    {
+        $sbCess = $row[self::COLUMN_SB_CESS] ?? null;
+
+        return Base\Helper::getIntegerFormattedAmount($sbCess);
+    }
+
+    protected function getKkCess(array $row)
+    {
+        $kkCess = $row[self::COLUMN_KK_CESS] ?? null;
+
+        return Base\Helper::getIntegerFormattedAmount($kkCess);
     }
 
     protected function getGatewayFee($row)
     {
         //
+        // This should be isset not empty as fee can be 0 also.
+        //
+        if (isset($row[self::COLUMN_FEE]) === false)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_FEE);
+
+            return null;
+        }
+
+        //
         // The fee is provided as a separate column.
         // But we use the column which is the net deduction.
         // Hence, we don't need to add the service tax to this.
         //
-        $fee = floatval($row[self::COLUMN_FEE]) * 100;
-
-        return intval($fee);
+        return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
     }
 
     protected function getReconPaymentAmount($row)
     {
-        $paymentAmount = floatval($row[self::COLUMN_PAYMENT_AMOUNT]) * 100;
+        if (empty($row[self::COLUMN_PAYMENT_AMOUNT]) === true)
+        {
+            return null;
+        }
 
-        //
-        // We are converting to int after casting to string as PHP randomly
-        // returns wrong int values due to differing floating point precisions
-        // So something like intval(31946.0) may give 31945 or 31946
-        // Convering to string using number_format and then converting
-        // is a hack to avoid this issue
-        //
-        return intval(number_format($paymentAmount, 2, '.', ''));
+        return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
     }
 
     protected function getGatewaySettledAt(array $row)
@@ -104,7 +134,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'trace_code'    => TraceCode::RECON_INFO_ALERT,
                     'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
                     'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'gateway'       => $this->gateway
                 ]);
 
             $this->app['trace']->traceException($ex);
@@ -120,11 +150,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
                     'message'         => 'Payment amount mismatch',
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
-                    'gateway'         => get_called_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             return false;

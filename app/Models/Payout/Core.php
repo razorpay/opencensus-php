@@ -7,25 +7,27 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
-use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
-use RZP\Models\FundTransfer\Kotak;
-use RZP\Models\Settlement\Holidays;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Settlement\Merchant as SettlementMerchant;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 
 class Core extends Base\Core
 {
-    const MAX_PAYOUT_AMOUNT     = 500000000; // 50 Lakhs
+    const MAX_PAYOUT_AMOUNT     = 800000000; // 80 Lakhs
+
+    const PAYOUT_RETRY       = 'payout_retry_%s';
+
+    const MUTEX_LOCK_TIMEOUT = 300;
 
     /**
      * @var Mutex
@@ -113,6 +115,85 @@ class Core extends Base\Core
         return $payout->toArrayPublic();
     }
 
+    public function retryFailedPayouts(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_PAYOUT_RETRY_REQUEST,
+            $input);
+
+        (new Validator)->validateInput('payout_retry', $input);
+
+        $ids = Entity::verifyIdAndStripSignMultiple($input['ids']);
+
+        $payouts = $this->repo->payout->fetchFailedPayouts($ids);
+
+        $mutexResource = sprintf(self::PAYOUT_RETRY, $this->mode);
+
+        $result = $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function () use ($payouts)
+            {
+                return $this->attemptRetryForFailedPayouts($payouts);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $result + [
+            'not_attempted' => array_diff($ids, $payouts->getIds()),
+        ];
+    }
+
+    protected function attemptRetryForFailedPayouts(Base\PublicCollection $payouts): array
+    {
+        $payoutsRetried = [];
+
+        $retryFailed = [];
+
+        foreach ($payouts as $payout)
+        {
+            $channel = $payout->getChannel();
+
+            $merchantSettler = new SettlementMerchant($payout->merchant, $channel, $this->repo);
+
+            try
+            {
+                $payout = $this->repo->transaction(
+                    function () use ($merchantSettler, $payout)
+                    {
+                        return $merchantSettler->retryFailedPayout($payout);
+                    });
+
+                $payoutsRetried[] = $payout->getId();
+            }
+            catch (\Throwable $e)
+            {
+                $retryFailed[] = $payout->getId();
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_PAYOUT_RETRY_FAILED,
+                    [
+                        'id'      => $payout->getId(),
+                        'message' => $e->getMessage()
+                    ]
+                );
+
+                continue;
+            }
+
+            return [
+                'payouts_retried'       => $payoutsRetried,
+                'failed_retries'        => $retryFailed,
+            ];
+        }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_PAYOUT_RETRIED_IDS,
+            $payoutsRetried);
+
+        return $payoutsRetried;
+    }
     protected function createCustomerPayout(array $input, Merchant\Entity $merchant): Entity
     {
         $this->validateMerchantStatus($merchant);

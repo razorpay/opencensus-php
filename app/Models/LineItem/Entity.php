@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const TAX_INCLUSIVE    = 'tax_inclusive';
     const HSN_CODE         = 'hsn_code';
     const SAC_CODE         = 'sac_code';
+    const TAX_RATE         = 'tax_rate';
     const UNIT             = 'unit';
     const QUANTITY         = 'quantity';
     const DELETED_AT       = 'deleted_at';
@@ -68,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::TAX_INCLUSIVE => false,
         self::HSN_CODE      => null,
         self::SAC_CODE      => null,
+        self::TAX_RATE      => null,
     ];
 
     protected $visible = [
@@ -91,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::TAX_INCLUSIVE,
         self::HSN_CODE,
         self::SAC_CODE,
+        self::TAX_RATE,
         self::UNIT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -115,6 +118,7 @@ class Entity extends Base\PublicEntity
         self::TAX_INCLUSIVE,
         self::HSN_CODE,
         self::SAC_CODE,
+        self::TAX_RATE,
         self::UNIT,
         self::QUANTITY,
         self::TAXES,
@@ -129,6 +133,7 @@ class Entity extends Base\PublicEntity
         self::TAX_INCLUSIVE,
         self::HSN_CODE,
         self::SAC_CODE,
+        self::TAX_RATE,
         self::UNIT,
         self::QUANTITY,
     ];
@@ -141,6 +146,7 @@ class Entity extends Base\PublicEntity
         self::NET_AMOUNT    => 'int',
         self::TAX_INCLUSIVE => 'bool',
         self::QUANTITY      => 'int',
+        self::TAX_RATE      => 'int',
     ];
 
     protected $publicSetters = [
@@ -168,8 +174,14 @@ class Entity extends Base\PublicEntity
         self::TAX_INCLUSIVE,
         self::HSN_CODE,
         self::SAC_CODE,
+        self::TAX_RATE,
         self::TAX_ID,
         self::TAX_GROUP_ID,
+    ];
+
+    protected $ignoredRelations = [
+        'entity',
+        'ref',
     ];
 
     // -------------------------- Getters ----------------------------
@@ -214,9 +226,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SAC_CODE);
     }
 
+    public function getTaxRate()
+    {
+        return $this->getAttribute(self::TAX_RATE);
+    }
+
     public function getQuantity()
     {
         return $this->getAttribute(self::QUANTITY);
+    }
+
+    public function getName(): string
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getDescriptionElseName(): string
+    {
+        return $this->getDescription() ?: $this->getName();
     }
 
     // -------------------------- Getters Ends -----------------------

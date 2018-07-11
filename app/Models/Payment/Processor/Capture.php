@@ -2,23 +2,22 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Jobs\DispatchRouter;
+use RZP\Models\Emi;
+use RZP\Models\Order;
+use RZP\Models\Invoice;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Models\Currency;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
+use RZP\Models\VirtualAccount;
+use RZP\Models\Plan\Subscription;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Currency;
-use RZP\Models\Invoice;
-use RZP\Models\Merchant;
-use RZP\Models\Emi;
-use RZP\Models\Order;
-use RZP\Models\Payment;
-use RZP\Models\VirtualAccount;
-use RZP\Models\Plan\Subscription;
-use RZP\Models\Transaction;
-use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
 
 trait Capture
 {
@@ -300,6 +299,8 @@ trait Capture
      */
     protected function capturePayment(Payment\Entity $payment, int $captureAmount, string $currency)
     {
+        $this->modifyCaptureAmountForDiscountedOrder($payment, $captureAmount);
+
         //
         // If the fee bearer is customer then please to adjust input amount
         // with the available fee for the payment.
@@ -367,6 +368,30 @@ trait Capture
         $this->captureOnGateway($data);
 
         return $payment;
+    }
+
+    protected function modifyCaptureAmountForDiscountedOrder(Payment\Entity $payment, int & $captureAmount)
+    {
+        if ($payment->hasOrder() === false)
+        {
+            return;
+        }
+
+        $order = $payment->order;
+
+        if ($order->isDiscountApplicable() === false)
+        {
+            return;
+        }
+
+        $discount = $payment->discount;
+
+        if ($payment->discount === null)
+        {
+            return;
+        }
+
+        $captureAmount = $discount->offer->getDiscountedAmount($order->getAmount());
     }
 
     /**
@@ -444,9 +469,7 @@ trait Capture
         // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
         // previous capture request.
         //
-        $job = new CaptureJob($data);
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::CAPTURE);
+        CaptureJob::dispatch($data);
     }
 
     /**
@@ -504,11 +527,6 @@ trait Capture
         $this->triggerPaymentCapturedEvents();
 
         $this->notifyPaymentCaptured();
-
-        //
-        // Analytics
-        //
-        $this->notifyDashboard('payment', $this->payment);
     }
 
     /**
@@ -606,7 +624,8 @@ trait Capture
     {
         $payment = $this->payment;
 
-        if ($payment->isBankTransfer() === false)
+        if (($payment->isBankTransfer() === false) and
+            ($payment->isBharatQr() === false))
         {
             return;
         }
@@ -696,6 +715,8 @@ trait Capture
 
         $order->incrementAmountPaidBy($paidAmount);
 
+        $this->updateOrderStatusPaidIfApplicable($order, $payment);
+
         $this->repo->saveOrFail($order);
 
         $this->trace->info(
@@ -720,6 +741,31 @@ trait Capture
         {
             $this->updateInvoiceAfterCapture($invoice, $payment);
         }
+    }
+
+    protected function updateOrderStatusPaidIfApplicable(Order\Entity $order, Payment\Entity $payment)
+    {
+        if ($this->shouldMarkOrderPaid($order, $payment) === true)
+        {
+            $order->setStatus(Order\Status::PAID);
+        }
+    }
+
+    protected function shouldMarkOrderPaid(Order\Entity $order, Payment\Entity $payment)
+    {
+        if ($order->getAmountPaid() === $order->getAmount())
+        {
+            return true;
+        }
+
+        if (($order->isDiscountApplicable() === true) and
+            ($payment->discount !== null) and
+            (($payment->getAmount() + $payment->discount->getAmount()) === $order->getAmount()))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

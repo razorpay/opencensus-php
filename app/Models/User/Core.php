@@ -7,7 +7,6 @@ use Hash;
 
 use Carbon\Carbon;
 use Illuminate\Hashing\BcryptHasher;
-use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -20,9 +19,7 @@ use RZP\Constants\Timezone;
 
 class Core extends Base\Core
 {
-    use DispatchesJobs;
-
-    public function create(array $input)
+    public function create(array $input): Entity
     {
         $user = (new Entity)->build($input);
 
@@ -31,18 +28,21 @@ class Core extends Base\Core
         return $user;
     }
 
-    public function edit(Entity $user, array $input)
+    public function edit(Entity $user, array $input, $operation = 'edit')
     {
-        $user->edit($input);
+        $user->edit($input, $operation);
 
         $this->repo->saveOrFail($user);
 
-        $this->trace->info(
-            TraceCode::USER_EDIT,
-            [
-                'user_id'     => $user->getId(),
-                'input'       => $input,
-            ]);
+        if ($operation === 'edit')
+        {
+            $this->trace->info(
+                TraceCode::USER_EDIT,
+                [
+                    'user_id'     => $user->getId(),
+                    'input'       => $input
+                ]);
+        }
 
         return $user;
     }
@@ -88,18 +88,6 @@ class Core extends Base\Core
 
     public function changePassword(Entity $user, array $input)
     {
-        $oldPassword = $input[Entity::OLD_PASSWORD] ?? null;
-
-        if ((empty($oldPassword) === false) and
-            (Hash::check($oldPassword, $user->getPassword()) === false))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OLD_PASSWORD_MISMATCH);
-        }
-
-        (new Validator)->validateInput('change_password', $input);
-
-        $input[Entity::PASSWORD] = Hash::make($input[Entity::PASSWORD]);
-
         $user->fill($input);
 
         $this->repo->saveOrFail($user);
@@ -172,6 +160,8 @@ class Core extends Base\Core
 
         $merchantId = $input[Entity::MERCHANT_ID];
 
+        $this->repo->merchant->findOrFailPublic($merchantId);
+
         $this->repo->attach($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
 
         return $user->toArrayPublic();
@@ -186,6 +176,8 @@ class Core extends Base\Core
      */
     protected function detach(Entity $user, array $input)
     {
+        $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+
         $this->repo->detach($user, Entity::MERCHANTS, $input[Entity::MERCHANT_ID]);
 
         return $user->toArrayPublic();
@@ -212,6 +204,8 @@ class Core extends Base\Core
 
         $merchantId = $input[Entity::MERCHANT_ID];
 
+        $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+
         $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams], false);
 
         return $user->toArrayPublic();
@@ -224,9 +218,7 @@ class Core extends Base\Core
             'email' => $user['email'],
         ];
 
-        $job = new MailChimpSubscribe($data);
-
-        $this->dispatch($job);
+        MailChimpSubscribe::dispatch($data);
     }
 
     /**

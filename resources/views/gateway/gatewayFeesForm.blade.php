@@ -23,6 +23,9 @@
       .btn:active{
         box-shadow: 0 0 0 1px rgba(0,0,0,.15) inset,0 0 6px rgba(0,0,0,.2) inset;
       }
+      .btn[disabled]{
+        opacity: 0.6;
+      }
       img{
         width: 192px;
       }
@@ -89,18 +92,45 @@
         max-width: 320px;
         margin: 30px 0;
       }
+      #pro {display: none}
+      @keyframes spin {
+        0% {
+            transform: scale(0.5);
+            opacity: 0;
+            border-width: 8px;
+        }
+
+        20% {
+            transform: scale(0.6);
+            opacity: 0.8;
+            border-width: 4px;
+        }
+
+        90% {
+            transform: scale(1);
+            opacity: 0;
+        }
+      }
+
+    .spin {
+        margin: 0;
+        margin-left: 8px;
+        height: 1em;
+        width: 1em;
+        vertical-align: middle;
+        display: inline-block;
+        border-radius: 50%;
+        border: 4px solid #ffffff;
+        animation: spin 1.3s linear infinite;
+        box-sizing: border-box;
+        opacity: 0;
+    }
     </style>
   </head>
   <body>
     <form action='{{$url}}' method='post'>
       @foreach ($input as $key=>$value)
-        @if (is_array($value))
-          @foreach ($value as $key2=>$value2)
-            <input type='hidden' name='{{$key}}[{{$key2}}]' value='{{$value2}}'>
-          @endforeach
-        @else
           <input type='hidden' name='{{$key}}' value='{{$value}}'>
-        @endif
       @endforeach
       <div id='receipt'>
         <h2 style='font-weight: normal'>Fees Breakup</h2>
@@ -113,11 +143,19 @@
         <div class='td b'><span>Total</span></div>
         <div class='td r b'><span>₹{{$data['amount']}}</span></div>
         <div style='clear: both'></div>
-        <input class='btn' type='submit' value='Continue'>
+        <button class='btn' type='submit' value='continue'>Continue</button>
       </div>
       <p>Secure payments by</p>
       <img src='https://cdn.razorpay.com/logo.svg' height='40px'>
     </form>
     <div style='vertical-align: middle; display: inline-block; height: 96%'></div>
-  </body>
-</html>
+<script>
+  document.forms[0].onsubmit = function() {
+    var btn = document.querySelector('.btn');
+    btn.disabled = true;
+    btn.innerHTML = 'Processing';
+    let span = document.createElement('span');
+    span.className = 'spin';
+    btn.appendChild(span);
+  }
+</script>

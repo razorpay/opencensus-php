@@ -12,6 +12,7 @@ use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Terminal\Options;
+use RZP\Gateway\Netbanking\Icici\ResponseFields;
 
 class NetbankingIciciGatewayTest extends TestCase
 {
@@ -47,6 +48,46 @@ class NetbankingIciciGatewayTest extends TestCase
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
+    }
+
+    public function testCallbackFailedDueDateMismatch()
+    {
+        $boundaryTime = Carbon::create(2018, 6, 21, 23, 58, 00,Timezone::IST);
+
+        Carbon::setTestNow($boundaryTime);
+
+        $iterator = 0;
+
+        $this->mockServerContentFunction(function(& $content, $action) use (& $iterator)
+        {
+            if ($action === 'verify')
+            {
+                if ($iterator === 0)
+                {
+                    $content[ResponseFields::STATUS] = 'failed';
+                }
+
+                $iterator++;
+            }
+        });
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->assertEquals('captured',$payment['status']);
+
+        $this->assertSame(2, $iterator);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->fixtures->edit('netbanking', $netbanking['id'], ['date' => null]);
+
+        $this->verifyPayment($payment['id']);
+
+        $this->assertSame(3, $iterator);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertNotNull($netbanking['date']);
     }
 
     /**
@@ -106,6 +147,20 @@ class NetbankingIciciGatewayTest extends TestCase
         {
             $this->doAuthPayment($this->payment);
         });
+    }
+
+    public function testVerifyAmountMismatch()
+    {
+        $this->mockAmountMismatch();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthAndCapturePayment($this->payment);
+            });
     }
 
     public function testPaymentVerify()
@@ -237,6 +292,10 @@ class NetbankingIciciGatewayTest extends TestCase
             {
                 $this->verifyPayment($payment['razorpay_payment_id']);
             });
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertNull($netbanking['date']);
     }
 
     public function testEmptyVerifyResponse()
@@ -413,6 +472,17 @@ class NetbankingIciciGatewayTest extends TestCase
             if ($action === 'hash')
             {
                 $content['ES'] = 'This_is_a_random_string';
+            }
+        });
+    }
+
+    protected function mockAmountMismatch()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content[ResponseFields::AMOUNT] = '300';
             }
         });
     }

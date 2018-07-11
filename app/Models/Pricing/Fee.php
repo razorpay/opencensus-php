@@ -5,7 +5,6 @@ namespace RZP\Models\Pricing;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Exception;
-use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 
@@ -20,6 +19,8 @@ class Fee extends Base\Core
     const DEFAULT_PRICING_PLAN_ID = '1hDYlICobzOCYt';
 
     const EMI_SUB_PRICING_PLAN_ID = '1EmiSubPricing';
+
+    const DEFAULT_QR_CODE_PLAN_ID = 'A8UwvIbaL8n4Q8';
 
     const DEFAULT_BANK_TRANSFER_PLAN_ID = '8gP5505KgDVWIh';
 
@@ -82,6 +83,21 @@ class Fee extends Base\Core
             $bankTransferPricing = $this->repo->getPricingPlanById(self::DEFAULT_BANK_TRANSFER_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($bankTransferPricing);
+        }
+
+        if ($pricingPlan->hasQrCodeReceiver() === false)
+        {
+            //
+            // We are not creating the default qr code pricing plan in code because it has multiple
+            // issue.
+            // 1. We wouldn't be able to change the pricing rules without changing the code. It will
+            //    need a deployment
+            // 2. If we add it in the code we will have to keep validation on deletion. Because if
+            //    a ops guy deletes it it will get created again.
+            //
+            $qrCodePricing = $this->repo->getPricingPlanById(self::DEFAULT_QR_CODE_PLAN_ID);
+
+            $pricingPlan = $pricingPlan->merge($qrCodePricing);
         }
 
         return $pricingPlan;

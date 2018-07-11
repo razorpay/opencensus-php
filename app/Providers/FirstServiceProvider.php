@@ -2,7 +2,12 @@
 
 namespace RZP\Providers;
 
+use Config;
+use Barryvdh\Debugbar;
+use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
+
+use RZP\Http\RequestContext;
 use RZP\Trace\ApiTraceProcessor;
 
 class FirstServiceProvider extends ServiceProvider
@@ -21,11 +26,15 @@ class FirstServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->registerDebugbarIfApplicable();
+
         $this->registerRequestGetIdMacro();
 
         $this->registerRequestSetTaskIdMacro();
 
         $this->registerRequestGetTaskIdMacro();
+
+        $this->registerRequestContext();
     }
 
     public function boot()
@@ -70,6 +79,20 @@ class FirstServiceProvider extends ServiceProvider
     }
 
     /**
+     * Register Debugbar ServiceProvider and Facade for API Inspector
+     * for debug mode, non-production requests.
+     */
+    protected function registerDebugbarIfApplicable()
+    {
+        if ((Config::get('app.debug') === true) and
+            ($this->app->environment() !== 'production'))
+        {
+            $this->app->register(Debugbar\ServiceProvider::class);
+            AliasLoader::getInstance()->alias('Debugbar', Debugbar\Facade::class);
+        }
+    }
+
+    /**
      * Registers a getTaskId macro on request. It uses the X-Razorpay-TaskId header value
      * if present, else generates a new one.If api is the source of new task id, then uses
      * the request id value instead of generating new one
@@ -103,5 +126,10 @@ class FirstServiceProvider extends ServiceProvider
 
             return $this->taskId;
         });
+    }
+
+    protected function registerRequestContext()
+    {
+        $this->app->singleton('request.ctx', function($app) { return new RequestContext($app); });
     }
 }

@@ -68,17 +68,20 @@ class Entity
     const SETTLEMENT            = 'settlement';
     const TRANSACTION           = 'transaction';
     const FEE_BREAKUP           = 'fee_breakup';
+    const PAYMENT_LINK          = 'payment_link';
     const GATEWAY_RULE          = 'gateway_rule';
     const GATEWAY_FILE          = 'gateway_file';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
     const DISPUTE_FILE          = 'dispute_file';
     const SUBSCRIPTION          = 'subscription';
+    const ENTITY_OFFER          = 'entity_offer';
     const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
     const SCHEDULE_TASK         = 'schedule_task';
     const LINE_ITEM_TAX         = 'line_item_tax';
     const DISPUTE_REASON        = 'dispute_reason';
+    const NODAL_STATEMENT       = 'nodal_statement';
     const VIRTUAL_ACCOUNT       = 'virtual_account';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const TERMINAL_ACTION       = 'terminal_action';
@@ -129,7 +132,9 @@ class Entity
     const UPI                    = 'upi';
     const AEPS                   = 'aeps';
     const AMEX                   = 'amex';
-    const BLADE                  = 'blade';
+    const MPI                    = 'mpi';
+    const MPI_BLADE              = 'mpi_blade';
+    const MPI_ENSTAGE            = 'mpi_enstage';
     const ATOM                   = 'atom';
     const ENACH                  = 'enach';
     const HDFC                   = 'hdfc';
@@ -150,6 +155,7 @@ class Entity
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
+    const UPI_HULK               = 'upi_hulk';
     const ENACH_RBL              = 'enach_rbl';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const NETBANKING_AXIS        = 'netbanking_axis';
@@ -163,6 +169,8 @@ class Entity
     const NETBANKING_RBL         = 'netbanking_rbl';
     const NETBANKING_INDUSIND    = 'netbanking_indusind';
     const NETBANKING_PNB         = 'netbanking_pnb';
+    const NETBANKING_OBC         = 'netbanking_obc';
+    const NETBANKING_CSB         = 'netbanking_csb';
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const WALLET_JIOMONEY        = 'wallet_jiomoney';
     const WALLET_SBIBUDDY        = 'wallet_sbibuddy';
@@ -172,10 +180,18 @@ class Entity
     const WALLET_OPENWALLET      = 'wallet_openwallet';
     const WALLET_AIRTELMONEY     = 'wallet_airtelmoney';
     const WALLET_MPESA           = 'wallet_mpesa';
+    const WALLET_AMAZONPAY       = 'wallet_amazonpay';
 
     // Tax and Tax Groups
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
+
+    // External Service Entity (ServiceName.EntityName)
+    const REPORTING_LOGS               = 'reporting.logs';
+    const REPORTING_CONFIGS            = 'reporting.configs';
+    const REPORTING_SCHEDULES          = 'reporting.schedules';
+    const SHIELD_RULES                 = 'shield.rules';
+    const SHIELD_RULE_ANALYTICS        = 'shield.rule_analytics';
 
     /**
      * Defines a map of entites which are currently
@@ -197,6 +213,20 @@ class Entity
         ],
     ];
 
+    /**
+     * Id corresponding to following listed entities are allowed for x_entity_id (header or query parameter) during
+     * keyless auth to public routes.
+     * Ref: KeylessPublicAuth's retrieveMerchant() for usage.
+     */
+    const KEYLESS_ALLOWED_ENTITIES = [
+        self::ORDER,
+        self::INVOICE,
+        self::PAYMENT,
+        self::CUSTOMER,
+        self::SUBSCRIPTION,
+        self::PAYMENT_LINK,
+    ];
+
     public static $namespace = [
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::P2P                   => \RZP\Models\P2p::class,
@@ -206,7 +236,6 @@ class Entity
         self::EBS                   => \RZP\Gateway\Ebs::class,
         self::ATOM                  => \RZP\Gateway\Atom::class,
         self::AMEX                  => \RZP\Gateway\Amex::class,
-        self::BLADE                 => \RZP\Gateway\Blade::class,
         self::HDFC                  => \RZP\Gateway\Hdfc::class,
         self::USER                  => \RZP\Models\User::class,
         self::OFFER                 => \RZP\Models\Offer::class,
@@ -232,9 +261,11 @@ class Entity
         self::INVITATION            => \RZP\Models\Invitation::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
+        self::ENTITY_OFFER          => \RZP\Models\Offer\EntityOffer::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
         self::DISPUTE_FILE          => \RZP\Models\Dispute\File::class,
+        self::PAYMENT_LINK          => \RZP\Models\PaymentLink::class,
         self::GATEWAY_TOKEN         => \RZP\Models\Customer\GatewayToken::class,
         self::SCHEDULE_TASK         => \RZP\Models\Schedule\Task::class,
         self::DISPUTE_REASON        => \RZP\Models\Dispute\Reason::class,
@@ -250,6 +281,7 @@ class Entity
         self::MERCHANT_PROMOTION    => \RZP\Models\Merchant\Promotion::class,
         self::MERCHANT_INVOICE      => \RZP\Models\Merchant\Invoice::class,
         self::MERCHANT_EMI_PLANS    => \RZP\Models\Merchant\EmiPlans::class,
+        self::NODAL_STATEMENT       => \RZP\Models\Nodal\Statement::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP   => \RZP\Models\Merchant\AccessMap::class,
@@ -273,6 +305,7 @@ class Entity
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Sbi::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
+        self::UPI_HULK               => \RZP\Gateway\Upi\Hulk::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Icici::class,
         self::AXIS_MIGS              => \RZP\Gateway\AxisMigs::class,
@@ -294,16 +327,22 @@ class Entity
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,
+        self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Obc::class,
         self::NETBANKING_AIRTEL      => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_FEDERAL     => \RZP\Gateway\Netbanking\Federal::class,
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Rbl::class,
         self::NETBANKING_INDUSIND    => \RZP\Gateway\Netbanking\Indusind::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Pnb::class,
+        self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Csb::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET      => \RZP\Gateway\Wallet\Openwallet::class,
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
         self::WALLET_AIRTELMONEY     => \RZP\Gateway\Wallet\Airtelmoney::class,
         self::WALLET_MPESA           => \RZP\Gateway\Wallet\Mpesa::class,
+        self::MPI                    => \RZP\Gateway\Mpi\Base::class,
+        self::MPI_BLADE              => \RZP\Gateway\Mpi\Blade::class,
+        self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Enstage::class,
+        self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Amazonpay::class,
 
         // heimdall
         self::ORG                   => \RZP\Models\Admin\Org::class,
@@ -338,13 +377,19 @@ class Entity
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
+
+        self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,
+        self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Base::class,
 
         self::ENACH_RBL              => \RZP\Gateway\Enach\Base::class,
 
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Base::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Base::class,
+        self::UPI_HULK               => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
@@ -357,6 +402,17 @@ class Entity
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Base::class,
+
+        self::NODAL_STATEMENT        => \RZP\Models\Nodal\Statement::class,
+    ];
+
+    protected static $externalServiceClass = [
+        self::REPORTING_LOGS               => \RZP\Services\Reporting::class,
+        self::REPORTING_CONFIGS            => \RZP\Services\Reporting::class,
+        self::REPORTING_SCHEDULES          => \RZP\Services\Reporting::class,
+        self::SHIELD_RULES                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RULE_ANALYTICS        => \RZP\Services\ShieldClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [
@@ -520,8 +576,51 @@ class Entity
         }
     }
 
+    /**
+     * For API entities there would only be entity, which would be verified by normal flow
+     * For other, we need to validate the service should exists, and entity is exposed
+     *
+     * @param string $entity
+     * @return bool
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public static function validateExternalServiceEntity(string $entity)
+    {
+        return (isset(self::$externalServiceClass[$entity]) === true);
+    }
+
+    public static function getExternalServiceClass(string $entity)
+    {
+        $class = self::$externalServiceClass[$entity];
+
+        return new $class;
+    }
+
+    public static function getExternalEntityName(string $entity)
+    {
+        return explode('.', $entity)[1];
+    }
+
     public static function isEntitySyncedInLiveAndTest($entity)
     {
         return in_array($entity, self::$syncedInLiveAndTest, true);
+    }
+
+    /**
+     * Returns the entity name from given sign. Only iterates over the scope of allowed entities for keyless auth.
+     * @param  string      $sign
+     * @return string|null
+     */
+    public static function getKeylessAllowedEntityFromSign(string $sign)
+    {
+        foreach (self::KEYLESS_ALLOWED_ENTITIES as $allowedEntity)
+        {
+            $allowedEntityClass = self::getEntityClass($allowedEntity);
+
+            if ($sign === $allowedEntityClass::getSign())
+            {
+                return $allowedEntity;
+            }
+        }
     }
 }

@@ -14,10 +14,11 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Module
 {
-    const OPENWALLET    = 'openwallet';
-    const ONBOARDING    = 'onboarding';
-    const SUBSCRIPTIONS = 'subscriptions';
     const BATCH         = 'batch';
+    const PARTNER       = 'partner';
+    const ONBOARDING    = 'onboarding';
+    const OPENWALLET    = 'openwallet';
+    const SUBSCRIPTIONS = 'subscriptions';
 
     /**
      * @param string $module

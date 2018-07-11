@@ -1,0 +1,223 @@
+<?php
+
+namespace RZP\Tests\Functional\Lambda;
+
+use Excel;
+use Config;
+use ZipArchive;
+
+use RZP\Tests\Functional\TestCase;
+use Illuminate\Http\Testing\File as TestingFile;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
+class LambdaTest extends TestCase
+{
+    use PaymentTrait;
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->testDataFilePath = __DIR__.'/LambdaTestData.php';
+
+        $this->fixtures->create('terminal:shared_enach_rbl_terminal');
+
+        $this->ba->appAuth();
+    }
+
+    public function testENachRblAckBatchXmlUploadedFile()
+    {
+        $file = $this->getFileToUpload();
+
+        $request = [
+            'url'    => '/lambda/emandate',
+            'method' => 'POST',
+            'content' => [
+                'sub_type' => 'acknowledge',
+                'gateway'  => 'enach_rbl',
+            ],
+            'files' => [
+                'file' => $file,
+            ]
+        ];
+
+        $batches = $this->makeRequestAndGetContent($request);
+
+        $this->validateBatch($batches);
+    }
+
+    public function testENachRblAckBatchAwsKey()
+    {
+        $file = $this->getFileToUpload();
+
+        $request = [
+            'url'    => '/lambda/emandate',
+            'method' => 'POST',
+            'content' => [
+                'sub_type' => 'acknowledge',
+                'gateway'  => 'enach_rbl',
+                'key'      => $file->getRealPath()
+            ],
+        ];
+
+        $batches = $this->makeRequestAndGetContent($request);
+
+        $this->validateBatch($batches);
+    }
+
+    public function testENachRblAckBatchZipAwsKey()
+    {
+        $file = $this->getFileToUpload();
+
+        $file = $this->createZipFile($file);
+
+        $request = [
+            'url'    => '/lambda/emandate',
+            'method' => 'POST',
+            'content' => [
+                'sub_type' => 'acknowledge',
+                'gateway'  => 'enach_rbl',
+                'key'      => $file
+            ],
+        ];
+
+        $batches = $this->makeRequestAndGetContent($request);
+
+        $this->validateBatch($batches);
+    }
+
+    protected function validateBatch($batches)
+    {
+        $this->assertEquals('collection', $batches['entity']);
+
+        $this->assertEquals(1, $batches['count']);
+
+        $this->assertEquals('emandate', $batches['items'][0]['type']);
+    }
+
+    protected function createZipFile($file)
+    {
+        $zip = new ZipArchive();
+
+        $tempFileName = sys_get_temp_dir() . '/test.zip';
+
+        $zip->open($tempFileName, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        $zip->addFile($file->getRealPath(), $file->getFileName());
+
+        $zip->close();
+
+        return $tempFileName;
+    }
+
+    protected function getFileToUpload()
+    {
+        list($payment, $token, $order) = $this->createEmandatePayment();
+
+        $sheets = [
+            'Acknowledgement_summary' => [
+                'config' => [
+                    'start_cell' => 'A1',
+                ],
+                'items'  => [
+                    [
+                        'random' => '1',
+                    ],
+                ],
+            ],
+            'ACKNOWLEDGMENT REPORT'  => [
+                'config' => [
+                    'start_cell' => 'A2',
+                ],
+                'items'  => [
+                    [
+                        'MANDATE_DATE' => 'some date',
+                        'BATCH'        => 10,
+                        'IHNO'         => 6411,
+                        'MANDATE_TYPE' => 'NEW',
+                        'UMRN'         => 'UTIB6000000005393968',
+                        'REF_1'        => $payment->getId(),
+                        'REF_2'        => '',
+                        'CUST_NAME'    => 'customer name',
+                        'BANK'         => 'UTIB',
+                        'BRANCH'       => 'branch',
+                        'BANK_CODE'    => 'UTIB0000123',
+                        'AC_TYPE'      => 'SAVINGS',
+                        'ACNO'         => '914010009305862',
+                        'ACK_DATE'     => 'some date',
+                        'ACK_DESC'     => 'description',
+                        'AMOUNT'       => 99999,
+                        'FREQUENCY'    => 'ADHO',
+                        'TEL_NO'       => '',
+                        'MOBILE_NO'    => '9998887776',
+                        'MAIL_ID'      => 'test@enach.com',
+                        'UPLOAD_BATCH' => 'ESIGN000001',
+                        'UPLOAD_DATE'  => 'some date',
+                        'UPDATE_DATE'  => '',
+                        'SOLE_ID'      => '',
+                    ]
+                ],
+            ],
+        ];
+
+        $data = $this->getExcelString('Acknowledgment Report_15062018_Acknowledgment Report', $sheets);
+
+        $tempFileName = sys_get_temp_dir() . '/Acknowledgment Report_15062018_Acknowledgment Report.xlsx';
+
+        $handle = fopen($tempFileName, 'w+');
+        fwrite($handle, $data);
+        fseek($handle, 0);
+        $file = (new TestingFile('Acknowledgment Report_15062018_Acknowledgment Report.xlsx', $handle));
+
+        return $file;
+    }
+
+    protected function createEmandatePayment($amount = 0, $recurringType = 'initial')
+    {
+        $order = $this->fixtures->create('order:emandate_order', [
+            'status' => 'attempted',
+            'amount' => 0]);
+
+        $token = $this->fixtures->create('customer:emandate_token', [
+            'aadhaar_number' => '390051307206',
+            'auth_type' => 'aadhaar']);
+
+        $payment = [
+            'auth_type'         => 'aadhaar',
+            'terminal_id'       => '1000EnachRblTl',
+            'order_id'          => $order->getId(),
+            'amount'            => $order->getAmount(),
+            'amount_authorized' => $order->getAmount(),
+            'gateway'           => 'enach_rbl',
+            'bank'              => 'UTIB',
+            'recurring'         => '1',
+            'customer_id'       => $token->getCustomerId(),
+            'token_id'          => $token->getId(),
+            'recurring_type'    => $recurringType,
+        ];
+
+        $payment = $this->fixtures->create('payment:emandate_authorized', $payment);
+
+        return [$payment, $token, $order];
+    }
+
+    protected function getExcelString($name, $sheets)
+    {
+        $excel = Excel::create(
+            $name,
+            function($excel) use ($sheets) {
+                foreach ($sheets as $sheetName => $data)
+                {
+                    $excel->sheet(
+                        $sheetName,
+                        function($sheet) use ($data) {
+                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
+                        }
+                    );
+                }
+            }
+        );
+
+        return $excel->string('xlsx');
+    }
+}

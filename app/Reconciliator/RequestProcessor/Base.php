@@ -47,9 +47,12 @@ class Base extends Core
     const NETBANKING_FEDERAL     = 'NetbankingFederal';
     const NETBANKING_CORPORATION = 'NetbankingCorporation';
     const NETBANKING_RBL         = 'NetbankingRbl';
+    const NETBANKING_CSB         = 'NetbankingCsb';
     const NETBANKING_INDUSIND    = 'NetbankingIndusind';
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
+    const NETBANKING_OBC         = 'NetbankingObc';
+    const NETBANKING_HDFC        = 'NetbankingHdfc';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const JIOMONEY               = 'Jiomoney';
@@ -60,6 +63,8 @@ class Base extends Core
     const UPI_ICICI              = 'UpiIcici';
     const ADMIN                  = 'admin';
     const HITACHI                = 'Hitachi';
+    const CARD_FSS               = 'CardFss';
+    const ATOM                   = 'Atom';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -75,14 +80,17 @@ class Base extends Core
         self::PAYTM               => [],
         self::KOTAK               => ['bankalerts@kotak.com'],
         self::OLAMONEY            => ['olamoney-noreply@olacabs.com'],
-        self::FREECHARGE          => ['noreply@freechargemail.in'],
-        self::NETBANKING_AXIS     => ['it.rico@axisbank.com'],
+        self::FREECHARGE          => ['noreply@fcemail.in'],
+        self::NETBANKING_AXIS     => ['ibanking@axisbank.com'],
         self::NETBANKING_ICICI    => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
         self::NETBANKING_INDUSIND => [],
+        self::NETBANKING_OBC      => [],
         self::NETBANKING_PNB      => [],
+        self::NETBANKING_CSB      => ['noreply@csb.co.in'],
         self::NETBANKING_BOB      => ['billpay@bankofbaroda.com'],
+        self::NETBANKING_HDFC     => [],
         self::JIOMONEY            => [],
         self::EBS                 => [],
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
@@ -92,9 +100,11 @@ class Base extends Core
         self::UPI_SBI             => [],
         self::PAYUMONEY           => [],
         self::HITACHI             => ['reportsmailer@hitachi-payments.com'],
+        self::CARD_FSS            => [],
+        self::ATOM                => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN               => ['saurav.chowdhury@razorpay.com']
+        self::ADMIN               => ['saurav.chowdhury@razorpay.com'],
     ];
 
     /**
@@ -249,7 +259,6 @@ class Base extends Core
      *
      * @param array $zipFileDetails Zip file that needs to be extracted.
      * @return array File details of all the files present in the zip file.
-     * @throws Exception\ReconciliationException
      */
     protected function getFileDetailsFromZipFile(array $zipFileDetails)
     {

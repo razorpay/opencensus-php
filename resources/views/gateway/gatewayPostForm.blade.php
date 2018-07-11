@@ -74,6 +74,9 @@ body{
   color:#212121;
   font-size:14px;
   letter-spacing:-0.3px;
+  @if ($data['nobranding'])
+    display: none;
+  @endif
 }
 
 #ldr {
