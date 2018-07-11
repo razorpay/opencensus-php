@@ -227,7 +227,9 @@ class Service extends Base\Service
 
     public function loginWithOAuth($input)
     {
-        // TODO: error validation
+        $validator = new Validator();
+
+        $validator->validateInput('o_auth_login', $input);
 
         // Get the admin record
         $admin = $this->repo->admin->findByEmail($input['email']);

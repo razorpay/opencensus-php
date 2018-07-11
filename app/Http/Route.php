@@ -543,7 +543,6 @@ final class Route
         'admin_get_app_auth'                       => ['post',     'current_admin',                                  'OrganizationController@getAdminByAppAuth'                          ],
         'admin_get'                                => ['get',      'admin/{id}/fetch',                               'OrganizationController@getAdmin'                                   ],
         'admin_edit'                               => ['put',      'admin/{id}',                                     'OrganizationController@editAdmin'                                  ],
-        'admin_edit_app_auth'                      => ['put',      'admin-app-auth/{id}',                            'OrganizationController@editAdmin'                                  ],
         'admin_fetch_merchant_ids_new'             => ['get',      'admins/merchant_ids',                            'OrganizationController@getMerchantIdsFromEs'                       ],
         'admin_fetch_merchants_new'                => ['get',      'admins/merchants',                               'OrganizationController@getMerchantsFromEs'                         ],
         'admin_delete'                             => ['delete',   'admin/{id}',                                     'OrganizationController@deleteAdmin'                                ],
@@ -1043,7 +1042,6 @@ final class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'admin_authentication',
-        'admin_edit_app_auth',
         'admin_forgot_password',
         'admin_lock_old_accounts',
         'admin_oauth_authenticate',
@@ -1980,7 +1978,6 @@ final class Route
             'user_resend_verification',
             'user_reset_password_token',
             // Called during signup flow
-            'admin_edit_app_auth',
             'admin_authentication',
             'admin_forgot_password',
             'admin_reset_password',
