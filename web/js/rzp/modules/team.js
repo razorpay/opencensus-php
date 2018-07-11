@@ -10,9 +10,17 @@ export const INVITATION_REMOVE = 'INVITATION_REMOVE';
 export const USER_UPDATE = 'USER_UPDATE';
 export const USER_REMOVE = 'USER_REMOVE';
 
-const fetchInvitations = _ => merchantFetch('invitations');
+const fetchInvitations = _ =>
+  merchantFetch({
+    url: 'invitations',
+    mode: 'live',
+  });
 
-const fetchUsers = _ => merchantFetch(`merchants-users`);
+const fetchUsers = _ =>
+  merchantFetch({
+    url: 'merchants-users',
+    mode: 'live',
+  });
 
 export const fetchTeamDetails = params => {
   return {
@@ -44,6 +52,7 @@ export const resendInvitation = (inviteId, data) => {
     payload: merchantFetch({
       url: `invitations/${inviteId}/resend`,
       method: 'put',
+      mode: 'live',
       data,
     }),
   };
@@ -56,6 +65,7 @@ export const updateInvitation = (inviteId, data) => {
       url: `invitations/${inviteId}`,
       method: 'patch',
       data,
+      mode: 'live',
     }),
   };
 };
@@ -66,6 +76,7 @@ export const cancelInvitation = inviteId => {
     payload: merchantFetch({
       method: 'delete',
       url: `invitations/${inviteId}`,
+      mode: 'live',
     }),
   };
 };
@@ -77,6 +88,7 @@ export const updateUser = (userId, data) => {
       url: `users/${userId}/update`,
       method: 'put',
       data,
+      mode: 'live',
     }),
   };
 };

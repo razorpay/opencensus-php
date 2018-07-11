@@ -17,6 +17,9 @@ import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
 
+const welcomeImg = '/img/activation/welcome.svg';
+const successImg = '/img/activation/submit-success.svg';
+
 /*
 * ActivationContainer is used in:
 * 1. '/activation' route for Activation form for merchant, and
@@ -74,12 +77,12 @@ export class ActivationContainer extends React.Component {
 
   preloadWelcomeAsset() {
     const welcome = new Image();
-    welcome.src = '/img/activation/welcome.svg';
+    welcome.src = welcomeImg;
   }
 
   preloadSuccessAsset() {
     const success = new Image();
-    success.src = '/img/activation/submit-success.svg';
+    success.src = successImg;
   }
 
   updateSession(data) {
@@ -371,7 +374,7 @@ const SuccessScreen = _ => {
     <div class="Activation--success">
       <div class="Activation-title">
         <side-title>Activation Form submitted Successfully!</side-title>
-        <div class="submit-illustration" />
+        <img src={successImg} class="submit-illustration" />
       </div>
       <div class="Activation-info">
         <i class="i i-check" /> Activation Form Submitted
@@ -405,7 +408,7 @@ const WelcomeScreen = ({ openWizard }) => {
     <div class="Activation--welcome">
       <h3> Get Started with Activation</h3>
       <div class="underline" />
-      <div class="welcome-illustration" />
+      <img src={welcomeImg} class="welcome-illustration" />
       <div class="short-content">
         <p>
           Simply submit your business details and upload relevant proofs to

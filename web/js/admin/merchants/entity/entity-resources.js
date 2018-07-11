@@ -481,6 +481,10 @@ export function getDetailsViewMap(model) {
         : null,
     },
     {
+      label: 'KLA',
+      value: _getBoolIcon(details.activated && !details.has_key_access),
+    },
+    {
       label: 'MCC',
       value: details.category,
     },
