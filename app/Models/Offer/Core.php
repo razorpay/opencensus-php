@@ -220,21 +220,20 @@ class Core extends Base\Core
         // required to uniquely define an offer
         $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $this->merchant->getId());
 
-        // This will check if any existing offer with
-        // same emi duration exists. For example
-        // existing offer has null emi_durations that
-        // means all emi durations are valid. So any
-        // new offer with same issuer and any emi duration like
-        // 3 will fail
+        /**
+         * This will check if any existing offer with
+         * same emi duration exists. For example
+         * existing offer has null emi_durations that
+         * means all emi durations are valid. So any
+         * new offer with same issuer and any emi duration like
+         * 3 will fail
+         */
         if ($offer->getEmiSubvention() === true)
         {
             $existingDurations = [];
 
-            $existingOffersArray =  $existingOffers->toArray();
-
-            array_walk(
-                $existingOffersArray,
-                function (&$existingOffer, $key) use( &$existingDurations)
+            $existingOffers->each(
+                function ($existingOffer) use(&$existingDurations)
                 {
                     $existingOfferDuration = $existingOffer['emi_durations'] ?: Emi\Entity::VALID_DURATIONS;
 
@@ -243,12 +242,9 @@ class Core extends Base\Core
 
             $offerEmiDurations = $offer->getEmiDurations() ?: Emi\Entity::VALID_DURATIONS;
 
-            $diffArray = array_diff($offerEmiDurations, $existingDurations);
-
-            if (count($diffArray) !== count($offer->getEmiDurations()))
+            if (empty(array_intersect($offerEmiDurations, $existingDurations)) === false)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS,
-                    'emi_durations', implode(', ', $diffArray));
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
             }
         }
         else if($existingOffers->count() > 0)

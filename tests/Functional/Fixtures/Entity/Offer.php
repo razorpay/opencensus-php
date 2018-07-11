@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Carbon\Carbon;
 
-use JMS\Serializer\Tests\Fixtures\Discriminator\Car;
 use RZP\Constants\Timezone;
 
 class Offer extends Base
@@ -49,7 +48,7 @@ class Offer extends Base
             'emi_durations'  => [9],
             'payment_network'=> 'AMEX',
             'issuer'         => null,
-            'min_amount'     => 316389,
+            'min_amount'     => 319149,
             'percent_rate'   => null,
         ];
 
