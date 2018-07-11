@@ -481,7 +481,7 @@ export function getDetailsViewMap(model) {
         : null,
     },
     {
-      label: 'KLA',
+      label: 'Keyless Auth',
       value: _getBoolIcon(details.activated && !details.has_key_access),
     },
     {
