@@ -4,7 +4,7 @@ import { render } from 'react-dom';
 import { HashRouter as Router } from 'react-router-dom';
 
 import 'rzp/utils/polyfills';
-import store from 'merchant/store';
+import store from 'merchantLA/store';
 
 import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider';
 
