@@ -312,14 +312,11 @@ class   Processor extends VirtualAccount\Processor
 
         if (isset($this->gatewayInput[GatewayResponseParams::SENDER_NAME]) === true)
         {
-            $cardHolderName = preg_replace("/[^ \w]+/",
-                                           "",
-                                            $this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
-        }
+            $senderName = $this->gatewayInput[GatewayResponseParams::SENDER_NAME];
 
-        if (empty($cardHolderName) === false)
-        {
-            $card[Card\Entity::NAME] = $cardHolderName;
+            $cardName = preg_replace("/[^ \w]+/", "", $senderName);
+
+            $card[Card\Entity::NAME] = $cardName ?: $card[Card\Entity::NAME];
         }
 
         return $card;
