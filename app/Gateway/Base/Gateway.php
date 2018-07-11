@@ -321,7 +321,7 @@ class Gateway
      * else the value of $valid will be true and we will send the respective response to gateway.
      */
 
-    public function getBharatQrResponse(bool $valid, $input = null, $exception = null)
+    public function getBharatQrResponse(bool $valid, $gatewayInput = null, $exception = null)
     {
         if ($valid === true)
         {

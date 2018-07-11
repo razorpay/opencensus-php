@@ -39,11 +39,20 @@ class Service extends Base\Service
         {
             $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);
         }
+        catch(Exception\GatewayErrorException $ex)
+        {
+            $this->trace->traceException($ex);
+
+            // sending the error reason to the gateway
+            return $gatewayClass->getBharatQrResponse(false, $input, $ex);
+        }
         catch (\Exception $ex)
         {
             $this->trace->traceException($ex);
 
-            return $gatewayClass->getBharatQrResponse(false, $input, $ex);
+            // since it could be any runtime exception, so sharing "Failure" as a generic error description and not
+            //passing exception object
+            return $gatewayClass->getBharatQrResponse(false, $input);
         }
 
         $qrData = $gatewayResponse['qr_data'];
