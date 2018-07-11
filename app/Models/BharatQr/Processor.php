@@ -204,7 +204,7 @@ class Processor extends VirtualAccount\Processor
 
         if (isset($this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
         {
-            $gatewayMerchantId    = $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
+            $gatewayMerchantId = $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
 
             $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
         }
@@ -312,11 +312,11 @@ class Processor extends VirtualAccount\Processor
 
         if (isset($this->gatewayInput[GatewayResponseParams::SENDER_NAME]) === true)
         {
-            $senderName = $this->gatewayInput[GatewayResponseParams::SENDER_NAME] ;
+            $senderName = $this->gatewayInput[GatewayResponseParams::SENDER_NAME];
 
-            $card[Card\Entity::NAME] = empty($senderName) ? $card[Card\Entity::NAME] : preg_replace("/[^ \w]+/",
-                                                                                                    "",
-                                                                                                     $senderName);
+            $cardName = preg_replace("/[^ \w]+/", "", $senderName);
+
+            $card[Card\Entity::NAME] = $cardName ?: $card[Card\Entity::NAME];
         }
 
         return $card;
