@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
+import GroupingDropdown from 'merchantLA/components/Home/GroupingDropdown';
 
 import { trackGroupingChange } from './ga';
 

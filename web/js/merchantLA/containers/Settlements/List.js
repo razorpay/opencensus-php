@@ -8,9 +8,9 @@ import SettlementsList from 'merchantLA/components/Settlements/List';
 import SettlementsListFilter from 'merchantLA/components/Settlements/ListFilter';
 import SettlementBreakupModal from './BreakupModal';
 import HeaderAction from 'rzp/ui/HeaderAction';
-import { fetchSettlements as fetchAll } from 'rzp/modules/collection';
+import { fetchSettlements as fetchAll } from 'merchantLA/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import TestModeBanner from 'merchantLA/containers/TestModeBanner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 @connect(state => state.settlements, {

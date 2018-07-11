@@ -22,7 +22,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import { groupBy } from 'rzp/utils/pokedex';
 import Change from 'rzp/ui/Change';
 
-import { fetch } from 'merchant/modules/pokedex';
+import { fetch } from 'merchantLA/modules/pokedex';
 import {
   API_ERROR,
   API_INVALID_RESP,
@@ -30,14 +30,14 @@ import {
   getPaymentMethodColor,
   platformsOrder,
   paymentMethodsOrder,
-} from 'merchant/components/Home/data';
-import { trackNoData, trackError } from 'merchant/containers/Home/ga';
-import Tooltip from 'merchant/components/Home/Tooltip';
+} from 'merchantLA/components/Home/data';
+import { trackNoData, trackError } from 'merchantLA/containers/Home/ga';
+import Tooltip from 'merchantLA/components/Home/Tooltip';
 
 import {
-  NUM_TRANSACTIONS,
-  TRANSACTION_VOLUME,
-  REFUNDS,
+  NUM_TRANSFERS,
+  TRANSFERS_VOLUME,
+  REVERSALS,
   SAVED_CARDS,
   SUCCESS_RATE,
   PLATFORM,
@@ -283,6 +283,10 @@ class KeyMetricsContainer extends Component {
   }
 
   tabStateMixin({ tabState, histogram, refreshTinyGraphs }) {
+    if (!tabState || !histogram) {
+      return;
+    }
+
     /*
      * Given response from PQL( `histogram` ) , prepares timeline data
      * required for chart.js using `getTimelineData`, Prepares CSV and Screenshot
@@ -325,13 +329,13 @@ class KeyMetricsContainer extends Component {
     };
 
     /*
-     * For Transaction Volume, Number of Transactions and Refunds, we 
-     * group by Payment Method (card , netbanking etc..) and 
+     * For Transfers Volume, Number of Transfers and Reversals, we
+     * group by Payment Method (card , netbanking etc..) and
      * Platform (Desktop, Andorid , IOS etc..) , we can get color to be used
-     * for a particular platform from `getPlatformColor`, similarly for 
+     * for a particular platform from `getPlatformColor`, similarly for
      * payment methods from `getPaymentMethodColor`
      */
-    if ([NUM_TRANSACTIONS, TRANSACTION_VOLUME, REFUNDS].indexOf(tabName) >= 0) {
+    if ([NUM_TRANFERS, TRANSFER_VOLUME, REVERSALS].indexOf(tabName) >= 0) {
       options.getColor =
         selectedGrouping && selectedGrouping.value === PLATFORM
           ? getPlatformColor

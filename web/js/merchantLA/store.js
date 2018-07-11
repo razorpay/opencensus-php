@@ -1,6 +1,6 @@
 import { createStore, applyMiddleware } from 'redux';
 import apiAsyncMiddleware from 'rzp/middlewares/apiAsyncMiddleware';
-import reducers from './reducers';
+import reducers from 'merchantLA/reducers';
 
 const store = createStore(reducers, applyMiddleware(apiAsyncMiddleware));
 

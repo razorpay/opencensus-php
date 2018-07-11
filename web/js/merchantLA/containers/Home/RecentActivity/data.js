@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
+// TODO: Transfers has not statusLabel, so see what to show here
 import {
   PaymentStatusLabel,
   SettlementStatusLabel,
@@ -50,7 +51,7 @@ const commonMeta = {
   ],
 };
 
-const tabs = ['payments', 'settlements', 'refunds'],
+const tabs = ['transfers', 'settlements', 'reversals'],
   tabsMeta = {};
 
 tabs.forEach(tabName => {

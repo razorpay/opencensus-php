@@ -1,8 +1,8 @@
 import { matchPath } from 'react-router-dom';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
+import { showWhenUtil } from 'merchantLA/components/ShowWhen';
 
-import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
-import SettlementDetails from 'merchant/containers/Marketplace/Transfers/Details';
+import TransferDetails from 'merchantLA/containers/Marketplace/Transfers/Details';
+import SettlementDetails from 'merchantLA/containers/Marketplace/Transfers/Details';
 
 /*
 * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets

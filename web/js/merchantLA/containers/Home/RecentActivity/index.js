@@ -3,19 +3,18 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import {
-  fetchPayments,
-  fetchRefunds,
+  fetchTransfers,
+  fetchReversals,
   fetchSettlements,
-} from 'rzp/modules/collection';
+} from 'merchantLA/modules/collection';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
 import GenericPanel, {
   PanelBody,
   PanelTopbar,
   PanelFooter,
-} from 'merchant/components/Home/GenericPanel';
+} from 'merchantLA/components/Home/GenericPanel';
 import { tabs, tabsMeta } from './data';
-import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
 import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
 
@@ -60,15 +59,15 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
 @connect(
   state => {
     return {
-      payments: state.payments,
-      refunds: state.refunds,
+      transfers: state.transfers,
+      reversals: state.reversals,
       settlements: state.settlements,
       windowWidth: state.app.windowWidth,
     };
   },
   {
-    fetchPayments,
-    fetchRefunds,
+    fetchTransfers,
+    fetchReversals,
     fetchSettlements,
   }
 )
@@ -100,13 +99,13 @@ export default class RecentActivity extends Component {
   }
 
   fetchData(params) {
-    this.props.fetchPayments(params).then(data => {
+    this.props.fetchTransfers(params).then(data => {
       return (
-        this.props.onFetchPayments &&
-        this.props.onFetchPayments(data && data.data)
+        this.props.onFetchTransfers &&
+        this.props.onFetchTransfers(data && data.data)
       );
     });
-    this.props.fetchRefunds(params);
+    this.props.fetchReversals(params);
     this.props.fetchSettlements(params);
   }
 

@@ -12,12 +12,12 @@ const paymentMethodsColumns = [
 const aggTypes = [
   {
     value: 'sum',
-    text: 'By Payment Volume',
+    text: 'By Transfer Volume',
     isCurrency: true,
   },
   {
     value: 'count',
-    text: 'By Number of Payments',
+    text: 'By Number of Transfers',
   },
 ];
 

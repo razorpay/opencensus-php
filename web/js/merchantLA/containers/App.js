@@ -16,25 +16,20 @@ import MerchantTour from 'merchant/containers/MerchantTour';
 import IdleWarningDialog from 'merchant/components/IdleWarningDialog';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
-import * as SessionActions from 'merchant/modules/session';
-import * as ConfigActions from 'merchant/modules/config';
+import * as SessionActions from 'merchantLA/modules/session';
 import { applyTheme } from 'rzp/themes';
-import User, { setFeatures } from 'merchant/models/User';
-import { fetchFeaturesAjax } from 'merchant/modules/config';
-import { fetchConfig } from 'merchant/modules/config';
-import { resizeWindow } from 'merchant/modules/app';
+import User, { setFeatures } from 'merchantLA/models/User';
+import { resizeWindow } from 'merchantLA/modules/app';
 
 @withRouter
 @connect(
   state => ({
     ...state.session,
-    config: state.config,
     windowWidth: state.app.windowWidth,
   }),
   {
     ...ModalActions,
     ...SessionActions,
-    ...ConfigActions,
     ...NotificationActions,
     resizeWindow,
   }
@@ -63,8 +58,6 @@ export default class App extends Component {
 
     this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
 
-    this.logoutPopupShown = false;
-
     this.state = {
       isLoading: true,
     };
@@ -73,32 +66,7 @@ export default class App extends Component {
   }
 
   componentWillMount() {
-    /*
-    * Event Based Redirection
-    *
-    window.addEventListener('NOT_AUTHENTICATED', () => {
-      if (this.logoutPopupShown) {
-        return;
-      }
-
-      let email = this.props.user.user.email;
-
-      this.props.closeModal();
-      this.props.openModal({
-        size: 'small',
-        component: <LogoutDialog email={email} />,
-      });
-      this.logoutPopupShown = true;
-    });
-
-    window.addEventListener('UNAUTHORIZED', () => {
-      this.props.history.push('/');
-    });
-    */
-
     let currentMode = LocalStorageService.getItem(this.modeToken);
-
-    this.props.fetchConfig();
 
     Promise.all([
       this.fetchUser().then(({ data }) => {
@@ -126,22 +94,15 @@ export default class App extends Component {
         }
       }),
     ]).then(response => {
-      // Fetch features before displaying other views
-      fetchFeaturesAjax(response[0].current)
-        .catch(_ => _)
-        .then(data => {
-          let user = new User(response[0]);
-          user.features = setFeatures(data.success ? data.data.features : []);
+      this.props.updateSession({ mode: currentMode });
 
-          this.props.updateSession({ user, mode: currentMode });
+      let $splash = document.getElementById('splash');
+      if ($splash) {
+        $splash.parentElement.removeChild($splash);
+      }
 
-          let $splash = document.getElementById('splash');
-          if ($splash) {
-            $splash.parentElement.removeChild($splash);
-          }
-
-          this.setState({ isLoading: false });
-        });
+      this.setState({ isLoading: false });
+      this.setState({ isLoading: false });
     });
   }
 
@@ -314,7 +275,7 @@ export default class App extends Component {
   };
 
   render() {
-    let { user, config, org, mode, modeFormatted } = this.props;
+    let { user, org, mode, modeFormatted } = this.props;
 
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
@@ -329,11 +290,7 @@ export default class App extends Component {
           onSwitchMode={this.switchMode}
           showMobileNav={this.props.windowWidth < 950}
         />
-        <Sidebar
-          user={user}
-          logoURL={org.main_logo_url}
-          config={config.config}
-        />
+        <Sidebar user={user} logoURL={org.main_logo_url} />
         <Content user={user} modeFormatted={modeFormatted} />
         <Footer />
 

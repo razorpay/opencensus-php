@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const editFields = ['id', 'delay_roll'];
 const newFields = ['name', 'website'];

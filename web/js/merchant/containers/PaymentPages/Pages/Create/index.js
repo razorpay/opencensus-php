@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { withRouter } from 'react-router-dom';
 import { classList } from 'common/util';
 

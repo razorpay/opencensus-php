@@ -4,7 +4,7 @@ import TransferDetails from 'merchantLA/components/Marketplace/Transfers/Details
 import {
   fetchTransfer,
   fetchReversals,
-} from 'merchant/modules/marketplace/transfer';
+} from 'merchantLA/modules/marketplace/transfer';
 import * as ModalActions from 'rzp/modules/modals';
 
 import { showNotification } from 'rzp/modules/notifications';

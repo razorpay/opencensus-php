@@ -7,10 +7,10 @@ import Amount from 'rzp/ui/Amount';
 import Sticky from 'rzp/ui/Sticky';
 import DateRangePicker from 'rzp/ui/DateRangePicker';
 
-import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
-import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
-import RecentActivity from 'merchant/containers/Home/RecentActivity';
-import Traffic from 'merchant/containers/Home/Traffic';
+import KeyMetrics from 'merchantLA/containers/Home/KeyMetrics';
+import PaymentMethods from 'merchantLA/containers/Home/PaymentMethods';
+import RecentActivity from 'merchantLA/containers/Home/RecentActivity';
+import Traffic from 'merchantLA/containers/Home/Traffic';
 
 import { trackPresetChange, trackSettlementsClick } from './ga';
 
@@ -27,7 +27,7 @@ class AnalyticsMobile extends Component {
       current_balance,
       onExtraContentMount,
       isAdmin,
-      onFetchPayments,
+      onFetchTransfers,
       scrollAmountToStickHeader,
       dateRangePresets,
       onDatesChange,
@@ -79,7 +79,7 @@ class AnalyticsMobile extends Component {
               <p className="section-title">{recentActivityTitle}</p>
               <RecentActivity
                 sectionTitle={recentActivityTitle}
-                onFetchPayments={onFetchPayments}
+                onFetchTransfers={onFetchTransfers}
                 isTabletResolution={true}
               />
             </div>

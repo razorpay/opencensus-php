@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
 
-import ProfileDropdown from 'merchant/containers/Header/ProfileDropdown';
-import { toggleMobileMenu } from 'merchant/modules/app';
+import ProfileDropdown from 'merchantLA/containers/Header/ProfileDropdown';
+import { toggleMobileMenu } from 'merchantLA/modules/app';
 
 import NavFragment from './NavFragment';
 import ModesDropdown from './SwitchMode';

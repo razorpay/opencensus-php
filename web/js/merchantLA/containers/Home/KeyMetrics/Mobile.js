@@ -18,7 +18,7 @@ import {
   humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
 
-import Tooltip from 'merchant/components/Home/Tooltip';
+import Tooltip from 'merchantLA/components/Home/Tooltip';
 
 import { trackGoToLinks } from './ga';
 import { tabsMeta } from './data';

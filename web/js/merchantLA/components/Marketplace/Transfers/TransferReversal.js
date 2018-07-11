@@ -5,7 +5,7 @@ import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Definition from 'rzp/ui/Definition';
 import DataTable from 'rzp/ui/Table/DataTable';
 import LoaderDots from 'rzp/ui/LoaderDots';
-import { reversalId, amount, createdAt } from 'rzp/ui/item/pair';
+import { reversalId, amount, createdAt } from 'merchantLA/utils/item/pair';
 
 /*
  * Design:

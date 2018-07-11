@@ -5,9 +5,14 @@ import ReversalsListFilter from 'merchantLA/components/Marketplace/ReversalsList
 import DataTable from 'rzp/ui/Table/DataTable';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchReversals as fetchAll } from 'rzp/modules/collection';
+import { fetchReversals as fetchAll } from 'merchantLA/modules/collection';
 
-import { reversalId, transferId, amount, createdAt } from 'rzp/ui/item/pair';
+import {
+  reversalId,
+  transferId,
+  amount,
+  createdAt,
+} from 'merchantLA/utils/item/pair';
 
 @connect(state => state.reversals, { fetchAll })
 export default class ReversalsListContainer extends ListContainer {

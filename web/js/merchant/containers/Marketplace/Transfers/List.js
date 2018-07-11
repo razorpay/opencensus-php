@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import TransfersListFilter from 'merchant/components/Marketplace/TransfersListFilter';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchTransfers as fetchAll } from 'rzp/modules/collection';
+import { fetchTransfers as fetchAll } from 'merchant/modules/collection';
 import {
   transferId,
   source,

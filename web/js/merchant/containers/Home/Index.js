@@ -16,7 +16,7 @@ import debounce from 'rzp/utils/debounce';
 
 import * as HomeActions from 'merchant/modules/home';
 import { fetch } from 'merchant/modules/pokedex';
-import { fetchPayments } from 'rzp/modules/collection';
+import { fetchPayments } from 'merchant/modules/collection';
 import {
   API_ERROR,
   API_INVALID_RESP,
@@ -157,7 +157,7 @@ export default class HomeContainer extends Component {
      * Need to show the banner until the user integrates in live mode
      * which we can check by checking his live transactions
      *
-     * If the user is in live mode, we make fetchAll payments in 
+     * If the user is in live mode, we make fetchAll payments in
      * RecentActivity component, which will be done using `onFetchPayments`
      * below
      */

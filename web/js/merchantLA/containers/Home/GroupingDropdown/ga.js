@@ -1,4 +1,4 @@
-import track from 'merchant/containers/Home/ga';
+import track from 'merchantLA/containers/Home/ga';
 
 export const trackGroupingChange = (grouping, sectionTitle) => {
   track({

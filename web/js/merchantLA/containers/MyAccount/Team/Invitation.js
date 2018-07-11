@@ -6,7 +6,7 @@ import {
   resendInvitation,
   cancelInvitation,
   fetchTeamDetails,
-} from 'rzp/modules/team';
+} from 'merchantLA/modules/team';
 
 @connect(state => state.session, {
   fetchTeamDetails,

@@ -1,4 +1,4 @@
-import track, { trackGoToLinks } from 'merchant/containers/Home/ga';
+import track, { trackGoToLinks } from 'merchantLA/containers/Home/ga';
 
 export const trackTabClick = (tabName, sectionTitle) => {
   track({

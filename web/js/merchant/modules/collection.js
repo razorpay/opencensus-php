@@ -1,8 +1,6 @@
 import { set, merge, unshift, remove } from 'rzp/utils/immutable';
 import createReducer from 'rzp/modules/createReducer';
-import ajax from 'merchant/utils/ajax';
 
-import GenericEntity from 'merchant/models/GenericEntity';
 import Payment from 'merchant/models/Payment';
 import Refund from 'merchant/models/Refund';
 import Order from 'merchant/models/Order';
@@ -107,7 +105,7 @@ export const paymentsReducer = makeCollectionReducer(
   'PAYMENTS',
   {},
   // ignore( do not send to API ) "ref" param if seen present the url
-  {...defaultInitialState, blacklistQueryParams:["ref"]}
+  { ...defaultInitialState, blacklistQueryParams: ['ref'] }
 );
 
 export const fetchOrders = params => fetchAll(params, Order, 'ORDERS');
@@ -130,7 +128,7 @@ export const refundsReducer = makeCollectionReducer(
   'REFUNDS',
   {},
   // ignore( do not send to API ) "ref" param if seen present the url
-  {...defaultInitialState, blacklistQueryParams:["ref"]}
+  { ...defaultInitialState, blacklistQueryParams: ['ref'] }
 );
 
 export const fetchLinkBatches = params =>

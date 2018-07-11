@@ -14,14 +14,14 @@ import {
 import LocalStorageService from 'rzp/utils/localStorage';
 import debounce from 'rzp/utils/debounce';
 
-import * as HomeActions from 'merchant/modules/home';
-import { fetch } from 'merchant/modules/pokedex';
-import { fetchPayments } from 'rzp/modules/collection';
+import * as HomeActions from 'merchantLA/modules/home';
+import { fetch } from 'merchantLA/modules/pokedex';
+import { fetchTransfers } from 'merchantLA/modules/collection';
 import {
   API_ERROR,
   API_INVALID_RESP,
   isMobileDevice,
-} from 'merchant/components/Home/data';
+} from 'merchantLA/components/Home/data';
 
 import {
   trackError,
@@ -71,7 +71,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
   {
     ...HomeActions,
     showNotification,
-    fetchPayments,
+    fetchTransfers,
   }
 )
 export default class HomeContainer extends Component {
@@ -146,7 +146,7 @@ export default class HomeContainer extends Component {
       showOnboardingBanner,
       showOnboardingBannerFirstStep,
       // payments is used to change content in the integration step
-      payments: {
+      transfers: {
         loading: true,
         items: [],
       },
@@ -157,8 +157,8 @@ export default class HomeContainer extends Component {
      * Need to show the banner until the user integrates in live mode
      * which we can check by checking his live transactions
      *
-     * If the user is in live mode, we make fetchAll payments in 
-     * RecentActivity component, which will be done using `onFetchPayments`
+     * If the user is in live mode, we make fetchAll payments in
+     * RecentActivity component, which will be done using `onFetchTransfers`
      * below
      */
     if (hasAccessToOnboardingBanner && !showOnboardingBanner) {
@@ -173,7 +173,7 @@ export default class HomeContainer extends Component {
         LocalStorageService.setItem(this.onboardingBannerToken, 'true');
         LocalStorageService.setItem(this.firstStepToken, 'true');
       } else if (mode !== 'live') {
-        this.props.fetchPayments({ mode: 'live' }).then(data => {
+        this.props.fetchTransfers({ mode: 'live' }).then(data => {
           data = data.data;
 
           if (data && data.items && data.items.length === 0) {
@@ -185,7 +185,7 @@ export default class HomeContainer extends Component {
 
     this.oldestTxnReqId = 0;
     this.onDatesChange = this.onDatesChange.bind(this);
-    this.onFetchPayments = this.onFetchPayments.bind(this);
+    this.onFetchTransfers = this.onFetchTransfers.bind(this);
     this.setScrollAmountToStickHeader = this.setScrollAmountToStickHeader.bind(
       this
     );
@@ -491,7 +491,7 @@ export default class HomeContainer extends Component {
     LocalStorageService.setItem(this.firstStepToken, 'true');
   }
 
-  onFetchPayments(data) {
+  onFetchTransfers(data) {
     const { user, mode } = this.props;
 
     const items = (data && data.items) || [];
@@ -499,7 +499,7 @@ export default class HomeContainer extends Component {
     const { showOnboardingBanner } = this.state;
 
     this.setState({
-      payments: {
+      transfers: {
         loading: false,
         items,
       },
@@ -510,7 +510,7 @@ export default class HomeContainer extends Component {
      * we use it to show the banner , if there are no trasaction
      */
     if (user.isActivated && mode === 'live') {
-      // show hotjar if number of payments is greater than 50
+      // show hotjar if number of transfers is greater than 50
       if (items.length > 50) {
         document.body.className += ' show-hotjar-poll';
       }
@@ -556,7 +556,7 @@ export default class HomeContainer extends Component {
       onHideOnboardingBanner,
       onFirstStepClose,
       onDatesChange,
-      onFetchPayments,
+      onFetchTransfers,
       onExtraContentMount,
       setScrollAmountToStickHeader,
     } = this;
@@ -583,7 +583,7 @@ export default class HomeContainer extends Component {
       onHideOnboardingBanner,
       onFirstStepClose,
       onDatesChange,
-      onFetchPayments,
+      onFetchTransfers,
       onExtraContentMount,
       setScrollAmountToStickHeader,
 

@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen from 'merchantLA/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
 import Banner from 'rzp/ui/Banner';
 import { trackLinkClick } from './ga';

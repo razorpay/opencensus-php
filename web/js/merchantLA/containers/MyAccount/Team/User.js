@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import { removeUser, fetchTeamDetails } from 'rzp/modules/team';
+import { removeUser, fetchTeamDetails } from 'merchantLA/modules/team';
 
 @connect(
   state => {

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
+import MoreOptionsButton from 'merchantLA/components/Home/MoreOptionsButton';
 
 import { trackOverflowDDClick, trackExportCSV, trackDownloadImage } from './ga';
 

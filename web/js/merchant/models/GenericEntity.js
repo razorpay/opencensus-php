@@ -1,6 +1,6 @@
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 /*
   Abstract class for most CRUD entities. The base Entity has methods like
@@ -15,6 +15,7 @@ export default class GenericEntity extends Entity {
   resourceUrl = '/user/generic';
 
   fetchAll(params = {}) {
+    console.log('GENERIC REALLY???');
     const Klass = this.constructor;
     let { id, ...queryParams } = params;
     let data = this.listRouteName

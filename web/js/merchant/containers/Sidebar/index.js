@@ -7,7 +7,6 @@ import ProgressBar from 'rzp/ui/ProgressBar';
 import { toggleMobileMenu } from 'merchant/modules/app';
 import MainNavLink from 'merchant/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
-import store from 'merchant/store';
 import { areReportsStillDownloading } from 'merchant/modules/reports';
 
 import { trackGoToActivation, trackGoToConfig } from './ga';

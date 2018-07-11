@@ -5,14 +5,13 @@ import TransfersListFilter from 'merchantLA/components/Marketplace/TransfersList
 import DataTable from 'rzp/ui/Table/DataTable';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchTransfers as fetchAll } from 'rzp/modules/collection';
+import { fetchTransfers as fetchAll } from 'merchantLA/modules/collection';
 import {
   transferId,
-  source,
   recipient,
   amount,
   createdAt,
-} from 'rzp/ui/item/pair';
+} from 'merchantLA/utils/item/pair';
 
 @connect(state => state.transfers, { fetchAll })
 export default class TransfersListContainer extends ListContainer {
@@ -34,7 +33,7 @@ export default class TransfersListContainer extends ListContainer {
 
               <DataTable
                 title="Transfers"
-                columns={[transferId, source, recipient, amount, createdAt]}
+                columns={[transferId, recipient, amount, createdAt]}
                 count={this.state.count}
                 skip={this.state.skip}
                 paginate={this.paginate}

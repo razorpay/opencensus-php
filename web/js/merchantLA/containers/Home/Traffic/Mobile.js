@@ -5,9 +5,9 @@ import GenericPanel, {
   PanelTopbar,
   PanelBody,
   PanelFooter,
-} from 'merchant/components/Home/GenericPanel';
-import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
-import StackedBars from 'merchant/containers/Home/StackedBars';
+} from 'merchantLA/components/Home/GenericPanel';
+import GroupingDropdown from 'merchantLA/components/Home/GroupingDropdown';
+import StackedBars from 'merchantLA/containers/Home/StackedBars';
 
 class MobileTraffic extends Component {
   constructor(props) {

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { Redirect } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
-import { fetchTeamDetails } from 'rzp/modules/team';
+import { fetchTeamDetails } from 'merchantLA/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import NewInvitation from './NewInvitation';
 import Invitation from './Invitation';

@@ -28,6 +28,6 @@
     <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
 @endif
 
-<script src="{{$cdnDashboardUrl}}/dist/merchant-la-entry.js"></script>
+<script src="{{$cdnDashboardUrl}}/dist/merchantLA-entry.js"></script>
 
 @include('partials/footer')

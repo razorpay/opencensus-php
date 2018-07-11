@@ -7,7 +7,7 @@ import { matchDetail, matchModal } from 'merchantLA/routes';
 import Slider from 'rzp/ui/Slider';
 import { ModalMask } from 'component/Modal';
 
-import { showWhenUtil } from 'merchant/components/ShowWhen';
+import { showWhenUtil } from 'merchantLA/components/ShowWhen';
 import Home from 'merchantLA/containers/Home/Index';
 import Transfers from 'merchantLA/containers/Marketplace/Transfers/List';
 import Reversals from 'merchantLA/containers/Marketplace/Reversals/List';
@@ -21,7 +21,7 @@ import {
   setBaseLocation,
   setActiveEntity,
   setSecActiveEntity,
-} from 'merchant/modules/app';
+} from 'merchantLA/modules/app';
 import { openSlider } from 'rzp/modules/slider';
 
 @withRouter

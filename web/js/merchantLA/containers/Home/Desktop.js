@@ -11,12 +11,14 @@ import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
 import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
 import LocalStorageService from 'rzp/utils/localStorage';
 
-import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
-import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
-import Traffic from 'merchant/containers/Home/Traffic';
-import RecentActivity from 'merchant/containers/Home/RecentActivity';
-import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
-import { showOrHideTour } from 'merchant/modules/session';
+import KeyMetrics from 'merchantLA/containers/Home/KeyMetrics';
+import PaymentMethods from 'merchantLA/containers/Home/PaymentMethods';
+import Traffic from 'merchantLA/containers/Home/Traffic';
+import RecentActivity from 'merchantLA/containers/Home/RecentActivity';
+import GenericPanel, {
+  PanelBody,
+} from 'merchantLA/components/Home/GenericPanel';
+import { showOrHideTour } from 'merchantLA/modules/session';
 
 import { trackPresetChange, trackSettlementsClick, trackViewTour } from './ga';
 
@@ -93,7 +95,7 @@ class AnalyticsDesktop extends Component {
       onHideOnboardingBanner,
       onFirstStepClose,
       onDatesChange,
-      onFetchPayments,
+      onFetchTransfers,
       onExtraContentMount,
 
       defaultPreset,
@@ -265,7 +267,7 @@ class AnalyticsDesktop extends Component {
                   <div className="content">
                     <RecentActivity
                       sectionTitle={recentActivityTitle}
-                      onFetchPayments={onFetchPayments}
+                      onFetchTransfers={onFetchTransfers}
                     />
                   </div>
                 </div>

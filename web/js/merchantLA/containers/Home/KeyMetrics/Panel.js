@@ -26,18 +26,21 @@ import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import GenericTooltip from 'rzp/ui/Tooltip';
 
 import { tabsMeta, breakdownVals, breakdownValsMap } from './data';
-import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
-import FilteringDropdown from 'merchant/components/Home/FilteringDropdown';
-import Legend from 'merchant/components/Home/Legend';
-import LastUpdated from 'merchant/components/Home/LastUpdated';
-import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
+import GroupingDropdown from 'merchantLA/containers/Home/GroupingDropdown';
+import FilteringDropdown from 'merchantLA/components/Home/FilteringDropdown';
+import Legend from 'merchantLA/components/Home/Legend';
+import LastUpdated from 'merchantLA/components/Home/LastUpdated';
+import MoreOptionsButton from 'merchantLA/containers/Home/MoreOptionsButton';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
   PanelFooter,
-} from 'merchant/components/Home/GenericPanel';
-import Tooltip from 'merchant/components/Home/Tooltip';
-import { PLATFORM, CUMULATIVE } from 'merchant/containers/Home/KeyMetrics/data';
+} from 'merchantLA/components/Home/GenericPanel';
+import Tooltip from 'merchantLA/components/Home/Tooltip';
+import {
+  PLATFORM,
+  CUMULATIVE,
+} from 'merchantLA/containers/Home/KeyMetrics/data';
 
 import { trackGoToLinks } from './ga';
 import customToolTip, { positioner } from './customTooltip';

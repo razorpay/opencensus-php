@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Route, NavLink } from 'react-router-dom';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen from 'merchantLA/components/ShowWhen';
 
 import Profile from 'merchantLA/containers/MyAccount/Profile';
 import TeamManagement from 'merchantLA/containers/MyAccount/Team';

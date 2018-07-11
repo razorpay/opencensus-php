@@ -8,8 +8,8 @@ import {
   humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
 
-import { getPaymentMethodColor } from 'merchant/components/Home/data';
-import { paymentMethodsColumns } from 'merchant/containers/Home/PaymentMethods/data';
+import { getPaymentMethodColor } from 'merchantLA/components/Home/data';
+import { paymentMethodsColumns } from 'merchantLA/containers/Home/PaymentMethods/data';
 
 import { trackTreemapClick } from '../ga';
 
@@ -95,7 +95,7 @@ function main(
   initialize(root);
   accumulate(root);
 
-  /* 
+  /*
    * Populating chart colors based on the values
    * Bigger the values get first colors in the
    * color palette
@@ -452,6 +452,10 @@ const getGroupingFactor = (groupKey, bankNames) => {
 };
 
 const makeCSVData = (data, bankNames, groupTitleMap) => {
+  if (!data) {
+    return;
+  }
+
   const csvHeader = []
       .concat(paymentMethodsColumns.map(titleCase))
       .concat(['Amount', '%Share']),

@@ -1,4 +1,4 @@
-import track from 'merchant/containers/Home/ga';
+import track from 'merchantLA/containers/Home/ga';
 
 function getNameFromHierarchy(hierarchy, namesArr = []) {
   if (!hierarchy) {

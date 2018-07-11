@@ -2,11 +2,9 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 
-import { toggleMobileMenu } from 'merchant/modules/app';
+import { toggleMobileMenu } from 'merchantLA/modules/app';
 import MainNavLink from 'merchant/components/MainNavLink';
-import { areReportsStillDownloading } from 'merchant/modules/reports';
-
-import { trackGoToActivation, trackGoToConfig } from './ga';
+import { areReportsStillDownloading } from 'merchantLA/modules/reports';
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
@@ -26,9 +24,6 @@ export default class Sidebar extends Component {
     this.state = {
       isReportsPending: areReportsStillDownloading(props.currentReportList),
     };
-
-    this.onSidebarBannerClick = this.onSidebarBannerClick.bind(this);
-    this.hideSidebar = this.hideSidebar.bind(this);
   }
 
   // currently active routes in tabbed containers
@@ -51,23 +46,13 @@ export default class Sidebar extends Component {
     }
   }
 
-  onSidebarBannerClick() {
-    if (this.props.showMobileMenu) {
-      this.props.toggleMobileMenu();
-    }
-
-    return (this.props.user.isSubmitted
-      ? trackGoToConfig
-      : trackGoToActivation)();
-  }
-
   hideSidebar() {
     return this.props.showMobileMenu && this.props.toggleMobileMenu();
   }
 
   render() {
     const { isReportsPending } = this.state;
-    let { user, config, logoURL, showMobileMenu } = this.props;
+    let { user, logoURL, showMobileMenu } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
 

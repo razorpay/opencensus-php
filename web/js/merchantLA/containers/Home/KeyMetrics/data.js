@@ -20,7 +20,7 @@ const dateFormat = 'Do MMM YYYY';
 
 const TRANSACTION_VOLUME = 'transactionVolume',
   NUM_TRANSACTIONS = 'numTransactions',
-  REFUNDS = 'refunds',
+  REVERSALS = 'reversals',
   SAVED_CARDS = 'savedCards',
   SUCCESS_RATE = 'successRate',
   PLATFORM = 'platform',
@@ -32,7 +32,7 @@ export {
   TRANSACTION_VOLUME,
   NUM_TRANSACTIONS,
   SAVED_CARDS,
-  REFUNDS,
+  REVERSALS,
   PLATFORM,
   CUMULATIVE,
   METHOD,
@@ -104,22 +104,22 @@ export const tabsOrder = [
   TRANSACTION_VOLUME,
   NUM_TRANSACTIONS,
   SAVED_CARDS,
-  REFUNDS,
+  REVERSALS,
 ];
 
 export const tabsMeta = {
   [TRANSACTION_VOLUME]: {
     name: TRANSACTION_VOLUME,
-    title: 'Payment Volume',
+    title: 'Transfer Volume',
     grouping: defaultGroupingVals,
     options: [],
     isCurrency: true,
-    index: 'payments',
+    index: 'transfers',
     getGroupObj,
     getGroupQuery,
     helpText:
-      'Payment volume is the amount of "authorised"' +
-      'payments, which were created in the selected time range.',
+      'Transfer volume is the amount of "authorised"' +
+      'transfers, which were created in the selected time range.',
     getCountQuery: function() {
       return {
         [this.name]: {
@@ -148,7 +148,7 @@ export const tabsMeta = {
   },
   [NUM_TRANSACTIONS]: {
     name: NUM_TRANSACTIONS,
-    title: 'Number of Payments',
+    title: 'Number of Transfers',
     grouping: defaultGroupingVals,
     options: [],
     index: 'payments',
@@ -181,20 +181,20 @@ export const tabsMeta = {
       };
     },
   },
-  [REFUNDS]: {
-    name: REFUNDS,
-    title: 'Number of Refunds',
+  [REVERSALS]: {
+    name: REVERSALS,
+    title: 'Number of Reversals',
     grouping: [...defaultGroupingVals.slice(0, 2)],
     options: [],
-    index: 'refunds',
+    index: 'reversals',
     getGroupObj,
     getGroupQuery,
-    helpText: 'Number of refunds created in the selected time range.',
+    helpText: 'Number of reversals created in the selected time range.',
     getCountQuery: function() {
       return {
         [this.name]: {
           agg_type: 'count',
-          filter_key: 'refunds',
+          filter_key: 'reversals',
           details: {
             index: this.index,
           },
@@ -207,7 +207,7 @@ export const tabsMeta = {
       return {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
-          filter_key: 'refunds',
+          filter_key: 'reversals',
           details: {
             index: this.index,
             group_by: [...groupBy, `histogram_${breakdown}`],
@@ -217,7 +217,7 @@ export const tabsMeta = {
     },
     getFilterQuery: function(startTime, endTime) {
       return {
-        refunds: [getDefaultFilter(startTime, endTime)],
+        reversals: [getDefaultFilter(startTime, endTime)],
       };
     },
   },

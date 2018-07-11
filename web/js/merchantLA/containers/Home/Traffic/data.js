@@ -18,7 +18,7 @@ const groupValues = ['transactionVolume', 'noTransactions'];
 
 const groupMeta = {
   [groupValues[0]]: {
-    title: 'By Payment Volume',
+    title: 'By Transfer Volume',
     aggType: 'sum',
     column: 'base_amount',
     groupBy: 'platform',
@@ -26,7 +26,7 @@ const groupMeta = {
     value: groupValues[0],
   },
   [groupValues[1]]: {
-    title: 'By Number of Payments',
+    title: 'By Number of Transfers',
     aggType: 'count',
     groupBy: 'platform',
     value: groupValues[1],

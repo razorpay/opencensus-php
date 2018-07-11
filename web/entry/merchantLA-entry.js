@@ -16,7 +16,7 @@
   );
 
   document.write('<script src="' + base + 'vendor_m.js"></script>');
-  document.write('<script src="' + base + 'merchant_la.js"></script>');
+  document.write('<script src="' + base + 'merchantLA.js"></script>');
   appendLink(base + 'css/merchant-la.css');
   appendLink(
     'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'

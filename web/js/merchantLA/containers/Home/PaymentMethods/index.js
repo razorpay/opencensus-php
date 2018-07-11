@@ -7,22 +7,22 @@ import Breadcrumb, { BreadcrumbItem } from 'rzp/ui/Breadcrumb';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
-import Treemap from 'merchant/containers/Home/PaymentMethods/Treemap';
-import LastUpdated from 'merchant/components/Home/LastUpdated';
-import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
-import { fetch } from 'merchant/modules/pokedex';
+import Treemap from 'merchantLA/containers/Home/PaymentMethods/Treemap';
+import LastUpdated from 'merchantLA/components/Home/LastUpdated';
+import MoreOptionsButton from 'merchantLA/containers/Home/MoreOptionsButton';
+import { fetch } from 'merchantLA/modules/pokedex';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
   PanelFooter,
-} from 'merchant/components/Home/GenericPanel';
-import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
+} from 'merchantLA/components/Home/GenericPanel';
+import { API_ERROR, API_INVALID_RESP } from 'merchantLA/components/Home/data';
 import {
   trackGoToLinks,
   trackNoData,
   trackError,
-} from 'merchant/containers/Home/ga';
-import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
+} from 'merchantLA/containers/Home/ga';
+import GroupingDropdown from 'merchantLA/components/Home/GroupingDropdown';
 
 import Mobile from './Mobile';
 import { trackBreadcrumbClick } from './ga';

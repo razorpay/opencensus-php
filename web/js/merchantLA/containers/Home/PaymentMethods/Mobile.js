@@ -12,13 +12,13 @@ import GenericPanel, {
   PanelTopbar,
   PanelBody,
   PanelFooter,
-} from 'merchant/components/Home/GenericPanel';
-import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
-import StackedBars from 'merchant/containers/Home/StackedBars';
+} from 'merchantLA/components/Home/GenericPanel';
+import GroupingDropdown from 'merchantLA/components/Home/GroupingDropdown';
+import StackedBars from 'merchantLA/containers/Home/StackedBars';
 import {
   paymentMethodsOrder,
   getPaymentMethodColor,
-} from 'merchant/components/Home/data';
+} from 'merchantLA/components/Home/data';
 
 const formatText = text => {
   return globalGroupTitleMap[text.toLowerCase()] || titleCase(text);

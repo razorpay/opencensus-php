@@ -7,29 +7,29 @@ import debounce from 'rzp/utils/debounce';
 import takeScreenshot from 'rzp/utils/screenshot';
 import { showNotification } from 'rzp/modules/notifications';
 
-import { fetch } from 'merchant/modules/pokedex';
+import { fetch } from 'merchantLA/modules/pokedex';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
   PanelFooter,
-} from 'merchant/components/Home/GenericPanel';
+} from 'merchantLA/components/Home/GenericPanel';
 import { groupValues, groupMeta, getQuery, getPieData } from './data';
-import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
-import Legend from 'merchant/components/Home/Legend';
-import LastUpdated from 'merchant/components/Home/LastUpdated';
-import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
+import GroupingDropdown from 'merchantLA/containers/Home/GroupingDropdown';
+import Legend from 'merchantLA/components/Home/Legend';
+import LastUpdated from 'merchantLA/components/Home/LastUpdated';
+import MoreOptionsButton from 'merchantLA/containers/Home/MoreOptionsButton';
 import {
   API_ERROR,
   API_INVALID_RESP,
   getPlatformColor,
-} from 'merchant/components/Home/data';
+} from 'merchantLA/components/Home/data';
 import {
   trackError,
   trackGoToLinks,
   trackNoData,
-} from 'merchant/containers/Home/ga';
+} from 'merchantLA/containers/Home/ga';
 
-import Mobile from 'merchant/containers/Home/Traffic/Mobile';
+import Mobile from 'merchantLA/containers/Home/Traffic/Mobile';
 
 const aggTypes = groupValues.map(value => groupMeta[value]);
 
