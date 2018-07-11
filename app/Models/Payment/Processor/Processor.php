@@ -1230,8 +1230,6 @@ class Processor
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
 
-        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
-
         $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
 
         $this->validateAndSetReceiverIfApplicable($payment, $input);

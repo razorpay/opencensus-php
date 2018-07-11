@@ -163,7 +163,9 @@ class Service extends Base\Service
 
                 $durations = $offer->getEmiDurations();
 
-                $emiPlanIds = $this->repo->emi_plan->fetchIdsByDurationAndBankOrNetwork($bank, $network, $durations);
+                $durations = $durations ?: $durations;
+
+                $emiPlanIds = $this->repo->emi_plan->fetchIdsByDurationAndBankOrNetwork($durations, $bank, $network);
 
                 $emiPlanIds = array_fill_keys($emiPlanIds, $offer->getPublicId());
 

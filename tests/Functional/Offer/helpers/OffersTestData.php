@@ -435,7 +435,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment network for card should be a valid card network'
+                    'description' => 'Payment network for card should be a valid card network code'
                 ]
             ],
             'status_code' => 400,
@@ -732,7 +732,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Min amount required for these emi subvention is 319149'
+                    'description' => 'Min amount required for this emi subvention is 319149'
                 ]
             ],
             'status_code' => 400,
@@ -845,7 +845,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Iins should be a valid array',
+                    'description' => 'IINs should be a valid array',
                 ]
             ],
             'status_code' => 400
@@ -868,7 +868,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Iins can be only edited for card / emi offer'
+                    'description' => 'IINs can be only edited for card / emi offer'
                 ]
             ],
             'status_code' => 400
@@ -1078,7 +1078,7 @@ return [
         ],
     ],
 
-    "testCreateOfferValidateMerchant" => [
+    'testCreateOfferValidateMerchant' => [
         'request' => [
             'content' => [
                 'name'                => 'Test Offer',
@@ -1110,5 +1110,240 @@ return [
             'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ]
+    ],
+
+    'testCreateOfferWithCorporateOrRetailIssuer' => [
+        'request' => [
+            'content' => [
+                'name'            => 'Test Offer',
+                'payment_method'  => 'netbanking',
+                'issuer'          => 'BARB_C',
+                'min_amount'      => 1000,
+                'flat_cashback'   => 800,
+                'processing_time' => 172800,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
+                'display_text'    => 'Some more details',
+                'terms'           => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'          => true,
+                'name'            => 'Test Offer',
+                'payment_method'  => 'netbanking',
+                'issuer'          => 'BARB_C',
+                'min_amount'      => 1000,
+                'flat_cashback'   => 800,
+                'processing_time' => 172800,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
+                'display_text'    => 'Some more details',
+                'terms'           => 'Some more details'
+            ],
+        ],
+    ],
+
+    'testCreateOfferValidateMaxCashback' => [
+        'request' => [
+            'content' => [
+                'name'            => 'Test Offer',
+                'payment_method'  => 'wallet',
+                'issuer'          => 'airtelmoney',
+                'max_cashback'    => 200,
+                'min_amount'      => 500,
+                'processing_time' => 172800,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
+                'display_text'    => 'Some more details',
+                'terms'           => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Max cashback should be combined wih percent rate'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MAX_CASHBACK_WITHOUT_PERCENT_RATE
+        ],
+    ],
+
+    'testCreateOfferInternationalEmi' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'BARB_C',
+                'international'       => true,
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'BARB_C',
+                'international'       => true,
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+        ],
+    ],
+
+    'testCreateOfferValidateMethodType' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'netbanking',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'BARB_C',
+                'international'       => true,
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The payment method type field may be sent only when payment method is card',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCreateOfferMinAmount' => [
+        'request' => [
+            'content' => [
+                'name'            => 'Test Offer',
+                'payment_method'  => 'netbanking',
+                'issuer'          => 'UTIB',
+                'min_amount'      => 500,
+                'flat_cashback'   => 800,
+                'processing_time' => 172800,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
+                'display_text'    => 'Some more details',
+                'terms'           => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Flat cashback cannot be greater than minimum amount',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCreateCardOfferWithInvalidIinLength' => [
+        'request' => [
+            'content' => [
+                'name'            => 'Test Offer',
+                'payment_method'  => 'card',
+                'iins'            => ['4111111'],
+                'percent_rate'    => 1000,
+                'processing_time' => 86400,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
+                'display_text'    => 'Some more details',
+                'terms'           => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid IIN : All IINs should have exactly 6 digits',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCreateCardOfferWithInvalidFullNetworkName' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MasterCard',
+                'issuer'              => 'BARB_C',
+                'international'       => true,
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment network for card should be a valid card network code',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
     ],
 ];

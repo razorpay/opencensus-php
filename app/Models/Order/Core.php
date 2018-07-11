@@ -74,7 +74,7 @@ class Core extends Base\Core
             return;
         }
 
-        foreach ($input[Entity::OFFERS] as $offerId)
+        foreach (array_unique($input[Entity::OFFERS]) as $offerId)
         {
             $this->validateAndAssociateOffer($order, $offerId);
         }

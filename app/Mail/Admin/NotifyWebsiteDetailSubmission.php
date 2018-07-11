@@ -36,8 +36,8 @@ class NotifyWebsiteDetailSubmission extends Mailable
 
     protected function addSender()
     {
-        $fromEmail = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
-        $fromName  = Constants::HEADERS[Constants::SUPPORT];
+        $fromEmail = Constants::MAIL_ADDRESSES[Constants::ACTIVATION];
+        $fromName  = Constants::HEADERS[Constants::ACTIVATION];
 
         $this->from($fromEmail, $fromName);
 
