@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
     "content-hash": "38cdc106edeb48f43226378fa4bd855b",
@@ -554,7 +554,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "DataDog",
+                    "name": "Datadog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
@@ -1496,16 +1496,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.9.9",
+            "version": "8.9.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "79a3ee64277b3c8f71dc379c7325155b945058d7"
+                "reference": "9ac648a237e57ce1863b3f5a044a7a41e6fadf36"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/79a3ee64277b3c8f71dc379c7325155b945058d7",
-                "reference": "79a3ee64277b3c8f71dc379c7325155b945058d7",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/9ac648a237e57ce1863b3f5a044a7a41e6fadf36",
+                "reference": "9ac648a237e57ce1863b3f5a044a7a41e6fadf36",
                 "shasum": ""
             },
             "require": {
@@ -1518,8 +1518,8 @@
                 "pear/pear_exception": "^1.0",
                 "pear/versioncontrol_git": "^0.5",
                 "phing/phing": "^2.7",
+                "php-coveralls/php-coveralls": "^1.0|^2.0",
                 "phpunit/phpunit": "^4.8|^5.0",
-                "satooshi/php-coveralls": "^1.0|^2.0",
                 "symfony/console": "^2.8|^3.0"
             },
             "type": "library",
@@ -1560,7 +1560,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2018-06-27T13:04:37+00:00"
+            "time": "2018-07-11T10:20:19+00:00"
         },
         {
             "name": "giggsey/locale",

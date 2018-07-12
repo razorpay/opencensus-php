@@ -53,7 +53,12 @@ class QueueEventListener
         return [
             Metric::LABEL_ASYNC_JOB_CONNECTION => $this->event->job->getConnectionName(),
             Metric::LABEL_ASYNC_JOB_QUEUE      => $this->event->job->getQueue(),
-            Metric::LABEL_ASYNC_JOB_NAME       => $this->event->job->resolveName(),
+
+            //
+            // We do str_replace \ with _ to ease querying, otherwise while querying
+            // need to backslash which is difficult from Grafana dashboard.
+            //
+            Metric::LABEL_ASYNC_JOB_NAME       => str_replace('\\', '_', $this->event->job->resolveName()),
         ];
     }
 }

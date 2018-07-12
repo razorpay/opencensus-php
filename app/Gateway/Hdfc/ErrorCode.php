@@ -59,6 +59,7 @@ class ErrorCode
     const GW00456   = 'GW00456';
     const GW00458   = 'GW00458';
     const GW00850   = 'GW00850';
+    const GW00852   = 'GW00852';
     const GW00854   = 'GW00854';
     const GW00856   = 'GW00856';
     const GW00874   = 'GW00874';
@@ -270,6 +271,7 @@ class ErrorCode
         self::GW00456     => 'Invalid TranPortal Id',
         self::GW00458     => 'Invalid Payment Attempt',
         self::GW00850     => 'Missing Required data',
+        self::GW00852     => 'Invalid card number',
         self::GW00854     => 'Invalid Expiration Date',
         self::GW00856     => 'Invalid cvv',
         self::GW00874     => 'Transaction denied due to expiration date.',
@@ -373,6 +375,7 @@ class ErrorCode
         self::GW00456     => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
         self::GW00458     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::GW00850     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        self::GW00852     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
         self::GW00854     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
         self::GW00856     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         self::GW00874     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,

@@ -1376,6 +1376,21 @@ class BankTransferTest extends TestCase
         return $bankAccount;
     }
 
+    public function testBankTransferProcessWithExtraFields()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
+
+        $this->startTest();
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+    }
+
     protected function processBankTransfer($accountNumber, $ifsc, $utr = null)
     {
         return $this->processOrNotifyBankTransfer($accountNumber, $ifsc, $utr);
