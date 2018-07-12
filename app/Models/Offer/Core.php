@@ -232,13 +232,11 @@ class Core extends Base\Core
         {
             $existingDurations = [];
 
-            $existingOffers->each(
-                function ($existingOffer) use(&$existingDurations)
-                {
-                    $existingOfferDuration = $existingOffer['emi_durations'] ?: Emi\Entity::VALID_DURATIONS;
+            $existingOffers->each(function ($existingOffer) use(& $existingDurations) {
+                $existingOfferDuration = $existingOffer[Entity::EMI_DURATIONS] ?: Emi\Entity::VALID_DURATIONS;
 
-                    $existingDurations = array_merge($existingDurations, $existingOfferDuration);
-                });
+                $existingDurations = array_merge($existingDurations, $existingOfferDuration);
+            });
 
             $offerEmiDurations = $offer->getEmiDurations() ?: Emi\Entity::VALID_DURATIONS;
 
