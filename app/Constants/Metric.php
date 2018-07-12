@@ -18,6 +18,16 @@ class Metric
     const ASYNC_JOBS_PROCESSED_TOTAL            = 'async_jobs_processed_total';
     const ASYNC_JOBS_ERRORS_TOTAL               = 'async_jobs_errors_total';
 
+    // Payment Links (new Payment Pages) Metrics
+    const PAYMENT_PAGE_CREATED_TOTAL           = 'payment_page_created_total';
+    const PAYMENT_PAGE_UPDATED_TOTAL           = 'payment_page_updated_total';
+    const PAYMENT_PAGE_EXPIRED_TOTAL           = 'payment_page_expired_total';
+    const PAYMENT_PAGE_VIEW_RENDERED_TOTAL     = 'payment_page_view_rendered_total';
+    const PAYMENT_PAGE_PAYMENT_ATTEMPTED_TOTAL = 'payment_page_payment_attempted_total';
+    const PAYMENT_PAGE_PAYMENT_COMPLETED_TOTAL = 'payment_page_payment_completed_total';
+    const PAYMENT_PAGE_PAYMENT_REFUNDED_TOTAL  = 'payment_page_payment_refunded_total';
+
+
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
     const HTTP_REQUEST_DURATION_MILLISECONDS    = 'http_request_duration_milliseconds.histogram';
