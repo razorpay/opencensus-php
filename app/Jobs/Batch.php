@@ -25,6 +25,8 @@ class Batch extends Job
      */
     protected $params;
 
+    public $timeout = 5400;
+
     public function __construct(string $mode, string $id, array $params = [])
     {
         parent::__construct($mode);

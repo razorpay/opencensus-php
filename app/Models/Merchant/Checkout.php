@@ -19,6 +19,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Offer\Checker;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Gateway\Downtime;
 use RZP\Models\Plan\Subscription;
@@ -508,6 +509,12 @@ class Checkout
 
         $data['version'] = 1;
 
+        //
+        // When using Keyless auth, checkout has no way to identify the request mode
+        // Adding mode to the preferences response for this
+        //
+        $data['mode'] = $mode;
+
         // Magic checkout is displayed for the merchant based on true or false
         $data['magic'] = $merchant->isFeatureEnabled(Feature\Constants::MAGIC);
 
@@ -570,6 +577,8 @@ class Checkout
             return;
         }
 
+        $verbose = true;
+
         //
         // If there's a single forced offer, we only put those
         // methods on checkout which can be used with that offer.
@@ -579,7 +588,12 @@ class Checkout
         {
             $offer = $offers->first();
 
-            $this->updateMethodsToEnableOnCheckout($offer, $data);
+            $checker = new Checker($offer, $verbose);
+
+            if ($checker->checkApplicabilityOnOrder($order) === true)
+            {
+                $this->updateMethodsToEnableOnCheckout($offer, $data);
+            }
         }
 
         $this->updateEmiOptionsUsingOffers($offers, $data);
@@ -590,7 +604,12 @@ class Checkout
         //
         foreach ($offers as $offer)
         {
-            $data['offers'][] = $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount);
+            $checker = new Checker($offer, $verbose);
+
+            if ($checker->checkApplicabilityOnOrder($order) === true)
+            {
+                $data['offers'][] = $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount);
+            }
         }
     }
 

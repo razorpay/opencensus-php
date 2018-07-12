@@ -35,10 +35,11 @@
     <h2>Error</h2>
     <p>
     @if (isset($data['error']) and isset($data['error']['description']))
-      {{$data['error']['description']}}
+      {{$data['error']['description']}}.
     @else
       An Error Occurred.
     @endif
+      Please contact the merchant for assistance.
     </p>
   </div>
   </body>

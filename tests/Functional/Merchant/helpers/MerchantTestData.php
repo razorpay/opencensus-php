@@ -1365,6 +1365,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'mode'  => 'test',
                 'magic' => false,
             ],
         ],
@@ -2493,6 +2494,47 @@ return [
         ],
     ],
 
+    'testGetCheckoutWithMultipleSubEmiOffers' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'emi_options' => [
+                        'AMEX' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 316389
+                            ],
+
+                            [
+                                'duration'   => 6,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 319149
+                            ],
+
+                        ],
+                        'HDFC' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 12,
+                                'subvention' => 'customer',
+                                'min_amount' => 300000
+                            ],
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutRouteWithSavedGlobal' => [
         'request' => [
             'url' => '/preferences',
@@ -2965,5 +3007,19 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
         ],
-    ]
+    ],
+
+    'testOfferCheckoutPreferences' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => null
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

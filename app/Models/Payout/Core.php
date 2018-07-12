@@ -23,7 +23,7 @@ use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Core extends Base\Core
 {
-    const MAX_PAYOUT_AMOUNT     = 500000000; // 50 Lakhs
+    const MAX_PAYOUT_AMOUNT     = 800000000; // 80 Lakhs
 
     const PAYOUT_RETRY       = 'payout_retry_%s';
 

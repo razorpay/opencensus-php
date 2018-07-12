@@ -42,47 +42,25 @@ class Repository extends Base\Repository
         return $query->firstOrFail();
     }
 
-    public function fetchByBankOrNetwork($bank, $network, $durations)
+    public function fetchByDurationsAndBankOrNetwork(array $durations = [], string $bank = null, string $network = null)
     {
         $query = $this->newQuery();
 
-        if ($durations)
+        if (empty($durations) === false)
         {
             $query->whereIn(Entity::DURATION, $durations);
         }
 
-        if ($bank)
+        if (empty($bank) === false)
         {
-            $query->where(Entity::BANK, '=', $bank);
+            $query->where(Entity::BANK, $bank);
         }
-        else if ($network === Network::AMEX)
+
+        if ($network === Network::AMEX)
         {
-            $query->where(Entity::NETWORK, '=', $network);
+            $query->where(Entity::NETWORK, $network);
         }
 
         return $query->get();
-    }
-
-    public function fetchIdsByBankAndNetwork($bank, $network, $durations)
-    {
-        $query = $this->newQuery();
-
-        $query->select(Entity::ID);
-
-        if ($durations)
-        {
-            $query->whereIn(Entity::DURATION, $durations);
-        }
-
-        if ($bank)
-        {
-            $query->where(Entity::BANK, '=', $bank);
-        }
-        else if ($network === Network::AMEX)
-        {
-            $query->where(Entity::NETWORK, '=', $network);
-        }
-
-        return $query->pluck('id')->toArray();
     }
  }

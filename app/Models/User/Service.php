@@ -219,7 +219,25 @@ class Service extends Base\Service
 
     public function confirmUserByData(array $input): array
     {
-        $user = (new Core)->confirmUserByData($input);
+        $user = null;
+
+        (new Entity)->getValidator()->validateInput('confirm', $input);
+
+        // need to validate if it is only a confirm_token or an email
+        if (empty($input[Entity::CONFIRM_TOKEN]) === false)
+        {
+            $user = $this->repo->user->findByToken($input[Entity::CONFIRM_TOKEN]);
+        }
+        else if (empty($input[Entity::EMAIL]) === false and $this->auth->isAdminAuth() === true)
+        {
+            $user = $this->repo->user->findByEmail($input[Entity::EMAIL]);
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+        }
+
+        $user = (new Core)->confirm($user);
 
         $data = $user->toArrayPublic();
 
@@ -228,11 +246,11 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function changePassword(string $id, array $input): array
+    public function changePassword(array $input): array
     {
-        $user = $this->repo->user->findOrFailPublic($id);
+        $user = $this->user;
 
-        $user = (new Core)->changePassword($user, $input);
+        (new Core)->edit($user, $input, 'changePassword');
 
         return $user->toArrayPublic();
     }
@@ -309,23 +327,6 @@ class Service extends Base\Service
         $data = $this->sendConfirmationMail($dashboardHeaders['user_id']);
 
         return $data;
-    }
-
-    /**
-     * Returns user by email.
-     * @param string $email
-     *
-     * @return array
-     */
-    public function getUserByEmail(string $email)
-    {
-        $user = $this->repo->user->findByEmail($email);
-
-        $responseData = [
-            'id' => $user->getId(),
-        ];
-
-        return $responseData;
     }
 
     public function postResetPassword(array $input)

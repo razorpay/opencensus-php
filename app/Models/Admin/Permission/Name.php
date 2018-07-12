@@ -25,6 +25,7 @@ class Name
     const VIEW_MERCHANT_AGGREGATIONS          = 'view_merchant_aggregations';
     const VIEW_MERCHANT_TAGS                  = 'view_merchant_tags';
     const CREATE_PRICING_PLAN                 = 'create_pricing_plan';
+    const UPDATE_PRICING_PLAN                 = 'update_pricing_plan';
     const SET_PRICING_RULES                   = 'set_pricing_rules';
     const DELETE_PRICING_PLAN_RULES           = 'delete_pricing_plan_rules';
     const DELETE_EMI_PLAN                     = 'delete_emi_plan';
