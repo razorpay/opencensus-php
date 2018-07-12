@@ -275,11 +275,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MAX_CASHBACK);
     }
 
-    public function getEmiSubvention()
-    {
-        return $this->getAttribute(self::EMI_SUBVENTION);
-    }
-
     public function getIssuer()
     {
         return $this->getAttribute(self::ISSUER);
@@ -328,6 +323,11 @@ class Entity extends Base\PublicEntity
     public function getIins()
     {
         return $this->getAttribute(self::IINS);
+    }
+
+    public function getEmiSubvention()
+    {
+        return $this->getAttribute(self::EMI_SUBVENTION);
     }
 
     public function getEmiDurations()

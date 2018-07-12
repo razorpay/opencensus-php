@@ -3,6 +3,7 @@
 namespace RZP\Models\Offer;
 
 use RZP\Exception;
+use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -219,7 +220,34 @@ class Core extends Base\Core
         // required to uniquely define an offer
         $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $this->merchant->getId());
 
-        if ($existingOffers->count() > 0)
+        /**
+         * This will check if any existing offer with
+         * same emi duration exists. For example
+         * existing offer has null emi_durations that
+         * means all emi durations are valid. So any
+         * new offer with same issuer and any emi duration like
+         * 3 will fail
+         */
+        if ($offer->getEmiSubvention() === true)
+        {
+            $existingDurations = [];
+
+            $existingOffers->each(
+                function ($existingOffer) use(&$existingDurations)
+                {
+                    $existingOfferDuration = $existingOffer['emi_durations'] ?: Emi\Entity::VALID_DURATIONS;
+
+                    $existingDurations = array_merge($existingDurations, $existingOfferDuration);
+                });
+
+            $offerEmiDurations = $offer->getEmiDurations() ?: Emi\Entity::VALID_DURATIONS;
+
+            if (empty(array_intersect($offerEmiDurations, $existingDurations)) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
+            }
+        }
+        else if($existingOffers->count() > 0)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
         }

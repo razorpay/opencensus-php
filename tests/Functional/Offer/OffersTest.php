@@ -186,6 +186,17 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testConflictingEmiSubOffers()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->create('offer:emi_subvention');
+
+        $this->startTest();
+    }
+
     public function testCreateOfferInternationalEmi()
     {
         $this->fixtures->merchant->enableEmi();

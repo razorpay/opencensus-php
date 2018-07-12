@@ -709,6 +709,40 @@ return [
                 'terms'               => 'Some more details'
             ]
         ]
+
+
+    ],
+
+    'testConflictingEmiSubOffers' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'payment_network'     => 'AMEX',
+                'emi_subvention'      => true,
+                'max_payment_count'   => 2,
+                'processing_time'     => '1',
+                'starts_at'           => 1519457060,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OFFER_ALREADY_EXISTS
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS
+        ]
     ],
 
     'testEmiSubventionOfferWithInvalidAmount' => [
