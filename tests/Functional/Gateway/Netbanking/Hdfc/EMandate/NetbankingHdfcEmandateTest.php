@@ -70,6 +70,8 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $this->assertArraySelectiveEquals($data, $payment);
 
+        $this->assertEquals('initial', $payment['recurring_type']);
+
         $token = $this->getLastEntity('token', true);
 
         $this->assertEquals($payment[Payment\Entity::TOKEN_ID], $token[Token\Entity::ID]);
@@ -481,6 +483,8 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->doS2SRecurringPayment($payment);
 
         $secondPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('auto', $secondPayment['recurring_type']);
 
         $secondPaymentId = substr($secondPayment['id'], 4);
 
