@@ -155,7 +155,7 @@ function _getCreditsFields() {
     return [
       ['Id', item => item.id],
       ['Campaign', item => item.campaign],
-      ['Type', item => item.type],
+      ['Type', item => statusPill(item.type)],
       ['Value', item => item.value],
       ['Created At', item => formatDate(item.created_at)],
     ];
@@ -730,6 +730,7 @@ export function getDetailsViewMap(model) {
           creditsLogs={creditsLogs}
           fetchCreditsLogs={model.fetchCreditsLogs}
           getCreditsFields={_getCreditsFields()}
+          merchantId={details.id}
         />
       ),
     },
