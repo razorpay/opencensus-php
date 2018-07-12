@@ -8,6 +8,7 @@ use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Models\Card\Network;
 use RZP\Models\BharatQr\Tags;
 use RZP\Models\Merchant\Account;
 use RZP\Models\BharatQr\Constants;
@@ -158,6 +159,8 @@ class Provider
         ],
     ];
 
+    protected $rupayTerminalId;
+
     public static function getBankCode(string $provider)
     {
         $ifsc = self::DEFAULT_DETAILS[$provider][BankAccount::IFSC_CODE];
@@ -243,7 +246,7 @@ class Provider
             $this->getIdentifierTlv(Tags::VISA, Terminal\Entity::VISA_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::MASTERCARD, Terminal\Entity::MC_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::RUPAY, Terminal\Entity::RUPAY_MPAN, $merchantIdentifiers),
-            Tags::MERCHANT_ACCOUNT . $this->getLengthAndValue(Isg::MERCHANT_ACCOUNT),
+            Tags::MERCHANT_ACCOUNT . $this->getLengthAndValue(Constants::MERCHANT_ACCOUNT),
             $this->getBharatQrUpiTlv($merchantIdentifiers),
             $this->getBharatQrDynamicUpiTlv($qrCode, $merchantIdentifiers),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Isg::MERCHANT_CATEGORY),
@@ -336,9 +339,14 @@ class Provider
     {
         $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getId());
 
-        $idTlv2 = Tags::TERMINAL_ID . $this->getLengthAndValue(Isg::ISG_TERMINAL_ID);
+        if (empty($this->rupayTerminalId) === false)
+        {
+            $terminalIdTlv = Tags::TERMINAL_ID . $this->getLengthAndValue($this->rupayTerminalId);
 
-        $additionalDetailsString = $idTlv.$idTlv2;
+            $idTlv .= $terminalIdTlv;
+        }
+
+        $additionalDetailsString = $idTlv;
 
         return Tags::ADDITIONAL_DETAIL . strlen($additionalDetailsString) . $additionalDetailsString;
     }
@@ -412,6 +420,11 @@ class Provider
             if ($terminal === null)
             {
                 continue;
+            }
+
+            if ($bharatQrNetwork === Network::RUPAY)
+            {
+                $this->rupayTerminalId = $terminal->getGatewayTerminalId();
             }
 
             $terminal = $terminal->toArray();

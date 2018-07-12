@@ -33,6 +33,8 @@ class   Processor extends VirtualAccount\Processor
         $this->gatewayInput = $gatewayResponse['qr_data'];
 
         $this->callbackData = $gatewayResponse['callback_data'];
+
+        $this->terminal = $gatewayResponse['terminal'];
     }
 
     protected function isDuplicate(Base\PublicEntity $bharatQr)
@@ -188,50 +190,8 @@ class   Processor extends VirtualAccount\Processor
 
     protected function getTerminal()
     {
-        //
-        // This won't be null in case it is
-        // unexpected payment initially. We
-        // need the terminal to check if the expected
-        // is true or false. Based on this value
-        // payment is set to expected or unexpected
-        //
-        if ($this->terminal !== null)
-        {
-            return $this->terminal;
-        }
-
-        $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
-
-        if (isset($this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
-        {
-            $gatewayMerchantId    = $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
-
-            $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
-        }
-        else
-        {
-            $gatewayMpan = $this->gatewayInput[GatewayResponseParams::MPAN];
-
-            $terminal = $this->repo->terminal->findByGatewayMpan($gatewayMpan, $gateway);
-        }
-
-        if ($terminal === null)
-        {
-            throw new Exception\LogicException(
-                'Terminal should not be null here',
-                null,
-                [
-                    'gateway_merchant_id' => $gatewayMerchantId,
-                    'merchant_pan'        => $gatewayMpan,
-                ]
-            );
-        }
-
-        $this->terminal = $terminal;
-
-        return $terminal;
+        return $this->terminal;
     }
-
 
     protected function getVirtualAccountFromEntity(Base\PublicEntity $bharatQr)
     {

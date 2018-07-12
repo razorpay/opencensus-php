@@ -2,7 +2,6 @@
 
 namespace RZP\Models\BharatQr;
 
-use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\QrCode;
@@ -38,38 +37,77 @@ class Service extends Base\Service
         try
         {
             $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);
+
+            $qrData = $gatewayResponse['qr_data'];
+
+            (new Validator)->validateInput('gateway_response', $qrData);
+
+            $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
+
+            $this->determineAndSetModeForQr($qrCodeId, $gateway);
+
+            $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
+
+            $terminal = $this->getTerminal($gatewayResponse['qr_data']);
+
+            $gatewayResponse['terminal'] = $terminal;
+
+            $terminalArray = $terminal->toArray();
+
+            // before processing payment, we will call verify callback to check if the
+            // notification was sent by the gateway or some other source .
+            $gatewayClass->verifyBharatQrCallback($input, $terminalArray);
         }
         catch(Exception\GatewayErrorException $ex)
         {
             $this->trace->traceException($ex);
 
-            // sending the error reason to the gateway
             return $gatewayClass->getBharatQrResponse(false, $input, $ex);
         }
         catch (\Exception $ex)
         {
             $this->trace->traceException($ex);
 
-            // since it could be any runtime exception, so sharing "Failure" as a generic error description and not
-            //passing exception object
             return $gatewayClass->getBharatQrResponse(false, $input);
         }
-
-        $qrData = $gatewayResponse['qr_data'];
-
-        (new Validator)->validateInput('gateway_response', $qrData);
-
-        $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
-
-        $this->determineAndSetModeForQr($qrCodeId, $gateway);
-
-        $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
 
         $valid = $this->core->processPayment($gatewayResponse);
 
         $response = $gatewayClass->getBharatQrResponse($valid, $input);
 
         return $response;
+    }
+
+    protected function getTerminal($gatewayResponse)
+    {
+        $gateway = $gatewayResponse[GatewayResponseParams::GATEWAY];
+
+        if (isset($gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
+        {
+            $gatewayMerchantId = $gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID];
+
+            $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
+        }
+        else
+        {
+            $gatewayMpan = $gatewayResponse[GatewayResponseParams::MPAN];
+
+            $terminal = $this->repo->terminal->findByGatewayMpan($gatewayMpan, $gateway);
+        }
+
+        if ($terminal === null)
+        {
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                null,
+                [
+                    'gateway_merchant_id' => $gatewayMerchantId,
+                    'merchant_pan'        => $gatewayMpan,
+                ]
+            );
+        }
+
+        return $terminal;
     }
 
     protected function validateGateway(string $gateway)
@@ -109,7 +147,7 @@ class Service extends Base\Service
         }
         else
         {
-            $mode = $this->repo->determineLiveOrTestModeForEntity($merchantReference, Constants\Entity::QR_CODE);
+            $mode = $this->repo->qr_code->determineLiveOrTestModeForEntityByMerchantReference($merchantReference);
 
             $mode = $mode ?? Mode::LIVE;
         }
