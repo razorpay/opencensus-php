@@ -106,6 +106,10 @@ class Preferences
         self::MID_APARTMENTADDA,
     ];
 
+    const ONLY_NEFT_SETTLEMENT_MIDS = [
+        self::MID_PIGGY,
+    ];
+
     public static function checkZohoHeaders(Headers $headers)
     {
         $expectedHeader = Config::get('applications.zoho.header');
