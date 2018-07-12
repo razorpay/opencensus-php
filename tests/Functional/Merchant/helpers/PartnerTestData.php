@@ -597,5 +597,20 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
         ],
     ],
+
+    'testNoSubmerchantAccountAccessForReseller' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000011/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
 ];
 
