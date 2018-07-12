@@ -1,8 +1,10 @@
 <?php
 
+namespace RZP\Gateway\Netbanking\Canara;
+
 class RequestFields
 {
-    const ACTION                        = 'fldTxnId';      // purchase or verify
+    const MODE_OF_TRANSACTION           = 'fldTxnId';      // purchase or verify
     const CLIENT_CODE                   = 'fldClientCode';
     const CLIENT_ACCOUNT                = 'fldClientAccount';
     const MERCHANT_CODE                 = 'fldMerchCode';

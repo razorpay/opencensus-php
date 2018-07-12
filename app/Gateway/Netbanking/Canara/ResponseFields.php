@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Gateway\Netbanking\Canara;
+
 class ResponseFields
 {
     const ACTION                        = 'fldTxnId';      // purchase or verify
