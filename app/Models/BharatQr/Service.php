@@ -154,11 +154,4 @@ class Service extends Base\Service
 
         $this->app['basicauth']->setModeAndDbConnection($mode);
     }
-
-    protected function getNewProcessor($gatewayResponse)
-    {
-        $processor = (new Processor($gatewayResponse));;
-
-        return $processor;
-    }
 }

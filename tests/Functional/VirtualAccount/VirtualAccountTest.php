@@ -147,7 +147,7 @@ class VirtualAccountTest extends TestCase
 
         $qrCode = $this->getLastEntity('qr_code', true);
 
-        $this->assertEquals($qrCode['id'], 'qr_' . $qrCode['reference']);
+        $this->assertEquals('qr_' . strtoupper(substr($qrCode['id'], 3)), 'qr_' . $qrCode['reference']);
 
         $qrString = $qrCode['qr_string'];
 
@@ -718,7 +718,7 @@ class VirtualAccountTest extends TestCase
     {
         $virtualAccount = $this->createVirtualAccount([], true, null, true);
 
-        $qrCodeId = substr($virtualAccount['receivers'][1]['id'], 3);
+        $qrCodeId = strtoupper(substr($virtualAccount['receivers'][1]['id'], 3));
 
         $mockServer = $this->app['gateway']->server('hitachi');
 

@@ -338,7 +338,7 @@ class Provider
     {
         $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getId());
 
-        if (empty($this->rupayTerminalId) !== true)
+        if (empty($this->rupayTerminalId) === false)
         {
             $terminalIdTlv = Tags::TERMINAL_ID . $this->getLengthAndValue($this->rupayTerminalId);
 
