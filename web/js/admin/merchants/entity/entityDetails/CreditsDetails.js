@@ -35,9 +35,7 @@ export default class CreditDetails extends Component {
       <AddCredits
         model={{ ...credit, mode: curMode }}
         merchantId={merchantId}
-        opts={{
-          successHandler: this.updateCreditsLog.bind(this),
-        }}
+        successHandler={this.updateCreditsLog.bind(this)}
       />
     );
   };

@@ -9,9 +9,7 @@ export default ({ entity, updateEntity }) => {
       <AddCredits
         model={entity}
         merchantId={entity.merchant_id}
-        opts={{
-          successHandler: updateEntity,
-        }}
+        successHandler={updateEntity}
       />
     );
   }

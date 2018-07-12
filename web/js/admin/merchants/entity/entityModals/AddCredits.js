@@ -9,7 +9,7 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 import { adminPost, adminPut } from 'common/fetch';
 import { isWorkflow } from 'common/util';
 
-export default ({ merchantId, model = {}, opts = {} }) => {
+export default ({ merchantId, model = {}, successHandler }) => {
   function OnSuccess(response) {
     if (response) {
       closeModal();
@@ -19,8 +19,8 @@ export default ({ merchantId, model = {}, opts = {} }) => {
         return;
       }
       // Execute success handler if provided by parent component
-      if (opts.successHandler) {
-        opts.successHandler(response);
+      if (successHandler) {
+        successHandler(response);
       }
       notifySuccess('Credits updated successfully.');
     }
