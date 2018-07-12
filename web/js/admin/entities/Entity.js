@@ -230,6 +230,12 @@ const actions = {
         />
       </ShowWhen>
     ),
+  credits: (entity, entityComponent) => (
+    <action.CreditActions
+      entity={entity}
+      updateEntity={entityComponent::updateEntity}
+    />
+  ),
 };
 
 function updateEntity(data) {
