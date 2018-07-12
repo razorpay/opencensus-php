@@ -40,7 +40,7 @@ class Service extends Base\Service
 
         $plans = [];
 
-        $emiOfferPlans = $this->getEmiPlansByOffers($offers);
+        $emiOfferPlans = $this->getSubventedEmiPlansForOffers($offers);
 
         foreach ($emiPlans as $plan)
         {
@@ -50,7 +50,6 @@ class Service extends Base\Service
 
             // min amount in paisa
             $minAmount = $plan->getMinAmount();
-
 
             if (array_key_exists($plan->getId(), $emiOfferPlans) === true)
             {
@@ -149,29 +148,28 @@ class Service extends Base\Service
      * @param array $offers
      * @return array
      */
-    protected function getEmiPlansByOffers($offers = [])
+    protected function getSubventedEmiPlansForOffers($offers)
     {
+        $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
         $emiOfferPlans = [];
 
-        foreach ($offers as $offer)
-        {
-            if ($offer->getEmiSubvention() === true)
+        $offers->map(function ($offer, $key) use($emiPlans, & $emiOfferPlans) {
+            $bank = $offer->getIssuer();
+
+            $network = $offer->getPaymentNetwork();
+
+            $durations = $offer->getEmiDurations() ?: Entity::VALID_DURATIONS;
+
+            foreach($emiPlans as $emiPlan)
             {
-                $bank = $offer->getIssuer();
-
-                $network = $offer->getPaymentNetwork();
-
-                $durations = $offer->getEmiDurations();
-
-                $durations = $durations ?: $durations;
-
-                $emiPlanIds = $this->repo->emi_plan->fetchIdsByDurationAndBankOrNetwork($durations, $bank, $network);
-
-                $emiPlanIds = array_fill_keys($emiPlanIds, $offer->getPublicId());
-
-                $emiOfferPlans = $emiPlanIds +  $emiOfferPlans;
+                if (($emiPlan->getBank() === $bank) and
+                    ($emiPlan->getNetwork() === $network) and
+                    (in_array($emiPlan->getDuration(), $durations, true) === true))
+                {
+                    $emiOfferPlans = [$emiPlan->getId() => $offer->getPublicId()] + $emiOfferPlans;
+                }
             }
-        }
+        });
 
         return $emiOfferPlans;
     }

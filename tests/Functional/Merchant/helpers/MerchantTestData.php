@@ -2494,6 +2494,47 @@ return [
         ],
     ],
 
+    'testGetCheckoutWithMultipleSubEmiOffers' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'emi_options' => [
+                        'AMEX' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 316389
+                            ],
+
+                            [
+                                'duration'   => 6,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 319149
+                            ],
+
+                        ],
+                        'HDFC' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 12,
+                                'subvention' => 'customer',
+                                'min_amount' => 300000
+                            ],
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutRouteWithSavedGlobal' => [
         'request' => [
             'url' => '/preferences',
