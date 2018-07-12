@@ -17,7 +17,7 @@ class NetbankingCanaraGatewayTest extends TestCase
 
         $this->gateway = 'netbanking_canara';
 
-        $this->bank = 'canara';     // verify
+        $this->bank = 'CNRB';
 
         $this->setMockGatewayTrue();
 
@@ -30,18 +30,17 @@ class NetbankingCanaraGatewayTest extends TestCase
 
         $paymententity = $this->getLastEntity('payment', true);
 
-        s($paymententity);
-
-        //$this->assertTestResponse($paymententity);
+        $this->assertTestResponse($paymententity);
 
         $netbankingentity = $this->getLastEntity('netbanking', true);
 
-        s($netbankingentity);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $netbankingentity);
     }
 
     public function doNetbankingCanaraAuthAndCapturePayment()
     {
-        $payment = $this->getDefaultNetbankingPaymentArray('canara');
+        $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 
         $payment = $this->doAuthAndCapturePayment($payment);
 

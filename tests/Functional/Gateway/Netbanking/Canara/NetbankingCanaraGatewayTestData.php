@@ -12,7 +12,7 @@ return [
         'currency' => 'INR',
         'description' => 'random description',
         'card_id' => null,
-        'bank' => 'canara',
+        'bank' => 'CNRB',
         'error_code' => null,
         'error_description' => null,
         'email' => 'a@b.com',
@@ -24,6 +24,16 @@ return [
         'signed' => false,
         'verified' => null,
         'entity' => 'payment',
+    ],
+    'testPaymentNetbankingEntity' => [
+        'action' => 'authorize',
+        'amount' => 50000,
+        'bank' => 'CNRB',
+        'received' => true,
+        'client_code' => 'abcom',
+        'merchant_code' => 'test_merchant_id',
+        'entity' => 'netbanking',
+        'bank_payment_id' => 'AB1234',
     ],
 ];
 
