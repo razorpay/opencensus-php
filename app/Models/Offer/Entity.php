@@ -231,6 +231,8 @@ class Entity extends Base\PublicEntity
 
     public function build(array $input = [], string $operation = 'create')
     {
+        $this->modify($input);
+
         if (isset($input[self::EMI_SUBVENTION]) === true)
         {
             $operation = 'emiSubvention';
@@ -239,6 +241,8 @@ class Entity extends Base\PublicEntity
         $this->getValidator()->validateInput($operation, $input);
 
         $this->generate($input);
+
+        $this->unsetInput($operation, $input);
 
         $this->fill($input);
 
@@ -451,7 +455,8 @@ class Entity extends Base\PublicEntity
 
     protected function generateMinAmount(array $input)
     {
-        if (isset($input[self::EMI_SUBVENTION]) === false)
+        if ((isset($input[self::EMI_SUBVENTION]) === false) or
+            (empty($input[self::MIN_AMOUNT]) === false))
         {
             return;
         }
@@ -462,7 +467,7 @@ class Entity extends Base\PublicEntity
 
         $emiDurations = $input[self::EMI_DURATIONS] ?? [];
 
-        $minAmount = $input[self::MIN_AMOUNT] ?? (new Emi\Core)->calculateMinAmountForPlans($emiDurations, $bank, $network);
+        $minAmount = (new Emi\Core)->calculateMinAmountForPlans($emiDurations, $bank, $network);
 
         $this->setAttribute(self::MIN_AMOUNT, $minAmount);
     }

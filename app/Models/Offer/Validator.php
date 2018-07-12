@@ -350,7 +350,7 @@ class Validator extends Base\Validator
         if ($minAmount < $requiredMinAmount)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "Min amount required for this emi subvention is $requiredMinAmount");
+                "Min amount for this offer should be greater than $requiredMinAmount");
         }
     }
 
