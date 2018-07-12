@@ -179,7 +179,7 @@ class Entity extends Base\PublicEntity
 
     public function isGeneratedByMerchant()
     {
-        return ($this->getReference()) !== strtoupper($this->getId());
+        return ($this->getReference() !== strtoupper($this->getId()));
     }
 
     // --------------------- END GETTERS ---------------------

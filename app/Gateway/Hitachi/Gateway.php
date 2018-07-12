@@ -678,7 +678,7 @@ class Gateway extends Base\Gateway
             Entity::RRN                => $response[ResponseFields::RRN],
             Entity::AUTH_ID            => $response[ResponseFields::AUTHORIZATION_ID],
             Entity::STATUS             => $response[ResponseFields::STATUS_CODE],
-            Entity::MERCHANT_REFERENCE => $response[ResponseFields::PURCHASE_ID],
+            Entity::MERCHANT_REFERENCE => substr($response[ResponseFields::PURCHASE_ID], 0 , 14),
         ];
 
         return $attributes;

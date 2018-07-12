@@ -662,7 +662,7 @@ class Gateway
         return $input;
     }
 
-    public function verifyBharatQrCallback($input, $terminalId)
+    public function verifyBharatQrCallback($input, $terminalArray)
     {
         return $input;
     }

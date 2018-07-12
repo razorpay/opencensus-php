@@ -158,37 +158,6 @@ class RepositoryManager extends Illuminate\Support\Manager
         return null;
     }
 
-    public function determineLiveOrTestModeForEntityByMerchantReference($merchantReference, $entity)
-    {
-        $repo = $this->driver($entity);
-
-        $obj = $repo->connection(Mode::LIVE)->findByMerchantReference($merchantReference);
-
-        if ($obj !== null)
-        {
-            return Mode::LIVE;
-        }
-
-        $obj = $repo->connection(Mode::TEST)->findByMerchantReference($merchantReference);
-
-        if ($obj !== null)
-        {
-            return Mode::TEST;
-        }
-
-        //
-        // We need to set connection to null
-        // because it will be set to test if the
-        // id is not found in any of the database.
-        // So even if the db connection is later set
-        // to live, query connection will be set to
-        // test.
-        //
-        $repo->connection(null);
-
-        return null;
-    }
-
     protected function getRepositoryClassFromObject($entityObject)
     {
         $entity = $entityObject->getEntityName();
