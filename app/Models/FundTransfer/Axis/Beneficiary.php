@@ -13,11 +13,9 @@ use RZP\Models\FileStore;
 use RZP\Encryption\AESEncryption;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\BankAccount\Entity as BankAccount;
-use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
-use RZP\Models\FundTransfer\Base\Beneficiary as BaseBeneficiary;
+use RZP\Models\FundTransfer\Base\Beneficiary\FileProcessor;
 
-class Beneficiary extends BaseBeneficiary
+class Beneficiary extends FileProcessor
 {
     protected $id;
 
