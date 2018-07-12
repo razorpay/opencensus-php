@@ -643,7 +643,7 @@ class Gateway extends Base\Gateway
 
                 $gatewayPayment = $this->createGatewayPaymentEntity($gatewayAttributes, $input);
 
-                $this->checkErrorsAndThrowException($response);
+                $this->checkErrorsAndThrowException($response, null, null, Exception\Action::ENROLL);
             }
 
             $gatewayAttributes = $this->getAttributeFromAuthEnrollResponse($input, $response);
@@ -1602,7 +1602,7 @@ class Gateway extends Base\Gateway
             $errMsg, null, $sf);
     }
 
-    protected function checkErrorsAndThrowException(array $response, $code = null, $desc = null)
+    protected function checkErrorsAndThrowException(array $response, $code = null, $desc = null, $action = null)
     {
         $reasonCode = $response[F::REASON_CODE];
 
@@ -1610,7 +1610,7 @@ class Gateway extends Base\Gateway
         $desc = $desc ?: ResponseCode::getDescription($reasonCode);
 
         throw new Exception\GatewayErrorException(
-                $code, $reasonCode, $desc);
+                $code, $reasonCode, $desc, null, null, $action);
     }
 
     protected function validateCallbackGatewayFields(array $input)

@@ -1052,16 +1052,7 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        $payment->setVerified(null);
-        $payment->setVerifyBucket(0);
-
-        // If payment still doesnt exist we set verify_at as null
-        // So that this payment doesnt get picked up by any cron
-        // for verify
-        if ($payment->exists === false)
-        {
-            $payment->setVerifyAt(null);
-        }
+        $this->updateVerifyBucketOnPaymentFailure($exception);
 
         $this->repo->saveOrFail($payment);
 
@@ -1098,6 +1089,30 @@ class Processor
         $source = $riskData[Risk\Entity::SOURCE];
 
         (new Risk\Core)->logPaymentForSource($payment, $source, $riskData);
+    }
+
+    protected function updateVerifyBucketOnPaymentFailure(Exception\BaseException $e)
+    {
+        $payment = $this->payment;
+
+        $payment->setVerified(null);
+
+        $payment->setVerifyBucket(0);
+
+        if ($e instanceof Exception\GatewayErrorException)
+        {
+            if (in_array($e->getAction(), Exception\Action::$nonVerifiableActions, true) === true)
+            {
+                $payment->setVerifyAt(null);
+            }
+        }
+
+        // If payment still doesnt exist we set verify_at as null
+        // So that this payment doesnt get picked up by any cron
+        // for verify
+        if ($payment->exists === false) {
+            $payment->setVerifyAt(null);
+        }
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
