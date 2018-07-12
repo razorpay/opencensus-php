@@ -48,8 +48,7 @@ export default class CreditDetails extends Component {
         'Action',
         item => (
           <span class="link" onClick={() => this.openEditModal(item)}>
-            {' '}
-            Edit{' '}
+            Edit
           </span>
         ),
       ],

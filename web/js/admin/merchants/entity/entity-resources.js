@@ -155,24 +155,7 @@ function _getCreditsFields() {
     return [
       ['Id', item => item.id],
       ['Campaign', item => item.campaign],
-      [
-        'Type',
-        item => {
-          let labelClass = 'capitalize pill ';
-          switch (item.type) {
-            case 'fee':
-              labelClass += 'label-info';
-              break;
-            case 'refund':
-              labelClass += 'label-yellow';
-              break;
-            default:
-              labelClass += 'label-primary';
-              break;
-          }
-          return <span class={labelClass}>{item.type}</span>;
-        },
-      ],
+      ['Type', item => statusPill(item.type)],
       ['Value', item => item.value],
       ['Created At', item => formatDate(item.created_at)],
     ];
