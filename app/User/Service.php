@@ -124,11 +124,11 @@ class Service extends Base\Service
     public function changePassword(array $input)
     {
         $user = Auth::user();
-//
-//        if ($user->currentMerchant() and $user->currentMerchant()->isTestAccount())
-//        {
-//            return [["Password change forbidden on this account"], null];
-//        }
+
+        if ($user->currentMerchant() and $user->currentMerchant()->isTestAccount())
+        {
+            return [["Password change forbidden on this account"], null];
+        }
 
         list($error, $data) = $this->updatePasswordOnApi($input);
 
