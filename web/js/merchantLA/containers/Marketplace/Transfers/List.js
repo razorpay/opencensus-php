@@ -6,12 +6,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchTransfers as fetchAll } from 'merchantLA/modules/collection';
-import {
-  transferId,
-  recipient,
-  amount,
-  createdAt,
-} from 'merchantLA/utils/item/pair';
+import { transferId, amount, createdAt } from 'merchantLA/utils/item/pair';
 
 @connect(state => state.transfers, { fetchAll })
 export default class TransfersListContainer extends ListContainer {
@@ -33,7 +28,7 @@ export default class TransfersListContainer extends ListContainer {
 
               <DataTable
                 title="Transfers"
-                columns={[transferId, recipient, amount, createdAt]}
+                columns={[transferId, amount, createdAt]}
                 count={this.state.count}
                 skip={this.state.skip}
                 paginate={this.paginate}

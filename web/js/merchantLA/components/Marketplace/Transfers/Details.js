@@ -14,7 +14,6 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import TransferReversal from 'merchantLA/components/Marketplace/Transfers/TransferReversal';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import Fee from 'merchant/components/Fee';
 
 let initialState = {
   onHold: 'false',
@@ -26,7 +25,7 @@ let initialState = {
   editView: false,
 };
 
-const SettlementText = ({ data, transfer, onEdit }) => {
+const SettlementText = ({ data, transfer }) => {
   if (transfer.recipient_settlement && transfer.recipient_settlement.status) {
     return <span>{titleCase(transfer.recipient_settlement.status)}</span>;
   }
@@ -45,9 +44,6 @@ const SettlementText = ({ data, transfer, onEdit }) => {
           <span className="text-danger">On Hold</span>
         )}
         <span>&nbsp;&nbsp;</span>
-        <a href className="btn-link" onClick={onEdit}>
-          change
-        </a>
       </div>
       {data.onHold === 'false' && (
         <div className="text-fade">
@@ -114,31 +110,17 @@ export default class TransferDetails extends Component {
 
             <div class="SliderPanel__Body">
               <div class="panel-body">
-                <EntityDetailRow label="Linked Account">
+                <EntityDetailRow label="Parent Account">
                   <Definition>
-                    <span>{transfer.recipient_details.name}</span>
-                    {transfer.recipient_details.email && (
-                      <span>{transfer.recipient_details.email}</span>
-                    )}
-                    <code>{transfer.recipient}</code>
+                    <b>Parent Name(Flipkart)</b>
                   </Definition>
                 </EntityDetailRow>
 
                 <EntityDetailRow label="Amount">
-                  <ContentToggler>
-                    <Amount
-                      value={transfer.amount}
-                      currency={transfer.currency}
-                    />
-                    <div className="m-t">
-                      <Fee
-                        totalFee={transfer.fees}
-                        rzpFee={transfer.fees - transfer.tax}
-                        tax={transfer.tax}
-                        currency={transfer.currency}
-                      />
-                    </div>
-                  </ContentToggler>
+                  <Amount
+                    value={transfer.amount}
+                    currency={transfer.currency}
+                  />
                 </EntityDetailRow>
 
                 <EntityDetailRow
@@ -154,17 +136,6 @@ export default class TransferDetails extends Component {
                 <EntityDetailRow label="Settlement">
                   <SettlementText data={this.state} transfer={transfer} />
                 </EntityDetailRow>
-
-                <EntityDetailRow
-                  label="Source ID"
-                  value={() => (
-                    <div>
-                      <Link to={`/payments/${transfer.source}`}>
-                        {transfer.source}
-                      </Link>
-                    </div>
-                  )}
-                />
 
                 <EntityDetailRow label="Reversal">
                   <TransferReversal transfer={transfer} reversals={reversals} />

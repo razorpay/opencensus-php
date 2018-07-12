@@ -4,17 +4,14 @@ import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required, email } from 'rzp/utils/validators';
-import { roles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
 import { sendInvitation, fetchTeamDetails } from 'merchantLA/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
-const ROLES = without(roles, 'owner');
 const selector = formValueSelector('newInvitation');
 @connect(
   state => {
     return {
-      selectedRole: selector(state, 'role'),
       ...state.session,
     };
   },
@@ -28,7 +25,6 @@ const selector = formValueSelector('newInvitation');
   form: 'newInvitation',
   initialValues: {
     email: '',
-    role: 'manager',
   },
 })
 export default class NewInvitation extends Component {
@@ -53,7 +49,7 @@ export default class NewInvitation extends Component {
   };
 
   render() {
-    const { handleSubmit, selectedRole } = this.props;
+    const { handleSubmit } = this.props;
 
     return (
       <form onSubmit={handleSubmit(this.save)} style={{ marginBottom: '35px' }}>
@@ -79,18 +75,6 @@ export default class NewInvitation extends Component {
             </div>
           </div>
 
-          <div class="col-md-4">
-            <div class="form-group">
-              <Field name="role" component="select" class="form-control">
-                {Object.keys(ROLES).map(role => (
-                  <option key={role} value={role}>
-                    {ROLES[role].label}
-                  </option>
-                ))}
-              </Field>
-            </div>
-          </div>
-
           <div class="col-md-3">
             <div class="form-group">
               <AsyncButton
@@ -104,11 +88,10 @@ export default class NewInvitation extends Component {
         </div>
 
         <div class="form-group">
-          {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
-            <div class="alert alert-info text-center">
-              {ROLES[selectedRole].desc}
-            </div>
-          ) : null}
+          <div class="alert alert-info text-center">
+            Allows access to all views except access for Bank Details and Team
+            Management
+          </div>
         </div>
       </form>
     );
