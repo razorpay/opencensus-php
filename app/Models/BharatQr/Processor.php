@@ -186,7 +186,7 @@ class Processor extends VirtualAccount\Processor
         $this->virtualAccount = (new VirtualAccount\Core)->create($input, $merchant);
     }
 
-    protected function getTerminal()
+    public function getTerminal()
     {
         //
         // This won't be null in case it is

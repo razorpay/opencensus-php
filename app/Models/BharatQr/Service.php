@@ -43,15 +43,12 @@ class Service extends Base\Service
         {
             $this->trace->traceException($ex);
 
-            // sending the error reason to the gateway
             return $gatewayClass->getBharatQrResponse(false, $input, $ex);
         }
         catch (\Exception $ex)
         {
             $this->trace->traceException($ex);
 
-            // since it could be any runtime exception, so sharing "Failure" as a generic error description and not
-            //passing exception object
             return $gatewayClass->getBharatQrResponse(false, $input);
         }
 
@@ -64,6 +61,29 @@ class Service extends Base\Service
         $this->determineAndSetModeForQr($qrCodeId, $gateway);
 
         $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
+
+        $bharatQrProcessor = $this->getNewProcessor($gatewayResponse);
+
+        $terminal = $bharatQrProcessor->getTerminal();
+
+        try
+        {
+            // before processing payment, we will call verify callback to check if the
+            // notification was sent by the gateway or some other source .
+            $gatewayClass->verifyBharatQrCallback($input, $terminal->getGatewayTerminalId());
+        }
+        catch(Exception\GatewayErrorException $ex)
+        {
+            $this->traceException($ex, null, TraceCode::GATEWAY_VERIFY_ERROR, ['gateway'   => $gateway]);
+
+            return $gatewayClass->getBharatQrResponse(false, $input, $ex);
+        }
+        catch(\Exception $ex)
+        {
+            $this->traceException($ex, null, TraceCode::RUNTIME_ERROR);
+
+            return $gatewayClass->getBharatQrResponse(false, $input);
+        }
 
         $valid = $this->core->processPayment($gatewayResponse);
 
@@ -109,11 +129,19 @@ class Service extends Base\Service
         }
         else
         {
-            $mode = $this->repo->determineLiveOrTestModeForEntity($merchantReference, Constants\Entity::QR_CODE);
+            $mode = $this->repo->determineLiveOrTestModeForEntityByMerchantReference($merchantReference,
+                                                                                              Constants\Entity::QR_CODE);
 
             $mode = $mode ?? Mode::LIVE;
         }
 
         $this->app['basicauth']->setModeAndDbConnection($mode);
+    }
+
+    protected function getNewProcessor($gatewayResponse)
+    {
+        $processor = (new Processor($gatewayResponse));;
+
+        return $processor;
     }
 }

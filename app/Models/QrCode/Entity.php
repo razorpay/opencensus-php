@@ -104,7 +104,7 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::REFERENCE]) === false)
         {
-            $this->setReference($this->getId());
+            $this->setReference(strtoupper($this->getId()));
         }
     }
 
@@ -179,7 +179,7 @@ class Entity extends Base\PublicEntity
 
     public function isGeneratedByMerchant()
     {
-        return ($this->getReference() !== $this->getId());
+        return ($this->getReference()) !== strtoupper($this->getId());
     }
 
     // --------------------- END GETTERS ---------------------

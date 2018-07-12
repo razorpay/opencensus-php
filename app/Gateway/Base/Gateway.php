@@ -662,6 +662,11 @@ class Gateway
         return $input;
     }
 
+    public function verifyBharatQrCallback($input, $terminalId)
+    {
+        return $input;
+    }
+
     protected function shouldReturnIfPaymentNullInVerifyFlow($verify)
     {
         if (($verify->input['payment']['status'] === 'failed') or
