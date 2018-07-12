@@ -49,16 +49,18 @@ export default ({ merchantId, model = {}, opts = {} }) => {
       });
   }
 
+  let isEditable = !model.id;
+
   return (
-    <ModalContent header={`${model.id ? 'Edit' : 'Add'} Credits`}>
+    <ModalContent header={`${!isEditable ? 'Edit' : 'Add'} Credits`}>
       <Form class="full-span" style={{ width: '350px' }}>
-        <SelectMode disabled={!!model.id} defaultValue={model.mode} />
+        <SelectMode disabled={!isEditable} defaultValue={model.mode} />
 
         <SelectField
           label="Type"
           name="type"
           defaultValue={model.type}
-          disabled={!!model.id}
+          disabled={!isEditable}
         >
           <option value="amount">Amount</option>
           <option value="fee">Fee</option>
@@ -68,7 +70,7 @@ export default ({ merchantId, model = {}, opts = {} }) => {
         <Field
           label="Campaign"
           name="campaign"
-          disabled={!!model.id}
+          disabled={!isEditable}
           defaultValue={model.campaign}
         />
         <Field
