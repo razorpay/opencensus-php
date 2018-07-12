@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
-
-import { notifyError, notifySuccess } from 'common/modal';
 import Table from 'ui/Table';
 import Form from 'ui/Form';
-import { SelectField, SwitchField } from 'ui/Field';
-import { adminFetch, adminPost } from 'common/fetch';
+import { SwitchField } from 'ui/Field';
+import { openModal } from 'common/modal';
+import AddCredits from '../entityModals/AddCredits';
 
-export default class PricingPlanModal extends Component {
+export default class CreditDetails extends Component {
   state = { curMode: 'live' };
 
   componentWillMount() {
@@ -24,6 +23,39 @@ export default class PricingPlanModal extends Component {
     }
   }
 
+  updateCreditsLog(credit) {
+    this.props.fetchCreditsLogs(this.state.curMode);
+  }
+
+  openEditModal = credit => {
+    const { curMode } = this.state;
+    const { merchantId } = this.props;
+
+    openModal(
+      <AddCredits
+        model={{ ...credit, mode: curMode }}
+        merchantId={merchantId}
+        opts={{
+          successHandler: this.updateCreditsLog.bind(this),
+        }}
+      />
+    );
+  };
+
+  extraFields() {
+    return [
+      [
+        'Action',
+        item => (
+          <span class="link" onClick={() => this.openEditModal(item)}>
+            {' '}
+            Edit{' '}
+          </span>
+        ),
+      ],
+    ];
+  }
+
   render() {
     return (
       <Form>
@@ -39,7 +71,10 @@ export default class PricingPlanModal extends Component {
         <div>
           <Table
             items={this.props.creditsLogs[this.state.curMode]}
-            fields={this.props.getCreditsFields(this.state.curMode)}
+            fields={[
+              ...this.props.getCreditsFields(this.state.curMode),
+              ...this.extraFields(),
+            ]}
           />
         </div>
       </Form>

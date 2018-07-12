@@ -730,6 +730,7 @@ export function getDetailsViewMap(model) {
           creditsLogs={creditsLogs}
           fetchCreditsLogs={model.fetchCreditsLogs}
           getCreditsFields={_getCreditsFields()}
+          merchantId={details.id}
         />
       ),
     },
