@@ -388,6 +388,8 @@ class PartnerTest extends OAuthTestCase
 
         $this->allowAdminToAccessSubMerchant();
 
+        $this->createUserMerchantMapping(self::DEFAULT_MERCHANT_ID, 'owner');
+
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
         $partnerData = $this->getDummyPartnerAttributes();
@@ -476,6 +478,8 @@ class PartnerTest extends OAuthTestCase
 
         $this->allowAdminToAccessSubMerchant();
 
+        $this->createUserMerchantMapping(self::DEFAULT_MERCHANT_ID, 'owner');
+
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
         $partnerData = $this->getDummyPartnerAttributes();
@@ -507,6 +511,8 @@ class PartnerTest extends OAuthTestCase
 
         $this->allowAdminToAccessSubMerchant();
 
+        $this->createUserMerchantMapping(self::DEFAULT_MERCHANT_ID, 'owner');
+
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
         $partnerData = $this->getDummyPartnerAttributes();
@@ -532,6 +538,8 @@ class PartnerTest extends OAuthTestCase
         $this->allowAdminToAccessPartnerMerchant();
 
         $this->allowAdminToAccessSubMerchant();
+
+        $this->createUserMerchantMapping(self::DEFAULT_MERCHANT_ID, 'owner');
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
@@ -597,5 +605,20 @@ class PartnerTest extends OAuthTestCase
     protected function markMerchantAsPartner(string $merchantId, string $partnerType)
     {
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => $partnerType]);
+    }
+
+    protected function createUserMerchantMapping($merchantId, $role)
+    {
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => $role,
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        return $user;
     }
 }
