@@ -27,7 +27,7 @@ const NOT_REGISTERED = 11; // 'Society'
 //const Others = 12 // Removed now
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
-const LLPIN_BusinessTypes = [LLP];
+export const LLPIN_BusinessTypes = [LLP];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
 
 const stateOptions = ['--Select--'].concat(
@@ -287,7 +287,7 @@ const registrationDetails = [
     label: 'LLPIN',
     name: 'company_cin',
     required: true, // It's mandatory only for LLP
-    info: 'Example : AAB-2933',
+    info: 'Example : AAB2933',
     className: 'Input--capitalize',
     _when: activation =>
       activation.props.data.business_type &&

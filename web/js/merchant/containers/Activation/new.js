@@ -17,6 +17,8 @@ import User from 'merchant/models/User';
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
 
+import { LLPIN_BusinessTypes } from 'component/merchant/Activation/ActivationFormMap';
+
 const welcomeImg = '/img/activation/welcome.svg';
 const successImg = '/img/activation/submit-success.svg';
 
@@ -176,9 +178,21 @@ export class ActivationContainer extends React.Component {
         let errors = [];
 
         if (err.errors) {
-          err.errors.forEach(err => {
-            if (err.toLowerCase().indexOf('status code') === -1) {
-              errors.push(err);
+          err.errors.forEach(er => {
+            if (er.toLowerCase().indexOf('status code') === -1) {
+              // TODO: BE treats LLPin as cin currently. So, gives error for cin, not LLPin. To revert when BE handles.
+              if (er.indexOf('cin') !== -1) {
+                const businessType = this.state.data.business_type;
+
+                if (
+                  businessType &&
+                  LLPIN_BusinessTypes.indexOf(Number(businessType)) !== -1
+                ) {
+                  er = er.replace('cin', 'llpin');
+                }
+              }
+
+              errors.push(er);
             }
           });
         }
