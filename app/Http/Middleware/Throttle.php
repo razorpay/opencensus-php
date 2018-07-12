@@ -34,7 +34,7 @@ final class Throttle
 
         $response = $next($request);
 
-        $duration = millitime() - $start; // For metric http_request_duration_microseconds, in milliseconds
+        $duration = millitime() - $start; // For metric http_request_duration_milliseconds, in milliseconds
 
         $this->pushHttpMetrics($request, $response, $duration);
 
@@ -52,7 +52,7 @@ final class Throttle
         $dimensions = $this->getMetricDimensions($request, $response);
 
         Metrics::count(Metric::HTTP_REQUESTS_TOTAL, 1, $dimensions);
-        Metrics::summary(Metric::HTTP_REQUEST_DURATION_MICROSECONDS, $duration, $dimensions);
+        Metrics::histogram(Metric::HTTP_REQUEST_DURATION_MILLISECONDS, $duration, $dimensions);
     }
 
     /**
