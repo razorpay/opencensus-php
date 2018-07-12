@@ -861,8 +861,8 @@ return [
                 'percent_rate'              => 1000,
                 'processing_time'           => 86400,
                 'max_payment_count'         => 2,
-                'starts_at'                 => 1519457060,
-                'ends_at'                   => 1550993080,
+                'starts_at'                 => 1519457070,
+                'ends_at'                   => 1550993070,
             ]
         ]
     ],
