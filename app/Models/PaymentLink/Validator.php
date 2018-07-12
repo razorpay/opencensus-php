@@ -178,7 +178,7 @@ class Validator extends Base\Validator
      */
     public function validatePaymentAmount(Payment\Entity $payment)
     {
-        $paymentAmount     = $payment->getAmount();
+        $paymentAmount     = $payment->getAdjustedAmountWrtCustFeeBearer();
         $paymentLinkAmount = $this->entity->getAmount();
 
         if (($paymentLinkAmount !== null) and ($paymentLinkAmount !== $paymentAmount))

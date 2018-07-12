@@ -1823,4 +1823,26 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createCsbTpvTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CSB_TPV_TERMINAL;
+
+        $defaultValues = [
+            'id'                    => $termId,
+            'merchant_id'           => '100000Razorpay',
+            'gateway'               => 'netbanking_csb',
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'tpv'                   => 1,
+            'gateway_merchant_id'   => 'razorpay',
+            'gateway_access_code'   => 'random_code',
+            'gateway_secure_secret' => 'random_secret',
+            'network_category'      => 'ecommerce',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }

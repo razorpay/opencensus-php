@@ -7,6 +7,9 @@ use Barryvdh\Debugbar;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 
+use RZP\Http\RequestContext;
+use RZP\Trace\ApiTraceProcessor;
+
 class FirstServiceProvider extends ServiceProvider
 {
     /**
@@ -30,6 +33,8 @@ class FirstServiceProvider extends ServiceProvider
         $this->registerRequestSetTaskIdMacro();
 
         $this->registerRequestGetTaskIdMacro();
+
+        $this->registerRequestContext();
     }
 
     public function boot()
@@ -121,5 +126,10 @@ class FirstServiceProvider extends ServiceProvider
 
             return $this->taskId;
         });
+    }
+
+    protected function registerRequestContext()
+    {
+        $this->app->singleton('request.ctx', function($app) { return new RequestContext($app); });
     }
 }

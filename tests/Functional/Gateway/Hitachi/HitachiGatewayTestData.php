@@ -194,14 +194,14 @@ return [
         'entity'            => 'payment',
     ],
     'testPaymentEnrollEntity' => [
-        'entity'      => 'hitachi',
-        'action'      => 'authorize',
-        'received'    => true,
-        'amount'      => 50000,
-        'currency'    => 'INR',
-        'pAuthStatus' => 'Y',
-        'pECI'        => '06',
-        'pALGO'       => 2,
+        'entity'                 => 'hitachi',
+        'action'                 => 'authorize',
+        'received'               => true,
+        'amount'                 => 50000,
+        'currency'               => 'INR',
+        'pAuthStatus'            => 'Y',
+        'pECI'                   => '06',
+        'pALGO'                  => 2,
     ],
 
     'testPaymentNotEnrollEntity' => [
