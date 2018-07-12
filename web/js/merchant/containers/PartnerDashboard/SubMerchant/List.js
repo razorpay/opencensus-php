@@ -45,11 +45,25 @@ const switchMerchant = {
   value: () => 'Partnership Removed',
 };
 
-@connect(state => ({ ...state.submerchants }), {
-  fetchAll,
-  openModal,
-  closeModal,
-})
+const switchMerchantAccessMap = {
+  fully_managed: true,
+  aggregator: true,
+  reseller: false,
+  bank: false,
+  pure_platform: false,
+};
+
+@connect(
+  state => ({
+    userPartnerType: state.session.user.partner_type,
+    ...state.submerchants,
+  }),
+  {
+    fetchAll,
+    openModal,
+    closeModal,
+  }
+)
 export default class SubMerchantsList extends ListContainer {
   state = {};
 
@@ -62,6 +76,7 @@ export default class SubMerchantsList extends ListContainer {
 
   search = () => {};
   render() {
+    const { userPartnerType } = this.props;
     return (
       <div class="sub-merchants-list">
         <div class="content-wrapper sub-merchants-list--stats">
@@ -105,7 +120,9 @@ export default class SubMerchantsList extends ListContainer {
               email,
               addedOn,
               activationStatus,
-              switchMerchant,
+              ...(switchMerchantAccessMap[userPartnerType]
+                ? [switchMerchant]
+                : []),
             ]}
             {...this.props}
             /* since result does not have "acc_" appended to it */
