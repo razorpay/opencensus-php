@@ -145,7 +145,7 @@ class Service extends Base\Service
         }
         else
         {
-            $mode = $this->repo->qr_code->determineLiveOrTestModeForEntityByMerchantReference($merchantReference);
+            $mode = $this->repo->qr_code->determineLiveOrTestModeByMerchantReference($merchantReference);
 
             $mode = $mode ?? Mode::LIVE;
         }

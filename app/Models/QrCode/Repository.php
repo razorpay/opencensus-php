@@ -16,7 +16,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function determineLiveOrTestModeForEntityByMerchantReference($merchantReference)
+    public function determineLiveOrTestModeByMerchantReference($merchantReference)
     {
 
         $obj = $this->connection(Mode::LIVE)->findByMerchantReference($merchantReference);

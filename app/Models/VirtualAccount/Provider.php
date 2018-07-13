@@ -325,7 +325,7 @@ class Provider
         // In case of upi payments we need to send reference with
         // prefix. This is how they identify our payments
         //
-        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getId());
+        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getReference());
 
         $upiString = $rupayRidTlv . $transactionReferenceTlv;
 
@@ -334,7 +334,7 @@ class Provider
 
     protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode, array $merchantIdentifiers)
     {
-        $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getId());
+        $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getReference());
 
         if (isset($merchantIdentifiers['rupay_tid']) === true)
         {
