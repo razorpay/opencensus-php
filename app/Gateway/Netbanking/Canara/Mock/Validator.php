@@ -19,7 +19,6 @@ class Validator extends Base\Validator
         RequestFields::DATE                           => 'required|', // have to modify
         RequestFields::MODE_OF_TRANSACTION            => 'required|in:PUR',
         RequestFields::CLIENT_ACCOUNT                 => 'sometimes',
-        'DynamicUrl'=>'required',
     ];
 
 }
