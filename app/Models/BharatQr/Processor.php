@@ -26,7 +26,7 @@ class Processor extends VirtualAccount\Processor
 
     protected $terminal;
 
-    public function __construct(array $gatewayResponse, string $provider = null)
+    public function __construct(array $gatewayResponse, $terminal, string $provider = null)
     {
         parent::__construct($provider);
 
@@ -34,7 +34,7 @@ class Processor extends VirtualAccount\Processor
 
         $this->callbackData = $gatewayResponse['callback_data'];
 
-        $this->terminal = $gatewayResponse['terminal'];
+        $this->terminal = $terminal;
     }
 
     protected function isDuplicate(Base\PublicEntity $bharatQr)

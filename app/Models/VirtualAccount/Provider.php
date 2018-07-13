@@ -158,8 +158,6 @@ class Provider
         ],
     ];
 
-    protected $rupayTerminalId;
-
     public static function getBankCode(string $provider)
     {
         $ifsc = self::DEFAULT_DETAILS[$provider][BankAccount::IFSC_CODE];
@@ -255,7 +253,7 @@ class Provider
             Tags::MERCHANT_NAME . $this->getLengthAndValue(Constants::MERCHANT_NAME),
             Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
             Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
-            $this->getBharatQrAdditionalDetailTlv($qrCode),
+            $this->getBharatQrAdditionalDetailTlv($qrCode, $merchantIdentifiers),
         ];
 
         $qrString =  implode('', $tagArray);
@@ -334,13 +332,13 @@ class Provider
         return Tags::UPI_VPA_REFERENCE . strlen($upiString) . $upiString;
     }
 
-    protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode)
+    protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode, array $merchantIdentifiers)
     {
         $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getId());
 
-        if (empty($this->rupayTerminalId) === false)
+        if (isset($merchantIdentifiers['rupay_tid']) === true)
         {
-            $terminalIdTlv = Tags::TERMINAL_ID . $this->getLengthAndValue($this->rupayTerminalId);
+            $terminalIdTlv = Tags::TERMINAL_ID . $this->getLengthAndValue($merchantIdentifiers['rupay_tid']);
 
             $idTlv .= $terminalIdTlv;
         }
@@ -423,7 +421,7 @@ class Provider
 
             if ($bharatQrNetwork === Network::RUPAY)
             {
-                $this->rupayTerminalId = $terminal->getGatewayTerminalId();
+                $identifiers['rupay_tid'] = $terminal->getGatewayTerminalId();
             }
 
             $terminal = $terminal->toArray();

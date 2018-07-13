@@ -23,7 +23,7 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function processPayment(array $gatewayResponse)
+    public function processPayment(array $gatewayResponse, $terminal)
     {
         $input = $this->getBharatQrInputParams($gatewayResponse['qr_data']);
 
@@ -40,20 +40,13 @@ class Core extends Base\Core
 
             $bharatQr = $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
-                function() use ($bharatQr, $gatewayResponse)
+                function() use ($bharatQr, $gatewayResponse, $terminal)
                 {
-                    $bharatQr = (new Processor($gatewayResponse))->process($bharatQr);
+                    $bharatQr = (new Processor($gatewayResponse, $terminal))->process($bharatQr);
 
                     // This will be null in case it's a duplicate notification
                     return $bharatQr;
                 });
-
-            if ($bharatQr === null)
-            {
-                $valid = false;
-
-                return $valid;
-            }
 
             $valid = true;
         }

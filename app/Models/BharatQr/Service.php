@@ -50,10 +50,6 @@ class Service extends Base\Service
 
             $terminal = $this->getTerminal($gatewayResponse['qr_data']);
 
-            $gatewayResponse['terminal'] = $terminal;
-
-            $gatewayResponse['terminalArray'] = $terminal->toArray();
-
             $gatewayClass->setGatewayParams($gatewayResponse, $this->mode, $terminal);
 
             // before processing payment, we will call verify callback to check if the
@@ -73,7 +69,7 @@ class Service extends Base\Service
             return $gatewayClass->getBharatQrResponse(false, $input);
         }
 
-        $valid = $this->core->processPayment($gatewayResponse);
+        $valid = $this->core->processPayment($gatewayResponse, $terminal);
 
         $response = $gatewayClass->getBharatQrResponse($valid, $input);
 
