@@ -2706,8 +2706,6 @@ class MerchantTest extends TestCase
             'email'  => 'test1@razorpay.com',
         ]);
 
-        //$this->createMerchant(['id' => '10000000000040', 'email' => 'test1@razorpay.com']);
-
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
 
         $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
@@ -2744,6 +2742,29 @@ class MerchantTest extends TestCase
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
 
         $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateSubmerchantLoginPartnerAppMissing()
+    {
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000040',
+            'email'  => 'test@razorpay.com',
+        ]);
+
+        $this->createUserForMerchant('test@razorpay.com', '10000000000000');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->createOAuthApplication([
+                'id' => '10000000000App',
+                'type' => 'partner',
+                'deleted_at' => Carbon::now()->timestamp]);
 
         $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
 
@@ -2803,12 +2824,10 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
-        //$this->fixtures->create('merchant', [
-        //    'id'     => '10000000000040',
-        //    'email'  => 'test1@razorpay.com',
-        //]);
-
-        $this->createMerchant(['id' => '10000000000040', 'email' => 'test1@razorpay.com']);
+        $this->fixtures->create('merchant', [
+            'id'     => '10000000000040',
+            'email'  => 'test1@razorpay.com',
+        ]);
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 

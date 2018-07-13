@@ -1941,13 +1941,18 @@ class Service extends Base\Service
         (new AccessMap\Service)->mapOAuthApplication($subMerchant->getId(), ['application_id' => $appId]);
     }
 
-    protected function validateAggregatorSubMerchantRelation($subMerchant, $aggregatorMerchantId)
+    protected function validateAggregatorSubMerchantRelation(Entity $subMerchant, string $aggregatorMerchantId)
     {
+        if ($subMerchant->isLinkedAccount() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
         $referrer = $subMerchant->getReferrer();
 
-        $referrerEmptyOrNotSame = (empty($referrer) === true) or ($referrer !== $aggregatorMerchantId);
+        $referrerNotEmptyAndSame = (empty($referrer) === false) and ($referrer === $aggregatorMerchantId);
 
-        if ($referrerEmptyOrNotSame === false)
+        if ($referrerNotEmptyAndSame === true)
         {
             return;
         }

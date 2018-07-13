@@ -2991,6 +2991,26 @@ return [
         ],
     ],
 
+    'testCreateSubmerchantLoginPartnerAppMissing' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'DB Query Failed',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'   => Razorpay\OAuth\Exception\DBQueryException::class,
+            'message' => 'DB Query Failed',
+        ],
+    ],
+
     'testCreateSubmerchantLoginDuplicate' => [
         'request' => [
             'url' => '/submerchant/user/10000000000040',
