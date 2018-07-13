@@ -64,32 +64,11 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content, 'post');
 
-        $this->addRequestUrlQuery($request);
-
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }
 
-    protected function addRequestUrlQuery(&$request)
-    {
-        $query = [
-            'AuthenticationFG.MENU_ID'   => 'CIMSHP',
-            'AuthenticationFG.CALL_MODE' => 2,
-            'CATEGORY_ID'                => ($this->mode === Mode::LIVE) ? 'IRRAZB' : 'IRRAZ',
-        ];
-
-        if ($this->bankingType === BankingType::CORPORATE)
-        {
-            $query = [
-                'AuthenticationFG.MENU_ID'   => 'CIMSHP',
-                'AuthenticationFG.CALL_MODE' => 2,
-                'CATEGORY_ID'                => 'IRCSM',
-            ];
-        }
-
-        $request['url'] .= '?' . http_build_query($query);
-    }
 
     protected function getActionType()
     {
@@ -226,7 +205,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $verify->verifyResponseContent = $this->parseVerifyResponse($response);
+        $verify->verifyResponseContent = $this->parseResponse($response);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -238,25 +217,60 @@ class Gateway extends Base\Gateway
             ]);
     }
 
-    protected function getVerifyContent($data, $input)
+    public function getEncryptor($useOldKey = false): AESCrypto
     {
-        $data[RequestFields::VERIFY_CHECKSUM] = $this->getHashOfArray($data);
+        $this->useOldKey = $useOldKey;
 
+        $masterKey = $this->getSecret();
+
+        return new AESCrypto($masterKey);
+    }
+
+    public function getCorporateVerifyContent(array $content)
+    {
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'decrypted_data' => $data,
-                'payment_id'     => $input['payment']['id']
+                'content' => $content,
+                'gateway' => $this->gateway,
             ]);
 
-        $stringToEncrypt = $this->prepareStringToEncrypt($data, '=', '|');
+        $data = $this->prepareStringToEncryptAndHash($content);
 
-        $encryptedData = $this->getEncryptor()->encryptString($stringToEncrypt);
+        $content['chksum'] = $this->getHashOfString($data);
 
-        return [
-            RequestFields::VERIFY_ENCDATA   => $encryptedData,
-            RequestFields::VERIFY_PAYEE_ID  => $this->getMerchantId(),
+        $data = $data . '|chksum=' . $content['chksum'];
+
+        $encRequestContent = $this->encryptString($data);
+
+        $requestContent = [
+            RequestFields::VERIFY_ENCDATA  => $encRequestContent,
+            RequestFields::VERIFY_PAYEE_ID => $content[RequestFields::VERIFY_PAYEE_ID],
         ];
+
+        return $requestContent;
+    }
+
+    public function encryptString(string $queryString): string
+    {
+        $masterKey = $this->getSecret();
+
+        $crypto = new AESCrypto($masterKey);
+
+        $encryptedString = $crypto->encryptString($queryString);
+
+        return $encryptedString;
+    }
+
+    public function decryptString(string $encryptedString): string
+    {
+        $masterKey = $this->getSecret();
+
+        $crypto = new AESCrypto($masterKey);
+
+        $decryptedString = $crypto->decryptString($encryptedString);
+
+        return $decryptedString;
     }
 
     protected function getHashOfString($str)
@@ -343,19 +357,12 @@ class Gateway extends Base\Gateway
             RequestFields::VERIFY_AMT      => $this->formatAmount($input['payment']['amount']),
         ];
 
-        return $this->getVerifyContent($data, $input);
-    }
-
-    protected function getStringToHash($data, $glue = '')
-    {
-        $resultArray = [];
-
-        foreach ($data as $key => $value)
+        if ($this->isCorporateBanking() === true)
         {
-            $resultArray[] = $key . '=' . $value;
+            $data = $this->getCorporateVerifyContent($data);
         }
 
-        return implode('|', $resultArray);
+        return $data;
     }
 
     /**
@@ -425,18 +432,9 @@ class Gateway extends Base\Gateway
 
         $stringToEncrypt = $this->prepareStringToEncrypt($data);
 
-        $crypto = $this->getEncryptor();
+        $this->useOldKey = true;
 
-        return $crypto->encryptString($stringToEncrypt);
-    }
-
-    public function getEncryptor($useOldKey = false): AESCrypto
-    {
-        $this->useOldKey = $useOldKey;
-
-        $masterKey = $this->getSecret();
-
-        return new AESCrypto($masterKey);
+        return $this->encryptString($stringToEncrypt);
     }
 
     protected function getEntityAttributes(array $input)
@@ -452,16 +450,30 @@ class Gateway extends Base\Gateway
      * @param Eg. $data = ['PRN' => "6vTX585l2WP6Bq", 'MD' => "P"]
      * @return Eg. string "PRN~6vTX585l2WP6Bq$MD~P"
      */
-    protected function prepareStringToEncrypt(array $data, $kvSeparator = '~', $pairsSeparator = '$')
+    protected function prepareStringToEncrypt(array $data)
     {
         $queryArray = [];
 
         foreach ($data as $key => $value)
         {
-            $queryArray[] = $key . $kvSeparator . $value;
+            $queryArray[] = $key . '~' . $value;
         }
 
-        $queryString = implode($pairsSeparator, $queryArray);
+        $queryString = implode('$', $queryArray);
+
+        return $queryString;
+    }
+
+    protected function prepareStringToEncryptAndHash(array $data)
+    {
+        $queryArray = [];
+
+        foreach ($data as $key => $value)
+        {
+            $queryArray[] = $key . '=' . $value;
+        }
+
+        $queryString = implode('|', $queryArray);
 
         return $queryString;
     }
@@ -470,21 +482,12 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return mixed
      * @throws Exception\GatewayErrorException
-     *
-     * Here, we first try to decrypt using the new key and if it does not work,
-     * we will try using the old key
-     *
-     * When using the new key they would be urlencoding the data and hence, when
-     * using the new key you'd have to urldecode before decryption.
-     *
      */
     protected function getDataFromEncryptedResponse(array $input)
     {
-        // rawurldecode because sometimes the data contains '+' which gets converted
-        // to whitespace when using urldecode and subsequently the decryption fails
-        $encryptedString = rawurldecode($input['gateway'][ResponseFields::ENCRYPTED_STRING]);
+        $encryptedString = $input['gateway'][ResponseFields::ENCRYPTED_STRING];
 
-        $crypto = $this->getEncryptor();
+        $crypto = $this->getEncryptor(true);
 
         $decryptedString = $crypto->decryptString($encryptedString);
 
@@ -496,27 +499,15 @@ class Gateway extends Base\Gateway
         if (($decryptedString === false) or
             (isset($response[RequestFields::MERCHANT_REFERENCE]) === false))
         {
-            $crypto = $this->getEncryptor(true);
+            $crypto = $this->getEncryptor();
 
-            $encryptedString = $input['gateway'][ResponseFields::ENCRYPTED_STRING];
+            // rawurldecode because sometimes the data contains '+' which gets converted
+            // to whitespace when using urldecode and subsequently the decryption fails
+            $encryptedString = rawurldecode($input['gateway'][ResponseFields::ENCRYPTED_STRING]);
 
             $decryptedString = $crypto->decryptString($encryptedString);
 
             parse_str($decryptedString, $response);
-
-            if (($decryptedString === false) or
-                (isset($response[RequestFields::MERCHANT_REFERENCE]) === false))
-            {
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_RESPONSE_ENCRYPTION_FAILED,
-                    null,
-                    null,
-                    [
-                        'encrypted_data' => $encryptedString,
-                        'gateway'        => 'netbanking_axis',
-                        'payment_id'     => $input['payment']['id']
-                    ]);
-            }
         }
 
         $this->checkDecryptionFailure($encryptedString, $response, $input);
@@ -540,10 +531,9 @@ class Gateway extends Base\Gateway
     /**
      * The default success status is Y, but this method accepts the any possible success value to ensure usability
      *
-     * @param array  $attributes
-     * @param array  $content
+     * @param array $attributes
+     * @param array $content
      * @param string $status
-     * @throws Exception\BadRequestException
      * @throws Exception\GatewayErrorException
      */
     protected function checkResponseStatus(array $attributes, array $content, string $status = Status::YES)
@@ -619,7 +609,7 @@ class Gateway extends Base\Gateway
         return $attributes ?? [];
     }
 
-    protected function parseVerifyResponse($response)
+    protected function parseResponse($response)
     {
         $response = $response->body;
 
@@ -628,7 +618,10 @@ class Gateway extends Base\Gateway
             return $response;
         }
 
-        $response = $this->getEncryptor()->decryptString($response);
+        if ($this->isCorporateBanking() === true)
+        {
+            $response = $this->decryptString($response);
+        }
 
         $response = simplexml_load_string($response);
 
@@ -722,15 +715,7 @@ class Gateway extends Base\Gateway
 
         if ($domainType !== BankingType::EMANDATE)
         {
-            // For retail the base url changes for live mode and test mode
-            if ($this->domainType === BankingType::RETAIL)
-            {
-                $domainType .= '_' . $this->action . '_' . $this->mode;
-            }
-            else
-            {
-                $domainType .= '_' . $this->action;
-            }
+            $domainType .= '_' . $this->action;
         }
         else
         {
@@ -862,15 +847,5 @@ class Gateway extends Base\Gateway
     protected function formatAmount($amount): string
     {
         return $amount / 100;
-    }
-
-    protected function getVerifySecret()
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['verify_test_hash_secret'];
-        }
-
-        return $this->config['verify_live_hash_secret'];
     }
 }

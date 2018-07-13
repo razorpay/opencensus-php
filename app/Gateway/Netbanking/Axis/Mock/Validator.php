@@ -47,11 +47,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyRules = [
-        RequestFields::VERIFY_PAYEE_ID_QS => 'required|string',
-        RequestFields::VERIFY_ENCDATA     => 'required|string',
-    ];
-
-    protected static $corporateVerifyRules = [
         RequestFields::VERIFY_PAYEE_ID          => 'required|string',
         RequestFields::VERIFY_ITC               => 'sometimes|string',
         RequestFields::VERIFY_PRN               => 'sometimes|string|size:14',
