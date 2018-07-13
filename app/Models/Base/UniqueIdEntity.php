@@ -113,7 +113,7 @@ class UniqueIdEntity extends Entity
 
     public function generateId()
     {
-        $this->setAttribute(self::ID, strtoupper(static::generateUniqueId()));
+        $this->setAttribute(self::ID, static::generateUniqueId());
 
         return $this;
     }

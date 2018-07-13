@@ -16,7 +16,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\QrCode\Entity as QrCode;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
-class   Processor extends VirtualAccount\Processor
+class Processor extends VirtualAccount\Processor
 {
     const RANDOM_CARD_PADDING = '00000';
 

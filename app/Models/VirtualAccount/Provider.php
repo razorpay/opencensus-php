@@ -15,7 +15,6 @@ use RZP\Models\BharatQr\Constants;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
-use RZP\Gateway\Isg\Constants as Isg;
 
 class Provider
 {

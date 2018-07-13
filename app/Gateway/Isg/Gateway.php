@@ -84,7 +84,7 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function getPaymentVerifyRequestArray($input, $gatewayPayment)
+    protected function getVerifyRequestArray($input, $gatewayPayment)
     {
         $attributes = [
             Field::TRANSACTION_ID     => $gatewayPayment[Entity::BANK_REFERENCE_NUMBER],
@@ -119,10 +119,7 @@ class Gateway extends Base\Gateway
                 throw new Exception\RuntimeException('Not a valid response code');
         }
 
-        if ($response[Field::STATUS_CODE] !== Status::APPROVED)
-        {
             $this->handleGatewayError($gatewayErrorCode, $input, $response);
-        }
     }
 
     protected function handleGatewayError($gatewayErrorCode, $input, $response)
@@ -275,7 +272,7 @@ class Gateway extends Base\Gateway
             // called once a payment is made to run verify on that
             $gatewayPayment = $verify->payment;
 
-            $attributes = $this->getPaymentVerifyRequestArray($input, $gatewayPayment);
+            $attributes = $this->getVerifyRequestArray($input, $gatewayPayment);
         }
         else
         {
@@ -291,7 +288,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->traceGatewayPaymentResponse($response,
+        $this->traceGatewayPaymentResponse($response->body,
                                            $input,
                                           TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
 
