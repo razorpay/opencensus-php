@@ -91,6 +91,16 @@ class Gateway extends Base\Gateway
         }
     }
 
+  /*  public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+
+    }*/
+
     // -------------------------- Authorise helper methods ------------------------------
 
     protected function getRequestData($input)
@@ -108,7 +118,6 @@ class Gateway extends Base\Gateway
             RequestFields::FAILURE_STATIC_FLAG           => 'N',
             RequestFields::DATE                          => $this->getDate($input['payment'][Payment\Entity::CREATED_AT]),
         ];
-        $data['DynamicUrl'] = $input['callbackUrl'];
 
         return $data;
     }
@@ -167,8 +176,72 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    // -------------------------- VerifyCallback helper methods ------------------------------
+    // -------------------------- Verify helper methods ------------------------------
 
+   /* protected function sendPaymentVerifyRequest($verify)
+    {
+        $request = $this->getVerifyRequest($verify);
+
+        $response = $this->sendVerifyRequest($request);
+        sd($response);
+
+    }*/
+
+ /*   protected function getVerifyRequest($verify)
+    {
+        $input = $verify->input;
+
+        if ($this->action === Action::VERIFY)
+        {
+            $gatewayPayment = $verify->payment;
+
+            $bankRefNumber = $gatewayPayment['bank_payment_id'];
+        }
+        elseif ($this->action === Action::CALLBACK)
+        {
+            $bankRefNumber = $input['gateway'][ResponseFields::BANK_REFERENCE_NUMBER];
+        }
+        else
+        {
+            throw new Exception\LogicException('Verify should be called from either verify or callback actions');
+        }
+
+        $data = [
+            RequestFields::VERIFY_MERCHANT_CODE         => $this->getMerchantId(),
+            RequestFields::VERIFY_PAYMENT_ID            => $input['payment']['id'],
+            RequestFields::VERIFY_AMOUNT                => $this->formatAmount($input['payment']['amount']),
+            RequestFields::VERIFY_BANK_REF_NUMBER       => $bankRefNumber,
+            RequestFields::VERIFY_MODE_OF_TRANSACTION   => RequestFields::VERIFY_MODE_OF_TRANSACTION_VALUE,
+            RequestFields::FUND_TRANSFER                => Constants::FUND_TRANSFER,
+        ];
+
+        $encryptedString = $this->getEncryptor()->encryptData($data);
+
+        $content = [
+            RequestFields::VERIFY_MERCHANT_CODE => $this->getMerchantId(),
+            RequestFields::VERIFY_DATA          => $encryptedString
+        ];
+
+        $request = $this->getStandardRequestArray($content, 'get', Action::VERIFY);
+
+        // Since they don't have a valid SSL certificate on UAT site.
+        if ($this->mode === Mode::TEST)
+        {
+            $request['options']['verify'] = false;
+        }
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'gateway'           => $this->gateway,
+                'request'           => $request,
+                'payment_id'        => $input['payment']['id'],
+                'decrypted_content' => $data,
+            ]
+        );
+
+        return $request;
+    }*/
 
 
     // -------------------------- General helper methods --------------------------
