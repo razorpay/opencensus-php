@@ -146,6 +146,36 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateEmiSubventionOffer()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->startTest();
+    }
+
+    public function testEmiSubventionOfferWithInvalidAmount()
+    {
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->startTest();
+    }
+
+    public function testEmiSubventionWithDuration()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->startTest();
+    }
+
+    public function testInvalidEmiDuration()
+    {
+        $this->startTest();
+    }
+
     public function testCreateOfferWithCorporateOrRetailIssuer()
     {
         $this->startTest();
@@ -153,6 +183,17 @@ class OffersTest extends TestCase
 
     public function testCreateOfferValidateMaxCashback()
     {
+        $this->startTest();
+    }
+
+    public function testConflictingEmiSubOffers()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->create('offer:emi_subvention');
+
         $this->startTest();
     }
 

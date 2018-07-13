@@ -6,7 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Models\Card;
+use RZP\Models\Emi;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -45,7 +45,24 @@ class Validator extends Base\Validator
         Entity::ENDS_AT             => 'required|epoch',
         Entity::DISPLAY_TEXT        => 'filled|string|max:255',
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
-        Entity::TERMS               => 'required|string'
+        Entity::TERMS               => 'required|string',
+    ];
+
+    protected static $emiSubventionRules = [
+        Entity::NAME                => 'sometimes|filled|string|max:50',
+        Entity::PAYMENT_METHOD      => 'required|in:emi',
+        Entity::ISSUER              => 'required_without:payment_network',
+        Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX',
+        Entity::EMI_SUBVENTION      => 'required|boolean|in:1',
+        Entity::EMI_DURATIONS       => 'sometimes|array|custom',
+        Entity::MIN_AMOUNT          => 'filled|integer|min:0',
+        Entity::MAX_PAYMENT_COUNT   => 'filled|integer|min:1',
+        Entity::PROCESSING_TIME     => 'filled|integer',
+        Entity::STARTS_AT           => 'filled|epoch',
+        Entity::ENDS_AT             => 'required|epoch',
+        Entity::DISPLAY_TEXT        => 'filled|string|max:255',
+        Entity::ERROR_MESSAGE       => 'filled|string|max:255',
+        Entity::TERMS               => 'required|string',
     ];
 
     protected static $editRules = [
@@ -69,6 +86,10 @@ class Validator extends Base\Validator
         Entity::MAX_PAYMENT_COUNT,
         Entity::LINKED_OFFER_IDS,
         Entity::MAX_CASHBACK,
+    ];
+
+    protected static $emiSubventionValidators = [
+        Entity::MIN_AMOUNT,
     ];
 
     protected static $editValidators = [
@@ -306,6 +327,43 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Linked offer ids submitted are not valid');
+        }
+    }
+
+    protected function validateMinAmount(array $input)
+    {
+        if (isset($input[Entity::MIN_AMOUNT]) === false)
+        {
+            return;
+        }
+
+        $minAmount = $input[Entity::MIN_AMOUNT] ?? null;
+
+        $bank = $input[Entity::ISSUER] ?? null;
+
+        $network = $input[Entity::PAYMENT_NETWORK] ?? null;
+
+        $emiDurations = $input[Entity::EMI_DURATIONS] ?? [];
+
+        $requiredMinAmount = (new Emi\Core)->calculateMinAmountForPlans($emiDurations, $bank, $network);
+
+        if ($minAmount < $requiredMinAmount)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Min amount for this offer should be greater than $requiredMinAmount");
+        }
+    }
+
+    protected function validateEmiDurations(string $attribute, array $emiDurations)
+    {
+        $validDurations = Emi\Entity::VALID_DURATIONS;
+
+        $diff = array_diff($emiDurations, $validDurations);
+
+        if (empty($diff) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid emi durations given " . implode(", ", $diff));
         }
     }
 }

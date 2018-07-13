@@ -3,6 +3,7 @@
 namespace RZP\Models\Offer;
 
 use Carbon\Carbon;
+use RZP\Models\Emi;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
@@ -206,9 +207,12 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = [
         self::STARTS_AT,
+        self::MIN_AMOUNT,
     ];
 
     protected $casts = [
+        self::EMI_DURATIONS      => 'array',
+        self::EMI_SUBVENTION     => 'boolean',
         self::IINS               => 'array',
         self::INTERNATIONAL      => 'boolean',
         self::ACTIVE             => 'boolean',
@@ -224,6 +228,26 @@ class Entity extends Base\PublicEntity
         self::MAX_PAYMENT_COUNT  => 'int',
         self::LINKED_OFFER_IDS   => 'array',
     ];
+
+    public function build(array $input = [], string $operation = 'create')
+    {
+        $this->modify($input);
+
+        if (isset($input[self::EMI_SUBVENTION]) === true)
+        {
+            $operation = 'emiSubvention';
+        }
+
+        $this->getValidator()->validateInput($operation, $input);
+
+        $this->generate($input);
+
+        $this->unsetInput($operation, $input);
+
+        $this->fill($input);
+
+        return $this;
+    }
 
     public function merchant()
     {
@@ -303,6 +327,16 @@ class Entity extends Base\PublicEntity
     public function getIins()
     {
         return $this->getAttribute(self::IINS);
+    }
+
+    public function getEmiSubvention()
+    {
+        return $this->getAttribute(self::EMI_SUBVENTION);
+    }
+
+    public function getEmiDurations()
+    {
+        return $this->getAttribute(self::EMI_DURATIONS);
     }
 
     public function getStartsAt()
@@ -386,6 +420,20 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::IINS] = json_encode(array_values($iins));
     }
 
+    protected function setEmiDurationsAttribute($emiDurations)
+    {
+        $existingEmiDurations = $this->getAttribute(self::EMI_DURATIONS);
+
+        $emiDurations = $emiDurations ?: [];
+
+        if (empty($existingEmiDurations) === false)
+        {
+            $emiDurations = array_unique(array_merge($existingEmiDurations, $emiDurations));
+        }
+
+        $this->attributes[self::EMI_DURATIONS] = json_encode(array_values($emiDurations));
+    }
+
     protected function setLinkedOfferIdsAttribute(array $linkedOfferIds)
     {
         $existingLinkedOfferIds = $this->getAttribute(self::LINKED_OFFER_IDS);
@@ -403,6 +451,25 @@ class Entity extends Base\PublicEntity
         $startsAt = $input[self::STARTS_AT] ?? Carbon::now()->getTimestamp();
 
         $this->setAttribute(self::STARTS_AT, $startsAt);
+    }
+
+    protected function generateMinAmount(array $input)
+    {
+        if ((isset($input[self::EMI_SUBVENTION]) === false) or
+            (empty($input[self::MIN_AMOUNT]) === false))
+        {
+            return;
+        }
+
+        $bank = $input[self::ISSUER] ?? null;
+
+        $network = $input[self::PAYMENT_NETWORK] ?? null;
+
+        $emiDurations = $input[self::EMI_DURATIONS] ?? [];
+
+        $minAmount = (new Emi\Core)->calculateMinAmountForPlans($emiDurations, $bank, $network);
+
+        $this->setAttribute(self::MIN_AMOUNT, $minAmount);
     }
 
     public function toArrayCheckout(bool $discount = false, int $amount = null)
