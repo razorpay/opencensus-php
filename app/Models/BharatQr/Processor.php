@@ -94,6 +94,8 @@ class Processor extends VirtualAccount\Processor
         {
             $paymentProcessor->autoCapturePayment($payment);
         }
+
+        return $bharatQr;
     }
 
     /**

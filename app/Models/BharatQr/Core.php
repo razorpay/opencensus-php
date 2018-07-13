@@ -48,6 +48,13 @@ class Core extends Base\Core
                     return $bharatQr;
                 });
 
+            if ($bharatQr === null)
+            {
+                $valid = false;
+
+                return $valid;
+            }
+
             $valid = true;
         }
         catch (\Throwable $ex)
