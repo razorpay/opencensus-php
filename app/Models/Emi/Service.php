@@ -34,7 +34,7 @@ class Service extends Base\Service
         return $plans;
     }
 
-    public function getEmiOptions($offers = [])
+    public function getEmiOptions($offers = null)
     {
         $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
 
@@ -150,6 +150,11 @@ class Service extends Base\Service
      */
     protected function getSubventedEmiPlansForOffers($offers)
     {
+        if (empty($offers) === true)
+        {
+            return [];
+        }
+
         $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
         $emiOfferPlans = [];
 

@@ -572,7 +572,7 @@ class Checkout
 
         $orderAmount = $order->getAmount();
 
-        if ($offers->count() === 0)
+        if ($offers->isEmpty() === true)
         {
             return;
         }
