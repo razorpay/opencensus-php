@@ -50,6 +50,8 @@ import InvitesList from 'admin/invites/List';
 
 import ActivationList from 'admin/activations/List';
 
+import OperationsDashboard from 'admin/operations/Dashboard';
+
 import AsyncButton from 'ui/AsyncButton';
 
 import fetch, { adminFetch } from 'common/fetch';
@@ -135,6 +137,8 @@ export default class App extends Component {
 
               <Route path="/activation" component={ActivationList} />
 
+              <Route path="/operations" component={OperationsDashboard} />
+
               <Redirect to="/merchants" />
             </Switch>
           </ErrorBoundary>
@@ -202,6 +206,7 @@ const links = [
       'manage_onboarding_submissions',
       'magic-hat',
     ],
+    ['Ops Dashboards', '/operations', 'view_all_merchants'],
   ],
 
   // workflow
