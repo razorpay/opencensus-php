@@ -2151,6 +2151,35 @@ class MerchantTest extends TestCase
         });
     }
 
+    public function testBeneficiaryRegisterYesbank()
+    {
+        Mail::fake();
+
+        $md = $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/yesbank',
+            'method'    => 'post',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('merchants_count', $content);
+        $this->assertEquals(Channel::YESBANK, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class);
+    }
+
     public function testBeneficiaryRegisterKotak()
     {
         Mail::fake();

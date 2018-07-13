@@ -180,6 +180,7 @@ class Gateway
         Payment\Gateway::HITACHI,
         Payment\Gateway::UPI_HULK,
         Payment\Gateway::NETBANKING_AIRTEL,
+        Payment\Gateway::ATOM,
     ];
 
     public static $channels = [
