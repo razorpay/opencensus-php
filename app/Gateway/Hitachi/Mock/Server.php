@@ -51,7 +51,7 @@ class Server extends Base\Mock\Server
             'F042'       => 'abcd_hitachi_bharat',
             'F043'       => 'RazorpayBangalore',
             'F102'       => 'paymentId',
-            'PurchaseID' => $qrCodeId,
+            'PurchaseID' => strtoupper($qrCodeId),
             'SenderName' => 'Random Name',
         ];
 
