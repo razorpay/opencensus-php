@@ -252,7 +252,7 @@ class TransactionFilter extends Terminal\Filter
         // All first recurring payments or payments made via public
         // auth need to go via 3DS Recurring terminals only.
         //
-        if ($payment->isSecondRecurring(true, $gatewayTokens) === false)
+        if ($payment->isSecondRecurring() === false)
         {
             return ($terminal->is3DSRecurring() === true);
         }

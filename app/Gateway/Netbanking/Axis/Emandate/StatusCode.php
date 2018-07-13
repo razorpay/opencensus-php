@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Axis\Emandate;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Customer\Token;
 
 class StatusCode
 {
@@ -18,6 +19,12 @@ class StatusCode
 
     const EMANDATE_REGISTRATION_SUCCESS = 'EMANDATE_REGISTRATION_SUCCESS';
     const EMANDATE_REGISTRATION_FAILURE = 'EMANDATE_REGISTRATION_FAILURE';
+
+    const SI_STATUS_TO_RECURRING_STATUS_MAP = [
+        self::SUCCESS => Token\RecurringStatus::CONFIRMED,
+        self::PENDING => Token\RecurringStatus::INITIATED,
+        self::FAILED  => Token\RecurringStatus::REJECTED,
+    ];
 
     protected static $errorCodeMap = [
         self::FAILED  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
@@ -67,5 +74,16 @@ class StatusCode
     public static function getEmandateErrorCodeMap($errorCode)
     {
         return self::$errorCodeMapEmandate[$errorCode] ?? ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+    }
+
+    /**
+     * Sets the SI Message
+     *
+     * @param string $status
+     * @return string
+     */
+    public static function getSiMessage(string $status): string
+    {
+        return ($status === self::SUCCESS) ? 'Success' : 'Failure';
     }
 }

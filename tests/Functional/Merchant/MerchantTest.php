@@ -1181,7 +1181,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(20, $banks);
+        $this->assertCount(21, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -1680,6 +1680,124 @@ class MerchantTest extends TestCase
         }
     }
 
+    public function testGetCheckoutPreferencesWithOrderInActiveOffer()
+    {
+        $this->ba->publicAuth();
+
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],
+            'active' => 0
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer);
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('offers', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithOrderExpiredOffer()
+    {
+        $this->ba->publicAuth();
+
+        $offer = $this->fixtures->create('offer:expired', ['iins' => ['401200'],
+            'active' => 0
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer);
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('offers', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithOrderForceOfferExpired()
+    {
+        $this->ba->publicAuth();
+
+        $offer = $this->fixtures->create('offer:expired', ['iins' => ['401200'],
+            'active' => 0
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer,[
+            'force_offer' => true,
+        ]);
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('offers', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithMultipleOrderOffersInActive()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],
+            'active' => 0
+        ]);
+
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],
+            'active' => 1]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertNotNull($response['offers']);
+
+        $this->assertEquals(1, count($response['offers']));
+
+        $this->assertEquals('offer_' . $offer2->getId(), $response['offers']['0']['id']);
+    }
+
+    public function testGetCheckoutPreferencesWithMultipleOrderOffersExpired()
+    {
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $endsAt = Carbon::now(Timezone::IST)->timestamp;
+
+        $offer1 = $this->fixtures->create('offer:expired', ['iins' => ['401200']]);
+
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertNotNull($response['offers']);
+
+        $this->assertEquals(1, count($response['offers']));
+
+        $this->assertEquals('offer_' . $offer2->getId(), $response['offers']['0']['id']);
+    }
+
     public function testGetCheckoutPreferencesWithEmiOffer()
     {
         $this->ba->publicAuth();
@@ -2019,6 +2137,35 @@ class MerchantTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testBeneficiaryRegisterYesbank()
+    {
+        Mail::fake();
+
+        $md = $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/yesbank',
+            'method'    => 'post',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('merchants_count', $content);
+        $this->assertEquals(Channel::YESBANK, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class);
     }
 
     public function testBeneficiaryRegisterKotak()

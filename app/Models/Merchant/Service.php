@@ -915,9 +915,9 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function getMerchantBeneficiaryFile(array $input, string $channel): array
+    public function getMerchantBeneficiary(array $input, string $channel): array
     {
-        $response = (new BankAccount\BeneficiaryFile)->generate($input, $channel);
+        $response = (new BankAccount\Beneficiary)->register($input, $channel);
 
         return $response;
     }
@@ -960,9 +960,9 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function postMerchantBeneficiaryFile(array $input, string $channel): array
+    public function postMerchantBeneficiary(array $input, string $channel): array
     {
-        $response = (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps($input, $channel);
+        $response = (new BankAccount\Beneficiary)->registerBetweenTimestamps($input, $channel);
 
         return $response;
     }

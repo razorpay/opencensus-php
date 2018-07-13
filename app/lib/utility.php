@@ -42,16 +42,16 @@ if (! function_exists('array_merge_intersect'))
 
 if (! function_exists('array_assoc_flatten'))
 {
-    function array_assoc_flatten(array $array, $parent_key = null)
+    function array_assoc_flatten(array $array, string $separatorFormat = "%s.%s", $parent_key = null)
     {
         $return = array();
 
         foreach ($array as $key => $value)
         {
-            $key = ($parent_key === null) ? $key : $parent_key . '.' . $key;
+            $key = ($parent_key === null) ? $key : sprintf($separatorFormat, $parent_key, $key);
             if (is_array($value))
             {
-                $tmp = array_assoc_flatten($value, $key);
+                $tmp = array_assoc_flatten($value, $separatorFormat, $key);
                 $return = array_merge($return, $tmp);
             }
             else
@@ -528,5 +528,17 @@ if (! function_exists('amount_format_IN'))
     function amount_format_IN(int $amount = null): string
     {
         return money_format_IN(number_format($amount / 100, 2, '.', ''));
+    }
+}
+
+if (! function_exists('millitime'))
+{
+    /**
+     * Gets current unix timestamp in milliseconds
+     * @return int
+     */
+    function millitime(): int
+    {
+        return round(microtime(true) * 1000);
     }
 }

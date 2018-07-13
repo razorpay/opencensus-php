@@ -54,9 +54,12 @@ class EnstageGatewayTest extends TestCase
 
         $this->authorizePayment();
 
-        $gatewayEntity = $this->getLastEntity('mpi_blade', true);
+        $gatewayEntity = $this->getLastEntity('mpi', true);
 
         $this->assertNotNull(Enrolled::N, $gatewayEntity['enrolled']);
+
+        $this->assertEquals('mpi_enstage', $gatewayEntity['gateway']);
+
     }
 
     public function testAuthenticationError()

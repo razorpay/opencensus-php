@@ -455,8 +455,6 @@ trait SettlementTrait
         $this->trace->info($traceCode, $data);
 
         (new SlackNotification)->success('setl_initiate', $data);
-
-        Dashboard::send('settlement', $settlements);
     }
 
     protected function settlementFailure($channel, $e, $traceCode)

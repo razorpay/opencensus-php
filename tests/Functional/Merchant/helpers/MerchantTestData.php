@@ -1365,6 +1365,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'mode'  => 'test',
                 'magic' => false,
             ],
         ],
@@ -3041,6 +3042,20 @@ return [
         'response' => [
             'content' => [],
             'status_code' => 200,
+        ],
+    ],
+
+    'testOfferCheckoutPreferences' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => null
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
         ],
     ],
 ];

@@ -230,4 +230,15 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::SI_MSG);
     }
+
+    public function getDate()
+    {
+        return $this->getAttribute(self::DATE);
+    }
+
+	protected function setErrorMessageAttribute($message)
+	{
+		//to reduce the length of error message in case it extends database column field size.
+		$this->attributes[self::ERROR_MESSAGE] = substr($message, 0, 255);
+	}
 }

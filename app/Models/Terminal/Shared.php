@@ -70,6 +70,7 @@ class Shared
     const MPESA_RAZORPAY_TERMINAL            = '100VodaMpesaTl';
     const FSS_RAZORPAY_TERMINAL              = '100FssTerminal';
     const ENSTAGE_TERMINAL                   = '100ensgageTrml';
+    const CSB_TPV_TERMINAL                   = '1000csbtpvTrml';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
