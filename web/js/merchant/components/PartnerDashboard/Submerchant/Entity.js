@@ -55,8 +55,10 @@ export default props => {
 
                 {showFullDetails && (
                   <div class="pair-group-item">
-                    <a class="btn-link">Invite</a> the merchant to sign up on
-                    Razorpay, and manage the account
+                    <a class="btn-link" onClick={props.onInviteMerchant}>
+                      Invite
+                    </a>{' '}
+                    the merchant to sign up on Razorpay, and manage the account
                   </div>
                 )}
               </div>

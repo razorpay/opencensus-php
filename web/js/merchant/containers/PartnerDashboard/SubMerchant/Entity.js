@@ -3,8 +3,10 @@ import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { fetchSubmerchant } from 'merchant/modules/submerchant';
 import { switchMerchant } from 'merchant/modules/session';
+import { openModal } from 'rzp/modules/modals';
 
 import Entity from 'merchant/components/PartnerDashboard/Submerchant/Entity';
+import InviteMerchant from './Invite';
 
 const fullDetailsAccessMap = {
   fully_managed: true,
@@ -20,7 +22,7 @@ const fullDetailsAccessMap = {
     userPartnerType: state.session.user.partner_type,
     ...state.submerchant,
   }),
-  { fetchSubmerchant, switchMerchant }
+  { fetchSubmerchant, switchMerchant, openModal }
 )
 export default class SubmerchantEntityContainer extends Component {
   componentWillMount() {
@@ -32,6 +34,13 @@ export default class SubmerchantEntityContainer extends Component {
       this.props.fetchSubmerchant(nextProps.id.replace('acc_', ''));
     }
   }
+
+  handleInviteClick = () => {
+    this.props.openModal({
+      size: 'small',
+      component: <InviteMerchant />,
+    });
+  };
 
   render() {
     const {
@@ -49,6 +58,7 @@ export default class SubmerchantEntityContainer extends Component {
           error={error}
           showFullDetails={fullDetailsAccessMap[userPartnerType]}
           switchMerchant={switchMerchant}
+          onInviteMerchant={this.handleInviteClick}
         />
       </div>
     );
