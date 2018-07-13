@@ -158,7 +158,7 @@ class Service extends Base\Service
         $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
         $emiOfferPlans = [];
 
-        $offers->map(function ($offer, $key) use($emiPlans, & $emiOfferPlans) {
+        $offers->map(function ($offer) use($emiPlans, & $emiOfferPlans) {
             $bank = $offer->getIssuer();
 
             $network = $offer->getPaymentNetwork();
