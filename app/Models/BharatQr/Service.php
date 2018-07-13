@@ -52,12 +52,13 @@ class Service extends Base\Service
 
             $gatewayResponse['terminal'] = $terminal;
 
-            $terminalArray = $terminal->toArray();
+            $gatewayResponse['terminalArray'] = $terminal->toArray();
+
+            $gatewayClass->setGatewayParams($gatewayResponse, $this->mode, $terminal);
 
             // before processing payment, we will call verify callback to check if the
             // notification was sent by the gateway or some other source .
-            //passing mode to gateway since it is unaware till now about the mode
-            $gatewayClass->verifyBharatQrCallback($input, $terminalArray, $this->mode);
+            $gatewayClass->verifyBharatQrCallback($gatewayResponse);
         }
         catch(Exception\GatewayErrorException $ex)
         {

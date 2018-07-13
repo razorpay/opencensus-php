@@ -662,10 +662,8 @@ class Gateway
         return $input;
     }
 
-    public function verifyBharatQrCallback($input, $terminalArray, $mode)
+    public function verifyBharatQrCallback($input)
     {
-        $this->setMode($mode);
-
         return $input;
     }
 
