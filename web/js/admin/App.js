@@ -206,7 +206,7 @@ const links = [
       'manage_onboarding_submissions',
       'magic-hat',
     ],
-    ['Ops Dashboards', '/operations', 'view_all_merchants'],
+    ['Ops Dashboards', '/operations', ''],
   ],
 
   // workflow

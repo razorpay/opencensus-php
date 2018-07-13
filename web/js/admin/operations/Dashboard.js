@@ -14,11 +14,12 @@ export default class PublicFeaturesList extends Component {
     this.state = {
       dashboards: [],
       isFetching: true,
-      activeDashboardType: null,
+      activeDashboardType: '',
       activeDashboardLabel: '',
       isFetchingDashboard: true,
       dashboardData: [],
       dashboardFields: [],
+      selectDashboardValue: '',
     };
   }
 
@@ -28,10 +29,6 @@ export default class PublicFeaturesList extends Component {
         dashboards: response,
         isFetching: false,
       });
-
-      if (response[0]) {
-        this.fetchDashboard(response[0]['type']);
-      }
     });
   }
 
@@ -71,33 +68,49 @@ export default class PublicFeaturesList extends Component {
           isFetchingDashboard: false,
         });
       });
+    } else {
+      this.setState({
+        activeDashboardType: dashboardType,
+        dashboardData: [],
+        dashboardFields: [],
+      });
     }
   }
 
   onChange(e) {
-    this.fetchDashboard(e.target.value);
+    this.setState({
+      selectDashboardValue: e.target.value,
+    });
+  }
+
+  onSubmit(e) {
+    this.fetchDashboard(this.state.selectDashboardValue);
   }
 
   render() {
     return (
       <div class="list-container">
         <div class="box">
-          <header>Operation Dashboards</header>
+          <header>Ops Dashboards</header>
           {this.state.isFetching ? (
             <div class="spinner center" />
           ) : (
-            <Form class="filters">
+            <Form class="filters" onSubmit={this.onSubmit.bind(this)}>
               <SelectField
                 label="Select a dashboard"
                 name="dashboard"
                 onChange={this.onChange.bind(this)}
+                value={this.state.selectDashboardValue}
               >
+                <option value=""> None </option>
                 {this.state.dashboards.map(item => (
                   <option value={item.type} key={item.type}>
                     {item.label}
                   </option>
                 ))}
               </SelectField>
+
+              <button class="btn pull-right">Go</button>
             </Form>
           )}
         </div>
@@ -117,14 +130,6 @@ export default class PublicFeaturesList extends Component {
                 fields={this.state.dashboardFields}
               />
             )}
-          </div>
-        ) : (
-          ''
-        )}
-
-        {this.state.dashboards.length == 0 && !this.state.isFetching ? (
-          <div class="box">
-            <header>No dashboards to display.</header>
           </div>
         ) : (
           ''
