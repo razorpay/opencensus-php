@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Canara\Mock;
 
+use Respect\Validation\Rules\SubdivisionCode\ReSubdivisionCode;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Canara\RequestFields;
 use RZP\Gateway\Netbanking\Canara\ResponseFields;
@@ -44,6 +45,20 @@ class Server extends Base\Mock\Server
 
     }
 
+    public function callback($input)
+    {
+        return $this->verify($input);
+    }
+
+    public function verify($input)
+    {
+        $data = $this->getVerifyResponseData($input);
+
+        $response = $this->createXmlResponse($data);
+
+        return $this->makeResponse($response);
+    }
+
     protected function getCallbackResponseData(array $input)
     {
         $data = [
@@ -65,6 +80,34 @@ class Server extends Base\Mock\Server
         $this->content($data, Base\Action::CALLBACK);
 
         return $data;
+    }
+
+    protected function getVerifyResponseData(array $input)
+    {
+        return [
+            ResponseFields::VER_CLIENT_ACCOUNT                => '',
+            ResponseFields::VER_PAYMENT_ID                    => $input[ResponseFields::PAYMENT_ID],
+            ResponseFields::PUR_DATE                          => $input[ResponseFields::PUR_DATE],
+            ResponseFields::VER_BANK_REFERENCE_NUMBER         => $input[ResponseFields::BANK_REFERENCE_NUMBER],
+            ResponseFields::VER_AMOUNT                        => $input[ResponseFields::AMOUNT],              // have to verify
+            ResponseFields::RETURN_CODE                       => Constants::SUCCESS_RETURN_CODE,
+            ResponseFields::VERIFY_STATUS                     => Constants::SUCCESS_VERIFY_STATUS,
+        ];
+    }
+
+    protected function createXmlResponse(array $data)
+    {
+        $this->content($data,'verify');
+
+        $data = array_flip($data);
+
+        $xml = new \SimpleXMLElement('<VerifyOutput/>');
+
+        array_walk_recursive($data, array ($xml, 'addChild'));
+
+        $response = $xml->asXML();
+
+        return $response;
     }
 
 }

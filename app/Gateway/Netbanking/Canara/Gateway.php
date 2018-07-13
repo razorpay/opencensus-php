@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Canara;
 
 use Carbon\Carbon;
+use http\Env\Request;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -10,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
@@ -59,7 +61,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-       // $this->verifyCallback($input, $content);
+        $this->verifyCallback($input);
 
         $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::PAYMENT_ID]);
 
@@ -72,7 +74,7 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input,$acquirerData);
     }
 
-    protected function verifyCallback(array $input, array $callbackContent)
+    protected function verifyCallback(array $input)
     {
         $verify = new Verify($this->gateway, $input);
 
@@ -82,16 +84,14 @@ class Gateway extends Base\Gateway
 
         $this->checkGatewaySuccess($verify);
 
-        $apiSuccess = ($callbackContent[ResponseFields::STATUS] === ResponseCodeMap::SUCCESS_CODE);
-
-        if ($verify->gatewaySuccess !== $apiSuccess)
+        if ($verify->gatewaySuccess === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
     }
 
-  /*  public function verify(array $input)
+    public function verify(array $input)
     {
         parent::verify($input);
 
@@ -99,7 +99,7 @@ class Gateway extends Base\Gateway
 
         return $this->runPaymentVerifyFlow($verify);
 
-    }*/
+    }
 
     // -------------------------- Authorise helper methods ------------------------------
 
@@ -142,12 +142,6 @@ class Gateway extends Base\Gateway
         return $clientCode;
     }
 
-    public function getDate($createdat)
-    {
-        return $date = Carbon::createFromTimestamp($createdat, Timezone::IST)
-                             ->format('d/m/Y+H:i:s');
-    }
-
     public function getMerchantCode()  // verify - have to add id somewhere
     {
         $mid = $this->getLiveMerchantId();
@@ -178,16 +172,31 @@ class Gateway extends Base\Gateway
 
     // -------------------------- Verify helper methods ------------------------------
 
-   /* protected function sendPaymentVerifyRequest($verify)
+    protected function sendPaymentVerifyRequest($verify)
     {
         $request = $this->getVerifyRequest($verify);
 
-        $response = $this->sendVerifyRequest($request);
-        sd($response);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $request
+        );
 
-    }*/
+        $response = $this->sendGatewayRequest($request);
 
- /*   protected function getVerifyRequest($verify)
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $response->body,
+                'payment_id' => $verify->input['payment']['id'],
+            ]
+        );
+
+        $verify->verifyResponseContent = $this->parseResponseXml($response->body);
+
+    }
+
+    protected function getVerifyRequest($verify)
     {
         $input = $verify->input;
 
@@ -207,22 +216,22 @@ class Gateway extends Base\Gateway
         }
 
         $data = [
-            RequestFields::VERIFY_MERCHANT_CODE         => $this->getMerchantId(),
-            RequestFields::VERIFY_PAYMENT_ID            => $input['payment']['id'],
-            RequestFields::VERIFY_AMOUNT                => $this->formatAmount($input['payment']['amount']),
-            RequestFields::VERIFY_BANK_REF_NUMBER       => $bankRefNumber,
-            RequestFields::VERIFY_MODE_OF_TRANSACTION   => RequestFields::VERIFY_MODE_OF_TRANSACTION_VALUE,
-            RequestFields::FUND_TRANSFER                => Constants::FUND_TRANSFER,
+            RequestFields::MODE_OF_TRANSACTION           => Constants::MODE_OF_TRANSACTION_VERIFY,
+            RequestFields::CLIENT_CODE                   => $this->getClientCode($input['payment'][Payment\Entity::EMAIL]),
+            RequestFields::CLIENT_ACCOUNT                => '',
+            RequestFields::MERCHANT_CODE                 => $this->getMerchantCode(),
+            RequestFields::CURRENCY                      => Constants::INDIAN_CURRENCY,
+            RequestFields::AMOUNT                        => $input['payment']['amount'], // have to verify
+            RequestFields::SERVICE_CHARGE                => 0,
+            RequestFields::PAYMENT_ID                    => $input['payment']['id'],
+            RequestFields::SUCCESS_STATIC_FLAG           => 'N',
+            RequestFields::FAILURE_STATIC_FLAG           => 'N',
+            RequestFields::VER_DATE                      => $this->getCurrentDate(),
+            RequestFields::PUR_DATE                      => $this->getDate($input['payment'][Payment\Entity::CREATED_AT]),
+            ResponseFields::BANK_REFERENCE_NUMBER        => $bankRefNumber,
         ];
 
-        $encryptedString = $this->getEncryptor()->encryptData($data);
-
-        $content = [
-            RequestFields::VERIFY_MERCHANT_CODE => $this->getMerchantId(),
-            RequestFields::VERIFY_DATA          => $encryptedString
-        ];
-
-        $request = $this->getStandardRequestArray($content, 'get', Action::VERIFY);
+        $request = $this->getStandardRequestArray($data, 'get', Action::VERIFY);
 
         // Since they don't have a valid SSL certificate on UAT site.
         if ($this->mode === Mode::TEST)
@@ -241,7 +250,90 @@ class Gateway extends Base\Gateway
         );
 
         return $request;
-    }*/
+    }
+
+    public function verifyPayment(Verify $verify)
+    {
+        $verify->status = $this->getVerifyStatus($verify);
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $verify->amountMismatch = $this->getVerifyAmountMismatch($verify);
+
+        $verify->payment = $this->saveVerifyContent($verify);
+    }
+
+    protected function getVerifyStatus(Verify $verify) :string
+    {
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        return $status;
+    }
+
+    protected function saveVerifyContent(Verify $verify): Base\Entity
+    {
+        $gatewayPayment = $verify->payment;
+
+        $content = $verify->verifyResponseContent;
+
+        $attributes = $this->getVerifyAttributes($content);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
+    protected function checkGatewaySuccess(Verify $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $response = $verify->verifyResponseContent;
+
+        if ((isset($response[ResponseFields::VERIFY_STATUS]) === true) and
+            ($response[ResponseFields::VERIFY_STATUS] === Constants::SUCCESS_VERIFY_STATUS))
+        {
+            $verify->gatewaySuccess = true;
+        }
+    }
+
+    protected function getVerifyAttributes(array $content): array
+    {
+        return [
+            Base\Entity::RECEIVED        => true,
+            Base\Entity::STATUS          => $content[ResponseFields::VERIFY_STATUS],
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::VER_BANK_REFERENCE_NUMBER] // doubt indusind had a ? operrator
+        ];
+    }
+
+    protected function getVerifyAmountMismatch(Verify $verify)
+    {
+        $input = $verify->input;
+
+        $content = $verify->verifyResponseContent;
+
+        if (isset($content[ResponseFields::VER_AMOUNT]) === false)
+        {
+            return false;
+        }
+
+        $expectedAmount = (int)$input['payment']['amount'];
+
+        $actualAmount = (int)$content[ResponseFields::VER_AMOUNT];
+
+        return ($expectedAmount !== $actualAmount);
+    }
+
 
 
     // -------------------------- General helper methods --------------------------
@@ -249,6 +341,22 @@ class Gateway extends Base\Gateway
     public function stripEmailSpecialChars($email)
     {
         return preg_replace("/[^a-zA-Z0-9]+/", "", $email);
+    }
+
+    public function getDate($createdat)
+    {
+        return $date = Carbon::createFromTimestamp($createdat, Timezone::IST)
+            ->format('d/m/Y+H:i:s');
+    }
+
+    public function getCurrentDate()
+    {
+        return $date = Carbon::now()->format('d/m/Y+H:i:s');
+    }
+
+    protected function parseResponseXml(string $response): array
+    {
+        return (array) simplexml_load_string(trim($response));
     }
 
 }

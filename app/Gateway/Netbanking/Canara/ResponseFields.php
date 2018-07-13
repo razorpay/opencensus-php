@@ -17,4 +17,13 @@ class ResponseFields
     const DATE                          = 'fldDatTimeTxn';
     const BANK_REFERENCE_NUMBER         = 'fldBankRefNo';
     const MESSAGE                       = 'Message';
+
+    const VER_CLIENT_ACCOUNT            = 'ClientAccount';
+    const PUR_DATE                      = 'fldOrgDatTimeTxn';    // date of original payment entity
+    const VER_PAYMENT_ID                = 'MerchRefNbr';
+    const VER_AMOUNT                    = 'TxnAmt';
+    const VER_BANK_REFERENCE_NUMBER     = 'BankRefNo';
+    const RETURN_CODE                   = 'ReturnCode';
+    const VERIFY_STATUS                 = 'VerifyStatus';
+
 }
