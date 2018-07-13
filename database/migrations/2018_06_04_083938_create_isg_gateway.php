@@ -40,16 +40,13 @@ class CreateIsgGateway extends Migration
             $table->string(ISG::SECONDARY_ID)
                 ->nullable();
 
-            $table->char(ISG::MERCHANT_PAN, 16)
-                ->nullable();
-
-            $table->char(ISG::TRANSACTION_ID, 16)
+            $table->char(ISG::BANK_REFERENCE_NUMBER, 16)
                 ->nullable();
 
             $table->dateTime(ISG::TRANSACTION_DATE_TIME)
                 ->nullable();
 
-            $table->integer(ISG::TRANSACTION_AMOUNT)
+            $table->integer(ISG::AMOUNT)
                  ->nullable();
 
             $table->char(ISG::AUTH_CODE, 6)
@@ -61,16 +58,10 @@ class CreateIsgGateway extends Migration
             $table->integer(ISG::TIP_AMOUNT)
                 ->nullable();
 
-            $table->string(ISG::CONSUMER_PAN)
-                ->nullable();
-
             $table->char(ISG::STATUS_CODE, 2)
                 ->nullable();
 
             $table->char(ISG::STATUS_DESC, 30)
-                ->nullable();
-
-            $table->char(ISG::NOTIFICATION_REF_NO, 16)
                 ->nullable();
 
             $table->string(ISG::CREATED_AT);

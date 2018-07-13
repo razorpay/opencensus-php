@@ -6,11 +6,13 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Isg\Field;
 use RZP\Gateway\Isg\Status;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class BharatQrIsgPaymentTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -86,7 +88,7 @@ class BharatQrIsgPaymentTest extends TestCase
         $this->assertEquals($bharatQr['expected'], true);
     }
 
-    public function testQrPaymentFailedVerifyCallback()
+    public function testQrPaymentBadVerifyCallback()
     {
         $request = $this->testData["testQrPaymentProcess"];
 
@@ -169,7 +171,7 @@ class BharatQrIsgPaymentTest extends TestCase
         $this->assertSame($response['payment']['verified'], 1);
     }
 
-    public function testBharatQrFailedPaymentCallback()
+    public function testBharatQrFailedVerifyCallback()
     {
         $request = $this->testData["testQrPaymentProcess"];
 
@@ -177,16 +179,15 @@ class BharatQrIsgPaymentTest extends TestCase
 
         $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
 
+        $request['content'][Field::STATUS_CODE] = Status::NO_RECORDS;
+
+        $request['content'][Field::STATUS_DESC] = Status::getStatusCodeDescription(Status::NO_RECORDS);
+
         $this->mockServerContentFunction(function (&$content, $action = null) use ($request)
         {
             if ($action === Action::VERIFY)
             {
                 $content = $request['content'];
-
-                $content[Field::STATUS_CODE] = Status::NO_RECORDS;
-
-                $content[Field::STATUS_DESC] = Status::getStatusCodeDescription(Status::NO_RECORDS);
-
             }
         }, $this->gateway);
 
@@ -196,7 +197,7 @@ class BharatQrIsgPaymentTest extends TestCase
 
         $this->assertEquals($responseArray[Field::STATUS_CODE], Status::NO_RECORDS);
 
-        $this->assertEquals($responseArray[Field::STATUS_DESC], 'Transaction is declined by Isg Gateway');
+        $this->assertEquals($responseArray[Field::STATUS_DESC], 'No records present for given transaction in Isg Gateway');
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -206,5 +207,36 @@ class BharatQrIsgPaymentTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertNull($payment);
+    }
+
+    public function testDuplicateNotification()
+    {
+        $qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $request = $this->testData['testQrPaymentProcess'];
+
+        $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($request)
+        {
+            if ($action === Action::VERIFY)
+            {
+                $content = $request['content'];
+            }
+        }, $this->gateway);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $duplicateResponse = $this->makeRequestAndGetContent($request);
+
+        $responseArray = json_decode($duplicateResponse['original'], true);
+
+        $this->assertEquals($responseArray[Field::STATUS_DESC], Status::FAILED);
+
+        $bharatQr = $this->getDbEntities('bharat_qr', []);
+
+        $this->assertEquals(count($bharatQr) , 1);
     }
 }

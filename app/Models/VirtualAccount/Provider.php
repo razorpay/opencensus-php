@@ -249,13 +249,13 @@ class Provider
             Tags::MERCHANT_ACCOUNT . $this->getLengthAndValue(Constants::MERCHANT_ACCOUNT),
             $this->getBharatQrUpiTlv($merchantIdentifiers),
             $this->getBharatQrDynamicUpiTlv($qrCode, $merchantIdentifiers),
-            Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Isg::MERCHANT_CATEGORY),
+            Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
             Tags::COUNTRY_CODE . $this->getLengthAndValue(Constants::COUNTRY_CODE),
-            Tags::MERCHANT_NAME . $this->getLengthAndValue(Isg::MERCHANT_NAME),
-            Tags::MERCHANT_CITY . $this->getLengthAndValue(Isg::MERCHANT_CITY),
-            Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Isg::MERCHANT_PINCODE),
+            Tags::MERCHANT_NAME . $this->getLengthAndValue(Constants::MERCHANT_NAME),
+            Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
+            Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
             $this->getBharatQrAdditionalDetailTlv($qrCode),
         ];
 

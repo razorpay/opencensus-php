@@ -5,6 +5,7 @@ namespace RZP\Gateway\Isg;
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Base;
@@ -48,6 +49,15 @@ class Gateway extends Base\Gateway
 
             return null;
         }
+        else
+        {
+            throw new Exception\LogicException(
+            'Not a Bharat Qr Payment',
+            null,
+            [
+                'input' => $input
+            ]);
+        }
     }
 
     public function verify(array $input)
@@ -57,93 +67,79 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+
     }
 
-    protected function verifyCallback($input)
+    protected function getVerifyCallbackRequestArray($input)
     {
-        parent::verify($input);
-
-        $verify = new Verify($this->gateway, $input);
-
-        $this->sendVerifyCallbackRequest($verify);
-
-        $response = $verify->verifyResponseContent;
-
-        $this->checkStatusCodeAndDescription($response, $input);
-
-        $this->checkVerifyCallbackResponse($response, $input);
-    }
-    
-    protected function sendVerifyCallbackRequest($verify)
-    {
-        $input = $verify->input;
-
-        $request = $this->getCallbackRequestArray($input);
-
-        $this->traceGatewayPaymentRequest($request,
-                                          $input,
-                                         TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $this->traceGatewayPaymentResponse($response,
-                                           $input,
-                                          TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
-
-        $responseArray = $this->jsonToArray($response->body);
-
-        $verify->verifyResponseContent = $responseArray;
-    }
-
-    protected function getCallbackRequestArray($input)
-    {
-        $this->determineAndSetModeForQr($input[Field::PRIMARY_ID], $this->gateway);
-
-        $terminal = $this->app['repo']->terminal->findByGatewayMpan($input[Field::MERCHANT_PAN], $this->gateway);
-
         $attributes = [
             Field::TRANSACTION_ID     => $input[Field::TRANSACTION_ID],
             Field::PRIMARY_ID         => $input[Field::PRIMARY_ID],
-            Field::TERMINAL_ID        => $terminal->getGatewayTerminalId(),
+            Field::TERMINAL_ID        => $input[TerminalEntity::TERMINAL_ID],
             Field::TRANSACTION_DATE   => $this->getFormattedDate($input[Field::TRANSACTION_DATE_TIME],
                                                                 'Y-m-d'),
             Field::TRANSACTION_AMOUNT => $input[Field::TRANSACTION_AMOUNT],
         ];
 
-        return $this->getStandardRequestArray($attributes);
+        return $attributes;
+    }
+
+    protected function getPaymentVerifyRequestArray($input, $gatewayPayment)
+    {
+        $attributes = [
+            Field::TRANSACTION_ID     => $gatewayPayment[Entity::BANK_REFERENCE_NUMBER],
+            Field::PRIMARY_ID         => $gatewayPayment[Entity::MERCHANT_REFERENCE],
+            Field::TRANSACTION_AMOUNT => $this->getFormattedAmount($gatewayPayment[Entity::AMOUNT]),
+            Field::TRANSACTION_DATE   => $this->getFormattedDate($gatewayPayment[Entity::TRANSACTION_DATE_TIME],
+                                                                'Y-m-d'),
+            Field::TERMINAL_ID        => $input[BaseEntity::TERMINAL][TerminalEntity::GATEWAY_TERMINAL_ID],
+        ];
+
+        return $attributes;
     }
 
     protected function checkStatusCodeAndDescription($response, $input)
     {
+        if ($response[Field::STATUS_CODE] === Status::APPROVED)
+        {
+            return ;
+        }
+
+        switch ($response[Field::STATUS_CODE])
+        {
+            case Status::FALLBACK:
+                $gatewayErrorCode = 'E006';
+                break;
+
+            case Status::NO_RECORDS:
+                $gatewayErrorCode = 'E005';
+                break;
+
+            default:
+                throw new Exception\RuntimeException('Not a valid response code');
+        }
+
         if ($response[Field::STATUS_CODE] !== Status::APPROVED)
         {
-            if ($response[Field::STATUS_CODE] === Status::FALLBACK)
-            {
-                $gatewayErrorCode = "E005";
-
-                $errorCode = ResponseCode::getErrorCode($gatewayErrorCode);
-
-                $errorMessage = ResponseCode::getResponseCodeMessage($gatewayErrorCode);
-            }
-            else
-            {
-                $gatewayErrorCode = "E006";
-
-                $errorCode = ResponseCode::getErrorCode($gatewayErrorCode);
-
-                $errorMessage = ResponseCode::getResponseCodeMessage($gatewayErrorCode);
-            }
-
-                throw new Exception\GatewayErrorException(
-                    $errorCode,
-                    $gatewayErrorCode,
-                    $errorMessage,
-                    [
-                        'callback_response'        => $input,
-                        'verify_callback_response' => $response,
-                        'gateway'                  => $this->gateway,
-                    ]);
+            $this->handleGatewayError($gatewayErrorCode, $input, $response);
         }
+    }
+
+    protected function handleGatewayError($gatewayErrorCode, $input, $response)
+    {
+        $errorCode = ResponseCode::getErrorCode($gatewayErrorCode);
+
+        $errorMessage = ResponseCode::getResponseCodeMessage($gatewayErrorCode);
+
+        throw new Exception\GatewayErrorException(
+            $errorCode,
+            $gatewayErrorCode,
+            $errorMessage,
+            [
+                'callback_response'        => $input,
+                'verify_callback_response' => $response,
+                'gateway'                  => $this->gateway,
+            ]);
     }
 
     protected function checkVerifyCallbackResponse($response, $input)
@@ -163,6 +159,8 @@ class Gateway extends Base\Gateway
         );
 
         $expectedConsumerPan = $this->getDecryptedString($response[Field::CONSUMER_PAN]);
+
+        $this->checkDecryptionFailure($response[Field::CONSUMER_PAN], $expectedConsumerPan);
 
         $actualConsumerPan = $this->getDecryptedString($input[Field::CONSUMER_PAN]);
 
@@ -270,11 +268,22 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest($verify)
     {
-        $gatewayPayment = $verify->payment;
-
         $input = $verify->input;
 
-        $request = $this->getVerifyRequestArray($input, $gatewayPayment);
+        if (isset($verify->payment) === true)
+        {
+            // called once a payment is made to run verify on that
+            $gatewayPayment = $verify->payment;
+
+            $attributes = $this->getPaymentVerifyRequestArray($input, $gatewayPayment);
+        }
+        else
+        {
+            // called before making payment entity, to check whether the notifcation was sent by gateway only
+            $attributes = $this->getVerifyCallbackRequestArray($input);
+        }
+
+        $request = $this->getStandardRequestArray($attributes);;
 
         $this->traceGatewayPaymentRequest($request,
                                           $input,
@@ -289,20 +298,6 @@ class Gateway extends Base\Gateway
         $responseArray = $this->jsonToArray($response->body);
 
         $verify->verifyResponseContent = $responseArray;
-    }
-
-    protected function getVerifyRequestArray($input, $gatewayPayment)
-    {
-        $attributes = [
-            Field::TRANSACTION_ID     => $gatewayPayment[Entity::TRANSACTION_ID],
-            Field::PRIMARY_ID         => $gatewayPayment[Entity::MERCHANT_REFERENCE],
-            Field::TRANSACTION_AMOUNT => $this->getFormattedAmount($gatewayPayment[Entity::TRANSACTION_AMOUNT]),
-            Field::TRANSACTION_DATE   => $this->getFormattedDate($gatewayPayment[Entity::TRANSACTION_DATE_TIME],
-                                                                'Y-m-d'),
-            Field::TERMINAL_ID        => $input[BaseEntity::TERMINAL][TerminalEntity::GATEWAY_TERMINAL_ID],
-            ];
-
-        return  $this->getStandardRequestArray($attributes);
     }
 
     protected function getLiveSecret()
@@ -330,20 +325,61 @@ class Gateway extends Base\Gateway
 
     protected function getQrData(array $input)
     {
-        $this->verifyCallback($input);
-
         $customerCardNumber = $this->getDecryptedString($input[Field::CONSUMER_PAN]);
 
+        $this->checkDecryptionFailure($input[Field::CONSUMER_PAN], $customerCardNumber);
+
         $qrData = [
-            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[Field::TRANSACTION_AMOUNT]),
+            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount(
+                                                                                    $input[Field::TRANSACTION_AMOUNT]),
             BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($customerCardNumber, 0, 6),
-            BharatQr\GatewayResponseParams::CARD_LAST4            => substr($customerCardNumber, 12, 4),
+            BharatQr\GatewayResponseParams::CARD_LAST4            => substr($customerCardNumber, -4),
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[Field::PRIMARY_ID],
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => strval($input[Field::TRANSACTION_ID]),
             BharatQr\GatewayResponseParams::MPAN                  => $input[Field::MERCHANT_PAN],
-];
+            ];
+
         return $qrData;
+    }
+
+    public function verifyBharatQrCallback($input)
+    {
+        // storing the terminal id in input to make verfiy callback request
+        $terminalId = $input['terminalArray'][TerminalEntity::GATEWAY_TERMINAL_ID];
+
+        $input = $input['callback_data'];
+
+        $input[TerminalEntity::TERMINAL_ID] = $terminalId;
+
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $response = $verify->verifyResponseContent;
+
+        $this->checkStatusCodeAndDescription($response, $input);
+
+        $this->checkVerifyCallbackResponse($response, $input);
+    }
+
+    protected function checkDecryptionFailure($encryptedString, $decryptedString)
+    {
+        if (empty($decryptedString) === true)
+        {
+            $this->trace->error(
+              TraceCode::PAYMENT_CALLBACK_FAILURE,
+              [
+                  'encryptedString' => $encryptedString,
+                  'gateway'         => $this->gateway,
+              ]);
+
+            throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            );
+        }
     }
 
     protected function createGatewayPaymentEntityForQr($input)
@@ -358,15 +394,12 @@ class Gateway extends Base\Gateway
     protected function getAttributesFromQrResponse(array $input)
     {
         $attributes = [
-            Entity::MERCHANT_REFERENCE    => $input[Field::PRIMARY_ID],
-            Entity::MERCHANT_PAN          => $input[Field::MERCHANT_PAN],
-            Entity::TRANSACTION_ID        => $input[Field::TRANSACTION_ID],
-            Entity::TRANSACTION_DATE_TIME => $input[Field::TRANSACTION_DATE_TIME],
-            Entity::AUTH_CODE             => $input[Field::AUTH_CODE],
-            Entity::RRN                   => $input[Field::RRN],
-            Entity::CONSUMER_PAN          => $input[Field::CONSUMER_PAN],
-            Entity::STATUS_CODE           => $input[Field::STATUS_CODE],
-            Entity::NOTIFICATION_REF_NO   => $input[Field::TRANSACTION_ID],
+            Entity::MERCHANT_REFERENCE          => $input[Field::PRIMARY_ID],
+            Entity::BANK_REFERENCE_NUMBER       => $input[Field::TRANSACTION_ID],
+            Entity::TRANSACTION_DATE_TIME       => $input[Field::TRANSACTION_DATE_TIME],
+            Entity::AUTH_CODE                   => $input[Field::AUTH_CODE],
+            Entity::RRN                         => $input[Field::RRN],
+            Entity::STATUS_CODE                 => $input[Field::STATUS_CODE],
         ];
 
         if (isset($input[Field::SECONDARY_ID]) === true)
@@ -428,29 +461,6 @@ class Gateway extends Base\Gateway
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
 
         return $response;
-    }
-
-    protected function determineAndSetModeForQr(string $merchantReference, string $gateway)
-    {
-        // We are not using verifyIdAndSilentlyStripSign here because in case
-        // of unexpected payments reference id will be random and this will throw
-        // exception.
-        (new QrcodeEntity())->stripSignWithoutValidation($merchantReference);
-
-        if ($gateway === Payment\Gateway::SHARP)
-        {
-            $mode = Mode::TEST;
-        }
-        else
-        {
-            $mode = $this->app['repo']->determineLiveOrTestModeForEntity($merchantReference, Constants\Entity::QR_CODE);
-
-            $mode = $mode ?? Mode::LIVE;
-        }
-
-        $this->mode = $mode;
-
-        $this->app['basicauth']->setModeAndDbConnection($mode);
     }
 
     protected function traceGatewayPaymentRequest(

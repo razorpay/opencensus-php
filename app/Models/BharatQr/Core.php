@@ -44,9 +44,16 @@ class Core extends Base\Core
                 {
                     $bharatQr = (new Processor($gatewayResponse))->process($bharatQr);
 
-                    // This will be null in case it's a duplicate notification
+                  // This will be null in case it's a duplicate notification
                     return $bharatQr;
                 });
+
+            if ($bharatQr === null)
+            {
+                $valid = false;
+
+                return $valid;
+            }
 
             $valid = true;
         }
