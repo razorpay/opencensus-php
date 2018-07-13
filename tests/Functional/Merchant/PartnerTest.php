@@ -409,6 +409,10 @@ class PartnerTest extends OAuthTestCase
         $this->assertEquals(1, $merchantUsers['count']);
 
         $this->assertArraySelectiveEquals($partnerUser, $merchantUsers['items'][0]);
+
+        $submerchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->assertEquals(self::DEFAULT_MERCHANT_ID, $submerchant->getReferrer());
     }
 
     public function testAddPartnerAccessMapForDiffOrgSubmerchant()
@@ -516,9 +520,9 @@ class PartnerTest extends OAuthTestCase
 
     public function testRemovePartnerAccessMap()
     {
-        $this->allowAdminToAccessPartnerMerchant();
+        $partner = $this->allowAdminToAccessPartnerMerchant();
 
-        $this->allowAdminToAccessSubMerchant();
+        $submerchant = $this->allowAdminToAccessSubMerchant();
 
         $this->createUserMerchantMapping(self::DEFAULT_MERCHANT_ID, 'owner');
 
@@ -537,9 +541,17 @@ class PartnerTest extends OAuthTestCase
                 'merchant_id' => '10000000000011',
             ]);
 
+        $submerchant->retag(['Ref-' . self::DEFAULT_MERCHANT_ID]);
+
+        $this->assertEquals(self::DEFAULT_MERCHANT_ID, $submerchant->getReferrer());
+
         $this->ba->adminAuth();
 
         $this->startTest();
+
+        $submerchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->assertEquals(null, $submerchant->getReferrer());
     }
 
     public function testRemoveNonExistingPartnerAccessMap()

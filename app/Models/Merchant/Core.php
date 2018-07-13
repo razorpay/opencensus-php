@@ -951,9 +951,6 @@ class Core extends Base\Core
 
             $response = (new AccessMap\Service)->deleteMapOAuthApplication($submerchantId, $partnerAppId);
 
-            // Detaches if present. Error will not be thrown if not attached at all.
-            $this->repo->detach($partner->primaryOwner(), User\Entity::MERCHANTS, $submerchant->getId());
-
             $this->removeSubMerchantReferralTag($submerchant, $partner->getId());
 
             return $response;
