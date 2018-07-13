@@ -24,11 +24,23 @@ class Server extends Base\Mock\Server
 
         $this->content($content, 'authorize');
 
-        $url = $input['DynamicUrl'];
+        /*$callbackUrl = $input['DynamicUrl'];
 
-        $url .= '?' . http_build_query($content);
+        $callbackUrl .= '?' . http_build_query($content);
 
-        return $url;
+        return $callbackUrl;*/
+
+        $callbackUrl = $this->route->getUrl('gateway_payment_callback_canara_get');
+
+        $callbackUrl .= '?' . http_build_query($content);
+
+        $request = [
+            'url'     => $callbackUrl,
+            'content' => [],
+            'method'  => 'get',
+        ];
+
+        return $this->makePostResponse($request);
 
     }
 
