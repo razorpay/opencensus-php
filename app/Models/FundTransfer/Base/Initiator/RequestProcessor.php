@@ -214,7 +214,7 @@ abstract class RequestProcessor extends NodalAccount
 
         $response = new \Requests_Response();
 
-        $response->body = json_encode($content);
+        $response->body = $content;
 
         $response->status_code = 200;
 
@@ -264,9 +264,9 @@ abstract class RequestProcessor extends NodalAccount
      *
      * @param array $input config params
      *
-     * @return array
+     * @return string
      */
-    protected abstract function mockResponseGenerator(array $input): array;
+    protected abstract function mockResponseGenerator(array $input): string;
 
     /**
      * Should be implemented in the clild class to process the response of current request

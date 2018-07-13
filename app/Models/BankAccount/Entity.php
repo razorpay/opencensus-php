@@ -3,12 +3,16 @@
 namespace RZP\Models\BankAccount;
 
 use App;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Razorpay\IFSC\IFSC;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
 
+/**
+ * @property Merchant\Entity     $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
