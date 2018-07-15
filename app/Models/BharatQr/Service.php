@@ -141,7 +141,7 @@ class Service extends Base\Service
 
         if ($gateway === Payment\Gateway::SHARP)
         {
-            $mode = Mode::TEST;
+            $this->mode = Mode::TEST;
         }
         else
         {
