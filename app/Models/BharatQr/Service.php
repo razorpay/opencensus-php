@@ -147,9 +147,9 @@ class Service extends Base\Service
         {
             $mode = $this->repo->qr_code->determineLiveOrTestModeByMerchantReference($merchantReference);
 
-            $mode = $mode ?? Mode::LIVE;
+            $this->mode = $mode ?? Mode::LIVE;
         }
 
-        $this->app['basicauth']->setModeAndDbConnection($mode);
+        $this->app['basicauth']->setModeAndDbConnection($this->mode);
     }
 }

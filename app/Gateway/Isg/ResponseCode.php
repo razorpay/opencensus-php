@@ -13,6 +13,7 @@ class ResponseCode
         'E004' => 'Status Code mismatch in Verify response and callback response',
         'E005' => 'No records present for given transaction in Isg Gateway',
         'E006' => 'Transaction is declined by Isg Gateway',
+        'E007' => 'Input string cannot be decrypted',
     ];
     protected static $responseCodeToErrorCodeMap = [
         'E001' => ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED,
@@ -21,6 +22,7 @@ class ResponseCode
         'E004' => ErrorCode::GATEWAY_ERROR_STATUS_CODE_MISMATCH,
         'E005' => ErrorCode::GATEWAY_ERROR_TRANSACTION_MOT_PRESENT,
         'E006' => ErrorCode::GATEWAY_ERROR_TRANSACTION_DECLINED,
+        'E007' => ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED,
     ];
     public static function getErrorCode(string $code)
     {

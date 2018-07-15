@@ -17,7 +17,7 @@ return [
         'url'     => '/payment/callback/bharatqr/isg',
         'method'  => 'post',
         'content' => [
-            Field::PRIMARY_ID                   => 'tobeFilled',
+            Field::PRIMARY_ID                   => 'tobeset',
             Field::SECONDARY_ID                 => 'reference_id',
             Field::MERCHANT_PAN                 => '4403844012084006',
             Field::TRANSACTION_ID               => '1817700802564',

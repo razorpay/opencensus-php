@@ -133,9 +133,9 @@ class Gateway extends Base\Gateway
             $gatewayErrorCode,
             $errorMessage,
             [
-                'callback_response'        => $input,
-                'verify_callback_response' => $response,
-                'gateway'                  => $this->gateway,
+                'input'       => $input,
+                'response'    => $response,
+                'gateway'     => $this->gateway,
             ]);
     }
 
@@ -280,7 +280,7 @@ class Gateway extends Base\Gateway
             $attributes = $this->getVerifyCallbackRequestArray($input);
         }
 
-        $request = $this->getStandardRequestArray($attributes);;
+        $request = $this->getStandardRequestArray($attributes);
 
         $this->traceGatewayPaymentRequest($request,
                                           $input,
@@ -308,7 +308,10 @@ class Gateway extends Base\Gateway
 
         $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
 
-        return $aes->decryptString(hex2bin($string));
+        if (ctype_xdigit($string) === true)
+        {
+            return $aes->decryptString(hex2bin($string));
+        }
     }
 
     protected function getEncryptedString($string)
@@ -342,10 +345,9 @@ class Gateway extends Base\Gateway
 
     public function verifyBharatQrCallback($input)
     {
-        // storing the terminal id in input to make verfiy callback request
-        $terminalId = $input['terminalArray'][TerminalEntity::GATEWAY_TERMINAL_ID];
-
         $input = $input['callback_data'];
+
+        $terminalId = $this->terminal->getGatewayTerminalId();
 
         $input[TerminalEntity::TERMINAL_ID] = $terminalId;
 
@@ -373,9 +375,7 @@ class Gateway extends Base\Gateway
                   'gateway'         => $this->gateway,
               ]);
 
-            throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_FAILED
-            );
+            $this->handleGatewayError('E007', $encryptedString, $decryptedString);
         }
     }
 

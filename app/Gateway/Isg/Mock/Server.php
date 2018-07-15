@@ -12,7 +12,10 @@ class Server extends Base\Mock\Server
 {
     public function fillBharatQrCallback(& $request , $qrCode)
     {
-        $request[Field::PRIMARY_ID] = strtoupper(substr($qrCode['id'], 3));
+        if ($qrCode !== null)
+        {
+            $request[Field::PRIMARY_ID] = strtoupper(substr($qrCode['id'], 3));
+        }
 
         $encryptedCardNumber =  $this->getEncryptedString($request[Field::CONSUMER_PAN]);
 

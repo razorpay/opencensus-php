@@ -24,7 +24,13 @@ class BharatQrIsgPaymentTest extends TestCase
 
         $this->fixtures->create('terminal:bharat_qr_isg_terminal');
 
+        $this->t3 = $this->fixtures->on('live')->create('terminal:bharat_qr_isg_terminal');
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         $this->fixtures->merchant->activate();
     }
@@ -94,6 +100,8 @@ class BharatQrIsgPaymentTest extends TestCase
 
         $qrCode = $this->createVirtualAccount();
 
+        $this->ba->directAuth();
+
         $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
 
         $this->mockServerContentFunction(function (&$content, $action = null) use ($request)
@@ -129,6 +137,8 @@ class BharatQrIsgPaymentTest extends TestCase
         $request = $this->testData["testQrPaymentProcess"];
 
         $qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
 
         $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
 
@@ -176,6 +186,8 @@ class BharatQrIsgPaymentTest extends TestCase
         $request = $this->testData["testQrPaymentProcess"];
 
         $qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
 
         $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
 
@@ -233,10 +245,60 @@ class BharatQrIsgPaymentTest extends TestCase
 
         $responseArray = json_decode($duplicateResponse['original'], true);
 
-        $this->assertEquals($responseArray[Field::STATUS_DESC], Status::FAILED);
+        $this->assertEquals($responseArray[Field::STATUS_DESC], Status::SUCCESS);
 
         $bharatQr = $this->getDbEntities('bharat_qr', []);
 
         $this->assertEquals(count($bharatQr) , 1);
+    }
+
+    public function testUnexpectedPaymentNotificationOnUnexpectedTerminal()
+    {
+        $request = $this->testData["testQrPaymentProcess"];
+
+        $this->ba->directAuth();
+
+        $this->getMockServer('isg')->fillBharatQrCallback($request['content'], null);
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($request)
+        {
+            if ($action === Action::VERIFY)
+            {
+                $content = $request['content'];
+            }
+        }, $this->gateway);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $responseArray = json_decode($response['original'], true);
+    }
+
+    public function testDecryptionFailurePaymentNotification()
+    {
+        $request = $this->testData["testQrPaymentProcess"];
+
+        $qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
+
+        $request['content'][Field::CONSUMER_PAN] = 'random';
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $responseArray = json_decode($response['original'], true);
+
+        $this->assertEquals(Status::NO_RECORDS, $responseArray[Field::STATUS_CODE]);
+
+        $this->assertEquals("Input string cannot be decrypted", $responseArray[Field::STATUS_DESC]);
+
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        $this->assertNull($bharatQr);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment);
     }
 }
