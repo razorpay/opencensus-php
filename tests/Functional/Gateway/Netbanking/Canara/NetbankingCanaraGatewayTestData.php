@@ -1,5 +1,10 @@
 <?php
 
+use RZP\Gateway\Netbanking\Canara\Mock\Server;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 return [
     'testPayment' => [
         'merchant_id' => '10000000000000',
@@ -35,5 +40,11 @@ return [
         'entity' => 'netbanking',
         'bank_payment_id' => 'AB1234',
     ],
+    'testPaymentVerifySuccessEntity' => [
+        'bank_payment_id' => Server::BANK_REFERENCE_NUMBER,
+        'received'        => true,
+        'bank'            => 'CNRB',
+    ],
+
 ];
 
