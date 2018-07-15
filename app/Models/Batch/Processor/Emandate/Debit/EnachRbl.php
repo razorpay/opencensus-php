@@ -65,6 +65,6 @@ class EnachRbl extends Base
 
     protected function getApiErrorCode(array $content): string
     {
-        return Rbl\ErrorCodes::getDebitPublicErrorCode($content[self::GATEWAY_ERROR_CODE]);
+        return Rbl\ErrorCodes::getDebitPublicErrorCode($content);
     }
 }

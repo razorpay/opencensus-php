@@ -59,7 +59,7 @@ class EnachRbl extends Base
         }
         else
         {
-            return Rbl\ErrorCodes::getRegistrationPublicErrorCode($entry[Batch\Header::ENACH_REGISTER_RETURN_CODE]);
+            return Rbl\ErrorCodes::getRegistrationPublicErrorCode($entry);
         }
     }
 
