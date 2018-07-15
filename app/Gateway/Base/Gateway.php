@@ -496,6 +496,12 @@ class Gateway
             $request['options'] = [];
         }
 
+        // Use system certs to verify
+        if (isset($request['options']['verify']) === false)
+        {
+            $request['options']['verify'] = null;
+        }
+
         if (isset($request['headers']) === false)
         {
             $request['headers'] = [];
