@@ -141,15 +141,15 @@ class Service extends Base\Service
 
         if ($gateway === Payment\Gateway::SHARP)
         {
-            $mode = Mode::TEST;
+            $this->mode = Mode::TEST;
         }
         else
         {
             $mode = $this->repo->qr_code->determineLiveOrTestModeByMerchantReference($merchantReference);
 
-            $mode = $mode ?? Mode::LIVE;
+            $this->mode = $mode ?? Mode::LIVE;
         }
 
-        $this->app['basicauth']->setModeAndDbConnection($mode);
+        $this->app['basicauth']->setModeAndDbConnection($this->mode);
     }
 }
