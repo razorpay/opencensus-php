@@ -1210,7 +1210,7 @@ class Gateway extends Base\Gateway
 
         curl_setopt($curl, CURLOPT_SSLCERTPASSWD, $this->getClientCertificatePassword());
 
-        curl_setopt($curl, CURLOPT_CAINFO, $this->getServerCertificate());
+        // curl_setopt($curl, CURLOPT_CAINFO, $this->getServerCertificate());
 
         curl_setopt($curl, CURLOPT_HTTPHEADER, ["Content-Type: text/xml"]);
     }
