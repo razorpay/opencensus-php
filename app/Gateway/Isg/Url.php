@@ -9,6 +9,4 @@ class Url
     const LIVE_DOMAIN       = 'http://mvisamobileuat.hdfcbank.com:3933/';
 
     const VERIFY            = 'merchant/aggregator/checkTransStatus/';
-
-    const REFUND            = 'merchant/aggregator/refund/';
 }

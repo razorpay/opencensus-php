@@ -5,7 +5,6 @@ namespace RZP\Gateway\Isg;
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Base;
@@ -13,11 +12,11 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Models\BharatQr;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Constants\Entity as BaseEntity;
-use RZP\Models\QrCode\Entity as QrcodeEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 
 class Gateway extends Base\Gateway

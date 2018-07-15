@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Isg\Mock;
 
-
 use RZP\Gateway\Isg;
 use RZP\Gateway\Base\Mock\GatewayTrait;
 
