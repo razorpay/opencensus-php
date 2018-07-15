@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
@@ -1040,7 +1041,16 @@ class Gateway extends Base\Gateway
     {
         $siStatus = $gatewayPayment->getSIStatus();
 
-        $recurringStatus = Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? Token\RecurringStatus::REJECTED;
+        if (array_key_exists($siStatus, Status::SI_STATUS_TO_RECURRING_STATUS_MAP) === false)
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                '',
+                ['gateway_payment' => $gatewayPayment->toArray()]);
+        }
+
+        $recurringStatus = Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus];
 
         // TODO: Get the failure reason mapping and
         // display the correct failure reason here
