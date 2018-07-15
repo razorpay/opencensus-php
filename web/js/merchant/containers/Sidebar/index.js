@@ -206,8 +206,6 @@ export default class Sidebar extends Component {
                     label="Invoices"
                     icon="i i-notes text-warning"
                     to={routes.invoices}
-                    featureEnabled="Invoice"
-                    apiFeatureEnabled="subscriptions"
                     notMyRole="sellerapp"
                     isNew
                   />
@@ -246,8 +244,6 @@ export default class Sidebar extends Component {
                     label="Customers"
                     icon="i i-people text-warning"
                     to="/customers"
-                    featureEnabled="Invoice"
-                    apiFeatureEnabled={['subscriptions', 'virtual_accounts']}
                     notMyRole="sellerapp"
                   />
 
