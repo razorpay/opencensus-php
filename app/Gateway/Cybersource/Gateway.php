@@ -643,7 +643,7 @@ class Gateway extends Base\Gateway
 
                 $gatewayPayment = $this->createGatewayPaymentEntity($gatewayAttributes, $input);
 
-                $this->checkErrorsAndThrowException($response, null, null, Exception\Action::ENROLL);
+                $this->checkErrorsAndThrowException($response, null, null, Base\Action::AUTHENTICATE);
             }
 
             $gatewayAttributes = $this->getAttributeFromAuthEnrollResponse($input, $response);

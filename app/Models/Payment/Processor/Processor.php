@@ -1099,10 +1099,16 @@ class Processor
 
         $payment->setVerifyBucket(0);
 
+        //
+        // In case the gateway error exception is thrown on authenticate
+        // we set verify bucket to null
+        //
         if ($e instanceof Exception\GatewayErrorException)
         {
-            if (in_array($e->getAction(), Exception\Action::$nonVerifiableActions, true) === true)
+            if (in_array($e->getAction(), \RZP\Gateway\Base\Action::$nonVerifiableActions, true) === true)
             {
+                $payment->setVerifyBucket(null);
+
                 $payment->setVerifyAt(null);
             }
         }
@@ -1110,7 +1116,10 @@ class Processor
         // If payment still doesnt exist we set verify_at as null
         // So that this payment doesnt get picked up by any cron
         // for verify
-        if ($payment->exists === false) {
+        if ($payment->exists === false)
+        {
+            $payment->setVerifyBucket(null);
+
             $payment->setVerifyAt(null);
         }
     }
