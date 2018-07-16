@@ -3,18 +3,42 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
-import ModalHeader from 'rzp/ui/ModalHeader';
-import InputField from 'rzp/ui/Forms/InputField';
 import { closeModal } from 'rzp/modules/modals';
 import { required, email } from 'rzp/utils/validators';
+import { invite as inviteSubmerchant } from 'merchant/modules/submerchant';
+import { showNotification } from 'rzp/modules/notifications';
 
-@connect(null, { closeModal })
+import ModalHeader from 'rzp/ui/ModalHeader';
+import InputField from 'rzp/ui/Forms/InputField';
+
+@connect(state => ({ ...state.submerchant.item }), {
+  closeModal,
+  inviteSubmerchant,
+  showNotification,
+})
 @reduxForm({
   form: 'InviteMerchant',
 })
 export default class Invite extends Component {
-  save = () => {
-    alert('saving');
+  save = data => {
+    const submerchantId = this.props.id;
+    return this.props
+      .inviteSubmerchant(submerchantId, data)
+      .then(data => {
+        if (data) {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Merchant invited to manage dashboard successfully',
+          });
+        }
+        this.props.closeModal();
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
   };
   render() {
     const { handleSubmit } = this.props;

@@ -12,4 +12,19 @@ export default class Submerchant extends GenericEntity {
       data,
     }).then(response => response.data);
   }
+
+  invite(submerchantId, data) {
+    return ajax(
+      {
+        url: `/submerchant/user/${submerchantId}`,
+        method: 'POST',
+        data: {
+          ...data,
+          mode: 'live',
+        },
+      },
+      {},
+      '/merchant/api'
+    ).then(response => response.data);
+  }
 }

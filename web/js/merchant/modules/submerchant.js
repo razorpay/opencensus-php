@@ -4,6 +4,7 @@ import { merge } from 'rzp/utils/immutable';
 
 const SUB_MERCHANT_CREATE = 'SUB_MERCHANT_CREATE';
 const SUB_MERCHANT_FETCH_DETAILS = 'SUB_MERCHANT_FETCH_DETAILS';
+const SUB_MERCHANT_INVITE = 'SUB_MERCHANT_INVITE';
 
 export const create = payload => {
   return {
@@ -18,6 +19,11 @@ export const fetchSubmerchant = submerchantId => {
     payload: new Submerchant().fetch(submerchantId),
   };
 };
+
+export const invite = (...args) => ({
+  type: SUB_MERCHANT_INVITE,
+  payload: new Submerchant().invite(...args),
+});
 
 const initialState = {
   loading: true,
