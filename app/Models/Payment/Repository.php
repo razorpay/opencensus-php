@@ -54,7 +54,7 @@ class Repository extends Base\Repository
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
         Entity::TRANSFER_ID     => 'filled|public_id|size:18',
         Entity::CAPTURED        => 'sometimes|boolean',
-        self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',
+        self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer|custom:expand',
     ];
 
     // These are admin allowed params to search on.
@@ -92,6 +92,7 @@ class Repository extends Base\Repository
         Entity::SUBSCRIPTION_ID,
         Entity::CUSTOMER_ID,
         Entity::PAYMENT_LINK_ID,
+        Entity::TRANSFER_ID,
     ];
 
     protected $cardQueryKeys = [
@@ -107,6 +108,17 @@ class Repository extends Base\Repository
             (Merchant\Entity::hascustomerTransactionHistoryEnabled($merchant->getId()) === false))
         {
             throw new Exception\ExtraFieldsException($attribute);
+        }
+    }
+
+    protected function validateExpand($attribute, $value)
+    {
+        $merchant = $this->merchant;
+
+        if (((empty($merchant) === true) or
+            ($merchant->isLinkedAccount() === false)) and ($value === 'transfer'))
+        {
+            throw new Exception\ExtraFieldsException("expand=transfer");
         }
     }
 
@@ -684,15 +696,6 @@ class Repository extends Base\Repository
         $amount = $this->dbColumn(Entity::AMOUNT);
 
         $query->where($amount, '=', $params[Entity::AMOUNT]);
-    }
-
-    protected function addQueryParamTransferId($query, $params)
-    {
-        $transferId = $this->dbColumn(Entity::TRANSFER_ID);
-
-        Transfer\Entity::verifyIdAndStripSign($params[Entity::TRANSFER_ID]);
-
-        $query->where($transferId, '=', $params[Entity::TRANSFER_ID]);
     }
 
     protected function addQueryParamIin($query, $params)
