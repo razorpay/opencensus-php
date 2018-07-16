@@ -1015,7 +1015,7 @@ class Core extends Base\Core
 
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
     {
-        $tag = 'ref-' . $partnerId;
+        $tag = 'Ref-' . $partnerId;
 
         $tags = (new Merchant\Service)->deleteTag($merchant->getPublicId(), $tag);
 
