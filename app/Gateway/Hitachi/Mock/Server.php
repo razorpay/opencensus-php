@@ -35,7 +35,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function getBharatQrCallback($qrCodeReference, $ref = null)
+    public function getBharatQrCallback($qrCodeId, $ref = null)
     {
         $data = [
             'F002'       => '525783XXXXXX3413',
@@ -51,7 +51,7 @@ class Server extends Base\Mock\Server
             'F042'       => 'abcd_hitachi_bharat',
             'F043'       => 'RazorpayBangalore',
             'F102'       => 'paymentId',
-            'PurchaseID' => $qrCodeReference,
+            'PurchaseID' => $qrCodeId,
             'SenderName' => 'Random Name',
         ];
 

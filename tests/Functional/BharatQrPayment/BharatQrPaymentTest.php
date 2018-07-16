@@ -44,11 +44,11 @@ class BharatQrPaymentTest extends TestCase
 
         $this->ba->directAuth();
 
-        $qrCodeReference = $this->qrCode['reference'];
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
         $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
 
-        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeReference);
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
 
         $request['content'] = $content;
 
@@ -91,10 +91,10 @@ class BharatQrPaymentTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $qrCodeReference = $this->qrCode['reference'];
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
         $content = [
-            'reference' => $qrCodeReference,
+            'reference' => $qrCodeId,
             'method'    => 'card',
             'amount'    => '100',
         ];
@@ -182,9 +182,9 @@ class BharatQrPaymentTest extends TestCase
 
         $this->ba->directAuth();
 
-        $qrCodeReference = $this->qrCode['reference'];
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
-        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeReference);
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
 
         $request['content'] = $content;
 
@@ -221,11 +221,11 @@ class BharatQrPaymentTest extends TestCase
 
         $this->ba->directAuth();
 
-        $qrCodeReference = $qrCode['reference'];
-
-        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeReference);
+        $qrCodeId = substr($qrCode['id'], 3);
 
         $request = $this->testData['testQrPaymentProcess'];
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
 
         $request['content'] = $content;
 
@@ -256,9 +256,9 @@ class BharatQrPaymentTest extends TestCase
 
         $this->ba->directAuth();
 
-        $qrCodeReference = $this->qrCode['reference'];
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
-        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeReference);
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
 
         $content['CheckSum'] = 'random';
 
@@ -402,9 +402,9 @@ class BharatQrPaymentTest extends TestCase
 
         $request = $this->testData[__FUNCTION__];
 
-        $qrCodeReference = $this->qrCode['reference'];
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
-        $request['content']['merchantTranId'] = $qrCodeReference;
+        $request['content']['merchantTranId'] = $qrCodeId;
 
         $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
 
@@ -444,9 +444,9 @@ class BharatQrPaymentTest extends TestCase
 
         $request = $this->testData['testUpiQrPaymentProcess'];
 
-        $qrCodeReference = $this->qrCode['reference'];
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
-        $request['content']['merchantTranId'] = $qrCodeReference;
+        $request['content']['merchantTranId'] = $qrCodeId;
 
         $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
 
@@ -492,9 +492,9 @@ class BharatQrPaymentTest extends TestCase
 
         $request = $this->testData['testQrPaymentProcess'];
 
-        $qrCodeReference = $this->qrCode['reference'];
+        $qrCodeId = substr($this->qrCode['id'], 3);
 
-        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeReference);
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
 
         $request['content'] = $content;
 
@@ -523,10 +523,5 @@ class BharatQrPaymentTest extends TestCase
     protected function parseResponseXml(string $response): array
     {
         return (array) simplexml_load_string(trim($response));
-    }
-
-    protected function getQrCodeId()
-    {
-        return strtoupper(substr($this->qrCode['reference'], 3));
     }
 }

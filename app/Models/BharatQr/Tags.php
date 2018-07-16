@@ -8,7 +8,7 @@ class Tags
     const POINT_OF_INITIATION   = '01';
     const VISA                  = '02';
     const MASTERCARD            = '04';
-    const MERCHANT_ACCOUNT      = '08';
+    //const MERCHANT_ACCOUNT       = '08';
     // const AMEX                  = '11';
     const RUPAY                 = '06';
     const UPI_VPA               = '26';

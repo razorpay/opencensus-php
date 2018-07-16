@@ -243,7 +243,6 @@ class Provider
             $this->getIdentifierTlv(Tags::VISA, Terminal\Entity::VISA_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::MASTERCARD, Terminal\Entity::MC_MPAN, $merchantIdentifiers),
             $this->getIdentifierTlv(Tags::RUPAY, Terminal\Entity::RUPAY_MPAN, $merchantIdentifiers),
-            Tags::MERCHANT_ACCOUNT . $this->getLengthAndValue(Constants::MERCHANT_ACCOUNT),
             $this->getBharatQrUpiTlv($merchantIdentifiers),
             $this->getBharatQrDynamicUpiTlv($qrCode, $merchantIdentifiers),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
@@ -254,10 +253,12 @@ class Provider
             Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
             Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
             $this->getBharatQrAdditionalDetailTlv($qrCode, $merchantIdentifiers),
-            Tags::CRC . '04',
         ];
 
-        $qrString = implode('', $tags);
+        $qrString =  implode('', $tagArray);
+
+        // This is the CRC TL. Length of CRC is always 4
+        $qrString .= Tags::CRC . '04';
 
         $crc = (new CRC16)->calculateCrc($qrString);
 
@@ -324,7 +325,7 @@ class Provider
         // prefix. This is how they identify our payments
         //
         $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR .
-                                   $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getReference());
+                                   $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getId());
 
         $upiString = $rupayRidTlv . $transactionReferenceTlv;
 
@@ -333,7 +334,7 @@ class Provider
 
     protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode, array $merchantIdentifiers)
     {
-        $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getReference());
+        $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getId());
 
         if (isset($merchantIdentifiers['rupay_tid']) === true)
         {
