@@ -142,7 +142,7 @@ export default class ActivateAgainModal extends React.Component {
                       {
                         hasNoExpiry: e.target.value,
                       },
-                      this.flushExpireByError()
+                      this.flushExpireByError
                     );
                   }}
                 />

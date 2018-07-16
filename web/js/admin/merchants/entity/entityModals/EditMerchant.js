@@ -283,6 +283,15 @@ export default class EditMerchant extends Component {
             <option value="postpaid">Postpaid</option>
           </SelectField>
 
+          <SelectField
+            name="refund_source"
+            label="Refund Source"
+            defaultValue={details.refund_source}
+          >
+            <option value="balance">Balance</option>
+            <option value="credits">Refund Credits</option>
+          </SelectField>
+
           <div class="field multi">
             <label>Auto Refund Delay</label>
             <input

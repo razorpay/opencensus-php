@@ -103,13 +103,7 @@ const getPaymentDetail = invoice => (
 );
 
 export default props => {
-  let {
-    invoice,
-    isLoading,
-    statusMsg,
-    editPaymentLink,
-    isPaymentLinksV2Enabled,
-  } = props;
+  let { invoice, isLoading, statusMsg, editPaymentLink } = props;
 
   let status = invoice.status;
   const isDraft = status === 'draft';
@@ -144,16 +138,6 @@ export default props => {
                       {isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}
                     </button>
                   )}
-
-                {!isPaymentLinksV2Enabled &&
-                  isIssued && (
-                    <button
-                      class="btn btn-default btn-sm"
-                      onClick={props.onCancel}
-                    >
-                      Cancel Link
-                    </button>
-                  )}
               </div>
             </ShowWhen>
           </div>
@@ -181,61 +165,57 @@ export default props => {
                     <div>
                       <InvoiceStatusLabel status={invoice.status} />
                       <ShowWhen notMyRole="support finance">
-                        {isPaymentLinksV2Enabled &&
-                          isIssued && (
-                            <Button.Transparent
-                              class="Button--Link"
-                              style={{ marginLeft: 12 }}
-                              onClick={props.onCancel}
-                            >
-                              Cancel Link
-                            </Button.Transparent>
-                          )}
+                        {isIssued && (
+                          <Button.Transparent
+                            class="Button--Link"
+                            style={{ marginLeft: 12 }}
+                            onClick={props.onCancel}
+                          >
+                            Cancel Link
+                          </Button.Transparent>
+                        )}
                       </ShowWhen>
                     </div>
                   )}
                 />
 
-                <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                  <React.Fragment>
-                    {do {
-                      const isPartialPayment = invoice.partial_payment;
+                <React.Fragment>
+                  {do {
+                    const isPartialPayment = invoice.partial_payment;
 
-                      <EntityDetailRow
-                        label="Partial Payment"
-                        value={() => (
-                          <div>
-                            {isPartialPayment ? 'Enabled' : 'Disabled'}
-                            {isPaymentLinksV2Enabled &&
-                              isIssued && (
-                                <AsyncBtn.Transparent
-                                  onClick={() => {
-                                    const toEnablePartialPayment = +!isPartialPayment;
-                                    editPaymentLink({
-                                      partial_payment: toEnablePartialPayment,
-                                    });
+                    <EntityDetailRow
+                      label="Partial Payment"
+                      value={() => (
+                        <div>
+                          {isPartialPayment ? 'Enabled' : 'Disabled'}
+                          {isIssued && (
+                            <AsyncBtn.Transparent
+                              onClick={() => {
+                                const toEnablePartialPayment = +!isPartialPayment;
+                                editPaymentLink({
+                                  partial_payment: toEnablePartialPayment,
+                                });
 
-                                    trackTogglePartialPayment(
-                                      invoice.id,
-                                      'Toggle Partial Payment',
-                                      toEnablePartialPayment
-                                    );
-                                  }}
-                                  class="Button--Link"
-                                  style={{ marginLeft: 12 }}
-                                  pendingState={
-                                    isPartialPayment ? 'Disabling' : 'Enabling'
-                                  }
-                                >
-                                  {isPartialPayment ? 'Disable' : 'Enable'}
-                                </AsyncBtn.Transparent>
-                              )}
-                          </div>
-                        )}
-                      />;
-                    }}
-                  </React.Fragment>
-                </ShowWhen>
+                                trackTogglePartialPayment(
+                                  invoice.id,
+                                  'Toggle Partial Payment',
+                                  toEnablePartialPayment
+                                );
+                              }}
+                              class="Button--Link"
+                              style={{ marginLeft: 12 }}
+                              pendingState={
+                                isPartialPayment ? 'Disabling' : 'Enabling'
+                              }
+                            >
+                              {isPartialPayment ? 'Disable' : 'Enable'}
+                            </AsyncBtn.Transparent>
+                          )}
+                        </div>
+                      )}
+                    />;
+                  }}
+                </React.Fragment>
 
                 <EntityDetailRow
                   label="Amount"
@@ -246,11 +226,9 @@ export default props => {
                     />
                   )}
                 />
-                <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                  <EntityDetailRow label="Amount Paid">
-                    {getPaymentDetail(invoice)}
-                  </EntityDetailRow>
-                </ShowWhen>
+                <EntityDetailRow label="Amount Paid">
+                  {getPaymentDetail(invoice)}
+                </EntityDetailRow>
 
                 <EntityDetailRow
                   label="Link Url"
@@ -276,7 +254,7 @@ export default props => {
                 <EntityDetailRow
                   label="Receipt No."
                   value={
-                    isPaymentLinksV2Enabled && isIssued
+                    isIssued
                       ? () => (
                           <EditReceipt
                             value={invoice.receipt}
@@ -307,7 +285,7 @@ export default props => {
                 <EntityDetailRow
                   label={isExpired ? 'Expired On' : 'Expires On'}
                   value={
-                    isPaymentLinksV2Enabled && isIssued
+                    isIssued
                       ? () => (
                           <EditExpiry
                             value={invoice.expire_by}
@@ -328,21 +306,17 @@ export default props => {
                   }
                 />
 
-                {isPaymentLinksV2Enabled ? (
-                  <EntityDetailRow
-                    label="Notes"
-                    value={() => (
-                      <EditNotes
-                        value={invoice.notes}
-                        editFn={editPaymentLink}
-                        entityId={invoice.id}
-                        trackerFn={trackDetailViewEdits}
-                      />
-                    )}
-                  />
-                ) : (
-                  <NestedEntityDetailRow label="Notes" value={invoice.notes} />
-                )}
+                <EntityDetailRow
+                  label="Notes"
+                  value={() => (
+                    <EditNotes
+                      value={invoice.notes}
+                      editFn={editPaymentLink}
+                      entityId={invoice.id}
+                      trackerFn={trackDetailViewEdits}
+                    />
+                  )}
+                />
               </div>
             </div>
           </div>

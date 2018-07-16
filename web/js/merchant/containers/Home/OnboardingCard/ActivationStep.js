@@ -145,10 +145,12 @@ const WrapperElement = ({
  * Title for Activation step
  */
 const Title = ({
+  mode,
   children,
   isActivated,
   isSubmitted,
   isRejected,
+  hasKeyAccess,
   needsClarification,
 }) => {
   return (
@@ -156,7 +158,26 @@ const Title = ({
       {isSubmitted ? (
         <span>
           {isActivated ? (
-            'Account Activated'
+            <span>
+              Account Activated
+              {mode === 'live' &&
+                !hasKeyAccess && (
+                  <span>
+                    {' '}
+                    (Limited Access)
+                    <small>
+                      <i className="i i-info-circle text-fade" />
+                      <Popover align="top" followPointer={true} theme="dark">
+                        <PopoverBody>
+                          You can still use Payment Links and Invoices. Add your
+                          Website/App URL to get access to our API’s and other
+                          products like Route, Subscriptions etc.
+                        </PopoverBody>
+                      </Popover>
+                    </small>
+                  </span>
+                )}
+            </span>
           ) : isRejected ? (
             <span>
               Activation Not Accepted{' '}
@@ -331,6 +352,8 @@ export default class ActivationStep extends Component {
       isSubmitted,
       isRejected,
       needsClarification,
+      business_website: businessWebsite,
+      has_key_access: hasKeyAccess,
       clarification_mode: clarificationMode,
     } = user;
 
@@ -363,11 +386,14 @@ export default class ActivationStep extends Component {
             <div>
               <b>
                 <Title
+                  mode={mode}
                   isActivated={isActivated}
                   isSubmitted={isSubmitted}
                   hasPersonalised={hasPersonalised}
                   isRejected={isRejected}
                   needsClarification={needsClarification}
+                  businessWebsite={businessWebsite}
+                  hasKeyAccess={hasKeyAccess}
                 />
               </b>
               {!isActivated &&

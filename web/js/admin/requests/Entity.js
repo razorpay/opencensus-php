@@ -14,7 +14,7 @@ const entityMap = {
   merchant: {
     url: 'merchants',
   },
-  merchant_details: {
+  merchant_detail: {
     url: 'merchants',
   },
   credits: {

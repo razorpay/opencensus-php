@@ -1,3 +1,5 @@
+@import './animations';
+
 // i-switch checkbox
 
 .i-switch {
@@ -787,3 +789,67 @@ dl.rzp-definition {
   100%  { transform: rotate(360deg); }
 }
 
+/* Component: rzp/ui/Accordion */
+
+.Accordion {
+  .Accordion__item {
+    margin-top: 16px;
+    .Accordion__content {
+      padding: 16px 8px 0;
+      display: none;
+    }
+    .Accordion__title {
+      background: #F6F6F6;
+      padding: 10px;
+      cursor: pointer;
+      position: relative;
+      font-weight: bold;
+      &:hover {
+        background: #efefef;
+      }
+      .accordion__arrow {
+        display: inline-block;
+        position: absolute;
+        width: 24px;
+        height: 12px;
+        top: 50%;
+        right: 5px;
+        margin-top: -7px;
+        &::after,&::before {
+            display: block;
+            position: absolute;
+            top: 50%;
+            width: 10px;
+            height: 2px;
+            background-color: #58666e;
+            content: '';
+            transition: transform 0.25s ease;
+        }
+        &::before {
+          left: 4px;
+          transform: rotate(45deg);
+        }
+        &::after {
+          right: 4px;
+          transform: rotate(-45deg);
+        }
+      }
+    }
+    
+    &.open {
+      .Accordion__title > .accordion__arrow::before {
+        transform: rotate(-45deg);
+      }
+
+      .Accordion__title > .accordion__arrow::after {
+        transform: rotate(45deg);
+      }
+      .Accordion__content {
+        display: block;
+        animation: fadein 0.25s ease-in;
+      }
+    }
+  }
+}
+
+/* End Component */

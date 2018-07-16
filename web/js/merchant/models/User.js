@@ -97,14 +97,6 @@ export default class User {
     return (this.tags || []).indexOf('Gst_Invoice_Disabled') !== -1;
   }
 
-  /**
-   * Check for Partial Payment tag on Invoices.
-   * @return {Boolean}
-   */
-  get isInvoicePartialPaymentsEnabled() {
-    return (this.tags || []).indexOf('Invoice_partial_payments') >= 0;
-  }
-
   // TODO: Remove this code and reports v1 code when confirmed no rollbacks
   // Enabling reportsV2 for all merchants.
   get isReportV2Enabled() {
@@ -115,15 +107,6 @@ export default class User {
   // TODO: Remove this code when confirmed no rollbacks
   get isNewAnalyticsEnabled() {
     return true;
-  }
-
-  // RPL will exist and RPL will be shown as Early Access
-  get isPaymentLinksV2Enabled() {
-    if (this.tags) {
-      return this.findTag('paymentlinks_v2');
-    } else {
-      return false; // Back up as always false, because RPL is dependent upon this
-    }
   }
 
   get enabledFeatures() {

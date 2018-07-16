@@ -2,6 +2,7 @@ import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
+import Definition from 'rzp/ui/Definition';
 import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AccountDetails from 'merchant/components/VirtualAccounts/AccountDetails';
@@ -70,6 +71,17 @@ export default props => {
                     />
                   )}
                 />
+
+                {!!Object.keys(virtualaccount.notes).length && (
+                  <EntityDetailRow label="Notes">
+                    {Object.keys(virtualaccount.notes).map((key, index) => (
+                      <Definition key={index} customClass="notes">
+                        {key}
+                        {String(virtualaccount.notes[key] || '--')}
+                      </Definition>
+                    ))}
+                  </EntityDetailRow>
+                )}
               </div>
 
               {virtualaccount.status !== 'closed' ? (

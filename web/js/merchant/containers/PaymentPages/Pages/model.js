@@ -73,6 +73,9 @@ export function activatePaymentPage(id, data) {
     url: `payment_links/${id}/activate`,
     method: 'patch',
     data,
+    headers: {
+      'content-type': 'application/json',
+    },
   });
 }
 

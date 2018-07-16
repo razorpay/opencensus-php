@@ -8,10 +8,8 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 const InvoiceListItem = props => {
-  let { invoice, onEditClick, onCopy, type, isPaymentLinksV2Enabled } = props;
+  let { invoice, onCopy } = props;
   let customer = invoice.customer_details;
-
-  const isPaymentLinksType = type === 'link';
 
   return (
     <EntityItemRow id={invoice.id}>
@@ -58,37 +56,12 @@ const InvoiceListItem = props => {
       <td>
         <InvoiceStatusLabel status={invoice.status} />
       </td>
-      {isPaymentLinksType && !isPaymentLinksV2Enabled ? (
-        <td>
-          <div class="row-action">
-            <div class="btn-group">
-              <button
-                data-tip={
-                  !invoice.isEditable ? 'Paid invoice cannot be edited' : null
-                }
-                class="btn btn-xs btn-default"
-                disabled={!invoice.isEditable}
-                onClick={props.onEditClick}
-              >
-                <i class="i i-edit" />
-                <span>edit</span>
-              </button>
-            </div>
-          </div>
-        </td>
-      ) : null}
     </EntityItemRow>
   );
 };
 
 export default props => {
-  let {
-    type,
-    invoices,
-    isLoading,
-    onCopy = () => {},
-    isPaymentLinksV2Enabled,
-  } = props;
+  let { type, invoices, isLoading, onCopy = () => {} } = props;
   const isPaymentLinksType = type === 'link';
   let label = isPaymentLinksType ? 'Payment Link' : 'Invoice';
 
@@ -104,7 +77,6 @@ export default props => {
             <th>Customer</th>
             <th>Payment Link</th>
             <th>Status</th>
-            {isPaymentLinksType && !isPaymentLinksV2Enabled && <th>Actions</th>}
           </tr>
         </thead>
         <TableBody
@@ -117,11 +89,9 @@ export default props => {
             <InvoiceListItem
               key={invoice.id}
               invoice={invoice}
-              onEditClick={() => props.onEdit(invoice)}
               onDeleteClick={() => props.onDelete(invoice)}
               onCopy={onCopy}
               type={type}
-              isPaymentLinksV2Enabled={isPaymentLinksV2Enabled}
             />
           ))}
         </TableBody>
