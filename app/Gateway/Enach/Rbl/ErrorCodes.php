@@ -286,18 +286,9 @@ class ErrorCodes
 
     public static function getRegistrationPublicErrorCode(array $row)
     {
-        $errorCode = $row[Batch\Header::ENACH_REGISTER_RETURN_CODE];
+        $errorCode = $row[Batch\Header::ENACH_REGISTER_RETURN_CODE] ?? '';
 
-        if (array_key_exists($errorCode, self::$registerPublicErrorCodeMappings) === false)
-        {
-            // Log the whole row, that way it'd be easier to debug based on token id or
-            // payment id in case it fails
-            throw new GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                '',
-                '',
-                $row);
-        }
+        self::throwInvalidResponseErrorIfCodeNotMapped($errorCode, self::$registerPublicErrorCodeMappings, $row);
 
         $errorCode = self::$registerPublicErrorCodeMappings[$errorCode];
 
@@ -308,7 +299,16 @@ class ErrorCodes
     {
         $errorCode = $row[EnachRbl::GATEWAY_ERROR_CODE];
 
-        if (array_key_exists($errorCode, self::$registerPublicErrorCodeMappings) === false)
+        self::throwInvalidResponseErrorIfCodeNotMapped($errorCode, self::$debitPublicErrorCodeMappings, $row);
+
+        $errorCode = self::$debitPublicErrorCodeMappings[$errorCode];
+
+        return self::getDescriptionFromErrorCode($errorCode);
+    }
+
+    protected static function throwInvalidResponseErrorIfCodeNotMapped($errorCode, array $mapping, array $content)
+    {
+        if (array_key_exists($errorCode, $mapping) === false)
         {
             // Log the whole row, that way it'd be easier to debug based on token id or
             // payment id in case it fails
@@ -316,12 +316,8 @@ class ErrorCodes
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 '',
                 '',
-                $row);
+                $content);
         }
-
-        $errorCode = self::$registerPublicErrorCodeMappings[$errorCode];
-
-        return self::getDescriptionFromErrorCode($errorCode);
     }
 
     protected static function getDescriptionFromErrorCode($code)
