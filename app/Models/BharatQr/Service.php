@@ -56,7 +56,7 @@ class Service extends Base\Service
             // notification was sent by the gateway or some other source .
             $gatewayClass->verifyBharatQrCallback($gatewayResponse);
         }
-        catch(Exception\GatewayErrorException $ex)
+        catch (Exception\GatewayErrorException $ex)
         {
             $this->trace->traceException($ex);
 

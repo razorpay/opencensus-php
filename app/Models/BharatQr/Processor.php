@@ -276,7 +276,7 @@ class Processor extends VirtualAccount\Processor
         {
             $senderName = $this->gatewayInput[GatewayResponseParams::SENDER_NAME];
 
-            $cardName = preg_replace("/[^ \w]+/", "", $senderName);
+            $cardName = preg_replace('/[^ \w]+/', '', $senderName);
 
             $card[Card\Entity::NAME] = $cardName ?: $card[Card\Entity::NAME];
         }
