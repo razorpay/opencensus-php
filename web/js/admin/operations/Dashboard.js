@@ -11,7 +11,8 @@ import Table from 'ui/Table';
 import { notifyError } from 'common/modal';
 
 export default class PublicFeaturesList extends Component {
-  constructor() {
+  constructor(props) {
+    super();
     this.state = {
       dashboards: [],
       isFetching: true,
