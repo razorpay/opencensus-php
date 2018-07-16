@@ -1983,11 +1983,20 @@ class Service extends Base\Service
         return $accessMap;
     }
 
-    public function fetchSubmerchants(): array
+    public function getSubmerchantDetails(string $submerchantId): array
     {
         $partner = $this->fetchPartner();
 
-        $merchants = $this->core()->fetchSubmerchants($partner);
+        $merchant = $this->core()->getSubmerchantDetails($partner, $submerchantId);
+
+        return $merchant->toArrayPublic();
+    }
+
+    public function getSubmerchantsDetails(): array
+    {
+        $partner = $this->fetchPartner();
+
+        $merchants = $this->core()->getSubmerchantsDetails($partner);
 
         return $merchants->toArrayPublic();
     }

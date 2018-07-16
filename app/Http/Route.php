@@ -822,7 +822,8 @@ final class Route
         // Partner routes
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createAccessMap'                                ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deleteAccessMap'                                ],
-        'submerchants_fetch'                       => ['get',      'submerchants',                                   'MerchantController@fetchSubmerchants'                              ],
+        'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchantDetails'                          ],
+        'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@getSubmerchantsDetails'                         ],
     ];
 
     public static $public = [
@@ -1284,6 +1285,7 @@ final class Route
         'payment_link_deactivate',
         'payment_link_activate',
         'submerchants_fetch',
+        'submerchants_fetch_multiple',
     ];
 
     // These will run on internal auth with the assurance
@@ -1883,6 +1885,7 @@ final class Route
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
         'submerchants_fetch'                       => Permission::VIEW_PARTNERS,
+        'submerchants_fetch_multiple'              => Permission::VIEW_PARTNERS,
     ];
 
     public static $direct = [

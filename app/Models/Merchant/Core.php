@@ -1022,7 +1022,18 @@ class Core extends Base\Core
         return $tags;
     }
 
-    public function fetchSubmerchants(Entity $partner)
+    public function getSubmerchantDetails(Entity $partner, string $submerchantId): Entity
+    {
+        $partnerApp = $this->getPartnerApp($partner);
+
+        $accessMaps = $this->repo
+                           ->merchant
+                           ->fetchSubmerchantsByIdAndPartnerAppId($partnerApp->getId(), $submerchantId);
+
+        return $accessMaps;
+    }
+
+    public function getSubmerchantsDetails(Entity $partner): Base\PublicCollection
     {
         $partnerApp = $this->getPartnerApp($partner);
 
