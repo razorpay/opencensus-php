@@ -898,18 +898,34 @@ class Core extends Base\Core
      */
     public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
     {
-        $partnerApp = $this->getPartnerApp($partner);
+        $merchantService = new Service;
 
-        $submerchantId = $submerchant->getId();
+        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant, $merchantService)
+        {
+            $partnerApp = $this->getPartnerApp($partner);
 
-        $partnerAppId = $partnerApp->getId();
+            $partnerAppId = $partnerApp->getId();
 
-        // If the mapping already exists, the existing entity is returned
-        $accessMap = (new AccessMap\Service)->mapOAuthApplication(
-            $submerchantId,
-            [
-                AccessMap\Entity::APPLICATION_ID => $partnerAppId,
-            ]);
+            $submerchantId = $submerchant->getId();
+
+            // Maintained for backward compatibility
+            $merchantService->addSubMerchantReferral($partner, $submerchant);
+
+            if ($partner->hasSwitchDashboardAccess() === true)
+            {
+                // Attaches partners's user to the submerchant account as an owner
+                $merchantService->attachSubMerchantOwner($partner->primaryOwner()->getId(), $submerchant);
+            }
+
+            // If the mapping already exists, the existing entity is returned
+            $accessMap = (new AccessMap\Service)->mapOAuthApplication(
+                $submerchantId,
+                [
+                    AccessMap\Entity::APPLICATION_ID => $partnerAppId,
+                ]);
+
+            return $accessMap;
+        });
 
         return $accessMap;
     }
@@ -923,13 +939,22 @@ class Core extends Base\Core
      */
     public function deletePartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
     {
-        $partnerApp = $this->getPartnerApp($partner);
+        $merchantService = new Service;
 
-        $submerchantId = $submerchant->getId();
+        $response = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant, $merchantService)
+        {
+            $partnerApp = $this->getPartnerApp($partner);
 
-        $partnerAppId = $partnerApp->getId();
+            $submerchantId = $submerchant->getId();
 
-        $response = (new AccessMap\Service)->deleteMapOAuthApplication($submerchantId, $partnerAppId);
+            $partnerAppId = $partnerApp->getId();
+
+            $response = (new AccessMap\Service)->deleteMapOAuthApplication($submerchantId, $partnerAppId);
+
+            $this->removeSubMerchantReferralTag($submerchant, $partner->getId());
+
+            return $response;
+        });
 
         return $response;
     }
@@ -986,6 +1011,15 @@ class Core extends Base\Core
         $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());
 
         return $app;
+    }
+
+    protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
+    {
+        $tag = 'ref-' . $partnerId;
+
+        $tags = (new Merchant\Service)->deleteTag($merchant->getPublicId(), $tag);
+
+        return $tags;
     }
 
     public function fetchSubmerchants(Entity $partner)

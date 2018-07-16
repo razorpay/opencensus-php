@@ -1574,4 +1574,10 @@ class Entity extends Base\PublicEntity
     {
         return (($this->isPartner() === true) and ($this->getPartnerType() !== Constants::PURE_PLATFORM));
     }
+
+    public function hasSwitchDashboardAccess(): bool
+    {
+        // Later change to only fully managed partners
+        return ($this->isFullyManagedTypePartner() === true);
+    }
 }
