@@ -6,6 +6,7 @@ use Mail;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Mail\PaymentLink\PaymentRequest;
 
 class Notifier extends Base\Core
@@ -24,8 +25,9 @@ class Notifier extends Base\Core
 
     /**
      * Sends email and sms notifications to a customer with a payment link
+     *
      * @param Entity $paymentLink
-     * @param array $input
+     * @param array  $input
      */
     public function notifyByEmailAndSms(Entity $paymentLink, array $input)
     {
@@ -45,6 +47,7 @@ class Notifier extends Base\Core
 
     /**
      * Sends email notification to a customer with a payment link
+     *
      * @param Entity $paymentLink
      * @param string $email
      */
@@ -64,6 +67,8 @@ class Notifier extends Base\Core
         try
         {
             Mail::send($mailable);
+
+            $this->pushNotifyCountMetric('email');
         }
         catch (\Throwable $ex)
         {
@@ -80,10 +85,9 @@ class Notifier extends Base\Core
 
     /**
      * Sends sms notification to a customer with a payment link
+     *
      * @param  Entity $paymentLink
      * @param  string $contact
-     *
-     * @return bool
      */
     protected function notifyBySms(Entity $paymentLink, string $contact)
     {
@@ -92,6 +96,8 @@ class Notifier extends Base\Core
         try
         {
             $this->raven->sendSms($request, false);
+
+            $this->pushNotifyCountMetric('sms');
         }
         catch (\Throwable $ex)
         {
@@ -108,6 +114,7 @@ class Notifier extends Base\Core
 
     /**
      * Prepares raven request input
+     *
      * @param  Entity $paymentLink
      * @param  string $contact
      *
@@ -128,5 +135,14 @@ class Notifier extends Base\Core
                 'invoice_link'  => $paymentLink->getShortUrl(),
             ],
         ];
+    }
+
+    protected function pushNotifyCountMetric(string $type)
+    {
+        $dimensions = [
+            Metric::LABEL_TYPE => $type,
+        ];
+
+        $this->trace->count(Metric::PAYMENT_PAGE_NOTIFIED_TOTAL, 1, $dimensions);
     }
 }

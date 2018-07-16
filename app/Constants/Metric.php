@@ -22,11 +22,10 @@ class Metric
     const PAYMENT_PAGE_CREATED_TOTAL           = 'payment_page_created_total';
     const PAYMENT_PAGE_UPDATED_TOTAL           = 'payment_page_updated_total';
     const PAYMENT_PAGE_EXPIRED_TOTAL           = 'payment_page_expired_total';
+    const PAYMENT_PAGE_NOTIFIED_TOTAL          = 'payment_page_notified_total';
     const PAYMENT_PAGE_VIEW_RENDERED_TOTAL     = 'payment_page_view_rendered_total';
-    const PAYMENT_PAGE_PAYMENT_ATTEMPTED_TOTAL = 'payment_page_payment_attempted_total';
     const PAYMENT_PAGE_PAYMENT_COMPLETED_TOTAL = 'payment_page_payment_completed_total';
     const PAYMENT_PAGE_PAYMENT_REFUNDED_TOTAL  = 'payment_page_payment_refunded_total';
-
 
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
@@ -52,6 +51,7 @@ class Metric
     const LABEL_TRACE_LEVEL_NAME                = 'level_name';
     const LABEL_INSTANCE                        = 'instance';
     const LABEL_TYPE                            = 'type';
+    const LABEL_STEP                            = 'step';
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';
