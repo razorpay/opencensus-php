@@ -20,7 +20,8 @@ class Metric
     const TRACES_TOTAL                          = 'traces_total';
 
     // Summary type metric names
-    const HTTP_REQUEST_DURATION_MICROSECONDS    = 'http_request_duration_microseconds';
+    // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
+    const HTTP_REQUEST_DURATION_MILLISECONDS    = 'http_request_duration_milliseconds.histogram';
 
     // Labels
     const LABEL_RZP_MODE                        = 'rzp_mode';
