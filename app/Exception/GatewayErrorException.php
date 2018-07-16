@@ -75,6 +75,11 @@ class GatewayErrorException extends RecoverableException
         $this->message = $message;
     }
 
+    public function setAction($action)
+    {
+        $this->action = $action;
+    }
+
     public function isCritical()
     {
         return (ErrorClass::isCritical($this->getError()->getClass()) === true);

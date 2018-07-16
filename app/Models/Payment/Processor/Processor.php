@@ -1107,9 +1107,7 @@ class Processor
         {
             if (in_array($e->getAction(), \RZP\Gateway\Base\Action::$nonVerifiableActions, true) === true)
             {
-                $payment->setVerifyBucket(null);
-
-                $payment->setVerifyAt(null);
+                $payment->setNonVerifiable();
             }
         }
 
@@ -1118,9 +1116,7 @@ class Processor
         // for verify
         if ($payment->exists === false)
         {
-            $payment->setVerifyBucket(null);
-
-            $payment->setVerifyAt(null);
+            $payment->setNonVerifiable();
         }
     }
 
