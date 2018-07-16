@@ -710,7 +710,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
           );
         })()}
 
-        <div onClick={actions.AddSubmerchant}>Add Submerchant</div>
+        <ShowWhen permission="edit_partners">
+          <div onClick={actions.AddSubmerchant}>Add Submerchant</div>
+        </ShowWhen>
 
         <ShowWhen permission="edit_merchant_screenshot">
           <div onClick={actions.UploadScreenshots}>
