@@ -64,6 +64,7 @@ class Netbanking
         IFSC::INDB,
         IFSC::ORBC,
         IFSC::CSBK,
+        IFSC::ALLA,
         self::PUNB_R,
         self::BARB_R,
     ];
@@ -438,7 +439,7 @@ class Netbanking
                                             self::$self,
                                             self::$selfCorp)));
     }
-
+    // @codingStandardsIgnoreLine
     public static function getSupportedBanksForTPV()
     {
         return array_values(array_unique(array_merge(self::$billdeskTPV, self::$selfTPV)));
@@ -455,7 +456,7 @@ class Netbanking
 
         return self::$functionName($bank);
     }
-
+    // @codingStandardsIgnoreLine
     public static function isBankSupportedByGatewayForTPV($bank, $gateway)
     {
         // Direct gateways are handled seperately
