@@ -237,7 +237,7 @@ class Provider
 
         $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
 
-        $tags = [
+        $tagArray = [
             Tags::VERSION . $this->getLengthAndValue(Constants::VERSION),
             Tags::POINT_OF_INITIATION . $this->getLengthAndValue($pointOfInitiation),
             $this->getIdentifierTlv(Tags::VISA, Terminal\Entity::VISA_MPAN, $merchantIdentifiers),
