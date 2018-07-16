@@ -14,17 +14,19 @@ trait PaymentNetbankingTrait
         $mock = $this->isGatewayMocked();
 
         list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
-
         if ($mock)
         {
             $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
         }
         else
         {
+            // @codingStandardsIgnoreLine
             ;
         }
 
-        if ($gateway === 'netbanking_kotak' or $gateway === 'netbanking_corporation')
+        if ($gateway === 'netbanking_kotak' or
+            $gateway === 'netbanking_corporation' or
+            $gateway === 'netbanking_canara')
         {
             $response = $this->sendRequest($data);
             $this->assertEquals($response->getStatusCode(), '302');
