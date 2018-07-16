@@ -19,7 +19,6 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        throw new \Exception();
         $text = $this->getRefundData($input);
         sd($text);
 
