@@ -64,11 +64,13 @@ class Processor extends VirtualAccount\Processor
                         {
                             $paymentInput = $this->getPaymentArray($bharatQr);
 
+                            //
                             // This is being done because we want
                             // to skip terminal selection on payment
                             // creation and use this terminal instead
                             // as the payment has already gone through
                             // this terminal.
+                            //
                             $this->callbackData[Constants::RAZORPAY_TERMINAL_ID] = $this->getTerminal()->getId();
 
                             $res = $paymentProcessor->process($paymentInput, $this->callbackData);
@@ -77,12 +79,13 @@ class Processor extends VirtualAccount\Processor
 
                             $bharatQr->payment()->associate($payment);
 
-                            $payment->setGatewayForBharatQr($this->gatewayInput[GatewayResponseParams::GATEWAY]);
-
                             $bharatQr->virtualAccount()->associate($this->virtualAccount);
 
                             $this->repo->saveOrFail($bharatQr);
 
+                            //
+                            // @todo: remove this after validating.
+                            //
                             $this->repo->saveOrFail($payment);
 
                             $this->updateVirtualAccount($bharatQr);

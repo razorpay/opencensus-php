@@ -237,7 +237,7 @@ class Provider
 
         $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
 
-        $tagArray = [
+        $tags = [
             Tags::VERSION . $this->getLengthAndValue(Constants::VERSION),
             Tags::POINT_OF_INITIATION . $this->getLengthAndValue($pointOfInitiation),
             $this->getIdentifierTlv(Tags::VISA, Terminal\Entity::VISA_MPAN, $merchantIdentifiers),
@@ -254,12 +254,10 @@ class Provider
             Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
             Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
             $this->getBharatQrAdditionalDetailTlv($qrCode, $merchantIdentifiers),
+            Tags::CRC . '04',
         ];
 
-        $qrString =  implode('', $tagArray);
-
-        // This is the CRC TL. Length of CRC is always 4
-        $qrString .= Tags::CRC . '04';
+        $qrString = implode('', $tags);
 
         $crc = (new CRC16)->calculateCrc($qrString);
 
@@ -325,7 +323,8 @@ class Provider
         // In case of upi payments we need to send reference with
         // prefix. This is how they identify our payments
         //
-        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getReference());
+        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR .
+                                   $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getReference());
 
         $upiString = $rupayRidTlv . $transactionReferenceTlv;
 
