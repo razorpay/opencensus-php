@@ -37,6 +37,7 @@ return [
         'netbanking_federal',
         'netbanking_rbl',
         'netbanking_indusind',
+        'netbanking_allahabad',
         'netbanking_pnb',
         'netbanking_obc',
         'netbanking_csb',
@@ -86,6 +87,7 @@ return [
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
     'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
+    'mock_netbanking_allahabad'   => env('NETBANKING_ALLAHABAD_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_mpi_blade'              => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
@@ -396,6 +398,12 @@ return [
         'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
     ],
 
+    'netbanking_allahabad' => [
+        'test_merchant_id'       => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_HASH_SECRET'),
+    ],
+
+
     'netbanking_obc' => [
         'test_merchant_id'       => env('NETBANKING_OBC_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_OBC_GATEWAY_TEST_HASH_SECRET'),
@@ -489,6 +497,12 @@ return [
         'test_merchant_id_2' => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
         'test_merchant_id'   => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
         'test_hash_secret'   => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
+    ],
+
+    'netbanking_allahabad' => [
+        'test_merchant_id_2' => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id'   => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID_2'),
+        'test_hash_secret'   => env('NETBANKING_ALLAHABAD_TEST_HASH_SECRET'),
     ],
 
     'sharp' => [
