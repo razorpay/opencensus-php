@@ -184,6 +184,8 @@ function disableEmptyInputs(form) {
             <select name="currency">
                 <option value="INR">Indian Rupee</option>
                 <option value="USD">US Dollar</option>
+                <option value="EUR">Euro</option>
+                <option value="SGD">Singapore Dollar</option>
             </select>
         </td>
     </tr>
