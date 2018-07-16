@@ -8,9 +8,10 @@ import { snakeToTitleCase } from 'common/util';
 
 import Table from 'ui/Table';
 
+import { notifyError } from 'common/modal';
+
 export default class PublicFeaturesList extends Component {
-  constructor(props) {
-    super();
+  constructor() {
     this.state = {
       dashboards: [],
       isFetching: true,
@@ -25,10 +26,15 @@ export default class PublicFeaturesList extends Component {
 
   componentWillMount() {
     adminFetch(`live/admin/reports/types`).then(response => {
-      this.setState({
-        dashboards: response,
-        isFetching: false,
-      });
+      if (response) {
+        this.setState({
+          dashboards: response,
+          selectDashboardValue: response[0] ? response[0]['type'] : '',
+          isFetching: false,
+        });
+      } else {
+        notifyError(response.data.errors[0]);
+      }
     });
   }
 
@@ -61,12 +67,16 @@ export default class PublicFeaturesList extends Component {
       });
 
       adminFetch(`live/admin/reports/${dashboardType}`).then(response => {
-        let newFields = this.createDynamicFields(response);
-        this.setState({
-          dashboardData: response,
-          dashboardFields: newFields,
-          isFetchingDashboard: false,
-        });
+        if (response) {
+          let newFields = this.createDynamicFields(response);
+          this.setState({
+            dashboardData: response,
+            dashboardFields: newFields,
+            isFetchingDashboard: false,
+          });
+        } else {
+          notifyError(response.data.errors[0]);
+        }
       });
     } else {
       this.setState({
@@ -102,7 +112,6 @@ export default class PublicFeaturesList extends Component {
                 onChange={this.onChange.bind(this)}
                 value={this.state.selectDashboardValue}
               >
-                <option value=""> None </option>
                 {this.state.dashboards.map(item => (
                   <option value={item.type} key={item.type}>
                     {item.label}
