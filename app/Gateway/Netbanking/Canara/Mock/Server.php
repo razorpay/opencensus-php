@@ -99,11 +99,11 @@ class Server extends Base\Mock\Server
     {
         $this->content($data,'verify');
 
-        $data = array_flip($data);
-
         $xml = new \SimpleXMLElement('<VerifyOutput/>');
 
-        array_walk_recursive($data, array ($xml, 'addChild'));
+        foreach ($data as $key => $value) {
+            $xml->addChild($key,$data[$key]);
+        }
 
         $response = $xml->asXML();
 
