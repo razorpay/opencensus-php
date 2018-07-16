@@ -19,4 +19,6 @@ class RequestFields
     const APP_TYPE             = 'AppType';
     const MERCHANT_CODE        = 'MeCode';
     const ACCOUNT_NUMBER       = 'Account';
+    const STATFLG              = 'STATFLG';
+    const BANK_TRANSACTION_ID  = 'BID';
 }
