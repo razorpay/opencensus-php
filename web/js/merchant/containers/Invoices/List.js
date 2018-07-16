@@ -155,7 +155,6 @@ export default class InvoicesListContainer extends ListContainer {
         <HeaderAction>
           <ShowWhen
             myRole="admin operations manager owner"
-            featureEnabled="Invoice"
           >
             <div class="btn-toolbar pull-right">
               <NavLink
