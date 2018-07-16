@@ -147,7 +147,7 @@ class VirtualAccountTest extends TestCase
 
         $qrCode = $this->getLastEntity('qr_code', true);
 
-        $this->assertEquals('qr_' . strtoupper(substr($qrCode['id'], 3)), 'qr_' . $qrCode['reference']);
+        $this->assertEquals('qr_' . $qrCode['reference'], 'qr_' . strtoupper(substr($qrCode['id'], 3)));
 
         $qrString = $qrCode['qr_string'];
 
