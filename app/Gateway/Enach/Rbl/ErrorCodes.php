@@ -315,7 +315,7 @@ class ErrorCodes
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 '',
-                '',
+                'Gateway response code mapping not found.',
                 $content);
         }
     }
