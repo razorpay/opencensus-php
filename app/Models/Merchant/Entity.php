@@ -1578,6 +1578,6 @@ class Entity extends Base\PublicEntity
     public function hasSwitchDashboardAccess(): bool
     {
         // Later change to only fully managed partners
-        return ($this->isFullyManagedTypePartner() === true);
+        return (($this->isFullyManagedTypePartner() === true) or ($this->isAggregatorPartner() === true));
     }
 }

@@ -820,8 +820,8 @@ final class Route
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
 
         // Partner routes
-        'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createAccessMap'                                ],
-        'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deleteAccessMap'                                ],
+        'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
+        'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
     ];
 
     public static $public = [

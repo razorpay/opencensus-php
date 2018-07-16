@@ -890,13 +890,18 @@ class Core extends Base\Core
     }
 
     /**
+     * This function also adds ref-tag and creates user-merchant mapping in addition to the
+     * access map. The aggregator user is mapped to submerchant as an owner in cases of
+     * fully managed and aggregator type partners. The aggregator type will not get mapped
+     * in the future, it is only kept for backward compatibility.
+     *
      * @param Entity $partner
      * @param Entity $submerchant
      *
      * @return array
      * @throws BadRequestException
      */
-    public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
+    public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant): array
     {
         $merchantService = new Service;
 
@@ -919,10 +924,10 @@ class Core extends Base\Core
 
             // If the mapping already exists, the existing entity is returned
             $accessMap = (new AccessMap\Service)->mapOAuthApplication(
-                $submerchantId,
-                [
-                    AccessMap\Entity::APPLICATION_ID => $partnerAppId,
-                ]);
+                            $submerchantId,
+                            [
+                                AccessMap\Entity::APPLICATION_ID => $partnerAppId,
+                            ]);
 
             return $accessMap;
         });

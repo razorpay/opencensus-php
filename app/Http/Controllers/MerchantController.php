@@ -9,7 +9,6 @@ use RZP\Models\Key;
 use RZP\Models\Report;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
@@ -892,7 +891,7 @@ class MerchantController extends Controller
 
     public function getPublicGatewayDowntimeData()
     {
-        $data = $this->service(Entity::GATEWAY_DOWNTIME)->getDowntimeDataForMerchant();
+        $data = $this->service(E::GATEWAY_DOWNTIME)->getDowntimeDataForMerchant();
 
         return ApiResponse::json($data);
     }
@@ -995,7 +994,7 @@ class MerchantController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function createAccessMap(string $merchantId)
+    public function createPartnerAccessMap(string $merchantId)
     {
         $input = $this->input;
 
@@ -1009,7 +1008,7 @@ class MerchantController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function deleteAccessMap(string $merchantId)
+    public function deletePartnerAccessMap(string $merchantId)
     {
         $input = $this->input;
 

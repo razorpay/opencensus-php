@@ -12,6 +12,7 @@ use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
 
 use RZP\Exception;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Offer;
@@ -2005,14 +2006,17 @@ class Service extends Base\Service
                 $input);
         }
 
+        /** @var BasicAuth $ba */
         $ba = $this->app['basicauth'];
 
         // The submerchant should belong to the same org as of the admin
+        /** @var Entity $submerchant */
         $submerchant = $this->repo->merchant->findByIdAndOrgId($merchantId, $ba->getOrgId());
 
+        /** @var Admin\Entity $admin */
         $admin = $ba->getAdmin();
 
-        // The current admin should have access to the submerchant before the mapping can be created / deleted
+        // The current admin should have access to the submerchant before the mapping can be created/deleted
         $hasSubmerchantAccess = (new Group\Core)->groupCheck($admin, $submerchant);
 
         if ($hasSubmerchantAccess === false)
@@ -2025,7 +2029,6 @@ class Service extends Base\Service
                     'partner_id'     => $merchantId,
                     'submerchant_id' => $submerchant->getId(),
                 ]);
-
         }
 
         return [$partner, $submerchant];
