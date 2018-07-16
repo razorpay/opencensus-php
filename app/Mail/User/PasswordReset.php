@@ -12,13 +12,16 @@ class PasswordReset extends Base\Mailable
 
     protected $org;
 
+    /**
+     * @var User\Entity
+     */
     protected $user;
 
     protected $token;
 
     protected $expiryTime;
 
-    public function __construct($user, $org)
+    public function __construct(User\Entity $user, $org)
     {
         parent::__construct();
 

@@ -3065,6 +3065,60 @@ return [
         ],
     ],
 
+    'testAggregatorInviteSubMerchantToManageDash' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => ['email' => 'invite.owner@gmail.com']
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFullyManagedInviteSubMerchantToManageDash' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => ['email' => 'invite.owner@gmail.com']
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid input: email',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAggregatorInviteSubMerchantToManageDash2Owners' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => ['email' => 'invite.owner@gmail.com']
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid input: email',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testOfferCheckoutPreferences' => [
         'request' => [
             'url'     => '/preferences',

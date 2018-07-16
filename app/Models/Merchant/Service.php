@@ -1827,11 +1827,11 @@ class Service extends Base\Service
     {
         $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $input['email'] = $subMerchant->getEmail();
-
         $input['merchant_id'] = $this->merchant->getId();
 
-        $this->validateAggregatorSubMerchantRelation($subMerchant, $input['merchant_id']);
+        $input['email'] = $this->validateAndGetEmailInput($subMerchant, $this->merchant, $input);
+
+        $this->validateAggregatorSubMerchantRelation($subMerchant, $this->merchant);
 
         (new Merchant\Validator)->validateInput('createSubMerchantUser', $input);
 
@@ -1847,6 +1847,29 @@ class Service extends Base\Service
         (new User\Service)->postResetPassword(['email' => $subMerchantUser['email']]);
 
         return $subMerchantUser;
+    }
+
+    protected function validateAndGetEmailInput(Entity $subMerchant, Entity $partnerMerchant, array $input)
+    {
+        if (empty($input['email']) === true)
+        {
+            return $subMerchant->getEmail();
+        }
+
+        $isAggregatorPartner = $partnerMerchant->isAggregatorPartner();
+
+        $subEmailIsSameAsPartner = ($subMerchant->getEmail() === $partnerMerchant->getEmail());
+
+        $subMerchantHasLessThan2Owners = ($subMerchant->owners()->count() <= 2);
+
+        if (($isAggregatorPartner === true) and
+            ($subEmailIsSameAsPartner === true) and
+            ($subMerchantHasLessThan2Owners === true))
+        {
+            return $input['email'];
+        }
+
+        throw new Exception\BadRequestValidationFailureException('Invalid input: email');
     }
 
     public function formatUserCreationData(array $input, Merchant\Entity $subMerchant)
@@ -1941,7 +1964,7 @@ class Service extends Base\Service
         (new AccessMap\Service)->mapOAuthApplication($subMerchant->getId(), ['application_id' => $appId]);
     }
 
-    protected function validateAggregatorSubMerchantRelation(Entity $subMerchant, string $aggregatorMerchantId)
+    protected function validateAggregatorSubMerchantRelation(Entity $subMerchant, Entity $aggregatorMerchant)
     {
         if ($subMerchant->isLinkedAccount() === true)
         {
@@ -1950,18 +1973,16 @@ class Service extends Base\Service
 
         $referrer = $subMerchant->getReferrer();
 
-        $referrerNotEmptyAndSame = (empty($referrer) === false) and ($referrer === $aggregatorMerchantId);
+        $referrerNotEmptyAndSame = (empty($referrer) === false) and ($referrer === $aggregatorMerchant->getId());
 
         if ($referrerNotEmptyAndSame === true)
         {
             return;
         }
 
-        $aggregatorMerchant = $this->repo->merchant->findOrFailPublic($aggregatorMerchantId);
-
         $isNonPurePlatformAggregator = $aggregatorMerchant->isNonPurePlatformPartner();
 
-        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchantId);
+        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchant->getId());
 
         if (($isNonPurePlatformAggregator === true) and ($isPartnerMerchantMapped === true))
         {
