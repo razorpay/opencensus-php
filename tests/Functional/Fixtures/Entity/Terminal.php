@@ -1533,6 +1533,25 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedNetbankingAllahabadTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_ALLAHABAD_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_ALLAHABAD,
+            'gateway_merchant_id'   => 'netbanking_alla_merchant_id',
+            'gateway_merchant_id2'  => 'netbanking_alla_merchant_id2',
+            'netbanking'            => 1,
+            'card'                  => 0,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
     public function createSharedNetbankingRblTpvTerminal(array $attributes = [])
     {
         $attributes = [
