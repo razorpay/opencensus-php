@@ -50,7 +50,7 @@ import InvitesList from 'admin/invites/List';
 
 import ActivationList from 'admin/activations/List';
 
-import OperationsDashboard from 'admin/operations/Dashboard';
+import OperationsDashboard from 'admin/operations/List';
 
 import AsyncButton from 'ui/AsyncButton';
 
@@ -206,7 +206,7 @@ const links = [
       'manage_onboarding_submissions',
       'magic-hat',
     ],
-    ['Ops Dashboards', '/operations', ''],
+    ['Ops Dashboard', '/operations', ''],
   ],
 
   // workflow

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import Form from 'ui/Form';
-import Field, { SelectField } from 'ui/Field';
+import Field, { SelectField, SearchableSelectField } from 'ui/Field';
 
 import { adminFetch } from 'common/fetch';
 import { snakeToTitleCase } from 'common/util';
@@ -18,10 +18,9 @@ export default class PublicFeaturesList extends Component {
       isFetching: true,
       activeDashboardType: '',
       activeDashboardLabel: '',
-      isFetchingDashboard: true,
+      isFetchingDashboard: false,
       dashboardData: [],
-      dashboardFields: [],
-      selectDashboardValue: '',
+      dashboardFields: []
     };
   }
 
@@ -30,7 +29,6 @@ export default class PublicFeaturesList extends Component {
       if (response) {
         this.setState({
           dashboards: response,
-          selectDashboardValue: response[0] ? response[0]['type'] : '',
           isFetching: false,
         });
       } else {
@@ -88,39 +86,34 @@ export default class PublicFeaturesList extends Component {
     }
   }
 
-  onChange(e) {
-    this.setState({
-      selectDashboardValue: e.target.value,
-    });
-  }
-
-  onSubmit(e) {
-    this.fetchDashboard(this.state.selectDashboardValue);
+  onSubmit({dashboard}) {
+    this.fetchDashboard(dashboard);
   }
 
   render() {
+    let defaultValue = this.state.dashboards[0] ? this.state.dashboards[0]['type'] : '',
+    numberOfRows = this.state.dashboardData.length,
+    resultsStr = numberOfRows == 1 ? `${numberOfRows} result` : `${numberOfRows} results`;
+
     return (
       <div class="list-container">
         <div class="box">
-          <header>Ops Dashboards</header>
+          <header>Ops Dashboard</header>
           {this.state.isFetching ? (
             <div class="spinner center" />
           ) : (
-            <Form class="filters" onSubmit={this.onSubmit.bind(this)}>
-              <SelectField
-                label="Select a dashboard"
+            <Form class="filters operation-reports" onSubmit={this.onSubmit.bind(this)}>
+              <SearchableSelectField
+                trackBy="value"
+                label="Select a report"
                 name="dashboard"
-                onChange={this.onChange.bind(this)}
-                value={this.state.selectDashboardValue}
-              >
-                {this.state.dashboards.map(item => (
-                  <option value={item.type} key={item.type}>
-                    {item.label}
-                  </option>
-                ))}
-              </SelectField>
-
-              <button class="btn pull-right">Go</button>
+                defaultValue={defaultValue}
+                options={this.state.dashboards.map(item => ({
+                  name: item.label,
+                  value: item.type,
+                }))}
+              />
+              <button class="btn pull-right" disabled={this.state.isFetchingDashboard}>Go</button>
             </Form>
           )}
         </div>
@@ -128,9 +121,7 @@ export default class PublicFeaturesList extends Component {
         {this.state.activeDashboardType ? (
           <div class="box">
             <header>
-              {this.state.activeDashboardLabel}({
-                this.state.dashboardData.length
-              })
+              {this.state.activeDashboardLabel}({resultsStr})
             </header>
             {this.state.isFetchingDashboard ? (
               <div class="spinner center" />
