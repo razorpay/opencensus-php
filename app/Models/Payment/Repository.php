@@ -16,6 +16,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\Transfer;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -51,6 +52,7 @@ class Repository extends Base\Repository
         Entity::PAYMENT_LINK_ID => 'filled|public_id|size:17',
         Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
+        Entity::TRANSFER_ID     => 'filled|public_id|size:18',
         Entity::CAPTURED        => 'sometimes|boolean',
         self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',
     ];
@@ -361,7 +363,6 @@ class Repository extends Base\Repository
         {
             $query->where(Payment\Entity::GATEWAY, '=', $gateway);
         }
-
 
         if ($verifyStatus !== null)
         {
@@ -683,6 +684,15 @@ class Repository extends Base\Repository
         $amount = $this->dbColumn(Entity::AMOUNT);
 
         $query->where($amount, '=', $params[Entity::AMOUNT]);
+    }
+
+    protected function addQueryParamTransferId($query, $params)
+    {
+        $transferId = $this->dbColumn(Entity::TRANSFER_ID);
+
+        Transfer\Entity::verifyIdAndStripSign($params[Entity::TRANSFER_ID]);
+
+        $query->where($transferId, '=', $params[Entity::TRANSFER_ID]);
     }
 
     protected function addQueryParamIin($query, $params)

@@ -100,6 +100,12 @@ class Service extends Base\Service
         $this->validateLinkedAccount();
 
         $merchantId = $this->merchant->getId();
+
+//        $input['expand'] = ['transfer'];
+
+        $transfers = $this->repo->payment->fetch($input, $merchantId);
+
+        return $transfers->toArrayPublic();
     }
 
     protected function validateLinkedAccount()
