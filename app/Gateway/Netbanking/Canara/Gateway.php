@@ -61,11 +61,11 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $this->verifyCallback($input);
-
         $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::PAYMENT_ID]);
 
-        $this->assertAmount($input['payment']['amount'], (int)$content[ResponseFields::AMOUNT]);
+        $this->assertAmount($input['payment']['amount'], (int) $content[ResponseFields::AMOUNT]);
+
+        $this->verifyCallback($input);
 
         $gatewayPayment = $this->saveCallbackResponse($content);
 
@@ -105,18 +105,19 @@ class Gateway extends Base\Gateway
 
     protected function getRequestData($input)
     {
+        $paymentEntity = $input['payment'];
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => Constants::MODE_OF_TRANSACTION_PURCHASE,
-            RequestFields::CLIENT_CODE                   => $this->getClientCode($input['payment'][Payment\Entity::EMAIL]),
+            RequestFields::CLIENT_CODE                   => $this->getClientCode($paymentEntity[Payment\Entity::EMAIL]),
             RequestFields::CLIENT_ACCOUNT                => '',
             RequestFields::MERCHANT_CODE                 => $this->getMerchantCode(),
             RequestFields::CURRENCY                      => Constants::INDIAN_CURRENCY,
-            RequestFields::AMOUNT                        => $input['payment']['amount'], // have to verify
+            RequestFields::AMOUNT                        => $paymentEntity['amount'], // have to verify
             RequestFields::SERVICE_CHARGE                => 0,
-            RequestFields::PAYMENT_ID                    => $input['payment']['id'],
+            RequestFields::PAYMENT_ID                    => $paymentEntity['id'],
             RequestFields::SUCCESS_STATIC_FLAG           => 'N',
             RequestFields::FAILURE_STATIC_FLAG           => 'N',
-            RequestFields::DATE                          => $this->getDate($input['payment'][Payment\Entity::CREATED_AT]),
+            RequestFields::DATE                          => $this->getDate($paymentEntity[Payment\Entity::CREATED_AT]),
         ];
 
         return $data;
@@ -166,7 +167,6 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
-
         return $gatewayPayment;
     }
 
@@ -199,6 +199,7 @@ class Gateway extends Base\Gateway
     protected function getVerifyRequest($verify)
     {
         $input = $verify->input;
+        $paymentEntity = $input['payment'];
 
         if ($this->action === Action::VERIFY)
         {
@@ -217,17 +218,17 @@ class Gateway extends Base\Gateway
 
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => Constants::MODE_OF_TRANSACTION_VERIFY,
-            RequestFields::CLIENT_CODE                   => $this->getClientCode($input['payment'][Payment\Entity::EMAIL]),
+            RequestFields::CLIENT_CODE                   => $this->getClientCode($paymentEntity[Payment\Entity::EMAIL]),
             RequestFields::CLIENT_ACCOUNT                => '',
             RequestFields::MERCHANT_CODE                 => $this->getMerchantCode(),
             RequestFields::CURRENCY                      => Constants::INDIAN_CURRENCY,
-            RequestFields::AMOUNT                        => $input['payment']['amount'], // have to verify
+            RequestFields::AMOUNT                        => $paymentEntity['amount'], // have to verify
             RequestFields::SERVICE_CHARGE                => 0,
-            RequestFields::PAYMENT_ID                    => $input['payment']['id'],
+            RequestFields::PAYMENT_ID                    => $paymentEntity['id'],
             RequestFields::SUCCESS_STATIC_FLAG           => 'N',
             RequestFields::FAILURE_STATIC_FLAG           => 'N',
             RequestFields::VER_DATE                      => $this->getCurrentDate(),
-            RequestFields::PUR_DATE                      => $this->getDate($input['payment'][Payment\Entity::CREATED_AT]),
+            RequestFields::PUR_DATE                      => $this->getDate($paymentEntity[Payment\Entity::CREATED_AT]),
             ResponseFields::BANK_REFERENCE_NUMBER        => $bankRefNumber,
         ];
 
@@ -300,7 +301,8 @@ class Gateway extends Base\Gateway
 
         $response = $verify->verifyResponseContent;
 
-        if ((isset($response[ResponseFields::VERIFY_STATUS]) === true) and
+        if (($response[ResponseFields::RETURN_CODE] === Constants::SUCCESS_RETURN_CODE) and
+            (isset($response[ResponseFields::VERIFY_STATUS]) === true) and
             ($response[ResponseFields::VERIFY_STATUS] === Constants::SUCCESS_VERIFY_STATUS))
         {
             $verify->gatewaySuccess = true;
@@ -327,9 +329,9 @@ class Gateway extends Base\Gateway
             return false;
         }
 
-        $expectedAmount = (int)$input['payment']['amount'];
+        $expectedAmount = (int) $input['payment']['amount'];
 
-        $actualAmount = (int)$content[ResponseFields::VER_AMOUNT];
+        $actualAmount = (int) $content[ResponseFields::VER_AMOUNT];
 
         return ($expectedAmount !== $actualAmount);
     }
