@@ -34,6 +34,15 @@ class Preferences
         'A0GNi6PHlqy5zX', 'A0HuEfx39zhjr9', 'A5ONBRrNJ7dS1K',
         'A5MmRVEM3qf6QJ', 'A5OZ1qi9tgwnZB', 'A5OeZOCaeyQQ8Q',
     ];
+    const MID_IRCTC = [
+        '8byazTDARv4Io0',
+        'AEPXwjSlJJhfUl',
+        '9m4CChGex4ENkR',
+        'AEsxERLbWiBuUG',
+        '8ST00QgEPT14cE',
+        '8YPFnW5UOM91H7',
+        '90xVmQJTCEJ6GH'
+    ];
     const MID_CLEARTAX         = 'AGQJfLbWcmjxDX';
     const MID_APARTMENTADDA    = '9NVPPQuTqF4cYx';
 
