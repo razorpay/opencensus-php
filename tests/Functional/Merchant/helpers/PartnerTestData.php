@@ -613,7 +613,21 @@ return [
         ],
     ],
 
-    'testFetchPartnerAccessMap' => [
+    'testFetchPartnerSubmerchant' => [
+        'request'  => [
+            'url'     => '/submerchants/10000000000011',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => '10000000000011',
+                'entity' => 'merchant',
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchants' => [
         'request'  => [
             'url'     => '/submerchants',
             'method'  => 'GET',
