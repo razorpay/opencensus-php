@@ -53,7 +53,7 @@ class Provider
             'numeric' => [
                 'default' => '222333',
                 'handle'  => '222333',
-                'special' => '222333',
+                'special' => '543210',
             ],
             'alpha_numeric' => [
                 'default' => null,
@@ -89,7 +89,7 @@ class Provider
             'numeric' => [
                 'default' => '111222',
                 'handle'  => '111222',
-                'special' => '111222',
+                'special' => '543210',
             ],
             'alpha_numeric' => [
                 'default' => 'RAZO',
@@ -112,13 +112,15 @@ class Provider
         '139914' => '0',
         // YesBank
         '222333' => '00',
+        // BPCL has given a custom root for descriptor length 10.
+        '543210' => '',
     ];
 
     const PRIVILEGED_NUMERIC_HANDLE_MAPPING = [
         // BPCL gets 2223339
-        Preferences::MID_BPCL => '9',
+        Preferences::MID_BPCL => '',
         // Tests
-        Account::TEST_ACCOUNT => '9',
+        Account::TEST_ACCOUNT => '',
     ];
 
     const IFSC = [

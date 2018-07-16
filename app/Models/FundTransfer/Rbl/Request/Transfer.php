@@ -71,7 +71,7 @@ class Transfer extends Base
 
         $beneId             = $this->entity->bankAccount->getId();
 
-        $this->transferMode = $this->getTransferMode($amount);
+        $this->transferMode = $this->getTransferMode($amount, $this->entity->bankAccount->merchant);
 
         // Do not change the order of fields.
          return json_encode([

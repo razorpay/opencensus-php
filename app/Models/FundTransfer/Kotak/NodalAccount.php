@@ -216,7 +216,7 @@ class NodalAccount extends NodalBase\FileProcessor
         else
         {
             // Check RTGS time and minimum
-            $type = $this->getTransferMode($amount);
+            $type = $this->getTransferMode($amount, $ba->merchant);
         }
 
         // Mode will be present only for attempts of type Refund
