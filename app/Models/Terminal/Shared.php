@@ -37,6 +37,7 @@ class Shared
     const NETBANKING_FEDERAL_TERMINAL        = '100NbFdrlTrmnl';
     const NETBANKING_FEDERAL_TPV_TERMINAL    = '100NbFdrlTpvTl';
     const NETBANKING_RBL_TERMINAL            = '100NbRblTermnl';
+    const NETBANKING_ALLAHABAD_TERMINAL      = '100NbAllaTrmnl';
     const NETBANKING_CSB_TERMINAL            = '100NbCsbTermnl';
     const NETBANKING_RBL_TPV_TERMINAL        = '100NbRblTpvTml';
     const NETBANKING_INDUSIND_TERMINAL       = '100NbIndnTrmnl';
@@ -89,6 +90,7 @@ class Shared
         self::NETBANKING_KOTAK_TERMINAL,
         self::NETBANKING_ICICI_TERMINAL,
         self::NETBANKING_AIRTEL_TERMINAL,
+        self::NETBANKING_ALLAHABAD_TERMINAL,
         self::NETBANKING_AXIS_TERMINAL,
         self::NETBANKING_FEDERAL_TERMINAL,
         self::NETBANKING_RBL_TERMINAL,
@@ -133,6 +135,7 @@ class Shared
         self::HITACHI_TERMINAL                   => Gateway::HITACHI,
         self::MOBIKWIK_RAZORPAY_TERMINAL         => Gateway::MOBIKWIK,
         self::NETBANKING_HDFC_TERMINAL           => Gateway::NETBANKING_HDFC,
+        self::NETBANKING_ALLAHABAD_TERMINAL      => Gateway::NETBANKING_ALLAHABAD,
         self::NETBANKING_BOB_TERMINAL            => Gateway::NETBANKING_BOB,
         self::NETBANKING_CORPORATION_TERMINAL    => Gateway::NETBANKING_CORPORATION,
         self::NETBANKING_KOTAK_TERMINAL          => Gateway::NETBANKING_KOTAK,
