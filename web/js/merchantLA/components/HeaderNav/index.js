@@ -39,6 +39,7 @@ export default class HeaderNav extends Component {
         mode,
         modeFormatted,
         onSwitchMode,
+        onSwitchMerchant,
         showMobileNav,
         analytics,
         activePageName,
@@ -50,6 +51,7 @@ export default class HeaderNav extends Component {
         user,
         modeFormatted,
         onSwitchMode,
+        onSwitchMerchant,
       };
 
     return (

@@ -7,10 +7,12 @@ import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import Image from 'rzp/ui/Image';
+import ModalHeader from 'rzp/ui/ModalHeader';
 import Group, { GroupItem } from 'rzp/ui/Group';
 
 import { logout, showOrHideTour } from 'merchantLA/modules/session';
 import SubmitFeedback from 'merchantLA/containers/Header/SubmitFeedback';
+import { SwitchMerchantTypeahead } from 'merchantLA/components/HeaderNav/SwitchMerchant';
 
 @withRouter
 @connect(
@@ -38,6 +40,28 @@ export default class ProfileDropdown extends Component {
   submitFeedback = () => {
     this.props.openModal({
       component: <SubmitFeedback analytics={this.props.analytics} />,
+    });
+  };
+
+  openSwitchMerchantModal = () => {
+    const { user, onSwitchMerchant } = this.props;
+
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <div className="switch-merchant-modal-content">
+          <ModalHeader
+            title="Switch Merchant"
+            onCloseClick={this.props.closeModal}
+          />
+          <div className="modal-body">
+            <SwitchMerchantTypeahead
+              user={user}
+              onSwitchMerchant={onSwitchMerchant}
+            />
+          </div>
+        </div>
+      ),
     });
   };
 
@@ -111,6 +135,14 @@ export default class ProfileDropdown extends Component {
 
             {showMobileNav && (
               <React.Fragment>
+                {Object.keys(user.merchants).length > 1 && (
+                  <div
+                    className="media media-action"
+                    onClick={this.openSwitchMerchantModal}
+                  >
+                    <div className="media-body">Switch Merchant</div>
+                  </div>
+                )}
                 <div class="media media-action">
                   <div class="media-body">
                     <a target="_blank" href="https://docs.razorpay.com">

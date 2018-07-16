@@ -6,6 +6,7 @@ import { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import storage from 'rzp/utils/localStorage';
 
 import ModesDropdown from './SwitchMode';
+import SwitchMerchant from './SwitchMerchant';
 
 class NavFragment extends Component {
   constructor(props) {
@@ -40,7 +41,14 @@ class NavFragment extends Component {
   }
 
   render() {
-    const { user, mode, modeFormatted, onSwitchMode } = this.props;
+    const {
+      user,
+      mode,
+      showGSTModal,
+      modeFormatted,
+      onSwitchMode,
+      onSwitchMerchant,
+    } = this.props;
 
     const { showSwitchModeTooltip } = this.state;
 
@@ -71,6 +79,11 @@ class NavFragment extends Component {
             </Popover>
           )}
         </li>
+        {Object.keys(user.merchants).length > 1 ? (
+          <li class="SwitchMerchantDropdown">
+            <SwitchMerchant user={user} onSwitchMerchant={onSwitchMerchant} />
+          </li>
+        ) : null}
         <li>
           <a
             target="_blank"
