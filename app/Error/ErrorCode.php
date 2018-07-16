@@ -810,6 +810,9 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME                                 = 'BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME';
     const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                          = 'BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING';
 
+    // Linked Account
+    const BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT                                 = 'BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT';
+
     // Partners
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                       = 'BAD_REQUEST_MERCHANT_IS_NOT_PARTNER';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                                   = 'BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER';

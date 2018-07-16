@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Transfer;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as EntityConstant;
 
 class Service extends Base\Service
@@ -91,5 +93,24 @@ class Service extends Base\Service
         $reversal = (new Reversal\Core)->reverseForTransfer($transfer, $input, $this->merchant);
 
         return $reversal->toArrayPublic();
+    }
+
+    public function fetchLaTransfers(array $input)
+    {
+        $this->validateLinkedAccount();
+
+        $merchantId = $this->merchant->getId();
+    }
+
+    protected function validateLinkedAccount()
+    {
+        $merchant = $this->merchant;
+
+        if ((empty($merchant) === true) or
+            ($merchant->isLinkedAccount() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT);
+        }
     }
 }
