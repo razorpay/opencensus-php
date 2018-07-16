@@ -42,6 +42,7 @@ return [
         'netbanking_csb',
         'paytm',
         'sharp',
+        'upi_axis',
         'upi_icici',
         'upi_mindgate',
         'upi_hulk',
@@ -98,6 +99,7 @@ return [
     'mock_wallet_sbibuddy'        => env('SBIBUDDY_MOCK'),
     'mock_upi_mindgate'           => env('UPI_MINDGATE_MOCK'),
     'mock_upi_sbi'                => env('UPI_SBI_MOCK'),
+    'mock_upi_axis'               => env('UPI_AXIS_MOCK'),
     'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
     'mock_upi_hulk'               => env('UPI_HULK_MOCK'),
     'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
@@ -263,6 +265,9 @@ return [
         'live_merchant_id'       => env('UPI_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
         'live_public_key'        => env('UPI_ICICI_LIVE_PUBLIC_KEY'),
         'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
+    ],
+
+    'upi_axis' => [
     ],
 
     'aeps_icici' => [

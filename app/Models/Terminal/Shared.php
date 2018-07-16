@@ -57,6 +57,7 @@ class Shared
     const UPI_MINDGATE_TPV_TERMINAL          = '100UPIMndgtTpv';
     const UPI_MINDGATE_SBI_RAZORPAY_TERMINAL = '100UPIMgateSbi';
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
+    const UPI_AXIS_RAZORPAY_TERMINAL         = '100UPIAXISTmnl';
     const UPI_HULK_RAZORPAY_TERMINAL         = '100UPIHulkTrml';
     const UPI_HULK_RAZORPAY_INTENT_TERMINAL  = '1UPIInHulkTrml';
     const UPI_HULK_RAZORPAY_TPV_TERMINAL     = '1UPITpvHulkTml';
@@ -106,6 +107,7 @@ class Shared
         self::UPI_MINDGATE_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_TPV_TERMINAL,
         self::UPI_ICICI_RAZORPAY_TERMINAL,
+        self::UPI_AXIS_RAZORPAY_TERMINAL,
         self::UPI_HULK_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL,
         self::AEPS_ICICI_RAZORPAY_TERMINAL,
@@ -159,6 +161,7 @@ class Shared
         self::UPI_MINDGATE_RAZORPAY_TERMINAL     => Gateway::UPI_MINDGATE,
         self::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL => Gateway::UPI_SBI,
         self::UPI_ICICI_RAZORPAY_TERMINAL        => Gateway::UPI_ICICI,
+        self::UPI_AXIS_RAZORPAY_TERMINAL         => Gateway::UPI_AXIS,
         self::UPI_HULK_RAZORPAY_TERMINAL         => Gateway::UPI_HULK,
         self::OPENWALLET_RAZORPAY_TERMINAL       => Gateway::WALLET_OPENWALLET,
         self::MPESA_RAZORPAY_TERMINAL            => Gateway::WALLET_MPESA,

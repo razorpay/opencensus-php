@@ -16,5 +16,44 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class AxisGatewayTest extends TestCase
 {
     use PaymentTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__.'/AxisGatewayTestData.php';
+
+        parent::setUp();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_axis_terminal');
+
+        $this->gateway = 'upi_axis';
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+    }
+
+    public function testPayment($status = 'created')
+    {
+        unset($this->payment['description']);
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $this->checkPaymentStatus($paymentId, $status);
+
+        return $paymentId;
+    }
+
+    protected function checkPaymentStatus($id, $expectedStatus)
+    {
+        $response = $this->getPaymentStatus($id);
+
+        $status = $response['status'];
+
+        $this->assertEquals($expectedStatus, $status);
+    }
 }
 
