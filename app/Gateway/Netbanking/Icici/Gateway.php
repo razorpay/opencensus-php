@@ -1041,7 +1041,7 @@ class Gateway extends Base\Gateway
     {
         $siStatus = $gatewayPayment->getSIStatus();
 
-        if (array_key_exists($siStatus, Status::SI_STATUS_TO_RECURRING_STATUS_MAP) === false)
+        if (isset(Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus]) === false)
         {
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
