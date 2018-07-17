@@ -101,6 +101,7 @@ class OffersPaymentTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals(474100, $payment['amount']);
+        $this->assertEquals(474100, $payment['base_amount']);
         $this->assertEquals('captured', $payment['status']);
 
         // Payment Offer row got created

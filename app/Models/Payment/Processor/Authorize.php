@@ -1235,8 +1235,6 @@ trait Authorize
 
     protected function validateOfferIfApplicable(Payment\Entity $payment, array $input)
     {
-        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
-
         $offer = $this->offer;
 
         if ($offer !== null)
@@ -1723,6 +1721,8 @@ trait Authorize
         $payment->setInternational();
 
         $this->setRecurringType($payment, $input);
+
+        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
     }
 
     protected function setRecurringType(Payment\Entity $payment, array $input)
