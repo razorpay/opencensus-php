@@ -480,13 +480,22 @@ class Repository extends Base\Repository
      */
     public function fetchSubmerchantsByPartnerAppId(string $applicationId): Base\PublicCollection
     {
-        $merchantIdMerchantsColumn = $this->dbColumn(Entity::ID);
+        $merchantDetailRepo = $this->repo->merchant_detail;
 
-        $merchantIdAccessMapsColumn = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::MERCHANT_ID);
+        $merchantDetailDbColumns =  $merchantDetailRepo->dbColumn('*');
+
+        $merchantDetailMerchantIdColumn = $merchantDetailRepo->dbColumn(Detail\Entity::MERCHANT_ID);
+
+        $merchantsMerchantIdColumn = $this->dbColumn(Entity::ID);
+
+        $accessMapsMerchantIdColumn = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::MERCHANT_ID);
+
+        $attributes = [$merchantDetailDbColumns, $this->dbColumn('*')];
 
         return $this->newQuery()
-                    ->select($this->dbColumn('*'))
-                    ->join(Table::MERCHANT_ACCESS_MAP, $merchantIdMerchantsColumn, '=', $merchantIdAccessMapsColumn)
+                    ->select($attributes)
+                    ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantIdColumn, $accessMapsMerchantIdColumn)
+                    ->join(Table::MERCHANT_DETAIL, $merchantsMerchantIdColumn, $merchantDetailMerchantIdColumn)
                     ->where(AccessMap\Entity::ENTITY_TYPE, AccessMap\Entity::APPLICATION)
                     ->where(AccessMap\Entity::ENTITY_ID, $applicationId)
                     ->get();

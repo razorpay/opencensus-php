@@ -615,15 +615,18 @@ return [
 
     'testFetchPartnerSubmerchant' => [
         'request'  => [
-            'url'     => '/submerchants/10000000000011',
+            'url'     => '/submerchants/acc_10000000000011',
             'method'  => 'GET',
             'content' => [],
         ],
         'response' => [
             'content' => [
-                'id'               => '10000000000011',
+                'id'               => 'acc_10000000000011',
                 'entity'           => 'merchant',
                 'user'             => [],
+                'details'          => [
+                    'activation_status' => 'under_review',
+                ],
                 'dashboard_access' => false,
             ],
         ],
@@ -631,13 +634,13 @@ return [
 
     'testFetchPartnerSubmerchantProxyAuth' => [
         'request'  => [
-            'url'     => '/submerchants/10000000000011',
+            'url'     => '/submerchants/acc_10000000000011',
             'method'  => 'GET',
             'content' => [],
         ],
         'response' => [
             'content' => [
-                'id'               => '10000000000011',
+                'id'               => 'acc_10000000000011',
                 'entity'           => 'merchant',
                 'user'             => [],
                 'dashboard_access' => true,
@@ -657,9 +660,12 @@ return [
                 'count'  => 1,
                 'items'  => [
                     [
-                        'id'               => '10000000000011',
+                        'id'               => 'acc_10000000000011',
                         'entity'           => 'merchant',
                         'user'             => null,
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
                         'dashboard_access' => false,
                     ],
                 ],

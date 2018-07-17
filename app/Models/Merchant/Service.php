@@ -1984,6 +1984,8 @@ class Service extends Base\Service
 
     public function getSubmerchantDetails(string $submerchantId): array
     {
+        Account\Entity::verifyIdAndSilentlyStripSign($submerchantId);
+
         $partner = $this->fetchPartner();
 
         $submerchant = $this->core()->getSubmerchantDetails($partner, $submerchantId);

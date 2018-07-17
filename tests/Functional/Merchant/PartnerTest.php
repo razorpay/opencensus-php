@@ -629,6 +629,8 @@ class PartnerTest extends OAuthTestCase
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
+        $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'under_review']);
+
         $partnerData = $this->getDummyPartnerAttributes();
 
         // Create an oauth application using factory
@@ -658,6 +660,8 @@ class PartnerTest extends OAuthTestCase
         $this->allowAdminToAccessSubMerchant();
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
+
+        $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'under_review']);
 
         $partnerData = $this->getDummyPartnerAttributes();
 
