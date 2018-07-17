@@ -4,7 +4,6 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Exception\GatewayErrorException;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
@@ -18,6 +17,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Netbanking\Base\BankingType;
 use RZP\Models\Payment\Verify as PaymentVerify;
 

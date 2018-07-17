@@ -115,7 +115,6 @@ class Base extends BaseProcessor
         {
             return $this->processAuthorizedPayment($payment);
         }
-        sd("payment failed");
 
         return $this->processFailedPayment($payment, $content);
     }
