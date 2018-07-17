@@ -301,9 +301,7 @@ class ErrorCodes
 
         self::throwInvalidResponseErrorIfCodeNotMapped($errorCode, self::$debitPublicErrorCodeMappings, $row);
 
-        $errorCode = self::$debitPublicErrorCodeMappings[$errorCode];
-
-        return self::getDescriptionFromErrorCode($errorCode);
+        return self::$debitPublicErrorCodeMappings[$errorCode];
     }
 
     protected static function throwInvalidResponseErrorIfCodeNotMapped($errorCode, array $mapping, array $content)
