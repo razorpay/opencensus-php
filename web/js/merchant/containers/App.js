@@ -68,8 +68,6 @@ export default class App extends Component {
 
     this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
 
-    this.logoutPopupShown = false;
-
     this.state = {
       isLoading: true,
     };

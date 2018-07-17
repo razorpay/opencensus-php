@@ -6,7 +6,7 @@ import {
   fetchPayments,
   fetchRefunds,
   fetchSettlements,
-} from 'rzp/modules/collection';
+} from 'merchant/modules/collection';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
 import GenericPanel, {
@@ -15,7 +15,6 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import { tabs, tabsMeta } from './data';
-import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
 import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
 

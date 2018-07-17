@@ -327,6 +327,12 @@ a.breadcrumb__backNav--link {
   }
 }
 
+.note {
+  .rzpCheckbox [type='checkbox'] + label::after {
+    margin: -17px 0px 0 -20px;
+  }
+}
+
 @keyframes luminate {
   0% {
     background-color: rgba(251, 251, 157, 0.75)
@@ -835,7 +841,7 @@ dl.rzp-definition {
         }
       }
     }
-    
+
     &.open {
       .Accordion__title > .accordion__arrow::before {
         transform: rotate(-45deg);
