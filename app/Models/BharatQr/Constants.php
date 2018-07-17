@@ -20,5 +20,4 @@ class Constants
     const MERCHANT_VPA           = 'razorpaybqr@icici';
     const UPI_PREFIX             = 'RZP';
     const RAZORPAY_TERMINAL_ID   = 'razorpay_terminal_id';
-    const MERCHANT_ACCOUNT       = 'merchant_account';
 }
