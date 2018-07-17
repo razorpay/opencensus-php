@@ -17,6 +17,7 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_BOB         => ['bob.netbanking.refunds@razorpay.com'],
         Gateway::NETBANKING_RBL         => ['settlements@razorpay.com'],
         Gateway::NETBANKING_INDUSIND    => ['settlements@razorpay.com'],
+        Gateway::NETBANKING_CANARA      => ['settlements@razorpay.com'],
         Gateway::UPI_ICICI              => ['settlements@razorpay.com'],
         Gateway::WALLET_AIRTELMONEY     => ['settlements@razorpay.com'],
         Gateway::WALLET_PAYUMONEY       => ['settlements@razorpay.com']
@@ -30,6 +31,7 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_BOB         => 'Bank of Baroda Netbanking refunds',
         Gateway::NETBANKING_RBL         => 'RBL Netbanking refunds',
         Gateway::NETBANKING_INDUSIND    => 'Indusind Netbanking refunds',
+        Gateway::NETBANKING_CANARA      => 'Canara Netbanking refunds',
         Gateway::UPI_ICICI              => 'UPI Icici Refunds',
         Gateway::WALLET_AIRTELMONEY     => 'Wallet Airtelmoney refunds',
         Gateway::WALLET_PAYUMONEY       => 'Wallet Payumoney refunds'
@@ -60,6 +62,7 @@ class Constants extends Base\Constants
 
     const BODY_MAP = [
         Gateway::NETBANKING_CORPORATION => 'Please find attached refunds information for Corporation Netbanking',
+        // @codingStandardsIgnoreLine
         Gateway::NETBANKING_HDFC        => 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com',
         Gateway::NETBANKING_BOB         => 'Please find attached refunds information for Bank of Baroda',
         Gateway::NETBANKING_ICICI       => 'Please forward the ICICI Netbanking refunds file to UBPS operations team',
