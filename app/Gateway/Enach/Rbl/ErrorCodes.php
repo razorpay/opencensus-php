@@ -306,7 +306,7 @@ class ErrorCodes
 
     protected static function throwInvalidResponseErrorIfCodeNotMapped($errorCode, array $mapping, array $content)
     {
-        if (array_key_exists($errorCode, $mapping) === false)
+        if (isset($mapping[$errorCode]) === false)
         {
             // Log the whole row, that way it'd be easier to debug based on token id or
             // payment id in case it fails
