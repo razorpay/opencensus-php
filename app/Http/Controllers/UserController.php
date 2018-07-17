@@ -65,7 +65,7 @@ class UserController extends Controller
         $data['cdnDashboardUrl'] = \Config::get('app.cdn_dashboard_url');
 
         // $data is used to run diferent pieces of JS
-        if (isset($is_la_account) === true and $data['is_la_account'] === true and isset($data['user']) === true) {
+        if (isset($data['user']) === true and isset($data['linked_account']) === true and $data['linked_account'] === true) {
             return view('merchant.la', $data);
         } else {
             return view('merchant.index', $data);

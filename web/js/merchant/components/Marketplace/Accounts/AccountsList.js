@@ -25,7 +25,8 @@ const AccountsListItem = ({ account, showEditAccountModal, onEdit }) => {
         </a>
       </td>
       <td>
-        {user.merchants[user.current].email === account.email ? (
+        {showEditAccountModal &&
+        user.merchants[user.current].email === account.email ? (
           <button
             class="btn btn-link no-padding"
             onClick={() => showEditAccountModal(account)}
