@@ -137,7 +137,9 @@ class Server extends Base\Mock\Server
 
     protected function getHashOfString($str)
     {
-        $sig_str = hash_hmac('sha256',"$str",'');
+        $secret = $this->getSecret();
+
+        $sig_str = hash_hmac('sha256',$str,$secret);
 
         return $sig_str;
     }
