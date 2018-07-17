@@ -21,7 +21,19 @@ class Calculator extends Base\Core
         $this->offer = $offer;
     }
 
-    public function calculateDiscountedAmount(int $amount, $percentDiscount)
+    /**
+     * @param int $amount
+     * @param $percentDiscount
+     * @return int
+     * @throws Exception\LogicException
+     *
+     *
+     * Here percent discount can come from input if offer doesn't have
+     * information of discount. For example in case of emi offers the
+     * discount information is in emi plans and not in offers. So percent
+     * discount is passed to calculate the discount.
+     */
+    public function calculateDiscountedAmount(int $amount, $percentDiscount): int
     {
         $discount = $this->calculateDiscount($amount, $percentDiscount);
 
@@ -46,7 +58,17 @@ class Calculator extends Base\Core
         return $discountedAmount;
     }
 
-    public function calculateDiscount(int $amount, $percentDiscount)
+    /**
+     * @param int $amount
+     * @param $percentDiscount
+     * @return int|mixed
+     *
+     * Here percent discount can come from input if offer doesn't have
+     * information of discount. For example in case of emi offers the
+     * discount information is in emi plans and not in offers. So percent
+     * discount is passed to calculate the discount.
+     */
+    public function calculateDiscount(int $amount, $percentDiscount): int
     {
         if ($percentDiscount !== null)
         {
@@ -85,10 +107,10 @@ class Calculator extends Base\Core
         return $discount;
     }
 
-    protected function getPercentDiscount(int $amount, int $percent)
+    protected function getPercentDiscount(int $amount, int $percent): int
     {
         $discount = $amount * $percent / 10000;
 
-        return intval(round($discount));
+        return intval(number_format(round($discount), 2, '.', ''));
     }
 }

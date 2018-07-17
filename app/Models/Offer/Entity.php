@@ -371,7 +371,7 @@ class Entity extends Base\PublicEntity
 
 // --------------------- Calculator --------------------------------------------
 
-    public function getDiscountedAmountForPayment(int $amount, $payment)
+    public function getDiscountedAmountForPayment(int $amount, $payment): int
     {
         $percentDiscount = null;
 
@@ -385,7 +385,7 @@ class Entity extends Base\PublicEntity
         return  $this->getDiscountedAmount($amount, $percentDiscount);
     }
 
-    public function getDiscountAmountForPayment(int $amount, $payment)
+    public function getDiscountAmountForPayment(int $amount, $payment): int
     {
         $percentDiscount = null;
 
@@ -514,6 +514,9 @@ class Entity extends Base\PublicEntity
 
         //
         // If this flag is set then amount is to be discounted by us
+        // We don't calculate the discount for emi subvented offers
+        // because one offer of emi subvention can corresponds to multiple
+        // plans which means multiple discounts are applicable.
         //
         if (($discount === true) and
             ($this->getAttribute(self::EMI_SUBVENTION) !== true))
