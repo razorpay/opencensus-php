@@ -50,9 +50,6 @@ class Checker extends Base\Core
     {
         $this->order = $order;
 
-        // Validates order amount for offer
-        // $this->offer->getDiscountedAmount($order->getAmount());
-
         $offerActive = $this->offer->isActive();
 
         $validOfferPeriod = $this->checkOfferPeriod();
