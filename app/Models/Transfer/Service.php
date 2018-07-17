@@ -101,7 +101,7 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
-        $input['expand'] = ['transfer'];
+        $input['expand'] = ['transfer', 'transfer.recipient_settlement'];
 
         $transfers = $this->repo->payment->fetch($input, $merchantId);
 

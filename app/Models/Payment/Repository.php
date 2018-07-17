@@ -54,7 +54,7 @@ class Repository extends Base\Repository
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
         Entity::TRANSFER_ID     => 'filled|public_id|size:18',
         Entity::CAPTURED        => 'sometimes|boolean',
-        self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer|custom:expand',
+        self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
     ];
 
     // These are admin allowed params to search on.
@@ -116,7 +116,7 @@ class Repository extends Base\Repository
         $merchant = $this->merchant;
 
         if (((empty($merchant) === true) or
-            ($merchant->isLinkedAccount() === false)) and ($value === 'transfer'))
+            ($merchant->isLinkedAccount() === false)) and (($value === 'transfer') or $value = 'transfer.settlement'))
         {
             throw new Exception\ExtraFieldsException("expand=transfer");
         }
