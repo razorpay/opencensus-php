@@ -30,6 +30,7 @@ use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\SlackActions as SlackActions;
@@ -1860,16 +1861,17 @@ class Service extends Base\Service
 
         $subEmailIsSameAsPartner = ($subMerchant->getEmail() === $partnerMerchant->getEmail());
 
-        $subMerchantHasLessThan2Owners = ($subMerchant->owners()->count() <= 2);
+        $subMerchantHasLessThanTwoOwners = ($subMerchant->owners()->count() <= 2);
 
         if (($isAggregatorPartner === true) and
             ($subEmailIsSameAsPartner === true) and
-            ($subMerchantHasLessThan2Owners === true))
+            ($subMerchantHasLessThanTwoOwners === true))
         {
             return $input['email'];
         }
 
-        throw new Exception\BadRequestValidationFailureException('Invalid input: email');
+        throw new Exception\BadRequestValidationFailureException(
+            PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_MERCHANT_USER);
     }
 
     public function formatUserCreationData(array $input, Merchant\Entity $subMerchant)
@@ -1964,7 +1966,7 @@ class Service extends Base\Service
         (new AccessMap\Service)->mapOAuthApplication($subMerchant->getId(), ['application_id' => $appId]);
     }
 
-    protected function validateAggregatorSubMerchantRelation(Entity $subMerchant, string $aggregatorMerchantId)
+    protected function validateAggregatorSubMerchantRelation(Entity $subMerchant, Entity $aggregatorMerchant)
     {
         if ($subMerchant->isLinkedAccount() === true)
         {
@@ -1973,18 +1975,16 @@ class Service extends Base\Service
 
         $referrer = $subMerchant->getReferrer();
 
-        $referrerNotEmptyAndSame = (empty($referrer) === false) and ($referrer === $aggregatorMerchantId);
+        $referrerNotEmptyAndSame = (empty($referrer) === false) and ($referrer === $aggregatorMerchant->getId());
 
         if ($referrerNotEmptyAndSame === true)
         {
             return;
         }
 
-        $aggregatorMerchant = $this->repo->merchant->findOrFailPublic($aggregatorMerchantId);
-
         $isNonPurePlatformAggregator = $aggregatorMerchant->isNonPurePlatformPartner();
 
-        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchantId);
+        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchant->getId());
 
         if (($isNonPurePlatformAggregator === true) and ($isPartnerMerchantMapped === true))
         {

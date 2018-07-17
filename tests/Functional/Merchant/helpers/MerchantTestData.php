@@ -3138,7 +3138,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid input: email',
+                    'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_MERCHANT_USER,
                 ],
             ],
             'status_code' => 400,
@@ -3159,7 +3159,28 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid input: email',
+                    'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_MERCHANT_USER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testOldAggregatorInviteSubMerchantUserWithEmail' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => ['email' => 'invite.owner@gmail.com']
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_MERCHANT_USER,
                 ],
             ],
             'status_code' => 400,

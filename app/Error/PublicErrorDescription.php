@@ -636,4 +636,5 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
+    const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
 }

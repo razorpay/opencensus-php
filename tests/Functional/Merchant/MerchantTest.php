@@ -2957,6 +2957,31 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testOldAggregatorInviteSubMerchantUserWithEmail()
+    {
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000040',
+            'email'  => 'test1@razorpay.com',
+        ]);
+
+        $user = $this->createUserForMerchant('test@razorpay.com', '10000000000000');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id' => $user->getId(),
+            'merchant_id' => '10000000000040',
+            'role' => 'owner']);
+
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+
+        $merchant = Merchant\Entity::find("10000000000040");
+
+        $merchant->reTag(["ref-10000000000000"]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     protected function createUserForMerchant(string $email, string $merchantId)
     {
         $user = $this->fixtures->create('user', ['email' => $email]);
