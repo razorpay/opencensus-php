@@ -259,6 +259,30 @@ banner
 .multi-select .PowerSelect__TriggerInput
   min-width: 135px
 
+.PowerSelect__TriggerLabel
+  padding: 6px 22px 6px 8px;
+
+.PowerSelect__Clear
+  padding: 4px
+  color: #888
+
+.PowerSelect__Clear:before
+  content: "\D7"
+
+.PowerSelect__TriggerStatus
+  padding-top: 2px
+  padding-right: 8px
+  padding-left: 4px
+
+.PowerSelect--open .PowerSelect__TriggerStatus:before
+  transform: rotate(-180deg)
+
+.PowerSelect__TriggerStatus:before
+  content: ""
+  display: block
+  border-top: 4px solid #ccc
+  border-left: 4px solid transparent
+  border-right: 4px solid transparent
 
 //----------
 /* margins */

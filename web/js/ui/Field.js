@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { methods } from 'common/data';
 import { prevent } from 'common/util';
 import moment from 'moment';
-import { TypeAhead } from 'react-power-select';
+import { PowerSelect, TypeAhead } from 'react-power-select';
 import CalendarPicker from 'ui/Calendar';
 
 function focusInput(e) {
@@ -271,6 +271,57 @@ class SearchableSelect extends Component {
   }
 }
 
+class SelectFieldUI extends Component {
+  static defaultProps = {
+    options: [],
+    trackBy: 'value',
+  };
+
+  constructor({ options, trackBy, defaultValue }) {
+    super();
+    this.state = {
+      selectedOption:
+        options.find(option => option[trackBy] === defaultValue) || {},
+    };
+  }
+
+  handleChange = ({ option }) => {
+    this.setState({ selectedOption: option });
+  };
+
+  render() {
+    const { options, required, label, name, trackBy, ...props } = this.props;
+
+    return (
+      <div class="searchable-select">
+        <input
+          type="hidden"
+          class="hide"
+          name={name}
+          value={
+            this.state.selectedOption ? this.state.selectedOption[trackBy] : ''
+          }
+          readOnly
+        />
+        <PowerSelect
+          options={options}
+          name={name}
+          searchEnabled={false}
+          optionLabelPath="name"
+          selected={this.state.selectedOption}
+          onChange={this.handleChange}
+          className="searchable-select-field"
+          {...props}
+        />
+      </div>
+    );
+  }
+}
+
 export const SearchableSelectField = props => (
   <Field {...props} tag={SearchableSelect} />
+);
+
+export const SelectFieldUIField = props => (
+  <Field {...props} tag={SelectFieldUI} />
 );

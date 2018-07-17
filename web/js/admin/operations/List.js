@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import Form from 'ui/Form';
-import { SearchableSelectField } from 'ui/Field';
+import { SelectFieldUIField } from 'ui/Field';
 
 import { adminFetch } from 'common/fetch';
 import { snakeToTitleCase } from 'common/util';
@@ -112,7 +112,7 @@ export default class PublicFeaturesList extends Component {
             <div class="spinner center" />
           ) : (
             <Form class="filters operation-reports" onSubmit={this.onSubmit}>
-              <SearchableSelectField
+              <SelectFieldUIField
                 trackBy="value"
                 label="Select a report"
                 name="report"
