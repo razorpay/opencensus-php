@@ -25,7 +25,7 @@ class Hdfc extends Base
 
         $gatewayTokenStatus = $entry[Batch\Header::HDFC_EM_REGISTER_STATUS];
 
-        $status = $this->getTokenStatus($gatewayTokenStatus);
+        $status = $this->getTokenStatus($gatewayTokenStatus, $entry);
 
         return [
             self::TOKEN_STATUS     => $status,
@@ -50,7 +50,7 @@ class Hdfc extends Base
 
     protected function getTokenErrorMessage(string $gatewayTokenStatus, array $entry)
     {
-        if ($this->getTokenStatus($gatewayTokenStatus) === Token\RecurringStatus::CONFIRMED)
+        if ($this->getTokenStatus($gatewayTokenStatus, $entry) === Token\RecurringStatus::CONFIRMED)
         {
             return null;
         }

@@ -420,7 +420,7 @@ class EnachRblGatewayTest extends TestCase
         $payment = $this->makeDebitPayment();
 
         $fileStatuses = [
-            'status'     => 'REJECT',
+            'status'     => 'bounce',
             'error_code' => '1',
             'error_desc' => 'Account closed or transferred',
         ];
@@ -439,7 +439,7 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'status'        => 'REJECT',
+                'status'        => 'bounce',
                 'error_message' => 'Account closed or transferred',
             ],
             $enach
