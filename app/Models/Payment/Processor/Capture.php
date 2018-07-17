@@ -321,16 +321,6 @@ trait Capture
 
         $autoCaptured = $payment->getAutoCaptured();
 
-        if (($payment->isEmiMerchantSubvented() === true) and
-            ($autoCaptured === false))
-        {
-            $emiPlan = $payment->emiPlan;
-
-            $merchantPayback = $emiPlan->getMerchantPayback();
-
-            $captureAmount = Emi\Calculator::calculateSubventedAmount($captureAmount, $merchantPayback);
-        }
-
         if ($captureAmount !== $payment->getAmount())
         {
             throw new Exception\BadRequestException(
@@ -391,7 +381,7 @@ trait Capture
             return;
         }
 
-        $captureAmount = $discount->offer->getDiscountedAmount($order->getAmount());
+        $captureAmount = $discount->offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
     }
 
     /**

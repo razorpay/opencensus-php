@@ -52,16 +52,17 @@
 
     #header-details {
         float: left;
+        display: table;
     }
 
     #header-details > div {
-        display: inline-block;
         vertical-align: middle;
     }
 
     #header-details #merchant-name {
         font-size: 24px;
-        max-width: 75%;
+        padding-left: 16px;
+        display: table-cell;
     }
 
     #header-logo {
@@ -74,7 +75,7 @@
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         background: {{$light_color}};
         padding: 8px;
-        margin-right: 16px;
+        display: inline-block;
     }
 
     #contact-details {
