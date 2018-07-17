@@ -1026,21 +1026,78 @@ class Core extends Base\Core
     {
         $partnerApp = $this->getPartnerApp($partner);
 
-        $accessMaps = $this->repo
-                           ->merchant
-                           ->fetchSubmerchantsByIdAndPartnerAppId($partnerApp->getId(), $submerchantId);
+        $merchant = $this->repo
+                         ->merchant
+                         ->findSubmerchantByIdAndPartnerAppId($partnerApp->getId(), $submerchantId);
 
-        return $accessMaps;
+        $merchant = $this->getPartnerSubmerchantData($partner, $merchant);
+
+        return $merchant;
     }
 
     public function getSubmerchantsDetails(Entity $partner): Base\PublicCollection
     {
         $partnerApp = $this->getPartnerApp($partner);
 
-        $accessMaps = $this->repo
-                           ->merchant
-                           ->fetchSubmerchantsByPartnerAppId($partnerApp->getId());
+        $merchants = $this->repo
+                          ->merchant
+                          ->fetchSubmerchantsByPartnerAppId($partnerApp->getId());
 
-        return $accessMaps;
+        $merchants = $merchants->map(function($merchant) use ($partner) {
+            return $this->getPartnerSubmerchantData($partner, $merchant);
+        });
+
+        return $merchants;
+    }
+
+    protected function getPartnerSubmerchantData(Entity $partner, Entity $submerchant)
+    {
+        $response = $submerchant;
+
+        $response[Entity::DETAILS] = [
+            Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS)
+        ];
+
+        $response[Entity::USER] = $this->getNonPartnerPrimaryOwner($partner, $submerchant);
+
+        $response[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($partner, $submerchant);
+
+        return $response;
+    }
+
+    protected function getNonPartnerPrimaryOwner(Entity $partner, Entity $merchant): array
+    {
+        $owners = $merchant->owners();
+
+        $partnerEmail = $partner->getEmail();
+
+        foreach ($owners as $owner)
+        {
+            if ($owner->getEmail() !== $partnerEmail)
+            {
+                return $owner->toArrayPublic();
+            }
+        }
+
+        return [];
+    }
+
+    protected function hasSubmerchantDashboardAccess(Entity $partner, Entity $submerchant): bool
+    {
+        $userIds = $submerchant->users()->get()->getIds();
+
+        $loggedInPartnerUser = $this->app['basicauth']->getUser();
+
+        if ($loggedInPartnerUser === null)
+        {
+            return false;
+        }
+
+        if (in_array($loggedInPartnerUser->getId(), $userIds, true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -26,6 +26,19 @@ class PublicCollection extends Collection
         return $array;
     }
 
+    /**
+     * \Illuminate\Eloquent\Database\Collection::map() function uses toBase() function which returns
+     * an instance of Illuminate\Support\Collection and not \Illuminate\Eloquent\Database\Collection.
+     *
+     * Hence, when map() is called over PublicCollection the result is no longer an instance of PublicCollection.
+     *
+     * @return static
+     */
+    public function toBase()
+    {
+        return new static($this);
+    }
+
     public function toArrayAdmin()
     {
         $array[static::ENTITY] = $this->entity;
@@ -66,6 +79,15 @@ class PublicCollection extends Collection
     public function toArrayHosted()
     {
         return $this->itemsToArrayHosted();
+    }
+
+    public function toArrayPartner(): array
+    {
+        $array[static::ENTITY] = $this->entity;
+        $array[static::COUNT] = count($this->items);
+        $array[static::ITEMS] = $this->itemsToArrayPartner();
+
+        return $array;
     }
 
     public function getIds()
@@ -206,6 +228,15 @@ class PublicCollection extends Collection
         return array_map(function($item)
         {
             return $item->toArrayGateway();
+
+        }, $this->items);
+    }
+
+    protected function itemsToArrayPartner()
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayPartner();
 
         }, $this->items);
     }

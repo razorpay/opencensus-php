@@ -623,6 +623,8 @@ return [
             'content' => [
                 'id'     => '10000000000011',
                 'entity' => 'merchant',
+                'user' => [],
+                'dashboard_access' => false,
             ],
         ],
     ],
@@ -641,6 +643,8 @@ return [
                     [
                         'id'     => '10000000000011',
                         'entity' => 'merchant',
+                        'user' => [],
+                        'dashboard_access' => false,
                     ]
                 ],
             ],

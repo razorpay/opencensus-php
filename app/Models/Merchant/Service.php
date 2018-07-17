@@ -1987,18 +1987,18 @@ class Service extends Base\Service
     {
         $partner = $this->fetchPartner();
 
-        $merchant = $this->core()->getSubmerchantDetails($partner, $submerchantId);
+        $submerchant = $this->core()->getSubmerchantDetails($partner, $submerchantId);
 
-        return $merchant->toArrayPublic();
+        return $submerchant->toArrayPartner();
     }
 
     public function getSubmerchantsDetails(): array
     {
         $partner = $this->fetchPartner();
 
-        $merchants = $this->core()->getSubmerchantsDetails($partner);
+        $submerchants = $this->core()->getSubmerchantsDetails($partner);
 
-        return $merchants->toArrayPublic();
+        return $submerchants->toArrayPartner();
     }
 
     /**

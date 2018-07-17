@@ -142,6 +142,9 @@ class Entity extends Base\PublicEntity
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';
 
+    // Partner array keys
+    const DASHBOARD_ACCESS          = 'dashboard_access';
+
     protected $entity = 'merchant';
 
     protected static $sign = '';
@@ -325,6 +328,12 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::ACTIVATED_AT,
+    ];
+
+    protected $partner = [
+        self::DETAILS,
+        self::USER,
+        self::DASHBOARD_ACCESS,
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;

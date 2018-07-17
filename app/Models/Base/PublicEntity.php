@@ -18,6 +18,10 @@ class PublicEntity extends UniqueIdEntity
 
     const MERCHANT_ID           = 'merchant_id';
 
+    const DETAILS               = 'details';
+
+    const USER                  = 'user';
+
     /**
      * General constant used as key for hold of collection of ids
      * in various cases.
@@ -88,6 +92,13 @@ class PublicEntity extends UniqueIdEntity
      */
     protected $adminOnlyPublic   = [];
 
+    /**
+     * Fields exposed through the toArrayPartner() function.
+     *
+     * @var array
+     */
+    protected $partner           = [];
+
     public function toArrayPublic()
     {
         $attributes = $this->attributesToArray();
@@ -146,6 +157,17 @@ class PublicEntity extends UniqueIdEntity
         $this->formatAmountFieldsForReport($array);
 
         $this->formatDateFieldsForReport($array);
+
+        return $array;
+    }
+
+    public function toArrayPartner(): array
+    {
+        $publicAttributes = $this->toArrayPublic();
+
+        $partnerAttributes = array_only($this->attributes, $this->partner);
+
+        $array = array_merge($publicAttributes, $partnerAttributes);
 
         return $array;
     }

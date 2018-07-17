@@ -487,20 +487,29 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchSubmerchantsByIdAndPartnerAppId(
+    public function findSubmerchantByIdAndPartnerAppId(
         string $applicationId,
-        string $submerchantId): Entity
+        string $submerchantId)
     {
+        $merchantDetailRepo = $this->repo->merchant_detail;
+
+        $merchantDetailsDbColumns =  $merchantDetailRepo->dbColumn('*');
+
+        $merchantIdMerchantDetailsColumn = $merchantDetailRepo->dbColumn(Detail\Entity::MERCHANT_ID);
+
         $merchantIdMerchantsColumn = $this->dbColumn(Entity::ID);
 
         $merchantIdAccessMapsColumn = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::MERCHANT_ID);
 
+        $attributes = [$merchantDetailsDbColumns, $this->dbColumn('*')];
+
         return $this->newQuery()
-                    ->select($this->dbColumn('*'))
+                    ->select($attributes)
                     ->join(Table::MERCHANT_ACCESS_MAP, $merchantIdMerchantsColumn, '=', $merchantIdAccessMapsColumn)
+                    ->join(Table::MERCHANT_DETAIL, $merchantIdMerchantsColumn, '=', $merchantIdMerchantDetailsColumn)
                     ->where(AccessMap\Entity::ENTITY_TYPE, AccessMap\Entity::APPLICATION)
                     ->where(AccessMap\Entity::ENTITY_ID, $applicationId)
-                    ->where(AccessMap\Entity::MERCHANT_ID, $submerchantId)
+                    ->where(Table::MERCHANT_ACCESS_MAP . '.' . AccessMap\Entity::MERCHANT_ID, $submerchantId)
                     ->firstOrFail();
     }
 }
