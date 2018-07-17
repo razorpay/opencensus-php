@@ -5,13 +5,17 @@ import CheckIcon from 'rzp/ui/CheckIcon';
 import TableBody from 'rzp/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
-const AccountsListItem = ({ account, onEdit }) => {
+import store from 'merchant/store';
+
+const AccountsListItem = ({ account, showEditAccountModal, onEdit }) => {
   let status = account.activation_details
     ? account.activation_details.status
     : account.activated;
   let timeStamp = account.activation_details
     ? account.activation_details.activated_at
     : account.activated_at;
+
+  const user = store.getState().session.user;
 
   return (
     <EntityItemRow id={account.id}>
@@ -20,7 +24,18 @@ const AccountsListItem = ({ account, onEdit }) => {
           <code>{prefixEntityValue('account', account.id)}</code>
         </a>
       </td>
-      <td>{account.email}</td>
+      <td>
+        {user.merchants[user.current].email === account.email ? (
+          <button
+            class="btn btn-link no-padding"
+            onClick={() => showEditAccountModal(account)}
+          >
+            Add Email
+          </button>
+        ) : (
+          account.email
+        )}
+      </td>
       <td>{account.name}</td>
       <td>
         <Time value={account.created_at} format="DD MMM YYYY, hh:mm:ss a" />
@@ -37,14 +52,14 @@ const AccountsListItem = ({ account, onEdit }) => {
   );
 };
 
-export default ({ accounts, isLoading, onEdit }) => {
+export default ({ accounts, isLoading, showEditAccountModal, onEdit }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover">
         <thead>
           <tr>
             <th>Account Id</th>
-            <th>Email</th>
+            <th>LA Access Email</th>
             <th>Name</th>
             <th>Created At</th>
             <th>Activated</th>
@@ -61,6 +76,7 @@ export default ({ accounts, isLoading, onEdit }) => {
             <AccountsListItem
               key={account.id}
               account={account}
+              showEditAccountModal={showEditAccountModal}
               onEdit={() => onEdit(account)}
             />
           ))}

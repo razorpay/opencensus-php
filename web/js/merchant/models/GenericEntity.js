@@ -15,7 +15,6 @@ export default class GenericEntity extends Entity {
   resourceUrl = '/user/generic';
 
   fetchAll(params = {}) {
-    console.log('GENERIC REALLY???');
     const Klass = this.constructor;
     let { id, ...queryParams } = params;
     let data = this.listRouteName
