@@ -745,10 +745,12 @@ class Gateway extends Base\Gateway
                             'error_message' => $error
                         ]);
             }
+
             // Throw Critical for now
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                'Invalid XML');
+                'Invalid XML',
+                $error);
         }
     }
 
