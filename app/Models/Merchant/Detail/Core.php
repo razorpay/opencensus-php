@@ -697,6 +697,7 @@ class Core extends Base\Core
             // for a linked accounts activation
             //
             $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
+            $response['linked_account'] = true;
         }
 
         $currentActivationState = $merchant->currentActivationState();
