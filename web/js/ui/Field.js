@@ -220,7 +220,6 @@ export function SelectMethod(props) {
 
 class SearchableSelect extends Component {
   static defaultProps = {
-    searchIndices: [],
     trackBy: 'value',
     options: [],
   };
@@ -241,7 +240,8 @@ class SearchableSelect extends Component {
     const {
       options,
       required,
-      searchIndices,
+      isSearchable = true,
+      allowClear = true,
       label,
       name,
       trackBy,
@@ -254,65 +254,32 @@ class SearchableSelect extends Component {
           type="hidden"
           class="hide"
           name={name}
-          value={this.state.selectedOption[trackBy]}
-          readOnly
-        />
-        <TypeAhead
-          options={options}
-          name={name}
-          optionLabelPath="name"
-          selected={this.state.selectedOption}
-          onChange={this.handleChange}
-          className="searchable-select-field"
-          {...props}
-        />
-      </div>
-    );
-  }
-}
-
-class SelectFieldUI extends Component {
-  static defaultProps = {
-    options: [],
-    trackBy: 'value',
-  };
-
-  constructor({ options, trackBy, defaultValue }) {
-    super();
-    this.state = {
-      selectedOption:
-        options.find(option => option[trackBy] === defaultValue) || {},
-    };
-  }
-
-  handleChange = ({ option }) => {
-    this.setState({ selectedOption: option });
-  };
-
-  render() {
-    const { options, required, label, name, trackBy, ...props } = this.props;
-
-    return (
-      <div class="searchable-select">
-        <input
-          type="hidden"
-          class="hide"
-          name={name}
           value={
             this.state.selectedOption ? this.state.selectedOption[trackBy] : ''
           }
           readOnly
         />
-        <PowerSelect
-          options={options}
-          name={name}
-          searchEnabled={false}
-          optionLabelPath="name"
-          selected={this.state.selectedOption}
-          onChange={this.handleChange}
-          className="searchable-select-field"
-          {...props}
-        />
+        {isSearchable ? (
+          <TypeAhead
+            options={options}
+            name={name}
+            optionLabelPath="name"
+            selected={this.state.selectedOption}
+            onChange={this.handleChange}
+            {...props}
+          />
+        ) : (
+          <PowerSelect
+            options={options}
+            name={name}
+            searchEnabled={false}
+            optionLabelPath="name"
+            selected={this.state.selectedOption}
+            onChange={this.handleChange}
+            className={`${allowClear ? '' : 'no-cross'}`}
+            {...props}
+          />
+        )}
       </div>
     );
   }
@@ -320,8 +287,4 @@ class SelectFieldUI extends Component {
 
 export const SearchableSelectField = props => (
   <Field {...props} tag={SearchableSelect} />
-);
-
-export const SelectFieldUIField = props => (
-  <Field {...props} tag={SelectFieldUI} />
 );

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import Form from 'ui/Form';
-import { SelectFieldUIField } from 'ui/Field';
+import { SearchableSelectField } from 'ui/Field';
 
 import { adminFetch } from 'common/fetch';
 import { snakeToTitleCase } from 'common/util';
@@ -112,11 +112,13 @@ export default class PublicFeaturesList extends Component {
             <div class="spinner center" />
           ) : (
             <Form class="filters operation-reports" onSubmit={this.onSubmit}>
-              <SelectFieldUIField
+              <SearchableSelectField
                 trackBy="value"
                 label="Select a report"
                 name="report"
                 defaultValue={defaultValue}
+                isSearchable={false}
+                allowClear={false}
                 options={this.state.reports.map(item => ({
                   name: item.label,
                   value: item.type,
