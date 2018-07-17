@@ -23,6 +23,8 @@ class MailTags
     const HDFC_SETTLEMENT_FILES            = 'hdfc_settlement_files';
     const HDFC_BENEFICIARY_MAIL            = 'hdfc_beneficiary_mail';
 
+    const YESBANK_BENEFICIARY_MAIL         = 'yesbank_beneficiary_mail';
+
     const RBL_SETTLEMENT                   = 'rbl_settlement';
 
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';

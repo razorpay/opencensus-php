@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Base\Initiator;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\RuntimeException;
@@ -56,7 +57,7 @@ abstract class NodalAccount extends Base\Core
         return ($this->purpose === Attempt\Purpose::SETTLEMENT);
     }
 
-    protected function getTransferMode($amount): string
+    protected function getTransferMode($amount, Merchant\Entity $merchant): string
     {
         $rtgsCutoffTime = Carbon::createFromTime(
                                 self::RTGS_CUTOFF_HOUR,
@@ -72,6 +73,16 @@ abstract class NodalAccount extends Base\Core
             ($amount >= self::MIN_RTGS_AMOUNT))
         {
             $mode = Mode::RTGS;
+        }
+
+        //
+        // Need this only for Piggy merchants currently. Hence
+        // the check against parentId and not the merchantId.
+        // Temporary solution. Proper solution coming soon.
+        //
+        if (in_array($merchant->getParentId(), Merchant\Preferences::ONLY_NEFT_SETTLEMENT_MIDS, true) === true)
+        {
+            $mode = Mode::NEFT;
         }
 
         return $mode;

@@ -196,7 +196,7 @@ class Selector extends Base\Core
         // that gateway token, and finding other usable terminals assigned to the
         // same primary merchant
         //
-        if ($payment->isSecondRecurring(true, $this->input['gateway_tokens']) === true)
+        if ($payment->isSecondRecurring() === true)
         {
             $possibleApplicableTerminals = $this->getTerminalsForSecondRecurringPayment();
 

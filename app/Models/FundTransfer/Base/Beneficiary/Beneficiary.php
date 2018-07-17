@@ -1,10 +1,9 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Base;
+namespace RZP\Models\FundTransfer\Base\Beneficiary;
 
 use Mail;
 
-use RZP\Models\FileStore;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\BankAccount\Entity as BankAccount;
@@ -12,8 +11,6 @@ use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 
 abstract class Beneficiary extends BaseCore
 {
-    const SIGNED_URL_DURATION = '1440';
-
     /**
      * @param $bankAccounts
      * @param array $input
@@ -26,13 +23,7 @@ abstract class Beneficiary extends BaseCore
      */
     public function register(PublicCollection $bankAccounts, array $input = []): array
     {
-        $data = $this->getData($bankAccounts);
-
-        $file = $this->generateFile($data);
-
-        $merchantCount = count($data);
-
-        $response = $this->makeResponse($file, $merchantCount);
+        $response = $this->registerBeneficiary($bankAccounts);
 
         $recipientEmails = $input[BankAccount::RECIPIENT_EMAILS] ?? null;
 
@@ -51,23 +42,6 @@ abstract class Beneficiary extends BaseCore
             $data['merchants_count']);
 
         Mail::queue($beneficiaryFileMail);
-    }
-
-    protected function makeResponse(FileStore\Creator $file, int $merchantCount): array
-    {
-        $fileDetails   = $file->get();
-
-        $signedFileUrl = $file->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
-
-        $data = [
-            'signed_url'      => $signedFileUrl,
-            'local_file_path' => $fileDetails['local_file_path'],
-            'file_name'       => basename($fileDetails['local_file_path']),
-            'merchants_count' => $merchantCount,
-            'channel'         => $this->channel,
-        ];
-
-        return $data;
     }
 
     /**
@@ -96,7 +70,5 @@ abstract class Beneficiary extends BaseCore
         return $normalizedString;
     }
 
-    abstract protected function getData(PublicCollection $bankAccounts): array;
-
-    abstract protected function generateFile($data): FileStore\Creator;
+    abstract protected function registerBeneficiary(PublicCollection $bankAccounts): array;
 }

@@ -450,9 +450,9 @@ class Entity extends Base\PublicEntity
 
     protected function setEmiDurationsAttribute($emiDurations)
     {
-        $existingEmiDuration = $this->getAttribute(self::EMI_DURATIONS);
+        $existingEmiDurations = $this->getAttribute(self::EMI_DURATIONS);
 
-        $emiDurations = $emiDurations ?: [];
+        $emiDurations = $emiDurations ?? [];
 
         if (empty($existingEmiDurations) === false)
         {

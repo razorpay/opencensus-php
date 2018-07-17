@@ -79,7 +79,8 @@ class Channel
     public static function getApiBasedChannels()
     {
         return [
-            self::RBL
+            self::RBL,
+            self::YESBANK,
         ];
     }
 
@@ -95,7 +96,6 @@ class Channel
             self::AXIS,
             self::ICICI,
             self::HDFC,
-            self::YESBANK,
         ];
     }
 

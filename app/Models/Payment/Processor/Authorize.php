@@ -934,8 +934,6 @@ trait Authorize
                 ]);
         }
 
-        $this->assertTokenIsRecurring($payment, $token);
-
         //
         // If payment type is card, validate that the card supports recurring
         // or if payment type is emandate, validate that the bank supports emandate
@@ -965,38 +963,9 @@ trait Authorize
         // handle second recurring type payments (recurring payments with recurring token)
         // coming via public auth. These can be safely treated as first recurring.
         //
-        if ((empty($input[Payment\Entity::TOKEN]) === false) and
-            ($payment->isSecondRecurring(true) === true))
+        if ($payment->isSecondRecurring() === true)
         {
             $this->verifyAggregatorIfApplicable($merchant);
-        }
-    }
-
-    /**
-     * If the token is not recurring, but the payment is a second recurring payment,
-     * then the token cannot be used for the payment.
-     *
-     * @param Payment\Entity $payment
-     * @param Token\Entity   $token
-     *
-     * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
-     */
-    protected function assertTokenIsRecurring(Payment\Entity $payment, Token\Entity $token)
-    {
-        //
-        // Second recurring payments have to be enabled for recurring
-        //
-        if (($payment->isSecondRecurring() === true) and
-            ($token->isRecurring() === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING,
-                Token\Entity::RECURRING,
-                [
-                    'payment' => $payment->toArray(),
-                    'token'   => $token->toArray()
-                ]);
         }
     }
 
@@ -1760,15 +1729,19 @@ trait Authorize
     {
         $type = null;
 
-        if ($payment->isEmandate() === true)
+        if ($payment->isRecurring() === true)
         {
             $token = $payment->getGlobalOrLocalTokenEntity();
 
-            // True => auto, False => initial
-            // TODO: Add support for when we allow recurring tokens for first payments
-            $type = ($token->isRecurring() === true) ?
-                    Payment\RecurringType::AUTO :
-                    Payment\RecurringType::INITIAL;
+            $type = Payment\RecurringType::INITIAL;
+
+            if (($token->isLocal() === true) and
+                ($token->isRecurring() === true) and
+                ($this->app['basicauth']->isPrivateAuth() === true) and
+                (isset($input['token']) === true))
+            {
+                $type = Payment\RecurringType::AUTO;
+            }
         }
 
         //
@@ -4014,8 +3987,7 @@ trait Authorize
     {
         // if not recurring, validate that card data and cvv in card data is present
         if (($payment->isRecurring() === false) and
-            ($payment->getTokenId() !== null) and
-            ($payment->localToken->isRecurring() === false))
+            ($payment->getTokenId() !== null))
         {
             $payment->getValidator()->validateCardAndCvv($input);
         }

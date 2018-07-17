@@ -4,12 +4,14 @@ namespace RZP\Models\Report\Types;
 
 use RZP\Base\JitValidator;
 use RZP\Exception;
+use RZP\Models\Merchant;
 
 class OpsReport extends BaseReport
 {
     const ENACH_PENDING_REGISTRATIONS = 'enach_pending_registrations';
     const ENACH_PENDING_DEBITS        = 'enach_pending_debits';
     const GATEWAY_FAILED_REFUNDS      = 'gateway_failed_refunds';
+    const IRCTC_DELTA_REFUNDS         = 'irctc_delta_refunds';
 
     protected static $rules = [
         'type'  => 'required|string|max:50'
@@ -27,7 +29,11 @@ class OpsReport extends BaseReport
         [
             'type' => self::GATEWAY_FAILED_REFUNDS,
             'label' => 'Gateway failed refunds'
-        ]
+        ],
+        [
+            'type' => self::IRCTC_DELTA_REFUNDS,
+            'label' => 'IRCTC delta refunds'
+        ],
     ];
 
     public function getOpsReportTypes()
@@ -55,6 +61,12 @@ class OpsReport extends BaseReport
 
             case self::GATEWAY_FAILED_REFUNDS:
                 $data = $this->repo->refund->fetchFailedRefundsByGateway();
+                break;
+
+            case self::IRCTC_DELTA_REFUNDS:
+                $irctcMerchants = Merchant\Preferences::MID_IRCTC;
+
+                $data = $this->repo->payment->fetchAuthorizedPaymentCountForMerchants($irctcMerchants);
                 break;
 
             default:

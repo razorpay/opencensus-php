@@ -105,6 +105,7 @@ class HdfcGatewayTest extends TestCase
 
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
 
         $token = $paymentEntity['token_id'];
         unset($payment['card']);
@@ -123,6 +124,7 @@ class HdfcGatewayTest extends TestCase
         // $this->assertTestResponse($paymentEntity);
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
 
         $paymentId = Payment::verifyIdAndSilentlyStripSign($paymentId);
 
