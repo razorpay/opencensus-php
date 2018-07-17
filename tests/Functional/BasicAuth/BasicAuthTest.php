@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\BasicAuth;
 
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -321,6 +322,25 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testPartnerAuthOnJsonpRouteAppMissing()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', ['deleted_at' => Carbon::now()->timestamp]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $this->fixtures->create('emi_plan');
+
+        $this->ba->publicAuth('rzp_test_partner_' . $client->getId());
+
+        $this->startTest();
+    }
+
     public function testPartnerAuthOnJsonpRouteWrongMerchantForClient()
     {
         $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
@@ -469,9 +489,9 @@ class BasicAuthTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
-    protected function setUpPartnerMerchantAppAndGetClient(string $env = 'dev')
+    protected function setUpPartnerMerchantAppAndGetClient(string $env = 'dev', array $attributes = [])
     {
-        $client = $this->createPartnerApplicationAndGetClientByEnv($env);
+        $client = $this->createPartnerApplicationAndGetClientByEnv($env, $attributes);
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
 

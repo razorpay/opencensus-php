@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Rbl;
 use App;
 use Config;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Rbl\Request\Transfer;
@@ -61,7 +62,9 @@ class NodalAccount extends NodalBase\NodalAccount
             }
             catch (\Throwable $e)
             {
-                $this->trace->info(
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
                     TraceCode::NODAL_TRANSFER_REQUEST_FAILED,
                     [
                         'channel'    => $this->channel,

@@ -33,6 +33,10 @@
         z-index: -1;
     }
 
+    #desktop-container #header-details {
+        max-width: 65%;
+   }
+
     #desktop-container .content {
         display: table;
         border-collapse: collapse;

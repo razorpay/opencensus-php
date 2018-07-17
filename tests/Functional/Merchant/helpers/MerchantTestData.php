@@ -3009,6 +3009,113 @@ return [
         ],
     ],
 
+    'testCreateSubmerchantLogin' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginSameEmail' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The email has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginPartnerAppMissing' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'DB Query Failed',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'   => Razorpay\OAuth\Exception\DBQueryException::class,
+            'message' => 'DB Query Failed',
+        ],
+    ],
+
+    'testCreateSubmerchantLoginDuplicate' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The email has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateLinkedAccountLogin' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN,
+                ],
+            ],
+            'status_code' => 403,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginPartnerWithMarketplace' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testOfferCheckoutPreferences' => [
         'request' => [
             'url'     => '/preferences',
