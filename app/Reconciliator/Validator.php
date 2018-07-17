@@ -42,7 +42,7 @@ class Validator
                                                         . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/"
                                                      ],
         RequestProcessor\Base::NETBANKING_BOB     => [  "/^(RE: )?Razorpay_Scroll_ of /",
-                                                        "/^Bank of Baroda RazorPay Internet Banking payment recon file for date "
+                                                        "/^Bank of Baroda RazorPay Internet Banking payment recon file for\s*date "
                                                         . "\([0-9]{2}-[0-9]{2}-20[0-9]{2}\)/"
                                                      ],
         RequestProcessor\Base::NETBANKING_CSB     => ["/^RAZORPAY_Recon File/"],
