@@ -520,7 +520,7 @@ class PartnerTest extends OAuthTestCase
 
     public function testRemovePartnerAccessMap()
     {
-        $partner = $this->allowAdminToAccessPartnerMerchant();
+        $this->allowAdminToAccessPartnerMerchant();
 
         $submerchant = $this->allowAdminToAccessSubMerchant();
 
