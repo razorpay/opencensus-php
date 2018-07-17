@@ -103,7 +103,7 @@ class Gateway extends Base\Gateway
             Action::AUTHORIZE);
 
         $this->saveCallbackResponse($content);
-
+        s($input['terminal']);
         return $this->getCallbackResponseData($input);
     }
 
@@ -123,8 +123,8 @@ class Gateway extends Base\Gateway
             RequestFields::ACTION                 => Status::YES,
             RequestFields::BANK_ID                => Constants::BANK_ID,
             RequestFields::MODE_OF_PAYMENT        => Constants::MODE_OF_PAYMENT_AUTH,
-            RequestFields::PAYEE_ID               => '',
-            RequestFields::ITEM_CODE              => '',
+            RequestFields::PAYEE_ID               => Constants::PAYEE_ID,
+            RequestFields::ITEM_CODE              => $input['payment']['id'],
             RequestFields::PRODUCT_REF_NUMBER     => $input['payment']['id'],
             RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount']),
             RequestFields::CURRENCY               => Currency::INR,
@@ -132,8 +132,8 @@ class Gateway extends Base\Gateway
             RequestFields::CG                     => Status::YES,
             RequestFields::LANGUAGE_ID            => Constants::USER_LANG_ID,
             RequestFields::USER_TYPE              => Constants::USER_TYPE,
-            RequestFields::APP_TYPE               => '',
-            RequestFields::MERCHANT_CODE          => '',
+            RequestFields::APP_TYPE               => Constants::RETAIL,
+            RequestFields::MERCHANT_CODE          => Constants::MERCHANT_CODE,
         ];
 
         return $data;
@@ -229,14 +229,14 @@ class Gateway extends Base\Gateway
             RequestFields::ACTION                 => Status::YES,
             RequestFields::BANK_ID                => Constants::BANK_ID,
             RequestFields::MODE_OF_PAYMENT        => Constants::MODE_OF_PAYMENT_VERIFY,
-            RequestFields::PAYEE_ID               => '',
-            RequestFields::ITEM_CODE              => '',
+            RequestFields::PAYEE_ID               => Constants::PAYEE_ID,
+            RequestFields::ITEM_CODE              => $input['payment']['id'],
             RequestFields::PRODUCT_REF_NUMBER     => $input['payment']['id'],
             RequestFields::AMOUNT                 => $input['payment']['amount'] / 100,
             RequestFields::CURRENCY               => Currency::INR,
             RequestFields::LANGUAGE_ID            => Constants::USER_LANG_ID,
             RequestFields::USER_TYPE              => Constants::USER_TYPE,
-            RequestFields::APP_TYPE               => '',
+            RequestFields::APP_TYPE               => Constants::RETAIL,
             RequestFields::STATFLG                => Constants::STATFLG,
             RequestFields::BANK_TRANSACTION_ID    => '',
         ];
@@ -313,8 +313,6 @@ class Gateway extends Base\Gateway
     {
         $attributes = [];
 
-        s($content);
-
         $attributes[Base\Entity::STATUS] = $content[ResponseFields::PAID];
 
         return $attributes;
@@ -346,7 +344,9 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        $sig_str = hash_hmac('sha256',"$str",'');
+        $secret = $this->getSecret();
+
+        $sig_str = hash_hmac('sha256',$str,$secret);
 
         return $sig_str;
     }
