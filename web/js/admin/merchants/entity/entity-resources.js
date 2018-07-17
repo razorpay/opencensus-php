@@ -155,7 +155,7 @@ function _getCreditsFields() {
     return [
       ['Id', item => item.id],
       ['Campaign', item => item.campaign],
-      ['Type', item => item.type],
+      ['Type', item => statusPill(item.type)],
       ['Value', item => item.value],
       ['Created At', item => formatDate(item.created_at)],
     ];
@@ -481,6 +481,10 @@ export function getDetailsViewMap(model) {
         : null,
     },
     {
+      label: 'Keyless Auth',
+      value: _getBoolIcon(details.activated && !details.has_key_access),
+    },
+    {
       label: 'MCC',
       value: details.category,
     },
@@ -629,8 +633,8 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Methods',
-      children: () =>
-        Object.keys(_getMethods).map(method => (
+      children: () => {
+        let methodRows = Object.keys(_getMethods).map(method => (
           <EntityRow
             key={method}
             label={_getMethods[method]}
@@ -638,7 +642,21 @@ export function getDetailsViewMap(model) {
               details.methods ? _getBoolIcon(details.methods[method]) : '-'
             }
           />
-        )),
+        ));
+
+        if (details.methods) {
+          let disabledBanks = details.methods.disabled_banks;
+          methodRows.push(
+            <EntityRow
+              key="disabled_banks"
+              label="Disabled Banks"
+              value={disabledBanks.length ? disabledBanks : '--'}
+            />
+          );
+        }
+
+        return methodRows;
+      },
     },
     {
       label: 'Suspended',
@@ -712,6 +730,7 @@ export function getDetailsViewMap(model) {
           creditsLogs={creditsLogs}
           fetchCreditsLogs={model.fetchCreditsLogs}
           getCreditsFields={_getCreditsFields()}
+          merchantId={details.id}
         />
       ),
     },

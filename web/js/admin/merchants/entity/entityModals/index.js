@@ -24,3 +24,4 @@ export GenerateReports from './GenerateReports/index';
 export ViewTeam from './ViewTeam';
 export EditFraudScore from './EditFraudScore';
 export EditWhiteListIps from './EditWhiteListIps';
+export ViewBanks from './ViewBanks';

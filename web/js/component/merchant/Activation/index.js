@@ -101,6 +101,7 @@ export default class ActivationWizard extends React.Component {
         this.props.data.business_registered_pin
         ? '1'
         : '0', // '1' => checkbox ticked
+    has_url: this.props.data && this.props.data.business_website ? '0' : '1', // '0' => value exists
     has_gstin: this.props.data && this.props.data.gstin ? '0' : '1', // '0' => value exists
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
@@ -500,11 +501,10 @@ export default class ActivationWizard extends React.Component {
     // has_gstin  = 0 => selected 1st radio box => Has GSTIN
     this.setState({
       has_gstin: this.props.data.gstin ? '0' : '1', // '1' => no value
+      has_url: this.props.data.business_website ? '0' : '1', // '1' => no value
     });
 
     // Step 2:
-    // Handle case where user changed to 'no gst' option. But since we don't modify GST once filled, 1st radio box must get auto selected if GST value exists.
-    // has_gstin  = 0 => selected 1st radio box => Has GSTIN
     this.setState({
       same_address:
         this.props.data.business_operation_pin ==
@@ -615,6 +615,9 @@ export default class ActivationWizard extends React.Component {
      * */
     if (stateName === 'has_gstin' && fieldValue === '1') {
       sideEffectFieldsToUpdate['gstin'] = null;
+    } else if (stateName === 'has_url' && fieldValue === '1') {
+      // If user marks no url from radio box
+      sideEffectFieldsToUpdate['business_website'] = null;
     }
 
     /* Step 3: If same_address is already ticked and any of business_registered fields are changed, then mark operational fields dirty;'.*/

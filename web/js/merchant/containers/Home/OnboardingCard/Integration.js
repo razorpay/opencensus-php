@@ -14,10 +14,22 @@ import {
   trackGoToPayments,
 } from './ga';
 
-const Icon = ({ mode, keysGenerated, paymentsMade }) => {
+const Icon = ({
+  mode,
+  keysGenerated,
+  paymentsMade,
+  hasKeyAccess,
+  businessWebsite,
+}) => {
   let className = '';
 
-  if (!keysGenerated) {
+  if (mode === 'live' && !hasKeyAccess) {
+    if (businessWebsite) {
+      className = 'activation-form-need-clarification';
+    } else {
+      className = 'keygen';
+    }
+  } else if (!keysGenerated) {
     className = 'keygen';
   } else if (!paymentsMade) {
     className = 'integrate';
@@ -56,8 +68,18 @@ class WrapperElement extends Component {
       keysGenerated,
       paymentsMade,
       stepNum,
+      hasKeyAccess,
+      businessWebsite,
       ...otherProps
     } = this.props;
+
+    if (mode === 'live' && !hasKeyAccess && businessWebsite) {
+      return (
+        <div {...otherProps}>
+          <div className="media">{children}</div>
+        </div>
+      );
+    }
 
     if (keysGenerated && !paymentsMade) {
       return (
@@ -77,7 +99,10 @@ class WrapperElement extends Component {
 
     return (
       <Link
-        to={(!keysGenerated && '/keys') || '/payments'}
+        to={
+          (((mode === 'live' && !hasKeyAccess) || !keysGenerated) && '/keys') ||
+          '/payments'
+        }
         onClick={this.trackStep}
         {...otherProps}
       >
@@ -95,13 +120,17 @@ const Title = ({
   children,
   keysGenerated,
   paymentsMade,
+  hasKeyAccess,
+  businessWebsite,
   ...otherProps
 }) => {
   const formattedMode = titleCase(mode);
 
   let text = '';
 
-  if (!keysGenerated) {
+  if (mode === 'live' && !hasKeyAccess) {
+    text = 'Get Complete Account Access';
+  } else if (!keysGenerated) {
     text = `Integrate in ${formattedMode} Mode`;
   } else if (!paymentsMade) {
     text = `Integrate & Create ${formattedMode} Payment`;
@@ -116,12 +145,20 @@ const Text = ({
   mode,
   children,
   keysGenerated,
+  hasKeyAccess,
+  businessWebsite,
   paymentsMade,
   ...otherProps
 }) => {
   let text = '';
 
-  if (!keysGenerated) {
+  if (mode === 'live' && !hasKeyAccess) {
+    if (businessWebsite) {
+      text = 'Your Website/App details are under review.';
+    } else {
+      text = 'Add Business Website/App details.';
+    }
+  } else if (!keysGenerated) {
     text = `Generate ${mode} API keys.`;
   } else if (!paymentsMade) {
     text = 'Go through our Documentation.';
@@ -207,29 +244,31 @@ export default class IntegrationStep extends Component {
   }
 
   render() {
-    const { mode } = this.props,
+    const { mode, hasKeyAccess, businessWebsite } = this.props,
       { isLoading, keysGenerated, paymentsMade } = this.state,
       isIntegrated = keysGenerated && paymentsMade,
       stepNum = this.getStep();
 
+    const commonProps = { mode, hasKeyAccess, businessWebsite };
+
     return (
       <WrapperElement
-        mode={mode}
+        {...commonProps}
         keysGenerated={keysGenerated}
         paymentsMade={paymentsMade}
         stepNum={stepNum}
         className={`Onboarding__Step ${isLoading ? ' loading' : ''}`}
       >
         <div className="media-icon">
-          <Icon mode={mode} {...this.state} />
+          <Icon {...commonProps} {...this.state} />
         </div>
         <div className="media-body">
           <b>
-            <Title mode={mode} {...this.state} />
+            <Title {...commonProps} {...this.state} />
             {isLoading && <PlaceholderLoader />}
           </b>
           <div className="step-desc">
-            <Text mode={mode} {...this.state} />
+            <Text {...commonProps} {...this.state} />
             {isLoading && <PlaceholderLoader />}
           </div>
         </div>

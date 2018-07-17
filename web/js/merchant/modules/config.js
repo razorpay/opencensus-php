@@ -1,6 +1,6 @@
 import ajax from 'merchant/utils/ajax';
 import { set, merge } from 'rzp/utils/immutable';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const CONFIG_FETCH = 'CONFIG_FETCH';
 const FEATURES_FETCH = 'FEATURES_FETCH';

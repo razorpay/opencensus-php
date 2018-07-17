@@ -1,6 +1,9 @@
 import { set } from 'rzp/utils/immutable';
 import VirtualAccount from 'merchant/models/VirtualAccount';
-import { makeActionCollectionReducer, fetchAll } from 'rzp/modules/collection';
+import {
+  makeActionCollectionReducer,
+  fetchAll,
+} from 'merchant/modules/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 
 const VIRTUAL_ACCOUNT_CREATE = 'VIRTUAL_ACCOUNT_CREATE';

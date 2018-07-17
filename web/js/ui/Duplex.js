@@ -62,7 +62,10 @@ function getValue(result, mode, attributes) {
         <i class={`${value ? 'i-yes text-success' : 'i-no text-danger'}`} />
       </span>
     );
-  } else if (key.endsWith('status')) {
+  } else if (
+    key.endsWith('status') ||
+    (key === 'type' && attributes.entity == 'credits')
+  ) {
     value = statusPill(value);
   } else if (
     // charge_at is time

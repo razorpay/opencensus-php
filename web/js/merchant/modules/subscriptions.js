@@ -5,12 +5,12 @@ import {
   makeActionCollectionReducer,
   fetchAll,
   updateEntityInList,
-} from 'rzp/modules/collection';
+} from 'merchant/modules/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 
 import { PLAN_FETCH } from 'merchant/modules/plans';
 import { CUSTOMER_FETCH } from 'merchant/modules/customers';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const SUBSCRIPTIONS_FETCH = 'SUBSCRIPTIONS_FETCH';
 const SUBSCRIPTION_CREATE = 'SUBSCRIPTION_CREATE';

@@ -20,6 +20,7 @@ const heading =
   state => {
     return {
       user: state.session.user,
+      business_website: state.session.user.business_website,
       mode: state.session.mode,
     };
   },
@@ -60,6 +61,7 @@ export default class SubscriptionsController extends Component {
             description={heading}
             formType="subscriptions"
             isTestMode={false}
+            isPreStepCompleted={() => !!this.props.business_website}
           />
         </div>
       ),
@@ -78,6 +80,7 @@ export default class SubscriptionsController extends Component {
           formType="subscriptions"
           isTestMode={this.props.mode === 'test'}
           enableFeatureInTestMode={this.enableFeature}
+          isPreStepCompleted={!!this.props.business_website}
         />
       );
     }

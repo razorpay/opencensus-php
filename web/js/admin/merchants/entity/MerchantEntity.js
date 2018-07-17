@@ -683,6 +683,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
       <div class="group">
         <div class="group-heading" />
+
+        <ShowWhen permission="view_merchant_banks">
+          <div onClick={actions.ViewBanks}>
+            View Banks
+            <i class="pull-right i i-bank" />
+          </div>
+        </ShowWhen>
+
         <ShowWhen permission="edit_merchant_mark_referred">
           <div onClick={isDetailsLoading ? null : actions.MarkReferred}>
             Mark as Referred

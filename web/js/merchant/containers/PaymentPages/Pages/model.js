@@ -1,4 +1,4 @@
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 export function createPaymentPage(reqPayload) {
   reqPayload.currency = 'INR'; // TODO: Get is dynamically
@@ -73,6 +73,9 @@ export function activatePaymentPage(id, data) {
     url: `payment_links/${id}/activate`,
     method: 'patch',
     data,
+    headers: {
+      'content-type': 'application/json',
+    },
   });
 }
 

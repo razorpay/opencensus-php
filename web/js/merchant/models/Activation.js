@@ -1,5 +1,5 @@
 import Entity from './Entity';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { uniqueArray } from 'common/util';
 
 import {

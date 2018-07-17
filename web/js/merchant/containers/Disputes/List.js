@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import moment from 'moment';
 
 import DisputeListFilter from 'merchant/components/Disputes/DisputeListFilter';
 import { daysLeftInExpiry } from 'merchant/utils/disputes';
-import { fetchDisputes as fetchAll } from 'rzp/modules/collection';
+import { fetchDisputes as fetchAll } from 'merchant/modules/collection';
 import DataTable from 'rzp/ui/Table/DataTable';
-import Banner from 'rzp/ui/Banner';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import { titleCase } from 'common/util';
 import { getTime } from 'rzp/ui/item';
