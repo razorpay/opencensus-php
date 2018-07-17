@@ -621,10 +621,26 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'     => '10000000000011',
-                'entity' => 'merchant',
-                'user' => [],
+                'id'               => '10000000000011',
+                'entity'           => 'merchant',
+                'user'             => [],
                 'dashboard_access' => false,
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantProxyAuth' => [
+        'request'  => [
+            'url'     => '/submerchants/10000000000011',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => '10000000000011',
+                'entity'           => 'merchant',
+                'user'             => [],
+                'dashboard_access' => true,
             ],
         ],
     ],
@@ -641,11 +657,11 @@ return [
                 'count'  => 1,
                 'items'  => [
                     [
-                        'id'     => '10000000000011',
-                        'entity' => 'merchant',
-                        'user' => [],
+                        'id'               => '10000000000011',
+                        'entity'           => 'merchant',
+                        'user'             => null,
                         'dashboard_access' => false,
-                    ]
+                    ],
                 ],
             ],
         ],

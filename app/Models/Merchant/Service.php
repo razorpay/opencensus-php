@@ -1951,11 +1951,10 @@ class Service extends Base\Service
 
     /**
      * @param string $merchantId
-     * @param array  $input
      *
      * @return array
      */
-    public function createPartnerAccessMap(string $merchantId, array $input): array
+    public function createPartnerAccessMap(string $merchantId): array
     {
         $partner = $this->fetchPartner();
 
@@ -1968,11 +1967,10 @@ class Service extends Base\Service
 
     /**
      * @param string $merchantId
-     * @param array  $input
      *
      * @return array
      */
-    public function deletePartnerAccessMap(string $merchantId, array $input): array
+    public function deletePartnerAccessMap(string $merchantId): array
     {
         $partner = $this->fetchPartner();
 

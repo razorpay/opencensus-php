@@ -1050,39 +1050,79 @@ class Core extends Base\Core
         return $merchants;
     }
 
-    protected function getPartnerSubmerchantData(Entity $partner, Entity $submerchant)
+    /**
+     * Sets the partner attributes in the instance of Merchant\Entity so that toArrayPartner() can be used later.
+     *
+     * @param Entity $partner
+     * @param Entity $submerchant
+     *
+     * @return Entity
+     */
+    protected function getPartnerSubmerchantData(Entity $partner, Entity $submerchant): Entity
     {
-        $response = $submerchant;
-
-        $response[Entity::DETAILS] = [
+        $submerchant[Entity::DETAILS] = [
             Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS)
         ];
 
-        $response[Entity::USER] = $this->getNonPartnerPrimaryOwner($partner, $submerchant);
+        $nonPartnerPrimaryOwner = $this->getNonPartnerPrimaryOwner($partner, $submerchant);
 
-        $response[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($partner, $submerchant);
+        if ($nonPartnerPrimaryOwner === null)
+        {
+            $submerchant[Entity::USER] = null;
+        }
+        else
+        {
+            $submerchant[Entity::USER] = $nonPartnerPrimaryOwner->toArrayPublic();
+        }
 
-        return $response;
+        $submerchant[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($submerchant);
+
+        return $submerchant;
     }
 
-    protected function getNonPartnerPrimaryOwner(Entity $partner, Entity $merchant): array
+    /**
+     * A submerchant account can have at a max of 2 users with the `owner` role -
+     * One being his own user and second being the partner merchant's user linked as an owner to the submerchant.
+     *
+     * This function returns the first type of primary owner.
+     *
+     * @param Entity $partner
+     * @param Entity $merchant
+     *
+     * @return null|User\Entity
+     */
+    protected function getNonPartnerPrimaryOwner(Entity $partner, Entity $merchant)
     {
         $owners = $merchant->owners();
 
-        $partnerEmail = $partner->getEmail();
+        $partnerUserEmail = null;
+
+        $partnerUser = $partner->primaryOwner();
+
+        if ($partnerUser !== null)
+        {
+           $partnerUserEmail = $partnerUser->getEmail();
+        }
 
         foreach ($owners as $owner)
         {
-            if ($owner->getEmail() !== $partnerEmail)
+            if ($owner->getEmail() !== $partnerUserEmail)
             {
-                return $owner->toArrayPublic();
+                return $owner;
             }
         }
 
-        return [];
+        return null;
     }
 
-    protected function hasSubmerchantDashboardAccess(Entity $partner, Entity $submerchant): bool
+    /**
+     * Checks whether the logged in partner user has access over the submerchant's account
+     *
+     * @param Entity $submerchant
+     *
+     * @return bool
+     */
+    protected function hasSubmerchantDashboardAccess(Entity $submerchant): bool
     {
         $userIds = $submerchant->users()->get()->getIds();
 
