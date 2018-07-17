@@ -21,7 +21,7 @@ class Gateway extends Base\Gateway
 
     const ACQUIRER = 'axis';
 
-    protected $gateway = Payment\Gateway::UPI_AXIS;
+    protected $gateway = 'upi_axis';
 
     protected $response;
 
@@ -33,7 +33,7 @@ class Gateway extends Base\Gateway
      * This is what shows up as the payee
      * on the notification to the customer
      */
-    const DEFAULT_PAYEE_VPA = 'razorpaypg@axisbank';
+    const DEFAULT_PAYEE_VPA = 'razorpaypg@axis';
 
     protected $map = [
 

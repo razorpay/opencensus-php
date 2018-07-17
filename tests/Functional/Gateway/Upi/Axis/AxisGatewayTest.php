@@ -56,4 +56,3 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals($expectedStatus, $status);
     }
 }
-
