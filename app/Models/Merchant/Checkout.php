@@ -558,7 +558,7 @@ class Checkout
         if (($order !== null) and
             ($order->hasOffers() === true))
         {
-            $this->checkAndFillOrderOffers($merchant, $order, $data);
+            $this->checkAndFillOrderOffers($order, $data);
         }
         else
         {
@@ -566,11 +566,16 @@ class Checkout
         }
     }
 
-    protected function checkAndFillOrderOffers(Merchant\Entity $merchant, Order\Entity $order, array & $data)
+    protected function checkAndFillOrderOffers(Order\Entity $order, array & $data)
     {
         $offers = $order->offers;
 
         $orderAmount = $order->getAmount();
+
+        if ($offers->isEmpty() === true)
+        {
+            return;
+        }
 
         $verbose = true;
 
@@ -587,9 +592,11 @@ class Checkout
 
             if ($checker->checkApplicabilityOnOrder($order) === true)
             {
-                $this->updateMethodsToEnableOnCheckout($merchant, $offer, $data);
+                $this->updateMethodsToEnableOnCheckout($offer, $data);
             }
         }
+
+        $this->updateEmiOptionsUsingOffers($offers, $data);
 
         //
         // For multiple offers, we show all methods,
@@ -616,7 +623,12 @@ class Checkout
         }
     }
 
-    protected function updateMethodsToEnableOnCheckout(Merchant\Entity $merchant, Offer\Entity $offer, array & $data)
+    protected function updateEmiOptionsUsingOffers($offers, array & $data)
+    {
+        $data['methods']['emi_options'] = (new Emi\Service)->getEmiOptions($offers);
+    }
+
+    protected function updateMethodsToEnableOnCheckout(Offer\Entity $offer, array & $data)
     {
         $offerMethod = $offer->getPaymentMethod();
 
@@ -641,11 +653,8 @@ class Checkout
 
                 $offerMethodType = $offer->getPaymentMethodType();
 
-                $emiSubvention = $merchant->getEmiSubvention();
-
                 $this->updateMethodsForCardOrEmiOffer(
                     $data,
-                    $emiSubvention,
                     $offerMethod,
                     $offerMethodType);
 
@@ -698,7 +707,6 @@ class Checkout
 
     protected function updateMethodsForCardOrEmiOffer(
         array & $data,
-        string $emiSubvention,
         string $offerMethod,
         string $offerMethodType = null)
     {
@@ -710,11 +718,7 @@ class Checkout
 
             $data['methods'][Payment\Method::EMI] = true;
 
-            $data['methods']['emi_subvention']    = $emiSubvention;
-
             $data['methods']['emi_plans']         = $emiService->all();
-
-            $data['methods']['emi_options']       = $emiService->getEmiOptions();
         }
 
         switch ($offerMethodType)

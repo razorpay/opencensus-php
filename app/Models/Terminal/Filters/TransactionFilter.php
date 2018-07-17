@@ -238,7 +238,7 @@ class TransactionFilter extends Terminal\Filter
             ($payment->card->isDebit() === true))
         {
             if (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) !== true) and
-                ($terminal->getGateway() !== Gateway::HITACHI))
+                ($terminal->isDebitRecurring() === false))
             {
                 return false;
             }
