@@ -44,8 +44,11 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
         $fileData = [
             'file_path'  => $file['local_file_path'],
+            'signed_url' => $signedFileUrl,
             'file_name'  => basename($file['local_file_path']),
         ];
 
@@ -92,7 +95,7 @@ class RefundFile extends Base\RefundFile
             ];
 
             $txt = $this->getTextData($data);
-
+            s($txt);
             return $txt;
 
         }
