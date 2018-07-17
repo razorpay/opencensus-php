@@ -130,6 +130,10 @@ export const options = {
     ' 21': 21,
     ' 24': 24,
   },
+  auth_type: {
+    '': 'All',
+    pin: 'PIN',
+  },
   percent_rate: '',
   fixed_rate: '',
   min_fee: '',
@@ -341,6 +345,18 @@ class Rule extends CollectionItem {
       var field = this.selectField('emi_duration');
       if (field) {
         return <div>{field} Months</div>;
+      }
+    }
+  }
+
+  authTypeField() {
+    if (
+      this.payment_method === 'card' &&
+      this.payment_method_type === 'debit'
+    ) {
+      var field = this.selectField('auth_type');
+      if (field) {
+        return <div>Auth Type: {field}</div>;
       }
     }
   }

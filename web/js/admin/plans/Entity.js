@@ -85,6 +85,7 @@ const fields = [
         {item.selectField('payment_method')}
         {item.paymentMethodTypeField()}
         {item.receiverTypeField()}
+        {item.authTypeField()}
         {item.internationalField()}
         {item.emiDurationField()}
       </div>
