@@ -355,6 +355,7 @@ class Rule extends CollectionItem {
       this.payment_method_type === 'debit'
     ) {
       var field = this.selectField('auth_type');
+
       if (field) {
         return <div>Auth Type: {field}</div>;
       }
