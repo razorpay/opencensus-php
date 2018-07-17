@@ -1168,6 +1168,7 @@ class BasicAuth
         {
             $this->merchant = $authCreds->getMerchant();
         }
+
         return $this->merchant;
     }
 

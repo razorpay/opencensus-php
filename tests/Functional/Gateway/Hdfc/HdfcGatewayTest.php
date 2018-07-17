@@ -145,6 +145,76 @@ class HdfcGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($hdfcData, $hdfcCaptured);
     }
 
+    public function testDebitRecurringPayment()
+    {
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->fixtures->create('iin',
+                                [
+                                    'iin'    => '607466',
+                                    'issuer' => 'HDFC',
+                                    'type'   => 'debit',
+                                ]);
+
+
+
+        $payment['card']['number'] = '6074661038443336';
+
+        $type = [
+            'recurring_non_3ds' => '1',
+            'recurring_3ds'     => '1',
+            'debit_recurring'   => '1',
+        ];
+
+        $this->fixtures->edit('terminal', 'FssRecurringTl', ['type' => $type]);
+
+        $this->fixtures->merchant->addFeatures(['hdfc_debit_si']);
+
+        $response = $this->doAuthPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+
+        $token = $paymentEntity['token_id'];
+        unset($payment['card']);
+
+        // Set payment for subsequent recurring payment
+        $payment['token'] = $token;
+
+        // Switch to private auth for subsequent recurring payment
+        $this->ba->privateAuth();
+
+        $response = $this->doS2sRecurringPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        // $this->assertTestResponse($paymentEntity);
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+
+        $paymentId = Payment::verifyIdAndSilentlyStripSign($paymentId);
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertNotNull($hdfc['ref']);
+        $this->assertNotNull($hdfc['auth']);
+        $this->assertEquals($paymentId, $hdfc['payment_id']);
+        $this->assertEquals('APPROVED', $hdfc['result']);
+        $this->assertEquals('authorized', $hdfc['status']);
+
+        $payment = $this->capturePayment($paymentEntity['id'], $paymentEntity['amount']);
+
+        $hdfcCaptured = $this->getLastEntity('hdfc', true);
+
+        $hdfcData = $this->testData['testHdfcPaymentEntity'];
+
+        $this->assertArraySelectiveEquals($hdfcData, $hdfcCaptured);
+    }
+
     public function testFailureInRecurringPayment()
     {
         $payment = $this->getDefaultRecurringPaymentArray();

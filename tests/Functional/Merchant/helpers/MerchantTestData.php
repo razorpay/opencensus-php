@@ -2464,19 +2464,70 @@ return [
             'content' => [
                 'methods' => [
                     'emi_options' => [
+                        'AMEX' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 316389
+                            ],
+
+                            [
+                                'duration'   => 6,
+                                'interest'   => 12,
+                                'subvention' => 'customer',
+                                'min_amount' => 300000
+                            ],
+
+                        ],
                         'HDFC' => [
                             [
                                 'duration'   => 9,
                                 'interest'   => 12,
                                 'subvention' => 'customer',
-                                'min_amount' => 500000
+                                'min_amount' => 300000
                             ],
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutWithMultipleSubEmiOffers' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'emi_options' => [
+                        'AMEX' => [
                             [
                                 'duration'   => 9,
                                 'interest'   => 0,
                                 'subvention' => 'merchant',
-                                'min_amount' => 527315
-                            ]
+                                'min_amount' => 316389
+                            ],
+
+                            [
+                                'duration'   => 6,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 319149
+                            ],
+
+                        ],
+                        'HDFC' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 12,
+                                'subvention' => 'customer',
+                                'min_amount' => 300000
+                            ],
                         ]
                     ]
                 ]

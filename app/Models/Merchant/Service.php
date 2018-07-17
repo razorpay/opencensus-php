@@ -1964,7 +1964,7 @@ class Service extends Base\Service
         (new AccessMap\Service)->mapOAuthApplication($subMerchant->getId(), ['application_id' => $appId]);
     }
 
-    protected function validateAggregatorSubMerchantRelation(Entity $subMerchant, Entity $aggregatorMerchant)
+    protected function validateAggregatorSubMerchantRelation(Entity $subMerchant, string $aggregatorMerchantId)
     {
         if ($subMerchant->isLinkedAccount() === true)
         {
@@ -1973,16 +1973,18 @@ class Service extends Base\Service
 
         $referrer = $subMerchant->getReferrer();
 
-        $referrerNotEmptyAndSame = (empty($referrer) === false) and ($referrer === $aggregatorMerchant->getId());
+        $referrerNotEmptyAndSame = (empty($referrer) === false) and ($referrer === $aggregatorMerchantId);
 
         if ($referrerNotEmptyAndSame === true)
         {
             return;
         }
 
+        $aggregatorMerchant = $this->repo->merchant->findOrFailPublic($aggregatorMerchantId);
+
         $isNonPurePlatformAggregator = $aggregatorMerchant->isNonPurePlatformPartner();
 
-        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchant->getId());
+        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchantId);
 
         if (($isNonPurePlatformAggregator === true) and ($isPartnerMerchantMapped === true))
         {
