@@ -69,6 +69,8 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
+        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
+
         // this needs to be done after we have card entity as we need to know if
         // cards used in payment is international
         $this->processCurrencyConversions($payment);
@@ -1721,8 +1723,6 @@ trait Authorize
         $payment->setInternational();
 
         $this->setRecurringType($payment, $input);
-
-        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
     }
 
     protected function setRecurringType(Payment\Entity $payment, array $input)
