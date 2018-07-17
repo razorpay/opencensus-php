@@ -53,7 +53,7 @@ class Status
 
     protected static function throwInvalidResponseErrorIfCodeNotMapped($status, array $mapping, array $content)
     {
-        if (isset($mapping[$status]) === false)
+        if (in_array($status, $mapping) === false)
         {
             // Log the whole row, that way it'd be easier to debug based on token id or
             // payment id in case it fails
