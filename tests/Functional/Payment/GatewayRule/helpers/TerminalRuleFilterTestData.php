@@ -644,8 +644,9 @@ return [
 
     'testRecurringRule'  => [
         'payment_options' => [
-            'method' => Method::CARD,
-            'recurring' => 1,
+            'method'         => Method::CARD,
+            'recurring'      => 1,
+            'recurring_type' => 'initial',
         ],
         'fixtures' => [
             [

@@ -225,11 +225,12 @@ class Gateway extends Base\Gateway
         {
             $msg = $e->getMessage();
 
-            $this->trace->traceException($e);
-
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR;
-
-            throw new Exception\GatewayErrorException($errorCode);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
+                null,
+                $msg,
+                [],
+                $e);
         }
 
         if ($ret === false)
@@ -724,8 +725,6 @@ class Gateway extends Base\Gateway
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException($e);
-
             $error = $e->getMessage();
 
             switch (true)
@@ -738,6 +737,8 @@ class Gateway extends Base\Gateway
                 case strpos($error, 'SignatureMethod') !== false:
                 case strpos($error, 'SignatureValue') !== false:
                 case strpos($error, 'KeyInfo') !== false:
+                    $this->trace->traceException($e);
+
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
                         null,
@@ -749,8 +750,10 @@ class Gateway extends Base\Gateway
             // Throw Critical for now
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                'Invalid XML',
-                $error);
+                null,
+                null,
+                [],
+                $e);
         }
     }
 

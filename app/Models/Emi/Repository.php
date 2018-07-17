@@ -41,4 +41,26 @@ class Repository extends Base\Repository
 
         return $query->firstOrFail();
     }
+
+    public function fetchByDurationsAndBankOrNetwork(array $durations = [], string $bank = null, string $network = null)
+    {
+        $query = $this->newQuery();
+
+        if (empty($durations) === false)
+        {
+            $query->whereIn(Entity::DURATION, $durations);
+        }
+
+        if (empty($bank) === false)
+        {
+            $query->where(Entity::BANK, $bank);
+        }
+
+        if ($network === Network::AMEX)
+        {
+            $query->where(Entity::NETWORK, $network);
+        }
+
+        return $query->get();
+    }
  }

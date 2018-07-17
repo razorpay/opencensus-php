@@ -217,6 +217,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE2,
         self::DISPUTED,
         self::AUTH_TYPE,
+        self::RECURRING_TYPE,
     ];
 
     protected $visible = [
@@ -1822,71 +1823,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE2);
     }
 
-    /**
-     * @param bool                  $accessCheck For terminal selection, we need to ensure that it's either private
-     *                                           auth or privilege auth. If it's public auth, terminal selection
-     *                                           logic needs to treat it as first recurring only because in public
-     *                                           auth, it always needs to go via 2fa terminal.
-     *
-     * @param Base\PublicCollection $gatewayTokens
-     *
-     * @return bool
-     * @throws Exception\LogicException
-     */
-    public function isSecondRecurring($accessCheck = false, Base\PublicCollection $gatewayTokens = null)
+    public function isSecondRecurring()
     {
-        if ($this->isRecurring() === false)
+        if (($this->isRecurring() === true) and
+            ($this->isRecurringTypeAuto() === true))
         {
-            return false;
+            return true;
         }
 
-        $app = \App::getFacadeRoot();
-
-        if ($accessCheck === true)
-        {
-            $basicAuth = $app['basicauth'];
-
-            if (($basicAuth->isPrivateAuth() === false) and
-                ($basicAuth->isPrivilegeAuth() === false))
-            {
-                return false;
-            }
-        }
-
-        $token = $this->getGlobalOrLocalTokenEntity();
-
-        // Recurring payments should always have a token!
-        if ($token === null)
-        {
-            throw new Exception\LogicException(
-                'Token absent for recurring payment',
-                ErrorCode::SERVER_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT,
-                [
-                    'payment_id'    => $this->getId(),
-                    'access_check'  => $accessCheck,
-                ]);
-        }
-
-        //
-        // We use null check and not count here because gatewayTokens collection passed
-        // might have 0 items. In this case, we don't need to run the query again. The
-        // query would have already been run and the result could have been 0 items.
-        //
-        if ($gatewayTokens === null)
-        {
-            $reference = $this->getReferenceForGatewayToken();
-
-            $gatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
-        }
-
-        //
-        // We can have multiple gateway_tokens for a single token.
-        // Each gateway_token would correspond to a different gateway.
-        // This still means that this is second recurring since a
-        // gateway_token has already been created for the given token.
-        // The token can now be used without 2FA.
-        //
-        return ($gatewayTokens->count() > 0);
+        return false;
     }
 
     public function isEmiMerchantSubvented()
@@ -2239,7 +2184,8 @@ class Entity extends Base\PublicEntity
         $merchantIds = [
             '10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f',
             '7thBRSDflu7NHL', '87qTXzFTBLFN7i', '9sOd4xwUKox63N',
-            '9fI2f7tNoAmVhu', '6H7N6hlcv29OMG', '8tiqrk8Qpc47l9'
+            '9fI2f7tNoAmVhu', '6H7N6hlcv29OMG', '8tiqrk8Qpc47l9',
+            '6ZLE5BE57SExGF'
         ];
 
         $currentMerchantId = $this->getMerchantId();
@@ -2749,7 +2695,7 @@ class Entity extends Base\PublicEntity
         // Since the first auth transaction would have already been
         // done, we don't need to do any MaxMind risk checks for this.
         //
-        if ($this->isSecondRecurring(true) === true)
+        if ($this->isSecondRecurring() === true)
         {
             return false;
         }

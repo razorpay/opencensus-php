@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use DB;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
@@ -288,6 +289,26 @@ class Repository extends Base\Repository
             ->get();
 
         return $refunds;
+    }
+
+    public function fetchFailedRefundsByGateway()
+    {
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
+
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $data =  $this->newQuery()
+                       ->select(DB::raw('payments.gateway as gateway, count(*) AS count'))
+                       ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                       ->where($refundStatus, '=', Refund\STATUS::FAILED)
+                       ->groupBy($paymentGateway)
+                       ->get();
+
+        return $data;
     }
 
     public function fetchFailedRefundsForGatewayBetweenTimestamps($from, $to, $gateway)

@@ -7,6 +7,7 @@ use App;
 use Redirect;
 use Request;
 use RZP\Models\Admin;
+use RZP\Models\Report;
 
 class AdminController extends Controller
 {
@@ -184,6 +185,24 @@ class AdminController extends Controller
         $input = Request::all();
 
         $data = $this->service()->createBatch($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getOpsReportTypes()
+    {
+        $report = new Report\Types\OpsReport;
+
+        $data = $report->getOpsReportTypes();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getOpsReport($type)
+    {
+        $report = new Report\Types\OpsReport;
+
+        $data = $report->getOpsReport($type);
 
         return ApiResponse::json($data);
     }

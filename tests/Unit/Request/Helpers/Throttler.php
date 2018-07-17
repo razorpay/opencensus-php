@@ -10,6 +10,17 @@ use RZP\Http\Throttle\Throttler as BaseThrottler;
  */
 class Throttler extends BaseThrottler
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        //
+        // Generally Throttler class gets used in middleware and there reqCtx is initialized.
+        // For the purpose of Unit testing we initialize reqCtx manually.
+        //
+        $this->reqCtx->init();
+    }
+
     public function __call(string $name, array $args)
     {
         return $this->$name(...$args);

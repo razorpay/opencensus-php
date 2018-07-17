@@ -153,14 +153,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING,
+                    'description'   => 'The amount must be 0 for eMandate registration',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => RZP\Exception\BadRequestException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING,
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -169,14 +169,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING,
+                    'description'   => 'The amount must be 0 for eMandate registration',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => RZP\Exception\BadRequestException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING,
-        ],
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+         ],
     ],
 ];

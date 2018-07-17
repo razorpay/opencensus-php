@@ -13,9 +13,9 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Holidays;
 
-class BeneficiaryFile extends Base\Core
+class Beneficiary extends Base\Core
 {
-    public function generate(array $input, string $channel): array
+    public function register(array $input, string $channel): array
     {
         (new Validator)->validateInput('merchant_beneficiary_register', $input);
 
@@ -23,12 +23,12 @@ class BeneficiaryFile extends Base\Core
 
         $bankAccounts = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt($merchantIds);
 
-        $result = $this->generateBeneficiaryFile($bankAccounts, $channel);
+        $result = $this->registerBeneficiary($bankAccounts, $channel);
 
         return $result;
     }
 
-    public function generateBetweenTimestamps(array $input, string $channel): array
+    public function registerBetweenTimestamps(array $input, string $channel): array
     {
         (new Validator)->validateInput('beneficiary_register', $input);
 
@@ -63,7 +63,7 @@ class BeneficiaryFile extends Base\Core
             TraceCode::MERCHANT_BENEFICIARY_FILE_GENERATE,
             ['new_beneficiaries_added' => $newBeneficiaryCount]);
 
-        $result = $this->generateBeneficiaryFile($bankAccounts, $channel, $input);
+        $result = $this->registerBeneficiary($bankAccounts, $channel, $input);
 
         // should notify after beneficiary file is generated.
         $message = "Merchant Beneficiary file generated. Beneficiary added since".
@@ -81,7 +81,7 @@ class BeneficiaryFile extends Base\Core
         return $result;
     }
 
-    protected function generateBeneficiaryFile(
+    protected function registerBeneficiary(
         Base\PublicCollection $bankAccounts,
         string $channel,
         array $input = []): array

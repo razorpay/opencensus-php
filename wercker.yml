@@ -165,10 +165,7 @@ deploy-canary:
                 echo "[ERROR] Cannot deploy a non-canary/non-master branch to prod-canary"
                 exit 1
               fi
-              if [ -n $(git rev-list HEAD | grep $MASTER) ]; then
-                echo "[ERROR] Cannot deploy outdated branch to prod-canary"
-                exit 1
-              fi
+              ( git rev-list HEAD | grep $MASTER ) || ( echo "[ERROR] Cannot deploy outdated branch to prod-canary" && exit 1)
             fi
       - script:
           name: check vendor dir exists

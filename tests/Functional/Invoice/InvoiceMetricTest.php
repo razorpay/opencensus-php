@@ -71,7 +71,7 @@ class InvoiceMetricTest extends TestCase
              ->method('histogram')
              ->withConsecutive(
                 [
-                    'http_request_duration_microseconds',
+                    'http_request_duration_milliseconds.histogram',
                     $this->greaterThanOrEqual(0),
                     $expectedHttpMetricTags,
                 ]);
@@ -85,7 +85,7 @@ class InvoiceMetricTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->exactly(10))
+        $mock->expects($this->exactly(7))
              ->method('count')
              ->withConsecutive(
                 [
@@ -120,60 +120,66 @@ class InvoiceMetricTest extends TestCase
                         'entity'  => 'merchant',
                     ],
                 ],
-                [
-                    'traces_total',
-                    1,
-                    [
-                        'code'       => 'INVOICE_CREATE_REQUEST',
-                        'level'      => 200,
-                        'level_name' => 'INFO',
-                        'channel'    => 'Razorpay API',
-                        'route'      => 'invoice_create',
-                        'rzp_mode'   => 'test',
-                    ],
-                ],
+                // [
+                //     'traces_total',
+                //     1,
+                //     [
+                //         'code'            => 'INVOICE_CREATE_REQUEST',
+                //         'context_code'    => 'INVOICE_CREATE_REQUEST',
+                //         'level'           => 200,
+                //         'level_name'      => 'INFO',
+                //         'channel'         => 'Razorpay API',
+                //         'route'           => 'invoice_create',
+                //         'rzp_mode'        => 'test',
+                //         'rzp_merchant_id' => '10000000000000',
+                //     ],
+                // ],
                 [
                     'async_jobs_received_total',
                     1,
                     [
                         'async_job_connection' => 'sync',
                         'async_job_queue'      => 'sync',
-                        'async_job_name'       => 'RZP\Jobs\EsSync',
+                        'async_job_name'       => 'RZP_Jobs_EsSync',
                     ],
                 ],
-                [
-                    'traces_total',
-                    1,
-                    [
-                        'code'       => 'ES_SYNC_REQUEST',
-                        'level'      => 100,
-                        'level_name' => 'DEBUG',
-                        'channel'    => 'Razorpay API',
-                        'route'      => 'invoice_create',
-                        'rzp_mode'   => 'test',
-                    ],
-                ],
+                // [
+                //     'traces_total',
+                //     1,
+                //     [
+                //         'code'            => 'ES_SYNC_REQUEST',
+                //         'context_code'    => 'ES_SYNC_REQUEST',
+                //         'level'           => 100,
+                //         'level_name'      => 'DEBUG',
+                //         'channel'         => 'Razorpay API',
+                //         'route'           => 'invoice_create',
+                //         'rzp_mode'        => 'test',
+                //         'rzp_merchant_id' => '10000000000000',
+                //     ],
+                // ],
                 [
                     'async_jobs_processed_total',
                     1,
                     [
                         'async_job_connection' => 'sync',
                         'async_job_queue'      => 'sync',
-                        'async_job_name'       => 'RZP\Jobs\EsSync',
+                        'async_job_name'       => 'RZP_Jobs_EsSync',
                     ],
                 ],
-                [
-                    'traces_total',
-                    1,
-                    [
-                        'code'       => 'INVOICE_CREATED',
-                        'level'      => 200,
-                        'level_name' => 'INFO',
-                        'channel'    => 'Razorpay API',
-                        'route'      => 'invoice_create',
-                        'rzp_mode'   => 'test',
-                    ],
-                ],
+                // [
+                //     'traces_total',
+                //     1,
+                //     [
+                //         'code'            => 'INVOICE_CREATED',
+                //         'context_code'    => 'INVOICE_CREATED',
+                //         'level'           => 200,
+                //         'level_name'      => 'INFO',
+                //         'channel'         => 'Razorpay API',
+                //         'route'           => 'invoice_create',
+                //         'rzp_mode'        => 'test',
+                //         'rzp_merchant_id' => '10000000000000',
+                //     ],
+                // ],
                 [
                     'http_requests_total',
                     1,
@@ -184,7 +190,7 @@ class InvoiceMetricTest extends TestCase
              ->method('histogram')
              ->withConsecutive(
                 [
-                    'http_request_duration_microseconds',
+                    'http_request_duration_milliseconds.histogram',
                     $this->greaterThanOrEqual(0),
                     $expectedHttpMetricTags,
                 ]);
