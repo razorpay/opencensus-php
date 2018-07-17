@@ -31,6 +31,7 @@ class MailTags
     const FTA_CRITICAL_ERROR               = 'fta_critical_error';
 
     const CORPORATION_NETBANKING_REFUNDS_MAIL   = 'corporation_netbanking_refunds_mail';
+    const ALLAHABAD_NETBANKING_REFUNDS_MAIL     = 'allahabad_netbanking_refunds_mail';
     const HDFC_NETBANKING_REFUNDS_MAIL          = 'hdfc_netbanking_refunds_mail';
     const BOB_NETBANKING_REFUNDS_MAIL           = 'bob_netbanking_refunds_mail';
     const AXIS_NETBANKING_REFUNDS_MAIL          = 'axis_netbanking_refunds_mail';
