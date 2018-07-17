@@ -6,6 +6,8 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
+use RZP\Models\Payment;
+use RZP\Models\Transfer;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as EntityConstant;
 
@@ -103,9 +105,28 @@ class Service extends Base\Service
 
         $input['expand'] = ['transfer', 'transfer.recipient_settlement'];
 
-        $transfers = $this->repo->payment->fetch($input, $merchantId);
+        // fetching by payments fetch to handle notes search.
+        $payments = $this->repo->payment->fetch($input, $merchantId);
 
-        return $transfers->toArrayPublic();
+        $transfersResponse = $this->createResponse($payments);
+
+        return $transfersResponse;
+    }
+
+    private function createResponse($payments)
+    {
+        $transfers = [];
+        foreach ($payments as $payment)
+        {
+            $result = $payment->toArrayPublic();
+
+            $transferData = $result[Payment\Entity::TRANSFER];
+            $transferData[Transfer\Entity::NOTES] = $result[Payment\Entity::NOTES];
+
+            $transfers[] = $transferData;
+        }
+
+        return $transfers;
     }
 
     protected function validateLinkedAccount()
