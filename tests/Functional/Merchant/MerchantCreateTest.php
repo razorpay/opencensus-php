@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use Mail;
-use Queue;
 use Razorpay\OAuth\Application;
 use Illuminate\Database\Eloquent\Factory;
 use Razorpay\OAuth\Application\Entity as OAuthApp;
@@ -17,6 +16,8 @@ use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerMail;
+use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMail;
 
 
 class MerchantCreateTest extends TestCase
@@ -231,6 +232,34 @@ class MerchantCreateTest extends TestCase
         $this->assertNull($liveMapping);
     }
 
+    public function testCreateSubMerchantWithEmailUserExists()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+
+        $this->fixtures->create('user', ['email' => 'submerchant@razorpay.com']);
+
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantMail::class, function ($mail)
+        {
+            return $mail->hasTo('submerchant@razorpay.com', 'Submerchant 2');
+        });
+
+        list($testMapping, $liveMapping) = $this->getLastMappingForBothModes();
+
+        $this->assertNull($testMapping);
+
+        $this->assertNull($liveMapping);
+    }
+
     private function createUserMerchantMapping($merchantId, $role)
     {
         $user = $this->fixtures->create('user');
@@ -264,6 +293,8 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateSubMerchantByFullyManagedWOEmail()
     {
+        Mail::fake();
+
         list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
         $this->ba->proxyAuth();
@@ -272,6 +303,15 @@ class MerchantCreateTest extends TestCase
 
         $this->startTest();
 
+        Mail::assertQueued(CreateSubMerchantPartnerMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@razorpay.com');
+        });
+
+        Mail::assertNotQueued(CreateSubMerchantAffiliateMail::class);
+
+        Mail::assertNotQueued(CreateSubMerchantMail::class);
+
         $submerchant = $this->getLastEntity('merchant', true);
 
         $mapping = $this->getMerchantUserMapping($submerchant['id'], $user['id']);
@@ -279,11 +319,12 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(1, count($mapping));
 
         $this->verifyAccessMapEntries($app, $submerchant);
-        // Add mailer asserts post mails
     }
 
     public function testCreateSubMerchantByFullyManagedWithEmail()
     {
+        Mail::fake();
+
         list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
         $this->ba->proxyAuth();
@@ -292,6 +333,16 @@ class MerchantCreateTest extends TestCase
 
         $this->startTest();
 
+        Mail::assertQueued(CreateSubMerchantPartnerMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@razorpay.com');
+        });
+
+        Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function ($mail)
+        {
+            return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
+        });
+
         $submerchant = $this->getLastEntity('merchant', true);
 
         $mapping = $this->getMerchantUserMapping($submerchant['id'], $user['id']);
@@ -299,11 +350,45 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(1, count($mapping));
 
         $this->verifyAccessMapEntries($app, $submerchant);
-        // Add mailer asserts post mails
+    }
+
+    public function testCreateSubMerchantByFullyManagedWithEmailUserExists()
+    {
+        Mail::fake();
+
+        list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
+
+        $this->fixtures->create('user', ['email' => 'testsub@razorpay.com']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantPartnerMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@razorpay.com');
+        });
+
+        Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function ($mail)
+        {
+            return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
+        });
+
+        $submerchant = $this->getLastEntity('merchant', true);
+
+        $mapping = $this->getMerchantUserMapping($submerchant['id'], $user['id']);
+
+        $this->assertEquals(1, count($mapping));
+
+        $this->verifyAccessMapEntries($app, $submerchant);
     }
 
     public function testCreateSubMerchantByAggregatorWithEmail()
     {
+        Mail::fake();
+
         list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
 
         $this->ba->proxyAuth();
@@ -311,6 +396,16 @@ class MerchantCreateTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantPartnerMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@razorpay.com');
+        });
+
+        Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function ($mail)
+        {
+            return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
+        });
 
         $submerchant = $this->getLastEntity('merchant', true);
 
@@ -321,7 +416,6 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(1, count($mapping));
 
         $this->verifyAccessMapEntries($app, $submerchant);
-        // Add mailer asserts post mails
     }
 
     public function testCreateSubMerchantByAggregatorWithoutEmail()
@@ -345,7 +439,6 @@ class MerchantCreateTest extends TestCase
         $this->assertNull($testMapping);
 
         $this->assertNull($liveMapping);
-        // Add mailer asserts post mails
     }
 
     public function testCreateSubMerchantByAggregatorWithoutApp()
@@ -371,11 +464,12 @@ class MerchantCreateTest extends TestCase
         $this->assertNull($testMapping);
 
         $this->assertNull($liveMapping);
-        // Add mailer asserts post mails
     }
 
     public function testCreateSubMerchantByAggregatorExceptionWithoutEmail()
     {
+        Mail::fake();
+
         list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
 
         // TODO: Move to partner app post discussion on features in proxy auth
@@ -387,6 +481,11 @@ class MerchantCreateTest extends TestCase
 
         $this->startTest();
 
+        Mail::assertQueued(CreateSubMerchantPartnerMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@razorpay.com');
+        });
+
         $submerchant = $this->getLastEntity('merchant', true);
 
         $mapping = $this->getMerchantUserMapping($submerchant['id'], $user['id']);
@@ -394,7 +493,6 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(1, count($mapping));
 
         $this->verifyAccessMapEntries($app, $submerchant);
-        // Add mailer asserts post mails
     }
 
     public function testCreateMarketplaceLinkedAccount()
@@ -438,6 +536,9 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Testing Marketplace LA addition while also marked as partner of type bank.
+     */
     public function testCreateMarketplaceLAWithoutEmailWithPartnerBank()
     {
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
@@ -453,6 +554,9 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Testing Marketplace LA addition while also marked as partner of type fully managed.
+     */
     public function testCreateMarketplaceLAWithoutEmailWithPartnerFM()
     {
         $this->createUserMerchantMapping('10000000000000', 'owner');
@@ -468,8 +572,13 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Testing Partner sub merchant addition while also featured as marketplace
+     */
     public function testCreateSubMerchantWithoutEmailWithPartnerFMAndMarketplace()
     {
+        Mail::fake();
+
         $this->createUserMerchantMapping('10000000000000', 'owner');
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
@@ -481,6 +590,11 @@ class MerchantCreateTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantPartnerMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@razorpay.com');
+        });
     }
 
     public function testLinkedAccountDefaultSchedule()
