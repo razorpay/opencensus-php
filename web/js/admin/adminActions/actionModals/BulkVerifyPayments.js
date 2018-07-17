@@ -4,6 +4,8 @@ import { SelectField, TextAreaField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
 import { adminPost } from 'common/fetch';
+import { splitAndFilter } from 'common/util';
+
 import { notifySuccess, closeModal, notifyError } from 'common/modal';
 
 BulkVerifyPayments.title = 'Bulk Verify Payments';
@@ -15,7 +17,7 @@ export default function BulkVerifyPayments() {
         type="text"
         name="ids"
         required
-        placeholder="Please enter comma separated payment ids for bulk verification."
+        placeholder="Enter comma separated payment ids"
       />
       <SelectField label="Mode" name="mode" required>
         <option value="live">Live</option>
@@ -31,7 +33,7 @@ export default function BulkVerifyPayments() {
             adminPost({
               url: `${mode}/payments/verify/bulk`,
               data: {
-                payment_ids: ids.split(','),
+                payment_ids: splitAndFilter(ids, ','),
               },
             }).then(response => {
               if (response) {
