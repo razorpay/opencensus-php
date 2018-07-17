@@ -23,7 +23,7 @@ export const isUrlLenient = url => {
 export const flexibleDevUrl = url => {
   url = url || '';
 
-  let urlRegExp = /^(http(s?)?:\/\/)?\w+(\.\w+)*(:[0-9]+)?\/?(\/[.\w]*)*$/;
+  let urlRegExp = /^(http(s?)?:\/\/)?[\w.-]+(\.[\w.-]+)*(:[0-9]+)?\/?(\/[.\w\-]*)*$/;
 
   return urlRegExp.test(url);
 };
@@ -47,6 +47,13 @@ export const isPhone = phone => {
   return phoneRegExp.test(phone);
 };
 
+export const isInteger = value => {
+  value = value || '';
+  let integerRegExp = new RegExp(/^[0-9]+$/);
+
+  return integerRegExp.test(value);
+};
+
 export const isIpAddress = ipAddress => {
   const ipRegExp = new RegExp(
     /\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/
@@ -61,19 +68,30 @@ export function validatePincodeLength(value) {
     : 'Pin Code must be 6 digits';
 }
 
+// TODO: Convert to return true/false and make it consumable
 // Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
 export function validatePANCard(value) {
-  return !value ||
-    (value.length === 10 && /^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$/.test(value))
-    ? undefined
-    : 'Invalid PAN card';
+  if (value) {
+    if (value.length !== 10) {
+      return 'PAN card must be 10 characters';
+    } else if (!/^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$/.test(value)) {
+      return 'Invalid PAN card';
+    }
+  }
 }
 
+// TODO: Convert to return true/false and make it consumable
 // Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
 export function validateCIN(value) {
   return value && value.length != 21
     ? 'CIN length must be 21 characters'
     : undefined;
+}
+
+// TODO: Convert to return true/false and make it consumable
+// Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
+export function validateIFSC(value) {
+  return value && value.length != 11 && 'IFSC code must be 11 characters';
 }
 
 export function validateMultipleEmails(emails) {
@@ -106,6 +124,14 @@ export const length = (length, message = '') => {
 
   return (value = '') => {
     return value.trim().length !== length ? message : '';
+  };
+};
+
+export const maxLength = (length, message = '') => {
+  message = message || `Enter upto ${length} characters`;
+
+  return (value = '') => {
+    return value.trim().length > length ? message : '';
   };
 };
 

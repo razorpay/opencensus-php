@@ -20,6 +20,7 @@ export TriggerDummyError from './TriggerDummyError';
 export MakeAPICall from './MakeAPICall';
 
 export RetryRefund from './RetryRefund';
+export RetryPayout from './RetryPayout';
 
 export CreateGatewayFile from './CreateGatewayFile';
 
@@ -34,3 +35,5 @@ export NodalMoneyTransfer from './NodalMoneyTransfer';
 export FundTransferUpdate from './FundTransferUpdate';
 
 export MerchantInvoiceNote from './MerchantInvoiceNote';
+
+export BatchUpload from './BatchUpload';

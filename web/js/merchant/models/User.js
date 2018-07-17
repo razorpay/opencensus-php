@@ -117,11 +117,8 @@ export default class User {
     });
   }
 
-  get isOldBatchEnabled() {
-    return (this.tags || []).indexOf('Batch_import_links') !== -1;
-  }
-
-  get isNewBatchEnabled() {
-    return (this.tags || []).indexOf('Batch_import_links_v2') !== -1;
+  /* Check if the tag exists */
+  findTag(tag) {
+    return !!this.tags.find(t => t.toLowerCase() === tag.toLowerCase());
   }
 }

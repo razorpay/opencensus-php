@@ -1,0 +1,43 @@
+$alert-warning-bg = #FFF6DA;
+$alert-warning = #CDC4A8;
+
+$alert-info-bg = rgba(132, 202, 255, 0.1);
+$alert-info = #b2cef6;
+
+$alert-error-bg = rgba(255, 143, 143, 0.1);
+$alert-error = #f18f8f;
+
+.Alert
+  padding: 16px
+  border: 1px solid
+  border-radius: 2px
+  color: #4D4D4D
+  margin-bottom: 12px
+
+  .side-description
+    color: #838383
+
+  .Alert-icon--before
+    margin-right: 4px
+    display: inline-block
+    vertical-align: top;
+    line-height: 22px;
+
+  .Alert-content
+    display: inline-block
+    width: 100%
+
+  .Alert-icon--before + .Alert-content
+    width: 94%
+
+.Alert--warning
+  border-color: $alert-warning
+  background: $alert-warning-bg
+
+.Alert--info
+  border-color: $alert-info
+  background: $alert-info-bg
+
+.Alert--error
+  border-color: $alert-error
+  background: $alert-error-bg

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
@@ -122,6 +122,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
   const merchant = model.merchant;
   const isDetailsLoading = !Object.keys(toJS(merchant.details)).length;
   const isFeaturesLoading = !Object.keys(toJS(merchant.features)).length;
+  let isAdminsLoading = !Object.keys(toJS(merchant.adminsMap)).length;
+  const isPartnerRequestsLoading = !Object.keys(toJS(merchant.partnerRequests))
+    .length;
+
+  // If user has no permission, then don't wait for this
+  if (!user.permissions.find(perm => perm === 'view_all_admin')) {
+    isAdminsLoading = false;
+  }
 
   /* Confirmation Messages */
   const toggleArchiveMerchantCM = function() {
@@ -437,10 +445,16 @@ const ActionsList = ({ model, merchantId, actions }) => {
           </div>
         </ShowWhen>
         <ShowWhen permission="edit_merchant">
-          <div onClick={isDetailsLoading ? null : actions.EditMerchant}>
+          <div
+            onClick={
+              isAdminsLoading || isDetailsLoading ? null : actions.EditMerchant
+            }
+          >
             Edit Merchant
             <i class="pull-right i i-edit-form" />
-            {isDetailsLoading && <div class="dot-loader">.</div>}
+            {(isAdminsLoading || isDetailsLoading) && (
+              <div class="dot-loader">.</div>
+            )}
           </div>
         </ShowWhen>
         <ShowWhen permission="edit_merchant_risk_threshold">
@@ -633,7 +647,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
               pendingClass="btn-pending"
               confirm={toggleSuspensionCM()}
             >
-              {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
+              {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}
               <i class="pull-right i i-power" />
               Merchant
               <span class="spin-btn" />
@@ -669,6 +683,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
       <div class="group">
         <div class="group-heading" />
+
+        <ShowWhen permission="view_merchant_banks">
+          <div onClick={actions.ViewBanks}>
+            View Banks
+            <i class="pull-right i i-bank" />
+          </div>
+        </ShowWhen>
+
         <ShowWhen permission="edit_merchant_mark_referred">
           <div onClick={isDetailsLoading ? null : actions.MarkReferred}>
             Mark as Referred
@@ -676,6 +698,26 @@ const ActionsList = ({ model, merchantId, actions }) => {
             {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
+
+        {(function() {
+          const isLoading = isDetailsLoading || isPartnerRequestsLoading;
+          const action = merchant.details.partner_type ? 'Remove' : 'Mark';
+          return (
+            <ShowWhen permission="edit_merchant_requests">
+              <div onClick={isLoading ? null : actions.TogglePartnerType}>
+                {isLoading ? (
+                  <Fragment>
+                    Fetching Partner Status <div class="dot-loader">.</div>{' '}
+                  </Fragment>
+                ) : (
+                  <Fragment>{action} as partner</Fragment>
+                )}
+                <i class="pull-right i-partner" />
+              </div>
+            </ShowWhen>
+          );
+        })()}
+
         <ShowWhen permission="edit_merchant_screenshot">
           <div onClick={actions.UploadScreenshots}>
             Upload screenshots

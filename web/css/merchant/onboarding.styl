@@ -1,0 +1,96 @@
+.Onboarding
+  font-size: 14px
+  text-align: center
+
+  .illustration
+    padding: 130px
+    width: 160px
+    background-repeat: no-repeat
+    background-size: contain
+    background-position: center
+    margin: 20px auto 0
+
+  .description
+    margin: 20px 16px 0
+
+  .form-fields
+    margin: 20px 16px 0
+
+    .Input
+      margin: 0
+
+  .Button
+    margin 20px auto 0
+
+
+.Onboarding--PaymentPages, .Onboarding--Invoices
+  margin: 20px 0 80px
+  color: #58666E
+
+  .Onboarding-heading
+    font-size: 20px
+    font-weight: 600
+    margin-bottom: 16px
+
+    span
+      color: $primary-color
+
+  .Onboarding--content
+    margin-top: 56px
+
+  .step
+    position: relative
+    text-align: center
+    display: inline-block
+    width: 30%
+    min-width: 240px
+    font-size: 14px
+    padding: 0 8px
+    vertical-align: top
+
+    .img
+      position: relative
+
+      img
+        position: absolute
+        bottom: 0
+        left: 50%
+        transform: translateX(-50%)
+
+    .title
+      font-size: 16px
+      font-weight: 600
+      margin: 16px 0 4px
+
+    .i
+      position: absolute
+      top: 50%
+      right: -18px
+      transform: translateY(-50%)
+      font-size: 36px
+      font-weight: 600
+      color: #58666E
+
+  @media (max-width: 1023px)
+
+    .Onboarding--content  .step
+      display: block
+      margin: 48px auto 0
+
+      .i
+        display: none
+
+.Onboarding--PaymentPages
+  .Onboarding--content
+    margin-top: 76px
+
+  .img
+    height: 140px
+  img
+    height: 100%
+
+.Onboarding--Invoices
+  .img
+    height: 160px
+
+

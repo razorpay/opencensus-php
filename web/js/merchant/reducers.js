@@ -30,12 +30,15 @@ import {
   virtualAccountsReducer,
   virtualAccountReducer,
 } from 'merchant/modules/virtualaccounts';
+import statesReducer from 'merchant/modules/states';
+import taxesReducer from 'merchant/modules/taxes';
 
 import {
   refundBatchesReducer,
   paymentLinkBatchesReducer,
   PaymentBatchIdsReducer,
   paymentBatchesReducer,
+  batchDetailsReducer,
 } from 'merchant/modules/batches';
 
 import {
@@ -55,6 +58,7 @@ import {
 } from 'merchant/modules/subscriptions';
 import { plansReducer, planReducer } from 'merchant/modules/plans';
 import { addOnsReducer } from 'merchant/modules/addons';
+import { reportsReducer } from 'merchant/modules/reports';
 
 export default combineReducers({
   modal: modalReducer,
@@ -69,6 +73,7 @@ export default combineReducers({
   paymentlinkbatches: paymentLinkBatchesReducer,
   paymentBatchIds: PaymentBatchIdsReducer,
   refundbatches: refundBatchesReducer,
+  batchDetails: batchDetailsReducer,
   subscriptions: subscriptionsReducer,
   subscription: subscriptionReducer,
   plans: plansReducer,
@@ -103,4 +108,7 @@ export default combineReducers({
   reversals: reversalsReducer,
   virtualaccounts: virtualAccountsReducer,
   virtualaccount: virtualAccountReducer,
+  states: statesReducer,
+  taxes: taxesReducer,
+  reports: reportsReducer,
 });

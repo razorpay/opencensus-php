@@ -98,10 +98,6 @@ app
               name: 'LLP',
               value: 6,
             },
-            8: {
-              name: 'Educational Institutes',
-              value: 8,
-            },
             9: {
               name: 'Trust',
               value: 9,
@@ -113,10 +109,6 @@ app
             11: {
               name: 'NGO',
               value: 7,
-            },
-            12: {
-              name: 'Other',
-              value: 12,
             },
           },
 
@@ -265,7 +257,13 @@ app
         };
 
         payload.data.password_confirmation = payload.data.password;
+
         payload.data.business_name = payload.data.business_name || '';
+
+        // Business name cannot be empty or null. Same as quickSendDetails
+        if (!payload.data.business_name) {
+          delete payload.data.business_name;
+        }
 
         $scope.alerts.resetAlerts();
         var request = $http(payload);
@@ -326,6 +324,18 @@ app
 
       $scope.sendDetails = function() {
         pushToDrip();
+        invokeAdroll();
+
+        // Fire linkedin Pixel.
+        var i = new Image();
+        i.src =
+          'https://dc.ads.linkedin.com/collect/?pid=155571&conversionId=391804&fmt=gif';
+
+        // Fire Quora pixel.
+        i = new Image();
+        i.src =
+          'https://q.quora.com/_/ad/0b40045f43e5492d916199b03c35aa48/pixel?tag=ViewContent&noscript=1';
+
         var payload = {
           method: 'post',
           url: '/user/pre_signup',
@@ -363,12 +373,19 @@ app
 
       $scope.quickSendDetails = function(detailField, key) {
         $scope.signup.merchantData[detailField] = key;
+
+        var reqPayload = Object.assign({}, $scope.signup.merchantData);
+        // Business name cannot be empty or null
+        if (!reqPayload.business_name) {
+          delete reqPayload['business_name'];
+        }
+
         pushToDrip();
         var payload = {
           method: 'post',
           url: '/user/pre_signup',
           transformRequest: transformRequestAsFormPost,
-          data: $scope.signup.merchantData,
+          data: reqPayload,
         };
 
         var request = $http(payload);
@@ -455,6 +472,50 @@ app
           } catch (e) {}
         };
       })();
+
+      /**
+       * The script is a tiny bit modified than what AdRoll gives,
+       * specifically onload event listener part.
+       */
+      var invokeAdroll = function invokeAdroll() {
+        adroll_adv_id = 'TJ37WOXRMNBN3E7GBHOOXB';
+        adroll_pix_id = 'KCGQOUBQ5VFKRM3XB5PB2U';
+
+        (function() {
+          var _onload = function() {
+            // Use only on prod.
+            if (window.location.hostname != 'dashboard.razorpay.com') {
+              return;
+            }
+
+            if (
+              document.readyState &&
+              !/loaded|complete/.test(document.readyState)
+            ) {
+              setTimeout(_onload, 10);
+              return;
+            }
+            if (!window.__adroll_loaded) {
+              __adroll_loaded = true;
+              setTimeout(_onload, 50);
+              return;
+            }
+            var scr = document.createElement('script');
+            var host =
+              'https:' == document.location.protocol
+                ? 'https://s.adroll.com'
+                : 'http://a.adroll.com';
+            scr.setAttribute('async', 'true');
+            scr.type = 'text/javascript';
+            scr.src = host + '/j/roundtrip.js';
+            (
+              (document.getElementsByTagName('head') || [null])[0] ||
+              document.getElementsByTagName('script')[0].parentNode
+            ).appendChild(scr);
+          };
+          _onload();
+        })();
+      };
 
       // creates Drip lead if email present in params
       pushToDrip('email_only');

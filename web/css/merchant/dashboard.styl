@@ -501,7 +501,7 @@ body.analytics-v2-active .onboarding-card-wrapper {
         }
       }
 
-      @media(max-width:688px) {
+      @media (min-width: $screen-sm-min + 1px) and (max-width: 820px), (max-width:688px) {
 
         display: block;
 
@@ -840,7 +840,7 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
   position: relative;
   /* 9999px box-shadow spread radius does not work in safari, max is 1016 */
-  box-shadow: 0 0 0 1000px rgba(0,0,0,.25), 0 0 15px rgba(0,0,0,.25);
+  box-shadow: 0 0 0 1000px rgba(0,0,0,.7), 0 0 15px rgba(0,0,0,.25);
   z-index: 9999;
   border-radius: 2px;
 
@@ -869,7 +869,7 @@ body.analytics-v2-active .onboarding-card-wrapper {
     }
 
     > div.media-body {
- 
+
       width: 100%;
     }
 
@@ -1090,85 +1090,6 @@ body.analytics-v2-active .onboarding-card-wrapper {
   min-height: 28px;
 }
 
-// Entity Detail Row
-.entity-detail-row {
-  padding: 8px;
-  border-bottom: 1px solid #ebecee;
-
-  &.clickable:hover {
-    background-color: #f7f6f6;
-    cursor: pointer;
-  }
-
-// To highlight selected row
-  &.active {
-    background-color: rgba(255,255,215,0.75);
-  }
-
-  .row-item {
-    display: inline-block;
-    vertical-align: middle;
-
-    &.content {
-      width: 93%;
-    }
-
-    &.i {
-      width: 7%;
-      text-align: center;
-      font-size: 22px;
-      padding: 10px;
-      cursor: pointer;
-    }
-  }
-
-  .detail-row {
-    display: table;
-    width: 100%;
-    margin-bottom: 4px;
-
-    // Style for 3rd row
-    &:nth-of-type(3) {
-      font-size: 13px;
-    }
-  }
-
-  .row-element {
-    display: table-cell;
-  }
-
-  .left {
-    width: 60%;
-  }
-  .right {
-    width: 40%;
-    text-align: right;
-  }
-}
-
-// Entity Detail List & Data Table
-.entity-detail-list, .data-table {
-  .list-heading {
-    background-color: #F7F8FA;
-    border-top: 1px solid #dfe0e2;
-    padding: 12px;
-
-    &:before {
-      display: table;
-      content: " ";
-    }
-
-    &:after {
-      clear: both;
-    }
-
-    .label--secondary {
-      line-height: 21px;
-      float: right;
-    }
-  }
-}
-
 div.data-table.has-panel {
   div.table-responsive {
     margin-top: 0;
@@ -1189,6 +1110,35 @@ div.data-table.has-panel {
   margin: 20px 0;
   border-bottom: 1px solid #C6CFD9;
 }
+
+// Stats Info
+.stats-info
+  width: 100%
+  .table
+    border: 1px solid $stats-border
+    margin-bottom: 0px
+    table-layout: fixed
+
+    .td-info
+      position: relative
+
+    .td-info:not(:first-child)::before
+      content: '';
+      height: 20px;
+      background: $stats-border;
+      width: 1px;
+      position: absolute;
+      top: 18px;
+      bottom: 18px;
+    .td-heading
+      display: block
+      color: rgba(0,0,0,0.54)
+      text-align: center
+      font-size: 13px
+    .td-value
+      display: block
+      text-align: center
+      font-size: 16px
 
 // Entity Detail List
 .entity-detail-list {
@@ -1323,7 +1273,7 @@ div.feature-activation-banner {
     cursor: pointer;
 
     &:hover {
-        background-color: #F0F1F6;
+      background-color: #F0F1F6;
     }
   }
 }
@@ -1332,23 +1282,199 @@ div.feature-activation-banner {
   display: none;
 }
 
-.navbar-default .navbar-toggle .i-bar {
-  background-color: #888;
+.layout.rzp {
+
+  > .navbar.navbar-fixed-top {
+
+    .navbar-toggle-container {
+
+      color: white;
+
+      button.navbar-toggle {
+
+        display: inline-block;
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: 10px;
+        margin-top: 11px;
+        margin-bottom: 11px;
+        float: none;
+        border: none;
+        vertical-align: middle;
+
+        &:hover, &:focus {
+
+          background-color: transparent;
+        }
+
+        .i-bar {
+
+          background-color: currentColor;
+        }
+
+        @media(max-width: 360px) {
+
+          margin-right: 10px;
+        }
+      }
+    }
+  }
 }
 
+@media (min-width: 0px) {
 
-.navbar-inverse .navbar-toggle .i-bar {
-  background-color: #fff;
+  // Do not collapse navbar even in mobile
+  .layout.rzp ul.navbar-nav.navbar-right {
+
+    float: right;
+    margin: 0 -15px 0 0;
+
+    &> li {
+
+      float: left;
+    }
+  }
 }
 
-.navbar-default .navbar-toggle {
-  border-color: #ddd;
+@media (max-width: $screen-sm-min) {
+
+  .layout.rzp {
+
+    > .navbar.navbar-fixed-top {
+
+      background-color: $sidebar-bg-color;
+
+      ul.navbar-nav.navbar-right {
+
+        > li > div.dropdown > a {
+
+          color: white !important;
+
+          &.switch-modes-toggle {
+
+            padding: 17px 15px;
+          }
+        }
+
+        .dropdown-menu.ProfileDropdown {
+
+          left: auto;
+          right: 0;
+        }
+      }
+    }
+  }
 }
-.navbar-default .navbar-toggle:hover {
-  background-color: #ddd;
+
+@media (max-width: 360px) {
+
+  .layout.rzp > .navbar.navbar-fixed-top {
+
+    ul.navbar-nav.navbar-right > li:first-child > div.dropdown > a {
+
+      padding-right: 0;
+      padding-left: 0;
+    }
+  }
 }
-.navbar-default .navbar-toggle .i-bar {
-  background-color: #888;
+
+#profile-dropdown {
+
+  .merchant-logo-preview{
+
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    overflow: hidden;
+
+    .rzp-image > img {
+
+      border-radius: 50%;
+    }
+  }
+
+  a {
+    color: inherit;
+  }
+
+  .rzp-image.invalid-src {
+
+    color: #949494;
+  }
+
+  .loggedin-as {
+
+    background-color: #F5F7F8;
+
+    .account-details {
+
+      padding: 12px 0;
+      font-size: 16px;
+      line-height: 19px;
+      max-width: 250px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+
+      i.i-account {
+
+        font-size: 24px;
+        vertical-align: middle;
+        color: #BDC3C6;
+        display: inline-block;
+        height: 24px;
+        line-height: 1em;
+      }
+    }
+
+    .logout-btn {
+
+      display: block;
+      width: 100%;
+    }
+  }
+}
+
+.switch-merchant-modal-content {
+
+  div.modal-body {
+
+    max-height: 90vh;
+    overflow: auto;
+
+    ul.merchants-list {
+
+      > li {
+
+        border: 1px solid rgba(0,0,0,0.05);
+        border-top: none;
+
+        &.active {
+
+          background-color: $primary-color;
+          color: white;
+
+          > a .i.i-check {
+
+            display: inline;
+          }
+        }
+
+        > a {
+
+          color: inherit;
+          cursor: pointer;
+
+          .i.i-check {
+
+            display: none;
+          }
+        }
+      }
+    }
+  }
 }
 
 // Bars
@@ -1359,3 +1485,7 @@ div.feature-activation-banner {
   border-radius 1px
 .i-bar + .i-bar
   margin-top 4px
+
+.temp-icon-style
+  font-size: 18px
+  margin-left: -1px

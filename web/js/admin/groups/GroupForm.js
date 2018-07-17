@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Field, { SelectField, SelectMethod } from 'ui/Field';
 import Table from 'ui/Table';
 import Form from 'ui/Form';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 export default class GroupForm extends Component {
   deleteParentField = () => {
@@ -26,7 +26,7 @@ export default class GroupForm extends Component {
       group,
     } = this.props;
     return (
-      <BaseModal header="Edit Group">
+      <ModalContent header="Edit Group">
         {this.props.pending ? (
           <div class="spinner center" />
         ) : (
@@ -85,7 +85,7 @@ export default class GroupForm extends Component {
               : null}
           </Form>
         )}
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

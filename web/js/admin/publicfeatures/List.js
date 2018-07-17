@@ -8,7 +8,8 @@ import Collection from 'model/collection';
 import { adminFetch } from 'common/fetch';
 import { showEntity } from './Entity';
 import { statusPill, publicFeature } from 'common/data';
-import { snakeToTitleCase, prevent, formatDate } from 'common/util';
+import { snakeToTitleCase, prevent, formatDate, subString } from 'common/util';
+import { flattenObject } from 'rzp/utils/rzp-utils';
 
 const defaultFilters = {
   status: '',
@@ -55,13 +56,14 @@ export default class PublicFeaturesList extends Component {
       ),
     ],
     ['Merchant Name', item => item.merchant.name],
-    ['Product', item => item.name],
+    ['Request', item => publicFeature.featuresAkaMap[item.type][item.name]],
     [
       'Account Activation Status',
       item => (item.merchant.activated ? 'Activated' : 'Not Activated'),
     ],
     ['Product Activation Status', item => statusPill(item.status)],
     ['Submitted At', item => formatDate(item.created_at)],
+    ['Internal Comment', item => subString(item.internal_comment, 80)],
   ];
 
   onSubmit = filters => {
@@ -84,7 +86,7 @@ export default class PublicFeaturesList extends Component {
 
   render() {
     const afterCall = this.afterCall;
-
+    const allFeatures = flattenObject(publicFeature.featuresAkaMap);
     return (
       <div class="list-container">
         <div class="box">
@@ -104,11 +106,11 @@ export default class PublicFeaturesList extends Component {
                 </option>
               ))}
             </SelectField>
-            <SelectField label="Product" name="name" onChange={this.filter}>
+            <SelectField label="Request" name="name" onChange={this.filter}>
               <option value="">All</option>
-              {Object.keys(publicFeature.featuresAkaMap).map(feature => (
-                <option value={feature} key={feature}>
-                  {publicFeature.featuresAkaMap[feature]}
+              {Object.keys(allFeatures).map(feature => (
+                <option value={feature.split('.')[1]} key={feature}>
+                  {allFeatures[feature]}
                 </option>
               ))}
             </SelectField>

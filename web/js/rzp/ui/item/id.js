@@ -20,11 +20,16 @@ const sources = {
   reversal: 'transfer_id',
 };
 
+const batchBaseUrls = {
+  payment_link: 'paymentlinks',
+};
+
 export const idItem = id => <code>{id}</code>;
 
-export const idLink = id => {
+/* if label not present id will be used as label */
+export const idLink = (id, label) => {
   var url = baseUrl[id.split('_')[0]];
-  var item = idItem(id);
+  var item = label || idItem(id);
   if (url) {
     url += id;
     return <Link to={url}>{item}</Link>;
@@ -32,7 +37,12 @@ export const idLink = id => {
   return item;
 };
 
-const makePropLink = prop => item => idLink(item[prop]);
+/* 
+  idKey: value of this key in item object will be appened to url
+  labeKey: value of this key in item object will be displayed as label in link
+*/
+const makePropLink = (idKey, labelKey) => item =>
+  idLink(item[idKey], item[labelKey]);
 
 export const makeIdLink = type => item => {
   return idLink(item[(item.entity === type ? '' : `${type}_`) + 'id']);
@@ -49,3 +59,12 @@ export const transfer = makeIdLink('transfer');
 export const source = item => idLink(item[sources[item.entity]]);
 export const recipient = makePropLink('recipient');
 export const reversal = makeIdLink('reversal');
+
+export const batchLink = item => {
+  const url = batchBaseUrls[item.type];
+  return !!url ? (
+    <Link to={`/${url}/batchuploads/${item.id}`}>{idItem(item.id)}</Link>
+  ) : (
+    idItem(item.id)
+  );
+};

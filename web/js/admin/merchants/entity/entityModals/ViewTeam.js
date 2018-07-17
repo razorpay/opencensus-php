@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import fetch, { adminFetch } from 'common/fetch';
 
@@ -28,7 +28,9 @@ export default class TeamDetails extends Component {
 
   render() {
     return (
-      <BaseModal header={`Team Details for merchant ${this.props.merchantId}`}>
+      <ModalContent
+        header={`Team Details for merchant ${this.props.merchantId}`}
+      >
         <div class="container">
           <div class="heading">Users</div>
           {!this.state.users ? (
@@ -52,7 +54,7 @@ export default class TeamDetails extends Component {
             />
           )}
         </div>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

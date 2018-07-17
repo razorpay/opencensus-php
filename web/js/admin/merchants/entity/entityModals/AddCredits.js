@@ -1,56 +1,84 @@
 import React from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 
 import Form from 'ui/Form';
 import Field, { SelectMode, SelectField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
-import { adminPost } from 'common/fetch';
+import { adminPost, adminPut } from 'common/fetch';
 import { isWorkflow } from 'common/util';
 
-export default ({ merchantId }) => {
+export default ({ merchantId, model = {}, successHandler }) => {
+  function OnSuccess(response) {
+    if (response) {
+      closeModal();
+
+      if (isWorkflow(response)) {
+        notifySuccess('Workflow is created successfully.');
+        return;
+      }
+      // Execute success handler if provided by parent component
+      if (successHandler) {
+        successHandler(response);
+      }
+      notifySuccess('Credits updated successfully.');
+    }
+  }
+
   function onSubmit(body) {
     const mode = body.mode;
-    delete body.mode;
+    const requestFunc = model.id ? adminPut : adminPost,
+      requestUrl = model.id
+        ? `${mode}/merchants/${merchantId}/credits/${model.id}`
+        : `${mode}/merchants/${merchantId}/credits_log`;
 
-    return adminPost({
-      url: `${mode}/merchants/${merchantId}/credits_log`,
+    if (model.id) {
+      body = { value: body.value };
+    } else {
+      delete body.mode;
+    }
+
+    return requestFunc({
+      url: requestUrl,
       data: body,
     })
-      .then(response => {
-        if (response) {
-          closeModal();
-
-          if (isWorkflow(response)) {
-            notifySuccess('Workflow is created successfully.');
-            return;
-          }
-          // TODO: Update credits in the model
-          notifySuccess('Credits updated successfully.');
-        }
-      })
+      .then(OnSuccess)
       .catch(err => {
         notifyError(JSON.stringify(err.response));
       });
   }
 
-  return (
-    <BaseModal header="Credits">
-      <Form class="full-span" style={{ width: '350px' }}>
-        <SelectMode />
+  let isEditable = !model.id;
 
-        <SelectField label="Type" name="type" defaultValue="amount">
+  return (
+    <ModalContent header={`${!isEditable ? 'Edit' : 'Add'} Credits`}>
+      <Form class="full-span" style={{ width: '350px' }}>
+        <SelectMode disabled={!isEditable} defaultValue={model.mode} />
+
+        <SelectField
+          label="Type"
+          name="type"
+          defaultValue={model.type}
+          disabled={!isEditable}
+        >
           <option value="amount">Amount</option>
           <option value="fee">Fee</option>
+          <option value="refund">Refund</option>
         </SelectField>
 
-        <Field label="Campaign" name="campaign" />
+        <Field
+          label="Campaign"
+          name="campaign"
+          disabled={!isEditable}
+          defaultValue={model.campaign}
+        />
         <Field
           label="Amount(Paise)"
           name="value"
           type="number"
           infoMsg="This will add a amount credits of ( Paise) to the merchant amount credits balance."
+          defaultValue={model.value}
         />
 
         <AsyncButton
@@ -60,6 +88,6 @@ export default ({ merchantId }) => {
           onSubmit={onSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };

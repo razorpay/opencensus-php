@@ -21,10 +21,13 @@ export default class ModalSlider extends Component {
       'body .layout > .Notifications'
     );
 
+    const calendarPicker = document.querySelector('body .rc-calendar-picker');
+
     // Fix for power-select dropdown and notification click in slider component
     if (
       (powerselectMenu && powerselectMenu.contains(target)) ||
-      (notification && notification.contains(target))
+      (notification && notification.contains(target)) ||
+      (calendarPicker && calendarPicker.contains(target))
     ) {
       return;
     }

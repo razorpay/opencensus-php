@@ -164,6 +164,12 @@ class TransactionController extends Controller
 
             $data['merchant_details'] = $merchantDetails;
 
+            $state_code = $data['merchant_details']['business_registered_state'];
+            if (empty($state_code) === false)
+            {
+                $data['merchant_details']['business_registered_state'] = (new MerchantDetails\Service)->getStateFromCode($state_code);
+            }
+
             return Response::view($isGstApplicable ? 'merchant.invoice.invoice' : 'merchant.invoice_old', $data);
         }
         else

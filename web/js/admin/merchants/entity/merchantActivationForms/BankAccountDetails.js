@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 
-import { beneficiaryStateMap } from '../entity-resources';
-
 import Form from 'ui/Form';
 import Field, { SelectField, CheckField } from 'ui/Field';
 

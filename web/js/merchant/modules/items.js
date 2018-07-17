@@ -35,7 +35,11 @@ export const saveItem = params => {
 
   return {
     type: item.isNew ? ITEM_CREATE : ITEM_EDIT,
-    payload: item.save(),
+    payload: item.save(null, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }),
   };
 };
 

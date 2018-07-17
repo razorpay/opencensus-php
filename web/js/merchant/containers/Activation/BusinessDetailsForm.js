@@ -343,11 +343,7 @@ export default class BusinessDetailsForm extends Component {
                     name="business_website"
                     component={InputField}
                     class="form-control"
-                    autoFocus={true}
-                    validate={[
-                      required(),
-                      lenientUrl('Please enter a valid URL'),
-                    ]}
+                    validate={[lenientUrl('Please enter a valid URL')]}
                   />
                   <small class="help-block">
                     <i class="i i-info-circle" />
@@ -669,7 +665,7 @@ export default class BusinessDetailsForm extends Component {
 
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
-              <div class="btn-toolbar">
+              <div class="btn-toolbar m-t m-b">
                 {accountId ? null : (
                   <AsyncButton
                     type="button"

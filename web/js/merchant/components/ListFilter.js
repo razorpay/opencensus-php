@@ -14,7 +14,10 @@ export default class ListFilter extends Component {
 
   // update search query
   componentWillReceiveProps(nextProps) {
-    if (this.props.location.search !== nextProps.location.search) {
+    if (
+      decodeURI(this.props.location.search) !==
+      decodeURI(nextProps.location.search)
+    ) {
       this.initSearchForm(nextProps);
     }
   }
@@ -29,6 +32,12 @@ export default class ListFilter extends Component {
 
     if (props.location.search) {
       params = getURLQueryParams(props.location.search);
+    }
+
+    for (let k in params) {
+      if (params.hasOwnProperty(k)) {
+        params[k] = decodeURI(params[k]);
+      }
     }
 
     this.props.initialize(params);

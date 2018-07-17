@@ -14,7 +14,13 @@ import { luminateRow } from 'merchant/modules/app';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { stringifyQueryParams } from '../../../rzp/utils/rzp-utils';
 
-@connect(state => state.items, { ...ItemActions, ...ModalActions, luminateRow })
+@connect(
+  state => ({
+    ...state.items,
+    session: state.session,
+  }),
+  { ...ItemActions, ...ModalActions, luminateRow }
+)
 @reduxForm({
   form: 'newItem',
 })
@@ -27,7 +33,11 @@ export default class ItemsListContainer extends ListContainer {
   }
 
   fetchEntityList(params) {
-    return this.props.fetchItems(params);
+    return this.props.fetchItems({
+      ...params,
+      'expand[]': 'tax',
+      type: 'invoice',
+    });
   }
 
   itemFormOnMount = item => {
@@ -45,8 +55,16 @@ export default class ItemsListContainer extends ListContainer {
   };
 
   showItemModal = (item = null) => {
+    /**
+     * Taxes are to be shown when the merchant has GSTIN entered.
+     * Size of modal changes if taxes are to be shown.
+     */
+    let user = this.props.session.user;
+    let gstin = user.gstin || user.p_gstin;
+    let showTaxes = Boolean(gstin);
+
     this.props.openModal({
-      size: 'small',
+      size: showTaxes ? 'regular' : 'small',
       component: (
         <ItemCreation
           item={item}
@@ -54,19 +72,20 @@ export default class ItemsListContainer extends ListContainer {
           closeModal={this.props.closeModal}
           onMount={this.itemFormOnMount}
           onUnmount={this.itemFormOnUnmount}
+          showTaxes={showTaxes}
         />
       ),
     });
   };
 
   highlightRowAndClose = (item, prevItem) => {
+    this.props.luminateRow(item.id);
+    this.props.closeModal();
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Invoices',
       eventAction: `Submit Form - ${prevItem ? 'Edit' : 'New'} Item`,
       eventLabel: getKeysSeparatedByPipe(item),
     });
-    this.props.luminateRow(item.id);
-    this.props.closeModal();
   };
 
   deleteItem = item => {

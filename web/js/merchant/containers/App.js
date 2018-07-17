@@ -7,6 +7,7 @@ import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
 import ReactIdle from 'rzp/ui/ReactIdle';
 import LocalStorageService from 'rzp/utils/localStorage';
+import debounce from 'rzp/utils/debounce';
 import Sidebar from 'merchant/containers/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
@@ -14,6 +15,7 @@ import Footer from 'merchant/components/Footer';
 import MerchantTour from 'merchant/containers/MerchantTour';
 import ActivationRequired from 'merchant/components/ActivationRequired';
 import IdleWarningDialog from 'merchant/components/IdleWarningDialog';
+import LogoutDialog from 'merchant/components/LogoutDialog';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
@@ -24,15 +26,24 @@ import { fetchFeaturesAjax } from 'merchant/modules/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
+import { resizeWindow } from 'merchant/modules/app';
 
 @withRouter
-@connect(state => ({ ...state.session, config: state.config }), {
-  ...ModalActions,
-  ...SessionActions,
-  ...ConfigActions,
-  ...NotificationActions,
-  fetchGST,
-})
+@connect(
+  state => ({
+    ...state.session,
+    config: state.config,
+    windowWidth: state.app.windowWidth,
+  }),
+  {
+    ...ModalActions,
+    ...SessionActions,
+    ...ConfigActions,
+    ...NotificationActions,
+    fetchGST,
+    resizeWindow,
+  }
+)
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -57,13 +68,39 @@ export default class App extends Component {
 
     this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
 
+    this.logoutPopupShown = false;
+
     this.state = {
       isLoading: true,
-      showMobileNav: false,
     };
+
+    this.handleResize = debounce(this.handleResize.bind(this), 200);
   }
 
   componentWillMount() {
+    /*
+    * Event Based Redirection
+    *
+    window.addEventListener('NOT_AUTHENTICATED', () => {
+      if (this.logoutPopupShown) {
+        return;
+      }
+
+      let email = this.props.user.user.email;
+
+      this.props.closeModal();
+      this.props.openModal({
+        size: 'small',
+        component: <LogoutDialog email={email} />,
+      });
+      this.logoutPopupShown = true;
+    });
+
+    window.addEventListener('UNAUTHORIZED', () => {
+      this.props.history.push('/');
+    });
+    */
+
     let currentMode = LocalStorageService.getItem(this.modeToken);
 
     this.props.fetchGST();
@@ -114,11 +151,19 @@ export default class App extends Component {
     });
   }
 
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize);
+  }
+
   componentWillReceiveProps({ user, history }) {
     if (user.isAuthenticated) {
       let role = user.userRole;
       this.redirectToRoute(role);
     }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize);
   }
 
   fetchUser() {
@@ -260,9 +305,20 @@ export default class App extends Component {
 
   lock = () => {
     let email = this.props.user.user.email;
+
+    if (window.Raven && window.Raven.captureMessage) {
+      window.Raven.captureMessage('Dashboard Locked', {
+        level: 'info',
+      });
+    }
+
     return this.props.logout().then(() => {
-      location.hash = `/access/lockme/${email}`;
-      location.reload();
+      // waiting for 100ms more hoping raven call
+      // would be resolved by then
+      window.setTimeout(() => {
+        location.hash = `/access/lockme/${email}`;
+        location.reload();
+      }, 100);
     });
   };
 
@@ -273,10 +329,8 @@ export default class App extends Component {
     });
   };
 
-  toggleMobileNav = () => {
-    this.setState({
-      showMobileNav: !this.state.showMobileNav,
-    });
+  handleResize = () => {
+    this.props.resizeWindow();
   };
 
   showGSTModal = () => {
@@ -302,8 +356,7 @@ export default class App extends Component {
           showGSTModal={this.showGSTModal}
           onSwitchMode={this.switchMode}
           onSwitchMerchant={this.switchMerchant}
-          toggleMobileNav={this.toggleMobileNav}
-          showMobileNav={this.state.showMobileNav}
+          showMobileNav={this.props.windowWidth < 950}
         />
         <Sidebar
           user={user}

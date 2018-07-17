@@ -9,7 +9,7 @@ import {
   closeModal,
 } from 'common/modal';
 import Form from 'ui/Form';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import AsyncButton from 'ui/AsyncButton';
 import Field, { SelectField, TextAreaField, FileField } from 'ui/Field';
 import Table from 'ui/Table';
@@ -55,6 +55,12 @@ export default class EditPublicFeatures extends Component {
         this.submissions = feature.submissions;
         if (feature.name === 'marketplace') {
           newState.agreement = feature.submissions.vendor_agreement;
+        }
+
+        newState.questions = {};
+        if (feature.questions) {
+          const { akaFeature } = this;
+          newState.questions = feature.questions[akaFeature];
         }
       }
 
@@ -103,10 +109,7 @@ export default class EditPublicFeatures extends Component {
       },
     };
 
-    if (
-      publicFeature.featuresAkaMap[akaFeature] ===
-      publicFeature.featuresAkaMap.marketplace
-    ) {
+    if (akaFeature && akaFeature.toLowerCase() === 'marketplace') {
       return `${
         addons[akaFeature].prefix
       }<br/><br/>Clarifications: <br/>${needs_clarification_text}<br/><br/>${
@@ -185,9 +188,10 @@ export default class EditPublicFeatures extends Component {
       selectedStatus,
       selectedReasonCategory,
       needs_clarification_text,
+      questions,
     } = this.state;
 
-    let { merchant_id, name, internal_comment } = this.props.model;
+    let { merchant_id, name, internal_comment, type } = this.props.model;
 
     let {
       akaFeature,
@@ -201,7 +205,7 @@ export default class EditPublicFeatures extends Component {
     let oldStatus = this.props.model.status;
 
     return (
-      <BaseModal header="Edit Submission">
+      <ModalContent header="Edit Submission">
         <Form class="full-span full-elements" onSubmit={save}>
           {this.state.pending ? (
             <div class="spinner center" />
@@ -212,8 +216,8 @@ export default class EditPublicFeatures extends Component {
                 <code>{merchant_id}</code>
               </div>
               <div class="field">
-                <label>Feature</label>
-                <code>{name}</code>
+                <label>Request</label>
+                <code>{publicFeature.featuresAkaMap[type][name]}</code>
               </div>
               <SelectField
                 label="Status"
@@ -276,19 +280,15 @@ export default class EditPublicFeatures extends Component {
                   </div>
                 </Fragment>
               )}
-              {publicFeature.featuresAkaMap[akaFeature] ===
-                publicFeature.featuresAkaMap.marketplace ||
-              publicFeature.featuresAkaMap[akaFeature] ===
-                publicFeature.featuresAkaMap.virtual_accounts ? (
+              {questions['use_case'] && (
                 <TextAreaField
                   label="Use Case"
                   name="submissions[use_case]"
                   defaultValue={submissions.use_case}
                 />
-              ) : null}
+              )}
 
-              {publicFeature.featuresAkaMap[akaFeature] ===
-                publicFeature.featuresAkaMap.virtual_accounts && (
+              {questions['expected_monthly_revenue'] && (
                 <Field
                   label="Expected Monthly Revenue"
                   type="number"
@@ -297,30 +297,33 @@ export default class EditPublicFeatures extends Component {
                 />
               )}
 
-              {publicFeature.featuresAkaMap[akaFeature] ===
-                publicFeature.featuresAkaMap.subscriptions && [
+              {questions['business_model'] && (
                 <TextAreaField
                   label="Business Model"
                   name="submissions[business_model]"
                   key="business_model"
                   defaultValue={submissions.business_model}
-                />,
+                />
+              )}
+
+              {questions['sample_plans'] && (
                 <TextAreaField
                   label="Subscription Plans"
                   name="submissions[sample_plans]"
                   key="sample_plans"
                   defaultValue={submissions.sample_plans}
-                />,
+                />
+              )}
+              {questions['website_details'] && (
                 <TextAreaField
                   label="Website Details"
                   name="submissions[website_details]"
                   key="website_details"
                   defaultValue={submissions.website_details}
-                />,
-              ]}
+                />
+              )}
 
-              {publicFeature.featuresAkaMap[akaFeature] ===
-                publicFeature.featuresAkaMap.marketplace && [
+              {questions['settling_to'] && (
                 <SelectField
                   label="Transferring to"
                   name="submissions[settling_to]"
@@ -332,7 +335,10 @@ export default class EditPublicFeatures extends Component {
                       {t[1]}
                     </option>
                   ))}
-                </SelectField>,
+                </SelectField>
+              )}
+
+              {questions['vendor_agreement'] && (
                 <div key="vendor_agreement">
                   {this.state.agreement ? (
                     <div>
@@ -357,8 +363,8 @@ export default class EditPublicFeatures extends Component {
                       name="file_name"
                     />
                   )}
-                </div>,
-              ]}
+                </div>
+              )}
 
               <TextAreaField
                 label="Internal Comment"
@@ -383,7 +389,7 @@ export default class EditPublicFeatures extends Component {
             </div>
           )}
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

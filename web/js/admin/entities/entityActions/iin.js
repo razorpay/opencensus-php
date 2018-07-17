@@ -4,7 +4,7 @@ import { notifyError, notifySuccess } from 'common/modal';
 
 import ShowWhen from 'admin/components/ShowWhen';
 import AsyncButton from 'ui/AsyncButton';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
 import Field, { SelectField, CheckField } from 'ui/Field';
 
@@ -59,7 +59,7 @@ export default ({ entity, updateEntity, mode }) => {
 // Edit iin Form
 const EditIINForm = ({ entity, handleSubmit }) => {
   return (
-    <BaseModal header="Edit iin">
+    <ModalContent header="Edit iin">
       <Form class="full-span">
         <Field
           label="IIN (6 digit)"
@@ -131,6 +131,6 @@ const EditIINForm = ({ entity, handleSubmit }) => {
           onSubmit={handleSubmit}
         />
       </Form>
-    </BaseModal>
+    </ModalContent>
   );
 };

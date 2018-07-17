@@ -2,14 +2,13 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
+import PaymentLinksList from 'merchant/containers/PaymentLinks/Links/List';
+import BatchUploadList from 'merchant/containers/PaymentLinks/BatchUpload/List';
 
-import LinkList from 'merchant/containers/PaymentLinks/List';
-import BatchList from 'merchant/containers/PaymentLinks/BatchList';
-import BatchListNew from 'merchant/containers/PaymentLinks/BatchListNew';
-import BatchUpload from 'merchant/containers/PaymentLinks/BatchUpload';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
+import Button from 'component/Button';
 
-const OLD_BATCH_TAG = 'batch_import_links';
-const NEW_BATCH_TAG = 'batch_import_links_v2';
+import { classList } from 'common/util';
 
 @connect(state => {
   return {
@@ -26,38 +25,65 @@ export default class PaymentLinksContainer extends Component {
           <NavLink exact to="/paymentlinks">
             Payment Links
           </NavLink>
-          <ShowWhen
-            myRole="owner manager operations admin"
-            featureEnabled={[OLD_BATCH_TAG, NEW_BATCH_TAG]}
-          >
+          <ShowWhen myRole="owner manager operations admin">
             <NavLink exact to="/paymentlinks/batchuploads">
               Batch Uploads
             </NavLink>
           </ShowWhen>
         </header>
 
+        <TestModeBanner />
+
         <content>
           <Switch>
-            {user.isOldBatchEnabled && !user.isNewBatchEnabled ? (
-              <Route
-                path="/paymentlinks/batchuploads/new"
-                component={BatchUpload}
-              />
-            ) : null}
-
-            {user.isNewBatchEnabled ? (
-              <Route
-                path="/paymentlinks/batchuploads"
-                component={BatchListNew}
-              />
-            ) : (
-              <Route path="/paymentlinks/batchuploads" component={BatchList} />
-            )}
-
-            <Route path="/paymentlinks" component={LinkList} />
+            <Route
+              path="/paymentlinks/batchuploads"
+              component={BatchUploadList}
+            />
+            <Route path="/paymentlinks" component={PaymentLinksList} />
           </Switch>
         </content>
       </tabbed-container>
     );
   }
 }
+
+/*
+* USAGE:
+*
+
+<AnnouncementBanner
+  handleClick={this.handleAnnouncementClose}
+  hidden={!this.state.showAnnouncementBanner}
+  content={
+    <span>
+      Issuing hundreds of payment links manually? Instead, upload an excel sheet and leave the rest to us. Try our{' '}
+      <NavLink
+        class="link"
+        to="/paymentlinks/batchuploads"
+        onClick={trackLinkClick}
+      >
+        Batch Uploads
+      </NavLink>.
+    </span>
+  }
+/>
+
+*
+* */
+const AnnouncementBanner = ({ className, hidden, content, handleClick }) => {
+  return (
+    <div
+      class={classList(
+        'Announcement_Banner',
+        className,
+        hidden && 'Announcement_Banner--hide'
+      )}
+    >
+      {content}
+      <Button.Transparent class="close-btn" onClick={handleClick}>
+        ×
+      </Button.Transparent>
+    </div>
+  );
+};

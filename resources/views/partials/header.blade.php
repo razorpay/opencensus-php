@@ -63,7 +63,7 @@
             if (b.indexOf('hotjar') >= 0) {
                 this.send = function (s) {
                     try {
-                        let x = JSON.parse(s);
+                        var x = JSON.parse(s);
                         if (x['action'] && (x['action'] === 'create_poll_response' || x['action'] === 'update_poll_response')) {
                             if (x['response_content']) {
                                 if (typeof x['response_content'] === 'string') {

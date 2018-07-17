@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import BaseModal from 'ui/BaseModal';
+import { ModalContent } from 'component/Modal';
 import { toJS, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
@@ -90,6 +90,8 @@ export default class EditMerchant extends Component {
       }`;
     }
 
+    body.convert_currency = body.convert_currency || null;
+
     this.dropUnchangedFields(body);
 
     delete body.auto_refund_delay_type;
@@ -104,6 +106,9 @@ export default class EditMerchant extends Component {
       url: '/admin/api/live/merchants/' + this.props.merchantId,
       method: 'put',
       data: body,
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
       .then(data => {
         if (data) {
@@ -188,7 +193,7 @@ export default class EditMerchant extends Component {
     });
 
     return (
-      <BaseModal header="Edit Merchant">
+      <ModalContent header="Edit Merchant">
         <Form class="full-span full-elements" style={{ width: '650px' }}>
           <Field label="Name" name="name" defaultValue={details.name} />
           <Field label="MCC" name="category" defaultValue={details.category} />
@@ -278,6 +283,15 @@ export default class EditMerchant extends Component {
             <option value="postpaid">Postpaid</option>
           </SelectField>
 
+          <SelectField
+            name="refund_source"
+            label="Refund Source"
+            defaultValue={details.refund_source}
+          >
+            <option value="balance">Balance</option>
+            <option value="credits">Refund Credits</option>
+          </SelectField>
+
           <div class="field multi">
             <label>Auto Refund Delay</label>
             <input
@@ -300,13 +314,14 @@ export default class EditMerchant extends Component {
             defaultValue={details.auto_capture_late_auth ? '1' : '0'}
           />
 
-          {details.convert_currency != null ? (
-            <SwitchField
-              label="Convert Currency"
-              name="convert_currency"
-              defaultValue={details.convert_currency ? '1' : '0'}
-            />
-          ) : null}
+          <SelectField
+            name="convert_currency"
+            label="Convert Currency"
+            defaultValue={details.convert_currency === false ? '0' : ''}
+          >
+            <option value="">Disabled</option>
+            <option value="0">Enabled</option>
+          </SelectField>
 
           <div class="field">
             <label>Groups</label>
@@ -316,15 +331,17 @@ export default class EditMerchant extends Component {
             />
           </div>
 
-          <MultiSelectField
-            label="Admins"
-            name="admins"
-            options={adminsList}
-            defaultValue={details.admins}
-            trackBy="id"
-            keys={['name', 'email']}
-            placeholder="Select users"
-          />
+          {user.permissions.find(perm => perm === 'view_all_admin') && (
+            <MultiSelectField
+              label="Admins"
+              name="admins"
+              options={adminsList}
+              defaultValue={details.admins}
+              trackBy="id"
+              keys={['name', 'email']}
+              placeholder="Select users"
+            />
+          )}
 
           <AsyncButton
             text="Cancel"
@@ -339,7 +356,7 @@ export default class EditMerchant extends Component {
             onSubmit={this.handleConfirm}
           />
         </Form>
-      </BaseModal>
+      </ModalContent>
     );
   }
 }

@@ -67,7 +67,8 @@ export default class FileUpload extends React.Component {
     this.props.onFileChange
       .call(this, file, this.progressTracker)
       .then(data => {
-        if (data.errors) {
+        if (data && data.errors) {
+          // In some cases data was undefined while it was success. Mostly for slow connection.
           this.setState({ stagedFileStatus: 'error' });
         } else {
           this.setState({ stagedFileStatus: 'success' });

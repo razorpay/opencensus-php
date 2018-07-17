@@ -155,7 +155,7 @@ function _getCreditsFields() {
     return [
       ['Id', item => item.id],
       ['Campaign', item => item.campaign],
-      ['Type', item => item.type],
+      ['Type', item => statusPill(item.type)],
       ['Value', item => item.value],
       ['Created At', item => formatDate(item.created_at)],
     ];
@@ -277,6 +277,7 @@ const utilMapping = {
     openwallet: 'Openwallet',
     mpesa: 'Mpesa',
     paytm: 'Paytm',
+    amazonpay: 'Amazon Pay',
   },
 };
 
@@ -301,44 +302,7 @@ const _getMethods = {
   emi: 'EMI',
   emandate: 'e-Mandate',
   mpesa: 'Mpesa',
-};
-
-export const beneficiaryStateMap = {
-  AN: 'Andaman And Nicobar',
-  AP: 'Andhra Pradesh',
-  AR: 'Arunachal Pradesh',
-  AS: 'Assam',
-  BI: 'Bihar',
-  CH: 'Chandigarh (UT)',
-  CT: 'Chattisgarh',
-  DN: 'Dadra And Nagar Haveli',
-  DD: 'Daman And Diu (UT)',
-  DL: 'Delhi',
-  GO: 'Goa',
-  GJ: 'Gujarat',
-  HA: 'Haryana',
-  HP: 'Himachal Pradesh',
-  JK: 'Jammu And Kashmir',
-  JH: 'Jharkhand',
-  KA: 'Karnataka',
-  KE: 'Kerala',
-  MP: 'Madhya Pradesh',
-  MH: 'Maharashtra',
-  MA: 'Manipur',
-  ME: 'Meghalaya',
-  MI: 'Mizoram',
-  NA: 'Nagaland',
-  OR: 'Orissa',
-  PO: 'Pondicherry(UT)',
-  PB: 'Punjab',
-  RJ: 'Rajasthan',
-  SK: 'Sikkim',
-  TG: 'Telangana',
-  TN: 'Tamilnadu',
-  TR: 'Tripura',
-  UP: 'Uttar Pradesh',
-  UT: 'Uttranchal',
-  WB: 'West Bengal',
+  amazonpay: 'Amazon Pay',
 };
 
 /*---------------------------------------- Render UI resource --------------------------------------------*/
@@ -389,6 +353,12 @@ export function getDetailsViewMap(model) {
           getFeaturesFields={_getFeaturesFields(model.deleteFeature)}
         />
       ),
+    },
+    {
+      label: 'Partner',
+      value: details.partner_type
+        ? snakeToTitleCase(details.partner_type)
+        : _getBoolIcon(false),
     },
     {
       label: 'Marketplace Merchant',
@@ -509,6 +479,10 @@ export function getDetailsViewMap(model) {
             </a>
           )
         : null,
+    },
+    {
+      label: 'Keyless Auth',
+      value: _getBoolIcon(details.activated && !details.has_key_access),
     },
     {
       label: 'MCC',
@@ -659,8 +633,8 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Methods',
-      children: () =>
-        Object.keys(_getMethods).map(method => (
+      children: () => {
+        let methodRows = Object.keys(_getMethods).map(method => (
           <EntityRow
             key={method}
             label={_getMethods[method]}
@@ -668,7 +642,21 @@ export function getDetailsViewMap(model) {
               details.methods ? _getBoolIcon(details.methods[method]) : '-'
             }
           />
-        )),
+        ));
+
+        if (details.methods) {
+          let disabledBanks = details.methods.disabled_banks;
+          methodRows.push(
+            <EntityRow
+              key="disabled_banks"
+              label="Disabled Banks"
+              value={disabledBanks.length ? disabledBanks : '--'}
+            />
+          );
+        }
+
+        return methodRows;
+      },
     },
     {
       label: 'Suspended',
@@ -742,6 +730,7 @@ export function getDetailsViewMap(model) {
           creditsLogs={creditsLogs}
           fetchCreditsLogs={model.fetchCreditsLogs}
           getCreditsFields={_getCreditsFields()}
+          merchantId={details.id}
         />
       ),
     },
