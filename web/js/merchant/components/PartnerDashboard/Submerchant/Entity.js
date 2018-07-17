@@ -3,6 +3,8 @@ import Time from 'rzp/ui/Time';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
+import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
+
 export default props => {
   const { submerchant, isLoading, error, showFullDetails } = props;
   return (
@@ -15,10 +17,12 @@ export default props => {
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
             <span>{submerchant.name || 'Default Name'}</span>
-            {!!submerchant.id && (
+            {submerchant.dashboard_access && (
               <div class="btn-toolbar pull-right">
                 <button
-                  onClick={props.switchMerchant(submerchant.id)}
+                  onClick={() => {
+                    // TODO: write code for switching user
+                  }}
                   class="btn btn-primary btn-sm"
                 >
                   Switch Merchant
@@ -46,21 +50,28 @@ export default props => {
 
                 {/* Status of Activation */}
                 <EntityDetailRow label="Activation Status">
-                  {submerchant.activated ? (
-                    <span>Activated on {submerchant.activated_at}</span>
+                  {submerchant.details &&
+                  submerchant.details.activation_status ? (
+                    <ActivationStatusLabel
+                      status={submerchant.details.activation_status}
+                    />
                   ) : (
-                    'Not Activated'
+                    <span class="label status-label label-warning">
+                      Not Submitted
+                    </span>
                   )}
                 </EntityDetailRow>
 
-                {showFullDetails && (
-                  <div class="pair-group-item">
-                    <a class="btn-link" onClick={props.onInviteMerchant}>
-                      Invite
-                    </a>{' '}
-                    the merchant to sign up on Razorpay, and manage the account
-                  </div>
-                )}
+                {showFullDetails &&
+                  !submerchant.user && (
+                    <div class="pair-group-item">
+                      <a class="btn-link" onClick={props.onInviteMerchant}>
+                        Invite
+                      </a>{' '}
+                      the merchant to sign up on Razorpay, and manage the
+                      account
+                    </div>
+                  )}
               </div>
             </div>
           </div>

@@ -11,6 +11,7 @@ import StatsCard from 'rzp/ui/StatsCard';
 import HeaderAction from 'rzp/ui/HeaderAction';
 
 import { getTime } from 'rzp/ui/item';
+import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 import {
   submerchant as name,
   submerchantId as id,
@@ -37,12 +38,29 @@ const activationStatus = {
       Activation Status <i class="i-info-circle" />
     </Fragment>
   ),
-  value: item => (item.activated ? 'Activated' : 'Not Activated'),
+  value: submerchant =>
+    submerchant.details && submerchant.details.activation_status ? (
+      <ActivationStatusLabel status={submerchant.activation_status} />
+    ) : (
+      <span class="status-label label label-warning">Not Submitted</span>
+    ),
 };
 
 const switchMerchant = {
   title: 'Switch Merchant',
-  value: () => 'Partnership Removed',
+  value: item =>
+    item.dashboard_access ? (
+      <button
+        class="btn btn-default btn-xs"
+        onClick={() => {
+          // TODO: write code for switching dashboard
+        }}
+      >
+        Switch
+      </button>
+    ) : (
+      'No Access'
+    ),
 };
 
 const switchMerchantAccessMap = {
