@@ -30,35 +30,39 @@ class InvoiceMetricTest extends TestCase
              ->method('count')
              ->withConsecutive(
                 [
-                    'eloquent_cache_misses_total',
+                    'cache_misses_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'key',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_writes_total',
+                    'cache_writes_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'key',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_misses_total',
+                    'cache_misses_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_writes_total',
+                    'cache_writes_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
@@ -89,35 +93,39 @@ class InvoiceMetricTest extends TestCase
              ->method('count')
              ->withConsecutive(
                 [
-                    'eloquent_cache_misses_total',
+                    'cache_misses_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'key',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_writes_total',
+                    'cache_writes_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'key',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_misses_total',
+                    'cache_misses_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_writes_total',
+                    'cache_writes_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 // [

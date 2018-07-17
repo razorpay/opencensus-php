@@ -313,9 +313,16 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->mockSiRecurringStatusNotSet();
 
-        $this->doAuthPayment($payment);
+        $data = $this->testData[__FUNCTION__];
 
-        $this->assertEMandateStrangeStatus();
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+
+        $this-> assertEMandateStrangeStatus();
     }
 
     /**
@@ -848,15 +855,15 @@ class NetbankingIciciEMandateTest extends TestCase
 
         // Since recurring status is not set, the token entity will not contain recurring fields
         $this->assertEquals(false, $token[Token::RECURRING]);
-        $this->assertEquals(RecurringStatus::REJECTED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
-        $this->assertEquals('Failure', $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON_SHORT]);
+        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
+        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON_SHORT]);
 
         $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
         $this->assertEquals('C', $netbanking[Netbanking::SI_STATUS]);
         $this->assertEquals(null, $netbanking[Netbanking::BANK_PAYMENT_ID]);
 
         // Assert gateway token was created
-        $this->assertNotNull($gatewayToken);
+        $this->assertNull($gatewayToken);
     }
 
     protected function mockEmptySecondRecurringResponse()

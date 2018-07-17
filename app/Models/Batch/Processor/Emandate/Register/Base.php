@@ -69,7 +69,7 @@ abstract class Base extends BaseProcessor
     }
 
     abstract protected function getDataFromRow(array $entry): array;
-    abstract protected function getTokenStatus(string $gatewayTokenStatus): string;
+    abstract protected function getTokenStatus(string $gatewayTokenStatus, array $content): string;
     abstract protected function getTokenErrorMessage(string $gatewayTokenStatus, array $entry);
     abstract protected function getGatewayPayment(Payment\Entity $payment);
 
