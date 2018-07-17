@@ -31,6 +31,8 @@ use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -268,24 +270,79 @@ class Service extends Base\Service
     }
 
     /**
-     * Sends a mail to the sub-merchant email telling them about
+     * Old flow: Sends a mail to the sub-merchant email telling them about
      * account creation. Adds aggregator in cc if the sub-merchant
      * email is different.
+     *
+     * Partners flow: Sends a mail to the partner informing about the account
+     * addition. If the sub-merchant email is different then sends an email
+     * to the user created with this email with a password reset email.
+     *
+     * @param Entity      $subMerchant
+     * @param Entity      $aggregator
+     * @param User\Entity $user
+     * @param bool        $createdNewUser
      */
-    protected function sendSubMerchantCreationMail($subMerchant, $aggregator)
+    protected function sendSubMerchantCreationMail(
+        Entity $subMerchant,
+        Entity $aggregator,
+        User\Entity $user = null,
+        bool $createdNewUser = false)
     {
-        if ($aggregator->isMarketplace() === true)
-        {
-            return;
-        }
+        $isPartnerFlow = $aggregator->isPartner();
 
         $subMerchant = $subMerchant->toArray();
 
         $aggregator = $aggregator->toArray();
 
-        $createSubMerchantMail = new CreateSubMerchantMail($subMerchant, $aggregator);
+        if ($isPartnerFlow === true)
+        {
+            $this->sendNewSubMerchantCreationMails($subMerchant, $aggregator, $user, $createdNewUser);
+        }
+        else
+        {
+            $createSubMerchantMail = new CreateSubMerchantMail($subMerchant, $aggregator);
 
-        Mail::queue($createSubMerchantMail);
+            Mail::queue($createSubMerchantMail);
+        }
+    }
+
+    /**
+     * @param array       $subMerchant
+     * @param array       $aggregator
+     * @param User\Entity $user
+     * @param bool        $createdNewUser
+     */
+    protected function sendNewSubMerchantCreationMails(
+        array $subMerchant,
+        array $aggregator,
+        User\Entity $user = null,
+        bool $createdNewUser = false)
+    {
+        // This mail goes to the partner who has added the sub-merchant
+        $createSubMerchantPartnerMail = new CreateSubMerchantPartner($subMerchant, $aggregator);
+
+        Mail::queue($createSubMerchantPartnerMail);
+
+        if ($subMerchant['email'] === $aggregator['email'])
+        {
+            return;
+        }
+
+        $orgId = $this->auth->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+        $org['hostname'] = $this->auth->getOrgHostName();
+
+        $mailUserData = $createdNewUser ? $user : null;
+
+        // If user was just created then we need to pass the details to the mailer for sending
+        // reset password link.
+        $createSubMerchantAffiliateMail =
+            new CreateSubMerchantAffiliate($subMerchant, $aggregator, $org, $mailUserData);
+
+        Mail::queue($createSubMerchantAffiliateMail);
     }
 
     public function editEmail($id, array $input): array
@@ -1825,6 +1882,7 @@ class Service extends Base\Service
      */
     public function createSubMerchantUser($merchantId, array $input): array
     {
+        /** @var Entity $subMerchant */
         $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $input['email'] = $subMerchant->getEmail();
@@ -1837,25 +1895,65 @@ class Service extends Base\Service
 
         unset($input['merchant_id']);
 
-        //Creates a user from the given data.
-        $userData = $this->formatUserCreationData($input, $subMerchant);
+        $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $input['email']);
 
-        $subMerchantUser = (new User\Service)->create($userData);
-
-        $this->attachSubMerchantOwner($subMerchantUser['id'], $subMerchant);
-
-        (new User\Service)->postResetPassword(['email' => $subMerchantUser['email']]);
+        $subMerchantUser = $subMerchantUser->toArrayPublic();
 
         return $subMerchantUser;
     }
 
-    public function formatUserCreationData(array $input, Merchant\Entity $subMerchant)
+    /**
+     * In case of partners, we created the sub-merchant's user in case the email
+     * is different from partner's. There might be some rare cases where the user
+     * with the provided email already exists, in which case we would want to attach
+     * that user to the sub-merchant created as owner.
+     *
+     * @param  Entity $subMerchant
+     * @param  string $email
+     *
+     * @return array
+     */
+    protected function createOrFetchUserAndAttachMerchant(Entity $subMerchant, string $email): array
+    {
+        $created = false;
+
+        /** @var User\Entity $subMerchantUser */
+        $subMerchantUser = $this->repo->user->getUserFromEmail($email);
+
+        if (empty($subMerchantUser) === true)
+        {
+            $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $email);
+
+            $created = true;
+        }
+        else
+        {
+            $this->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
+        }
+
+        return [$subMerchantUser, $created];
+    }
+
+    protected function createUserAndAttachMerchant(Entity $subMerchant, string $email): User\Entity
+    {
+        $userData = $this->formatUserCreationData($email, $subMerchant);
+
+        $subMerchantUser = (new User\Core)->create($userData);
+
+        $this->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
+
+        (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+
+        return $subMerchantUser;
+    }
+
+    public function formatUserCreationData(string $email, Merchant\Entity $subMerchant)
     {
         $dummyPass = bin2hex(random_bytes(20));
 
         return [
             User\Entity::NAME                  => $subMerchant->getName(),
-            User\Entity::EMAIL                 => $input['email'],
+            User\Entity::EMAIL                 => $email,
             User\Entity::PASSWORD              => $dummyPass,
             User\Entity::PASSWORD_CONFIRMATION => $dummyPass,
             User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
@@ -1886,7 +1984,7 @@ class Service extends Base\Service
 
         unset($input['account']);
 
-        $subMerchant = $this->repo->transactionOnLiveAndTest(function () use (
+        list($subMerchant, $newUser, $createdNew) = $this->repo->transactionOnLiveAndTest(function () use (
             $input,
             $merchant,
             $isLinkedAccount,
@@ -1894,6 +1992,10 @@ class Service extends Base\Service
         )
         {
             $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant, $isLinkedAccount);
+
+            $newUser = null;
+
+            $createdNew = false;
 
             if ($isLinkedAccount === false)
             {
@@ -1904,18 +2006,37 @@ class Service extends Base\Service
                 // Partner and sub-merchant are connected via partner's app,
                 // this connect is used for multiple validity checks, web-hooks, etc
                 $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
+
+                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
             }
 
             $this->repo->saveOrFail($subMerchant);
 
-            return $subMerchant;
+            return [$subMerchant, $newUser, $createdNew];
         });
 
         // This goes out to the aggregator + sub-merchant(if separate email)
         // (skips if marketplace merchant)
-        $this->sendSubMerchantCreationMail($subMerchant, $merchant);
+        if (($merchant->isMarketplace() and $isLinkedAccount) === false)
+        {
+            $this->sendSubMerchantCreationMail($subMerchant, $merchant, $newUser, $createdNew);
+        }
 
         return $subMerchant->toArrayPublic();
+    }
+
+    protected function createAdditionalUserOrFetchIfApplicable(Entity $subMerchant, Entity $merchant)
+    {
+        $subMerchantUser = null;
+        $createdNew      = false;
+
+        if (($merchant->isPartner() === true) and ($subMerchant->getEmail() !== $merchant->getEmail()))
+        {
+            list($subMerchantUser, $createdNew) =
+                $this->createOrFetchUserAndAttachMerchant($subMerchant, $subMerchant->getEmail());
+        }
+
+        return [$subMerchantUser, $createdNew];
     }
 
     protected function mapSubMerchantPartnerAppIfApplicable(Entity $merchant, Entity $subMerchant)
@@ -1957,6 +2078,7 @@ class Service extends Base\Service
             return;
         }
 
+        /** @var Entity $aggregatorMerchant */
         $aggregatorMerchant = $this->repo->merchant->findOrFailPublic($aggregatorMerchantId);
 
         $isNonPurePlatformAggregator = $aggregatorMerchant->isNonPurePlatformPartner();
