@@ -66,14 +66,16 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
+        $content = ['type' => 'retail'];
+
+        $this->content($content, 'verify');
+
         if (isset($input[Emandate\RequestFields::DATA]) === true)
         {
             return $this->handleEmandateVerifyFlow($input);
         }
 
-        $this->validateActionInput($input);
-
-        $response = $this->getVerifyXml($input);
+        $response = $this->getVerifyXml($input, $content['type']);
 
         return $this->makeResponse($response);
     }
@@ -138,16 +140,32 @@ class Server extends Base\Mock\Server
         $content = $this->getBaseResponseForBankingType($data);
 
         // for test cases
-        $this->content($content);
+        $this->content($content, 'authorize');
 
-        $masterKey = $this->getMasterKeyFromGateway();
+        $masterKey = $this->getSecret();
 
         // Make sure this is correct, there is some lack of clarity here
         $query = http_build_query($content);
 
         $crypto = new AESCrypto($masterKey);
 
-        $encryptedString = $crypto->encryptString($query);
+        $encryptedString = urlencode($crypto->encryptString($query));
+
+        $oldHashSecret = $this->config['test_hash_secret'];
+
+        $crypto = new AESCrypto($oldHashSecret);
+
+        $oldEncryptedString = $crypto->encryptString($query);
+
+        $encryptedStrings = [
+            'old_encrypted'   => $oldEncryptedString,
+            'new_encrypted'   => $encryptedString,
+            'currently_using' => $encryptedString,
+        ];
+
+        $this->content($encryptedStrings, 'test_encryption');
+
+        $encryptedString = $encryptedStrings['currently_using'];
 
         $response[ResponseFields::ENCRYPTED_STRING] = $encryptedString;
 
@@ -193,24 +211,29 @@ class Server extends Base\Mock\Server
         return $content;
     }
 
-    protected function getMasterKeyFromGateway()
+    protected function getVerifyXml($input, $type)
     {
-        return $this->getSecret();
-    }
-
-    protected function getVerifyXml($input)
-    {
-        $flag = false;
-
-        if (isset($input['encdata']) === true)
+        if ($type === 'corporate')
         {
-            $flag = true;
+            $this->bankingType = BankingType::CORPORATE;
 
-            $decryptedString = $this->getDataFromEncryptedCorporateVerifyInput($input[RequestFields::VERIFY_ENCDATA]);
+            $this->validateActionInput($input, 'corporate_verify');
+
+            $decryptedString = $this->getDataFromEncryptedVerifyInput($input[RequestFields::VERIFY_ENCDATA]);
 
             $input = $this->getDecryptedData($decryptedString);
 
             $input = array_change_key_case($input, CASE_LOWER);
+        }
+        else
+        {
+            $this->bankingType = BankingType::RETAIL;
+
+            $this->validateActionInput($input);
+
+            $decryptedString = $this->getDataFromEncryptedVerifyInput($input[RequestFields::VERIFY_ENCDATA]);
+
+            $input = $this->getDecryptedData($decryptedString);
         }
 
         $response = [
@@ -225,7 +248,7 @@ class Server extends Base\Mock\Server
         ];
 
         // for test cases
-        $this->content($response, Base\Action::VERIFY);
+        $this->content($response, 'verify_content');
 
         // For null verify response
         if ($response === "")
@@ -237,21 +260,18 @@ class Server extends Base\Mock\Server
 
         $xml->addChild('Table1');
 
-        $this->array_to_xml($response, $xml->Table1);
+        $this->arrayToXml($response, $xml->Table1);
 
         $this->content($xml, 'multiple_tables');
 
-        $response = $xml->asXML();
+        $xmlString = $xml->asXML();
 
-        if ($flag === true)
-        {
-            $response = $this->getCorporateVerifyEncryptedStringResponse($response);
-        }
+        $encryptedXml = $this->getVerifyEncryptedStringResponse($xmlString);
 
-        return $response;
+        return $encryptedXml;
     }
 
-    protected function array_to_xml($array, &$xml)
+    protected function arrayToXml($array, &$xml)
     {
         foreach ($array as $key => $value)
         {
@@ -277,7 +297,7 @@ class Server extends Base\Mock\Server
         }
     }
 
-    protected function getDataFromEncryptedCorporateVerifyInput($encryptedString)
+    protected function getDataFromEncryptedVerifyInput($encryptedString)
     {
         $masterKey = $this->getSecret();
 
@@ -288,7 +308,7 @@ class Server extends Base\Mock\Server
         return $decryptedString;
     }
 
-    protected function getCorporateVerifyEncryptedStringResponse(string $data)
+    protected function getVerifyEncryptedStringResponse(string $data)
     {
         $masterKey = $this->getSecret();
 
@@ -308,7 +328,7 @@ class Server extends Base\Mock\Server
                 return $this->config['verify_test_hash_secret'];
             }
 
-            return $this->config['test_hash_secret'];
+            return $this->config['test_hash_secret_new'];
         }
         else
         {

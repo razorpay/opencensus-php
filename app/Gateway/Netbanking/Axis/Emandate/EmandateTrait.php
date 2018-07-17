@@ -531,7 +531,9 @@ trait EmandateTrait
             unset($arrayToBeHashed[3]);
         }
 
-        return $this->generateHash($arrayToBeHashed);
+        $str = implode('', $arrayToBeHashed);
+
+        return $this->getHashOfString($str);
     }
 
     protected function getEmandateSecret() : string

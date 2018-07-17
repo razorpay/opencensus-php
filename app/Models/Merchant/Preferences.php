@@ -45,6 +45,7 @@ class Preferences
     ];
     const MID_CLEARTAX         = 'AGQJfLbWcmjxDX';
     const MID_APARTMENTADDA    = '9NVPPQuTqF4cYx';
+    const MID_INVEZTA          = '8YQygO7pzP3Gut';
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here
@@ -113,6 +114,7 @@ class Preferences
         self::MID_SRI_CHAITANYA,
         self::MID_CLEARTAX,
         self::MID_APARTMENTADDA,
+        self::MID_INVEZTA,
     ];
 
     const ONLY_NEFT_SETTLEMENT_MIDS = [

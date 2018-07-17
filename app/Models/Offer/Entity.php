@@ -424,7 +424,7 @@ class Entity extends Base\PublicEntity
     {
         $existingEmiDurations = $this->getAttribute(self::EMI_DURATIONS);
 
-        $emiDurations = $emiDurations ?: [];
+        $emiDurations = $emiDurations ?? [];
 
         if (empty($existingEmiDurations) === false)
         {

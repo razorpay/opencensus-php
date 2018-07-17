@@ -50,11 +50,40 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->assertEquals($gatewayMerchantId, $gatewayEntity['reference1']);
     }
 
+    public function testPaymentWithEncryptionKeySwitch()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'test_encryption')
+            {
+                $content['currently_using'] = $content['old_encrypted'];
+            }
+        });
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPayment');
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $gatewayEntity);
+
+        $gatewayMerchantId = $this->terminal->getGatewayMerchantId();
+
+        $this->assertEquals($gatewayMerchantId, $gatewayEntity['reference1']);
+    }
+
     public function testAmountTampering()
     {
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            $content['AMT'] = '1';
+            if ($action === 'authorize')
+            {
+                $content['AMT'] = '1';
+            }
         });
 
         $data = $this->testData[__FUNCTION__];
@@ -138,6 +167,15 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->payment = $this->getDefaultNetbankingPaymentArray('UTIB_C');
 
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content['type'] = 'corporate';
+                }
+            });
+
         $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -201,7 +239,25 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->payment = $this->getDefaultNetbankingPaymentArray('UTIB_C');
 
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content['type'] = 'corporate';
+                }
+            });
+
         $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content['type'] = 'corporate';
+                }
+            });
 
         $this->verifyPayment($payment['id']);
 
@@ -683,7 +739,10 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
-                $content = "";
+                if ($action === 'verify_content')
+                {
+                    $content = "";
+                }
             });
     }
 
@@ -707,6 +766,11 @@ class NetbankingAxisGatewayTest extends TestCase
         return $this->mockServerContentFunction(
             function(&$content, $action = null)
             {
+                if ($action === 'verify')
+                {
+                    $content['type'] = 'corporate';
+                }
+
                 $content[ResponseFields::PAID] = Status::NO;
                 $content[ResponseFields::FLAG] = Status::PENDING;
             });
@@ -734,7 +798,7 @@ class NetbankingAxisGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
-            if ($action === 'verify')
+            if ($action === 'verify_content')
             {
                 $content[ResponseFields::STATUS]              = ResponseFields::PAYMENT_STATUS;
                 $content[ResponseFields::VERIFY_RESPONSE_AMT] = '10.00';
