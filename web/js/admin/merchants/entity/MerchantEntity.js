@@ -710,9 +710,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
           );
         })()}
 
-        <ShowWhen permission="edit_partners">
-          <div onClick={actions.AddSubmerchant}>Add Submerchant</div>
-        </ShowWhen>
+        {!isDetailsLoading &&
+          !!merchant.details.partner_type && (
+            <ShowWhen permission="edit_partners">
+              <div onClick={actions.AddSubmerchant}>Add Submerchant</div>
+            </ShowWhen>
+          )}
 
         <ShowWhen permission="edit_merchant_screenshot">
           <div onClick={actions.UploadScreenshots}>
