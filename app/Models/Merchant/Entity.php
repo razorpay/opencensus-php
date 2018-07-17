@@ -1038,12 +1038,12 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::PARTNER_TYPE);
     }
 
-    public function isFullyManagedTypePartner(): bool
+    public function isFullyManagedPartner(): bool
     {
         return ($this->getPartnerType() === Constants::FULLY_MANAGED);
     }
 
-    public function isPurePlatformTypePartner(): bool
+    public function isPurePlatformPartner(): bool
     {
         return ($this->getPartnerType() === Constants::PURE_PLATFORM);
     }
@@ -1557,5 +1557,10 @@ class Entity extends Base\PublicEntity
     public function setPartnerType(string $partnerType = null)
     {
         $this->setAttribute(self::PARTNER_TYPE, $partnerType);
+    }
+
+    public function isNonPurePlatformPartner(): bool
+    {
+        return (($this->isPartner() === true) and ($this->getPartnerType() !== Constants::PURE_PLATFORM));
     }
 }

@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
     "content-hash": "38cdc106edeb48f43226378fa4bd855b",
@@ -554,7 +554,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "Datadog",
+                    "name": "DataDog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
@@ -5454,12 +5454,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "a178cee3befbc9ced0c23061ba4ef21bd602b5b0"
+                "reference": "a287c9d18c9ffb44ee6e4f5352aacf916003eb5e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/a178cee3befbc9ced0c23061ba4ef21bd602b5b0",
-                "reference": "a178cee3befbc9ced0c23061ba4ef21bd602b5b0",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/a287c9d18c9ffb44ee6e4f5352aacf916003eb5e",
+                "reference": "a287c9d18c9ffb44ee6e4f5352aacf916003eb5e",
                 "shasum": ""
             },
             "require": {
@@ -5498,7 +5498,7 @@
                 "source": "https://github.com/razorpay/oauth/tree/master",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2018-06-26T17:54:18+00:00"
+            "time": "2018-07-16T07:23:18+00:00"
         },
         {
             "name": "razorpay/razorpay",
