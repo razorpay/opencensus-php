@@ -162,17 +162,46 @@ class NetbankingCanaraGatewayTest extends TestCase
     {
         $filePath = $data['netbanking_canara']['file'];
 
-        $this->assertEquals($data['netbanking_icici']['count'], 3);
+        $this->assertEquals($data['netbanking_canara']['count'], 3);
+
+        s($filePath);
         $this->assertTrue(file_exists($filePath));
 
-        $sheet = Excel::load($filePath)->all()->toArray();
+        $refundsFileContents = file($filePath);
 
-        $this->assertEquals(count($sheet[0]), 10);
+        $refundAmounts = [1 => 50000, 2 => 10000, 3 => 40000];
 
-        // have to change values
-        $this->assertEquals($sheet[0]['refund_amount'], 500);
-        $this->assertEquals($sheet[1]['refund_amount'], 100);
-        $this->assertEquals($sheet[2]['refund_amount'], 400);
+        $columns = [
+                    'TRANSACTION DATE AND TIME',
+                    'Refund Date',
+                    'BANK_REF_NO',
+                    'PG_REF_NUM',
+                    'Refund Reference',
+                    'Transaction Amount',
+                    'Refund Amount'];
+
+        foreach ($refundsFileContents as $key => $row)
+        {
+            $refundsFileRow = explode('|', $row);
+
+            $lastValue = array_pop($refundsFileRow);
+
+            $lastValue = str_replace(array("\n", "\r"), '', $lastValue);
+
+            array_push($refundsFileRow, $lastValue);
+
+            if($key === 0)
+            {
+                $this->assertEquals($refundsFileRow, $columns);
+            }
+            else
+            {
+                $this->assertEquals($refundsFileRow[6], $refundAmounts[$key]);
+            }
+
+            // Asserting that the file contains 7 columns
+            $this->assertEquals(count($refundsFileRow), 7);
+        }
 
         unlink($filePath);
     }
