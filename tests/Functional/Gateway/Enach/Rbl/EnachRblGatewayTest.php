@@ -218,6 +218,31 @@ class EnachRblGatewayTest extends TestCase
         });
     }
 
+    public function testRegistrationReconInvalidResponseCode()
+    {
+        $payment = $this->createAcknowledgedEnachPayment(false);
+
+        $batchFile = $this->getBatchFileToUpload($payment, 'Pending', '123', 'Some error message');
+
+        $url = '/admin/batches';
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertNull($enach['registration_status']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNull($token['gateway_token']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
     public function testRegistrationReconWithSharedMerchantProxyAuth()
     {
         $payment = $this->createAcknowledgedEnachPayment(false);
@@ -415,6 +440,36 @@ class EnachRblGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             [
                 'status'        => 'REJECT',
+                'error_message' => 'Account closed or transferred',
+            ],
+            $enach
+        );
+    }
+
+    public function testDebitFileReconciliationInvalidResponse()
+    {
+        $payment = $this->makeDebitPayment();
+
+        $fileStatuses = [
+            'status'     => 'INVALID_RESPONSE',
+            'error_code' => '123',
+            'error_desc' => 'Account closed or transferred',
+        ];
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id'])->toArray();
+
+        $this->assertEquals('created', $payment['status']);
+
+        $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'        => 'INVALID_RESPONSE',
                 'error_message' => 'Account closed or transferred',
             ],
             $enach
@@ -768,7 +823,7 @@ class EnachRblGatewayTest extends TestCase
         return $file;
     }
 
-    protected function getBatchFileToUpload($payment)
+    protected function getBatchFileToUpload($payment, $status = 'Active', $errorCode = '', $errorDesc = '')
     {
         $sheets = [
             'sheet1' => [
@@ -815,9 +870,9 @@ class EnachRblGatewayTest extends TestCase
                         'UTILITY_CODE'    => 'NACH00000000012323',
                         'UTILITY_NAME'    => 'RAZORPAY',
                         'NODAL_ACNO'      => 'RATN3234334',
-                        'STATUS'          => 'Active',
-                        'CODE_DESC'       => '',
-                        'RETURN_CODE'     => '',
+                        'STATUS'          => $status,
+                        'CODE_DESC'       => $errorDesc,
+                        'RETURN_CODE'     => $errorCode,
                     ],
                 ],
             ],

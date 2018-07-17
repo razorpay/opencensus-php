@@ -26,7 +26,7 @@ class EnachRbl extends Base
 
         $gatewayTokenStatus = $entry[Batch\Header::ENACH_REGISTER_STATUS];
 
-        $status = $this->getTokenStatus($gatewayTokenStatus);
+        $status = $this->getTokenStatus($gatewayTokenStatus, $entry);
 
         return [
             self::GATEWAY_TOKEN       => $gatewayToken,
@@ -41,9 +41,9 @@ class EnachRbl extends Base
         ];
     }
 
-    protected function getTokenStatus(string $gatewayTokenStatus): string
+    protected function getTokenStatus(string $gatewayTokenStatus, array $content): string
     {
-        if (Rbl\Status::isRegistrationSuccess($gatewayTokenStatus) === true)
+        if (Rbl\Status::isRegistrationSuccess($gatewayTokenStatus, $content) === true)
         {
             return Token\RecurringStatus::CONFIRMED;
         }

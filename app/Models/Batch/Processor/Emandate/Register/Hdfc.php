@@ -38,9 +38,9 @@ class Hdfc extends Base
      * @param string $gatewayTokenStatus
      * @return string
      */
-    protected function getTokenStatus(string $gatewayTokenStatus): string
+    protected function getTokenStatus(string $gatewayTokenStatus, array $content): string
     {
-        if (Netbanking\Hdfc\Status::isRegistrationSuccess($gatewayTokenStatus) === true)
+        if (Netbanking\Hdfc\Status::isRegistrationSuccess($gatewayTokenStatus, $content) === true)
         {
             return Token\RecurringStatus::CONFIRMED;
         }
