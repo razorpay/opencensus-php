@@ -56,10 +56,19 @@
 
     .form-group .errormsg {
         color: {{$text_red}};
+        display: none;
+    }
+
+    .has-error .errormsg {
+        display: block;
     }
 
     .form-group.has-error .form-control {
         border-color: {{$text_red}};
+    }
+
+    .form-group.no-label .help-block{
+        margin-left: 0;
     }
 
     .form-group .icon {

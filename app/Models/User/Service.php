@@ -219,7 +219,25 @@ class Service extends Base\Service
 
     public function confirmUserByData(array $input): array
     {
-        $user = (new Core)->confirmUserByData($input);
+        $user = null;
+
+        (new Entity)->getValidator()->validateInput('confirm', $input);
+
+        // need to validate if it is only a confirm_token or an email
+        if (empty($input[Entity::CONFIRM_TOKEN]) === false)
+        {
+            $user = $this->repo->user->findByToken($input[Entity::CONFIRM_TOKEN]);
+        }
+        else if (empty($input[Entity::EMAIL]) === false and $this->auth->isAdminAuth() === true)
+        {
+            $user = $this->repo->user->findByEmail($input[Entity::EMAIL]);
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+        }
+
+        $user = (new Core)->confirm($user);
 
         $data = $user->toArrayPublic();
 

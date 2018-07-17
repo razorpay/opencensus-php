@@ -11,6 +11,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Hdfc\Payment\Result;
 
 class HdfcGatewayTest extends TestCase
 {
@@ -104,6 +105,7 @@ class HdfcGatewayTest extends TestCase
 
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
 
         $token = $paymentEntity['token_id'];
         unset($payment['card']);
@@ -122,6 +124,7 @@ class HdfcGatewayTest extends TestCase
         // $this->assertTestResponse($paymentEntity);
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
 
         $paymentId = Payment::verifyIdAndSilentlyStripSign($paymentId);
 
@@ -583,7 +586,7 @@ class HdfcGatewayTest extends TestCase
 
     public function testPaymentFailWithFailureLongResultCode()
     {
-        $this->hdfcPaymentMockResultCode('!ERROR!-Transaction denied due to previous capture check failure ( Validate Original Transaction )', 'authorize');
+        $this->hdfcPaymentMockResultCode(Result::DENIED_CAPTURE, 'authorize');
 
         $this->makeRequestAndCatchException(
             function ()

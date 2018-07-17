@@ -29,6 +29,10 @@ class Entity extends Base\PublicEntity
     // Appended attributes
     const ISSUER_NAME           = 'issuer_name';
 
+
+    // These are the valid durations that emi plan can have
+    const VALID_DURATIONS = [3, 6, 9, 12, 18, 24];
+
     protected $entity           = 'emi_plan';
 
     protected $generateIdOnCreate = true;

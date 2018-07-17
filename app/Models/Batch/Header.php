@@ -287,8 +287,16 @@ class Header
     const DIRECT_DEBIT_PAYMENT_ID      = 'payment_id';
     const DIRECT_DEBIT_REMARKS         = 'remarks';
 
-    const ELFIN_LONG_URL             = 'Long Url';
-    const ELFIN_SHORT_URL            = 'Short Url';
+    const ELFIN_LONG_URL               = 'Long Url';
+    const ELFIN_SHORT_URL              = 'Short Url';
+
+    //
+    // OAuth Migration Token
+    // Also uses MERCHANT_ID declared above
+    //
+    const ACCESS_TOKEN                 = 'access_token';
+    const PUBLIC_TOKEN                 = 'public_token';
+    const REFRESH_TOKEN                = 'refresh_token';
 
     /**
      * Input and output file headers
@@ -737,6 +745,23 @@ class Header
             self::OUTPUT => [
                 self::ELFIN_LONG_URL,
                 self::ELFIN_SHORT_URL,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::OAUTH_MIGRATION_TOKEN => [
+
+            self::INPUT => [
+                self::MERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::ACCESS_TOKEN,
+                self::PUBLIC_TOKEN,
+                self::REFRESH_TOKEN,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

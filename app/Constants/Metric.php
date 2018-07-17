@@ -20,7 +20,8 @@ class Metric
     const TRACES_TOTAL                          = 'traces_total';
 
     // Summary type metric names
-    const HTTP_REQUEST_DURATION_MICROSECONDS    = 'http_request_duration_microseconds';
+    // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
+    const HTTP_REQUEST_DURATION_MILLISECONDS    = 'http_request_duration_milliseconds.histogram';
 
     // Labels
     const LABEL_RZP_MODE                        = 'rzp_mode';
@@ -37,9 +38,12 @@ class Metric
     const LABEL_ASYNC_JOB_NAME                  = 'async_job_name';
     const LABEL_TRACE_CHANNEL                   = 'channel';
     const LABEL_TRACE_CODE                      = 'code';
+    const LABEL_TRACE_CONTEXT_CODE              = 'context_code';
     const LABEL_TRACE_LEVEL                     = 'level';
     const LABEL_TRACE_LEVEL_NAME                = 'level_name';
+    const LABEL_INSTANCE                        = 'instance';
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';
+    const LABEL_NONE_VALUE                      = 'none';
 }

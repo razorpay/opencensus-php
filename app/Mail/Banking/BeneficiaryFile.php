@@ -49,7 +49,7 @@ class BeneficiaryFile extends Mailable
     {
         $channel = $this->channel;
 
-        $subject = 'Razorpay updated beneficiary file for ' . ucfirst($channel);
+        $subject = 'Razorpay updated beneficiaries for ' . ucfirst($channel);
 
         $this->subject($subject);
 
@@ -65,9 +65,12 @@ class BeneficiaryFile extends Mailable
 
     protected function addMailData()
     {
-        $data['body'] = 'Please find attached updated beneficiary file for ' .
-                        'Razorpay and kindly update it on your end.' .
-                        'Beneficiaries Count is '. $this->count .'.';
+        if (isset($data['body']) === false)
+        {
+            $data['body'] = 'Please find attached updated beneficiary file for ' .
+                            'Razorpay and kindly update it on your end.' .
+                            'Beneficiaries Count is ' . $this->count . '.';
+        }
 
         $this->with($data);
 

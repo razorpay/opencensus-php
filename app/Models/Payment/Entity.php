@@ -107,8 +107,7 @@ class Entity extends Base\PublicEntity
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
-    // From 10 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
-    const REFERENCE10           = 'reference10';
+    // From 11 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
     const REFERENCE11           = 'reference11';
     const REFERENCE12           = 'reference12';
     const REFERENCE13           = 'reference13';
@@ -121,6 +120,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_CAPTURED      = 'gateway_captured';
     // This is the bucket for the next verify and not the current verify.
     const VERIFY_BUCKET         = 'verify_bucket';
+    const VERIFY_AT             = 'verify_at';
     const CALLBACK_URL          = 'callback_url';
     const TAX                   = 'tax';
     const OTP_ATTEMPTS          = 'otp_attempts';
@@ -217,6 +217,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE2,
         self::DISPUTED,
         self::AUTH_TYPE,
+        self::RECURRING_TYPE,
     ];
 
     protected $visible = [
@@ -279,6 +280,7 @@ class Entity extends Base\PublicEntity
         self::VERIFIED,
         self::GATEWAY_CAPTURED,
         self::VERIFY_BUCKET,
+        self::VERIFY_AT,
         self::CALLBACK_URL,
         self::RECURRING,
         self::SAVE,
@@ -377,13 +379,15 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         'recurring',
         self::METADATA,
+        self::VERIFY_AT,
     ];
 
     protected $dates = [
         self::UPDATED_AT,
         self::CREATED_AT,
         self::AUTHORIZED_AT,
-        self::CAPTURED_AT
+        self::CAPTURED_AT,
+        self::VERIFY_AT,
     ];
 
     protected $hiddenInReport = [self::ACQUIRER_DATA];
@@ -695,6 +699,14 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function generateVerifyAt($input)
+    {
+        // We want to set verify at as created at + 120
+        // so that for payments with status = created
+        // we can pick them after 2 min for verify.
+        $this->setVerifyAt(time() + 120);
+    }
+
     // --------------------- Generators Ends ---------------------------------------
 
     // ----------------------- Setters ---------------------------------------------
@@ -877,6 +889,11 @@ class Entity extends Base\PublicEntity
     public function setVerifyBucket($verifyBucket = 0)
     {
         $this->setAttribute(self::VERIFY_BUCKET, $verifyBucket);
+    }
+
+    public function setVerifyAt($verifyAt)
+    {
+        $this->setAttribute(self::VERIFY_AT, $verifyAt);
     }
 
     public function setVerified($verified)
@@ -1786,6 +1803,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VERIFY_BUCKET);
     }
 
+    public function getVerifyAt()
+    {
+        return $this->getAttribute(self::VERIFY_AT);
+    }
+
     public function getTerminalId()
     {
         return $this->getAttribute(self::TERMINAL_ID);
@@ -1801,71 +1823,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE2);
     }
 
-    /**
-     * @param bool                  $accessCheck For terminal selection, we need to ensure that it's either private
-     *                                           auth or privilege auth. If it's public auth, terminal selection
-     *                                           logic needs to treat it as first recurring only because in public
-     *                                           auth, it always needs to go via 2fa terminal.
-     *
-     * @param Base\PublicCollection $gatewayTokens
-     *
-     * @return bool
-     * @throws Exception\LogicException
-     */
-    public function isSecondRecurring($accessCheck = false, Base\PublicCollection $gatewayTokens = null)
+    public function isSecondRecurring()
     {
-        if ($this->isRecurring() === false)
+        if (($this->isRecurring() === true) and
+            ($this->isRecurringTypeAuto() === true))
         {
-            return false;
+            return true;
         }
 
-        $app = \App::getFacadeRoot();
-
-        if ($accessCheck === true)
-        {
-            $basicAuth = $app['basicauth'];
-
-            if (($basicAuth->isPrivateAuth() === false) and
-                ($basicAuth->isPrivilegeAuth() === false))
-            {
-                return false;
-            }
-        }
-
-        $token = $this->getGlobalOrLocalTokenEntity();
-
-        // Recurring payments should always have a token!
-        if ($token === null)
-        {
-            throw new Exception\LogicException(
-                'Token absent for recurring payment',
-                ErrorCode::SERVER_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT,
-                [
-                    'payment_id'    => $this->getId(),
-                    'access_check'  => $accessCheck,
-                ]);
-        }
-
-        //
-        // We use null check and not count here because gatewayTokens collection passed
-        // might have 0 items. In this case, we don't need to run the query again. The
-        // query would have already been run and the result could have been 0 items.
-        //
-        if ($gatewayTokens === null)
-        {
-            $reference = $this->getReferenceForGatewayToken();
-
-            $gatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
-        }
-
-        //
-        // We can have multiple gateway_tokens for a single token.
-        // Each gateway_token would correspond to a different gateway.
-        // This still means that this is second recurring since a
-        // gateway_token has already been created for the given token.
-        // The token can now be used without 2FA.
-        //
-        return ($gatewayTokens->count() > 0);
+        return false;
     }
 
     public function isEmiMerchantSubvented()
@@ -2218,7 +2184,8 @@ class Entity extends Base\PublicEntity
         $merchantIds = [
             '10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f',
             '7thBRSDflu7NHL', '87qTXzFTBLFN7i', '9sOd4xwUKox63N',
-            '9fI2f7tNoAmVhu', '6H7N6hlcv29OMG', '8tiqrk8Qpc47l9'
+            '9fI2f7tNoAmVhu', '6H7N6hlcv29OMG', '8tiqrk8Qpc47l9',
+            '6ZLE5BE57SExGF'
         ];
 
         $currentMerchantId = $this->getMerchantId();
@@ -2728,7 +2695,7 @@ class Entity extends Base\PublicEntity
         // Since the first auth transaction would have already been
         // done, we don't need to do any MaxMind risk checks for this.
         //
-        if ($this->isSecondRecurring(true) === true)
+        if ($this->isSecondRecurring() === true)
         {
             return false;
         }

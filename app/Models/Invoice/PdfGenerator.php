@@ -84,7 +84,7 @@ class PdfGenerator extends Base\Core
             'footer-font-size'  => '9',
             'footer-center'     => 'Page [page] of [topage]',
             'dpi'               => 290,
-            'zoom'              => 1.28,
+            'zoom'              => 1,
             'ignoreWarnings'    => false,
             'encoding'          => 'UTF-8',
         ];

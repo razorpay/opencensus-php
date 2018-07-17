@@ -29,6 +29,7 @@ class Validator extends Base\Validator
         Entity::TITLE         => 'required|filled|string|max:40',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
+        Entity::SLUG          => 'filled|alpha_num|min:4|max:20',
     ];
 
     protected static $editRules = [
@@ -40,6 +41,8 @@ class Validator extends Base\Validator
         Entity::TITLE         => 'filled|string|max:40',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
+        // Todo: Discuss with product on should making slug null be allowed in patch requests?
+        Entity::SLUG          => 'filled|alpha_num|min:4|max:20',
     ];
 
     protected static $sendNotificationRules = [
@@ -110,6 +113,7 @@ class Validator extends Base\Validator
 
     public function validateActivateOperation()
     {
+        /** @var Entity $paymentLink */
         $paymentLink = $this->entity;
 
         if ($paymentLink->isActive() === true)
@@ -122,6 +126,7 @@ class Validator extends Base\Validator
 
     public function validateDeactivateOperation()
     {
+        /** @var Entity $paymentLink */
         $paymentLink = $this->entity;
 
         if ($paymentLink->isInactive() === true)
@@ -173,7 +178,7 @@ class Validator extends Base\Validator
      */
     public function validatePaymentAmount(Payment\Entity $payment)
     {
-        $paymentAmount     = $payment->getAmount();
+        $paymentAmount     = $payment->getAdjustedAmountWrtCustFeeBearer();
         $paymentLinkAmount = $this->entity->getAmount();
 
         if (($paymentLinkAmount !== null) and ($paymentLinkAmount !== $paymentAmount))
