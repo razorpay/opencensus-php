@@ -108,7 +108,7 @@ class Service extends Base\Service
             }
             else
             {
-                if ($merchant->isPurePlatformTypePartner() === true)
+                if ($merchant->isPurePlatformPartner() === true)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
@@ -143,7 +143,7 @@ class Service extends Base\Service
 
         $subMerchantEmailIsSame = ($aggregatorMerchant->getEmail() === $subMerchant->getEmail());
 
-        if (($aggregatorMerchant->isFullyManagedTypePartner() === true) or
+        if (($aggregatorMerchant->isFullyManagedPartner() === true) or
             //Remove the following line later as aggregator isn't supposed to
             //have dashboard access eventually. This is for BC.
             ($aggregatorMerchant->isAggregatorPartner() === true) or
@@ -1817,7 +1817,9 @@ class Service extends Base\Service
 
     /**
      * Creates submerchant User and associates with the submerchant as owner.
-     * @param array $input
+     *
+     * @param string $merchantId
+     * @param array  $input
      *
      * @return array
      */
@@ -1842,18 +1844,20 @@ class Service extends Base\Service
 
         $this->attachSubMerchantOwner($subMerchantUser['id'], $subMerchant);
 
-        (new User\Service)->sendConfirmationMail($subMerchantUser['id']);
+        (new User\Service)->postResetPassword(['email' => $subMerchantUser['email']]);
 
         return $subMerchantUser;
     }
 
     public function formatUserCreationData(array $input, Merchant\Entity $subMerchant)
     {
+        $dummyPass = bin2hex(random_bytes(20));
+
         return [
             User\Entity::NAME                  => $subMerchant->getName(),
             User\Entity::EMAIL                 => $input['email'],
-            User\Entity::PASSWORD              => $input['password'],
-            User\Entity::PASSWORD_CONFIRMATION => $input['password_confirmation'],
+            User\Entity::PASSWORD              => $dummyPass,
+            User\Entity::PASSWORD_CONFIRMATION => $dummyPass,
             User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
         ];
     }
@@ -1937,14 +1941,64 @@ class Service extends Base\Service
         (new AccessMap\Service)->mapOAuthApplication($subMerchant->getId(), ['application_id' => $appId]);
     }
 
-    protected function validateAggregatorSubMerchantRelation($subMerchant, $aggregatorMerchantId)
+    protected function validateAggregatorSubMerchantRelation(Entity $subMerchant, string $aggregatorMerchantId)
     {
+        if ($subMerchant->isLinkedAccount() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
         $referrer = $subMerchant->getReferrer();
 
-        if ((empty($referrer) === true) or ($referrer !== $aggregatorMerchantId))
+        $referrerNotEmptyAndSame = (empty($referrer) === false) and ($referrer === $aggregatorMerchantId);
+
+        if ($referrerNotEmptyAndSame === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FORBIDDEN);
+            return;
         }
+
+        $aggregatorMerchant = $this->repo->merchant->findOrFailPublic($aggregatorMerchantId);
+
+        $isNonPurePlatformAggregator = $aggregatorMerchant->isNonPurePlatformPartner();
+
+        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchantId);
+
+        if (($isNonPurePlatformAggregator === true) and ($isPartnerMerchantMapped === true))
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+    }
+
+    /**
+     * This function checks for a mapping between the partner merchant's dummy app from
+     * auth database and the submerchant. This is stored in the `merchant_access_map` table
+     * on API side.
+     *
+     * @param  string $merchantId
+     * @param  string $partnerId
+     *
+     * @return bool
+     */
+    public function isPartnerMerchantMapped(string $merchantId, string $partnerId): bool
+    {
+        $app = $this->getPartnerAppByMerchantId($partnerId);
+
+        $mapping = (new AccessMap\Repository)
+                        ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), AccessMap\Entity::APPLICATION);
+
+        return (empty($mapping) === false);
+    }
+
+    /**
+     * TODO: Check if the core function (getPartnerApp) is needed at all and remove it if not
+     * @param  string $merchantId
+     *
+     * @return null|OAuthApplication\Entity
+     */
+    public function getPartnerAppByMerchantId(string $merchantId)
+    {
+        return (new OAuthApplication\Repository)->findActivePartnerApplicationByMerchantId($merchantId);
     }
 }

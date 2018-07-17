@@ -73,6 +73,7 @@ class Constants
     const PAYMENT_NOBRANDING              = 'payment_nobranding';
     const ENABLE_VPA_VALIDATE             = 'enable_vpa_validate';
     const ALLOW_SUBMERCHANT_WITHOUT_EMAIL = 'allow_sub_without_email';
+    const HDFC_DEBIT_SI                   = 'hdfc_debit_si';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -174,6 +175,7 @@ class Constants
         self::OTPELF                          => true,
         self::ENABLE_VPA_VALIDATE             => true,
         self::ALLOW_SUBMERCHANT_WITHOUT_EMAIL => true,
+        self::HDFC_DEBIT_SI                   => true,
     ];
 
     // Entity type constants

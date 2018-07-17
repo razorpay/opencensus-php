@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Bank\IFSC;
 
 /**
  * @property Merchant\Entity    $merchant
@@ -636,11 +637,22 @@ class Entity extends Base\PublicEntity
 
         $isSupportedDebitBank = in_array($issuer, Payment\Gateway::getIssuersSupportedForDebitCardRecurring(), true);
 
-        $debitCheck = (($type === Type::DEBIT) and
-                       ($isSupportedNetwork === true) and
-                       ((($isSupportedDebitBank === true) and
-                         ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true)) or
-                        ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true)));
+        $debitCheck = false;
+
+        if (($type === Type::DEBIT) and
+            ($isSupportedNetwork === true))
+        {
+            if ($issuer === IFSC::HDFC)
+            {
+                $debitCheck = (($merchant->isFeatureEnabled(Feature\Constants::HDFC_DEBIT_SI) === true) or
+                               ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
+            }
+            else if ($isSupportedDebitBank === true)
+            {
+                $debitCheck = (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true) or
+                               ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
+            }
+        }
 
         $creditCheck = (($type === Type::CREDIT) and
                         ($isSupportedNetwork === true));

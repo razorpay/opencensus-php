@@ -874,7 +874,7 @@ class Core extends Base\Core
      */
     public function createPartnerApp(Entity $merchant)
     {
-        if ($merchant->isPurePlatformTypePartner() === true)
+        if ($merchant->isPurePlatformPartner() === true)
         {
             // Don't create a dummy application for pure platforms
             return;
@@ -910,7 +910,7 @@ class Core extends Base\Core
      */
     public function deletePartnerApp(Entity $merchant)
     {
-        if ($merchant->isPurePlatformTypePartner() === true)
+        if ($merchant->isPurePlatformPartner() === true)
         {
             // A dummy application for pure platforms does not exist
             return;
