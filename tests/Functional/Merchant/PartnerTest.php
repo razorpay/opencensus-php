@@ -388,7 +388,9 @@ class PartnerTest extends OAuthTestCase
 
         $submerchant = $this->allowAdminToAccessSubMerchant();
 
-        $this->createUserMerchantMapping(self::DEFAULT_MERCHANT_ID, 'owner');
+        $this->createMerchantUser(self::DEFAULT_MERCHANT_ID);
+
+        $this->createMerchantUser(self::DEFAULT_SUBMERCHANT_ID);
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
 
@@ -406,9 +408,13 @@ class PartnerTest extends OAuthTestCase
 
         $merchantUsers = $submerchant->users()->get()->toArrayPublic();
 
-        $this->assertEquals(1, $merchantUsers['count']);
+        $this->assertEquals(2, $merchantUsers['count']);
 
-        $this->assertArraySelectiveEquals($partnerUser, $merchantUsers['items'][0]);
+        $userIds = array_map(function($item){
+            return $item['id'];
+        }, $merchantUsers['items']);
+
+        $this->assertContains($partnerUser['id'], $userIds);
 
         $submerchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
 
@@ -491,7 +497,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->allowAdminToAccessSubMerchant();
 
-        $this->createUserMerchantMapping(self::DEFAULT_MERCHANT_ID, 'owner');
+        $this->createMerchantUser(self::DEFAULT_MERCHANT_ID);
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
@@ -524,7 +530,11 @@ class PartnerTest extends OAuthTestCase
 
         $submerchant = $this->allowAdminToAccessSubMerchant();
 
-        $this->createUserMerchantMapping(self::DEFAULT_MERCHANT_ID, 'owner');
+        $partnerUser = $this->createMerchantUser(self::DEFAULT_MERCHANT_ID);
+
+        $this->createMerchantUser(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
@@ -545,6 +555,10 @@ class PartnerTest extends OAuthTestCase
 
         $this->assertEquals(self::DEFAULT_MERCHANT_ID, $submerchant->getReferrer());
 
+        $merchantUsers = $submerchant->users()->get()->toArrayPublic();
+
+        $this->assertEquals(2, $merchantUsers['count']);
+
         $this->ba->adminAuth();
 
         $this->startTest();
@@ -552,6 +566,11 @@ class PartnerTest extends OAuthTestCase
         $submerchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
 
         $this->assertEquals(null, $submerchant->getReferrer());
+
+        $merchantUsers = $submerchant->users()->get()->toArrayPublic();
+
+        // The above test should not delete the mapping. Dashboard access has to be revoked separately.
+        $this->assertEquals(2, $merchantUsers['count']);
     }
 
     public function testRemoveNonExistingPartnerAccessMap()
@@ -560,7 +579,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->allowAdminToAccessSubMerchant();
 
-        $this->createUserMerchantMapping(self::DEFAULT_MERCHANT_ID, 'owner');
+        $this->createMerchantUser(self::DEFAULT_MERCHANT_ID);
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
@@ -582,6 +601,11 @@ class PartnerTest extends OAuthTestCase
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $this->createOAuthApplication($partnerData);
+
         $this->ba->adminAuth();
 
         $this->startTest();
@@ -593,7 +617,7 @@ class PartnerTest extends OAuthTestCase
 
         $submerchant = $this->allowAdminToAccessSubMerchant();
 
-        $this->createUserMerchantMapping(self::DEFAULT_MERCHANT_ID, 'owner');
+        $this->createMerchantUser(self::DEFAULT_MERCHANT_ID);
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
 
@@ -654,18 +678,23 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => $partnerType]);
     }
 
-    protected function createUserMerchantMapping($merchantId, $role)
+    protected function createMerchantUser($merchantId)
     {
         $user = $this->fixtures->create('user');
 
+        $this->addUserToMerchant($user, $merchantId, 'owner');
+
+        return $user;
+    }
+
+    protected function addUserToMerchant($user, $merchantId, $role)
+    {
         $mappingData = [
             'user_id'     => $user['id'],
             'merchant_id' => $merchantId,
             'role'        => $role,
         ];
 
-        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
-
-        return $user;
+        return $this->fixtures->create('user:user_merchant_mapping', $mappingData);
     }
 }

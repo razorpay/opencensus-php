@@ -944,9 +944,7 @@ class Core extends Base\Core
      */
     public function deletePartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
     {
-        $merchantService = new Service;
-
-        $response = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant, $merchantService)
+        $response = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
             $partnerApp = $this->getPartnerApp($partner);
 

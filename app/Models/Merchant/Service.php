@@ -1952,13 +1952,12 @@ class Service extends Base\Service
 
     /**
      * @param string $merchantId
-     * @param array  $input
      *
      * @return array
      */
-    public function createPartnerAccessMap(string $merchantId, array $input): array
+    public function createPartnerAccessMap(string $merchantId): array
     {
-        list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId, $input);
+        list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId);
 
         $accessMap = $this->core()->createPartnerSubmerchantAccessMap($partner, $submerchant);
 
@@ -1967,13 +1966,12 @@ class Service extends Base\Service
 
     /**
      * @param string $merchantId
-     * @param array  $input
      *
      * @return array
      */
-    public function deletePartnerAccessMap(string $merchantId, array $input): array
+    public function deletePartnerAccessMap(string $merchantId): array
     {
-        list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId, $input);
+        list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId);
 
         $accessMap = $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
 
@@ -1982,12 +1980,11 @@ class Service extends Base\Service
 
     /**
      * @param string $merchantId
-     * @param array  $input
      *
      * @return array
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function getPartnerAndSubMerchant(string $merchantId, array $input): array
+    protected function getPartnerAndSubMerchant(string $merchantId): array
     {
         //
         // In the context of partners and submerchants -
@@ -2002,8 +1999,7 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_PARTNER_CONTEXT_NOT_SET,
-                Entity::MERCHANT_ID,
-                $input);
+                Entity::PARTNER_TYPE);
         }
 
         /** @var BasicAuth $ba */
