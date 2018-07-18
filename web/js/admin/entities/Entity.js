@@ -244,7 +244,9 @@ function updateEntity(data) {
   });
 }
 
-const deleteEmiPlan = _ => adminDelete(`emi/${this.id}`);
+function deleteEmiPlan() {
+  return adminDelete(`emi/${this.id}`);
+}
 
 function downloadFile() {
   var windowRef = window.open('', '_blank');
