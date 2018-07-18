@@ -88,7 +88,7 @@ class Server extends Base\Mock\Server
             ResponseFields::VER_CLIENT_ACCOUNT                => '',
             ResponseFields::VER_PAYMENT_ID                    => $input[ResponseFields::PAYMENT_ID],
             ResponseFields::PUR_DATE                          => $input[ResponseFields::PUR_DATE],
-            ResponseFields::VER_BANK_REFERENCE_NUMBER         => $input[ResponseFields::BANK_REFERENCE_NUMBER],
+            ResponseFields::VER_BANK_REFERENCE_NUMBER         => self::BANK_REFERENCE_NUMBER,
             ResponseFields::VER_AMOUNT                        => $input[ResponseFields::AMOUNT],              // have to verify
             ResponseFields::RETURN_CODE                       => Constants::SUCCESS_RETURN_CODE,
             ResponseFields::VERIFY_STATUS                     => Constants::SUCCESS_VERIFY_STATUS,

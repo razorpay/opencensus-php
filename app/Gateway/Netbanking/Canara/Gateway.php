@@ -65,6 +65,8 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($input['payment']['amount'], (int) $content[ResponseFields::AMOUNT]);
 
+        $this->checkCallbackStatus($content);
+
         $this->verifyCallback($input);
 
         $gatewayPayment = $this->saveCallbackResponse($content);
@@ -87,7 +89,7 @@ class Gateway extends Base\Gateway
         if ($verify->gatewaySuccess === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+                ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED);
         }
     }
 
@@ -157,6 +159,21 @@ class Gateway extends Base\Gateway
 
     // -------------------------- Callback helper methods ------------------------------
 
+    protected function checkCallbackStatus(array $content)
+    {
+        if (isset($content[ResponseFields::BANK_REFERENCE_NUMBER]) === false)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                [
+                    'content' => $content
+                ]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+    }
+
     protected function saveCallbackResponse($content)
     {
         $content[NetbankingEntity::RECEIVED] = true;
@@ -204,16 +221,12 @@ class Gateway extends Base\Gateway
         if ($this->action === Action::VERIFY)
         {
             $gatewayPayment = $verify->payment;
-
             $bankRefNumber = $gatewayPayment['bank_payment_id'];
         }
-        elseif ($this->action === Action::CALLBACK)
+        elseif(($this->action === Action::CALLBACK) and
+                (isset($input['gateway'][ResponseFields::BANK_REFERENCE_NUMBER]) === true))
         {
-            $bankRefNumber = $input['gateway'][ResponseFields::BANK_REFERENCE_NUMBER];
-        }
-        else
-        {
-            throw new Exception\LogicException('Verify should be called from either verify or callback actions');
+                $bankRefNumber = $input['gateway'][ResponseFields::BANK_REFERENCE_NUMBER];
         }
 
         $data = [
@@ -229,8 +242,12 @@ class Gateway extends Base\Gateway
             RequestFields::FAILURE_STATIC_FLAG           => 'N',
             RequestFields::VER_DATE                      => $this->getCurrentDate(),
             RequestFields::PUR_DATE                      => $this->getDate($paymentEntity[Payment\Entity::CREATED_AT]),
-            ResponseFields::BANK_REFERENCE_NUMBER        => $bankRefNumber,
         ];
+
+        if(isset($bankRefNumber) === true)
+        {
+            $data[ResponseFields::BANK_REFERENCE_NUMBER] = $bankRefNumber;
+        }
 
         $request = $this->getStandardRequestArray($data, 'get', Action::VERIFY);
 
