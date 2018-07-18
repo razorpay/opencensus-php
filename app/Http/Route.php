@@ -1884,6 +1884,8 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
+        'invoice_issue_by_batch'                   => '*',
+        'invoice_notify_by_batch'                  => '*',
     ];
 
     public static $direct = [
