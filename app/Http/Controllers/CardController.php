@@ -31,15 +31,6 @@ class CardController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getPaymentFlows()
-    {
-        $input = Request::all();
-
-        $data = $this->service(E::IIN)->fetchPaymentFlows($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function updateSavedCards()
     {
         $data = $this->service()->updateSavedCards();

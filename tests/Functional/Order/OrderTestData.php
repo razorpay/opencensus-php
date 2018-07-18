@@ -531,6 +531,58 @@ return [
         ],
     ],
 
+
+    'testCreateOrderWithRepeatedOffers' => [
+        'request' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offers'        => [
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offer_id'      => null,
+                'offers'        => null,
+            ],
+        ],
+    ],
+
+    'testCreateOrderWithOffersAndOfferID' => [
+        'request' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offer_id'      => null,
+                'offers'        => [
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Request should send either offer_id or offers',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateOrderWithMultipleOffers' => [
         'request' => [
             'content' => [

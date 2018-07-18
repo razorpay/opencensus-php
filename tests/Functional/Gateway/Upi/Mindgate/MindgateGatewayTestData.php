@@ -162,4 +162,36 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
         ]
     ],
+
+    'testValidateVpaSuccess' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'success@hdfcbank',
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'vpa'       => 'success@hdfcbank',
+                'success'   => true,
+            ],
+        ]
+    ],
+
+    'testValidateVpaFailure' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'invalidvpa@hdfcbank',
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'vpa'       => 'invalidvpa@hdfcbank',
+                'success'   => false,
+            ],
+        ]
+    ],
 ];

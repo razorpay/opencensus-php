@@ -2,19 +2,28 @@
 
 namespace RZP\Tests\Functional\BasicAuth;
 
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+
+use Illuminate\Database\Eloquent\Factory;
 
 class BasicAuthTest extends TestCase
 {
+    use OAuthTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/BasicAuthData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/BasicAuthData.php';
 
         parent::setUp();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->privateAuth();
     }
@@ -168,7 +177,7 @@ class BasicAuthTest extends TestCase
         foreach ($internalRoutes as $routeName => $routeInfo)
         {
             $testData['request']['method'] = $routeInfo[0];
-            $testData['request']['url'] = $routeInfo[1];
+            $testData['request']['url']    = $routeInfo[1];
 
             $this->startTest($testData);
         }
@@ -183,7 +192,7 @@ class BasicAuthTest extends TestCase
         foreach ($internalRoutes as $routeName => $routeInfo)
         {
             $testData['request']['method'] = $routeInfo[0];
-            $testData['request']['url'] = $routeInfo[1];
+            $testData['request']['url']    = $routeInfo[1];
 
             $this->startTest($testData);
         }
@@ -204,7 +213,7 @@ class BasicAuthTest extends TestCase
         $this->markTestIncomplete();
 
         $request = [
-            'url' => '/payments/create/jsonp?keyid=rzp_test_TheTestAuthKey',
+            'url'    => '/payments/create/jsonp?keyid=rzp_test_TheTestAuthKey',
             'method' => 'GET',
         ];
 
@@ -275,6 +284,198 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testPartnerAuthOnJsonpRoute()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $this->fixtures->create('emi_plan');
+
+        $this->ba->publicAuth('rzp_test_partner_' . $client->getId());
+
+        $this->startTest();
+    }
+
+    public function testPartnerAuthOnJsonpRouteWrongClientId()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $this->fixtures->create('emi_plan');
+
+        $this->ba->publicAuth('rzp_test_partner_' . 'wrongClient123');
+
+        $this->startTest();
+    }
+
+    public function testPartnerAuthOnJsonpRouteAppMissing()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', ['deleted_at' => Carbon::now()->timestamp]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $this->fixtures->create('emi_plan');
+
+        $this->ba->publicAuth('rzp_test_partner_' . $client->getId());
+
+        $this->startTest();
+    }
+
+    public function testPartnerAuthOnJsonpRouteWrongMerchantForClient()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $testData = ['request' => ['server' => ['HTTP_X-Razorpay-Account' => 'acc_' . $newMerchant['id']]]];
+
+        $this->fixtures->create('emi_plan');
+
+        $this->ba->publicAuth('rzp_test_partner_' . $client->getId());
+
+        $this->startTest($testData);
+    }
+
+    public function testPartnerAuthOnJsonpRouteApiKey()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $this->fixtures->create('emi_plan');
+
+        $key = $this->getLastEntity('key', true);
+
+        $this->ba->publicAuth('rzp_test_partner_' . $key['id']);
+
+        $this->startTest();
+    }
+
+    public function testRequestWithPartnerHeadersClientCreds()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $this->startTest();
+    }
+
+    public function testRequestWithPartnerHeadersPurePlatform()
+    {
+        $client = $this->createOAuthApplicationAndGetClientByEnv('dev');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'pure_platform']);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $this->startTest();
+    }
+
+    public function testRequestWithPartnerNoSecret()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), '');
+
+        $this->startTest();
+    }
+
+    public function testRequestWithPartnerHeadersClientCredsWrongMode()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->ba->privateAuth('rzp_live_partner_' . $client->getId(), $client->getSecret());
+
+        $this->startTest();
+    }
+
+    public function testRequestWithPartnerHeadersWrongClientCreds()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), 'wrongsecret');
+
+        $this->startTest();
+    }
+
+    public function testRequestWithPartnerInactiveMerchantLiveMode()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('prod');
+
+        $this->ba->privateAuth('rzp_live_partner_' . $client->getId(), $client->getSecret());
+
+        $this->startTest();
+    }
+
+
+    public function testRequestWithPartnerHeadersClientCredsNotPartner()
+    {
+        $client = $this->createOAuthApplicationAndGetClientByEnv('dev');
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $this->startTest();
+    }
+
+    public function testPartnerRequestOnNonMappedMerchant()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $this->startTest();
+    }
+
     public function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -286,5 +487,16 @@ class BasicAuthTest extends TestCase
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function setUpPartnerMerchantAppAndGetClient(string $env = 'dev', array $attributes = [])
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv($env, $attributes);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->fixtures->merchant->addFeatures(['partner']);
+
+        return $client;
     }
 }

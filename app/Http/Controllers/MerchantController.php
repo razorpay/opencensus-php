@@ -9,7 +9,6 @@ use RZP\Models\Key;
 use RZP\Models\Report;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
@@ -357,9 +356,9 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMerchantBeneficiaryFile($channel)
+    public function getMerchantBeneficiary($channel)
     {
-        $data = $this->service()->getMerchantBeneficiaryFile($this->input, $channel);
+        $data = $this->service()->getMerchantBeneficiary($this->input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -417,11 +416,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postMerchantBeneficiaryFile($channel)
+    public function postMerchantBeneficiary($channel)
     {
         $input = Request::all();
 
-        $data = $this->service()->postMerchantBeneficiaryFile($input, $channel);
+        $data = $this->service()->postMerchantBeneficiary($input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -892,7 +891,7 @@ class MerchantController extends Controller
 
     public function getPublicGatewayDowntimeData()
     {
-        $data = $this->service(Entity::GATEWAY_DOWNTIME)->getDowntimeDataForMerchant();
+        $data = $this->service(E::GATEWAY_DOWNTIME)->getDowntimeDataForMerchant();
 
         return ApiResponse::json($data);
     }
@@ -995,11 +994,9 @@ class MerchantController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function createAccessMap(string $merchantId)
+    public function createPartnerAccessMap(string $merchantId)
     {
-        $input = $this->input;
-
-        $response = $this->service()->createPartnerAccessMap($merchantId, $input);
+        $response = $this->service()->createPartnerAccessMap($merchantId);
 
         return ApiResponse::json($response);
     }
@@ -1009,12 +1006,10 @@ class MerchantController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function deleteAccessMap(string $merchantId)
+    public function deletePartnerAccessMap(string $merchantId)
     {
-        $input = $this->input;
+        $this->service()->deletePartnerAccessMap($merchantId);
 
-        $response = $this->service()->deletePartnerAccessMap($merchantId, $input);
-
-        return ApiResponse::json($response);
+        return ApiResponse::json([], 204);
     }
 }

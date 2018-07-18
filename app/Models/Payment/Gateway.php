@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use App;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
@@ -22,6 +23,7 @@ class Gateway
     const AXIS_MIGS              = 'axis_migs';
     const BILLDESK               = 'billdesk';
     const MPI_BLADE              = 'mpi_blade';
+    const MPI_ENSTAGE            = 'mpi_enstage';
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
     const ESIGNER_DIGIO          = 'esigner_digio';
@@ -178,6 +180,7 @@ class Gateway
         Payment\Gateway::HITACHI,
         Payment\Gateway::UPI_HULK,
         Payment\Gateway::NETBANKING_AIRTEL,
+        Payment\Gateway::ATOM,
     ];
 
     public static $channels = [
@@ -186,6 +189,7 @@ class Gateway
         self::AXIS_GENIUS         => Settlement\Channel::KOTAK,
         self::AXIS_MIGS           => Settlement\Channel::KOTAK,
         self::MPI_BLADE           => Settlement\Channel::KOTAK,
+        self::MPI_ENSTAGE         => Settlement\Channel::KOTAK,
         self::BILLDESK            => Settlement\Channel::KOTAK,
         self::EBS                 => Settlement\Channel::KOTAK,
         self::ENACH_RBL           => Settlement\Channel::KOTAK,
@@ -235,6 +239,7 @@ class Gateway
             self::CYBERSOURCE,
             self::FIRST_DATA,
             self::MPI_BLADE,
+            self::MPI_ENSTAGE,
             self::HITACHI,
             self::CARD_FSS,
         ],
@@ -372,6 +377,12 @@ class Gateway
         self::SHARP,
     ];
 
+    public static $headless = [
+        self::CYBERSOURCE,
+        self::HITACHI,
+        self::HDFC,
+    ];
+
     /**
      * Each card gateway only support specific card networks.
      * This maintains a map of gateway to card network which
@@ -400,6 +411,10 @@ class Gateway
             Network::AMEX
         ],
         self::MPI_BLADE => [
+            Network::MC,
+            Network::VISA
+        ],
+        self::MPI_ENSTAGE => [
             Network::MC,
             Network::VISA
         ],
@@ -568,110 +583,133 @@ class Gateway
             IFSC::UTIB,
             IFSC::HDFC,
         ],
+        // Please keep this list sorted
+        // You can find the latest PDF version
+        // at https://www.npci.org.in/nach-e-mandates
         AuthType::AADHAAR => [
             IFSC::ABHY,
             IFSC::ACUX,
             IFSC::ADCC,
+            IFSC::AGCX,
+            IFSC::AJSX,
+            IFSC::AMAX,
+            IFSC::AMRX,
             IFSC::ANDB,
+            IFSC::APBL,
+            IFSC::APGB,
+            IFSC::BACB,
             IFSC::BCBM,
             IFSC::BGBX,
+            IFSC::BHSX,
             IFSC::BKDN,
             IFSC::BKID,
+            IFSC::BNPA,
+            IFSC::BURX,
             IFSC::CBIN,
+            IFSC::CHSX,
             IFSC::CITI,
+            IFSC::CMCX,
             IFSC::CNRB,
             IFSC::CORP,
             IFSC::COSB,
-            IFSC::CSBX,
+            IFSC::CSBK,
+            IFSC::CURX,
             IFSC::DBSS,
             IFSC::DCBL,
+            IFSC::DDBX,
+            IFSC::DGBX,
+            IFSC::DSPX,
             IFSC::ESFB,
             IFSC::FDRL,
+            IFSC::FGCB,
+            IFSC::GCBX,
+            IFSC::GCUX,
+            IFSC::GSCB,
             IFSC::HDFC,
             IFSC::HSBC,
             IFSC::IBKL,
             IFSC::ICIC,
             IFSC::IDFB,
             IFSC::INDB,
+            IFSC::IUCB,
+            IFSC::JANA,
+            IFSC::JASB,
+            IFSC::JHAX,
+            IFSC::JSBP,
+            IFSC::JSCX,
+            IFSC::JUCX,
             IFSC::KAIJ,
+            IFSC::KARB,
+            IFSC::KASX,
+            IFSC::KDCX,
+            IFSC::KHAX,
             IFSC::KKBK,
+            IFSC::KNPX,
+            IFSC::KOCX,
+            IFSC::KSCB,
+            IFSC::KUNS,
             IFSC::KVBL,
+            IFSC::LBMX,
+            IFSC::LCCX,
+            IFSC::LKMX,
             IFSC::MAHB,
+            IFSC::MBCX,
+            IFSC::MERX,
+            IFSC::MHSX,
+            IFSC::MOGX,
+            IFSC::MSOX,
+            IFSC::NAIX,
+            IFSC::NALX,
+            IFSC::NCCX,
+            IFSC::NOBX,
+            IFSC::NOIX,
+            IFSC::NSBX,
+            IFSC::NSGX,
             IFSC::ORBC,
+            IFSC::PALX,
+            IFSC::PCUX,
+            IFSC::RAMX,
             IFSC::RATN,
+            IFSC::RCUX,
+            IFSC::REBX,
+            IFSC::RGCX,
+            IFSC::SAGX,
             IFSC::SCBL,
+            IFSC::SCCX,
+            IFSC::SDBX,
+            IFSC::SDCB,
+            IFSC::SHUX,
             IFSC::SIBL,
             IFSC::SRCB,
+            IFSC::STRX,
             IFSC::SUTB,
             IFSC::SVCB,
+            IFSC::SWMX,
             IFSC::SYNB,
             IFSC::TACX,
-            IFSC::TMBL,
-            IFSC::UBIN,
-            IFSC::UCBA,
-            IFSC::UTIB,
-            IFSC::VARA,
-            IFSC::YESB,
-            Netbanking::BARB_R,
-            Netbanking::PUNB_R,
-            IFSC::BNPA,
-            IFSC::UCBS,
-            IFSC::REBX,
-            IFSC::LKMX,
-            IFSC::AGCX,
-            IFSC::MOGX,
-            IFSC::NALX,
-            IFSC::KOCX,
-            IFSC::UCUX,
-            IFSC::RAMX,
-            IFSC::APGB,
-            IFSC::NCCX,
-            IFSC::MBCX,
-            IFSC::TSIX,
-            IFSC::AMRX,
-            IFSC::DDBX,
-            IFSC::SAGX,
-            IFSC::IUCB,
-            IFSC::KDCX,
-            IFSC::VIJX,
-            IFSC::ZSHX,
-            IFSC::PCUX,
-            IFSC::GCUX,
-            IFSC::MSOX,
-            IFSC::BACB,
-            IFSC::NSGX,
-            IFSC::JASB,
-            IFSC::JUCX,
-            IFSC::STRX,
-            IFSC::KSCB,
-            IFSC::VCCX,
-            IFSC::AMAX,
-            IFSC::BURX,
-            IFSC::MERX,
-            IFSC::KHAX,
-            IFSC::TEHX,
-            IFSC::SCCX,
-            IFSC::TGMB,
-            IFSC::JSBP,
-            IFSC::BHSX,
-            IFSC::KUNS,
-            IFSC::APBL,
-            IFSC::KASX,
-            IFSC::SWMX,
             IFSC::TCUB,
             IFSC::TECX,
-            IFSC::CHSX,
-            IFSC::CURX,
-            IFSC::JSCX,
-            IFSC::NOIX,
-            IFSC::PDCX,
-            IFSC::RCUX,
-            IFSC::SHUX,
-            IFSC::ZSGX,
-            IFSC::KARB,
-            IFSC::SDCB,
+            IFSC::TEHX,
+            IFSC::TGMB,
+            IFSC::TKUX,
+            IFSC::TMBL,
             IFSC::TSAB,
+            IFSC::TSIX,
+            IFSC::UBIN,
+            IFSC::UCBA,
+            IFSC::UCBS,
+            IFSC::UCUX,
+            IFSC::UTIB,
+            IFSC::UTZX,
+            IFSC::VARA,
+            IFSC::VCCX,
+            IFSC::VIJX,
             IFSC::VJSX,
+            IFSC::YESB,
+            IFSC::ZSGX,
+            IFSC::ZSHX,
+            Netbanking::BARB_R,
+            Netbanking::PUNB_R,
         ]
     ];
 
@@ -1010,6 +1048,15 @@ class Gateway
         Gateway::UPI_MINDGATE,
     ];
 
+    public static $upiValidateVpaGateways = [
+        Mode::LIVE => [
+            Gateway::UPI_MINDGATE,
+        ],
+        Mode::TEST => [
+            Gateway::SHARP,
+        ],
+    ];
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -1265,6 +1312,11 @@ class Gateway
         return in_array($gateway, self::$asynchronous, true);
     }
 
+    public static function supportsHeadlessBrowser($gateway)
+    {
+        return in_array($gateway, self::$headless, true);
+    }
+
     public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)
     {
         // This means that all the networks are supported by the gateway for authAndCapture.
@@ -1421,5 +1473,12 @@ class Gateway
         }
 
         return $gateways;
+    }
+
+    public static function getGatewayForValidateVpaForMode(string $mode)
+    {
+        // Currently we are only using MindGate for live and Sharp for test, later when
+        // we have more gateways, we can introduce gateway selection logic here.
+        return self::$upiValidateVpaGateways[$mode][0];
     }
 }

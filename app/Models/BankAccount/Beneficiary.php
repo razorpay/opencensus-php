@@ -1,0 +1,95 @@
+<?php
+
+namespace RZP\Models\BankAccount;
+
+use App;
+use Mail;
+use Config;
+use Carbon\Carbon;
+
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
+use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Holidays;
+
+class Beneficiary extends Base\Core
+{
+    public function register(array $input, string $channel): array
+    {
+        (new Validator)->validateInput('merchant_beneficiary_register', $input);
+
+        $merchantIds = $input['merchant_ids'] ?? [];
+
+        $bankAccounts = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt($merchantIds);
+
+        $result = $this->registerBeneficiary($bankAccounts, $channel);
+
+        return $result;
+    }
+
+    public function registerBetweenTimestamps(array $input, string $channel): array
+    {
+        (new Validator)->validateInput('beneficiary_register', $input);
+
+        if (isset($input[Entity::ON]))
+        {
+            $today = Carbon::createFromTimestamp($input['on'], Timezone::IST);
+        }
+        else
+        {
+            $today = Carbon::today(Timezone::IST);
+        }
+
+        if (Holidays::isWorkingDay($today) === false)
+        {
+            return ['message' => 'Today is a holiday! Happy holidays :)'];
+        }
+
+        $from = Holidays::getPreviousWorkingDay($today);
+
+        $bankAccounts = $this->repo->bank_account->getMerchantBankAccountsBetweenTimestamp(
+            $from->getTimestamp(),
+            $today->getTimestamp());
+
+        if ($bankAccounts->count() === 0)
+        {
+            return ['message' => 'No Beneficiary added since last report.'];
+        }
+
+        $newBeneficiaryCount = $bankAccounts->count();
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BENEFICIARY_FILE_GENERATE,
+            ['new_beneficiaries_added' => $newBeneficiaryCount]);
+
+        $result = $this->registerBeneficiary($bankAccounts, $channel, $input);
+
+        // should notify after beneficiary file is generated.
+        $message = "Merchant Beneficiary file generated. Beneficiary added since".
+            " last report is ". $newBeneficiaryCount;
+
+        $this->app['slack']->queue(
+            $message,
+            [
+                'channel' => $channel,
+            ],
+            [
+                'channel' => Config::get('slack.channels.settlements')
+            ]);
+
+        return $result;
+    }
+
+    protected function registerBeneficiary(
+        Base\PublicCollection $bankAccounts,
+        string $channel,
+        array $input = []): array
+    {
+        $beneClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\Beneficiary';
+
+        $response = (new $beneClass)->register($bankAccounts, $input);
+
+        return $response;
+    }
+}

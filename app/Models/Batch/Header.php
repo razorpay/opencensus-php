@@ -156,12 +156,11 @@ class Header
     const HDFC_EM_REGISTER_MANDATE_SERIAL_NO                = HdfcEMRegisterHeadings::MANDATE_SERIAL_NUMBER;
     const HDFC_EM_REGISTER_MERCHANT_REQUEST_NO              = HdfcEMRegisterHeadings::MERCHANT_REQUEST_NO;
     const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
-    const HDFC_EM_REGISTER_REMARKS                          = HdfcEMRegisterHeadings::REMARKS;
+    const HDFC_EM_REGISTER_REMARKS                          = HdfcEMRegisterHeadings::REMARK;
 
     //
     // HDFC Emandate Debit Response File Headers
     //
-    const HDFC_EM_DEBIT_SERIAL_NO           = HdfcEMDebitHeadings::SERIAL_NO;
     const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
     const HDFC_EM_DEBIT_MANDATE_ID          = HdfcEMDebitHeadings::MANDATE_ID;
     const HDFC_EM_DEBIT_ACCOUNT_NO          = HdfcEMDebitHeadings::ACCOUNT_NO;
@@ -288,8 +287,16 @@ class Header
     const DIRECT_DEBIT_PAYMENT_ID      = 'payment_id';
     const DIRECT_DEBIT_REMARKS         = 'remarks';
 
-    const ELFIN_LONG_URL             = 'Long Url';
-    const ELFIN_SHORT_URL            = 'Short Url';
+    const ELFIN_LONG_URL               = 'Long Url';
+    const ELFIN_SHORT_URL              = 'Short Url';
+
+    //
+    // OAuth Migration Token
+    // Also uses MERCHANT_ID declared above
+    //
+    const ACCESS_TOKEN                 = 'access_token';
+    const PUBLIC_TOKEN                 = 'public_token';
+    const REFRESH_TOKEN                = 'refresh_token';
 
     // Partner submerchant headers
     const PARTNER_TYPE         = 'partner_type';
@@ -456,7 +463,6 @@ class Header
 
         'emandate_debit_hdfc' => [
             self::INPUT => [
-                self::HDFC_EM_DEBIT_SERIAL_NO,
                 self::HDFC_EM_DEBIT_TRANSACTION_REF_NO,
                 self::HDFC_EM_DEBIT_MANDATE_ID,
                 self::HDFC_EM_DEBIT_ACCOUNT_NO,
@@ -744,6 +750,24 @@ class Header
             self::OUTPUT => [
                 self::ELFIN_LONG_URL,
                 self::ELFIN_SHORT_URL,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::OAUTH_MIGRATION_TOKEN => [
+
+            self::INPUT => [
+                self::MERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::ACCESS_TOKEN,
+                self::PUBLIC_TOKEN,
+                self::REFRESH_TOKEN,
+
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

@@ -274,16 +274,20 @@ abstract class Base extends RequestProcessor
     /**
      * {@inheritdoc}
      */
-    protected function mockResponseGenerator(array $input): array
+    protected function mockResponseGenerator(array $input): string
     {
         // Currently code wont go in this block.
         if ((isset($input['failed_response']) === true) and
             ($input['failed_response'] === '1'))
         {
-            return $this->mockGenerateFailedResponse();
+            $content = $this->mockGenerateFailedResponse();
+        }
+        else
+        {
+            $content = $this->mockGenerateSuccessResponse();
         }
 
-        return $this->mockGenerateSuccessResponse();
+        return json_encode($content);
     }
 
     /**

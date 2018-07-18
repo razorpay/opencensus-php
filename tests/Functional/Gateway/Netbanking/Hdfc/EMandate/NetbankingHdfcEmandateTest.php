@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Hdfc\Emandate;
 
 use Mail;
+use Excel;
 use Carbon\Carbon;
 
 use RZP\Models\Payment;
@@ -17,12 +18,15 @@ use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
+use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings;
 
 class NetbankingHdfcEmandateTest extends TestCase
 {
     use ReconTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
+
+    const ROW_CHUNK_SIZE = 3000;
 
     protected $payment;
 
@@ -65,6 +69,8 @@ class NetbankingHdfcEmandateTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($data, $payment);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
 
         $token = $this->getLastEntity('token', true);
 
@@ -171,6 +177,83 @@ class NetbankingHdfcEmandateTest extends TestCase
         });
     }
 
+    public function testEmandateRegistrationForLateAuth()
+    {
+        Mail::fake();
+
+        $this->testEmandateInitialPayment();
+
+        $payment = $this->getDbLastEntity('payment')->toArray();
+
+        $this->fixtures->base->editEntity(
+            'payment',
+            $payment['id'],
+            [
+                'authorized_at' => null,
+                'status'        => 'created',
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testEmandateRegistrationForLateAuthFailure'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $dayBeforeYesterday = Carbon::now()->subDays(2)->getTimestamp();
+
+        $this->fixtures->base->editEntity(
+            'payment',
+            $payment['id'],
+            [
+                'created_at'    => $dayBeforeYesterday,
+                'authorized_at' => Carbon::now()->getTimestamp(),
+                'status'        => 'authorized',
+            ]
+        );
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull($content[File\Entity::SENT_AT]);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $token = $this->getDbLastEntity('token')->toArray();
+
+        $expectedFileContent = [
+            'mandate_id'                   => $token['id'],
+            'merchant_unique_reference_no' => $payment['id'],
+        ];
+
+        Mail::assertQueued(Email::class, function ($mail) use ($expectedFileContent)
+        {
+            $fileContents = $this->parseExcel($mail->viewData['signed_url']);
+
+            // Assert that the late auth payment actually exists in the file we send
+            $this->assertArraySelectiveEquals($expectedFileContent, $fileContents[0]);
+
+            $key = Payment\Gateway::NETBANKING_HDFC . '_register';
+
+            $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+            $expectedSubj = EmailConstants::SUBJECT_MAP[$key] . $today;
+
+            $this->assertEquals($expectedSubj, $mail->subject);
+
+            $this->assertNotNull($mail->viewData['file_name']);
+            $this->assertNotNull($mail->viewData['signed_url']);
+            $this->assertEquals(EmailConstants::BODY_MAP[$key], $mail->viewData['body']);
+
+            $this->assertNotEmpty($mail->attachments);
+
+            return ($mail->hasFrom('emandate@razorpay.com') and
+                ($mail->hasTo(EmailConstants::RECIPIENT_EMAILS_MAP[$key])));
+        });
+    }
+
     public function testEmandateRegistrationRecon()
     {
         Mail::fake();
@@ -181,7 +264,7 @@ class NetbankingHdfcEmandateTest extends TestCase
         $entities[0]['status_in_file'] = 'success';
 
         $entities[] = $this->createRegistrationInitiatedEntities();
-        $entities[1]['status_in_file'] = 'reject';
+        $entities[1]['status_in_file'] = 'failure';
         $entities[1]['remark_in_file'] = 'Some reject reason';
 
         $file = $this->generateEmandateRegisterReconFile($entities);
@@ -196,6 +279,29 @@ class NetbankingHdfcEmandateTest extends TestCase
         );
 
         $this->assertRegistrationReconEntities($entities);
+    }
+
+    public function testEmandateRegistrationReconInvalidStatus()
+    {
+        Mail::fake();
+
+        $entities = [];
+
+        $entities[] = $this->createRegistrationInitiatedEntities();
+        $entities[0]['status_in_file'] = 'processed';
+
+        $file = $this->generateEmandateRegisterReconFile($entities);
+
+        $this->makeBatchRequest(
+            [
+                'type'     => 'emandate',
+                'sub_type' => 'register',
+                'gateway'  => 'hdfc',
+            ],
+            $file
+        );
+
+        $this->assertRegistrationReconInvalidStatusEntities($entities);
     }
 
     protected function assertRegistrationReconEntities($entities)
@@ -225,6 +331,14 @@ class NetbankingHdfcEmandateTest extends TestCase
         $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
 
         $this->assertEquals('rejected', $netbanking[Netbanking::SI_STATUS]);
+    }
+
+    protected function assertRegistrationReconInvalidStatusEntities($entities)
+    {
+        $token = $this->getDbEntityById('token', $entities[0]['token']['id'])->toArray();
+
+        // Since the status was invalid, the token recurring status should not be changed
+        $this->assertEquals(Token\RecurringStatus::INITIATED, $token['recurring_status']);
     }
 
     public function testEmandateDebit()
@@ -297,10 +411,10 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $entities = [];
         $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
-        $entities[0]['status_in_file'] = 'Processed';
+        $entities[0]['status_in_file'] = 'success';
 
         $entities[] = $this->createDebitInitiatedEntities($registrationEntities);
-        $entities[1]['status_in_file'] = 'Rejected';
+        $entities[1]['status_in_file'] = 'failure';
 
         $file = $this->generateEmandateDebitReconFile($entities);
 
@@ -326,7 +440,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $netbanking = $this->getDbEntityById('netbanking', $entities[0]['netbanking']['id'])->toArray();
 
-        $this->assertEquals('processed', $netbanking[Netbanking::STATUS]);
+        $this->assertEquals('success', $netbanking[Netbanking::STATUS]);
 
         // Validate registration failure entities
         $payment = $this->getDbEntityById('payment', $entities[1]['payment']['id'])->toArray();
@@ -335,7 +449,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
 
-        $this->assertEquals('rejected', $netbanking[Netbanking::STATUS]);
+        $this->assertEquals('failure', $netbanking[Netbanking::STATUS]);
     }
 
     public function testSecondRecurringPaymentVerify()
@@ -369,6 +483,8 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->doS2SRecurringPayment($payment);
 
         $secondPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('auto', $secondPayment['recurring_type']);
 
         $secondPaymentId = substr($secondPayment['id'], 4);
 
@@ -606,7 +722,7 @@ class NetbankingHdfcEmandateTest extends TestCase
                 'Mandate Serial Number'        => $entityList['token']['id'],
                 'Merchant Request No'          => $entityList['payment']['id'],
                 'Status'                       => $entityList['status_in_file'],
-                'Remarks'                      => '',
+                'Remark'                       => '',
             ];
         }
 
@@ -630,12 +746,10 @@ class NetbankingHdfcEmandateTest extends TestCase
     protected function generateEmandateDebitReconFile(array $entities)
     {
         $items = [];
-        $i = 1;
 
         foreach ($entities as $entityList)
         {
             $items[] = [
-                'Sr. no'             => $i,
                 'Transaction_Ref_No' => $entityList['payment']['id'],
                 'Mandate ID'         => $entityList['token']['id'],
                 'Account_NO'         => $entityList['token']['account_number'],
@@ -648,8 +762,6 @@ class NetbankingHdfcEmandateTest extends TestCase
                 'Remark'             => '',
                 'Narration'          => '',
             ];
-
-            $i++;
         }
 
         $content = [
@@ -760,5 +872,28 @@ class NetbankingHdfcEmandateTest extends TestCase
             'netbanking' => $netbanking,
             'token'      => $entities['token'],
         ];
+    }
+
+    protected function parseExcel($filePath)
+    {
+        $allSheetsContent = [];
+
+        Excel::filter('chunk')->selectSheetsByIndex(0)->load($filePath)->chunk(
+            self::ROW_CHUNK_SIZE,
+            function ($results) use (& $allSheetsContent)
+            {
+                foreach ($results as $row)
+                {
+                    // Currently, since it returns an array of rows, there's no
+                    // way to get the sheet names. And we cannot let it return
+                    // an array of sheets because chunk works only on a
+                    // cell collection (rows) and not on a row collection (sheets)
+                    $allSheetsContent[] = $row->all();
+                }
+            },
+            false
+        );
+
+        return $allSheetsContent;
     }
 }

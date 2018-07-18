@@ -11,26 +11,38 @@ use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\PaymentLink
+ *
+ * @property Entity $entity
+ */
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT        => 'required|mysql_unsigned_int|min:100',
-        Entity::CURRENCY      => 'filled|in:INR',
+        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100',
+        Entity::CURRENCY      => 'required_with:amount|nullable|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
         Entity::TITLE         => 'required|filled|string|max:40',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
+        Entity::SLUG          => 'filled|alpha_num|min:4|max:20',
     ];
 
     protected static $editRules = [
+        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100',
+        Entity::CURRENCY      => 'required_with:amount|nullable|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT       => 'sometimes|string|min:1|max:40|nullable',
         Entity::TITLE         => 'filled|string|max:40',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
+        // Todo: Discuss with product on should making slug null be allowed in patch requests?
+        Entity::SLUG          => 'filled|alpha_num|min:4|max:20',
     ];
 
     protected static $sendNotificationRules = [
@@ -42,7 +54,7 @@ class Validator extends Base\Validator
 
     public function validateExpireBy(string $attribute, int $value)
     {
-        $now = Carbon::now(Timezone::IST);
+        $now         = Carbon::now(Timezone::IST);
         $minExpireBy = $now->copy()->addSeconds(Entity::MIN_EXPIRY_SECS);
 
         if ($value < $minExpireBy->getTimestamp())
@@ -53,14 +65,45 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateTimesPayable(string $attribute, int $value)
+    /**
+     * Validates attribute for edit operation. Note that in edit we allow making of times_payable equal to number of
+     * times_paid already and while doing so payment link goes to inactive status.
+     *
+     * @param string   $attribute
+     * @param int|null $value
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateTimesPayable(string $attribute, int $value = null)
     {
         $paymentLink = $this->entity;
 
-        if ($value < $paymentLink->getTimesPaid())
+        if (($value !== null) and ($value < $paymentLink->getTimesPaid()))
         {
             throw new BadRequestValidationFailureException(
-                'Times payable cannot be less than the number of payments already made',
+                'Times payable should be greater than or equal to the number of payments already made',
+                Entity::TIMES_PAYABLE,
+                [
+                    Entity::TIMES_PAYABLE => $value,
+                ]);
+        }
+    }
+
+    /**
+     * Validate times_payable attribute for activation. For activation(unlike edit), it must be greater than times_paid
+     *
+     * @param int|null $value
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateTimesPayableForActivation(int $value = null)
+    {
+        $paymentLink = $this->entity;
+
+        if (($value !== null) and ($value <= $paymentLink->getTimesPaid()))
+        {
+            throw new BadRequestValidationFailureException(
+                'Times payable should be greater than the number of payments already made',
                 Entity::TIMES_PAYABLE,
                 [
                     Entity::TIMES_PAYABLE => $value,
@@ -70,6 +113,7 @@ class Validator extends Base\Validator
 
     public function validateActivateOperation()
     {
+        /** @var Entity $paymentLink */
         $paymentLink = $this->entity;
 
         if ($paymentLink->isActive() === true)
@@ -82,6 +126,7 @@ class Validator extends Base\Validator
 
     public function validateDeactivateOperation()
     {
+        /** @var Entity $paymentLink */
         $paymentLink = $this->entity;
 
         if ($paymentLink->isInactive() === true)
@@ -94,6 +139,7 @@ class Validator extends Base\Validator
 
     /**
      * Validates that payment link's attributes are holding values that confirms to active state requirements.
+     *
      * @throws BadRequestValidationFailureException
      */
     public function validateShouldActivationBeAllowed()
@@ -104,7 +150,7 @@ class Validator extends Base\Validator
 
         if ($timesPayable !== null)
         {
-            $this->validateTimesPayable(Entity::TIMES_PAYABLE, $timesPayable);
+            $this->validateTimesPayableForActivation($timesPayable);
         }
 
         if ($expireBy !== null)
@@ -125,12 +171,14 @@ class Validator extends Base\Validator
 
     /**
      * If amount is set for payment link, validates that amount of new payment request is same as expected
+     *
      * @param  Payment\Entity $payment
+     *
      * @throws BadRequestException
      */
     public function validatePaymentAmount(Payment\Entity $payment)
     {
-        $paymentAmount     = $payment->getAmount();
+        $paymentAmount     = $payment->getAdjustedAmountWrtCustFeeBearer();
         $paymentLinkAmount = $this->entity->getAmount();
 
         if (($paymentLinkAmount !== null) and ($paymentLinkAmount !== $paymentAmount))

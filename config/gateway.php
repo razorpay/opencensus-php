@@ -16,6 +16,7 @@ return [
         'axis_migs',
         'billdesk',
         'mpi_blade',
+        'mpi_enstage',
         'card_fss',
         'cybersource',
         'esigner_digio',
@@ -104,6 +105,7 @@ return [
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
     'mock_wallet_mpesa'           => env('MPESA_MOCK'),
     'mock_card_fss'               => env('FSS_MOCK'),
+    'mock_mpi_enstage'            => env('ENSTAGE_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
@@ -437,8 +439,12 @@ return [
     'netbanking_axis' => [
         // retail netbanking
         'live_hash_secret'                  => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
+        'live_hash_secret_new'              => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_NEW'),
         'test_hash_secret'                  => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret_new'              => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_NEW'),
         'test_merchant_id'                  => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        'verify_live_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_VERIFY_LIVE_HASH_SECRET'),
+        'verify_test_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_VERIFY_TEST_HASH_SECRET'),
 
         // corporate netbanking
         'live_hash_secret_corporate'        => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_CORPORATE'),
@@ -490,6 +496,24 @@ return [
     ],
 
     'sharp' => [
+    ],
+
+    'mpi_enstage' => [
+        'test' => [
+            'gateway_merchant_id'          => env('ENSTAGE_TEST_MERCHANT_ID'),
+            'gateway_merchant_name'        => 'Test Merchant',
+        ],
+        '6ZJzxyLFWrGs74' => [
+            'gateway_merchant_id'          => 'Wibmo_RYatra_Axis_Expay',
+            'gateway_merchant_name'        => 'RYatra_Axis_Expay',
+        ],
+        'test_acq_bin'                      => env('ENSTAGE_TEST_GATEWAY_ACQUIRER_BIN'),
+        'test_secret_key'                   => env('ENSTAGE_TEST_SECRET_KEY_ID'),
+        'test_encryption_key'               => env('ENSTAGE_TEST_ENCRYPTION_KEY'),
+        'live_encryption_key'               => env('ENSTAGE_GATEWAY_LIVE_ENCRYPTION_KEY'),
+        'live_secret'                       => env('ENSTAGE_GATEWAY_LIVE_SECRET'),
+        'live_mastercard_acq_bin'           => env('ENSTAGE_LIVE_MASTERCARD_ACQ_BIN'),
+        'live_visa_acq_bin'                 => env('ENSTAGE_LIVE_VISA_ACQ_BIN'),
     ],
 
     'proxy_enabled' => env('PROXY_ENABLED'),

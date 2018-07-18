@@ -11,6 +11,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Hdfc\Payment\Result;
 
 class HdfcGatewayTest extends TestCase
 {
@@ -96,6 +97,78 @@ class HdfcGatewayTest extends TestCase
     public function testRecurringPayment()
     {
         $payment = $this->getDefaultRecurringPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+
+        $token = $paymentEntity['token_id'];
+        unset($payment['card']);
+
+        // Set payment for subsequent recurring payment
+        $payment['token'] = $token;
+
+        // Switch to private auth for subsequent recurring payment
+        $this->ba->privateAuth();
+
+        $response = $this->doS2sRecurringPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        // $this->assertTestResponse($paymentEntity);
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('FssRecurringTl', $paymentEntity['terminal_id']);
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
+
+        $paymentId = Payment::verifyIdAndSilentlyStripSign($paymentId);
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertNotNull($hdfc['ref']);
+        $this->assertNotNull($hdfc['auth']);
+        $this->assertEquals($paymentId, $hdfc['payment_id']);
+        $this->assertEquals('APPROVED', $hdfc['result']);
+        $this->assertEquals('authorized', $hdfc['status']);
+
+        $payment = $this->capturePayment($paymentEntity['id'], $paymentEntity['amount']);
+
+        $hdfcCaptured = $this->getLastEntity('hdfc', true);
+
+        $hdfcData = $this->testData['testHdfcPaymentEntity'];
+
+        $this->assertArraySelectiveEquals($hdfcData, $hdfcCaptured);
+    }
+
+    public function testDebitRecurringPayment()
+    {
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->fixtures->create('iin',
+                                [
+                                    'iin'    => '607466',
+                                    'issuer' => 'HDFC',
+                                    'type'   => 'debit',
+                                ]);
+
+
+
+        $payment['card']['number'] = '6074661038443336';
+
+        $type = [
+            'recurring_non_3ds' => '1',
+            'recurring_3ds'     => '1',
+            'debit_recurring'   => '1',
+        ];
+
+        $this->fixtures->edit('terminal', 'FssRecurringTl', ['type' => $type]);
+
+        $this->fixtures->merchant->addFeatures(['hdfc_debit_si']);
 
         $response = $this->doAuthPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
@@ -353,6 +426,30 @@ class HdfcGatewayTest extends TestCase
         $this->assertNull($payment['verified']);
     }
 
+    public function testLongErrorCode()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content = [
+                    'error_code_tag'    => 'IPAY0200121',
+                    'result'            => '!ERROR!-IPAY0200121-FSSConnect Destination is down',
+                    'error_service_tag' => 'null',
+                ];
+            }
+
+            return $content;
+        });
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $this->doAuthPayment();
+        });
+    }
+
     public function testVerifyRefundDeniedByRiskOnGateway()
     {
         $payment = $this->doAuthAndCapturePayment();
@@ -555,6 +652,21 @@ class HdfcGatewayTest extends TestCase
         $hdfc = $this->getLastEntity('hdfc', true);
 
         $this->assertEquals($hdfc['result'], 'DENIED BY RISK');
+    }
+
+    public function testPaymentFailWithFailureLongResultCode()
+    {
+        $this->hdfcPaymentMockResultCode(Result::DENIED_CAPTURE, 'authorize');
+
+        $this->makeRequestAndCatchException(
+            function ()
+            {
+                $payment = $this->doAuthAndCapturePayment();
+            });
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals($hdfc['error_code2'], 'RP00021');
     }
 
     protected function timeoutHdfcAuthorizePayment()

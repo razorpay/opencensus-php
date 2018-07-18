@@ -364,7 +364,6 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2Axis()
     {
-
         $this->ba->adminAuth();
 
         $channel = Channel::AXIS;
@@ -374,7 +373,6 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2Icici()
     {
-
         $this->ba->adminAuth();
 
         $channel = Channel::ICICI;
@@ -442,6 +440,37 @@ class SettlementTest extends TestCase
         $this->assertEquals(4, $setlResponse[$channel]['txnCount']);
 
         Carbon::setTestNow();
+    }
+
+    /**
+     * Tests the case for MF merchants that shouldn't get settlements
+     */
+    public function testMfMerchantSettlementSkip()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $skipMfIds = Preferences::NO_SETTLEMENT_MIDS;
+
+        foreach ($skipMfIds as $mid)
+        {
+            $this->fixtures->merchant->createAccount($mid);
+
+            $dt = Carbon::create(2017, 12, 12, 16, 0, 0, Timezone::IST)
+                        ->subDays(5);
+
+            $this->createPaymentEntities(2, $mid, $dt);
+
+            $dt = Carbon::create(2017, 12, 12, 16, 13, 0, Timezone::IST);
+
+            Carbon::setTestNow($dt);
+
+            $setlResponse = $this->initiateSettlements($channel);
+
+            $this->assertNotNull($setlResponse[$channel]);
+            $this->assertEquals(0, $setlResponse[$channel]['count']);
+        }
     }
 
     public function testMutualFundMarketplaceSettlementSchedule()
@@ -527,7 +556,7 @@ class SettlementTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
 
-        $today = Carbon::today(Timezone::IST);
+        $today = Carbon::create(2018, 1, 26, 0, 0, 0, Timezone::IST);
 
         // Create payment with captured at as 26th Jan
         $entities = $this->createPaymentAndRefundEntities(1, $today);
@@ -536,7 +565,7 @@ class SettlementTest extends TestCase
 
         $settledAt1 = $today->addHours(10);
 
-        $tomorrow = Carbon::tomorrow(Timezone::IST);
+        $tomorrow = Carbon::create(2018, 1, 27, 0, 0, 0, Timezone::IST);
 
         // Create payment with captured at as 27th Jan
         $entities = $this->createPaymentAndRefundEntities(1, $tomorrow);
@@ -568,22 +597,29 @@ class SettlementTest extends TestCase
         $this->assertEquals(0, $content[$channel]['txnCount']);
 
         // Set time to day after tomorrow
-        $tomorrow = Carbon::tomorrow(Timezone::IST);
+        $tomorrow = Carbon::create(2018, 1, 28, 0, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($tomorrow);
 
         $content = $this->initiateDailySettlements();
 
-        $txn = $this->getEntityById('transaction', $paymentTxns['items'][0]['id'], true);
-        $this->assertNotNull($txn['settled_at']);
+        $txn0 = $this->getEntityById('transaction', $paymentTxns['items'][0]['id'], true);
+        $this->assertNotNull($txn0['settled_at']);
+        $txn1 = $this->getEntityById('transaction', $paymentTxns['items'][1]['id'], true);
+        $this->assertNotNull($txn1['settled_at']);
 
         $this->assertEquals(2, $content[$channel]['count']);
         $this->assertEquals(4, $content[$channel]['txnCount']);
 
-        $ftas = ($this->getEntities('fund_transfer_attempt', [], true))['items'];
+        //
+        // Have to be fetched separately since they're created at the
+        // same time, and IDs are random, so order can't be predicted
+        //
+        $fta0 = $this->getEntities('fund_transfer_attempt', ['source_id' => $txn0['settlement_id']], true)['items'][0];
+        $fta1 = $this->getEntities('fund_transfer_attempt', ['source_id' => $txn1['settlement_id']], true)['items'][0];
 
-        $this->assertEquals($settledAt1->getTimestamp(), $ftas[0]['initiate_at']);
-        $this->assertEquals($settledAt2->getTimestamp(), $ftas[1]['initiate_at']);
+        $this->assertEquals($settledAt1->getTimestamp(), $fta0['initiate_at']);
+        $this->assertEquals($settledAt2->getTimestamp(), $fta1['initiate_at']);
     }
 
     /**

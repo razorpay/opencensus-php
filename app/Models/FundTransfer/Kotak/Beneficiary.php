@@ -11,9 +11,9 @@ use RZP\Models\FundTransfer\Base;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\BankAccount\Entity as BankAccount;
-use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
+use RZP\Models\FundTransfer\Base\Beneficiary\FileProcessor;
 
-class Beneficiary extends Base\Beneficiary
+class Beneficiary extends FileProcessor
 {
     protected $channel = Channel::KOTAK;
 

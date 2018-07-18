@@ -15,6 +15,7 @@ class Flow
         '3ds'           => self::_3DS,
         'pin'           => self::PIN,
         'otp'           => self::OTP,
+        'iframe'        => self::IFRAME,
         'magic'         => self::MAGIC,
         'headless_otp'  => self::HEADLESS_OTP,
     ];

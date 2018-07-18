@@ -16,6 +16,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_AUTH_SUCCESS                          = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_PENDING                          = 'PAYMENT_AUTH_PENDING';
     const PAYMENT_AUTH_FAILURE                          = 'PAYMENT_AUTH_FAILURE';
+    const PAYMENT_AUTH_ESIGN_FAILURE                    = 'PAYMENT_AUTH_ESIGN_FAILURE';
     const PAYMENT_AUTHORIZED_NULL                       = 'PAYMENT_AUTHORIZED_NULL';
     const PAYMENT_CALLBACK_REQUEST                      = 'PAYMENT_CALLBACK_REQUEST';
     const PAYMENT_REFUND_REQUEST                        = 'PAYMENT_REFUND_REQUEST';
@@ -280,7 +281,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_LINK_PAYMENT_REFUND_REQUEST           = 'PAYMENT_LINK_PAYMENT_REFUND_REQUEST';
     const PAYMENT_LINK_PAYMENT_REFUND_HANDLED           = 'PAYMENT_LINK_PAYMENT_REFUND_HANDLED';
     const PAYMENT_LINK_PAYMENT_REFUND_ERROR             = 'PAYMENT_LINK_PAYMENT_REFUND_ERROR';
-    const PAYMENT_LINK_POST_PAYMENT_CAPTURE_ATTEMPT     = 'PAYMENT_LINK_POST_PAYMENT_CAPTURE_ATTEMPT';
+    const PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS          = 'PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS';
+    const PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS_SKIPPED  = 'PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS_SKIPPED';
     const PAYMENT_LINK_UPDATED_POST_PAYMENT_CAPTURE     = 'PAYMENT_LINK_UPDATED_POST_PAYMENT_CAPTURE';
     const PAYMENT_LINK_DEACTIVATE_REQUEST               = 'PAYMENT_LINK_DEACTIVATE_REQUEST';
     const PAYMENT_LINK_DEACTIVATED                      = 'PAYMENT_LINK_DEACTIVATED';
@@ -385,6 +387,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BAD_REQUEST_INVALID_API_KEY                   = 'BAD_REQUEST_INVALID_API_KEY';
     const BAD_REQUEST_INVALID_API_SECRET                = 'BAD_REQUEST_INVALID_API_SECRET';
     const BAD_REQUEST_API_SECRET_NOT_PROVIDED           = 'BAD_REQUEST_API_SECRET_NOT_PROVIDED';
+    const BAD_REQUEST_INVALID_CLIENT_KEY                = 'BAD_REQUEST_INVALID_CLIENT_KEY';
     const BAD_REQUEST_INVALID_ACCOUNT_HEADER            = 'BAD_REQUEST_INVALID_ACCOUNT_HEADER';
 
     const RUNTIME_ERROR                                 = 'RUNTIME_ERROR';
@@ -666,6 +669,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_RECEIVER_UPDATED                  = 'PAYMENT_RECEIVER_UPDATED';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
+
+    const BENEFICIARY_REGISTRATION_FAILED_RESPONSE  = 'BENEFICIARY_REGISTRATION_FAILED_RESPONSE';
+    const BENEFICIARY_REGISTRATION_FAILED           = 'BENEFICIARY_REGISTRATION_FAILED';
+    const BENEFICIARY_REGISTRATION_SUMMARY          = 'BENEFICIARY_REGISTRATION_SUMMARY';
+
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
     const MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED     = 'MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED';
     const MERCHANT_NOTIFY_HOLIDAY                   = 'MERCHANT_NOTIFY_HOLIDAY';
@@ -751,6 +759,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
+    const OTPELF_REQUEST                            = 'OTPELF_REQUEST';
+    const OTPELF_RESPONSE                           = 'OTPELF_RESPONSE';
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
@@ -1085,7 +1095,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_CODE_URL                                   = 'QR_CODE_URL';
     const QUERY_CACHE_STORE_ERROR                       = 'QUERY_CACHE_STORE_ERROR';
     const QUERY_CACHE_FLUSH_ERROR                       = 'QUERY_CACHE_FLUSH_ERROR';
-    const QUERY_CACHE_EVENT_ERROR                       = 'QUERY_CACHE_EVENT_ERROR';
+    const METRIC_CACHE_EVENT_ERROR                      = 'METRIC_CACHE_EVENT_ERROR';
 
     // Account codes
     const ACCOUNT_CREATED                               = 'ACCOUNT_CREATED';

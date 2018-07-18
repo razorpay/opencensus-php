@@ -17,6 +17,8 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
         Entity::STATUS      => 'sometimes|in:created,processing,processed',
         Entity::GATEWAY     => 'sometimes|string|max:30',
+        Entity::TYPE        => 'sometimes|string|required_with:sub_type',
+        Entity::SUB_TYPE    => 'sometimes|string',
     ];
 
     protected function validateType($attribute, $value)

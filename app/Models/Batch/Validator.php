@@ -5,13 +5,13 @@ namespace RZP\Models\Batch;
 use App;
 use RZP\Base;
 use RZP\Models\Invoice;
-use RZP\Http\BasicAuth;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
@@ -139,6 +139,15 @@ class Validator extends Base\Validator
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
         Entity::APPLICATION_ID       => 'filled|string|size:14',
+    ];
+
+    protected static $oauthMigrationTokenCreateRules = [
+        Entity::TYPE           => 'required|custom',
+        Entity::NAME           => 'filled|string|max:255',
+        Entity::FILE           => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        OMHelper::CLIENT_ID    => 'required|string|size:14',
+        OMHelper::USER_ID      => 'required|string|size:14',
+        OMHelper::REDIRECT_URI => 'required|url',
     ];
 
     protected function validateType($attribute, $value)

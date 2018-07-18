@@ -2,15 +2,22 @@
 
 namespace RZP\Gateway\Base;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Payment\Verify\Result;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Verify\Action;
 
 trait AuthorizeFailed
 {
+    /**
+     * @param array $input
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\LogicException
+     */
     public function authorizeFailed(array $input)
     {
         $e = null;
@@ -59,6 +66,11 @@ trait AuthorizeFailed
         return $this->authorizeFailedPayment($verify);
     }
 
+    /**
+     * @param $verify
+     * @return array
+     * @throws Exception\LogicException
+     */
     protected function authorizeFailedPayment($verify)
     {
         if (($verify->apiSuccess === false) and
@@ -86,12 +98,25 @@ trait AuthorizeFailed
         {
             $response['acquirer'][Entity::REFERENCE2] = $gatewayPayment->getAuthCode();
         }
-        
+
         if (method_exists($gatewayPayment, 'getBankPaymentId') === true)
         {
             $response['acquirer'][Entity::REFERENCE1] = $gatewayPayment->getBankPaymentId();
+
+            // For api based emandate initial payments, if late authorized,
+            // we need to update the token status to confirmed
+            if (($this->input['payment']['method'] === Payment\Method::EMANDATE) and
+                ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL))
+            {
+                if (method_exists($this, 'getRecurringData') === true)
+                {
+                    $recurringData = $this->getRecurringData($gatewayPayment);
+
+                    $response = array_merge($response, $recurringData);
+                }
+            }
         }
-      
+
         if (method_exists($gatewayPayment, 'getVpa') === true)
         {
             $response['acquirer'][Entity::VPA] = $gatewayPayment->getVpa();

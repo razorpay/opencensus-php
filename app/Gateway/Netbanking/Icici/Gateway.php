@@ -17,6 +17,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Netbanking\Base\BankingType;
 use RZP\Models\Payment\Verify as PaymentVerify;
 
@@ -36,6 +37,11 @@ class Gateway extends Base\Gateway
 
     // Payment type recurring
     const RECURRING         = 'R';
+
+    // Verification window for defining border transaction in seconds refer isEodTransaction method
+    const VERIFY_WINDOW     =  600;
+
+    const GATEWAY_DATE_FORMAT = 'Y-m-d';
 
     public function setGatewayParams($input, $mode, $terminal)
     {
@@ -268,8 +274,6 @@ class Gateway extends Base\Gateway
 
         $this->sendPaymentVerifyRequest($verify);
 
-        $this->setGatewaySuccess($verify);
-
         //
         // If verify returns false, we throw an error as
         // authorize request / response has been tampered with
@@ -278,6 +282,16 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
+
+        //
+        // We don't do this for recurring payments as they don't have amount
+        // in the response
+        //
+        if ((isset($input['payment']['recurring']) === true) and
+            ($input['payment']['recurring'] === true))
+        {
+            return;
         }
 
         $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
@@ -301,7 +315,9 @@ class Gateway extends Base\Gateway
         //
         // temp fix: failed recurring payments are getting marked as success on verify on ICICI's end
         //
-        if ($input['payment']['recurring'] === true)
+        if (($input['payment']['recurring'] === true) and
+            (isset($input['payment']['recurring_type']) === true) and
+            ($input['payment']['recurring_type'] === 'auto'))
         {
            return ;
         }
@@ -330,6 +346,37 @@ class Gateway extends Base\Gateway
     }
 
     public function sendPaymentVerifyRequest(Verify $verify)
+    {
+        $paymentCreatedAt = $verify->input['payment']['created_at'];
+
+        //We need transaction date in verify request to the api
+        if ($verify->payment->getDate() === null)
+        {
+            $formattedDate =  Carbon::createFromTimestamp($paymentCreatedAt,Timezone::IST)
+                                    ->format(self::GATEWAY_DATE_FORMAT);
+
+            $verify->payment->setDate($formattedDate);
+        }
+
+        $this->makeVerifyRequestToGateway($verify);
+
+        $this->setGatewaySuccess($verify);
+
+        // Sometimes  verify txn that happens near to eod fails since it hits the  gateway server next day.
+        if (($verify->gatewaySuccess === false) and
+            ($this->isEodTransaction($paymentCreatedAt) === true))
+        {
+            $gatewayTxnDate = Carbon::createFromTimestamp($paymentCreatedAt)->addDay(1)->format('Y-m-d');
+
+            $verify->payment->setDate($gatewayTxnDate);
+
+            $this->makeVerifyRequestToGateway($verify);
+        }
+
+        $this->setGatewaySuccess($verify);
+    }
+
+    protected function makeVerifyRequestToGateway($verify)
     {
         $requestData = $this->getVerifyRequestData($verify);
 
@@ -508,12 +555,9 @@ class Gateway extends Base\Gateway
 
     protected function getBaseVerifyRequestData(Base\Entity $gatewayPayment, array $input)
     {
-        $paymentDate = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)
-                             ->format('Y-m-d');
-
         $data = $this->getPaymentReferenceData($input);
 
-        $data[RequestFields::PAYMENT_DATE] = $paymentDate;
+        $data[RequestFields::PAYMENT_DATE] = $gatewayPayment->getDate();
 
         //
         // For payments that were done via the recurring flow, we
@@ -779,6 +823,11 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getVerifyAttributesFromPaymentAndContent($gatewayPayment, $content);
 
+        if ($verify->gatewaySuccess === false)
+        {
+           unset($gatewayPayment[Base\Entity::DATE]);
+        }
+
         $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
@@ -798,6 +847,20 @@ class Gateway extends Base\Gateway
         if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
         {
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[$bankPaymentIdKey] ?? null;
+        }
+
+        // If RID exists and status is registration success, set token related attributes here
+        if ((empty($content[ResponseFields::SI_REFERENCE_ID]) === false) and
+            ($content[ResponseFields::STATUS] === Status::SI_REGISTRATION_SUCCESS))
+        {
+            $recurringData = [
+                Base\Entity::SI_TOKEN  => $content[ResponseFields::SI_REFERENCE_ID] ??
+                    $content[ResponseFields::SI_SCHEDULE_ID] ??
+                    null,
+                Base\Entity::SI_STATUS => Status::Y,
+            ];
+
+            $attributes = array_merge($attributes, $recurringData);
         }
 
         return $attributes;
@@ -978,7 +1041,16 @@ class Gateway extends Base\Gateway
     {
         $siStatus = $gatewayPayment->getSIStatus();
 
-        $recurringStatus = Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? Token\RecurringStatus::REJECTED;
+        if (isset(Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus]) === false)
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                '',
+                ['gateway_payment' => $gatewayPayment->toArray()]);
+        }
+
+        $recurringStatus = Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus];
 
         // TODO: Get the failure reason mapping and
         // display the correct failure reason here
@@ -997,6 +1069,21 @@ class Gateway extends Base\Gateway
     {
         return number_format($amount, 2, '.', '');
     }
+
+    /**
+     * This method checks if transactions happened towards EOD.
+     * ICIC Transaction Status API filters based on the date as well.
+     * Transactions that happens at 11.50 we resent verify request with next days payment date.
+     * @param PaymentCreatedAt
+     * @return bool
+     */
+    protected function isEodTransaction($paymentCreatedAt) : bool
+    {
+        $paymentTime = Carbon::createFromTimestamp($paymentCreatedAt, Timezone::IST);
+
+        return ($paymentTime->secondsUntilEndOfDay() <= self::VERIFY_WINDOW);
+    }
+
     public function forceAuthorizeFailed($input)
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(

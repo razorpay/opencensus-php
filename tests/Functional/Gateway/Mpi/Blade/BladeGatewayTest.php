@@ -60,6 +60,10 @@ class BladeGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertNull($payment['approval_code']);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
     }
 
     public function testSuccessful13DigitPanForNonEnrolledCard()
@@ -89,6 +93,10 @@ class BladeGatewayTest extends TestCase
             $this->testData['testSuccessful13DigitPanTxn'], $txn);
 
         $payment = $this->getLastEntity('payment', true);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
 
         $this->assertNull($payment['approval_code']);
     }
@@ -145,5 +153,98 @@ class BladeGatewayTest extends TestCase
                     ]
                 ]);
             });
+    }
+
+    public function testElementIreqCodeFollowsVendorCode()
+    {
+        $response = $this->getIreqCodeFollowsVendorCode();
+
+        $this->mockIReqCode($response);
+
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => CardNumber::VALID_NOT_ENROLL_NUMBER,
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ]);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
+    }
+
+    public function testBlankIreq()
+    {
+        $response = $this->getBlankIReq();
+
+        $this->mockIReqCode($response);
+
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => CardNumber::VALID_NOT_ENROLL_NUMBER,
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ]);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
+    }
+
+    public function testInvalidIReqCode()
+    {
+        $response = $this->getInvalidIreqCode();
+
+        $this->mockIReqCode($response);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = CardNumber::VALID_NOT_ENROLL_NUMBER;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+    }
+
+    protected function mockIReqCode($response)
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null) use ($response)
+            {
+                $content['Message']['VERes']['IReq'] = $response;
+            }
+        );
+    }
+
+    protected function getBlankIReq()
+    {
+        return [];
+    }
+
+    protected function getInvalidIreqCode()
+    {
+        return [
+            'iReqcode'   => 56,
+        ];
+    }
+
+    protected function getIreqCodeFollowsVendorCode()
+    {
+        return [
+            'vendorCode' => 1000,
+            'iReqCode'   => 56,
+            'iReqDetail' => 'VEReq.pan',
+        ];
     }
 }

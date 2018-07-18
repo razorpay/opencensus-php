@@ -13,6 +13,7 @@ use RZP\Jobs\EsSync;
 use RZP\Constants\Mode;
 use Database\Connection;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Collection;
 use RZP\Models\Base\EsRepository;
@@ -792,6 +793,15 @@ class Repository extends \Razorpay\Spine\Repository
         $entity->load($relations);
 
         return $entity;
+    }
+
+    public function findByIdAndOrgId($id, $orgId, array $relations = [])
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        return $this->newQuery()
+                    ->orgId($orgId)
+                    ->findOrFailPublic($id);
     }
 
     protected function getParentNamespace()

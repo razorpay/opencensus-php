@@ -32,6 +32,7 @@ class Service extends Base\Service
         RequestProcessor\Base::FIRST_DATA,
         RequestProcessor\Base::FREECHARGE,
         RequestProcessor\Base::NETBANKING_CSB,
+        RequestProcessor\Base::NETBANKING_BOB,
         RequestProcessor\Base::NETBANKING_OBC,
         RequestProcessor\Base::NETBANKING_RBL,
         RequestProcessor\Base::NETBANKING_AXIS,

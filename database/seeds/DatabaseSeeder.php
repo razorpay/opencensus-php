@@ -1142,6 +1142,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingCsbTerminal();
         $this->createEbsTerminal();
         $this->createAepsTerminal();
+        $this->createEnstageTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -2045,5 +2046,18 @@ class DatabaseSeeder extends Seeder
                 'updated_at'            => time()
             ]
         );
+    }
+
+    protected function createEnstageTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::ENSTAGE_TERMINAL,
+            'merchant_id'               => Account::TEST_ACCOUNT,
+            'gateway'                   => Gateway::MPI_ENSTAGE,
+            'gateway_acquirer'          => 'rbl',
+            'card'                      => 1,
+            'created_at'                => time(),
+            'updated_at'                => time()
+        ]);
     }
 }

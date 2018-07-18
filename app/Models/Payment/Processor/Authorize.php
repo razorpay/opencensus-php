@@ -69,6 +69,8 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
+        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
+
         // this needs to be done after we have card entity as we need to know if
         // cards used in payment is international
         $this->processCurrencyConversions($payment);
@@ -174,6 +176,11 @@ trait Authorize
                 }
 
                 $retry = false;
+
+                if ($this->canRunHeadlessOtpFlow($payment) === true)
+                {
+                    $request = $this->openHeadlessBrowser($payment, $request);
+                }
 
                 break;
             }
@@ -345,10 +352,11 @@ trait Authorize
         {
             $templateData = [
                'data' => $response,
-               'cdn'  => $this->config->get('url.cdn.production')
+               'cdn'  => $this->app['config']->get('url.cdn.production')
             ];
 
-            $content = View::make('gateway.gatewayOtpPostForm')
+            $content = $this->app['view']
+                            ->make('gateway.gatewayOtpPostForm')
                             ->with('data', $templateData)
                             ->render();
 
@@ -360,7 +368,8 @@ trait Authorize
                 ],
                 'version'    => 1,
                 'payment_id' => $payment->getPublicId(),
-                'gateway'    => $response['gateway']
+                'next'       => ['otp_submit'],
+                'gateway'    => $response['gateway'],
             ];
         }
 
@@ -451,12 +460,15 @@ trait Authorize
         $this->trace->info(
             TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
             [
-                'payment_id'      => $payment->getId(),
-                'payment_created' => $paymentCreatedTime,
-                'verify_bucket'   => $payment->getVerifyBucket(),
-                'authorized_at'   => $currentTime,
-                'time_difference' => $currentTime - $paymentCreatedTime,
-                'caller'          => $this->getVerifyCaller(),
+                'payment_id'          => $payment->getId(),
+                'payment_created'     => $paymentCreatedTime,
+                'verify_bucket'       => $payment->getVerifyBucket(),
+                'authorized_at'       => $currentTime,
+                'time_difference'     => $currentTime - $paymentCreatedTime,
+                'caller'              => $this->getVerifyCaller(),
+                'error_code'          => $payment->getErrorCode(),
+                'internal_error_code' => $payment->getInternalErrorCode(),
+                'gateway'             => $payment->getGateway(),
             ]);
 
         $this->segment->trackPayment($payment, TraceCode::PAYMENT_FAILED_TO_AUTHORIZED);
@@ -874,14 +886,28 @@ trait Authorize
             return;
         }
 
-        if ($payment->getAuthType() === Payment\AuthType::PIN)
+        switch ($payment->getAuthType())
         {
-            if (($payment->card->iinRelation === null) or
-                ($payment->card->iinRelation->supports(IIN\Flow::PIN) === false))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The pin authentication type is not applicable on the given card');
-            }
+            case Payment\AuthType::PIN:
+                if (($payment->card->iinRelation === null) or
+                    ($payment->card->iinRelation->supports(IIN\Flow::PIN) === false))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The pin authentication type is not applicable on the given card');
+                }
+                break;
+
+            case Payment\AuthType::OTP:
+                // We support OTP flow with native supports from the gateway, headless_otp
+                // flow is something which is a hack and not natively supported by the gateway
+                if (($payment->card->iinRelation === null) or
+                    (($payment->card->iinRelation->supports(IIN\Flow::OTP) === false) and
+                     ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === false)))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The otp authentication type is not applicable on the given card');
+                }
+                break;
         }
     }
 
@@ -909,8 +935,6 @@ trait Authorize
                     'payment_id'    => $payment->getId(),
                 ]);
         }
-
-        $this->assertTokenIsRecurring($payment, $token);
 
         //
         // If payment type is card, validate that the card supports recurring
@@ -941,38 +965,9 @@ trait Authorize
         // handle second recurring type payments (recurring payments with recurring token)
         // coming via public auth. These can be safely treated as first recurring.
         //
-        if ((empty($input[Payment\Entity::TOKEN]) === false) and
-            ($payment->isSecondRecurring(true) === true))
+        if ($payment->isSecondRecurring() === true)
         {
             $this->verifyAggregatorIfApplicable($merchant);
-        }
-    }
-
-    /**
-     * If the token is not recurring, but the payment is a second recurring payment,
-     * then the token cannot be used for the payment.
-     *
-     * @param Payment\Entity $payment
-     * @param Token\Entity   $token
-     *
-     * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
-     */
-    protected function assertTokenIsRecurring(Payment\Entity $payment, Token\Entity $token)
-    {
-        //
-        // Second recurring payments have to be enabled for recurring
-        //
-        if (($payment->isSecondRecurring() === true) and
-            ($token->isRecurring() === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING,
-                Token\Entity::RECURRING,
-                [
-                    'payment' => $payment->toArray(),
-                    'token'   => $token->toArray()
-                ]);
         }
     }
 
@@ -1734,15 +1729,19 @@ trait Authorize
     {
         $type = null;
 
-        if ($payment->isEmandate() === true)
+        if ($payment->isRecurring() === true)
         {
             $token = $payment->getGlobalOrLocalTokenEntity();
 
-            // True => auto, False => initial
-            // TODO: Add support for when we allow recurring tokens for first payments
-            $type = ($token->isRecurring() === true) ?
-                    Payment\RecurringType::AUTO :
-                    Payment\RecurringType::INITIAL;
+            $type = Payment\RecurringType::INITIAL;
+
+            if (($token->isLocal() === true) and
+                ($token->isRecurring() === true) and
+                ($this->app['basicauth']->isPrivateAuth() === true) and
+                (isset($input['token']) === true))
+            {
+                $type = Payment\RecurringType::AUTO;
+            }
         }
 
         //
@@ -2349,26 +2348,7 @@ trait Authorize
         $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
                                             $iinEntity, $emiDuration);
 
-        $emiMerchantSubvention = $this->repo->merchant_emi_plans->fetchByMerchantAndEmiPlan(
-                                                                        $payment->merchant->getId(),
-                                                                        $emiPlan->getId());
-
         $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
-
-        if ($emiMerchantSubvention !== null)
-        {
-            $amount = $payment->getAmount();
-
-            $merchantPayback = $emiPlan->getMerchantPayback();
-
-            $baseAmount = Emi\Calculator::calculateSubventedAmount($amount, $merchantPayback);
-
-            $payment->setAmountAttribute($baseAmount);
-
-            $payment->setEmiSubvention(Emi\Subvention::MERCHANT);
-        }
-
-        $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);
 
         $payment->emiPlan()->associate($emiPlan);
     }
@@ -2827,8 +2807,10 @@ trait Authorize
             return;
         }
 
+        $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
+
         $discountInput = [
-            Discount\Entity::AMOUNT => $this->offer->getDiscount($order->getAmount()),
+            Discount\Entity::AMOUNT => $discountAmount,
         ];
 
         (new Discount\Service)->create($discountInput, $payment, $this->offer);
@@ -2844,6 +2826,31 @@ trait Authorize
     {
         if ($payment->hasPaymentLink() === false)
         {
+            return;
+        }
+
+        //
+        // If for some reason(e.g. multiple payment callback request) the payment here is found to be already captured
+        // we just return and don't execute further processing because that must have already happened during first
+        // successful request.
+        //
+        // Payment capture happens in a MUTEX. In case of multiple requests one is bound to fail (with e.g. another
+        // payment operation is in progress) and in case one is captured successfully, it will throw validation error
+        // saying 'payment is already captured'. In both cases our finally block below, for the 2nd request will attempt
+        // to refund the payment because it's an exception. In refund call as well, we have separate methods for
+        // refunding authorized and captured payment and so in both cases it will fail there. Additionally, a refund
+        // also requires the same lock and will fail if another capture operation is in progress.
+        //
+        if ($payment->hasBeenCaptured() === true)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS_SKIPPED,
+                [
+                    'payment_id'      => $payment->getId(),
+                    'payment_status'  => $payment->getStatus(),
+                    'payment_link_id' => $payment->paymentLink->getId(),
+                ]);
+
             return;
         }
 
@@ -3366,7 +3373,11 @@ trait Authorize
     protected function fillReturnDataWithSignatureIfApplicable(array & $data)
     {
         // If the accessed via keyless flow(public auth routes) and key doesn't exists, skips calculating signatures.
-        if (($this->ba->isPublicAuth() === true) and ($this->ba->getKeyEntity() === null))
+        // Otherwise, we calculate signature with secret from either API keys or OAuth client or partner's dummy client.
+        if (($this->ba->isPublicAuth() === true) and
+            ($this->ba->getKeyEntity() === null) and
+            ($this->ba->getOAuthClientId() === null) and
+            ($this->ba->isPartnerAuth() === false))
         {
             return;
         }
@@ -3576,6 +3587,16 @@ trait Authorize
         if ($payment->terminal->isIvr() === true)
         {
             return true;
+        }
+
+        // If the payment is card payment with headless browser flow then
+        // we render the otp submission page to the user
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            if ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP)
+            {
+                return true;
+            }
         }
 
         $wallet = $payment->getWallet();
@@ -3966,8 +3987,7 @@ trait Authorize
     {
         // if not recurring, validate that card data and cvv in card data is present
         if (($payment->isRecurring() === false) and
-            ($payment->getTokenId() !== null) and
-            ($payment->localToken->isRecurring() === false))
+            ($payment->getTokenId() !== null))
         {
             $payment->getValidator()->validateCardAndCvv($input);
         }

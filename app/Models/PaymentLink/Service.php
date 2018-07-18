@@ -69,10 +69,15 @@ class Service extends Base\Service
         return $paymentLink->toArrayPublic();
     }
 
-    public function getHostedViewPaylaod(string $id): array
+    public function getViewNameAndPayload(string $id)
     {
-        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+        /** @var Entity $paymentLink */
+        $paymentLink = $this->repo->payment_link->findByPublicId($id);
 
-        return (new ViewSerializer($paymentLink))->serializeForHosted();
+        $viewPayload = $this->core->getHostedViewPayload($paymentLink);
+
+        $view = $this->core->getHostedViewTemplate($paymentLink);
+
+        return [$view, $viewPayload];
     }
 }

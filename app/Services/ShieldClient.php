@@ -157,6 +157,13 @@ class ShieldClient implements ExternalService
             $input['attempts'] = $payment->order->getAttempts();
         }
 
+        //Pass client metadata to shield
+        //These include browser fingerprint, local timezone etc
+        if ($payment->hasMetadata('shield'))
+        {
+            $input['client_metadata'] = $payment->getMetadata('shield');
+        }
+
         $analytics = $this->getPaymentAnalyticsData($payment);
 
         $input = array_merge($input, $analytics);
@@ -276,7 +283,7 @@ class ShieldClient implements ExternalService
                 $options
             );
 
-            return $this->parseAndReturnResponse($response);
+            return $this->parseAndReturnResponse($response, $data);
         }
         catch(\Requests_Exception $e)
         {
@@ -292,14 +299,26 @@ class ShieldClient implements ExternalService
         return [];
     }
 
-    protected function parseAndReturnResponse($res): array
+    protected function parseAndReturnResponse($res, array $data)
     {
         $code = $res->status_code;
+
         $responseArray = json_decode($res->body, true);
 
         if ($code !== 200)
         {
-            $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR, ['response' => $responseArray]);
+            $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR,
+                    [
+                        'response' => $responseArray,
+                        'request'  => $data,
+                    ]);
+        }
+
+        // In case json_decode fails, we $responseArray would be null.
+        // We need to make sure that the response is always an array type
+        if ($responseArray == null)
+        {
+            $responseArray = [];
         }
 
         return $responseArray;

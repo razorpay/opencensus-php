@@ -52,8 +52,6 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $this->mockDashboardRequest();
-
         $refund = $this->startTest($payment['id'], (string) $payment['amount']);
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
@@ -310,8 +308,6 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $this->mockDashboardRequest();
-
         $refund = $this->startTest($payment['id'], (string) $payment['amount']);
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
@@ -343,8 +339,6 @@ class RefundTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->mockDashboardRequest(4);
 
         $this->refundPayment($payment['id'], '10000');
         $this->refundPayment($payment['id'], '20000');
@@ -1015,8 +1009,6 @@ class RefundTest extends TestCase
 
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $this->mockDashboardRequest();
-
         $refund = $this->startTest($payment['id'], (string) $payment['amount']);
 
         $txn = $this->getLastEntity('transaction', true);
@@ -1052,24 +1044,6 @@ class RefundTest extends TestCase
         $url = '/payments/'.$id.'/refund';
 
         $this->setRequestUrlAndMethod($request, $url, 'POST');
-    }
-
-    protected function mockDashboardRequest($times = 1)
-    {
-        $config = $this->config->get('applications.dashboard');
-
-        if ($config['pretend'] === false)
-        {
-            return;
-        }
-
-        $dashboard = Mockery::mock('RZP\Dashboard\DashboardServiceProvider');
-
-        $this->app->instance('dashboard', $dashboard);
-
-        $dashboard->shouldReceive('queueRecord')
-              ->times($times)
-              ->with('refund', Mockery::type('RZP\Models\\Base\\PublicEntity'));
     }
 
     protected function mockRefundEmail($times = 1)

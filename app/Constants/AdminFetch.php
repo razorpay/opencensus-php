@@ -100,6 +100,10 @@ class AdminFetch
                 'triggered_count'   => [
                     Fetch::LABEL        => 'triggered_count',
                     Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'rule_id'           => [
+                    Fetch::LABEL        => 'rule_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
                 ]
             ]
         ];
@@ -303,6 +307,15 @@ class AdminFetch
                         'payout',
                         'sub_merchant',
                         'direct_debit',
+                    ],
+                ],
+                'sub_type' => [
+                    Fetch::LABEL  => 'Sub Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'acknowledge',
+                        'debit',
+                        'register',
                     ],
                 ],
                 'gateway' => [

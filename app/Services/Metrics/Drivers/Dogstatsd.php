@@ -56,13 +56,26 @@ class Dogstatsd extends Driver
     }
 
     /**
+     * Note: Histogram of dogstatsd is reported as Prometheus summary metric type. If needed, we can define mapping &
+     * buckets for specific metric name/pattern in statsd_mapping.yml file.
      * {@inheritDoc}
      */
     public function histogram(string $metric, float $value, array $dimensions = [])
     {
-        // TODO: Histogram support is limited in some sense via statsd interface; To check and have fixed later;
-        // For now it's reported as summary in Prometheus with default 50, 90 and 99 %ile.
         $this->statsd->histogram(
+            $this->getNamespacedMetric($metric),
+            $value,
+            self::SAMPLE_RATE,
+            $this->getModifiedDimensions($dimensions));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function summary(string $metric, float $value, array $dimensions = [])
+    {
+        // Dogstatsd timing() emulates the behavior of Prometheus summary
+        $this->statsd->timing(
             $this->getNamespacedMetric($metric),
             $value,
             self::SAMPLE_RATE,

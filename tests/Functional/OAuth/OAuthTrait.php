@@ -24,6 +24,7 @@ trait OAuthTrait
         factory(Client\Entity::class)->create(
             [
                 'application_id' => $application->id,
+                'redirect_url'   => ['http://www.example.com'],
                 'environment'    => 'dev'
             ]);
 
@@ -49,6 +50,22 @@ trait OAuthTrait
                                 {
                                     return $client->getEnvironment() === $env;
                                 })
+                           ->first();
+    }
+
+    public function createPartnerApplicationAndGetClientByEnv(string $env = 'dev', array $attributes = [])
+    {
+        $attributes = array_merge($attributes, ['type' => 'partner']);
+
+        $application = $this->createOAuthApplication($attributes);
+
+        return $application->clients()
+                           ->get()
+                           ->filter(
+                            function($client, $key) use ($env)
+                            {
+                                return $client->getEnvironment() === $env;
+                            })
                            ->first();
     }
 
@@ -90,10 +107,11 @@ trait OAuthTrait
     protected function getDefaultAccessTokenValues(Client\Entity $client): array
     {
         return [
-            'client_id'  => $client->getId(),
-            'expires_at' => Carbon::today(Timezone::IST)->addDays(30)->timestamp,
-            'scopes'     => ['read_only'],
-            'type'       => 'access_token'
+            'client_id'    => $client->getId(),
+            'expires_at'   => Carbon::today(Timezone::IST)->addDays(30)->timestamp,
+            'scopes'       => ['read_only'],
+            'type'         => 'access_token',
+            'public_token' => 'TheTestAuthKey',
         ];
     }
 

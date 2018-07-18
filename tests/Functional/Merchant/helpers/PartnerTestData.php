@@ -339,6 +339,30 @@ return [
         ],
     ],
 
+    'testAddPartnerAccessMapSubmerchantAccessUnauthorized' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000011/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testAddPartnerAccessMap' => [
         'request'   => [
             'url'     => '/merchants/10000000000011/access_maps',
@@ -353,6 +377,31 @@ return [
                 'merchant_id' => '10000000000011',
                 'entity_type' => 'application',
             ],
+        ],
+    ],
+
+
+    'testAddPartnerAccessMapForDiffOrgSubmerchant' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000011/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
 
@@ -414,14 +463,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
         ],
     ],
 
@@ -435,17 +484,8 @@ return [
             'content' => [],
         ],
         'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_SUBMERCHANT_ALREADY_EXISTS,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_ALREADY_EXISTS,
+            'content'     => [],
+            'status_code' => 200,
         ],
     ],
 
@@ -457,12 +497,7 @@ return [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
             ],
             'content' => [],
-        ],
-        'response'  => [
-            'content' => [
-                'success' => true,
-            ],
-        ],
+        ]
     ],
 
     'testRemoveNonExistingPartnerAccessMap' => [
@@ -474,19 +509,6 @@ return [
             ],
             'content' => [],
         ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_FOUND,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_FOUND,
-        ],
     ],
 
     'testRemovePartnerAccessMapAgain' => [
@@ -497,19 +519,6 @@ return [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
             ],
             'content' => [],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
         ],
     ],
 
@@ -600,6 +609,21 @@ return [
             Header::PARTNER_MERCHANT_ID  => '10000000000000',
             Header::PARTNER_TYPE         => '',
             Header::SUBMERCHANT_ID       => '10000000000001',
+        ],
+    ],
+
+    'testNoSubmerchantAccountAccessForReseller' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000011/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
         ],
     ],
 ];

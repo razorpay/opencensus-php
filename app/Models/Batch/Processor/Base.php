@@ -108,8 +108,11 @@ class Base extends BaseModel\Core
 
     public function setParams(array $params = null)
     {
+        //
+        // TODO: Remove this method, $params member variable and it's usage in queue class.
         // To maintain backward compatibility with old queue jobs.
         // Old queue job will have $params as null in Job\Batch class.
+        //
 
         $this->params = $params ?: [];
 
@@ -394,7 +397,12 @@ class Base extends BaseModel\Core
     {
         foreach ($entries as $index => & $entry)
         {
-            $tracePayload = $this->batch->toArrayTrace([], ['row_index' => $index]);
+            $tracePayload = $this->batch->toArrayTrace(
+                [],
+                [
+                    'row_index' => $index,
+                    'row'       => $entry,
+                ]);
 
             try
             {

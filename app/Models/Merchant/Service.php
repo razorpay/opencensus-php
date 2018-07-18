@@ -18,8 +18,8 @@ use RZP\Models\Offer;
 use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
-use RZP\Models\Merchant;
 use RZP\Models\Schedule;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
@@ -32,6 +32,8 @@ use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Mail\Merchant\CreateSubMerchantPartner;
+use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -40,13 +42,13 @@ class Service extends Base\Service
 {
     use Notify;
 
-    const COUPON_RESPONSE               = 'apply_coupon';
-    const OAUTH_MAIL                    = 'oauth_mail';
+    const COUPON_RESPONSE = 'apply_coupon';
+    const OAUTH_MAIL      = 'oauth_mail';
 
     /**
      * Creates a merchant and saves in database
      *
-     * @param  array            $input
+     * @param  array $input
      * @return array
      */
     public function create(array $input): array
@@ -85,64 +87,74 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        $linkedAccount = (bool) ($input['account'] ?? false);
+        $isLinkedAccount = (bool)($input['account'] ?? false);
 
-        if (($linkedAccount === false) and
-            ($merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR) === false))
+        $isPartner = $merchant->isPartner();
+
+        $hasAggregatorFeature = $merchant->hasAggregatorFeature();
+
+        //
+        // Cannot create sub-merchant if all following conditions are met:
+        // 1. Not a linked account
+        // 2. Is neither a partner nor has an aggregator feature (for BC we allow the feature)
+        // 3. Is a partner of type pure-platform
+        //
+        if ($isLinkedAccount === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NOT_AGGREGRATOR);
+            if ($isPartner === false)
+            {
+                if ($hasAggregatorFeature === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
+                }
+            }
+            else
+            {
+                if ($merchant->isPurePlatformPartner() === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
+                }
+            }
         }
 
-        $ownerId = $input['user_id'];
-
-        unset($input['user_id']);
-
-        unset($input['account']);
-
-        $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant, $linkedAccount);
-
-        // This goes out to the aggregator
-        // (skip if marketplace merchant)
-        if ($merchant->isMarketplace() === false)
-        {
-            $this->sendSubMerchantCreationMail($subMerchant, $merchant);
-        }
-
-        if ($linkedAccount === false)
-        {
-            $this->addLinkedAccountReferral($merchant, $subMerchant);
-
-            $this->attachSubMerchantOwner($ownerId, $subMerchant);
-        }
-
-        $subMerchantData = $this->saveMerchantAndApplyCoupon($subMerchant, $input);
-
-        return $subMerchantData;
+        return $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input);
     }
 
     /**
+     * We create this mapping only in case of non-linked accounts if
+     * 1. Is partner of type fully-managed
+     * 2. Is partner of type aggregator and has exception given for optional sub-merchant email
+     * (For now all aggregators are allowed for backward compatibility till future phases)
+     * 3. Is not a partner but has aggregator feature (for backward compatibility)
+     *
      * @param string $ownerId
      * @param Entity $subMerchant
+     * @param Entity $aggregatorMerchant
      */
-    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
+    protected function attachSubMerchantOwnerIfApplicable(
+        string $ownerId,
+        Entity $subMerchant,
+        Entity $aggregatorMerchant)
     {
-        $userMerchantMappingInputData = [
-            'action'      => 'attach',
-            'role'        => 'owner',
-            'merchant_id' => $subMerchant->getId(),
-        ];
+        $isPartner = $aggregatorMerchant->isPartner();
 
-        (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
-    }
+        $hasAggregatorFeature = $aggregatorMerchant->hasAggregatorFeature();
 
-    public function addLinkedAccountReferral($aggregratorMerchant, $account)
-    {
-        $tagInputData = [
-            'tags' => ['ref-'.$aggregratorMerchant->id],
-        ];
+        $isOptionalEmailAllowed = $aggregatorMerchant->isOptionalEmailAllowedAggregator();
 
-        $this->addTags($account->id, $tagInputData);
+        $subMerchantEmailIsSame = ($aggregatorMerchant->getEmail() === $subMerchant->getEmail());
+
+        if (($aggregatorMerchant->isFullyManagedPartner() === true) or
+            //Remove the following line later as aggregator isn't supposed to
+            //have dashboard access eventually. This is for BC.
+            ($aggregatorMerchant->isAggregatorPartner() === true) or
+            (($isOptionalEmailAllowed === true) and ($subMerchantEmailIsSame === true)) or
+            (($isPartner === false) and ($hasAggregatorFeature === true)))
+        {
+            (new Core)->attachSubMerchantOwner($ownerId, $subMerchant);
+        }
     }
 
     public function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
@@ -208,7 +220,7 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
-        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        $merchant = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $input)
         {
             $merchant = (new Merchant\Core)->edit($merchant, $input);
 
@@ -235,18 +247,79 @@ class Service extends Base\Service
     }
 
     /**
-     * Sends a mail to the aggregator telling them about
-     * sub-merchant account creation
+     * Old flow: Sends a mail to the sub-merchant email telling them about
+     * account creation. Adds aggregator in cc if the sub-merchant
+     * email is different.
+     *
+     * Partners flow: Sends a mail to the partner informing about the account
+     * addition. If the sub-merchant email is different then sends an email
+     * to the user created with this email with a password reset email.
+     *
+     * @param Entity      $subMerchant
+     * @param Entity      $aggregator
+     * @param User\Entity $user
+     * @param bool        $createdNewUser
      */
-    protected function sendSubMerchantCreationMail($subMerchant, $aggregator)
+    protected function sendSubMerchantCreationMail(
+        Entity $subMerchant,
+        Entity $aggregator,
+        User\Entity $user = null,
+        bool $createdNewUser = false)
     {
+        $isPartnerFlow = $aggregator->isPartner();
+
         $subMerchant = $subMerchant->toArray();
 
         $aggregator = $aggregator->toArray();
 
-        $createSubMerchantMail = new CreateSubMerchantMail($subMerchant, $aggregator);
+        if ($isPartnerFlow === true)
+        {
+            $this->sendNewSubMerchantCreationMails($subMerchant, $aggregator, $user, $createdNewUser);
+        }
+        else
+        {
+            $createSubMerchantMail = new CreateSubMerchantMail($subMerchant, $aggregator);
 
-        Mail::queue($createSubMerchantMail);
+            Mail::queue($createSubMerchantMail);
+        }
+    }
+
+    /**
+     * @param array       $subMerchant
+     * @param array       $aggregator
+     * @param User\Entity $user
+     * @param bool        $createdNewUser
+     */
+    protected function sendNewSubMerchantCreationMails(
+        array $subMerchant,
+        array $aggregator,
+        User\Entity $user = null,
+        bool $createdNewUser = false)
+    {
+        // This mail goes to the partner who has added the sub-merchant
+        $createSubMerchantPartnerMail = new CreateSubMerchantPartner($subMerchant, $aggregator);
+
+        Mail::queue($createSubMerchantPartnerMail);
+
+        if ($subMerchant['email'] === $aggregator['email'])
+        {
+            return;
+        }
+
+        $orgId = $this->auth->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+        $org['hostname'] = $this->auth->getOrgHostName();
+
+        $mailUserData = $createdNewUser ? $user : null;
+
+        // If user was just created then we need to pass the details to the mailer for sending
+        // reset password link.
+        $createSubMerchantAffiliateMail =
+            new CreateSubMerchantAffiliate($subMerchant, $aggregator, $org, $mailUserData);
+
+        Mail::queue($createSubMerchantAffiliateMail);
     }
 
     public function editEmail($id, array $input): array
@@ -340,7 +413,7 @@ class Service extends Base\Service
             ($merchant->isActivated() === false) and
             (Account::isNodalAccount($merchantId) === false))
         {
-            $balance[Balance\Entity::ID] = $merchantId;
+            $balance[Balance\Entity::ID]      = $merchantId;
             $balance[Balance\Entity::BALANCE] = 0;
 
             return $balance;
@@ -382,8 +455,7 @@ class Service extends Base\Service
                 'pricing_plan_id');
         }
 
-        $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic(
-                                            $input['pricing_plan_id']);
+        $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($input['pricing_plan_id']);
 
         // validate if this plan can be set for this merchant.
         // Refer: https://github.com/razorpay/api/issues/324
@@ -473,7 +545,7 @@ class Service extends Base\Service
 
                 $migrationSummary['migrated_ids_count'] += 1;
             }
-            catch(\Exception $ex)
+            catch (\Exception $ex)
             {
                 $merchantId = $merchant->getId();
 
@@ -547,7 +619,7 @@ class Service extends Base\Service
                     $response[$merchantId] = 'Merchant is not activated';
                 }
             }
-            catch(\Exception $e)
+            catch (\Exception $e)
             {
                 $response[$merchantId] = $e->getMessage();
             }
@@ -730,7 +802,7 @@ class Service extends Base\Service
     public function generateTestBankAccounts()
     {
         $merchants = $this->repo->merchant->fetchMerchantWhereTestBankIsNull();
-        $fetched = $merchants->count();
+        $fetched   = $merchants->count();
 
         $core = new BankAccount\Core;
 
@@ -821,8 +893,8 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::WEBHOOK_EDIT,
             [
-                'webhook_id'    => $webhookId,
-                'input'         => $input,
+                'webhook_id' => $webhookId,
+                'input'      => $input,
             ]);
 
         $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
@@ -877,9 +949,9 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function getMerchantBeneficiaryFile(array $input, string $channel): array
+    public function getMerchantBeneficiary(array $input, string $channel): array
     {
-        $response = (new BankAccount\BeneficiaryFile)->generate($input, $channel);
+        $response = (new BankAccount\Beneficiary)->register($input, $channel);
 
         return $response;
     }
@@ -922,9 +994,9 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function postMerchantBeneficiaryFile(array $input, string $channel): array
+    public function postMerchantBeneficiary(array $input, string $channel): array
     {
-        $response = (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps($input, $channel);
+        $response = (new BankAccount\Beneficiary)->registerBetweenTimestamps($input, $channel);
 
         return $response;
     }
@@ -980,9 +1052,9 @@ class Service extends Base\Service
             }
         }
 
-        $response['total'] = count($merchantIds);
-        $response['success'] = $successCount;
-        $response['failed'] = $failedCount;
+        $response['total']     = count($merchantIds);
+        $response['success']   = $successCount;
+        $response['failed']    = $failedCount;
         $response['failedIds'] = $failedIds;
 
         return $response;
@@ -995,8 +1067,8 @@ class Service extends Base\Service
             $input
         );
 
-        if((isset($input['attributes']) === true) and
-           (isset($input['action']) === true))
+        if ((isset($input['attributes']) === true) and
+            (isset($input['action']) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Both Action and Attributes should not be sent.');
@@ -1016,7 +1088,7 @@ class Service extends Base\Service
         {
             try
             {
-                if(isset($input['attributes']) === true)
+                if (isset($input['attributes']) === true)
                 {
                     $this->edit($merchantId, $input['attributes']);
                 }
@@ -1225,8 +1297,8 @@ class Service extends Base\Service
 
         $merchantIds = $input['merchant_ids'];
         // Action: 'insert' or 'delete'
-        $action      = $input['action'];
-        $tagName     = $input['name'];
+        $action  = $input['action'];
+        $tagName = $input['name'];
 
         $tagFunction = $action . 'Tag';
 
@@ -1286,24 +1358,7 @@ class Service extends Base\Service
      */
     public function addTags($id, $input, $slackNotify = false)
     {
-        (new Validator)->validateInput('addTags', $input);
-
-        $this->trace->info(TraceCode::MERCHANT_TAGS_ADD, $input);
-
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $tags = $input['tags'];
-
-        $merchant->retag($tags);
-
-        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
-
-        if ($slackNotify === true)
-        {
-            $this->logActionToSlack($merchant, SlackActions::TAGGED, $input);
-        }
-
-        return $merchant->tagNames();
+        return $this->core()->addTags($id, $input, $slackNotify);
     }
 
     /**
@@ -1313,13 +1368,7 @@ class Service extends Base\Service
      */
     public function deleteTag($id, $tagName)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $merchant->untag($tagName);
-
-        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
-
-        return $merchant->tagNames();
+        return $this->core()->deleteTag($id, $tagName);
     }
 
     /**
@@ -1373,7 +1422,8 @@ class Service extends Base\Service
 
         $merchantCore = (new Merchant\Core);
 
-        foreach ($merchantIds as $merchantId) {
+        foreach ($merchantIds as $merchantId)
+        {
             try
             {
                 $merchantCore->markGratisTransactionPostpaid($merchantId, $from);
@@ -1466,9 +1516,9 @@ class Service extends Base\Service
             }
         }
 
-        $response['total'] = count($merchantsData);
-        $response['success'] = $successCount;
-        $response['failed'] = $failedCount;
+        $response['total']     = count($merchantsData);
+        $response['success']   = $successCount;
+        $response['failed']    = $failedCount;
         $response['failedIds'] = $failedIds;
 
         $this->trace->info(
@@ -1513,7 +1563,7 @@ class Service extends Base\Service
     private function getTimestamps()
     {
         $from = Carbon::today(Timezone::IST)->getTimestamp();
-        $to = Carbon::tomorrow(Timezone::IST)->getTimestamp() - 1;
+        $to   = Carbon::tomorrow(Timezone::IST)->getTimestamp() - 1;
 
         return [$from, $to];
     }
@@ -1522,7 +1572,7 @@ class Service extends Base\Service
      * Gets the feature names to be added. A feature needs to be added to merchant
      * only if the value in input is equal to the default value of the feature
      *
-     * @param array $features
+     * @param  array $features
      *
      * @return array
      */
@@ -1550,7 +1600,7 @@ class Service extends Base\Service
      * Gets the feature names to be removed. A feature needs to be removed from a
      * merchant only if the value in input is opposite of the default value of the feature
      *
-     * @param array $features
+     * @param  array $features
      *
      * @return array
      */
@@ -1639,10 +1689,11 @@ class Service extends Base\Service
 
         return $data;
     }
+
     /**
      * Will provide if merchant is confirmed or not.
      *
-     * @param $merchant
+     * @param  $merchant
      * @return bool
      */
     public function getMerchantConfirmed($merchant)
@@ -1667,7 +1718,7 @@ class Service extends Base\Service
      * Sends a mail to the merchant when an action is taken
      * on oauth access to his account
      *
-     * @param array  $input
+     * @param array $input
      * @param string $type
      *
      * @return array
@@ -1678,7 +1729,7 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::SEND_OAUTH_MAIL_REQUEST,
             [
-                'type' => $type,
+                'type'  => $type,
                 'input' => $input
             ]);
 
@@ -1690,7 +1741,7 @@ class Service extends Base\Service
 
         $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
 
-        $mailer = $this->getOAuthMailerClassByType($type);
+        $mailer   = $this->getOAuthMailerClassByType($type);
 
         $data = [
             'merchant'    => $merchant->toArrayPublic(),
@@ -1777,15 +1828,18 @@ class Service extends Base\Service
 
     /**
      * Creates submerchant User and associates with the submerchant as owner.
-     * @param array $input
+     *
+     * @param string $merchantId
+     * @param array  $input
      *
      * @return array
      */
     public function createSubMerchantUser($merchantId, array $input): array
     {
+        /** @var Entity $subMerchant */
         $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $input['email']  = $subMerchant->getEmail();
+        $input['email'] = $subMerchant->getEmail();
 
         $input['merchant_id'] = $this->merchant->getId();
 
@@ -1795,25 +1849,67 @@ class Service extends Base\Service
 
         unset($input['merchant_id']);
 
-        //Creates a user from the given data.
-        $userData = $this->formatUserCreationData($input, $subMerchant);
+        $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $input['email']);
 
-        $subMerchantUser = (new User\Service)->create($userData);
-
-        $this->attachSubMerchantOwner($subMerchantUser['id'], $subMerchant);
-
-        (new User\Service)->sendConfirmationMail($subMerchantUser['id']);
+        $subMerchantUser = $subMerchantUser->toArrayPublic();
 
         return $subMerchantUser;
     }
 
-    public function formatUserCreationData(array $input, Merchant\Entity $subMerchant)
+    /**
+     * In case of partners, we created the sub-merchant's user in case the email
+     * is different from partner's. There might be some rare cases where the user
+     * with the provided email already exists, in which case we would want to attach
+     * that user to the sub-merchant created as owner.
+     *
+     * @param  Entity $subMerchant
+     * @param  string $email
+     *
+     * @return array
+     */
+    protected function createOrFetchUserAndAttachMerchant(Entity $subMerchant, string $email): array
     {
+        $created = false;
+
+        /** @var User\Entity $subMerchantUser */
+        $subMerchantUser = $this->repo->user->getUserFromEmail($email);
+
+        if (empty($subMerchantUser) === true)
+        {
+            $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $email);
+
+            $created = true;
+        }
+        else
+        {
+            $this->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
+        }
+
+        return [$subMerchantUser, $created];
+    }
+
+    protected function createUserAndAttachMerchant(Entity $subMerchant, string $email): User\Entity
+    {
+        $userData = $this->formatUserCreationData($email, $subMerchant);
+
+        $subMerchantUser = (new User\Core)->create($userData);
+
+        $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
+
+        (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+
+        return $subMerchantUser;
+    }
+
+    public function formatUserCreationData(string $email, Merchant\Entity $subMerchant)
+    {
+        $dummyPass = bin2hex(random_bytes(20));
+
         return [
             User\Entity::NAME                  => $subMerchant->getName(),
-            User\Entity::EMAIL                 => $input['email'],
-            User\Entity::PASSWORD              => $input['password'],
-            User\Entity::PASSWORD_CONFIRMATION => $input['password_confirmation'],
+            User\Entity::EMAIL                 => $email,
+            User\Entity::PASSWORD              => $dummyPass,
+            User\Entity::PASSWORD_CONFIRMATION => $dummyPass,
             User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
         ];
     }
@@ -1834,30 +1930,164 @@ class Service extends Base\Service
         return ['variant' => $variant];
     }
 
-    protected function validateAggregatorSubMerchantRelation($subMerchant, $aggregatorMerchantId)
+    protected function createSubMerchantAndSetRelations(Entity $merchant, bool $isLinkedAccount, array $input)
     {
+        $ownerId = $input['user_id'];
+
+        unset($input['user_id']);
+
+        unset($input['account']);
+
+        list($subMerchant, $newUser, $createdNew) = $this->repo->transactionOnLiveAndTest(function () use (
+            $input,
+            $merchant,
+            $isLinkedAccount,
+            $ownerId
+        )
+        {
+            $merchantCore = new Merchant\Core;
+
+            $subMerchant = $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount);
+
+            $newUser = null;
+
+            $createdNew = false;
+
+            if ($isLinkedAccount === false)
+            {
+                $merchantCore->addSubMerchantReferral($merchant, $subMerchant);
+
+                $this->attachSubMerchantOwnerIfApplicable($ownerId, $subMerchant, $merchant);
+
+                // Partner and sub-merchant are connected via partner's app,
+                // this connect is used for multiple validity checks, web-hooks, etc
+                $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
+
+                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
+            }
+
+            $this->repo->saveOrFail($subMerchant);
+
+            return [$subMerchant, $newUser, $createdNew];
+        });
+
+        // This goes out to the aggregator + sub-merchant(if separate email)
+        // (skips if marketplace merchant)
+        if (($merchant->isMarketplace() and $isLinkedAccount) === false)
+        {
+            $this->sendSubMerchantCreationMail($subMerchant, $merchant, $newUser, $createdNew);
+        }
+
+        return $subMerchant->toArrayPublic();
+    }
+
+    protected function createAdditionalUserOrFetchIfApplicable(Entity $subMerchant, Entity $merchant)
+    {
+        $subMerchantUser = null;
+        $createdNew      = false;
+
+        if (($merchant->isPartner() === true) and ($subMerchant->getEmail() !== $merchant->getEmail()))
+        {
+            list($subMerchantUser, $createdNew) =
+                $this->createOrFetchUserAndAttachMerchant($subMerchant, $subMerchant->getEmail());
+        }
+
+        return [$subMerchantUser, $createdNew];
+    }
+
+    protected function mapSubMerchantPartnerAppIfApplicable(Entity $merchant, Entity $subMerchant)
+    {
+        if ($merchant->isPartner() === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $app = (new Core)->getPartnerApp($merchant);
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\LogicException(
+                'Server error app not found',
+                ErrorCode::SERVER_ERROR_PARTNER_APP_NOT_FOUND);
+        }
+
+        $appId = $app->getId();
+
+        (new AccessMap\Service)->mapOAuthApplication($subMerchant->getId(), ['application_id' => $appId]);
+    }
+
+    protected function validateAggregatorSubMerchantRelation(Entity $subMerchant, string $aggregatorMerchantId)
+    {
+        if ($subMerchant->isLinkedAccount() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
         $referrer = $subMerchant->getReferrer();
 
-        if ((empty($referrer) === true) or ($referrer !== $aggregatorMerchantId))
+        $referrerNotEmptyAndSame = (empty($referrer) === false) and ($referrer === $aggregatorMerchantId);
+
+        if ($referrerNotEmptyAndSame === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FORBIDDEN);
+            return;
         }
+
+        /** @var Entity $aggregatorMerchant */
+        $aggregatorMerchant = $this->repo->merchant->findOrFailPublic($aggregatorMerchantId);
+
+        $isNonPurePlatformAggregator = $aggregatorMerchant->isNonPurePlatformPartner();
+
+        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchantId);
+
+        if (($isNonPurePlatformAggregator === true) and ($isPartnerMerchantMapped === true))
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+    }
+
+    /**
+     * This function checks for a mapping between the partner merchant's dummy app from
+     * auth database and the submerchant. This is stored in the `merchant_access_map` table
+     * on API side.
+     *
+     * @param  string $merchantId
+     * @param  string $partnerId
+     *
+     * @return bool
+     */
+    public function isPartnerMerchantMapped(string $merchantId, string $partnerId): bool
+    {
+        $app = $this->getPartnerAppByMerchantId($partnerId);
+
+        $mapping = (new AccessMap\Repository)
+                        ->findMerchantAccessMapOnEntityId($merchantId, $app->getId(), AccessMap\Entity::APPLICATION);
+
+        return (empty($mapping) === false);
+    }
+
+    /**
+     * TODO: Check if the core function (getPartnerApp) is needed at all and remove it if not
+     * @param  string $merchantId
+     *
+     * @return null|OAuthApplication\Entity
+     */
+    public function getPartnerAppByMerchantId(string $merchantId)
+    {
+        return (new OAuthApplication\Repository)->findActivePartnerApplicationByMerchantId($merchantId);
     }
 
     /**
      * @param string $merchantId
-     * @param array  $input
      *
      * @return array
      */
-    public function createPartnerAccessMap(string $merchantId, array $input): array
+    public function createPartnerAccessMap(string $merchantId): array
     {
-        $list = $this->getPartnerAndSubMerchant($merchantId, $input);
-
-        $partner = $list[0];
-
-        $submerchant = $list[1];
+        list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId);
 
         $accessMap = $this->core()->createPartnerSubmerchantAccessMap($partner, $submerchant);
 
@@ -1866,31 +2096,21 @@ class Service extends Base\Service
 
     /**
      * @param string $merchantId
-     * @param array  $input
-     *
-     * @return array
      */
-    public function deletePartnerAccessMap(string $merchantId, array $input): array
+    public function deletePartnerAccessMap(string $merchantId)
     {
-        $list = $this->getPartnerAndSubMerchant($merchantId, $input);
+        list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId);
 
-        $partner = $list[0];
-
-        $submerchant = $list[1];
-
-        $accessMap = $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
-
-        return $accessMap;
+        $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
     }
 
     /**
      * @param string $merchantId
-     * @param array  $input
      *
      * @return array
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function getPartnerAndSubMerchant(string $merchantId, array $input): array
+    protected function getPartnerAndSubMerchant(string $merchantId): array
     {
         //
         // In the context of partners and submerchants -
@@ -1905,11 +2125,30 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_PARTNER_CONTEXT_NOT_SET,
-                Entity::MERCHANT_ID,
-                $input);
+                Entity::PARTNER_TYPE);
         }
 
-        $submerchant = $this->repo->merchant->findOrFail($merchantId);
+        // The submerchant should belong to the same org as of the admin
+        /** @var Entity $submerchant */
+        $submerchant = $this->repo->merchant->findByIdAndOrgId($merchantId, $this->auth->getOrgId());
+
+        /** @var Admin\Entity $admin */
+        $admin = $this->auth->getAdmin();
+
+        // The current admin should have access to the submerchant before the mapping can be created/deleted
+        $hasSubmerchantAccess = (new Group\Core)->groupCheck($admin, $submerchant);
+
+        if ($hasSubmerchantAccess === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                Entity::MERCHANT_ID,
+                [
+                    'admin_id'       => $admin->getId(),
+                    'partner_id'     => $merchantId,
+                    'submerchant_id' => $submerchant->getId(),
+                ]);
+        }
 
         return [$partner, $submerchant];
     }

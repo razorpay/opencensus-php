@@ -90,11 +90,18 @@ class ViewSerializer extends Base\Core
     {
         $serialized = $this->paymentLink->toArrayHosted();
 
+        $this->addAdditionalAttributesForPaymentLink($serialized);
         $this->addDerivedAttributesForPaymentLink($serialized);
         $this->addFormattedAmountAttributesForPaymentLink($serialized);
         $this->addFormattedEpochAttributesForPaymentLink($serialized);
 
         return $serialized;
+    }
+
+    protected function addAdditionalAttributesForPaymentLink(array & $serialized)
+    {
+        $serialized[Entity::HOSTED_TEMPLATE_ID] = $this->paymentLink->getHostedTemplateId();
+        $serialized[Entity::UDF_JSONSCHEMA_ID]  = $this->paymentLink->getUdfJsonschemaId();
     }
 
     protected function addDerivedAttributesForPaymentLink(array & $serialized)
@@ -123,10 +130,12 @@ class ViewSerializer extends Base\Core
     /**
      * Adds additional attributes ONLY to be used internally in various flows. E.g. merchant side mails, which requires
      * attributes besides hosted attributes, which is basically public user view attributes, etc.
-     *
      * @param array $serialized
      */
     protected function addAdditionalAttributesForInternal(array & $serialized)
     {
+        $serialized[E::MERCHANT] += [
+            'business_registered_address' => optional($this->merchant->merchantDetail)->getBusinessRegisteredAddress(),
+        ];
     }
 }
