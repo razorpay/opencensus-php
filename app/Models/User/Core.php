@@ -2,9 +2,8 @@
 
 namespace RZP\Models\User;
 
-use Config;
 use Hash;
-
+use Config;
 use Carbon\Carbon;
 use Illuminate\Hashing\BcryptHasher;
 
@@ -13,9 +12,8 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\RequestJob;
-use RZP\Jobs\MailChimpSubscribe;
 use RZP\Constants\Timezone;
+use RZP\Jobs\MailChimpSubscribe;
 
 class Core extends Base\Core
 {

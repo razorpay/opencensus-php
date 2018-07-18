@@ -64,6 +64,7 @@ class ProviderCode
     const IDFC               = 'idfc';
     const IDFCBANK           = 'idfcbank';
     const IDFCNETC           = 'idfcnetc';
+    const IKWIK              = 'ikwik';
     const IMOBILE            = 'imobile';
     const INDBANK            = 'indbank';
     const INDIANBANK         = 'indianbank';
@@ -182,6 +183,7 @@ class ProviderCode
         self::IDFC               => IFSC::IDFB,
         self::IDFCBANK           => IFSC::IDFB,
         self::IDFCNETC           => IFSC::IDFB,
+        self::IKWIK              => IFSC::HDFC,
         self::IMOBILE            => IFSC::ICIC,
         self::INDBANK            => IFSC::IDIB,
         self::INDIANBANK         => IFSC::IDIB,
