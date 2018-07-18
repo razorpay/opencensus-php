@@ -45,10 +45,7 @@ export default class CreateLogin extends Component {
 
         <div class="modal-body">
           <p>
-            The merchant <b>{referral.name}</b> with merchant id{' '}
-            <code>{referral.id}</code>will receive an email containing a link to
-            set password for newly created login account. The account will have
-            complete access to their merchant dashboard
+            The merchant <strong>{referral.name}</strong> (Merchant ID - <code>{referral.id}</code>), will receive an email with the sign-in link. They will have complete access to their dashboard
           </p>
         </div>
 
