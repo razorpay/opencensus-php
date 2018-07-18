@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'rzp/modules/notifications';
 import { without } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';

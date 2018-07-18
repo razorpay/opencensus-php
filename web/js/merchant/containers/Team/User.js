@@ -5,7 +5,11 @@ import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import { roles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
-import { updateUser, removeUser, fetchTeamDetails } from 'rzp/modules/team';
+import {
+  updateUser,
+  removeUser,
+  fetchTeamDetails,
+} from 'merchant/modules/team';
 
 const ROLES = without(roles, 'owner');
 @connect(
