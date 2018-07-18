@@ -226,7 +226,9 @@ return [
         'test_access_code'  => env('DIGIO_ESIGNER_GATEWAY_TEST_ACCESS_CODE'),
         'test_merchant_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_MERCHANT_ID'),
         'test_merchant_id2' => env('DIGIO_ESIGNER_GATEWAY_TEST_MERCHANT_ID2'),
-        'test_terminal_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_TERMINAL_ID')
+        'test_terminal_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_TERMINAL_ID'),
+        'live_access_code'  => env('DIGIO_ESIGNER_GATEWAY_LIVE_ACCESS_CODE'),
+        'live_terminal_id'  => env('DIGIO_ESIGNER_GATEWAY_LIVE_TERMINAL_ID'),
     ],
 
     'enach_rbl' => [],

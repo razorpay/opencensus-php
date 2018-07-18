@@ -13,8 +13,6 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Holidays;
 use RZP\Constants\Mode as BaseMode;
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Gateway\Enach\Base\Entity;
 use RZP\Models\Bank\Name as BankName;
 
 class Gateway extends Base\Gateway
@@ -28,7 +26,7 @@ class Gateway extends Base\Gateway
         $request = $this->getMandateCreationRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
-        
+
         $this->trace->info(TraceCode::GATEWAY_MANDATE_RESPONSE, [
             'gateway' => 'digio',
             'payment_id' => $input['payment']['id'],
@@ -254,7 +252,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === BaseMode::LIVE)
         {
-            return $input['terminal']['gateway_access_code'];
+            return $this->config['live_access_code'];
         }
 
         return $this->getTestAccessCode();
@@ -264,7 +262,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === BaseMode::LIVE)
         {
-            return $this->input['terminal']['gateway_terminal_id'];
+            return $this->config['live_terminal_id'];
         }
 
         return $this->config['test_terminal_id'];
