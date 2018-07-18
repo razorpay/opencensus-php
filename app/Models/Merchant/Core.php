@@ -815,7 +815,7 @@ class Core extends Base\Core
         catch (DBQueryException $ex)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
+                ErrorCode::SERVER_ERROR_PARTNER_APP_NOT_FOUND,
                 null,
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),
@@ -903,63 +903,46 @@ class Core extends Base\Core
      */
     public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant): array
     {
-        $merchantService = new Service;
-
-        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant, $merchantService)
+        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
             $partnerApp = $this->getPartnerApp($partner);
 
-            $partnerAppId = $partnerApp->getId();
-
-            $submerchantId = $submerchant->getId();
-
             // Maintained for backward compatibility
-            $merchantService->addSubMerchantReferral($partner, $submerchant);
+            $this->addSubMerchantReferral($partner, $submerchant);
 
-            if ($partner->hasSwitchDashboardAccess() === true)
+            if ($partner->allowSubmerchantAccess() === true)
             {
                 // Attaches partners's user to the submerchant account as an owner
-                $merchantService->attachSubMerchantOwner($partner->primaryOwner()->getId(), $submerchant);
+                $this->attachSubMerchantOwner($partner->primaryOwner()->getId(), $submerchant);
             }
 
             // If the mapping already exists, the existing entity is returned
-            $accessMap = (new AccessMap\Service)->mapOAuthApplication(
-                            $submerchantId,
+            $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
+                            $submerchant,
                             [
-                                AccessMap\Entity::APPLICATION_ID => $partnerAppId,
+                                AccessMap\Entity::APPLICATION_ID => $partnerApp->getId(),
                             ]);
 
             return $accessMap;
         });
 
-        return $accessMap;
+        return $accessMap->toArrayPublic();
     }
 
     /**
      * @param Entity $partner
      * @param Entity $submerchant
-     *
-     * @return array
-     * @throws BadRequestException
      */
     public function deletePartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
     {
-        $response = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
+        $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
             $partnerApp = $this->getPartnerApp($partner);
 
-            $submerchantId = $submerchant->getId();
-
-            $partnerAppId = $partnerApp->getId();
-
-            $response = (new AccessMap\Service)->deleteMapOAuthApplication($submerchantId, $partnerAppId);
+            (new AccessMap\Core)->deleteMappingForOAuthApp($submerchant, $partnerApp->getId());
 
             $this->removeSubMerchantReferralTag($submerchant, $partner->getId());
-
-            return $response;
         });
-
-        return $response;
     }
 
     /**
@@ -1016,13 +999,85 @@ class Core extends Base\Core
         return $app;
     }
 
+    public function addSubMerchantReferral($aggregratorMerchant, $account)
+    {
+        $tagInputData = [
+            'tags' => ['ref-' . $aggregratorMerchant->id],
+        ];
+
+        $this->addTags($account->id, $tagInputData);
+    }
+
+    /**
+     * @param string $ownerId
+     * @param Entity $subMerchant
+     */
+    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
+    {
+        $userMerchantMappingInputData = [
+            'action'      => 'attach',
+            'role'        => 'owner',
+            'merchant_id' => $subMerchant->getId(),
+        ];
+
+        (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
+    }
+
+    /**
+     * used for deleting a single tag of a merchant
+     * @param string $id
+     * @param string $tagName tag which has to be deleted
+     */
+    public function deleteTag($id, $tagName)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $merchant->untag($tagName);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * used for adding tags to merchant
+     * This function uses retag(), which overwrites all previous tags
+     * with the ones passed in the $input array
+     *
+     * @param string $id
+     * @param array  $input which contains the tags of the merchant
+     * @param bool   $slackNotify
+     *
+     * @return
+     */
+    public function addTags($id, $input, $slackNotify = false)
+    {
+        (new Validator)->validateInput('addTags', $input);
+
+        $this->trace->info(TraceCode::MERCHANT_TAGS_ADD, $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $tags = $input['tags'];
+
+        $merchant->retag($tags);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        if ($slackNotify === true)
+        {
+            $this->logActionToSlack($merchant, SlackActions::TAGGED, $input);
+        }
+
+        return $merchant->tagNames();
+    }
+
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
     {
         $tag = 'Ref-' . $partnerId;
 
-        $tags = (new Merchant\Service)->deleteTag($merchant->getPublicId(), $tag);
+        $tags = $this->deleteTag($merchant->getPublicId(), $tag);
 
         return $tags;
     }
-
 }

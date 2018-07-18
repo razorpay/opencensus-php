@@ -496,12 +496,7 @@ return [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
             ],
             'content' => [],
-        ],
-        'response'  => [
-            'content' => [
-                'success' => true,
-            ],
-        ],
+        ]
     ],
 
     'testRemoveNonExistingPartnerAccessMap' => [
@@ -513,12 +508,6 @@ return [
             ],
             'content' => [],
         ],
-        'response'  => [
-            'content' => [
-                'success' => true,
-            ],
-            'status_code' => 200,
-        ],
     ],
 
     'testRemovePartnerAccessMapAgain' => [
@@ -529,12 +518,6 @@ return [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
             ],
             'content' => [],
-        ],
-        'response'  => [
-            'content' => [
-                'success' => true,
-            ],
-            'status_code' => 200,
         ],
     ],
 

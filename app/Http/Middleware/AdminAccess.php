@@ -8,6 +8,7 @@ use Illuminate\Foundation\Application;
 
 use RZP\Http\Route;
 use RZP\Exception;
+use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 
 class AdminAccess

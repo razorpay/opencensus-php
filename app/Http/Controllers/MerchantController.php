@@ -996,8 +996,6 @@ class MerchantController extends Controller
      */
     public function createPartnerAccessMap(string $merchantId)
     {
-        $input = $this->input;
-
         $response = $this->service()->createPartnerAccessMap($merchantId);
 
         return ApiResponse::json($response);
@@ -1010,10 +1008,8 @@ class MerchantController extends Controller
      */
     public function deletePartnerAccessMap(string $merchantId)
     {
-        $input = $this->input;
+        $this->service()->deletePartnerAccessMap($merchantId);
 
-        $response = $this->service()->deletePartnerAccessMap($merchantId);
-
-        return ApiResponse::json($response);
+        return ApiResponse::json([], 204);
     }
 }

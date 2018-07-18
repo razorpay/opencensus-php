@@ -120,12 +120,11 @@ class SubMerchant extends Base
         $input = Helper::getSubMerchantInput($entry);
 
         // Create Sub-merchant account
-        $merchantService = new Merchant\Service;
-        $subMerchant     = $this->merchantCore->createSubMerchant($input, $this->merchant, false);
+        $subMerchant = $this->merchantCore->createSubMerchant($input, $this->merchant, false);
 
-        $merchantService->addSubMerchantReferral($this->merchant, $subMerchant);
+        $this->merchantCore->addSubMerchantReferral($this->merchant, $subMerchant);
 
-        $merchantService->attachSubMerchantOwner($this->merchant->primaryOwner()->getId(), $subMerchant);
+        $this->merchantCore->attachSubMerchantOwner($this->merchant->primaryOwner()->getId(), $subMerchant);
 
         $this->repo->saveOrFail($subMerchant);
 
@@ -186,7 +185,7 @@ class SubMerchant extends Base
         $subMerchantUser = (new User\Core)->create($userInput);
 
         // Attach the user as an owner on the sub_merchant account
-        (new Merchant\Service)->attachSubMerchantOwner($subMerchantUser->getPublicId(), $subMerchant);
+        (new Merchant\Core)->attachSubMerchantOwner($subMerchantUser->getPublicId(), $subMerchant);
 
         // Sent the user an email for confirmation
         $this->sendSubmerchantUserEmail($subMerchantUser);

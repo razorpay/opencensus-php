@@ -1562,10 +1562,10 @@ class Entity extends Base\PublicEntity
     /**
      * @return bool
      */
-    public function hasSwitchDashboardAccess(): bool
+    public function allowSubmerchantAccess(): bool
     {
         // Later change to only fully managed partners
-        return (($this->isFullyManagedTypePartner() === true) or ($this->isAggregatorPartner() === true));
+        return (($this->isFullyManagedPartner() === true) or ($this->isAggregatorPartner() === true));
     }
 
     /**

@@ -12,7 +12,6 @@ use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
 
 use RZP\Exception;
-use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Offer;
@@ -154,32 +153,8 @@ class Service extends Base\Service
             (($isOptionalEmailAllowed === true) and ($subMerchantEmailIsSame === true)) or
             (($isPartner === false) and ($hasAggregatorFeature === true)))
         {
-            $this->attachSubMerchantOwner($ownerId, $subMerchant);
+            (new Core)->attachSubMerchantOwner($ownerId, $subMerchant);
         }
-    }
-
-    /**
-     * @param string $ownerId
-     * @param Entity $subMerchant
-     */
-    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
-    {
-        $userMerchantMappingInputData = [
-            'action'      => 'attach',
-            'role'        => 'owner',
-            'merchant_id' => $subMerchant->getId(),
-        ];
-
-        (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
-    }
-
-    public function addSubMerchantReferral($aggregratorMerchant, $account)
-    {
-        $tagInputData = [
-            'tags' => ['ref-' . $aggregratorMerchant->id],
-        ];
-
-        $this->addTags($account->id, $tagInputData);
     }
 
     public function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
@@ -1383,24 +1358,7 @@ class Service extends Base\Service
      */
     public function addTags($id, $input, $slackNotify = false)
     {
-        (new Validator)->validateInput('addTags', $input);
-
-        $this->trace->info(TraceCode::MERCHANT_TAGS_ADD, $input);
-
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $tags = $input['tags'];
-
-        $merchant->retag($tags);
-
-        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
-
-        if ($slackNotify === true)
-        {
-            $this->logActionToSlack($merchant, SlackActions::TAGGED, $input);
-        }
-
-        return $merchant->tagNames();
+        return $this->core()->addTags($id, $input, $slackNotify);
     }
 
     /**
@@ -1410,13 +1368,7 @@ class Service extends Base\Service
      */
     public function deleteTag($id, $tagName)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $merchant->untag($tagName);
-
-        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
-
-        return $merchant->tagNames();
+        return $this->core()->deleteTag($id, $tagName);
     }
 
     /**
@@ -1942,7 +1894,7 @@ class Service extends Base\Service
 
         $subMerchantUser = (new User\Core)->create($userData);
 
-        $this->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
+        $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
 
         (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
 
@@ -1993,7 +1945,9 @@ class Service extends Base\Service
             $ownerId
         )
         {
-            $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant, $isLinkedAccount);
+            $merchantCore = new Merchant\Core;
+
+            $subMerchant = $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount);
 
             $newUser = null;
 
@@ -2001,7 +1955,7 @@ class Service extends Base\Service
 
             if ($isLinkedAccount === false)
             {
-                $this->addSubMerchantReferral($merchant, $subMerchant);
+                $merchantCore->addSubMerchantReferral($merchant, $subMerchant);
 
                 $this->attachSubMerchantOwnerIfApplicable($ownerId, $subMerchant, $merchant);
 
@@ -2142,16 +2096,12 @@ class Service extends Base\Service
 
     /**
      * @param string $merchantId
-     *
-     * @return array
      */
-    public function deletePartnerAccessMap(string $merchantId): array
+    public function deletePartnerAccessMap(string $merchantId)
     {
         list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId);
 
-        $accessMap = $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
-
-        return $accessMap;
+        $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
     }
 
     /**
@@ -2178,15 +2128,12 @@ class Service extends Base\Service
                 Entity::PARTNER_TYPE);
         }
 
-        /** @var BasicAuth $ba */
-        $ba = $this->app['basicauth'];
-
         // The submerchant should belong to the same org as of the admin
         /** @var Entity $submerchant */
-        $submerchant = $this->repo->merchant->findByIdAndOrgId($merchantId, $ba->getOrgId());
+        $submerchant = $this->repo->merchant->findByIdAndOrgId($merchantId, $this->auth->getOrgId());
 
         /** @var Admin\Entity $admin */
-        $admin = $ba->getAdmin();
+        $admin = $this->auth->getAdmin();
 
         // The current admin should have access to the submerchant before the mapping can be created/deleted
         $hasSubmerchantAccess = (new Group\Core)->groupCheck($admin, $submerchant);

@@ -561,7 +561,11 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->adminAuth();
 
-        $this->startTest();
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->sendRequest($testData['request']);
+
+        $response->assertStatus(204);
 
         $submerchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
 
@@ -590,7 +594,11 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->adminAuth();
 
-        $this->startTest();
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->sendRequest($testData['request']);
+
+        $response->assertStatus(204);
     }
 
     public function testRemovePartnerAccessMapAgain()
@@ -608,7 +616,11 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->adminAuth();
 
-        $this->startTest();
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->sendRequest($testData['request']);
+
+        $response->assertStatus(204);
     }
 
     public function testNoSubmerchantAccountAccessForReseller()
