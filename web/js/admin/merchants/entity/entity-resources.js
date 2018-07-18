@@ -502,9 +502,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Transaction Report Email',
-      value: details.merchant_details
-        ? details.merchant_details.transaction_report_email
-        : null,
+      value: details.transaction_report_email || null,
     },
     {
       label: 'International',
