@@ -729,7 +729,6 @@ class PartnerTest extends OAuthTestCase
         $createParams = [
             'name'     => $merchant->getName(),
             'website'  => $merchant->getWebsite(),
-            'logo_url' => null,
             'type'     => self::PARTNER,
         ];
 
