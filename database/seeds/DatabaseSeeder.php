@@ -328,6 +328,7 @@ class DatabaseSeeder extends Seeder
                     'contact_name'   => 'Test Account',
                     'contact_email'  => 'test@razorpay.com',
                     'contact_mobile' => '9876543210',
+                    // @codingStandardsIgnoreLine
                     'created_at'     => 1488306599, // 28/02/2017, 11:59:59 PM GMT+5:30; pre signup steps are required for people signing up on/after 01/03/2017
                     'updated_at'     => $currentTime,
                     )
@@ -495,53 +496,53 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::METHODS)->insert(
                 array(
-                    'merchant_id'   => Account::DEMO_ACCOUNT,
-                    'banks'         => '[]',
-                    'disabled_banks'=> '[]',
-                    'paytm'         => '1',
-                    'aeps'          => '1',
-                    'olamoney'      => '1',
-                    'freecharge'    => '1',
-                    'emandate'      => '1',
-                    'mobikwik'      => '1',
-                    'payzapp'       => '1',
-                    'payumoney'     => '1',
-                    'airtelmoney'   => '1',
-                    'openwallet'    => '1',
-                    'jiomoney'      => '1',
-                    'sbibuddy'      => '1',
-                    'card'          => '1',
-                    'upi'           => '1',
-                    'created_at'    => $currentTime,
-                    'updated_at'    => $currentTime
+                    'merchant_id'    => Account::DEMO_ACCOUNT,
+                    'banks'          => '[]',
+                    'disabled_banks' => '[]',
+                    'paytm'          => '1',
+                    'aeps'           => '1',
+                    'olamoney'       => '1',
+                    'freecharge'     => '1',
+                    'emandate'       => '1',
+                    'mobikwik'       => '1',
+                    'payzapp'        => '1',
+                    'payumoney'      => '1',
+                    'airtelmoney'    => '1',
+                    'openwallet'     => '1',
+                    'jiomoney'       => '1',
+                    'sbibuddy'       => '1',
+                    'card'           => '1',
+                    'upi'            => '1',
+                    'created_at'     => $currentTime,
+                    'updated_at'     => $currentTime
                 )
             );
 
             DB::table(Table::METHODS)->insert(
                 array(
-                    'merchant_id'   => Account::TEST_ACCOUNT,
-                    'banks'         => '[]',
-                    'disabled_banks'=> '[]',
-                    'paytm'         => '1',
-                    'aeps'          => '1',
-                    'mobikwik'      => '1',
-                    'olamoney'      => '1',
-                    'freecharge'    => '1',
-                    'emandate'      => '1',
-                    'payzapp'       => '1',
-                    'payumoney'     => '1',
-                    'airtelmoney'   => '1',
-                    'amazonpay'     => '1',
-                    'openwallet'    => '1',
-                    'jiomoney'      => '1',
-                    'sbibuddy'      => '1',
-                    'card'          => '1',
-                    'emi'           => '1',
-                    'upi'           => '1',
-                    'bank_transfer' => '1',
-                    'emandate'      => '1',
-                    'created_at'    => $currentTime,
-                    'updated_at'    => $currentTime
+                    'merchant_id'    => Account::TEST_ACCOUNT,
+                    'banks'          => '[]',
+                    'disabled_banks' => '[]',
+                    'paytm'          => '1',
+                    'aeps'           => '1',
+                    'mobikwik'       => '1',
+                    'olamoney'       => '1',
+                    'freecharge'     => '1',
+                    'emandate'       => '1',
+                    'payzapp'        => '1',
+                    'payumoney'      => '1',
+                    'airtelmoney'    => '1',
+                    'amazonpay'      => '1',
+                    'openwallet'     => '1',
+                    'jiomoney'       => '1',
+                    'sbibuddy'       => '1',
+                    'card'           => '1',
+                    'emi'            => '1',
+                    'upi'            => '1',
+                    'bank_transfer'  => '1',
+                    'emandate'       => '1',
+                    'created_at'     => $currentTime,
+                    'updated_at'     => $currentTime
                 )
             );
 
@@ -584,6 +585,7 @@ class DatabaseSeeder extends Seeder
                     'id'          => '7NamQFIGFyyNdc',
                     'org_id'      => '100000razorpay',
                     'entity_name' => 'admin',
+                    // @codingStandardsIgnoreLine
                     'fields'      => "name,email,allow_all_merchants,disabled,oauth_access_token,oauth_provider_id,roles,groups",
                     'created_at'  => time(),
                     'updated_at'  => time(),
@@ -592,6 +594,7 @@ class DatabaseSeeder extends Seeder
                     'id'          => '7NawjzGBBIX6Ar',
                     'org_id'      => '6dLbNSpv5XbCOG',
                     'entity_name' => 'admin',
+                    // @codingStandardsIgnoreLine
                     'fields'      => 'name,username,email,password,password_confirmation,employee_code,department_code,branch_code,location_code,supervisor_code,allow_all_merchants,disabled,roles,groups',
                     'created_at'  => time(),
                     'updated_at'  => time(),
@@ -600,6 +603,7 @@ class DatabaseSeeder extends Seeder
                     'id'          => '7NayAS7Iz2aMyi',
                     'org_id'      => '6dLbNSpv5XbCOG',
                     'entity_name' => 'admin_lead',
+                    // @codingStandardsIgnoreLine
                     'fields'      => 'channel_code,crm_next_no,db_token_no,branch_lts_no,branch_code,source_code,promo_code,lg_code,lc_ro_code,mrm_code,merchant_type,mcc_category,mcc_code,merchant_name,contact_name,contact_email,dba_name',
                     'created_at'  => time(),
                     'updated_at'  => time(),
@@ -1123,6 +1127,7 @@ class DatabaseSeeder extends Seeder
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
         $this->createNetbankingIciciTerminals();
+        $this->createNetbankingCanaraTerminal();
         $this->createNetbankingAirtelTerminals();
         $this->createNetbankingObcTerminal();
         $this->createNetbankingAxisTerminal();
@@ -1466,6 +1471,23 @@ class DatabaseSeeder extends Seeder
             ]
         );
     }
+
+    protected function createNetbankingCanaraTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => Terminal\Shared::NETBANKING_CANARA_TERMINAL,
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_CANARA,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_canara',
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
+        );
+    }
+
 
     protected function createNetbankingAirtelTerminals()
     {

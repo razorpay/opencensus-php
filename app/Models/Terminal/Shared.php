@@ -38,6 +38,7 @@ class Shared
     const NETBANKING_FEDERAL_TPV_TERMINAL    = '100NbFdrlTpvTl';
     const NETBANKING_RBL_TERMINAL            = '100NbRblTermnl';
     const NETBANKING_CSB_TERMINAL            = '100NbCsbTermnl';
+    const NETBANKING_CANARA_TERMINAL         = '100NbCnrbTermnl';
     const NETBANKING_RBL_TPV_TERMINAL        = '100NbRblTpvTml';
     const NETBANKING_INDUSIND_TERMINAL       = '100NbIndnTrmnl';
     const NETBANKING_INDUSIND_TPV_TERMINAL   = '100NbIndnTpvTl';
