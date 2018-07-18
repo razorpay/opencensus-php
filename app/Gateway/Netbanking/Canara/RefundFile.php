@@ -40,7 +40,7 @@ class RefundFile extends Base\RefundFile
             'signed_url' => $signedFileUrl,
         ];
 
-        //$this->sendRefundEmail($fileData, (array) $input['email']);
+        $this->sendRefundEmail($fileData, (array) $input['email']);
 
         return $file['local_file_path'];
     }

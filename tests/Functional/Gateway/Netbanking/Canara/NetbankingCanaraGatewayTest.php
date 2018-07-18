@@ -139,7 +139,7 @@ class NetbankingCanaraGatewayTest extends TestCase
 
         $this->checkRefundFileData($data);
 
-        //$this->checkMailQueue();
+        $this->checkMailQueue();
     }
 
     public function doNetbankingCanaraAuthAndCapturePayment()
@@ -286,15 +286,11 @@ class NetbankingCanaraGatewayTest extends TestCase
     {
         Mail::assertQueued(RefundFileMail::class, function ($mail)
         {
-            $body = '';
+            $body = 'Please find attached refunds information for Canara Bank';
 
             $this->assertEquals($body, $mail->viewData['body']);
 
-            $this->assertEquals('', $mail->viewData['amount']);
-
-            $this->assertEquals('3', $mail->viewData['count']);
-
-            $this->assertEquals('', $mail->view);
+            $this->assertEquals('emails.message', $mail->view);
 
             return true;
         });
