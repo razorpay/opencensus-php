@@ -5,7 +5,7 @@ import 'react-dates/initialize';
 import { connect, Provider } from 'react-redux';
 import { render } from 'react-dom';
 import { MemoryRouter as Router } from 'react-router-dom';
-import store from 'merchantLA/store';
+import store from 'merchant/store';
 
 import 'rzp/utils/polyfills';
 import * as NotificationActions from 'rzp/modules/notifications';
