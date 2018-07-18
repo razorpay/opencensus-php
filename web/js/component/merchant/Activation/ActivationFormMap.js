@@ -204,14 +204,14 @@ const businessModel = [
         {
           label: 'We do not have either',
           description: (
-            <div class="warning-svg">
-              {WarningSvg()}
-              <span>
-                You will only be able to use Payment Links, Invoices and Smart
-                Collect via dashboard. To get complete access, simply update
-                your website anytime later.
-              </span>
-            </div>
+            <ul class="Input-desc-list">
+              <li>
+                You can accept payments by sending out Payment Links and
+                Invoices from Dashboard.
+              </li>
+              <li>You will not get access to live APIs.</li>
+              <li>You can upgrade anytime later by adding your website/app.</li>
+            </ul>
           ),
         },
       ],
@@ -258,7 +258,7 @@ const businessModel = [
         </React.Fragment>
       ),
       info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
-      _when: activation => activation.state.has_url !== '1',
+      _when: activation => activation.state.has_url === '0',
     },
   ],
 ];
@@ -423,7 +423,6 @@ const registrationDetails = [
       _autoRenderImpure: true, // Re-render to show the error
       placeholder: 'Enter GSTIN',
       size: 'small',
-      required: false,
       info:
         'The entered GST Number should match either of the Address given above.',
       validator: value => {
