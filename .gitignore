@@ -20,7 +20,7 @@ environment/.env.testing_docker
 .DS_Store
 Thumbs.db
 /public/test/config.php
-/public/fonts
+#/public/fonts
 docs/
 app/config/dev
 app/config/**/dev/
