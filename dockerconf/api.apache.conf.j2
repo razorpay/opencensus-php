@@ -37,9 +37,10 @@
 
   # HTTPoxy Mitigation
   RequestHeader unset Proxy early
-
   LogLevel warn
 
-  ErrorLog /var/log/APACHE_HOST-{{ env }}-api-error.log
-  CustomLog /var/log/APACHE_HOST-{{ env }}-api-access.log combined
+  SetEnvIf Request_URI "/commit.txt" dontlog
+
+  ErrorLog /var/log/apache/APACHE_HOST-{{ env }}-api-error.log
+  CustomLog /var/log/apache/APACHE_HOST-{{ env }}-api-access.log combined env=!dontlog
 </VirtualHost>

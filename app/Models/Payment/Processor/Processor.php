@@ -326,7 +326,7 @@ class Processor
                 'url'     => $this->route->getUrlWithPublicAuthInQueryParam($currentRouteName),
                 'method'  => 'POST',
                 'content' => [
-                    'input' => $input,
+                    'input' => array_assoc_flatten($input, '%s[%s]'),
                     'bank_details' => $emandateMethods['emandate'][$input[Payment\Entity::BANK]],
                 ]
             ],
@@ -361,7 +361,7 @@ class Processor
                 'request' => [
                     'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
                     'method'  => 'POST',
-                    'content' => $input,
+                    'content' => array_assoc_flatten($input, '%s[%s]'),
                 ],
                 'method' => 'wallet',
                 'version' => '1',
@@ -582,7 +582,7 @@ class Processor
         {
             $orderAmount = $order->getAmount();
 
-            $discountedAmount = $this->offer->getDiscountedAmount($orderAmount);
+            $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
         }
@@ -645,7 +645,7 @@ class Processor
             return $offers->first();
         }
 
-        new Exception\LogicException('Auto selection of offer is not implemented yet.');
+        throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
     }
 
     protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
@@ -1055,6 +1055,14 @@ class Processor
         $payment->setVerified(null);
         $payment->setVerifyBucket(0);
 
+        // If payment still doesnt exist we set verify_at as null
+        // So that this payment doesnt get picked up by any cron
+        // for verify
+        if ($payment->exists === false)
+        {
+            $payment->setVerifyAt(null);
+        }
+
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
@@ -1213,7 +1221,7 @@ class Processor
 
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
-        if ($this->merchant->isFeeBearerCustomer())
+        if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $this->verifyProvidedFee($payment, $input);
         }
@@ -1221,8 +1229,6 @@ class Processor
         $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
-
-        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
 
         $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
 
@@ -1378,8 +1384,10 @@ class Processor
      * amount and verify that it's the same as received from checkout.
      *
      * @param Payment\Entity $payment
-     * @param $input
+     * @param                $input
+     *
      * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestException
      */
     protected function verifyProvidedFee(Payment\Entity $payment, array $input)
     {
@@ -1646,11 +1654,6 @@ class Processor
             unset($input['card'][Card\Entity::CVV]);
             unset($input['card'][Card\Entity::NUMBER]);
         }
-    }
-
-    protected function notifyDashboard($type, $entity)
-    {
-        Dashboard::send($type, $entity);
     }
 
     protected function getMerchantBankAccount(Merchant\Entity $merchant): BankAccount\Entity

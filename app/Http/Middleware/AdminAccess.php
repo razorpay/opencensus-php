@@ -5,10 +5,10 @@ namespace RZP\Http\Middleware;
 use Closure;
 use ApiResponse;
 use Illuminate\Foundation\Application;
-use Request;
+
 use RZP\Http\Route;
-use RZP\Models\Admin;
 use RZP\Exception;
+use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 
 class AdminAccess

@@ -209,7 +209,7 @@ class NodalAccount extends NodalBase\FileProcessor
             return Mode::IFT;
         }
 
-        $mode = $this->getTransferMode($amount);
+        $mode = $this->getTransferMode($amount, $ba->merchant);
 
         return $mode;
     }

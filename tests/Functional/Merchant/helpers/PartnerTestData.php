@@ -496,12 +496,7 @@ return [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
             ],
             'content' => [],
-        ],
-        'response'  => [
-            'content' => [
-                'success' => true,
-            ],
-        ],
+        ]
     ],
 
     'testRemoveNonExistingPartnerAccessMap' => [
@@ -513,12 +508,6 @@ return [
             ],
             'content' => [],
         ],
-        'response'  => [
-            'content' => [
-                'success' => true,
-            ],
-            'status_code' => 200,
-        ],
     ],
 
     'testRemovePartnerAccessMapAgain' => [
@@ -529,19 +518,6 @@ return [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
             ],
             'content' => [],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_APP_NOT_FOUND,
         ],
     ],
 

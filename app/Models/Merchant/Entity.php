@@ -1047,12 +1047,12 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::PARTNER_TYPE);
     }
 
-    public function isFullyManagedTypePartner(): bool
+    public function isFullyManagedPartner(): bool
     {
         return ($this->getPartnerType() === Constants::FULLY_MANAGED);
     }
 
-    public function isPurePlatformTypePartner(): bool
+    public function isPurePlatformPartner(): bool
     {
         return ($this->getPartnerType() === Constants::PURE_PLATFORM);
     }
@@ -1576,22 +1576,17 @@ class Entity extends Base\PublicEntity
     /**
      * @return bool
      */
-    public function isPurePlatformPartner(): bool
+    public function allowSubmerchantAccess(): bool
     {
-        return ($this->getPartnerType() === Constants::PURE_PLATFORM);
+        // Later change to only fully managed partners
+        return (($this->isFullyManagedPartner() === true) or ($this->isAggregatorPartner() === true));
     }
 
     /**
      * @return bool
      */
-    public function isNonPurePlatformTypePartner(): bool
+    public function isNonPurePlatformPartner(): bool
     {
         return (($this->isPartner() === true) and ($this->getPartnerType() !== Constants::PURE_PLATFORM));
-    }
-
-    public function hasSwitchDashboardAccess(): bool
-    {
-        // Later change to only fully managed partners
-        return (($this->isFullyManagedTypePartner() === true) or ($this->isAggregatorPartner() === true));
     }
 }

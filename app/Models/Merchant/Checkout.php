@@ -19,6 +19,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Offer\Checker;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Gateway\Downtime;
 use RZP\Models\Plan\Subscription;
@@ -508,6 +509,12 @@ class Checkout
 
         $data['version'] = 1;
 
+        //
+        // When using Keyless auth, checkout has no way to identify the request mode
+        // Adding mode to the preferences response for this
+        //
+        $data['mode'] = $mode;
+
         // Magic checkout is displayed for the merchant based on true or false
         $data['magic'] = $merchant->isFeatureEnabled(Feature\Constants::MAGIC);
 
@@ -551,7 +558,7 @@ class Checkout
         if (($order !== null) and
             ($order->hasOffers() === true))
         {
-            $this->checkAndFillOrderOffers($merchant, $order, $data);
+            $this->checkAndFillOrderOffers($order, $data);
         }
         else
         {
@@ -559,11 +566,18 @@ class Checkout
         }
     }
 
-    protected function checkAndFillOrderOffers(Merchant\Entity $merchant, Order\Entity $order, array & $data)
+    protected function checkAndFillOrderOffers(Order\Entity $order, array & $data)
     {
         $offers = $order->offers;
 
         $orderAmount = $order->getAmount();
+
+        if ($offers->isEmpty() === true)
+        {
+            return;
+        }
+
+        $verbose = true;
 
         //
         // If there's a single forced offer, we only put those
@@ -574,8 +588,15 @@ class Checkout
         {
             $offer = $offers->first();
 
-            $this->updateMethodsToEnableOnCheckout($merchant, $offer, $data);
+            $checker = new Checker($offer, $verbose);
+
+            if ($checker->checkApplicabilityOnOrder($order) === true)
+            {
+                $this->updateMethodsToEnableOnCheckout($offer, $data);
+            }
         }
+
+        $this->updateEmiOptionsUsingOffers($offers, $data);
 
         //
         // For multiple offers, we show all methods,
@@ -583,7 +604,12 @@ class Checkout
         //
         foreach ($offers as $offer)
         {
-            $data['offers'][] = $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount);
+            $checker = new Checker($offer, $verbose);
+
+            if ($checker->checkApplicabilityOnOrder($order) === true)
+            {
+                $data['offers'][] = $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount);
+            }
         }
     }
 
@@ -597,7 +623,12 @@ class Checkout
         }
     }
 
-    protected function updateMethodsToEnableOnCheckout(Merchant\Entity $merchant, Offer\Entity $offer, array & $data)
+    protected function updateEmiOptionsUsingOffers($offers, array & $data)
+    {
+        $data['methods']['emi_options'] = (new Emi\Service)->getEmiOptions($offers);
+    }
+
+    protected function updateMethodsToEnableOnCheckout(Offer\Entity $offer, array & $data)
     {
         $offerMethod = $offer->getPaymentMethod();
 
@@ -622,11 +653,8 @@ class Checkout
 
                 $offerMethodType = $offer->getPaymentMethodType();
 
-                $emiSubvention = $merchant->getEmiSubvention();
-
                 $this->updateMethodsForCardOrEmiOffer(
                     $data,
-                    $emiSubvention,
                     $offerMethod,
                     $offerMethodType);
 
@@ -679,7 +707,6 @@ class Checkout
 
     protected function updateMethodsForCardOrEmiOffer(
         array & $data,
-        string $emiSubvention,
         string $offerMethod,
         string $offerMethodType = null)
     {
@@ -691,11 +718,7 @@ class Checkout
 
             $data['methods'][Payment\Method::EMI] = true;
 
-            $data['methods']['emi_subvention']    = $emiSubvention;
-
             $data['methods']['emi_plans']         = $emiService->all();
-
-            $data['methods']['emi_options']       = $emiService->getEmiOptions();
         }
 
         switch ($offerMethodType)

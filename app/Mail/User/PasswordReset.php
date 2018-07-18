@@ -24,18 +24,18 @@ class PasswordReset extends Base\Mailable
 
         $this->user = $user->toArrayPublic();
 
-        $this->token = $this->getToken();
+        list($this->token, $this->expiryTime) = $this->getTokenAndExpiry();
 
         $this->org = $org;
     }
 
-    protected function getToken()
+    public function getTokenAndExpiry(): array
     {
-        $this->expiryTime = Carbon::now()->timestamp + self::EXPIRYTIME;
+        $expiryTime = Carbon::now()->timestamp + self::EXPIRYTIME;
 
-        $token = (new User\Core)->generateToken($this->user['id'], $this->expiryTime);
+        $token = (new User\Core)->generateToken($this->user['id'], $expiryTime);
 
-        return $token;
+        return [$token, $expiryTime];
     }
 
     protected function addRecipients()

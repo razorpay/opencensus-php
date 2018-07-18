@@ -486,12 +486,15 @@ class FeeCalculator
 
         $receiverType = $payment->getReceiverType();
 
+        $authType = $payment->getAuthType();
+
         $network = Card\Network::getCode($payment->card->getNetwork());
 
         // Current Implementation
         // * Filter based on receiver type
         // * Filter based on international
         // * Filter based on Network
+        // * Filter based on Auth Type
         // * If its amex, then stop
         // * Filter based on Card Type
         // * Filter based on AmountRange
@@ -504,7 +507,7 @@ class FeeCalculator
         // Right now if the receiver_type is present it needs to be selected no
         // matter what otherwise default type is used
         $filters1 = [
-            [Pricing\Entity::RECEIVER_TYPE,         $receiverType,  false,   null    ],
+            [Pricing\Entity::RECEIVER_TYPE,         $receiverType,  false,  null    ],
             [Pricing\Entity::INTERNATIONAL,         $international, false,  false   ],
             [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
         ];
@@ -520,6 +523,7 @@ class FeeCalculator
 
         $filters2 = array(
             [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      true,   null    ],
+            [Pricing\Entity::AUTH_TYPE,             $authType,      true,   null    ],
         );
 
         $rules = $this->applyFiltersOnRules($rules, $filters2);

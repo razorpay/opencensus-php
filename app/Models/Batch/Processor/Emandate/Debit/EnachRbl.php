@@ -60,11 +60,11 @@ class EnachRbl extends Base
 
     protected function isAuthorized(array $content): bool
     {
-        return Rbl\Status::isDebitSuccess($content[self::GATEWAY_RESPONSE_CODE]);
+        return Rbl\Status::isDebitSuccess($content[self::GATEWAY_RESPONSE_CODE], $content);
     }
 
     protected function getApiErrorCode(array $content): string
     {
-        return Rbl\ErrorCodes::getDebitPublicErrorCode($content[self::GATEWAY_ERROR_CODE]);
+        return Rbl\ErrorCodes::getDebitPublicErrorCode($content);
     }
 }

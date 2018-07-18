@@ -184,6 +184,8 @@ function disableEmptyInputs(form) {
             <select name="currency">
                 <option value="INR">Indian Rupee</option>
                 <option value="USD">US Dollar</option>
+                <option value="EUR">Euro</option>
+                <option value="SGD">Singapore Dollar</option>
             </select>
         </td>
     </tr>
@@ -268,6 +270,8 @@ function disableEmptyInputs(form) {
 <select name="currency">
     <option value="INR">Indian Rupee</option>
     <option value="USD">US Dollar</option>
+    <option value="EUR">Euro</option>
+    <option value="SGD">Singapore Dollar</option>
 </select>
 <input type="submit" value="Capture" onClick="javascript:document.capture.action = document.capture.action + document.getElementById('capture_id').value +'/capture'; document.capture.submit(); return false;"/>
 </form>

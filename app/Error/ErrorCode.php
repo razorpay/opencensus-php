@@ -621,8 +621,6 @@ class ErrorCode
 
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
 
-    const SERVER_ERROR_PARTNER_APP_NOT_FOUND                                        = 'SERVER_ERROR_PARTNER_APP_NOT_FOUND';
-
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
@@ -680,6 +678,7 @@ class ErrorCode
     const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                         = 'BAD_REQUEST_INVOICE_EXPIRE_FAILED';
     const BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER                                   = 'BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER';
     const BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY                             = 'BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY';
+    const BAD_REQUEST_PAYMENT_LINK_SLUG_GENERATE_FAILED                             = 'BAD_REQUEST_PAYMENT_LINK_SLUG_GENERATE_FAILED';
 
     const BAD_REQUEST_ITEM_INACTIVE                                                 = 'BAD_REQUEST_ITEM_INACTIVE';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
@@ -735,6 +734,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_OFFER_DURATION                                        = 'BAD_REQUEST_INVALID_OFFER_DURATION';
     const BAD_REQUEST_OFFER_ALREADY_EXISTS                                          = 'BAD_REQUEST_OFFER_ALREADY_EXISTS';
     const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK               = 'BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK';
+    const BAD_REQUEST_MAX_CASHBACK_WITHOUT_PERCENT_RATE                             = 'BAD_REQUEST_MAX_CASHBACK_WITHOUT_PERCENT_RATE';
     const BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER                                  = 'BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER';
     const BAD_REQUEST_OFFER_ALREADY_DEACTIVATED                                     = 'BAD_REQUEST_OFFER_ALREADY_DEACTIVATED';
 
@@ -809,7 +809,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                          = 'BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING';
 
     // Partners error codes
-    const BAD_REQUEST_PARTNER_APP_NOT_FOUND                                         = 'BAD_REQUEST_PARTNER_APP_NOT_FOUND';
+    const SERVER_ERROR_PARTNER_APP_NOT_FOUND                                        = 'SERVER_ERROR_PARTNER_APP_NOT_FOUND';
     const BAD_REQUEST_INVALID_PARTNER_ACTION                                        = 'BAD_REQUEST_INVALID_PARTNER_ACTION';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                       = 'BAD_REQUEST_MERCHANT_IS_NOT_PARTNER';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                                   = 'BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER';

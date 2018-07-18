@@ -1086,8 +1086,6 @@ trait Refund
         $notifier = new Notify($payment);
         $notifier->addRefund($this->refund);
         $notifier->trigger(Payment\Event::REFUNDED);
-
-        $this->notifyDashboard('refund', $this->refund);
     }
 
     protected function createRefundOnApiSeparately(

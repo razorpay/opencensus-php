@@ -28,4 +28,11 @@ class Mock extends Driver
     public function histogram(string $metric, float $value, array $dimensions = [])
     {
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function summary(string $metric, float $value, array $dimensions = [])
+    {
+    }
 }

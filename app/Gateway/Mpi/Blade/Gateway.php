@@ -225,11 +225,12 @@ class Gateway extends Base\Gateway
         {
             $msg = $e->getMessage();
 
-            $this->trace->traceException($e);
-
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR;
-
-            throw new Exception\GatewayErrorException($errorCode);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
+                null,
+                $msg,
+                [],
+                $e);
         }
 
         if ($ret === false)
@@ -436,11 +437,6 @@ class Gateway extends Base\Gateway
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
-        if (file_exists($gatewayCertPath) === false)
-        {
-            mkdir($gatewayCertPath);
-        }
-
         $clientCertPath = $gatewayCertPath . '/' .
                           $this->getClientCertificateName();
 
@@ -467,11 +463,6 @@ class Gateway extends Base\Gateway
     protected function getClientSslKey()
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
-
-        if (file_exists($gatewayCertPath) === false)
-        {
-            mkdir($gatewayCertPath);
-        }
 
         $clientCertPath = $gatewayCertPath . '/' .
                           $this->getClientSslKeyName();
@@ -734,8 +725,6 @@ class Gateway extends Base\Gateway
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException($e);
-
             $error = $e->getMessage();
 
             switch (true)
@@ -748,6 +737,8 @@ class Gateway extends Base\Gateway
                 case strpos($error, 'SignatureMethod') !== false:
                 case strpos($error, 'SignatureValue') !== false:
                 case strpos($error, 'KeyInfo') !== false:
+                    $this->trace->traceException($e);
+
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
                         null,
@@ -755,10 +746,14 @@ class Gateway extends Base\Gateway
                             'error_message' => $error
                         ]);
             }
+
             // Throw Critical for now
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                'Invalid XML');
+                'Invalid XML',
+                null,
+                [],
+                $e);
         }
     }
 
