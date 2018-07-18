@@ -172,9 +172,7 @@ class MerchantCreateTest extends TestCase
 
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
 
@@ -194,9 +192,7 @@ class MerchantCreateTest extends TestCase
     {
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
     }
@@ -207,9 +203,18 @@ class MerchantCreateTest extends TestCase
 
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->startTest();
+    }
+
+    public function testCreateSubMerchantWrongUserRole()
+    {
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+
+        $user = $this->createUserMerchantMapping('10000000000000', 'finance');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'finance');
 
         $this->startTest();
     }
@@ -220,9 +225,7 @@ class MerchantCreateTest extends TestCase
 
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
 
@@ -243,9 +246,7 @@ class MerchantCreateTest extends TestCase
 
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
 
@@ -285,9 +286,7 @@ class MerchantCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
     }
@@ -298,9 +297,7 @@ class MerchantCreateTest extends TestCase
 
         list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
 
@@ -328,9 +325,7 @@ class MerchantCreateTest extends TestCase
 
         list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
 
@@ -363,9 +358,7 @@ class MerchantCreateTest extends TestCase
 
         $this->fixtures->create('user', ['email' => 'testsub@razorpay.com']);
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
 
@@ -394,9 +387,7 @@ class MerchantCreateTest extends TestCase
 
         list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
 
@@ -425,9 +416,7 @@ class MerchantCreateTest extends TestCase
     {
         list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
 
@@ -450,9 +439,7 @@ class MerchantCreateTest extends TestCase
 
         (new Application\Repository())->deleteOrFail($app);
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
 
@@ -478,9 +465,7 @@ class MerchantCreateTest extends TestCase
         // TODO: Move to partner app post discussion on features in proxy auth
         $this->fixtures->merchant->addFeatures(['allow_sub_without_email']);
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
 
@@ -588,9 +573,7 @@ class MerchantCreateTest extends TestCase
 
         list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
-        $this->ba->proxyAuth();
-
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
         $this->startTest();
 

@@ -47,4 +47,15 @@ class User extends Base
                 'updated_at'  => 1493805150
             ]);
     }
+
+    public function createUserForMerchant(string $email, string $merchantId)
+    {
+        $user = $this->fixtures->create('user', ['email' => $email]);
+
+        $mappingData = ['user_id' => $user['id'], 'merchant_id' => $merchantId, 'role' => 'owner'];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        return $user;
+    }
 }

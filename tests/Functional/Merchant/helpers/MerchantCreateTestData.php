@@ -221,6 +221,26 @@ return [
         ],
     ],
 
+    'testCreateSubMerchantWrongUserRole' => [
+        'request'   => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'   => 'NewSubmerchant',
+                'name' => 'new name',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testCreateSubMerchantWithEmail' => [
         'request'  => [
             'url'     => '/submerchants',

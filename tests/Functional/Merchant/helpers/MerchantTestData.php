@@ -3120,7 +3120,7 @@ return [
         'request' => [
             'url' => '/submerchant/user/10000000000040',
             'method' => 'POST',
-            'content' => ['email' => 'invite.owner@gmail.com']
+            'content' => ['email' => 'invite.owner@razorpay.com']
         ],
         'response' => [
             'content' => [],
@@ -3132,7 +3132,7 @@ return [
         'request' => [
             'url' => '/submerchant/user/10000000000040',
             'method' => 'POST',
-            'content' => ['email' => 'invite.owner@gmail.com']
+            'content' => ['email' => 'invite.owner@razorpay.com']
         ],
         'response'  => [
             'content' => [
@@ -3153,7 +3153,7 @@ return [
         'request' => [
             'url' => '/submerchant/user/10000000000040',
             'method' => 'POST',
-            'content' => ['email' => 'invite.owner@gmail.com']
+            'content' => ['email' => 'invite.owner@razorpay.com']
         ],
         'response'  => [
             'content' => [
@@ -3174,7 +3174,7 @@ return [
         'request' => [
             'url' => '/submerchant/user/10000000000040',
             'method' => 'POST',
-            'content' => ['email' => 'invite.owner@gmail.com']
+            'content' => ['email' => 'invite.owner@razorpay.com']
         ],
         'response'  => [
             'content' => [

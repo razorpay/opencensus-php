@@ -325,7 +325,7 @@ class Service extends Base\Service
 
         Mail::queue($createSubMerchantPartnerMail);
 
-        if ($subMerchant['email'] === $aggregator['email'])
+        if ($subMerchant[Entity::EMAIL] === $aggregator[Entity::EMAIL])
         {
             return;
         }
@@ -334,7 +334,7 @@ class Service extends Base\Service
 
         $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
 
-        $org['hostname'] = $this->auth->getOrgHostName();
+        $org[Org\Hostname\Entity::HOSTNAME] = $this->auth->getOrgHostName();
 
         $mailUserData = $createdNewUser ? $user : null;
 
@@ -1886,17 +1886,17 @@ class Service extends Base\Service
         /** @var Entity $subMerchant */
         $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $input['merchant_id'] = $this->merchant->getId();
+        $input[User\Entity::MERCHANT_ID] = $this->merchant->getId();
 
-        $input['email'] = $this->validateAndGetEmailInput($subMerchant, $this->merchant, $input);
+        $input[User\Entity::EMAIL] = $this->validateAndGetEmailInput($subMerchant, $this->merchant, $input);
 
         $this->validateAggregatorSubMerchantRelation($subMerchant, $this->merchant);
 
         (new Merchant\Validator)->validateInput('createSubMerchantUser', $input);
 
-        unset($input['merchant_id']);
+        unset($input[User\Entity::MERCHANT_ID]);
 
-        $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $input['email']);
+        $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $input[User\Entity::EMAIL]);
 
         (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
 
@@ -1948,9 +1948,17 @@ class Service extends Base\Service
         return $subMerchantUser;
     }
 
+    /**
+     * @param  Entity $subMerchant
+     * @param  Entity $partnerMerchant
+     * @param  array $input
+     *
+     * @return mixed
+     * @throws Exception\BadRequestValidationFailureException
+     */
     protected function validateAndGetEmailInput(Entity $subMerchant, Entity $partnerMerchant, array $input)
     {
-        if (empty($input['email']) === true)
+        if (empty($input[User\Entity::EMAIL]) === true)
         {
             return $subMerchant->getEmail();
         }
@@ -1965,7 +1973,7 @@ class Service extends Base\Service
             ($subEmailIsSameAsPartner === true) and
             ($subMerchantHasLessThanTwoOwners === true))
         {
-            return $input['email'];
+            return $input[User\Entity::EMAIL];
         }
 
         throw new Exception\BadRequestValidationFailureException(
@@ -2003,7 +2011,7 @@ class Service extends Base\Service
 
     protected function createSubMerchantAndSetRelations(Entity $merchant, bool $isLinkedAccount, array $input)
     {
-        $ownerId = $input['user_id'];
+        $ownerId = $merchant->primaryOwner()->getId();
 
         unset($input['user_id']);
 
@@ -2087,6 +2095,12 @@ class Service extends Base\Service
         (new AccessMap\Service)->mapOAuthApplication($subMerchant->getId(), ['application_id' => $appId]);
     }
 
+    /**
+     * @param  Entity $subMerchant
+     * @param  Entity $aggregatorMerchant
+     *
+     * @throws Exception\BadRequestException
+     */
     protected function validateAggregatorSubMerchantRelation(Entity $subMerchant, Entity $aggregatorMerchant)
     {
         if ($subMerchant->isLinkedAccount() === true)
