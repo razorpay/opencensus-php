@@ -1897,6 +1897,8 @@ class Service extends Base\Service
 
         $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $input['email']);
 
+        (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+
         $subMerchantUser = $subMerchantUser->toArrayPublic();
 
         return $subMerchantUser;
@@ -1941,8 +1943,6 @@ class Service extends Base\Service
         $subMerchantUser = (new User\Core)->create($userData);
 
         $this->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
-
-        (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
 
         return $subMerchantUser;
     }

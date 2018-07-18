@@ -15,6 +15,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerMail;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMail;
@@ -342,6 +343,8 @@ class MerchantCreateTest extends TestCase
         {
             return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
         });
+
+        Mail::assertNotQueued(PasswordResetMail::class);
 
         $submerchant = $this->getLastEntity('merchant', true);
 
