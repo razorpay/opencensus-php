@@ -23,6 +23,8 @@ class MailTags
     const HDFC_SETTLEMENT_FILES            = 'hdfc_settlement_files';
     const HDFC_BENEFICIARY_MAIL            = 'hdfc_beneficiary_mail';
 
+    const YESBANK_BENEFICIARY_MAIL         = 'yesbank_beneficiary_mail';
+
     const RBL_SETTLEMENT                   = 'rbl_settlement';
 
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
@@ -107,6 +109,8 @@ class MailTags
     const ADMIN_CREATE                     = 'admin_create';
     const WELCOME                          = 'welcome';
     const ACCOUNT_ACTIVATED                = 'account_activated';
+    const SUB_MERCHANT_ADDED               = 'sub_merchant_added';
+    const AFFILIATE_ADDED                  = 'affiliate_added';
 
     const ICICI_FILES                      = 'icici_files';
 

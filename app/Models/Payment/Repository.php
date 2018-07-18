@@ -902,6 +902,24 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchAuthorizedPaymentCountForMerchants(array $merchantIds)
+    {
+        $dateFormat = '\'%Y-%m-%d\'';
+
+        $minCreatedAt = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        return $this->newQuery()
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'COUNT(*) AS count,' .
+                       'DATE_FORMAT(FROM_UNIXTIME(created_at + 19800),' . $dateFormat . ') as dates'
+                    )
+                    ->where(Entity::STATUS, '=', Status::AUTHORIZED)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->where(Entity::CREATED_AT, '<', $minCreatedAt)
+                    ->groupBy([Entity::MERCHANT_ID, 'dates'])
+                    ->get();
+    }
+
     public function fetchAuthorizedSummary()
     {
         return $this->newQuery()
@@ -1089,7 +1107,7 @@ class Repository extends Base\Repository
 
         $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
 
-        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+        $paymentAuthorizedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
 
         $selectCols = $this->dbColumn('*');
 
@@ -1107,7 +1125,7 @@ class Repository extends Base\Repository
                     ->where($paymentRecurringColumn, '=', 1)
                     ->where($paymentMethodColumn, '=', Method::EMANDATE)
                     ->where(Entity::GATEWAY, '=', $gateway)
-                    ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                    ->whereBetween($paymentAuthorizedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
                     ->where($tokenRecurringColumn, '!=', 1)
                     ->whereNotNull(Entity::AUTHORIZED_AT)

@@ -11,6 +11,7 @@ use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
+use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
@@ -19,10 +20,12 @@ use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -38,6 +41,7 @@ class MerchantTest extends TestCase
     use InteractsWithSession;
     use HeimdallTrait;
     use DbEntityFetchTrait;
+    use OAuthTrait;
 
     public function setUp()
     {
@@ -46,6 +50,10 @@ class MerchantTest extends TestCase
         parent::setUp();
 
         $this->ba->appAuth();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
     }
 
     public function testCreateKey()
@@ -1173,7 +1181,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(20, $banks);
+        $this->assertCount(21, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -1672,6 +1680,124 @@ class MerchantTest extends TestCase
         }
     }
 
+    public function testGetCheckoutPreferencesWithOrderInActiveOffer()
+    {
+        $this->ba->publicAuth();
+
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],
+            'active' => 0
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer);
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('offers', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithOrderExpiredOffer()
+    {
+        $this->ba->publicAuth();
+
+        $offer = $this->fixtures->create('offer:expired', ['iins' => ['401200'],
+            'active' => 0
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer);
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('offers', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithOrderForceOfferExpired()
+    {
+        $this->ba->publicAuth();
+
+        $offer = $this->fixtures->create('offer:expired', ['iins' => ['401200'],
+            'active' => 0
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer,[
+            'force_offer' => true,
+        ]);
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('offers', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithMultipleOrderOffersInActive()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],
+            'active' => 0
+        ]);
+
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200'],
+            'active' => 1]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertNotNull($response['offers']);
+
+        $this->assertEquals(1, count($response['offers']));
+
+        $this->assertEquals('offer_' . $offer2->getId(), $response['offers']['0']['id']);
+    }
+
+    public function testGetCheckoutPreferencesWithMultipleOrderOffersExpired()
+    {
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $endsAt = Carbon::now(Timezone::IST)->timestamp;
+
+        $offer1 = $this->fixtures->create('offer:expired', ['iins' => ['401200']]);
+
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testOfferCheckoutPreferences'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertNotNull($response['offers']);
+
+        $this->assertEquals(1, count($response['offers']));
+
+        $this->assertEquals('offer_' . $offer2->getId(), $response['offers']['0']['id']);
+    }
+
     public function testGetCheckoutPreferencesWithEmiOffer()
     {
         $this->ba->publicAuth();
@@ -1768,19 +1894,39 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->enableEmi();
+        $this->fixtures->create('emi_plan:default_emi_plans');
 
-        $emiPlan = $this->fixtures->create('emi_plan');
+        $offer = $this->fixtures->create('offer:emi_subvention');
 
-        $emiPlan = $this->fixtures->create('emi_plan', ['id' => '10101010101011']);
+        $order = $this->fixtures->order->createWithOffers([
+            $offer
+        ]);
 
-        $emiPlanId = $emiPlan['id'];
+        $this->ba->publicAuth();
 
-        $this->fixtures->create('merchant_emi_plans', ['emi_plan_id' => $emiPlanId]);
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
 
-        $response = $this->startTest();
+        $this->startTest();
+    }
 
-        $this->assertEquals($response['methods']['emi'], true);
+    public function testGetCheckoutWithMultipleSubEmiOffers()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $offer1 = $this->fixtures->create('offer:emi_subvention');
+        $offer2 = $this->fixtures->create('offer:emi_subvention', ['emi_durations' => [6,9]]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1, $offer2
+        ]);
+
+        $this->ba->publicAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->startTest();
     }
 
     public function testGetCheckoutRouteWithSavedGlobal()
@@ -2011,6 +2157,35 @@ class MerchantTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testBeneficiaryRegisterYesbank()
+    {
+        Mail::fake();
+
+        $md = $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/yesbank',
+            'method'    => 'post',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('merchants_count', $content);
+        $this->assertEquals(Channel::YESBANK, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class);
     }
 
     public function testBeneficiaryRegisterKotak()
@@ -2540,5 +2715,172 @@ class MerchantTest extends TestCase
         $this->ba->adminAuth('test');
 
         $this->startTest();
+    }
+
+    public function testCreateSubmerchantLogin()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant', [
+            'id'     => '10000000000040',
+            'email'  => 'test1@razorpay.com',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertNotEmpty($mailData['token']);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertTrue($mailable->hasTo('test1@razorpay.com'));
+
+            return true;
+        });
+    }
+
+    public function testCreateSubmerchantLoginSameEmail()
+    {
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000040',
+            'email'  => 'test@razorpay.com',
+        ]);
+
+        $this->createUserForMerchant('test@razorpay.com', '10000000000000');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateSubmerchantLoginPartnerAppMissing()
+    {
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000040',
+            'email'  => 'test@razorpay.com',
+        ]);
+
+        $this->createUserForMerchant('test@razorpay.com', '10000000000000');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->createOAuthApplication([
+                'id' => '10000000000App',
+                'type' => 'partner',
+                'deleted_at' => Carbon::now()->timestamp]);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateSubmerchantLoginDuplicate()
+    {
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000040',
+            'email'  => 'test1@razorpay.com',
+        ]);
+
+        $this->createUserForMerchant('test@razorpay.com', '10000000000000');
+
+        $this->createUserForMerchant('test1@razorpay.com', '10000000000040');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Creating a linked account(marketplace) login by the marketplace merchant,
+     * this should throw exception
+     */
+    public function testCreateLinkedAccountLogin()
+    {
+        $this->fixtures->create('merchant',[
+            'id'        => '10000000000040',
+            'email'     => 'test@razorpay.com',
+            'parent_id' => '10000000000000',
+        ]);
+
+        $this->createUserForMerchant('test@razorpay.com', '10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Creating a sub-merchant(partner program) login by a partner who
+     * is also an aggregator
+     */
+    public function testCreateSubmerchantLoginPartnerWithMarketplace()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant', [
+            'id'     => '10000000000040',
+            'email'  => 'test1@razorpay.com',
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertNotEmpty($mailData['token']);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertTrue($mailable->hasTo('test1@razorpay.com'));
+
+            return true;
+        });
+    }
+
+    protected function createUserForMerchant(string $email, string $merchantId)
+    {
+        $user = $this->fixtures->create('user', ['email' => $email]);
+
+        $mappingData = ['user_id' => $user['id'], 'merchant_id' => $merchantId, 'role' => 'owner'];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
     }
 }

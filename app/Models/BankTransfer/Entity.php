@@ -26,12 +26,15 @@ class Entity extends Base\PublicEntity
     // Details of the sender bank account
     const PAYER_NAME            = 'payer_name';
     const PAYER_ACCOUNT         = 'payer_account';
+    const PAYER_ACCOUNT_TYPE    = 'payer_account_type';
     const PAYER_IFSC            = 'payer_ifsc';
+    const PAYER_ADDRESS         = 'payer_address';
     const PAYER_BANK_ACCOUNT    = 'payer_bank_account';
     const PAYER_BANK_ACCOUNT_ID = 'payer_bank_account_id';
     const PAYER_BANK_NAME       = 'payer_bank_name';
 
     // Details of the receiver bank account
+    const PAYEE_NAME         = 'payee_name';
     const PAYEE_ACCOUNT      = 'payee_account';
     const PAYEE_IFSC         = 'payee_ifsc';
 
@@ -54,6 +57,9 @@ class Entity extends Base\PublicEntity
 
     // Remarks field
     const DESCRIPTION        = 'description';
+
+    // Attempts made by provider to notify
+    const ATTEMPT            = 'attempt';
 
     // Indicates whether the bank transfer corresponds
     // to an active virtual account on our side. If

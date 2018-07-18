@@ -275,7 +275,7 @@ return [
     'testNonSupportedCurrency' => [
         'request' => [
             'content' => [
-                'currency' => 'EUR',
+                'currency' => 'AED',
             ],
         ],
         'response' => [

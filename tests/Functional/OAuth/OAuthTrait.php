@@ -24,6 +24,7 @@ trait OAuthTrait
         factory(Client\Entity::class)->create(
             [
                 'application_id' => $application->id,
+                'redirect_url'   => ['http://www.example.com'],
                 'environment'    => 'dev'
             ]);
 
@@ -52,9 +53,11 @@ trait OAuthTrait
                            ->first();
     }
 
-    public function createPartnerApplicationAndGetClientByEnv(string $env = 'dev')
+    public function createPartnerApplicationAndGetClientByEnv(string $env = 'dev', array $attributes = [])
     {
-        $application = $this->createOAuthApplication(['type' => 'partner']);
+        $attributes = array_merge($attributes, ['type' => 'partner']);
+
+        $application = $this->createOAuthApplication($attributes);
 
         return $application->clients()
                            ->get()

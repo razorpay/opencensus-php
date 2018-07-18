@@ -37,7 +37,7 @@ class EnachRblGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('terminal:shared_enach_rbl_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_enach_rbl_terminal');
         $this->fixtures->create(Entity::CUSTOMER);
 
         $this->fixtures->merchant->enableEmandate();
@@ -218,6 +218,31 @@ class EnachRblGatewayTest extends TestCase
         });
     }
 
+    public function testRegistrationReconInvalidResponseCode()
+    {
+        $payment = $this->createAcknowledgedEnachPayment(false);
+
+        $batchFile = $this->getBatchFileToUpload($payment, 'Pending', '123', 'Some error message');
+
+        $url = '/admin/batches';
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertNull($enach['registration_status']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNull($token['gateway_token']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
     public function testRegistrationReconWithSharedMerchantProxyAuth()
     {
         $payment = $this->createAcknowledgedEnachPayment(false);
@@ -395,7 +420,7 @@ class EnachRblGatewayTest extends TestCase
         $payment = $this->makeDebitPayment();
 
         $fileStatuses = [
-            'status'     => 'REJECT',
+            'status'     => 'bounce',
             'error_code' => '1',
             'error_desc' => 'Account closed or transferred',
         ];
@@ -414,11 +439,109 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             [
-                'status'        => 'REJECT',
+                'status'        => 'bounce',
                 'error_message' => 'Account closed or transferred',
             ],
             $enach
         );
+    }
+
+    public function testDebitFileReconciliationInvalidResponse()
+    {
+        $payment = $this->makeDebitPayment();
+
+        $fileStatuses = [
+            'status'     => 'INVALID_RESPONSE',
+            'error_code' => '123',
+            'error_desc' => 'Account closed or transferred',
+        ];
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id'])->toArray();
+
+        $this->assertEquals('created', $payment['status']);
+
+        $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status'        => 'INVALID_RESPONSE',
+                'error_message' => 'Account closed or transferred',
+            ],
+            $enach
+        );
+    }
+
+    public function testDebitFileReconciliationTerminalsCheck()
+    {
+        $payment = $this->makeDebitPayment();
+
+        $fileStatuses = [
+            'status'     => 'PAID',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        /*
+         * Creating a direct terminal for enach, now $payment should go
+         * on shared terminal and $payment2 should go on the direct terminal
+        */
+        $this->fixtures->create('terminal:direct_enach_rbl_terminal');
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('1000EnachRblTl', $payment['terminal_id']);
+
+        $payment2 = $this->makeDebitPayment();
+
+        $batch = $this->makeBatchDebitPayment($payment2, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment2 = $this->getDbEntityById('payment', $payment2['id']);
+
+        $this->assertEquals('1EnachRblTrmnl', $payment2['terminal_id']);
+    }
+
+    public function testDebitFileReconciliationDirectTerminal()
+    {
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        $this->fixtures->create('terminal:direct_enach_rbl_terminal');
+
+        $payment = $this->makeDebitPayment();
+
+        $this->assertEquals('1EnachRblTrmnl', $payment['terminal_id']);
+    }
+
+    public function testDebitFileReconciliationNoTerminals()
+    {
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'UTIB0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        }, \RZP\Exception\RuntimeException::class, 'Terminal should not be null');
     }
 
     protected function makeDebitPayment()
@@ -700,7 +823,7 @@ class EnachRblGatewayTest extends TestCase
         return $file;
     }
 
-    protected function getBatchFileToUpload($payment)
+    protected function getBatchFileToUpload($payment, $status = 'Active', $errorCode = '', $errorDesc = '')
     {
         $sheets = [
             'sheet1' => [
@@ -747,9 +870,9 @@ class EnachRblGatewayTest extends TestCase
                         'UTILITY_CODE'    => 'NACH00000000012323',
                         'UTILITY_NAME'    => 'RAZORPAY',
                         'NODAL_ACNO'      => 'RATN3234334',
-                        'STATUS'          => 'Active',
-                        'CODE_DESC'       => '',
-                        'RETURN_CODE'     => '',
+                        'STATUS'          => $status,
+                        'CODE_DESC'       => $errorDesc,
+                        'RETURN_CODE'     => $errorCode,
                     ],
                 ],
             ],

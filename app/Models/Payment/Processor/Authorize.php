@@ -69,6 +69,8 @@ trait Authorize
         // Adds callback url, payment and card info to $gatewayInput
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
+        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
+
         // this needs to be done after we have card entity as we need to know if
         // cards used in payment is international
         $this->processCurrencyConversions($payment);
@@ -934,8 +936,6 @@ trait Authorize
                 ]);
         }
 
-        $this->assertTokenIsRecurring($payment, $token);
-
         //
         // If payment type is card, validate that the card supports recurring
         // or if payment type is emandate, validate that the bank supports emandate
@@ -965,38 +965,9 @@ trait Authorize
         // handle second recurring type payments (recurring payments with recurring token)
         // coming via public auth. These can be safely treated as first recurring.
         //
-        if ((empty($input[Payment\Entity::TOKEN]) === false) and
-            ($payment->isSecondRecurring(true) === true))
+        if ($payment->isSecondRecurring() === true)
         {
             $this->verifyAggregatorIfApplicable($merchant);
-        }
-    }
-
-    /**
-     * If the token is not recurring, but the payment is a second recurring payment,
-     * then the token cannot be used for the payment.
-     *
-     * @param Payment\Entity $payment
-     * @param Token\Entity   $token
-     *
-     * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
-     */
-    protected function assertTokenIsRecurring(Payment\Entity $payment, Token\Entity $token)
-    {
-        //
-        // Second recurring payments have to be enabled for recurring
-        //
-        if (($payment->isSecondRecurring() === true) and
-            ($token->isRecurring() === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING,
-                Token\Entity::RECURRING,
-                [
-                    'payment' => $payment->toArray(),
-                    'token'   => $token->toArray()
-                ]);
         }
     }
 
@@ -1758,15 +1729,19 @@ trait Authorize
     {
         $type = null;
 
-        if ($payment->isEmandate() === true)
+        if ($payment->isRecurring() === true)
         {
             $token = $payment->getGlobalOrLocalTokenEntity();
 
-            // True => auto, False => initial
-            // TODO: Add support for when we allow recurring tokens for first payments
-            $type = ($token->isRecurring() === true) ?
-                    Payment\RecurringType::AUTO :
-                    Payment\RecurringType::INITIAL;
+            $type = Payment\RecurringType::INITIAL;
+
+            if (($token->isLocal() === true) and
+                ($token->isRecurring() === true) and
+                ($this->app['basicauth']->isPrivateAuth() === true) and
+                (isset($input['token']) === true))
+            {
+                $type = Payment\RecurringType::AUTO;
+            }
         }
 
         //
@@ -2373,26 +2348,7 @@ trait Authorize
         $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
                                             $iinEntity, $emiDuration);
 
-        $emiMerchantSubvention = $this->repo->merchant_emi_plans->fetchByMerchantAndEmiPlan(
-                                                                        $payment->merchant->getId(),
-                                                                        $emiPlan->getId());
-
         $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
-
-        if ($emiMerchantSubvention !== null)
-        {
-            $amount = $payment->getAmount();
-
-            $merchantPayback = $emiPlan->getMerchantPayback();
-
-            $baseAmount = Emi\Calculator::calculateSubventedAmount($amount, $merchantPayback);
-
-            $payment->setAmountAttribute($baseAmount);
-
-            $payment->setEmiSubvention(Emi\Subvention::MERCHANT);
-        }
-
-        $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);
 
         $payment->emiPlan()->associate($emiPlan);
     }
@@ -2851,8 +2807,10 @@ trait Authorize
             return;
         }
 
+        $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
+
         $discountInput = [
-            Discount\Entity::AMOUNT => $this->offer->getDiscount($order->getAmount()),
+            Discount\Entity::AMOUNT => $discountAmount,
         ];
 
         (new Discount\Service)->create($discountInput, $payment, $this->offer);
@@ -4029,8 +3987,7 @@ trait Authorize
     {
         // if not recurring, validate that card data and cvv in card data is present
         if (($payment->isRecurring() === false) and
-            ($payment->getTokenId() !== null) and
-            ($payment->localToken->isRecurring() === false))
+            ($payment->getTokenId() !== null))
         {
             $payment->getValidator()->validateCardAndCvv($input);
         }

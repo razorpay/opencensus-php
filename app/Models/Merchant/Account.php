@@ -23,6 +23,8 @@ class Account
     const TEST_ACCOUNT_KEY_ID   = '1DP5mmOlF5G5ag';
     const DEMO_ACCOUNT_KEY_ID   = '0wFRWIZnH65uny';
 
+    const DEMO_VA_TEST          = '5ubLZpACTmD8D4';
+
     protected static $nodalAccounts = [
         self::NODAL_ACCOUNT,
         self::ATOM_ACCOUNT

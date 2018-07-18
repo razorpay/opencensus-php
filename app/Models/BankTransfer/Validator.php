@@ -18,16 +18,20 @@ class Validator extends Base\Validator
     const IFSC_LENGTH = 11;
 
     protected static $createRules = [
-        Entity::PAYER_NAME     => 'nullable|string|max:100',
-        Entity::PAYER_ACCOUNT  => 'nullable|string|max:40',
-        Entity::PAYER_IFSC     => 'nullable|string',
-        Entity::PAYEE_ACCOUNT  => 'required|string|max:20',
-        Entity::PAYEE_IFSC     => 'required|string|size:'.self::IFSC_LENGTH,
-        Entity::MODE           => 'required|custom',
-        Entity::REQ_UTR        => 'required|string|max:30',
-        Entity::TIME           => 'required',
-        Entity::AMOUNT         => 'required|numeric|min:0',
-        Entity::DESCRIPTION    => 'nullable|string|max:255',
+        Entity::PAYER_NAME         => 'nullable|string|max:100',
+        Entity::PAYER_ACCOUNT      => 'nullable|string|max:40',
+        Entity::PAYER_ACCOUNT_TYPE => 'nullable|string|max:40',
+        Entity::PAYER_IFSC         => 'nullable|string',
+        Entity::PAYER_ADDRESS      => 'nullable|string',
+        Entity::PAYEE_NAME         => 'nullable|string|max:100',
+        Entity::PAYEE_ACCOUNT      => 'required|string|max:20',
+        Entity::PAYEE_IFSC         => 'required|string|size:'.self::IFSC_LENGTH,
+        Entity::MODE               => 'required|custom',
+        Entity::REQ_UTR            => 'required|string|max:30',
+        Entity::TIME               => 'required',
+        Entity::AMOUNT             => 'required|numeric|min:0',
+        Entity::DESCRIPTION        => 'nullable|string|max:255',
+        Entity::ATTEMPT            => 'nullable|integer',
     ];
 
     protected static $createValidators = [

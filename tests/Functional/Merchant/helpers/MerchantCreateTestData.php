@@ -240,6 +240,25 @@ return [
         ],
     ],
 
+    'testCreateSubMerchantWithEmailUserExists' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant 2',
+                'email' => 'submerchant@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant 2',
+                'email' => 'submerchant@razorpay.com',
+            ],
+        ],
+    ],
+
     'testCreateSubMerchantWithDuplicateEmail' => [
         'request'   => [
             'url'     => '/submerchants',
@@ -284,6 +303,25 @@ return [
     ],
 
     'testCreateSubMerchantByFullyManagedWithEmail' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
+                'email' => 'testsub@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
+                'email' => 'testsub@razorpay.com',
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantByFullyManagedWithEmailUserExists' => [
         'request'  => [
             'url'     => '/submerchants',
             'method'  => 'POST',
