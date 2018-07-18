@@ -20,4 +20,12 @@ class Fields
     const TXN_REFUND_AMOUNT	= 'txnRefundAmount';
     const REFUND_REASON		= 'refundReason';
     const CHECKSUM			= 'checkSum';
+
+    const VALIDATE_VPA  = [
+        self::UNQ_TXN_ID,
+        self::CUSTOMER_VPA,
+        self::S_ID,
+        self::TXN_DTL,
+    ];
 }
+

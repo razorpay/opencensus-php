@@ -268,6 +268,13 @@ return [
     ],
 
     'upi_axis' => [
+        'test_merchant_id'       => env('UPI_ICICI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_public_key'        => env('UPI_ICICI_TEST_PUBLIC_KEY'),
+        'test_private_key'       => env('UPI_ICICI_TEST_PRIVATE_KEY'),
+        'live_merchant_id'       => env('UPI_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
+        'live_public_key'        => env('UPI_ICICI_LIVE_PUBLIC_KEY'),
+        'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
+        'gateway_encryption_key' => env('UPI_MINDGATE_GATEWAY_SECURE_SECRET'),
     ],
 
     'aeps_icici' => [
