@@ -31,6 +31,11 @@ class Vereq
             'CH'       => [
                 'enrolled' => 'N',
             ],
+            'IReq' => [
+                'iReqCode'   => '56',
+                'vendorCode' => '1000',
+                'iReqDetail' => 'VEReq.pan',
+            ],
         ];
     }
 

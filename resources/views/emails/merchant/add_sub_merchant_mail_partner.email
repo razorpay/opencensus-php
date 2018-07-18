@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body>
+    <link rel="stylesheet" type="text/css" href="ink.css">
+    <link rel="stylesheet" type="text/css" href="welcome.css">
+    <table class="row">
+      <tr>
+        <td class="wrapper">
+
+          <table class="four columns">
+            <tr>
+              <td class="center">
+                <img class="center" src="https://cdn.razorpay.com/logo.svg">
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Heading -->
+    <table class="row">
+      <tr>
+        <td class="wrapper last">
+
+        <table class="twelve columns" >
+          <tr>
+            <td class="center panel"  style="border-left: none; border-right: none; " >
+              <h6>
+                <center>
+                  {{{$merchant['name']}}} • ID: {{{$merchant['id']}}}
+                </center>
+              </h6>
+            </td>
+          </tr>
+        </table>
+
+          <table class="twelve columns">
+            <tr>
+              <td class="center">
+                <br />
+                <h1><center>
+                  <span style="color:#222">Congratulations!</span>
+                </center></h1>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <!-- Contact Us -->
+    <table class="container">
+      <tr>
+        <td>
+          <table class="row">
+            <tr>
+              <td class="wrapper offset-by-one">
+                <table class="ten columns">
+                  <tr>
+                    <td class="center welcome">
+
+<p>
+  {{{$subMerchant['name']}}} (ID: {{{$subMerchant['id']}}}) has been added as your affiliate account on Razorpay.
+  @if($subMerchant['email'] != $merchant['email'])
+  <br>
+  We have sent an invite mail to {{{$subMerchant['email']}}} for setting up their Razorpay login credentials .
+  They must login and submit the activation form with KYC details to start transacting.
+  @endif
+</p>
+
+<h3>KYC Process</h3>
+
+@if($subMerchant['email'] != $merchant['email'])
+<p>The first step for your affiliate accounts involves filling up the activation form on the <a href="https://dashboard.razorpay.com">Razorpay Dashboard</a>. The list of documents and details required for us to take you live can be found then in the <a href="https://dashboard.razorpay.com/#/app/activation">Activation</a> panel. All requirements have a basic explanation alongside to help you through the process.
+@else
+<p>As the next step, you will need to fill up the activation form for your affiliate accounts on the <a href="https://dashboard.razorpay.com">Razorpay Dashboard</a>. The list of documents and details required for us to take them live can be found in the <a href="https://dashboard.razorpay.com/#/app/activation">Activation</a> panel. All requirements have a basic explanation alongside to help through the process.
+@endif
+
+<p>This process is crucial as we share the same KYC with our partner banks who do their own due diligence.
+
+<h3>Activation Timeline</h3>
+
+<p>As soon as the KYC Process in completed by you, depending on the business segment, we will take you live in the upcoming 2-3 days.</p>
+
+<p>
+  Cheers,
+  <br>
+  Team Razorpay
+</p>
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="twelve columns">
+            <tr>
+              <td class="center">
+                <center>
+                  <hr>
+                  <a href="https://razorpay.com/terms/">Terms &amp; Conditions</a>
+                  |
+                  <a href="https://razorpay.com/privacy/">Privacy Policy</a>
+                  |
+                  <a href="https://razorpay.com/refund/">Refund Policy</a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="three columns offset-by-six">
+            <tr>
+              <td class="center">
+                <center>
+                  <a href="https://facebook.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/facebook.png" alt="Facebook Icon" title="Razorpay on Facebook"/>
+                  </a>
+                  <a href="https://twitter.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/twitter.png" alt="Twitter Icon" title="Razorpay on Twitter"/>
+                  </a>
+                  <a href="https://github.com/razorpay" class="logo">
+                    <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/github.png" alt="GitHub Icon" title="Razorpay on GitHub"/>
+                  </a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <table class="row footer">
+      <tr>
+        <td class="wrapper last">
+
+          <table class="seven columns">
+            <tr>
+              <td class="center">
+                <center>
+                  This message was sent to <a href="mailto:{{$merchant['email']}}">
+                  {{{$merchant['email']}}}</a>. Reach out to us by replying
+                  to this email or at <a href="mailto:support@razorpay.com">
+                  support@razorpay.com</a>
+                </center>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+</html>

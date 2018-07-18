@@ -30,35 +30,39 @@ class InvoiceMetricTest extends TestCase
              ->method('count')
              ->withConsecutive(
                 [
-                    'eloquent_cache_misses_total',
+                    'cache_misses_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'key',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_writes_total',
+                    'cache_writes_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'key',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_misses_total',
+                    'cache_misses_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_writes_total',
+                    'cache_writes_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
@@ -89,51 +93,41 @@ class InvoiceMetricTest extends TestCase
              ->method('count')
              ->withConsecutive(
                 [
-                    'eloquent_cache_misses_total',
+                    'cache_misses_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'key',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_writes_total',
+                    'cache_writes_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'key',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_misses_total',
+                    'cache_misses_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_writes_total',
+                    'cache_writes_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
                     ],
                 ],
-                // [
-                //     'traces_total',
-                //     1,
-                //     [
-                //         'code'            => 'INVOICE_CREATE_REQUEST',
-                //         'context_code'    => 'INVOICE_CREATE_REQUEST',
-                //         'level'           => 200,
-                //         'level_name'      => 'INFO',
-                //         'channel'         => 'Razorpay API',
-                //         'route'           => 'invoice_create',
-                //         'rzp_mode'        => 'test',
-                //         'rzp_merchant_id' => '10000000000000',
-                //     ],
-                // ],
                 [
                     'async_jobs_received_total',
                     1,
@@ -143,20 +137,6 @@ class InvoiceMetricTest extends TestCase
                         'async_job_name'       => 'RZP_Jobs_EsSync',
                     ],
                 ],
-                // [
-                //     'traces_total',
-                //     1,
-                //     [
-                //         'code'            => 'ES_SYNC_REQUEST',
-                //         'context_code'    => 'ES_SYNC_REQUEST',
-                //         'level'           => 100,
-                //         'level_name'      => 'DEBUG',
-                //         'channel'         => 'Razorpay API',
-                //         'route'           => 'invoice_create',
-                //         'rzp_mode'        => 'test',
-                //         'rzp_merchant_id' => '10000000000000',
-                //     ],
-                // ],
                 [
                     'async_jobs_processed_total',
                     1,
@@ -166,20 +146,6 @@ class InvoiceMetricTest extends TestCase
                         'async_job_name'       => 'RZP_Jobs_EsSync',
                     ],
                 ],
-                // [
-                //     'traces_total',
-                //     1,
-                //     [
-                //         'code'            => 'INVOICE_CREATED',
-                //         'context_code'    => 'INVOICE_CREATED',
-                //         'level'           => 200,
-                //         'level_name'      => 'INFO',
-                //         'channel'         => 'Razorpay API',
-                //         'route'           => 'invoice_create',
-                //         'rzp_mode'        => 'test',
-                //         'rzp_merchant_id' => '10000000000000',
-                //     ],
-                // ],
                 [
                     'http_requests_total',
                     1,

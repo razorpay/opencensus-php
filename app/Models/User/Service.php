@@ -5,14 +5,14 @@ namespace RZP\Models\User;
 use Mail;
 use Hash;
 use Config;
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
-use RZP\Models\Admin\AdminLead;
 use RZP\Mail\User as UserMail;
-use RZP\Models\User;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Admin\AdminLead;
 
 class Service extends Base\Service
 {

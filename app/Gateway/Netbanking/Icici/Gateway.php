@@ -17,6 +17,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Netbanking\Base\BankingType;
 use RZP\Models\Payment\Verify as PaymentVerify;
 
@@ -1040,7 +1041,16 @@ class Gateway extends Base\Gateway
     {
         $siStatus = $gatewayPayment->getSIStatus();
 
-        $recurringStatus = Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? Token\RecurringStatus::REJECTED;
+        if (isset(Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus]) === false)
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                '',
+                ['gateway_payment' => $gatewayPayment->toArray()]);
+        }
+
+        $recurringStatus = Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus];
 
         // TODO: Get the failure reason mapping and
         // display the correct failure reason here
