@@ -40,7 +40,7 @@ const activationStatus = {
   ),
   value: submerchant =>
     submerchant.details && submerchant.details.activation_status ? (
-      <ActivationStatusLabel status={submerchant.activation_status} />
+      <ActivationStatusLabel status={submerchant.details.activation_status} />
     ) : (
       <span class="status-label label label-warning">Not Submitted</span>
     ),
@@ -143,11 +143,6 @@ export default class SubMerchantsList extends ListContainer {
                 : []),
             ]}
             {...this.props}
-            /* since result does not have "acc_" appended to it */
-            items={this.props.items.map(item => ({
-              ...item,
-              id: `acc_${item.id}`,
-            }))}
           />
         </div>
       </div>

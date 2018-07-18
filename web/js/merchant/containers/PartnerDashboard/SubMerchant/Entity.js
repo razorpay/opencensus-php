@@ -26,12 +26,12 @@ const fullDetailsAccessMap = {
 )
 export default class SubmerchantEntityContainer extends Component {
   componentWillMount() {
-    this.props.fetchSubmerchant(this.props.id.replace('acc_', ''));
+    this.props.fetchSubmerchant(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.id !== this.props.id) {
-      this.props.fetchSubmerchant(nextProps.id.replace('acc_', ''));
+      this.props.fetchSubmerchant(nextProps.id);
     }
   }
 
