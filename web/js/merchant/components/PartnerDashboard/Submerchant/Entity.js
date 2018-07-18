@@ -1,3 +1,5 @@
+import { Fragment } from 'react';
+
 import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -62,16 +64,24 @@ export default props => {
                   )}
                 </EntityDetailRow>
 
-                {showFullDetails &&
-                  !submerchant.user && (
-                    <div class="pair-group-item">
-                      <a class="btn-link" onClick={props.onInviteMerchant}>
-                        Invite
-                      </a>{' '}
-                      the merchant to sign up on Razorpay, and manage the
-                      account
-                    </div>
-                  )}
+                {showFullDetails && (
+                  <div class="pair-group-item">
+                    {submerchant.user ? (
+                      <Fragment>
+                        <strong>{submerchant.user.email}</strong> is invited to
+                        manage dashboard
+                      </Fragment>
+                    ) : (
+                      <Fragment>
+                        <a class="btn-link" onClick={props.onInviteMerchant}>
+                          Invite
+                        </a>{' '}
+                        the merchant to sign up on Razorpay, and manage the
+                        account
+                      </Fragment>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
