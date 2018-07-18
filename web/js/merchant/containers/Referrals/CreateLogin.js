@@ -21,7 +21,7 @@ export default class CreateLogin extends Component {
       .then(() => {
         this.props.showNotification({
           type: 'success',
-          message: 'Login created for the merchant ' + name,
+          message: 'Merchant invitation sent successfully',
         });
         this.props.closeModal();
       })
@@ -45,7 +45,9 @@ export default class CreateLogin extends Component {
 
         <div class="modal-body">
           <p>
-            The merchant <strong>{referral.name}</strong> (Merchant ID - <code>{referral.id}</code>), will receive an email with the sign-in link. They will have complete access to their dashboard
+            The merchant <strong>{referral.name}</strong> (Merchant ID -{' '}
+            <code>{referral.id}</code>), will receive an email with the sign-in
+            link. They will have complete access to their dashboard
           </p>
         </div>
 
@@ -62,7 +64,7 @@ export default class CreateLogin extends Component {
             type="submit"
             class="btn btn-primary"
             text="Yes, Invite"
-            pendingText="Creating Login..."
+            pendingText="Inviting Merchant..."
             onClick={this.save}
           />
         </div>
