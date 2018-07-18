@@ -44,6 +44,44 @@ class NetbankingCanaraGatewayTest extends TestCase
             $this->testData['testPaymentNetbankingEntity'], $netbankingentity);
     }
 
+    public function testTamperedPayment()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockFailedVerifyResponse();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $payment = $this->doNetbankingCanaraAuthAndCapturePayment();
+            });
+
+        // Assert that we don't save any information into the netbanking entity
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
+    }
+
+    public function testAuthorizeFailed()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockFailedCallbackResponse();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $payment = $this->doNetbankingCanaraAuthAndCapturePayment();
+            });
+
+        // Assert that we don't save any information into the netbanking entity
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doNetbankingCanaraAuthAndCapturePayment();
@@ -86,7 +124,9 @@ class NetbankingCanaraGatewayTest extends TestCase
         Mail::fake();
 
         // Generate 2 payments
-        $this->createRefundsForExcel();
+        $this->createRefunds();
+
+        $this->alterPaymentsDateToYesterday();
 
         $this->alterRefundsDateToYesterday();
 
@@ -126,13 +166,37 @@ class NetbankingCanaraGatewayTest extends TestCase
             if ($action === 'verify')
             {
                 $content = [
+                    Canara\ResponseFields::RETURN_CODE => Canara\Constants::SAMPLE_FAILURE_RETURN_CODE,
                     Canara\ResponseFields::VERIFY_STATUS => Canara\Constants::SAMPLE_FAILURE_VERIFY_STATUS
                 ];
             }
         });
     }
 
-    protected function createRefundsForExcel()
+    protected function mockFailedCallbackResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                unset($content[Canara\ResponseFields::BANK_REFERENCE_NUMBER]);
+            }
+        });
+    }
+
+
+    protected function mockAmountMismatch()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content[Canara\ResponseFields::VER_AMOUNT] = '300';
+            }
+        });
+    }
+
+    protected function createRefunds()
     {
         $payment = $this->doNetbankingCanaraAuthAndCapturePayment();
 
@@ -144,16 +208,28 @@ class NetbankingCanaraGatewayTest extends TestCase
         $refund = $this->refundPayment($payment['id']);
     }
 
+    protected function alterPaymentsDateToYesterday()
+    {
+        $payments = $this->getEntities('payment', [], true);
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)->addMinutes(30)->timestamp;
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $createdAt]);
+        }
+    }
+
     protected function alterRefundsDateToYesterday()
     {
         // Get all pending refunds
         $refunds = $this->getEntities('refund', [], true);
 
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)->addMinutes(45)->timestamp;
+
         // Convert the created_at dates to yesterday's so that they are picked
         // up during refund excel generation
         foreach ($refunds['items'] as $refund)
         {
-            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 10;
             $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
     }
@@ -164,7 +240,6 @@ class NetbankingCanaraGatewayTest extends TestCase
 
         $this->assertEquals($data['netbanking_canara']['count'], 3);
 
-        s($filePath);
         $this->assertTrue(file_exists($filePath));
 
         $refundsFileContents = file($filePath);

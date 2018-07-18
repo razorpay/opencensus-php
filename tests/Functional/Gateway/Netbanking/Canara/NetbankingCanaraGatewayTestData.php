@@ -45,6 +45,57 @@ return [
         'received'        => true,
         'bank'            => 'CNRB',
     ],
+    'testTamperedPayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED,
+        ],
+    ],
+    'testPaymentFailedNetbankingEntity' => [
+        'bank_payment_id' => null,
+        'received'        => false,
+        'bank'            => 'CNRB',
+        'status'          => null
+    ],
+    'testAuthorizeFailed' => [
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        ],
+    ],
+    'testVerifyAmountMismatch' => [
+    'response'  => [
+        'content'     => [
+            'error' => [
+                'code'          => PublicErrorCode::SERVER_ERROR,
+                'description'   => PublicErrorDescription::SERVER_ERROR,
+            ],
+        ],
+        'status_code' => 500,
+    ],
+    'exception' => [
+        'class'                 => 'RZP\Exception\LogicException',
+        'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+    ],
+]
 
 ];
 
