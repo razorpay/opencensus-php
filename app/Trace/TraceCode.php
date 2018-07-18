@@ -1117,6 +1117,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Partners trace codes
     const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';
 
+    // Excel reader debug trace codes
+    const EXCEL_READER_IMPORT_CONFIG                    = 'EXCEL_READER_IMPORT_CONFIG';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

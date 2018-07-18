@@ -395,6 +395,9 @@ class Base extends BaseModel\Core
      */
     protected function processEntries(array & $entries)
     {
+        // Creation/validation step must ensure in general that there are entries to be processed
+        assertTrue(count($entries) > 0, 'Error in processing batch, no entries read to process');
+
         foreach ($entries as $index => & $entry)
         {
             $tracePayload = $this->batch->toArrayTrace(
