@@ -1253,7 +1253,6 @@ trait PaymentTrait
 
     protected function sendRequest($request, &$callback = null)
     {
-        s($request);
         $this->checkAndSetUrl($request);
 
         $response = $this->makeRequestParent($request);

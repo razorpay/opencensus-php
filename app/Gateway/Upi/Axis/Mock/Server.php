@@ -4,15 +4,14 @@ namespace RZP\Gateway\Upi\Axis\Mock;
 
 use App;
 use Carbon\Carbon;
-use RZP\Gateway\Upi\Axis;
-use RZP\Models\Payment;
-use phpseclib\Crypt\RSA;
+use Gateway\Upi\Axis;
+use RZP\Gateway\Upi\Axis\Action;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Base;
-use RZP\Gateway\Utility;
-use RZP\Gateway\Upi\Axis\Fields;
-use RZP\Gateway\Upi\Axis\Action;
 use RZP\Gateway\Upi\Axis\Status;
+use RZP\Gateway\Utility;
+use RZP\Gateway\Upi\Base\Entity as UPIEntity;
+use Models\Payment;
 
 class Server extends Base\Mock\Server
 {
@@ -39,32 +38,6 @@ class Server extends Base\Mock\Server
         Action::CALLBACK        => 21,
         Action::REFUND          => 21,
     ];
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        if (defined('CRYPT_RSA_PKCS15_COMPAT') === false) {
-            define('CRYPT_RSA_PKCS15_COMPAT', true);
-        }
-    }
-
-    /**
-     * Private Key of the mock server
-     */
-    protected function getPrivateKey()
-    {
-        return file_get_contents(__DIR__ . '/keys/mockserver.key');
-    }
-
-    /**
-     * Public key of the client that is connecting
-     * to us, in this case, the Mock Gateway
-     */
-    protected function getPublicKey()
-    {
-        return file_get_contents(__DIR__ . '/keys/mockclient.pub');
-    }
 
     public function authorize($input)
     {
@@ -101,27 +74,6 @@ class Server extends Base\Mock\Server
         $this->content($content);
 
         return $this->makeResponse($content);
-    }
-
-    public function decrypt($data)
-    {
-        return $this->getCipherInstance()
-            ->decrypt(hex2bin($data));
-    }
-
-    protected function encrypt($plaintext)
-    {
-        return $this->getCipherInstance()
-            ->encrypt($plaintext);
-    }
-
-    protected function getCipherInstance()
-    {
-        $cipher = new AES(AES::MODE_ECB);
-
-        $cipher->setKey($this->getEncryptionKey());
-
-        return $cipher;
     }
 
     public function validateVpa(string $input)
@@ -176,10 +128,61 @@ class Server extends Base\Mock\Server
         return $arr;
     }
 
+    public function decrypt($data)
+    {
+        return $this->getCipherInstance()
+            ->decrypt(hex2bin($data));
+    }
+
+    protected function encrypt($plaintext)
+    {
+        return $this->getCipherInstance()
+            ->encrypt($plaintext);
+    }
+
+    protected function getCipherInstance()
+    {
+        $cipher = new AES(AES::MODE_ECB);
+
+        $cipher->setKey($this->getEncryptionKey());
+
+        return $cipher;
+    }
+
     protected function getEncryptionKey()
     {
         $key = config('gateway.upi_mindgate.gateway_encryption_key');
 
         return hex2bin($key);
+    }
+
+    /**
+     * See docs link in README.md for response formatting
+     */
+    protected function makeResponse($data)
+    {
+        $action = $this->action;
+
+        // There are lots of empty "additional fields" in the response
+        // that are currently expected to be filled with NA
+        // The number of such fields depends on the request (auth|refund|etc)
+        // We calculate the number of such fields and add it as a padding
+        // with array_merge
+
+        $paddingCount = self::RESPONSE_FIELD_COUNT[$action] - count($data);
+
+        $data = array_merge($data, array_fill(count($data), $paddingCount, 'NA'));
+
+        $content = implode('|', $data);
+
+        $content = strtoupper(bin2hex($this->encrypt($content)));
+
+        $response = parent::makeResponse($content);
+
+        $response->headers->set('Content-Type', 'text/plain;charset=ISO-8859-1');
+        $response->headers->set('Expires', 'Thu, 01 Jan 1970 00:00:00 GMT');
+        $response->headers->set('x-frame-options', 'SAMEORIGIN');
+
+        return $response;
     }
 }

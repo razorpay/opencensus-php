@@ -33,26 +33,35 @@ class Gateway extends Base\Gateway
      * This is what shows up as the payee
      * on the notification to the customer
      */
-    const DEFAULT_PAYEE_VPA = 'razorpaypg@axisbank';
+    const DEFAULT_PAYEE_VPA = 'razaorpay@axis';
+
+    // Transaction Types
+    const P2P = 'P2P';
+    const P2M = 'P2M';
+
+    const PAY = 'PAY';
 
     const FIELD_LENGTH = [
-        Action::AUTHORIZE    => 17,
+        Action::AUTHORIZE => 17,
         Action::VALIDATE_VPA => 14,
-        Action::REFUND       => 20,
-        Action::VERIFY       => 14,
+        Action::REFUND => 20,
+        Action::VERIFY => 14,
     ];
 
     protected $map = [
-        Entity::VPA                       => Entity::VPA,
-        Entity::RECEIVED                  => Entity::RECEIVED,
-        Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
-        Entity::TYPE                      => Entity::TYPE,
-        Fields::CUSTOMER_VPA              => Entity::VPA,
-        Fields::MOB_NO                    => Entity::CONTACT,
-        Fields::MERCH_ID                  => Entity::GATEWAY_MERCHANT_ID,
+        Entity::VPA => Entity::VPA,
+        Entity::RECEIVED => Entity::RECEIVED,
+        Entity::EXPIRY_TIME => Entity::EXPIRY_TIME,
+        Entity::TYPE => Entity::TYPE,
+        Fields::UNQ_TXN_ID => Entity::PAYMENT_ID,
+        Fields::UNQ_CUST_ID => Entity::PAYMENT_ID,
+        Fields::AMOUNT => Entity::AMOUNT,
+        Fields::MERCH_ID => Entity::GATEWAY_MERCHANT_ID,
+        Fields::EXPIRY => Entity::EXPIRY_TIME,
+        Fields::CUSTOMER_VPA => Entity::VPA,
+        Fields::MOB_NO => Entity::CONTACT,
+        Fields::TXN_REFUND_ID => Entity::REFUND_ID,
     ];
-
-
 
     /**
      * Authorizes a payment using UPI Gateway
@@ -63,25 +72,28 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
-        s($input);
+
         $attributes = $this->getGatewayEntityAttributes($input);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-        $this->validateVpa($input['payment']);
+//        $this->validateVpa($input['payment']);
 
         parent::action($input, Action::AUTHORIZE);
 
         $request =  $this->getAuthorizeRequestArray($input);
+
+        s($request);
+
         $response = $this->sendGatewayRequest($request);
 
         $response = $this->parseGatewayResponse($response->body);
 
         $response[Entity::RECEIVED] = 1;
 
-        $this->updateGatewayPaymentEntity($gatewayPayment, $response);
+//        $this->updateGatewayPaymentEntity($gatewayPayment, $response);
 
-        $this->checkResponseStatus($response[ResponseFields::STATUS]);
+        $this->checkResponseStatus($response[Fields::CODE]);
 
         $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
 
@@ -123,6 +135,11 @@ class Gateway extends Base\Gateway
         return $attrs;
     }
 
+    /**
+     * The Merchant ID doesn't change for different
+     * merchants since this is the master merchant Id
+     * @return string (numeric merchant id)
+     */
     protected function getMerchantId()
     {
         if ($this->mode === Mode::LIVE)
@@ -130,15 +147,13 @@ class Gateway extends Base\Gateway
             return $this->terminal->getGatewayMerchantId();
         }
 
-//        return $this->config['test_merchant_id'];
-        return "RAZAORPAY";
+        return $this->config['test_merchant_id'];
     }
 
     /**
      * We need to validate that the user's VPA is valid before proceeding with the payment
      * @param array $input
      */
-
     public function validateVpa(array $input)
     {
         parent::action($input, Action::VALIDATE_VPA);
@@ -149,7 +164,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body, Action::VALIDATE_VPA);
 
-        $this->checkResponseStatus($response[ResponseFields::VPA_STATUS], Status::VPA_AVAILABLE);
+        $this->checkResponseStatus($response[Fields::VPA_STATUS], Status::VPA_AVAILABLE);
     }
 
     protected function getValidateVpaRequestArray(array $input): array
@@ -177,6 +192,12 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    /**
+     * Formats a request content array to a proper string
+     * that is sent to the server in POST body
+     * @param  array  $data request array
+     * @return string post body
+     */
     protected function transformRequestArrayToContent(array $data)
     {
         $extraFields = self::FIELD_LENGTH[$this->action] - count($data);
@@ -212,6 +233,106 @@ class Gateway extends Base\Gateway
         return json_encode($json);
     }
 
+    /**
+     * @param $responseBody
+     * @param string $type
+     * @return array
+     * @see https://drive.google.com/drive/u/0/folders/0B1MTSXtR53PfYldqNUIyLXlnSjA
+     */
+    protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
+    {
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+            'body'              => $responseBody,
+            'encrypted'         => true,
+            'gateway'           => $this->gateway,
+            'type'              => $type
+        ]);
+
+        $response = $this->decrypt($responseBody);
+        s($response);
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response]);
+
+        $type = strtoupper($type);
+
+        $fields = constant(__NAMESPACE__ . "\Fields::$type");
+
+        $values = explode('|', $response);
+
+        $result = [];
+
+        foreach ($fields as $index => $key)
+        {
+            $result[$key]     =   $values[$index];
+        }
+
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+            'body'              => $responseBody,
+            'decrypted'         => $response,
+            'parsed'            => $result,
+            'gateway'           => $this->gateway,
+            'type'              => $type
+        ]);
+        return $result;
+    }
+
+    /**
+     * This is the key used to encrypt requests
+     * @return string public key
+     */
+    protected function getEncryptionKey()
+    {
+        return $this->config['gateway_encryption_key'];
+    }
+
+    /**
+     * Encrypts data
+     *
+     * @param $plaintext
+     *
+     * @return string
+     */
+    public function encrypt($plaintext)
+    {
+        return $this->getCipherInstance()
+            ->encrypt($plaintext);
+    }
+
+    /**
+     * Returns a Crypto instance
+     * @return Crypto class instance
+     * @return Crypto
+     */
+    protected function getCipherInstance()
+    {
+        return new Crypto($this->getEncryptionKey());
+    }
+
+    /**
+     * Decrypts responses from the Mindgate API
+     *
+     * @param string $cipherText
+     *
+     * @return string
+     */
+    public function decrypt(string $cipherText)
+    {
+        return $this->getCipherInstance()
+            ->decrypt($cipherText);
+    }
+
+    private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
+    {
+        if ($status !== $successStatus)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($status);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                ResponseCode::getResponseMessage($status));
+        }
+    }
+
     protected function getAuthorizeRequestArray($input)
     {
         $payment = $input['payment'];
@@ -235,13 +356,6 @@ class Gateway extends Base\Gateway
             'NA',
         ];
 
-//        if ($input['merchant']->isTPVRequired() === true)
-//        {
-//            // MEBR is the request type for TPV
-//            $data[12] = 'MEBR';
-//            $data[13] = $input['order']['account_number'];
-//        }
-
         $content = $this->transformRequestArrayToContent($data);
 
         $request = $this->getStandardRequestArray($content);
@@ -254,10 +368,14 @@ class Gateway extends Base\Gateway
                 'gateway'           => $this->gateway,
                 'payment_id'        => $payment['id'],
             ]);
-
         return $request;
     }
 
+    /**
+     * Formats amount to 2 decimal places
+     * @param  int $amount amount in paise (100)
+     * @return string amount formatted to 2 decimal places in INR (1.00)
+     */
     protected function formatAmount($amount)
     {
         return number_format($amount / 100, 2, '.', '');
@@ -293,91 +411,4 @@ class Gateway extends Base\Gateway
         return $input['merchant']['category'] ?: '6012';
     }
 
-    /**
-     * @param $responseBody
-     * @param string $type
-     * @return array
-     * @see https://drive.google.com/drive/u/0/folders/0B1MTSXtR53PfYldqNUIyLXlnSjA
-     */
-    protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
-    {
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-            'body'              => $responseBody,
-            'encrypted'         => true,
-            'gateway'           => $this->gateway,
-            'type'              => $type
-        ]);
-//        s($responseBody);
-//        $response = $this->decrypt($responseBody);
-        $response = $responseBody;
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response]);
-
-        $type = strtoupper($type);
-
-        $fields = constant(__NAMESPACE__ . "\Fields::$type");
-
-        $values = explode('|', $response);
-
-        $result = [];
-
-        foreach ($fields as $index => $key)
-        {
-            $result[$key] = $values[$index];
-        }
-
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-            'body'              => $responseBody,
-            'decrypted'         => $response,
-            'parsed'            => $result,
-            'gateway'           => $this->gateway,
-            'type'              => $type
-        ]);
-
-        return $result;
-    }
-
-    /**
-     * Returns a Crypto instance
-     * @return Crypto class instance
-     * @return Crypto
-     */
-    protected function getCipherInstance()
-    {
-        return new Crypto($this->getEncryptionKey());
-    }
-
-    /**
-     * Decrypts responses from the Mindgate API
-     *
-     * @param string $cipherText
-     *
-     * @return string
-     */
-    public function decrypt(string $cipherText)
-    {
-        return $this->getCipherInstance()
-            ->decrypt($cipherText);
-    }
-
-    /**
-     * This is the key used to encrypt requests
-     * @return string public key
-     */
-    protected function getEncryptionKey()
-    {
-        return $this->config['gateway_encryption_key'];
-    }
-
-    /**
-     * Encrypts data
-     *
-     * @param $plaintext
-     *
-     * @return string
-     */
-    public function encrypt($plaintext)
-    {
-        return $this->getCipherInstance()
-            ->encrypt($plaintext);
-    }
 }

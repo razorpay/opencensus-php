@@ -99,7 +99,6 @@ trait PaymentCreationTrait
 
     protected function handlePaymentCreationFlow($response, $request, &$callback = null)
     {
-        s($response);
         $content = $response->getContent();
         $gateway = null;
         if ($request['url'] === '/payments/create/checkout')
@@ -307,7 +306,6 @@ trait PaymentCreationTrait
 
     protected function runPaymentCallbackFlowForGateway($response, $gateway, &$callback = null)
     {
-        s($gateway);
         $gateway = $this->decryptGatewayText($gateway);
 
         $func = $gateway;
