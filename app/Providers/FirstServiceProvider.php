@@ -143,11 +143,6 @@ class FirstServiceProvider extends ServiceProvider
     {
         $trace = $this->app['trace'];
 
-        $trace->macro('incr', function (string $metric, array $dimensions = [])
-        {
-            Metrics::count($metric, 1, $dimensions);
-        });
-
         $trace->macro('count', function (string $metric, int $times = 1, array $dimensions = [])
         {
             Metrics::count($metric, $times, $dimensions);

@@ -151,8 +151,8 @@ class InvoiceMetricTest extends TestCase
                     1,
                     [
                         'type'             => 'invoice',
-                        'has_batch'        => '0',
-                        'has_subscription' => '0',
+                        'has_batch'        => 0,
+                        'has_subscription' => 0,
                     ],
                 ],
                 [
