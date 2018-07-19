@@ -12,11 +12,13 @@ class Utility extends Base\Core
      * This return default storage directory
      * If it doesn't exist then it creates it
      *
+     * @param string $path
+     *
      * @return string
      */
-    public static function getStorageDir($path = 'files/settlement')
+    public static function getStorageDir(string $path = 'files/settlement'): string
     {
-        $dir = storage_path( $path);
+        $dir = storage_path($path);
 
         if (file_exists($dir) === false)
         {
