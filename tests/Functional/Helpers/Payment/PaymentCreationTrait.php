@@ -232,7 +232,6 @@ trait PaymentCreationTrait
                 }
             }
         }
-
         return $this->runPaymentCallbackFlowForGateway($response, $gateway, $callback);
     }
 

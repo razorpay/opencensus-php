@@ -44,6 +44,7 @@ class Fields
         self::UNQ_TXN_ID,
         self::AMOUNT,
         self::CUSTOMER_VPA,
+        self::CODE,
     ];
 }
 

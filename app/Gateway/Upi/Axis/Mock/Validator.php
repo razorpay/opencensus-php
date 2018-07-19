@@ -10,12 +10,11 @@ class Validator extends Base\Validator
         // Bank side Merchant Id
         'required|alpha_num|max:16',
         // Random 10 length string
-        'required|alpha_num|size:10',
-        // VPA
-        'required|string|max:255',
-        // Request Type
-        'required|string|in:T',
-        //UDF
+        'required|alpha_num|size:12',
+        // RZP API Payment Id
+        'required|alpha_num|max:50',
+        // RZP API Payment Id - used as customer ID for bank
+        'required|alpha_num|max:50',
         'sometimes|in:NA',
         'sometimes|in:NA',
         'sometimes|in:NA',
@@ -31,28 +30,30 @@ class Validator extends Base\Validator
 
     protected static $authRules = [
         // Bank side Merchant Id
-        'required|alpha_num',
+        'required|alpha_num|max:16',
+        // Random 10 length string
+        'required|alpha_num|size:12',
         // RZP API Payment Id
         'required|alpha_num|max:50',
-        // VPA
-        'required|max:255',
+        // RZP API Payment Id - used as customer ID for bank
+        'required|alpha_num|max:50',
         // Amount
         ['required', 'regex:/^\d*(\.\d{2})$/'],
-        // Remark
-        'required|string|max:50',
+        // Description
+        'required|max:255',
+        // Currency
+        'required|alpha_num|max:12',
+        // Orderid string
+        'required|alpha_num|max:12',
+        // VPA
+        'required|string|max:255',
         // Timeout
         'required|integer|max:45|min:1',
-        // MCC
-        'required|integer|max:9999|min:0',
-        // UDF
+        // SID
+        'required|max:255',
         'sometimes|in:NA',
         'sometimes|in:NA',
         'sometimes|in:NA',
-        'sometimes|in:NA',
-        'sometimes|in:NA',
-        // Fields for TPV request type
-        'sometimes|in:NA,MEBR',
-        'sometimes|string|alpha_num',
         'sometimes|in:NA',
         'sometimes|in:NA',
         'sometimes|in:NA',

@@ -56,6 +56,7 @@ class Server extends Base\Mock\Server
             random_int(100000, 999999),
             // Amount
             $input[3],
+            '00',
             Status::SUCCESS,
             // Description
             'Transaction Collect request initiated successfully',
@@ -184,5 +185,22 @@ class Server extends Base\Mock\Server
         $response->headers->set('x-frame-options', 'SAMEORIGIN');
 
         return $response;
+    }
+
+    /**
+     * Private Key of the mock server
+     */
+    protected function getPrivateKey()
+    {
+        return file_get_contents(__DIR__ . '/keys/mockserver.key');
+    }
+
+    /**
+     * Public key of the client that is connecting
+     * to us, in this case, the Mock Gateway
+     */
+    protected function getPublicKey()
+    {
+        return file_get_contents(__DIR__ . '/keys/mockclient.pub');
     }
 }

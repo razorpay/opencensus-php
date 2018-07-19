@@ -83,8 +83,6 @@ class Gateway extends Base\Gateway
 
         $request =  $this->getAuthorizeRequestArray($input);
 
-        s($request);
-
         $response = $this->sendGatewayRequest($request);
 
         $response = $this->parseGatewayResponse($response->body);
@@ -96,6 +94,8 @@ class Gateway extends Base\Gateway
         $this->checkResponseStatus($response[Fields::CODE]);
 
         $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
+
+
 
         return [
             'data'   => [
@@ -342,18 +342,16 @@ class Gateway extends Base\Gateway
 
         $data = [
             $this->getMerchantId(),
+            'RAZAORPAYAPP',
             $payment['id'],
-            $payment['vpa'],
+            $payment['id'],
             $this->formatAmount($payment['amount']),
             $this->getPaymentRemark($input),
+            'INR',
+            'ORDERID',
+            $payment['vpa'],
             $input['upi']['expiry_time'],
-            $this->getMerchantCategoryCode($input),
-            'NA',
-            'NA',
-            'NA',
-            'NA',
-            'NA',
-            'NA',
+            'SID',
         ];
 
         $content = $this->transformRequestArrayToContent($data);
