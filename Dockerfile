@@ -35,7 +35,13 @@ RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
 COPY --chown=apache:www-data . /app/
 
 # This step can't run without some classes from above step
-RUN composer dump-autoload && php artisan optimize
+RUN mkdir -p /app/storage/files/batch && \
+    mkdir -p /app/storage/files/filestore && \
+    mkdir -p /app/storage/files/logos && \
+    mkdir -p /app/storage/files/report && \
+    mkdir -p /app/storage/files/settlement && \
+    mkdir -p /app/storage/files/qrcodes && \
+    composer dump-autoload && php artisan optimize
 
 EXPOSE 80
 ENTRYPOINT ["/app/dockerconf/entrypoint.sh"]
