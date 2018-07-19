@@ -38,6 +38,7 @@ class Service extends Base\Service
         RequestProcessor\Base::NETBANKING_ICICI,
         RequestProcessor\Base::NETBANKING_FEDERAL,
         RequestProcessor\Base::NETBANKING_HDFC,
+        RequestProcessor\Base::NETBANKING_ALLAHABAD,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK
     ];
@@ -57,6 +58,7 @@ class Service extends Base\Service
         try
         {
             $summary = $this->processReconciliationRequest($input);
+
         }
         catch (\Throwable $e)
         {
