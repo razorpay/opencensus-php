@@ -35,13 +35,13 @@ class Gateway extends Base\Gateway
     protected $bank = 'allahabad';
 
     protected $map = [
-             RequestFields::ACCOUNT_NUMBER      => NetbankingEntity::ACCOUNT_NUMBER,
-             RequestFields::MERCHANT_CODE       => NetbankingEntity::MERCHANT_CODE,
-             RequestFields::AMOUNT              => NetbankingEntity::AMOUNT,
-             RequestFields::ACCOUNT_NUMBER      => NetbankingEntity::ACCOUNT_NUMBER,
-             NetbankingEntity::RECEIVED         => NetbankingEntity::RECEIVED,
-             ResponseFields::PRODUCT_REF_NUMBER => NetbankingEntity::PAYMENT_ID,
-
+         RequestFields::ACCOUNT_NUMBER      => NetbankingEntity::ACCOUNT_NUMBER,
+         RequestFields::MERCHANT_CODE       => NetbankingEntity::MERCHANT_CODE,
+         RequestFields::AMOUNT              => NetbankingEntity::AMOUNT,
+         RequestFields::ACCOUNT_NUMBER      => NetbankingEntity::ACCOUNT_NUMBER,
+         NetbankingEntity::RECEIVED         => NetbankingEntity::RECEIVED,
+         ResponseFields::PRODUCT_REF_NUMBER => NetbankingEntity::PAYMENT_ID,
+         ResponseFields::BANK_TRANSACTION_ID => NetbankingEntity::BANK_PAYMENT_ID,
     ];
 
     public function authorize(array $input)
@@ -52,7 +52,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($content);
 
-        $request = $this->getStandardRequestArray([],'get');
+        $request = $this->getStandardRequestArray([],'post');
 
         $param_str = http_build_query($content,null,'|');
 
@@ -88,7 +88,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $expectedAmount = $this->formatAmount($input['payment']['amount']);
+        $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
 
         $actualAmount   = $this->formatAmount($content[ResponseFields::AMOUNT]);
 
@@ -126,7 +126,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAYEE_ID               => Constants::PAYEE_ID,
             RequestFields::ITEM_CODE              => $input['payment']['id'],
             RequestFields::PRODUCT_REF_NUMBER     => $input['payment']['id'],
-            RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount']),
+            RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount'] / 100),
             RequestFields::CURRENCY               => Currency::INR,
             RequestFields::RETURN_URL             => $input['callbackUrl'],
             RequestFields::CG                     => Status::YES,
@@ -232,13 +232,13 @@ class Gateway extends Base\Gateway
             RequestFields::PAYEE_ID               => Constants::PAYEE_ID,
             RequestFields::ITEM_CODE              => $input['payment']['id'],
             RequestFields::PRODUCT_REF_NUMBER     => $input['payment']['id'],
-            RequestFields::AMOUNT                 => $input['payment']['amount'] / 100,
+            RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount'] / 100),
             RequestFields::CURRENCY               => Currency::INR,
             RequestFields::LANGUAGE_ID            => Constants::USER_LANG_ID,
             RequestFields::USER_TYPE              => Constants::USER_TYPE,
             RequestFields::APP_TYPE               => Constants::RETAIL,
             RequestFields::STATFLG                => Constants::STATFLG,
-            RequestFields::BANK_TRANSACTION_ID    => '',
+            //RequestFields::BANK_TRANSACTION_ID    => '',
         ];
 
         $request = $this->getStandardRequestArray([],'get');
@@ -346,7 +346,7 @@ class Gateway extends Base\Gateway
     {
         $secret = $this->getSecret();
 
-        $sig_str = hash_hmac('sha512',$str,$secret);
+        $sig_str = hash_hmac('sha256',$str,$secret);
 
         return $sig_str;
     }
