@@ -3,6 +3,7 @@
 # case we need to define any, this way it would not require instance bake.
 defaults:
     timer_type: histogram
+    buckets: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
 mappings:
 - match: api_http_request_duration_milliseconds.*
   timer_type: histogram

@@ -255,6 +255,8 @@ class Service extends Base\Service
 
         $invoice = $this->repo->invoice->findByPublicId($invoiceId);
 
+        $this->trace->count(Metric::INVOICE_VIEW_TOTAL, 1, $invoice->getMetricDimensions());
+
         $invoice->getValidator()->validateInvoiceViewable();
 
         return (new ViewDataSerializer($invoice))->serializeForHosted();
