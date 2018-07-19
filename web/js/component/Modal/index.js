@@ -112,6 +112,7 @@ export const ModalContent = ({
   header,
   banner,
   children,
+  footer,
   className = '',
   noPadding = false,
 }) => (
@@ -122,6 +123,7 @@ export const ModalContent = ({
       <div class={classList('Modal-body', noPadding && 'no-padding')}>
         {children}
       </div>
+      {footer && <footer>{footer}</footer>}
     </div>
   </ErrorBoundary>
 );
