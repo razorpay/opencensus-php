@@ -191,7 +191,7 @@ export default class Sidebar extends Component {
                   <ShowWhen myRole="owner manager admin">
                     <MainNavLink
                       label="Partner Dashboard"
-                      icon="i i-chart text-info"
+                      icon="i i-partner text-success"
                       to="/submerchants"
                       exact
                     />

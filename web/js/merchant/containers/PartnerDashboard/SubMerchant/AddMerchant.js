@@ -5,13 +5,18 @@ import AsyncButton from 'react-async-button';
 
 import { create } from 'merchant/modules/submerchant';
 import { showNotification } from 'rzp/modules/notifications';
+import { closeModal } from 'rzp/modules/modals';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 import InputField from 'rzp/ui/Forms/InputField';
 
 import { required } from 'rzp/utils/validators';
 
-@connect(state => ({ ...state.session }), { create, showNotification })
+@connect(state => ({ ...state.session }), {
+  create,
+  showNotification,
+  closeModal,
+})
 @reduxForm({
   form: 'addMerchant',
 })
@@ -25,6 +30,7 @@ export default class AddMerchant extends Component {
             type: 'success',
             message: 'Submerchant created successfull',
           });
+          this.props.closeModal();
         }
       })
       .catch(({ errors }) => {
