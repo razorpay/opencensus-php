@@ -5,9 +5,11 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Allahabad;
 use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Netbanking\Allahabad\RefundFile;
 use RZP\Models\Terminal\Options;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class NetbankingAllahabadGatewayTest extends TestCase
 {
@@ -78,7 +80,7 @@ class NetbankingAllahabadGatewayTest extends TestCase
 
         // Assert that we don't save any information into the netbanking entity
         $gatewayPayment = $this->getLastEntity('netbanking', true);
-        s($gatewayPayment);
+
         $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
     }
 
@@ -201,8 +203,8 @@ class NetbankingAllahabadGatewayTest extends TestCase
         $payment = $payments['items'][0];
 
         // refund full payment in 2 steps
-        $this->refundPayment($payment['id'], 10000);
-        $this->refundPayment($payment['id']);
+        $this->refundPayment($payment['id'], 10010);
+        $this->refundPayment($payment['id'],35020);
 
         $payment = $payments['items'][1];
 
@@ -221,77 +223,46 @@ class NetbankingAllahabadGatewayTest extends TestCase
         }
     }
 
-    protected function generateRefundsExcelForNb($bank)
-    {
-        $this->ba->appAuth();
-
-        $request = array(
-            'url'     => '/refunds/excel',
-            'method'  => 'post',
-            'content' => [
-                'bank'   => $bank,
-                'method' => 'netbanking',
-            ],
-        );
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-
     protected function checkRefundFileData($data)
     {
-        $this->assertTrue(file_exists($data['refunds']));
+        $this->assertTrue(file_exists($data['file']));
 
-        $refundsFileContents = file($data['refunds']);
+        $refundsFileContents = file($data['file']);
 
         // 3 refunds + 0 initial line
         assert(count($refundsFileContents) === 3);
 
         // Individual refund amounts to be asserted
-        $refundAmounts = ['100', '400', '500'];
+        $refundAmounts = ['100.10', '350.20', '500.00'];
 
         foreach ($refundsFileContents as $row)
         {
             $refundsFileRow = explode('|', $row);
 
-            // Asserting that the file contains 7 columns
-            assert(count($refundsFileRow) === 7);
+            // Asserting that the file contains 10 columns
+            assert(count($refundsFileRow) === 10);
 
-            // Asserting Free Field
-            assert($refundsFileRow[3] === '00000000');
+            $rowRefundAmount = trim($refundsFileRow[9]);
 
-            // Asserting Bank Payment Id
-            assert($refundsFileRow[4] === '99999999');
-
-            // Asserting that the refund amounts are correct
-            $rowRefundAmount = trim($refundsFileRow[6]);
             assert(in_array($rowRefundAmount, $refundAmounts, true));
         }
 
-        unlink($data['refunds']);
+        //unlink($data['file']);
     }
 
 
     protected function checkMailQueue()
     {
         $date = Carbon::today(Timezone::IST)->format('d-m-Y');
-        s($date);
+
         $testData = [
-            'subject' => 'Allahabad Netbanking claims and refund files for '.$date,
-            'amount' => [
-                'claims'  => 1500,
-                'refunds' => 1000,
-                'total'   => 500,
-            ],
-            'count'   => [
-                'claims'  => 3,
-                'refunds' => 3,
-            ]
+            'body'    => "Please find attached refunds information for Allahabad Netbanking",
+            'count'   => 3,
         ];
 
-        Mail::assertQueued(DailyFileMail::class, function ($mail) use ($testData, $date)
+        Mail::assertQueued(RefundFileMail::class, function ($mail) use ($testData, $date)
         {
-            $expectedSubject = 'Allahabad Netbanking claims and refund files for ' . $date;
+            $expectedSubject = 'Allahabad Netbanking refunds file for '.$date;
 
             $subject = $mail->subject;
 
@@ -299,7 +270,7 @@ class NetbankingAllahabadGatewayTest extends TestCase
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-            return $mail->hasTo('allahabad.netbanking.refunds@razorpay.com');
+            return $mail->hasTo('settlements@razorpay.com');
         });
     }
 
