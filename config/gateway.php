@@ -503,9 +503,10 @@ return [
             'gateway_merchant_id'          => env('ENSTAGE_TEST_MERCHANT_ID'),
             'gateway_merchant_name'        => 'Test Merchant',
         ],
-        '6ZJzxyLFWrGs74' => [
-            'gateway_merchant_id'          => 'Wibmo_RYatra_Axis_Expay',
-            'gateway_merchant_name'        => 'RYatra_Axis_Expay',
+        // Hardcoding the values here.
+        'live' => [
+            'gateway_merchant_id'          => 'Wibmo_Razorpay_Axis_Expay',
+            'gateway_merchant_name'        => 'Razorpay_Axis_Expay',
         ],
         'test_acq_bin'                      => env('ENSTAGE_TEST_GATEWAY_ACQUIRER_BIN'),
         'test_secret_key'                   => env('ENSTAGE_TEST_SECRET_KEY_ID'),

@@ -18,27 +18,43 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Core extends Base\Core
 {
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     public function create(array $input)
     {
         $merchant = $this->merchant;
 
-        $this->verifyIdAndStripSignForLinkedOfferIds($input);
+        $resource = 'offer_create_' . $merchant->getId();
 
-        $offer = new Entity;
+        return $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($input, $merchant)
+            {
+                $this->verifyIdAndStripSignForLinkedOfferIds($input);
 
-        $offer->merchant()->associate($merchant);
+                $offer = new Entity;
 
-        $offer = $offer->build($input);
+                $offer->merchant()->associate($merchant);
 
-        $this->validateMerchant($merchant, $input);
+                $offer = $offer->build($input);
 
-        $this->checkConflictingOffers($offer);
+                $this->validateMerchant($merchant, $input);
 
-        $this->repo->saveOrFail($offer);
+                $this->checkConflictingOffers($offer);
 
-        $this->traceNonExistingIins($offer, $merchant);
+                $this->repo->saveOrFail($offer);
 
-        return $offer;
+                $this->traceNonExistingIins($offer, $merchant);
+
+                return $offer;
+            });
     }
 
     public function update(Entity $offer, array $input)

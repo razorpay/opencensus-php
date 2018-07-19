@@ -1927,3 +1927,64 @@ UPDATE tokens SET gateway_token = "1742810456961", recurring = 1, recurring_stat
 UPDATE tokens SET gateway_token = "1448110472721", recurring = 1, recurring_status = "confirmed", updated_at = UNIX_TIMESTAMP() WHERE id = "AUjwPPSHN5Xs6q" AND method = "emandate" LIMIT 1;
 
 UPDATE gateway_tokens SET recurring = 1, updated_at = UNIX_TIMESTAMP() WHERE token_id IN ("A1sPKIwyWtkYnR", "A7oSkEEWVjrXcC", "AB0EpxG0osqCll", "AC54fqHh9gmKBF", "AHuJVOMX1WiYf3", "AKEb2kMVi1GAZv", "AKQ55jvblTZPfg", "AKjyQHrPwx3wnf", "ANwmd8QklQ9o7O", "AQJB9XHdtCNxsh", "AR7wpM2H4Wnd6I", "ARCMfJlq5Hf5y8", "ARFv32AE4bfk0F", "ARUaIpstnfIrnk", "ARZU8U88h8fbew", "ARvWWtNwYpZhbm", "AT6CGQhXgevIXU", "AUIwjQU3inCm8d", "AUjwPPSHN5Xs6q") LIMIT 19;
+
+# Updates settings for payment_link's type batches for specific duration (Ref: https://razorpay.atlassian.net/browse/IN-126)
+UPDATE settings
+SET    value = "0"
+WHERE  entity_id IN (SELECT id
+                     FROM   batches
+                     WHERE  created_at > 1528914600
+                            AND created_at < 1530901800
+                            AND type = 'payment_link')
+LIMIT 120;
+
+# Following is query to mark around 41k links cancelled. This is off case need, a merchant had created these via
+# batch(non-api user) and wants them to be cancelled. He didn't input expiration during batch creation.
+# Rows matched: 41660  Changed: 41660  Warnings: 0
+UPDATE invoices i
+LEFT JOIN payments p ON i.id = p.invoice_id
+SET i.status = 'cancelled',
+    i.cancelled_at = unix_timestamp(),
+    i.updated_at = unix_timestamp()
+WHERE i.batch_id IN ('AYhD3yazCd4XsG',
+                     'AYgupgpbRuvOHj',
+                     'AYdhPjiVrXcx01',
+                     'AYcljvhrnBiZFN',
+                     'AYcWsLPctWyFkF',
+                     'AXs966a4fD6xlY',
+                     'AXqaVCaHw4sPvS',
+                     'AXq88Mrf0yBzSO',
+                     'AXpyCGVixrGmis',
+                     'AWIQlxCEmkmTBS',
+                     'AWINqUuC6npUD3',
+                     'AWIKH6eWfdds7u',
+                     'AWIC0NbL4uF4Q6',
+                     'AWHMpEJsWIMGCu',
+                     'AWEak5fOxzrzqt')
+  AND i.merchant_id = '9mOxXWuS2uIw5j'
+  AND i.status = 'issued'
+  AND p.id IS NULL
+# Rows matched: 189  Changed: 189  Warnings: 0
+UPDATE invoices i
+LEFT JOIN payments p ON i.id = p.invoice_id
+SET i.status = 'cancelled',
+    i.cancelled_at = unix_timestamp(),
+    i.updated_at = unix_timestamp()
+WHERE i.batch_id IN ('AYhD3yazCd4XsG',
+                     'AYgupgpbRuvOHj',
+                     'AYdhPjiVrXcx01',
+                     'AYcljvhrnBiZFN',
+                     'AYcWsLPctWyFkF',
+                     'AXs966a4fD6xlY',
+                     'AXqaVCaHw4sPvS',
+                     'AXq88Mrf0yBzSO',
+                     'AXpyCGVixrGmis',
+                     'AWIQlxCEmkmTBS',
+                     'AWINqUuC6npUD3',
+                     'AWIKH6eWfdds7u',
+                     'AWIC0NbL4uF4Q6',
+                     'AWHMpEJsWIMGCu',
+                     'AWEak5fOxzrzqt')
+  AND i.merchant_id = '9mOxXWuS2uIw5j'
+  AND i.status = 'issued'
+  AND p.status = 'failed'
