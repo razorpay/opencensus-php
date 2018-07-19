@@ -483,12 +483,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:enach_rbl',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:18',
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
-        // Since, for the existing terminals, we have the below 2 values already assigned
-        // keeping this as sometimes, so that it can be added if required.
-        // In any case, these fields would not be used from the terminal. Instead,
-        // these would be fetched from the env variables.
-        Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
-        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|size:11',
+        Entity::GATEWAY_TERMINAL_ID         => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|size:11',
         Entity::TYPE                        => 'required|array',
     ];
 
