@@ -803,7 +803,7 @@ class Gateway extends Base\Gateway
             {
                 $this->repo->saveOrFail($gatewayPayment);
 
-                $this->checkErrorsAndThrowException($response);
+                $this->checkErrorsAndThrowException($response, null, null, Base\Action::AUTHENTICATE);
             }
         }
         catch (SoapFault $exception)
