@@ -36,7 +36,10 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
-            ['input' => $input]);
+            [
+                'input'       => $input,
+                'merchant_id' => $merchant->getId(),
+            ]);
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
