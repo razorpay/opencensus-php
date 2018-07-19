@@ -11,30 +11,17 @@ const options = {
   emandate: {
     subTypes: ['register', 'debit', 'acknowledge'],
     extraFields: ['name', 'gateway'],
-  },
-  payment_link: {
-    extraFields: ['config'],
+    gateways: ['enach_rbl', 'hdfc', 'axis'],
   },
   reconciliation: {
     extraFields: ['name', 'config', 'gateway'],
+    gateways: ['enach_rbl', 'hdfc', 'axis'],
   },
-  virtual_bank_account: {
-    extraFields: ['name'],
-  },
-  refund: {},
-  irctc_refund: {},
-  irctc_settlement: {},
-  linked_account: {},
-  bank_transfer: {},
-  recurring_charge: {},
-  payout: {},
-  sub_merchant: {},
-  direct_debit: {},
 };
 
 export default class BatchUpload extends Component {
   static permission = 'admin_batch_create';
-  static title = 'Batch Upload';
+  static title = 'Admin Batch Upload';
 
   //populate emandate details first
   state = {
@@ -48,14 +35,9 @@ export default class BatchUpload extends Component {
   };
 
   handleSave = body => {
-    const merchantId = body.merchant_id;
     let form = {
       file: document.querySelector('[name=file]').files[0],
     };
-
-    if (!merchantId) {
-      return notifyError('Please enter the merchant id');
-    }
 
     if (!form.file) {
       return notifyError('Please select a file');
@@ -65,7 +47,7 @@ export default class BatchUpload extends Component {
 
     form = { ...body, ...form };
 
-    return adminFormUpload(form, `/admin/api/live_${merchantId}/batches`).then(
+    return adminFormUpload(form, `/admin/api/live/admin/batches`).then(
       response => {
         if (response.data.success) {
           notifySuccess('Batch uploaded successfully!');
@@ -79,11 +61,11 @@ export default class BatchUpload extends Component {
 
   render() {
     const { selectedType } = this.state;
-    const extraFields = options[selectedType].extraFields || [];
+    const extraFields = options[selectedType].extraFields || [],
+      gateways = options[selectedType].gateways || [];
 
     return (
       <Form class="full-span full-elements" style={{ width: '650px' }}>
-        <Field label="Merchant ID" name="merchant_id" required={true} />
         <FileField label="Batch File" name="file" required={true} />
         <SelectField
           label="Type"
@@ -109,12 +91,19 @@ export default class BatchUpload extends Component {
         )}
 
         {/* conditionally load extra fields according to batch types */}
-        {extraFields.indexOf('name') > -1 && (
-          <Field label="File Name" name="name" />
-        )}
 
         {extraFields.indexOf('gateway') > -1 && (
-          <Field label="Gateway" name="gateway" />
+          <SelectField label="Gateway" name="gateway">
+            {gateways.map(gateway => (
+              <option value={gateway} key={gateway}>
+                {snakeToTitleCase(gateway)}
+              </option>
+            ))}
+          </SelectField>
+        )}
+
+        {extraFields.indexOf('name') > -1 && (
+          <Field label="File Name" name="name" defaultValue="file" />
         )}
 
         {extraFields.indexOf('config') > -1 && (

@@ -50,7 +50,9 @@ export default class CreateOffer extends Component {
     }
 
     // 5. Percent rate has limit 0-10000 (view takes from 0-100)
-    offer['percent_rate'] = offer['percent_rate'] * 100;
+    if (offer['percent_rate']) {
+      offer['percent_rate'] = offer['percent_rate'] * 100;
+    }
 
     // 6. Form the start and end time in unix timestamp form date and time taken separately for both start and end date
     let offsetStart = offer.starts_at_time.split(':');
@@ -71,7 +73,8 @@ export default class CreateOffer extends Component {
 
     // Remove keys with null/empty value
     Object.keys(offer).forEach(function(key) {
-      if (!offer[key]) {
+      // Allow false and 0 values to be sent. 'null' check is safe is creation, however not in edit mode where null is allowed to be sent.
+      if (typeof offer[key] === 'undefined' || offer[key] === null) {
         delete offer[key];
       }
     });
@@ -152,6 +155,14 @@ export default class CreateOffer extends Component {
             </SelectField>
           )}
 
+          {this.state.payment_method === 'card' && (
+            <SelectField name="international" label="International">
+              <option value="" />
+              <option value="1">True</option>
+              <option value="0">False</option>
+            </SelectField>
+          )}
+
           {['upi'].indexOf(this.state.payment_method) === -1 &&
             do {
               if (['upi', 'wallet'].indexOf(this.state.payment_method) === -1) {
@@ -182,9 +193,21 @@ export default class CreateOffer extends Component {
             name="percent_rate"
             placeholder="Eg: 45.25"
           />
-          <Field label="Max Cashback" name="max_cashback" />
-          <Field label="Flat Cashback" name="flat_cashback" />
-          <Field label="Min Amount" name="min_amount" />
+          <Field
+            label="Max Cashback"
+            name="max_cashback"
+            placeholder="(in paisa)"
+          />
+          <Field
+            label="Flat Cashback"
+            name="flat_cashback"
+            placeholder="(in paisa)"
+          />
+          <Field
+            label="Min Amount"
+            name="min_amount"
+            placeholder="(in paisa)"
+          />
           <Field
             label="Linked Offer ids"
             name="linked_offer_ids"

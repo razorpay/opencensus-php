@@ -1,10 +1,13 @@
 import ajax from 'merchant/utils/ajax';
 import AddOns from 'merchant/models/AddOns';
-import { makeActionCollectionReducer, fetchAll } from 'rzp/modules/collection';
+import {
+  makeActionCollectionReducer,
+  fetchAll,
+} from 'merchant/modules/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 import { set } from 'rzp/utils/immutable';
 import { formatFields } from 'merchant/resources/addons';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 export const ADDONS_CREATE = 'ADDONS_CREATE';
 export const ADDONS_EDIT = 'ADDONS_EDIT';

@@ -23,7 +23,7 @@ export const isUrlLenient = url => {
 export const flexibleDevUrl = url => {
   url = url || '';
 
-  let urlRegExp = /^(http(s?)?:\/\/)?\w+(\.\w+)*(:[0-9]+)?\/?(\/[.\w]*)*$/;
+  let urlRegExp = /^(http(s?)?:\/\/)?[\w.-]+(\.[\w.-]+)*(:[0-9]+)?\/?(\/[.\w\-]*)*$/;
 
   return urlRegExp.test(url);
 };
@@ -45,6 +45,13 @@ export const isPhone = phone => {
   phone = phone || '';
   let phoneRegExp = new RegExp(/^$|\+?[0-9]{8,15}$/);
   return phoneRegExp.test(phone);
+};
+
+export const isInteger = value => {
+  value = value || '';
+  let integerRegExp = new RegExp(/^[0-9]+$/);
+
+  return integerRegExp.test(value);
 };
 
 export const isIpAddress = ipAddress => {
@@ -117,6 +124,14 @@ export const length = (length, message = '') => {
 
   return (value = '') => {
     return value.trim().length !== length ? message : '';
+  };
+};
+
+export const maxLength = (length, message = '') => {
+  message = message || `Enter upto ${length} characters`;
+
+  return (value = '') => {
+    return value.trim().length > length ? message : '';
   };
 };
 

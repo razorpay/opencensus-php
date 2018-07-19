@@ -16,10 +16,6 @@ const ItemsListItem = ({ item, onEdit, onDelete }) => {
       <td class="text-right">{item.amountInINR}</td>
       <td class="row-action">
         <div class="btn-group">
-          <button class="btn btn-xs btn-default" onClick={onEdit}>
-            <i class="i i-edit" />
-            <span>edit</span>
-          </button>
           <button class="btn btn-xs btn-default" onClick={onDelete}>
             <i class="i i-delete text-danger" />
             <span>delete</span>

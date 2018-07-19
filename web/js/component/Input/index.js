@@ -1,7 +1,12 @@
 import FileUpload from 'merchant/components/File/Upload';
 import { classList } from 'common/util';
 
-function inputClass({ props, state, className }) {
+import CalendarPicker from './Calendar';
+import TimePicker from './Time';
+import PairList from './PairList';
+import EditablePairsList from './EditablePairList';
+
+export function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
 
   if (props.required) {
@@ -33,7 +38,11 @@ function inputClass({ props, state, className }) {
       wrapperClass += ' is-mature';
     }
 
-    if (state.error) {
+    /*
+    * 'propagatedError' is used to show api related errors.
+    * It's developer's repsonsibility to flush 'propagatedError' -> on onChange, or as per requirement, else it'll always remain visible.
+    * */
+    if (state.error || props.propagatedError) {
       wrapperClass += ' is-invalid';
     }
   }
@@ -41,29 +50,53 @@ function inputClass({ props, state, className }) {
   return wrapperClass;
 }
 
-function separateDomProps(props) {
+export function separateDomProps(props) {
   let {
     tag = 'input',
     label,
+    fieldLabel,
     description,
     options,
     defaultValue,
     addonBefore,
     addonAfter,
     validator,
+    checkboxMaskLabel,
     info,
     autoRender,
+    allowToday,
+    disablePastDates,
+    postSelectionValue,
+    isOutsideRange,
+    showClearDate,
+    startOfDayTimeStamp,
+    placement,
+    mature,
+    propagatedError,
     ...rest
   } = props;
 
   return {
     tag,
     label,
+    fieldLabel,
     description,
     options,
     defaultValue,
+    addonBefore,
+    addonAfter,
+    checkboxMaskLabel,
     info,
     autoRender,
+    allowToday,
+    disablePastDates,
+    postSelectionValue,
+    isOutsideRange,
+    showClearDate,
+    startOfDayTimeStamp,
+    placement,
+    mature,
+    propagatedError,
     props: rest,
   };
 }
@@ -108,7 +141,7 @@ class Description extends React.Component {
   }
 }
 
-class Label extends React.Component {
+export class Label extends React.Component {
   render() {
     const text = this.props.text;
     if (text) {
@@ -122,7 +155,7 @@ class Label extends React.Component {
   }
 }
 
-class Error extends React.Component {
+export class Error extends React.Component {
   render() {
     if (this.props.text) {
       return <div class="Input-error">{this.props.text}</div>;
@@ -166,7 +199,7 @@ export default class Field extends React.Component {
   }
 
   componentDidMount() {
-    // On change of every tab, FE error will be shown right in front if the value is filled but not valid
+    // On render, FE error will be shown upfront if value filled is not value.
     if (this.el && this.el.value) {
       this.setState({
         mature: true,
@@ -184,14 +217,22 @@ export default class Field extends React.Component {
   blur = e => {
     this.props.onBlur && this.props.onBlur(e);
     this.setState({ focus: false });
+
+    /*
+    * Setting mature shows the error. However, mature is done only when the field is touched and also, blurred.
+    * So, error on mature is shown only when it has touched + blurred once.
+    * */
+    if (this.state.touched) {
+      this.setState({ mature: true });
+    }
   };
 
   change = e => {
     this.valid();
     this.props.onChange && this.props.onChange(e);
 
-    if (!this.state.mature) {
-      this.setState({ mature: true });
+    if (!this.state.mature || !this.state.touched) {
+      this.setState({ touched: true });
     }
 
     this.updateInfo(e); // On focus, it must display information based on some value of self / other field.
@@ -285,7 +326,11 @@ export default class Field extends React.Component {
         onFocus={this.focus}
         onBlur={this.blur}
         onChange={this.change}
-        class="Input-el"
+        class={classList(
+          'Input-el',
+          allProps.addonBefore && 'Input-el--before',
+          allProps.addonAfter && 'Input-el--after'
+        )}
         defaultValue={defaultValue}
         ref={this.setRef}
       />
@@ -301,10 +346,20 @@ export default class Field extends React.Component {
               InputTag.toLowerCase() === 'select' && 'Select-elWrapper'
             )}
           >
+            {allProps.addonBefore && (
+              <span class="Input-addons Input-addons--before">
+                {allProps.addonBefore}
+              </span>
+            )}
             {InputComponent}
+            {allProps.addonAfter && (
+              <span class="Input-addons Input-addons--after">
+                {allProps.addonAfter}
+              </span>
+            )}
             <Info text={infoEle} />
           </div>
-          <Error text={this.state.error} />
+          <Error text={this.state.error || this.props.propagatedError} />
           <Description text={descriptionEle} />
         </div>
       </div>
@@ -313,35 +368,61 @@ export default class Field extends React.Component {
 }
 
 class Check extends Field {
-  className = 'Input--checkbox Input-content';
+  className = 'Input--checkbox';
+
+  state = {
+    value: this.props.defaultValue,
+  };
 
   toggle = e => {
     e.target.value = e.target.checked ? 1 : 0;
+
+    this.setState({
+      value: e.target.value,
+    });
+
     if (this.props.onChange) {
       this.props.onChange(e);
     }
   };
 
-  checked = Boolean(Number(this.props.defaultValue));
+  get checked() {
+    return Boolean(Number(this.state.value));
+  }
 
   render() {
-    let { label, description, info, props } = separateDomProps(this.props);
+    let { label, fieldLabel, description, info, props } = separateDomProps(
+      this.props
+    );
 
     return (
       <div class={inputClass(this)}>
-        <label>
-          <input
-            {...props}
-            defaultChecked={this.checked}
-            class="Input-el"
-            type="checkbox"
-            onChange={this.toggle}
-            disabled={this.props.disabled}
-          />
-          <div className="Input-checkbox" />
-          <Label class="Input-inlineLabel" text={label} />
-        </label>
-        <Description text={description} />
+        {label && <Label text={label} />}
+        <div class="Input-content">
+          <div class="Input-elWrapper">
+            <label>
+              <input
+                {...props}
+                defaultChecked={this.checked}
+                class="Input-el"
+                type="checkbox"
+                onChange={this.toggle}
+                disabled={this.props.disabled}
+              />
+              {this.props.checkboxMaskLabel ? (
+                <span class="Input-checkbox--label btn-link no-padding">
+                  {this.props.checkboxMaskLabel[+this.checked]}
+                </span>
+              ) : (
+                <React.Fragment>
+                  <div className="Input-checkbox" />
+                  <Label class="Input-inlineLabel" text={fieldLabel} />
+                </React.Fragment>
+              )}
+            </label>
+          </div>
+          <Description text={description} />
+        </div>
       </div>
     );
   }
@@ -445,20 +526,18 @@ Field.File = _ => {
     <div class={inputClass({ props: _ })}>
       <Label text={label} />
       <div class="Input-content Input-File">
-        <div class="Input-elWrapper">
-          <FileUpload
-            name={_.name}
-            onBiggerFileSize={_ => {
-              console.log('File size is bigger');
-            }}
-            onFileChange={_.onChange}
-            defaultValue={_.defaultValue}
-            disabled={_.disabled}
-            accept={_._accept}
-            showAcceptInfo={_._showAcceptInfo}
-            showStagedFileStatus={_._showStagedFileStatus}
-          />
-        </div>
+        <FileUpload
+          name={_.name}
+          onBiggerFileSize={_ => {
+            console.log('File size is bigger');
+          }}
+          onFileChange={_.onChange}
+          defaultValue={_.defaultValue}
+          disabled={_.disabled}
+          accept={_._accept}
+          showAcceptInfo={_._showAcceptInfo}
+          showStagedFileStatus={_._showStagedFileStatus}
+        />
         <Description text={description} />
       </div>
     </div>
@@ -492,4 +571,33 @@ Field.Select = ({ options, ...props }) => (
   </Field>
 );
 
-Field.Group = ({ children }) => <div class="InputGroup">{children}</div>;
+/* Fields to be shown visually closer than other fields in form*/
+Field.Group = ({ label, className, children, ...otherProps }) => {
+  return (
+    <div
+      class={classList(
+        'InputGroup',
+        className,
+        inputClass({ props: otherProps })
+      )}
+    >
+      <Label text={label} />
+      {children}
+    </div>
+  );
+};
+
+Field.PairList = PairList;
+Field.EditablePairsList = EditablePairsList;
+
+const ToCalendar = _ => (
+  <CalendarPicker
+    class="disable-past-year"
+    postSelectionValue={val => val.endOf('day')}
+    {..._}
+  />
+);
+
+Field.CalendarPicker = CalendarPicker;
+Field.ToCalendar = ToCalendar;
+Field.TimePicker = TimePicker;

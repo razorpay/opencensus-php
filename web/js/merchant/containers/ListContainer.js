@@ -63,7 +63,10 @@ export default class ListContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.location.search !== nextProps.location.search) {
+    if (
+      decodeURI(this.props.location.search) !==
+      decodeURI(nextProps.location.search)
+    ) {
       this.defaultSearch(nextProps.location.search);
     }
   }
@@ -78,27 +81,39 @@ export default class ListContainer extends Component {
       params.id = encodeURIComponent(params.id); // Encoding just id. Rest are query params, which is encoded while making axios request
     }
 
+    for (let k in params) {
+      if (params.hasOwnProperty(k)) {
+        params[k] = decodeURI(params[k]);
+      }
+    }
+
     // props.fetchAll is available only when model is implemented. Addons doesn't have model hence calling 'fetchList' class fn.
     if (!this.props.fetchAll && this.fetchList) {
       this.fetchList(params);
     } else if (this.props.fetchAll || this.fetchEntityList) {
-      return this.fetchEntityList(params)
-        .then(() => {
-          this.setState({
-            status: {
-              type: 'success',
-              message: null,
-            },
+      const promise = this.fetchEntityList(params);
+
+      if (promise.then) {
+        promise
+          .then(() => {
+            this.setState({
+              status: {
+                type: 'success',
+                message: null,
+              },
+            });
+          })
+          .catch(err => {
+            this.setState({
+              status: {
+                type: 'error',
+                message: err.errors || err,
+              },
+            });
           });
-        })
-        .catch(err => {
-          this.setState({
-            status: {
-              type: 'error',
-              message: err.errors || err,
-            },
-          });
-        });
+      }
+
+      return promise;
     }
   };
 

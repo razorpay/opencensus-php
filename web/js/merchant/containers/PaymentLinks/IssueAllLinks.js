@@ -20,8 +20,8 @@ import {
 @reduxForm({
   form: 'issueAllLinks',
   initialValues: {
-    sms_notify: 0,
-    email_notify: 0,
+    sms_notify: '0',
+    email_notify: '0',
   },
 })
 export default class IssueAllLinksModal extends Component {

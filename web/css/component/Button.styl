@@ -1,54 +1,74 @@
 .Button
-  background: #fff linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.04))
+  background: #fbfbfb
   color: #414141
-  padding: 11px 20px
+  padding: 10px 20px
   line-height: 16px
   border-radius: 2px
   border: 1px solid #e6e7e8
   outline: none
   margin-right: 12px
   transition: 0.15s, 0.3s border
-  &:active
-    color: #58666e
-    background-color: #cfcfcf
-    border-color: #94abb1
-    box-shadow: inset 0 3px 5px rgba(0,0,0,0.125)
 
-  &:hover
-    background-color: #f2f2f2
+  &:not(:disabled)
+    &:hover
+      background-color: #ececec
+      border-color: #d8d8d8
 
-  &.disabled
-    cursor: not-allowed
+    &:active
+      color: #58666e
+      background-color: #dcdcdc
+
+  &:disabled
+    cursor: not-allowed !important
     opacity: 0.5
+
+  &--small
+    padding: 8px 24px;
 
 .Button--transparent
   background-color: transparent
-  color: inherit
+  color: $primary-color
   border: 0
-  padding: 4px 8px
-  margin: 0
+  padding: 0
+  margin: 0 4px 0 0
   line-height: inherit
 
-  &:hover
-    background-color: transparent
-    color: inherit
-    opacity: 0.85
+  &:not(:disabled)
+    &:hover
+      background-color: transparent
+      color: $primary-color-hover
+      opacity: 0.85
 
+    &.Button--Link
+      &:active, &:focus
+        background-color: transparent
+        color: #135fd9
+        box-shadow: none
+        text-decoration: none
+
+      &:hover
+        text-decoration: underline
+
+      i
+        margin-left: 4px
+        display: inline-block // To avoid putting text-decoration
+        text-decoration: none
 
 .Button--primary
   background-color: $primary-color
   color: #fff
   border: darken($primary-color, 10%)
 
-  &:hover
-    color: #fff
-    background-color: #2371ec
-    border-color: #135fd9
+  &:not(:disabled)
+    &:hover
+      color: #fff
+      background-color: $primary-color-hover
+      border-color: #135fd9
 
-  &:active
-    color: #fff
-    background-color: #135fd9
-    border-color: #0e449c
+    &:active
+      color: #fff
+      background-color: #135fd9
+      border-color: #0e449c
 
 .Button-icon
   float: left
@@ -57,3 +77,14 @@
 .Button-icon--after
   float: right
   margin: 0 -4px 0 4px
+
+/* Input having button on the right attached to it */
+.Button--input--right
+  position: relative
+  margin-right: 0
+  margin-left: -2px
+  display: inline-block
+  border-top-left-radius: 0
+  border-bottom-left-radius: 0
+  z-index: 2
+  vertical-align: bottom

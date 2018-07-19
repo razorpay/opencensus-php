@@ -9,6 +9,11 @@ export default props => {
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
+      <div class="form-group list-filter-item">
+        <label>Notes</label>
+        <Field name="notes" class="form-control input-sm" component="input" />
+      </div>
+
       <div class="form-group list-filter-item count">
         <label>Count</label>
         <Field

@@ -406,6 +406,15 @@ export default class TerminalForm extends Component {
               entity && entity.type && entity.type.indexOf('bharat_qr') >= 0
             }
           />
+          <CheckField
+            label="Debit Recurring"
+            name="type[debit_recurring]"
+            defaultChecked={
+              entity &&
+              entity.type &&
+              entity.type.indexOf('debit_recurring') >= 0
+            }
+          />
 
           <div class="m-t m-b" />
           <AsyncButton

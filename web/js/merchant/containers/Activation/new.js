@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'rzp/modules/notifications';
 import { without } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
@@ -16,6 +16,11 @@ import User from 'merchant/models/User';
 
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
+
+import { LLPIN_BusinessTypes } from 'component/merchant/Activation/ActivationFormMap';
+
+const welcomeImg = '/img/activation/welcome.svg';
+const successImg = '/img/activation/submit-success.svg';
 
 /*
 * ActivationContainer is used in:
@@ -56,7 +61,7 @@ export class ActivationContainer extends React.Component {
     ]).then(([data, categories]) => {
       const someDetailsFilled = isFormTouched(data.data);
 
-      if (someDetailsFilled) {
+      if (!someDetailsFilled) {
         this.preloadWelcomeAsset();
       }
 
@@ -74,12 +79,12 @@ export class ActivationContainer extends React.Component {
 
   preloadWelcomeAsset() {
     const welcome = new Image();
-    welcome.src = 'img/activation/welcome.svg';
+    welcome.src = welcomeImg;
   }
 
   preloadSuccessAsset() {
     const success = new Image();
-    success.src = 'img/activation/submit-success.svg';
+    success.src = successImg;
   }
 
   updateSession(data) {
@@ -173,9 +178,21 @@ export class ActivationContainer extends React.Component {
         let errors = [];
 
         if (err.errors) {
-          err.errors.forEach(err => {
-            if (err.toLowerCase().indexOf('status code') === -1) {
-              errors.push(err);
+          err.errors.forEach(er => {
+            if (er.toLowerCase().indexOf('status code') === -1) {
+              // TODO: BE treats LLPin as cin currently. So, gives error for cin, not LLPin. To revert when BE handles.
+              if (er.indexOf('cin') !== -1) {
+                const businessType = this.state.data.business_type;
+
+                if (
+                  businessType &&
+                  LLPIN_BusinessTypes.indexOf(Number(businessType)) !== -1
+                ) {
+                  er = er.replace('cin', 'llpin');
+                }
+              }
+
+              errors.push(er);
             }
           });
         }
@@ -371,7 +388,7 @@ const SuccessScreen = _ => {
     <div class="Activation--success">
       <div class="Activation-title">
         <side-title>Activation Form submitted Successfully!</side-title>
-        <div class="submit-illustration" />
+        <img src={successImg} class="submit-illustration" />
       </div>
       <div class="Activation-info">
         <i class="i i-check" /> Activation Form Submitted
@@ -405,15 +422,15 @@ const WelcomeScreen = ({ openWizard }) => {
     <div class="Activation--welcome">
       <h3> Get Started with Activation</h3>
       <div class="underline" />
-      <div class="welcome-illustration" />
+      <img src={welcomeImg} class="welcome-illustration" />
       <div class="short-content">
         <p>
-          Simply submit your business details and upload relavant proofs to
+          Simply submit your business details and upload relevant proofs to
           start accepting payments.
         </p>
         <p>
           Once you submit the form, it may take upto {activationDuration} to get
-          you account activated.
+          your account activated.
         </p>
 
         <Button.Primary onClick={openWizard}>

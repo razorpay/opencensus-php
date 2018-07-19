@@ -4,18 +4,117 @@
   margin: 24px 0 8px
   position: relative
 
+  .Input-content
+    position: relative
+
+  .Input-addons
+    position: absolute
+    top: 1px
+    bottom: 1px
+    width: 36px
+    font-size: 14px
+    background-color: #F0F3F4
+    color: #57666D
+    text-align: center
+    line-height: 36px
+    pointer-events: none
+
+    i
+      font-size: 16px
+      line-height: unset
+
+    &--before
+      left: 1px
+      border-top-left-radius: 1px
+      border-bottom-left-radius: 1px
+
+    &--after
+      right: 1px
+      border-top-right-radius: 1px
+      border-bottom-right-radius: 1px
+
+    &--clickable
+      border-radius: 50%
+      background: transparent
+      pointer-events: all
+      cursor: pointer
+
+      &:hover
+        background: #fafafa
+
   label
     font-weight: normal
     margin-bottom: 0
+    line-height: inherit
+
   input[type=file]
     padding-top: 6px
   &.is-focused
+    .Input-addons
+      background-color: rgba(82,143,240,0.17)
+
     .Input-info
       transform: translateY(-50%)
       opacity: 1
 
       @media (max-width: 1024px)
         transform: none
+
+  &.is-mature:not(.is-focused)
+    .is-invalid, &.is-invalid
+      .Input-addons
+        background-color: rgba(167, 4, 5, 0.17);
+
+  &.Input--half
+    .Input-elWrapper, .Input--checkbox // Half of normal size
+      width: 170px
+
+  &.Input--half_small // Smaller than half size
+    .Input-elWrapper, .Input--checkbox
+      width: 148px
+
+  &.Input--half_big // Bigger than half size
+    .Input-elWrapper, .Input--checkbox
+      width: 192px
+
+  &--inline
+    display: inline-block
+
+  &.Input--small .Input-elWrapper
+    width: 260px
+
+  &.Input--large .Input-elWrapper
+    width: 320px
+
+.Input--checkbox.Input--checkbox
+  .Input-elWrapper
+    width: 100%;
+
+.Input--capitalize .Input-el
+  text-transform: uppercase
+
+.Input--pair
+  .Input-pair
+    position: relative
+    border: 1px solid #e2e2e2
+    border-radius: 2px
+    margin-bottom: 20px
+
+    .Input-elWrapper:nth-of-type(1)
+      font-weight: 600
+
+    .i-close
+      color: #b4babd
+
+    input, textarea
+      border: none
+
+    &.is-focused
+      border-color: #528ff0
+
+  .Input-pair-separator
+    margin: 0 12px
+    border-bottom: 1px dashed #e2e2e2
 
 .Input--required
   .Input-label::after
@@ -27,34 +126,41 @@
       color: $textDangerColor
 
 .Input--disabled
+  opacity: 0.35
+
   label
     cursor: unset !important
+    pointer-events: none
 
   input, select, .Input-checkbox, .Input-checkbox + .Input-inlineLabel, .Input-radio, textarea
-    background-color: #f8f8f8
     cursor: unset
+    pointer-events: none
 
   input:checked + .Input-radio
     border-color: #fafafa
 
-  .Input-checkbox, .Input-radio, input[type='file']
+  .Input-checkbox, .Input-checkbox--label, .Input-radio, input[type='file']
     cursor: not-allowed
 
 .Input--checkbox
   white-space: nowrap
-  .Input-inlineLabel
-    margin: -4px 0 0 0
 
 .Input-label
   font-weight: bold
   position: relative
 
-.Input:not(.Input-vTop) .Input-label
-  top: 7px
+.Input:not(.Input--vTop), .InputGroup:not(.InputGroup--vTop)
+  .Input-label
+    top: 7px
+
+.Input--vTop, .InputGroup--vTop // Explicit style to override in case of complex hierarchies
+  .Input-label
+    top: 0 !important
 
 .Input-elWrapper
   position: relative
   font-size: 0
+  vertical-align: top
 
   &.Select-elWrapper
     &::before
@@ -74,6 +180,7 @@
 
 .Input-info
   max-width: 250px
+  min-width: 200px
   display: inline-block
   position: absolute
   margin-left: 12px
@@ -122,14 +229,24 @@
 .Input-el
   line-height: 16px
   height: 36px
-  width: 260px
+  width: 100%
   background: #fff
-  font-size: 14px
-  padding: 0 12px
   border: 1px solid #E2E2E2
   border-radius: 2px
+  overflow: hidden
+  font-size: 14px
+  padding: 0 12px
   &[type=checkbox], &[type=radio]
-    display: none
+    display: block
+    height: 0
+    margin: 0
+    opacity: 0
+
+  &--before
+    padding-left: 48px
+
+  &--after
+    padding-right: 48px
 
 .Input:not(.Input--disabled) .Input-el
     &:hover
@@ -142,20 +259,23 @@
   margin-left: 4px
   vertical-align: middle
 
-
-.Input--small
-  .Input-el
-    max-width: 170px
-
 textarea.Input-el
-  height: 70px
+  min-height: 36px
+  max-height: 90px
+  height: 60px
+  line-height: 20px
   resize: vertical
   padding: 10px 12px
 
+.Input-checkbox--label
+  font-size: 14px
+  cursor: pointer
+
 .Input-checkbox
-  margin-right: 6px
-  width: 18px
-  height: 18px
+  width: 16px
+  margin-top: 2px
+  margin-right: 8px
+  height: 16px
   background: #fff
   border-radius: 2px
   float: left
@@ -164,6 +284,7 @@ textarea.Input-el
   border: 1px solid #ccc
 
   & + .Input-inlineLabel
+    font-size: 14px
     cursor: pointer
 
   &:after
@@ -176,7 +297,14 @@ textarea.Input-el
     border: solid #fff
     border-width: 0 2px 2px 0
     transform: rotate(45deg) scale(1.5)
-    margin: 1px 0 0 5px
+    margin: 0 0 0 4px
+
+:focus + .Input-checkbox
+  border-color: $primary-color
+
+:focus + .Input-checkbox--label
+  color: #22527b
+  text-decoration: underline
 
 :checked + .Input-checkbox
   background: $primary-color
@@ -210,6 +338,9 @@ textarea.Input-el
   border: 1px solid #ccc
   transition: .2s
 
+:focus + .Input-radio
+  border-color: $primary-color
+
 :checked + .Input-radio
   background: $primary-color
   border: 3px solid #fff
@@ -228,6 +359,9 @@ textarea.Input-el
     &.shallow
       color: #606061
 
+  &-list
+    padding-left: 16px
+
 .Input-error
   display: none
   color: $textDangerColor
@@ -241,5 +375,79 @@ textarea.Input-el
 
 .InputGroup
   margin: 24px 0 0
+  position: relative
+
   .Input
     margin: 8px 0
+
+  &--near // (Temporary class)
+    margin-top: 8px
+
+  &--inline
+    display: table
+
+    .Input
+      display: table-cell
+
+    .Input-content .Input-content
+      margin-left: 0
+      margin-right: 20px
+
+/* Placeholder states for Input element */
+.Input-el
+  &::-webkit-input-placeholder /* Chrome/Opera/Safari */
+    opacity: 0.8
+    text-transform: initial
+
+  &::-moz-placeholder /* Firefox 19+ */
+    opacity: 0.8
+    text-transform: initial
+
+  &:-ms-input-placeholder /* IE 10+ */
+    opacity: 0.8
+    text-transform: initial
+
+  &:-moz-placeholder /* Firefox 18- */
+    opacity: 0.8
+    text-transform: initial
+
+/* Calendar picker styles */
+.Input--Calendar-content
+  &.rc-calendar-picker
+    z-index: 9999
+
+  .rc-calendar
+    margin-top: 42px
+
+  &--top
+    .rc-calendar
+      margin-bottom: 40px
+      margin-top: 0
+
+      &::before
+        content: none
+
+      &::after
+        content: none
+
+/* Time picker styles */
+.Input--TimePicker
+  .rdtPicker td
+    font-size: 0 // To remove unwanted spacing
+
+  .rdtCounters
+    font-size: 14px
+    height: 84px
+
+  .rdtPicker
+    width: 100%
+    bottom: 37px
+    padding: 8px 5%
+
+  .rdtCounterSeparator
+    line-height: 84px
+
+  .rdtCounter
+    .rdtBtn, .rdtCount
+      line-height: 25px
+      height: 28px
