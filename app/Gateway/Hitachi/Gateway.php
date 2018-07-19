@@ -751,8 +751,8 @@ class Gateway extends Base\Gateway
     protected function getAttributesFromRefundReverseResponse(array $response) : array
     {
         $attributes = [
-            Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM],
-            Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE],
+            Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
+            Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE] ?? $response['response_code'],
         ];
 
         return $attributes;
