@@ -20,6 +20,8 @@ export default ({ entity, updateEntity, mode }) => {
       trivia: body.trivia,
       network: body.network,
       type: body.type,
+      enabled: body.enabled,
+      flows: body.flows,
     };
 
     // Lets remove all the empty variables
@@ -59,7 +61,19 @@ export default ({ entity, updateEntity, mode }) => {
 // Edit iin Form
 const EditIINForm = ({ entity, handleSubmit }) => {
   return (
-    <ModalContent header="Edit iin">
+    <ModalContent
+      header="Edit IIN"
+      footer={
+        <div class="text-right">
+          <AsyncButton
+            text="Save"
+            class="btn"
+            pendingClass="small spinner"
+            onSubmit={handleSubmit}
+          />
+        </div>
+      }
+    >
       <Form class="full-span">
         <Field
           label="IIN (6 digit)"
@@ -118,17 +132,54 @@ const EditIINForm = ({ entity, handleSubmit }) => {
           style={{ width: '200px' }}
         />
 
-        <CheckField label="EMI" name="emi" defaultChecked={entity.emi}>
-          <span class="m-l">EMI Available</span>
-        </CheckField>
-
         <Field label="Trivia" name="trivia" defaultValue={entity.trivia} />
 
-        <AsyncButton
-          text="Submit"
-          class="btn"
-          pendingClass="small spinner"
-          onSubmit={handleSubmit}
+        <CheckField
+          label="EMI Available"
+          name="emi"
+          defaultChecked={entity.emi}
+        />
+
+        <CheckField
+          label="Enabled"
+          name="enabled"
+          defaultChecked={entity.enabled}
+        />
+
+        <CheckField
+          label="3Ds"
+          name="flows[3ds]"
+          defaultChecked={entity.flows.includes('3ds')}
+        />
+
+        <CheckField
+          label="Pin"
+          name="flows[pin]"
+          defaultChecked={entity.flows.includes('pin')}
+        />
+
+        <CheckField
+          label="OTP"
+          name="flows[otp]"
+          defaultChecked={entity.flows.includes('otp')}
+        />
+
+        <CheckField
+          label="Iframe"
+          name="flows[iframe]"
+          defaultChecked={entity.flows.includes('iframe')}
+        />
+
+        <CheckField
+          label="Magic"
+          name="flows[magic]"
+          defaultChecked={entity.flows.includes('magic')}
+        />
+
+        <CheckField
+          label="Headless OTP"
+          name="flows[headless_otp]"
+          defaultChecked={entity.flows.includes('headless_otp')}
         />
       </Form>
     </ModalContent>
