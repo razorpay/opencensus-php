@@ -22,7 +22,7 @@ $env = 'production';
 
 $appEnvironment = env('APP_ENV');
 
-$dockerEnvironment = false;
+$dockerEnvironment = true;
 
 if (strpos($appEnvironment, 'testing') !== false)
 {
@@ -73,6 +73,8 @@ if ($dockerEnvironment === true)
 
 if (! function_exists('read_env_file'))
 {
+
+    // @codingStandardsIgnoreLine
     function read_env_file($envDir, $fileName)
     {
         $file = $envDir . '/' . $fileName;
