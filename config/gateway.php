@@ -502,7 +502,7 @@ return [
     'netbanking_allahabad' => [
         'test_merchant_id_2' => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID'),
         'test_merchant_id'   => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID_2'),
-        'test_hash_secret'   => env('NETBANKING_ALLAHABAD_TEST_HASH_SECRET'),
+        'test_hash_secret'   => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'sharp' => [
