@@ -31,7 +31,7 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        $content = $this->getRefundData($input);
+        list($content,$count) = $this->getRefundData($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -48,13 +48,14 @@ class RefundFile extends Base\RefundFile
 
         $fileData = [
             'file_path'  => $file['local_file_path'],
+            'count'      => $count,
             'signed_url' => $signedFileUrl,
             'file_name'  => basename($file['local_file_path']),
         ];
 
         $this->sendRefundEmail($fileData, (array) $input['email']);
 
-        return $file['local_file_path'];
+        return $fileData['file_path'];
 
     }
 
@@ -67,8 +68,8 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData($input)
     {
-        foreach ($input['data'] as $row)
-        {
+        $count=0;
+        foreach ($input['data'] as $row) {
             $txnDate = Carbon::createFromTimestamp(
                 $row['payment']['created_at'],
                 Timezone::IST)
@@ -82,23 +83,23 @@ class RefundFile extends Base\RefundFile
             $pid = $row['payment']['id'];
 
             $data[] = [
-                'PID'                   => $pid,
-                'Bank Id'               => '',
-                'Merchant Name'         => '',
-                'Txn Date'              => $txnDate,
-                'Refund Date'           => $refundDate,
-                'Bank Merchant Code'    => '',
-                'Bank Ref No.'          => '',
-                'PGI Reference No.'     => '',
-                'Txn Amount'            => $row['payment']['amount'] / 100,
-                'Refund'                => $row['refund']['amount'] / 100,
+                'PID' => $pid,
+                'Bank Id' => '027',
+                'Merchant Name' => '',
+                'Txn Date' => $txnDate,
+                'Refund Date' => $refundDate,
+                'Bank Merchant Code' => '',
+                'Bank Ref No.' => '',
+                'PGI Reference No.' => '',
+                'Txn Amount' => $this->formatAmount($row['payment']['amount'] / 100),
+                'Refund' => $this->formatAmount($row['refund']['amount'] / 100),
             ];
 
-            $txt = $this->getTextData($data);
-            s($txt);
-            return $txt;
-
+            $count++;
         }
+
+            $txt = $this->getTextData($data);
+            return [$txt,$count];
     }
 
     protected function getTextData($data)
@@ -111,5 +112,9 @@ class RefundFile extends Base\RefundFile
     protected function getFileToWriteNameWithoutExt()
     {
         return self::$fileToWriteName;
+    }
+    public function formatAmount($amount): string
+    {
+        return number_format($amount , 2, '.', '');
     }
 }
