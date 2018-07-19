@@ -402,7 +402,10 @@
             document.getElementsByName('payment-form')[0].style.display = 'none';
             document.getElementsByName('payment-form')[0].innerHTML = '';
 
-            window.RZP.getEl('testmode-warning').style.display = 'none';
+            var testModeEle = window.RZP.getEl('testmode-warning');
+            if (testModeEle) {
+                testModeEle.style.display = 'none';
+            }
 
             if (window.RZP.checkIsDesktop()) {
                 document.body.scrollTop = 0;
