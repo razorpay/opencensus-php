@@ -62,7 +62,7 @@ export default class AccountsListContainer extends ListContainer {
     this.props.openModal({
       size: 'small',
       component: (
-        <AccountCreation onSave={this.onAccountEdit} account={account} />
+        <AccountCreation onSave={this.onAccountEdit} accountData={account} />
       ),
     });
   };
