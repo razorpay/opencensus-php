@@ -62,8 +62,6 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $content[AuthResponseFields::TRANSACTION_ID]);
 
-        $this->verifySecureHash($content);
-
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
         $actualAmount   = number_format($content[AuthResponseFields::AMOUNT], 2, '.', '');
 
@@ -78,6 +76,8 @@ class Gateway extends Base\Gateway
                 $content[AuthResponseFields::STATUS_CODE],
                 $message);
         }
+
+        $this->verifySecureHash($content);
 
         $gatewayPayment = $this->saveCallbackContent($input, $content);
 

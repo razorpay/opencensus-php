@@ -37,6 +37,22 @@ class AtomGatewayTest extends TestCase
         $this->assertTestResponse($payment);
     }
 
+    public function testSignatureNotFound()
+    {
+        $this->mockSignatureNotFound();
+
+        $this->ba->publicAuth();
+
+        $data = $this->testData['testFailedPayment'];
+
+        $payment = $this->payment;
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testNetbankingPaymentCapture()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
@@ -319,6 +335,21 @@ class AtomGatewayTest extends TestCase
             $content['atomtxnId'] = $gatewayPayment['gateway_payment_id'];
 
             $content['BID']       = $gatewayPayment['bank_payment_id'];
+        });
+    }
+
+    protected function mockSignatureNotFound()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'hash')
+            {
+                unset($content['signature']);
+            }
+            if ($action === 'callback')
+            {
+                $content['f_code'] = 'F';
+            }
         });
     }
 }
