@@ -17,13 +17,13 @@ class Server extends Base\Mock\Server
     {
         $string_for_validation = $input['parameter_string'];
 
-        $sig = $input['bank_signature'];
+        $sig = $input['bank_signaturte'];
 
         $input['parameter_string'] = str_replace('|','&',$input['parameter_string']);
 
         parse_str($input['parameter_string'],$input);
 
-        $input['bank_signature']=$sig;
+        $input['bank_signaturte']=$sig;
 
         parent::authorize($input);
 
@@ -49,7 +49,7 @@ class Server extends Base\Mock\Server
 
         $callbackUrl = $input[RequestFields::RETURN_URL];
 
-        $callbackUrl .= '?bank_signature='.$response[ResponseFields::CHECKSUM] .'&parameter_string='.$checksum_string;
+        $callbackUrl .= '?bank_signaturte='.$response[ResponseFields::CHECKSUM] .'&parameter_string='.$checksum_string;
 
         $request = [
             'url'     => $callbackUrl,
@@ -75,7 +75,7 @@ class Server extends Base\Mock\Server
     {
         $data = [
             ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
-            ResponseFields::BANK_TRANSACTION_ID     => 8888888,
+            ResponseFields::BANK_TRANSACTION_ID     => 99999,
             ResponseFields::ITEM_CODE               => $input[RequestFields::ITEM_CODE],
             ResponseFields::PRODUCT_REF_NUMBER      => $input[RequestFields::PRODUCT_REF_NUMBER],
             ResponseFields::PAID                    => Status::YES,
@@ -124,7 +124,7 @@ class Server extends Base\Mock\Server
 
     protected function validatechecksum($string_for_validation, $input)
     {
-        $input_hash = $input['bank_signature'];
+        $input_hash = $input['bank_signaturte'];
 
         $expected_hash=$this->getHashOfString($string_for_validation);
 
