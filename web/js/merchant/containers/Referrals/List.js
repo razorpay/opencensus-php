@@ -63,7 +63,7 @@ export default class ReferralsListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen notMyRole="support">
+          <ShowWhen myRole="manager admin owner">
             <div class="btn-toolbar">
               <button
                 class="pull-right btn btn-primary"
