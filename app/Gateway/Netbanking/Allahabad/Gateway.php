@@ -103,7 +103,7 @@ class Gateway extends Base\Gateway
             Action::AUTHORIZE);
 
         $this->saveCallbackResponse($content);
-        s($input['terminal']);
+
         return $this->getCallbackResponseData($input);
     }
 
