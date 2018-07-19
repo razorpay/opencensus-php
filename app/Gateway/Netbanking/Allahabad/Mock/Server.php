@@ -75,7 +75,7 @@ class Server extends Base\Mock\Server
     {
         $data = [
             ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
-            ResponseFields::BANK_TRANSACTION_ID     => 99999999,
+            ResponseFields::BANK_TRANSACTION_ID     => 8888888,
             ResponseFields::ITEM_CODE               => $input[RequestFields::ITEM_CODE],
             ResponseFields::PRODUCT_REF_NUMBER      => $input[RequestFields::PRODUCT_REF_NUMBER],
             ResponseFields::PAID                    => Status::YES,
