@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
 import { titleCase } from 'rzp/utils/rzp-utils';
-import ProceedFormFields from 'merchant/containers/PaymentLinks/ProceedModal';
+import ProceedModal from 'merchant/containers/PaymentLinks/BatchUpload/ProceedModal';
 import * as ModalActions from 'rzp/modules/modals';
 
 @connect(state => state.session, ModalActions)
@@ -49,7 +49,7 @@ export default class BatchUpload extends Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <ProceedFormFields
+        <ProceedModal
           closeUrl={this.props.closeUrl}
           submitUploadBatch={this.props.uploadBatch.bind(
             null,

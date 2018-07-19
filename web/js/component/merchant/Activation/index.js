@@ -2,10 +2,10 @@ import Form from 'component/Form';
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import Alert from 'component/Alert';
-import { classList } from 'common/util';
+import { ModalAsideNav } from 'component/Wizard';
 import { prevent } from 'common/util';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
-
+import { classList } from 'common/util';
 import { activationDuration } from 'common/data';
 
 import {
@@ -76,6 +76,10 @@ function defaultFieldProps(f) {
   if (!f.hasOwnProperty('autoComplete')) {
     f.autoComplete = 'off';
   }
+
+  if (!f.hasOwnProperty('size')) {
+    f.size = 'small';
+  }
 }
 
 let DOCUMENT_UPLOAD_STEP; // To handle specific case for document step
@@ -97,7 +101,9 @@ export default class ActivationWizard extends React.Component {
         this.props.data.business_registered_pin
         ? '1'
         : '0', // '1' => checkbox ticked
-    has_gstin: this.props.data && this.props.data.gstin ? '0' : '1', // '0' => value exists
+    has_url:
+      this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
+    has_gstin: this.props.data && this.props.data.has_gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
   };
@@ -156,7 +162,10 @@ export default class ActivationWizard extends React.Component {
 
     defaultFieldProps.call(this, FORM_TABS_CONTENT); // Set the default props for all tab content views
 
-    // All document fields in activation form to have same footprint
+    /*
+    * All document fields in activation form to have same footprint.
+    * Adding onChange listener to all document upload fields.
+    * */
     DOCUMENT_UPLOAD_STEP &&
       FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(a => {
         a._cmp = Input.File;
@@ -167,18 +176,13 @@ export default class ActivationWizard extends React.Component {
         if (!a.hasOwnProperty('required')) {
           a.required = true;
         }
-      });
 
-    // Adding onChange listener to all document upload fields
-    DOCUMENT_UPLOAD_STEP &&
-      FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP].forEach(
-        a =>
-          (a.onChange = (file, progressTracker) => {
-            return props.saveFile(a.name, file, progressTracker).then(() => {
-              this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
-            });
-          })
-      );
+        a.onChange = (file, progressTracker) => {
+          return props.saveFile(a.name, file, progressTracker).then(() => {
+            this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
+          });
+        };
+      });
   }
 
   componentDidMount() {
@@ -319,7 +323,8 @@ export default class ActivationWizard extends React.Component {
       return; // No action if clicked on same Tab. (Click on Save sends newActiveTab = null, so it's not same as click on same tab)
     }
 
-    let currentActive = this.state.activeTab; // currentActive = The tab of which dirty data is saved
+    const currentActive = this.state.activeTab; // currentActive = The tab of which dirty data is saved
+    const savingWhichTab = currentActive;
 
     newActiveTab = newActiveTab != null ? newActiveTab : currentActive; // currentActive tab remains as newActiveTab (To handle Save btn click and 'Submit Form' tab click).
 
@@ -330,6 +335,8 @@ export default class ActivationWizard extends React.Component {
     let shouldSave = Object.keys(this.state.dirty).length ? true : null;
     if (!shouldSave) {
       this.updateFEOnlyValues();
+
+      this.markTabIfActive(savingWhichTab); // To update changes happened due to FE-only fields change, like has_gstin and has_url.
 
       cb && cb(); // If clicked on Save/Save-Next btn without any change
       return;
@@ -346,7 +353,13 @@ export default class ActivationWizard extends React.Component {
       ) {
         // Saving only the fields corresponding to currentActive tab.
         const fieldVal = currentDirty[name];
-        reqData[name] = fieldVal === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
+        reqData[name] = fieldVal;
+
+        // For business website empty string => user don't have website. null => user didn't attempt the field.
+        const allowEmptyString = ['business_website', 'gstin'];
+        if (allowEmptyString.indexOf(name) === -1) {
+          reqData[name] = reqData[name] === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
+        }
       }
     });
 
@@ -382,7 +395,6 @@ export default class ActivationWizard extends React.Component {
     });
 
     /* Following is api call and post response handling */
-    const savingWhichTab = currentActive;
     const savingDataOfWhichTab = { ...reqData };
 
     this.props.save(reqData).then(data => {
@@ -487,22 +499,19 @@ export default class ActivationWizard extends React.Component {
   };
 
   /*
-  * Fn. to keep _name fields(FE only fields) in sync with updated values(props.data) on tab change.
+  * Fn. to keep _name fields(FE-only fields) in sync with updated values(props.data) on tab change.
   * + Checking/Unchecking/Changing _name FE fields will remain as it is throughout(in state). But changing them might not always save data.
   * + Example: Changing 'has_gstin' from 1 -> 0 (not have-> have) but value is not filled, then tab change won't save anything. So next time, tab is selected, radio box must display as per saved value, not last state value.
   * + Example: If `same_address` ticked but values not saved due to some reason.
   * */
   updateFEOnlyValues() {
     // Step 1:
-    // Handle case where user changed to 'no gst' option. But since we don't modify GST once filled, 1st radio box must get auto selected if GST value exists.
-    // has_gstin  = 0 => selected 1st radio box => Has GSTIN
-    this.setState({
-      has_gstin: this.props.data.gstin ? '0' : '1', // '1' => no value
-    });
+    /*
+    *  Don't update FE-only values like has_gstin / has_url, cuz Input.
+    *  Radio is not externally controlled, so updating state will just update has_gstin and has_url but not the Radio buttons' view and state.
+    * */
 
     // Step 2:
-    // Handle case where user changed to 'no gst' option. But since we don't modify GST once filled, 1st radio box must get auto selected if GST value exists.
-    // has_gstin  = 0 => selected 1st radio box => Has GSTIN
     this.setState({
       same_address:
         this.props.data.business_operation_pin ==
@@ -612,7 +621,9 @@ export default class ActivationWizard extends React.Component {
      * Step 2: If user marks no GSTIN from radio box
      * */
     if (stateName === 'has_gstin' && fieldValue === '1') {
-      sideEffectFieldsToUpdate['gstin'] = null;
+      sideEffectFieldsToUpdate['gstin'] = '';
+    } else if (stateName === 'has_url' && fieldValue === '1') {
+      sideEffectFieldsToUpdate['business_website'] = '';
     }
 
     /* Step 3: If same_address is already ticked and any of business_registered fields are changed, then mark operational fields dirty;'.*/
@@ -823,55 +834,44 @@ export default class ActivationWizard extends React.Component {
         return ActivationField.call(this, field);
       });
 
+    let moreTabs = [];
+    if (!isFormSubmitted) {
+      moreTabs.push(
+        <li
+          key="submit-tab"
+          onClick={this.toggleSubmitLayer}
+          class={classList(
+            !this.isAllTabsValid() && 'disabled',
+            this.state.showSubmitLayer && 'active',
+            'li--submit'
+          )}
+        >
+          Submit Form
+          {!this.isAllTabsValid() && (
+            <div class="description small">Complete the form to submit</div>
+          )}
+        </li>
+      );
+    }
+
     return (
-      <div class="Activation--wizard">
+      <div class="Activation--wizard Wizard">
         {/* Activation form tabs */}
-        <aside>
-          <side-title>Activation Form</side-title>
-          {!this.isLinkedAccountForm &&
+        <ModalAsideNav
+          title="Activation Form"
+          description={
+            !this.isLinkedAccountForm &&
             !isFormSubmitted && (
               <p>Complete and submit the form to start accepting payments.</p>
-            )}
-          <ul>
-            {/* Activation form tabs */}
-            {FORM_TABS.map((t, i) => {
-              let isTabValid = this.state.tabs[i];
-              return (
-                <li
-                  class={classList(
-                    i === activeTab && !this.state.showSubmitLayer && 'active',
-                    isTabValid && 'text-success'
-                  )}
-                  key={i}
-                  data-index={i}
-                  onClick={this.changeTab}
-                >
-                  {isTabValid && <i class={'i-check text-success'} />}
-                  {t}
-                </li>
-              );
-            })}
-
-            {/* Submit form tab*/}
-            {!isFormSubmitted && (
-              <li
-                onClick={this.toggleSubmitLayer}
-                class={classList(
-                  !this.isAllTabsValid() && 'disabled',
-                  this.state.showSubmitLayer && 'active',
-                  'li--submit'
-                )}
-              >
-                Submit Form
-                {!this.isAllTabsValid() && (
-                  <div style={{ marginTop: -20, fontSize: 12 }}>
-                    Complete the form to submit
-                  </div>
-                )}
-              </li>
-            )}
-          </ul>
-        </aside>
+            )
+          }
+          tabs={FORM_TABS}
+          moreTabs={moreTabs}
+          tabsValidity={this.state.tabs}
+          tabClickHandler={this.changeTab}
+          activeTab={activeTab}
+          activeTabContdition={!this.state.showSubmitLayer}
+        />
 
         {/* Activation form Content */}
         <main
@@ -1056,7 +1056,7 @@ export default class ActivationWizard extends React.Component {
                 {isLastTab &&
                   !isFormSubmitted && (
                     <Button.Primary
-                      class={classList(!this.isAllTabsValid() && 'disabled')}
+                      disabled={!this.isAllTabsValid()}
                       onClick={this.toggleSubmitLayer}
                     >
                       Submit Form
@@ -1325,7 +1325,7 @@ class SubmitForm extends React.Component {
 
           {/* Action button */}
           <AsyncBtn.Primary
-            class={this.state.allowSubmit ? '' : 'disabled'}
+            disabled={!this.state.allowSubmit}
             onClick={this.submit}
             pendingState={'Submitting...'}
           >

@@ -3,7 +3,7 @@ export default props => {
     input,
     validate,
     tagName = 'input',
-    meta: { submitFailed, error },
+    meta: { submitFailed, error } = {},
     showInlineErrorText = true,
     ...otherProps
   } = props;

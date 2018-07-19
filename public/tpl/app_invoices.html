@@ -3,7 +3,7 @@
     <h1 class="font-thin h3">
       {{title}} ({{mode + " Mode"| titlecase }})
     </h1>
-    <ul class="nav nav-pills nav-justified" not-my-role="sellerapp" ng-show="merchant && user.tags.indexOf('Invoice') !== -1">
+    <ul class="nav nav-pills nav-justified" not-my-role="sellerapp" ng-show="merchant">
       <li>
         <a ui-sref="app.invoices.list"
           ng-class="{active: ('app.invoices.list' | includedByState) || ('app.invoices.detail' | includedByState) || ('app.invoices.new' | includedByState) || ('app.invoices.edit' | includedByState)}">

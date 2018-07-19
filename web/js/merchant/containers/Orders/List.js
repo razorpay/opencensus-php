@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import OrdersListFilter from 'merchant/components/Orders/OrdersListFilter';
-import { fetchOrders as fetchAll } from 'rzp/modules/collection';
+import { fetchOrders as fetchAll } from 'merchant/modules/collection';
 import {
   orderId,
   attempts,

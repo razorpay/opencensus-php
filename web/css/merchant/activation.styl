@@ -9,12 +9,7 @@ $height = 600px
   .spinner-container
     height: 300px
 
-.Activation--wizard, .Activation--success
-  side-title
-    font-size: 18px
-    font-weight: bold
-    display: block
-    margin-bottom: 20px
+$side-width = 240px
 
 /* Activation wizard screen */
 .Activation--wizard
@@ -38,72 +33,17 @@ $height = 600px
       display: inline-block
       width: 80%
 
-  $side-width = 240px
-
-  aside
-    padding: 24px 0
-    width: $side-width
-    background: #fff
-    position: absolute
-    height: 100%
-    border-right: 1px solid #eee
-
-    side-title, p
-      padding: 0 24px
-
-    ul
-      margin: 30px 0
-      padding: 0
-    li
-      cursor: pointer
-      line-height: 40px
-      list-style: none
-      padding: 0 24px
-      margin: 4px 0
-      color: #57666d
-      position: relative
-
-      .i-check
-        margin-right: 6px
-        line-height: initial
-        vertical-align: middle
-      &:hover
-        background: #fafbfc
-      &.text-success
-        color: #27c24c
-      &.active
-        background: #528FF0
-        color: #fff
-
-        .i-check::before
-          color: #fff
-
-        &:after
-          content: "\f10d"
-          color: #fff
-          position: absolute
-          right: 8px
-          top: 1px
-          font-family: merchant-icons
-
-      &.disabled
-        cursor: not-allowed
-        color: #b6c0c4
-
-      &--submit
-        margin-top: 28px
+  aside .li--submit
+    margin-top: 28px
 
   main
-    left: $side-width
+    left: 0
     right: 0
     padding: 30px
     position: absolute
     bottom: 80px
     top: 0
     overflow: auto
-
-    &.main--hide
-      display: none
 
     &.main--full
       bottom: 0
@@ -123,7 +63,7 @@ $height = 600px
     display: inline
 
   footer
-    left: $side-width
+    left: 0
     padding: 20px
     height: 80px
     right: 0
@@ -198,12 +138,6 @@ $height = 600px
       font-size: 14px
       margin-bottom 32px
 
-.activation-field
-  clear: both
-  position: relative
-  padding-left: 180px
-
-
 .Activation--success, .Activation--welcome
   border-radius: 2px
   background: #fafafa
@@ -217,16 +151,17 @@ $height = 600px
 .Activation--success
   padding: 24px
 
-  .side-title
-    margin-bottom: 4px
+  side-title
     text-align: center
+    font-size: 18px
+    font-weight: bold
+    display: block
+    margin-bottom: 12px
 
   .submit-illustration
-    background: url(/img/activation/submit-success.svg) no-repeat
     width: calc(100% + 48px)
-    height: 175px
+    padding: 12px 0 12px 24px
     margin-left: -24px
-    background-position: right
 
   .LinkCard
     color: #58666e
@@ -237,12 +172,14 @@ $height = 600px
     font-size: 16px
     background: #fff
     padding: 24px 6%
-    margin: -20px -12% 30px -12%
+    margin: -20px -12% 20px -12%
     border: 1px solid #e0e0e0
     box-shadow: 8px 8px 8px 0 rgba(132,155,191,0.1)
     color: $heading-primary
     font-weight: 600
     border-radius: 2px
+    position relative
+    z-index: 2
 
     .desc
       font-size: 14px
@@ -276,10 +213,6 @@ $height = 600px
     bottom: 0
     right: 0
     width: 58%
-    height: 94%
-    background: url(/img/activation/welcome.svg) no-repeat
-    background-position: bottom right
-    background-size: contain
     z-index: 1
 
   .short-content
@@ -360,7 +293,7 @@ $height = 600px
       margin: 24px 0 16px
 
     .Input-label
-      margin-bottom: 8px
+      margin-bottom: 12px
       text-align: left
       float: unset
 
@@ -371,7 +304,7 @@ $height = 600px
       margin: 0 0 16px
 
     .Input-label
-      margin-bottom: 8px
+      margin-bottom: 12px
       text-align: left
       float: unset
 
@@ -458,4 +391,4 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
       display: none
 
     main, footer
-      left: 0
+      left: 0 !important

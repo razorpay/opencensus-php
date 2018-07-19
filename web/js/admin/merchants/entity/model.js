@@ -1,4 +1,5 @@
 import { observable, action } from 'mobx';
+
 import { notifySuccess } from 'common/modal';
 import BaseModel from 'model/base';
 
@@ -22,6 +23,7 @@ export default class Model extends BaseModel {
     bankDetails: {},
     creditsLogs: {},
     adminsMap: {},
+    partnerRequests: {},
   };
 
   //Following properties are deeply nested into merchant details, hence create a diff observalble for it.
@@ -89,6 +91,11 @@ export default class Model extends BaseModel {
       if (user.permissions.find(perm => perm === 'view_merchant_features')) {
         this.fetchFeatures('live');
         this.fetchFeatures('test');
+      }
+
+      if (user.permissions.find(perm => perm === 'view_merchant_requests')) {
+        const requestType = !!data.partner_type ? 'deactivation' : 'activation';
+        this.fetchPartnerActivationRequest(requestType);
       }
     });
   }
@@ -223,6 +230,29 @@ export default class Model extends BaseModel {
   };
 
   @action
+  fetchPartnerActivationRequest = action => {
+    return this.request(
+      'fetchPartnerActivationRequest',
+      this.fetchFn(
+        `live_${this.merchantId}/merchant/requests/partner/${action}`
+      )
+    ).then(data => {
+      if (data) {
+        // partnerRequests coud be either for activation or deactivation
+        // hence in [action + 'Pending'] below, action could be activationPending or deactivationPending
+        this.merchant = {
+          ...this.merchant, //to force re-render
+          partnerRequests: {
+            [action + 'Pending']:
+              !!data.status &&
+              ['under_review', 'needs_clarification'].indexOf(data.status) > -1,
+          },
+        };
+      }
+    });
+  };
+
+  @action
   deleteFeature = (featureName, featureMode) => {
     return this.request(
       'deleteFeature',
@@ -296,6 +326,13 @@ export default class Model extends BaseModel {
     this.merchant.scheduleTasks.push(data);
 
     this.merchant = { ...this.merchant }; // To force re-render the view
+  }
+
+  updatePartnerRequests(data) {
+    this.merchant.partnerRequests = {
+      ...data,
+    };
+    this.merchant = { ...this.merchant };
   }
 
   /**

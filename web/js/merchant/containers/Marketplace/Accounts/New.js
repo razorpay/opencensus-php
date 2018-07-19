@@ -26,6 +26,16 @@ export default class AddAccount extends Component {
     errors: null,
   };
 
+  componentWillMount() {
+    const accountData = this.props.accountData;
+
+    if (accountData) {
+      this.props.initialize({
+        name: accountData.name,
+      });
+    }
+  }
+
   save = props => {
     return this.props
       .saveAccount(props)
@@ -44,11 +54,14 @@ export default class AddAccount extends Component {
   };
 
   render() {
-    const { handleSubmit } = this.props;
+    const { handleSubmit, accountData } = this.props;
 
     return (
       <div>
-        <ModalHeader title="Add Account" onCloseClick={this.props.closeModal} />
+        <ModalHeader
+          title={!!accountData ? 'Edit Account' : 'Add Account'}
+          onCloseClick={this.props.closeModal}
+        />
 
         <div class="modal-body">
           <Alert type="error" message={this.state.errors} />
@@ -63,6 +76,7 @@ export default class AddAccount extends Component {
                   class="form-control"
                   autoFocus={true}
                   validate={required()}
+                  disabled={!!accountData}
                 />
                 <small class="help-block">
                   The business/individual name for the account, which will
@@ -85,7 +99,7 @@ export default class AddAccount extends Component {
             <div class="Modal__actions">
               <AsyncButton
                 class="btn btn-primary btn-block"
-                text="Add"
+                text={!!accountData ? 'Update' : 'Add'}
                 pendingText="Adding..."
                 onClick={handleSubmit(this.save)}
               />

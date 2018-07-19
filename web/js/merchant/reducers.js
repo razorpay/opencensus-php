@@ -17,7 +17,7 @@ import settlementReducer from 'merchant/modules/settlements/details';
 import webhooksReducer from 'merchant/modules/webhooks';
 import keysReducer from 'merchant/modules/keys';
 import creditsReducer from 'merchant/modules/credits';
-import teamReducer from 'rzp/modules/team';
+import teamReducer from 'merchant/modules/team';
 import configReducer from 'merchant/modules/config';
 import activationReducer from 'merchant/modules/activation';
 import refundReducer from 'merchant/modules/refunds/details';
@@ -30,6 +30,8 @@ import {
   virtualAccountsReducer,
   virtualAccountReducer,
 } from 'merchant/modules/virtualaccounts';
+import statesReducer from 'merchant/modules/states';
+import taxesReducer from 'merchant/modules/taxes';
 
 import {
   refundBatchesReducer,
@@ -49,7 +51,7 @@ import {
   settlementsReducer,
   disputesReducer,
   submerchantsReducer,
-} from 'rzp/modules/collection';
+} from 'merchant/modules/collection';
 
 import {
   subscriptionsReducer,
@@ -107,6 +109,8 @@ export default combineReducers({
   reversals: reversalsReducer,
   virtualaccounts: virtualAccountsReducer,
   virtualaccount: virtualAccountReducer,
+  states: statesReducer,
+  taxes: taxesReducer,
   reports: reportsReducer,
   submerchants: submerchantsReducer,
 });

@@ -127,9 +127,11 @@ export default class EditOrg extends Component {
       id => !!workflowPerms[id]
     );
     if (body.id) {
+      delete body.id;
       return adminPut({
         url: `live/orgs/${this.org.id}`,
         content_type: 'application/json',
+        data: body,
       }).then(response => {
         if (response) notifySuccess('Org successfully added!');
       });

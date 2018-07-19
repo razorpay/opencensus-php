@@ -14,11 +14,39 @@ export const fetchInvoices = params => {
   };
 };
 
-export const saveInvoice = params => {
+export const saveInvoice = (params, headers = {}) => {
   let invoice = new Invoice(params);
   return {
     type: invoice.isNew ? INVOICE_CREATE : INVOICE_EDIT,
-    payload: invoice.save(),
+    payload: invoice.save(null, {
+      headers,
+    }),
+  };
+};
+
+/* Hook to update newly-created/edited payment link in redux list*/
+export const updatePLInReduxList = (newInvoice, isNew) => {
+  const invoice = new Invoice(newInvoice.data).deserialize();
+
+  return {
+    type: isNew ? `${INVOICE_CREATE}::SUCCESS` : `${INVOICE_EDIT}::SUCCESS`,
+    payload: invoice,
+  };
+};
+
+/* Hook to update newly created payment-page in redux list */
+export const updatePPInReduxList = (newLink, isNew) => {
+  return {
+    type: isNew ? 'PP_CREATE' : 'PP_EDIT',
+    payload: newLink,
+  };
+};
+
+/* Hook to populate payment-page list fetched separately from api */
+export const populateRPLReduxList = newLinksList => {
+  return {
+    type: 'PP_FETCH',
+    payload: newLinksList,
   };
 };
 
@@ -33,6 +61,7 @@ export const deleteInvoice = params => {
 let initialState = {
   loading: true,
   invoices: [],
+  paymentPages: [],
   count: 0,
 };
 
@@ -56,6 +85,24 @@ export default function(state = initialState, action) {
 
     case `${INVOICE_CREATE}::SUCCESS`:
       return set(state, 'invoices', unshift(state.invoices, action.payload));
+
+    case 'PP_CREATE':
+      return set(
+        state,
+        'paymentPages',
+        unshift(state.paymentPages, action.payload)
+      );
+
+    case 'PP_EDIT':
+      let entityIndex = state.paymentPages.findIndex(
+        entity => entity.id === action.payload.id
+      );
+      return set(state, `paymentPages.${entityIndex}`, action.payload);
+
+    case 'PP_FETCH':
+      return merge(state, {
+        paymentPages: action.payload.data.items,
+      });
 
     case `${INVOICE_EDIT}::SUCCESS`:
       let invoiceIndex = state.invoices.findIndex(

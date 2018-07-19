@@ -1,0 +1,31 @@
+.address-entry
+  .col
+    margin: 4px 0;
+
+  div.double-field
+    &>div
+      @media(min-width: 992px)
+        &:nth-of-type(2n+1)
+          padding-right: 4px
+        &:nth-of-type(2n)
+          padding-left: 4px
+
+  textarea
+    resize: none;
+
+  .PowerSelect
+    border-radius: 2px;
+    &:not(.PowerSelect--focused)
+      border-color: #cfdadd
+
+  .PowerSelect__Placeholder
+    color: #aaa;
+
+.address-entry-PS
+  .PowerSelect__Option
+    padding: 4px 8px
+    font-size: 14px;
+
+  .PowerSelect__Option:hover,
+  .PowerSelect__Option:focus
+    background-color: #F6F6F6

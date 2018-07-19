@@ -1,0 +1,29 @@
+.Input-pair--editable
+  .Input-pair
+    margin-bottom: 8px
+
+  .title
+    font-weight: 600
+
+  .description
+    margin: 4px 0
+
+  .pair--view, .pair--editable
+    margin-bottom: 20px
+
+  .pair--editable
+    left: -12px
+    position: relative
+
+  .pair--view
+    .Button:nth-of-type(n+2)
+      position: relative
+      margin-left: 8px
+
+      &::before
+        content: '|'
+        position: absolute
+        color: #dbdde3
+        left: -8px
+
+

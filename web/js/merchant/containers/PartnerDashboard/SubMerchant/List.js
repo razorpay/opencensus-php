@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import ListContainer from 'merchant/containers/ListContainer';
 
 import { openModal, closeModal } from 'rzp/modules/modals';
-import { fetchSubmerchants as fetchAll } from 'rzp/modules/collection';
+import { fetchSubmerchants as fetchAll } from 'merchant/modules/collection';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import StatsCard from 'rzp/ui/StatsCard';

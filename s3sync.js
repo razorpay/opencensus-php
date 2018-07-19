@@ -37,6 +37,7 @@ glob(
     'public/js/generated/*',
     'public/css/generated/*',
     'public/css/fonts/*',
+    'public/img/**/*',
   ],
   { nodir: true },
   (error, files) => {
