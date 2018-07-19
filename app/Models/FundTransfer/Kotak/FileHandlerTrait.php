@@ -856,7 +856,7 @@ trait FileHandlerTrait
 
         $newFilepath = $this->getFileToReadFullPath($extension);
 
-        $dir = $this->getStorageDir();
+        $dir = FileStore\Utility::getStorageDir();
 
         if (file_exists($dir) === false)
         {
@@ -884,21 +884,9 @@ trait FileHandlerTrait
         return $mode;
     }
 
-    protected function getStorageDir()
-    {
-        $dir = storage_path('files/settlement');
-
-        if (file_exists($dir) === false)
-        {
-            (new FileStore\Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
-        }
-
-        return $dir;
-    }
-
     protected function getFullFilePath($filename)
     {
-        return $this->getStorageDir() . '/' . $filename;
+        return FileStore\Utility::getStorageDir() . '/' . $filename;
     }
 
     protected function trace()

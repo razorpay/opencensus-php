@@ -13,13 +13,11 @@ use Storage;
 
 use RZP\Trace\TraceCode;
 use RZP\Exception;
+use RZP\Models\FileStore\Utility;
 use RZP\Models\Base\UniqueIdEntity;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class FileProcessor
 {
-    use FileHandlerTrait;
-
     const FILE_NAME               = 'file_name';
     const EXTENSION               = 'extension';
     const MIME_TYPE               = 'mime_type';
@@ -165,7 +163,7 @@ class FileProcessor
 
         $fileName = (string) time() . '.' . $extension;
 
-        $filePath = $this->getStorageDir();
+        $filePath = Utility::getStorageDir();
 
         $filePath .= '/' . $fileName;
 
@@ -379,7 +377,7 @@ class FileProcessor
 
         if ($move === true)
         {
-            $sourceFolderPath = $this->getStorageDir();
+            $sourceFolderPath = Utility::getStorageDir();
 
             $filePath = $sourceFolderPath . '/' . $fileName;
 

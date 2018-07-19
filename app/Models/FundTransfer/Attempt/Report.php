@@ -8,15 +8,13 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\FileStore\Utility;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Mail\Settlement\Report as ReportEmail;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Report extends Base\Core
 {
-    use FileHandlerTrait;
-
     const REPORT_HEADER = [
         'Channel',
         'Attempt ID',
@@ -264,7 +262,7 @@ class Report extends Base\Core
 
     protected function getFileNameForReport()
     {
-        $dir  = $this->getStorageDir();
+        $dir  = Utility::getStorageDir();
 
         $date = Carbon::today(Timezone::IST)->format('Y-M-d');
 
