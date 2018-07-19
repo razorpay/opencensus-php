@@ -14,9 +14,12 @@ use Storage;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class FileProcessor
 {
+    use FileHandlerTrait;
+
     const FILE_NAME               = 'file_name';
     const EXTENSION               = 'extension';
     const MIME_TYPE               = 'mime_type';
@@ -72,8 +75,6 @@ class FileProcessor
 
     const LINES_FROM_TOP    = 'lines_from_top';
     const LINES_FROM_BOTTOM = 'lines_from_bottom';
-
-    const SETTLEMENT_STORAGE_PATH = 'files/settlement';
 
     /********************
      * Instance objects
@@ -164,7 +165,8 @@ class FileProcessor
 
         $fileName = (string) time() . '.' . $extension;
 
-        $filePath = storage_path(self::SETTLEMENT_STORAGE_PATH);
+        $filePath = $this->getStorageDir();
+
         $filePath .= '/' . $fileName;
 
         Storage::disk('settlements')->put($fileName, $response->body);
@@ -377,7 +379,8 @@ class FileProcessor
 
         if ($move === true)
         {
-            $sourceFolderPath = storage_path(self::SETTLEMENT_STORAGE_PATH);
+            $sourceFolderPath = $this->getStorageDir();
+
             $filePath = $sourceFolderPath . '/' . $fileName;
 
             $file->move($sourceFolderPath, $fileName);

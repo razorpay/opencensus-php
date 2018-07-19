@@ -184,13 +184,6 @@ trait FileHandlerTrait
         else
         {
             $fullPath = $this->getFullFilePath($key);
-
-            $dir = dirname($fullPath);
-
-            if (file_exists($dir) === false)
-            {
-                (new FileStore\Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
-            }
         }
 
         return $this->getFileFromAws($key, $fullPath, $bucket);
@@ -893,7 +886,14 @@ trait FileHandlerTrait
 
     protected function getStorageDir()
     {
-        return storage_path('files/settlement');
+        $dir = storage_path('files/settlement');
+
+        if (file_exists($dir) === false)
+        {
+            (new FileStore\Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
+        }
+
+        return $dir;
     }
 
     protected function getFullFilePath($filename)
