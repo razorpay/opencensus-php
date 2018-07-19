@@ -9,5 +9,5 @@ class ResponseFields
     const PRODUCT_REF_NUMBER   = 'PRN';
     const BANK_TRANSACTION_ID  = 'BID';
     const AMOUNT               = 'AMT';
-    const CHECKSUM             = 'bank_signature';
+    const CHECKSUM             = 'response_signaturte';
 }
