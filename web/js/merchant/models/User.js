@@ -116,4 +116,9 @@ export default class User {
       return object[pluckKey];
     });
   }
+
+  /* Check if the tag exists */
+  findTag(tag) {
+    return !!this.tags.find(t => t.toLowerCase() === tag.toLowerCase());
+  }
 }

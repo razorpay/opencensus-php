@@ -9,6 +9,7 @@ import {
   validateCIN,
   validateIFSC,
   validatePANCard,
+  isUrlLenient,
 } from 'rzp/utils/validators';
 
 // This is as per the value saved in BE database
@@ -26,7 +27,7 @@ const NOT_REGISTERED = 11; // 'Society'
 //const Others = 12 // Removed now
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
-const LLPIN_BusinessTypes = [LLP];
+export const LLPIN_BusinessTypes = [LLP];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
 
 const stateOptions = ['--Select--'].concat(
@@ -47,7 +48,6 @@ const contactFields = [
     label: 'Contact Number',
     name: 'contact_mobile',
     type: 'tel',
-    addonBefore: '+91',
     info: 'We will reach out to this phone for any account related issues.',
   },
   {
@@ -185,7 +185,7 @@ const businessModel = [
     },
   ],
   {
-    label: () => <span>Want to accept international card payments</span>,
+    fieldLabel: () => <span>Want to accept international card payments</span>,
     name: 'business_international',
     _cmp: Input.Check,
     required: false,
@@ -193,44 +193,74 @@ const businessModel = [
       'Approval for international payments takes extra time to process. We will reach out to you as we may require some additional information.',
     _when: excludeFor_Indiv_NotReg,
   },
-  {
-    label: 'Link to Website/App',
-    name: 'business_website',
-    placeholder: 'Enter URL',
-    type: 'url',
-    description: (
-      <React.Fragment>
-        The entered App/Website should contain:
-        <b class="shallow"> About Us</b>, <b class="shallow"> Contact</b>,{' '}
-        <b class="shallow">
-          <a
-            href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
-            target="_blank"
-          >
-            Privacy Policy
-          </a>
-        </b>,{' '}
-        <b class="shallow">
-          <a
-            href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
-            target="_blank"
-          >
-            Terms & Conditions
-          </a>
-        </b>,{' '}
-        <b class="shallow">
-          <a
-            href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
-            target="_blank"
-          >
-            Cancellation/Refund Policy
-          </a>
-        </b>{' '}
-        & <b class="shallow">Pricing</b>. (Refer these links for sample pages)
-      </React.Fragment>
-    ),
-    info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
-  },
+  [
+    {
+      label: 'Website/App URL',
+      _cmp: Input.Radio,
+      _name: 'has_url',
+      className: 'Input--vTop',
+      options: [
+        'Website/App',
+        {
+          label: 'We do not have either',
+          description: (
+            <ul class="Input-desc-list">
+              <li>
+                You can accept payments by sending out Payment Links and
+                Invoices from Dashboard.
+              </li>
+              <li>You will not get access to live APIs.</li>
+              <li>You can upgrade anytime later by adding your website/app.</li>
+            </ul>
+          ),
+        },
+      ],
+    },
+    {
+      label: '',
+      name: 'business_website',
+      placeholder: 'Enter URL',
+      type: 'url',
+      validator: value => {
+        if (!isUrlLenient(value)) {
+          return 'Please enter a valid url';
+        }
+      },
+      description: (
+        <React.Fragment>
+          The entered App/Website should contain:
+          <b class="shallow"> About Us</b>, <b class="shallow"> Contact</b>,{' '}
+          <b class="shallow">
+            <a
+              href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
+              target="_blank"
+            >
+              Privacy Policy
+            </a>
+          </b>,{' '}
+          <b class="shallow">
+            <a
+              href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
+              target="_blank"
+            >
+              Terms & Conditions
+            </a>
+          </b>,{' '}
+          <b class="shallow">
+            <a
+              href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
+              target="_blank"
+            >
+              Cancellation/Refund Policy
+            </a>
+          </b>{' '}
+          & <b class="shallow">Pricing</b>. (Refer these links for sample pages)
+        </React.Fragment>
+      ),
+      info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
+      _when: activation => activation.state.has_url === '0',
+    },
+  ],
 ];
 
 const registrationDetails = [
@@ -240,7 +270,8 @@ const registrationDetails = [
     validator: validateCIN,
     required: true, // It's mandatory only for certain orgs
     maxLength: '21',
-    info: 'Example : U67190TN014PTC096978',
+    className: 'Input--capitalize',
+    info: 'Example : U67190TN2014PTC096978',
     _when: activation => {
       const currentBusinessType =
         activation.state.dirty.business_type ||
@@ -256,7 +287,8 @@ const registrationDetails = [
     label: 'LLPIN',
     name: 'company_cin',
     required: true, // It's mandatory only for LLP
-    info: 'Example : AAB-2933',
+    info: 'Example : AAB2933',
+    className: 'Input--capitalize',
     _when: activation =>
       activation.props.data.business_type &&
       LLPIN_BusinessTypes.indexOf(
@@ -267,6 +299,7 @@ const registrationDetails = [
     label: 'Company PAN Number',
     name: 'company_pan',
     placeholder: 'PAN Number',
+    className: 'Input--capitalize',
     info:
       'Mandatory for Companies. PAN details should be of the mentioned business only.',
     validator: validatePANCard,
@@ -278,7 +311,7 @@ const registrationDetails = [
       name: 'promoter_pan',
       placeholder: 'PAN Number',
       validator: validatePANCard,
-      className: 'Input-vTop',
+      className: 'Input--vTop Input--capitalize',
     },
     {
       label: 'PAN Owner Name',
@@ -319,7 +352,7 @@ const registrationDetails = [
   ],
   {
     _name: 'same_address',
-    label: 'Operational Address same as Registered Address',
+    fieldLabel: 'Operational Address same as Registered Address',
     description: 'Physical Verification may take place at this address',
     _cmp: Input.Check,
   },
@@ -364,7 +397,7 @@ const registrationDetails = [
       _name: 'has_gstin',
       label: 'GSTIN',
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
-      className: 'Input-vTop',
+      className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
       _when: excludeFor_Indiv_NotReg,
       description: function() {
@@ -390,7 +423,6 @@ const registrationDetails = [
       _autoRenderImpure: true, // Re-render to show the error
       placeholder: 'Enter GSTIN',
       size: 'small',
-      required: false,
       info:
         'The entered GST Number should match either of the Address given above.',
       validator: value => {
@@ -434,9 +466,9 @@ const bankAccountFields = [
         const bankAccountNumber = this.state.dirty.bank_account_number;
         const accountNo = this.state.account_no;
 
-        const isMatching = bankAccountNumber && bankAccountNumber == accountNo;
+        const isMatching = bankAccountNumber == accountNo;
 
-        if ((!!bankAccountNumber && !accountNo) || !isMatching) {
+        if (!!bankAccountNumber && (!accountNo || !isMatching)) {
           document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
         }
       },

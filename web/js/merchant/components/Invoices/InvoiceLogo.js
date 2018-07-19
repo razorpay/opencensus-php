@@ -1,21 +1,33 @@
-export default ({ name, logo }) => {
+export default ({ name, logo, gstin, cin }) => {
   return (
     <div class="row inv__branding">
-      <div class="col-md-6">
+      <div class="col-md-8 inv__branding--merchant">
         <div class="media">
           {logo && (
             <div class="media-left">
-              <a class="merchant-logo">
-                <img class="media-object" src={logo} alt="." />
-              </a>
+              <span class="inv__merchant-logo">
+                <img class="media-object" src={logo} alt={name} />
+              </span>
             </div>
           )}
-          <div class="media-body">
-            <h3>{name}</h3>
+          <div class={`media-body ${gstin || cin ? 'valign-top' : ''}`}>
+            <h3 class="inv__company-name">{name}</h3>
+            {gstin && (
+              <div class="inv__company-tax-details">
+                <span class="tax-heading">GSTIN - </span>
+                {gstin}
+              </div>
+            )}
+            {cin && (
+              <div class="inv__company-tax-details">
+                <span class="tax-heading">CIN - </span>
+                {cin}
+              </div>
+            )}
           </div>
         </div>
       </div>
-      <div class="col-md-6 inv__branding--rzp">
+      <div class="col-md-4 inv__branding--rzp">
         <div class="text-right pull-right">
           <a class="rzp-logo" href="https://razorpay.com/" target="_blank">
             <img src="https://razorpay.com/images/logo-black.png" alt="." />

@@ -1,6 +1,6 @@
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 /*
   Abstract class for most CRUD entities. The base Entity has methods like
@@ -50,7 +50,7 @@ export default class GenericEntity extends Entity {
     });
   }
 
-  save(params = null) {
+  save(params = null, httpData) {
     const Klass = this.constructor;
     params = params || this.serialize();
     let method = this.getResourceMethod();
@@ -62,6 +62,7 @@ export default class GenericEntity extends Entity {
       url,
       method,
       data,
+      httpData,
     }).then(response => {
       return new Klass(response.data).deserialize();
     });
@@ -81,6 +82,7 @@ export default class GenericEntity extends Entity {
     method = 'get',
     appendModeInURL = !Boolean(data.route_name),
     appendModeInQueryParam = Boolean(data.route_name),
+    httpData = {},
   }) {
     return ajax(
       {
@@ -90,6 +92,7 @@ export default class GenericEntity extends Entity {
         params,
         appendModeInQueryParam,
         appendModeInURL,
+        ...httpData,
       },
       {},
       data.route_name ? '' : '/merchant/api'

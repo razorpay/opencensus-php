@@ -343,10 +343,7 @@ export default class BusinessDetailsForm extends Component {
                     name="business_website"
                     component={InputField}
                     class="form-control"
-                    validate={[
-                      required(),
-                      lenientUrl('Please enter a valid URL'),
-                    ]}
+                    validate={[lenientUrl('Please enter a valid URL')]}
                   />
                   <small class="help-block">
                     <i class="i i-info-circle" />

@@ -3,7 +3,18 @@ import ajax from 'merchant/utils/ajax';
 import { getFixedINRAmount, rupeesToPaise } from 'rzp/utils/rzp-utils';
 
 export default class Item extends GenericEntity {
-  resourceFields = ['id', 'name', 'amount', 'currency', 'description'];
+  resourceFields = [
+    'id',
+    'name',
+    'amount',
+    'currency',
+    'description',
+    'hsn_code',
+    'sac_code',
+    'tax_rate',
+    'tax_inclusive',
+    'tax_id',
+  ];
   currency = 'INR';
   resourceUrl = 'items';
 

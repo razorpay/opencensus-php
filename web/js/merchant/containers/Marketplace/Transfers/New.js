@@ -7,12 +7,12 @@ import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
 import { withRouter } from 'react-router-dom';
 
+import { showWhenUtil } from 'merchant/components/ShowWhen';
+
 import { prefixEntityValue } from 'common/data';
 
 import Alert from 'rzp/ui/Forms/Alert';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';
-import InputField from 'rzp/ui/Forms/InputField';
-import InlineField from 'rzp/ui/Forms/InlineField';
 import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
 import { required } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
@@ -117,12 +117,20 @@ export default class TransferNew extends Component {
     }
 
     let transformedNotes = notes;
+    const linked_account_notes = [];
 
     if (notes && notes.length > 0) {
       transformedNotes = notes.reduce((result, current) => {
         result[current.key] = current.value;
+        if (this.isLADashboardEnabled && current.also_linked_account) {
+          linked_account_notes.push(current.key);
+        }
         return result;
       }, {});
+    }
+
+    if (this.isLADashboardEnabled) {
+      transformedNotes.linked_account_notes = linked_account_notes;
     }
 
     let holdData = {};
@@ -186,6 +194,10 @@ export default class TransferNew extends Component {
     // For display purpose only in TypeAhead
     this.setState({ selectedAccount: option });
   };
+
+  get isLADashboardEnabled() {
+    return showWhenUtil({ featureEnabled: 'enable_la_dashboard' });
+  }
 
   render() {
     const { handleSubmit, invalid, plan, accounts } = this.props;
@@ -260,7 +272,7 @@ export default class TransferNew extends Component {
                     >
                       {this.state.selectedAccount ? (
                         <div>
-                          <b style={{ marginRight: '5px' }}>
+                          <b class="option-title">
                             {this.state.selectedAccount.name}
                           </b>
                           <span> - {this.state.selectedAccount.id} </span>
@@ -361,7 +373,11 @@ export default class TransferNew extends Component {
               <FormItem
                 label={_ => <Label text="Internal Notes" />}
                 field={_ => (
-                  <FieldArray name="notes" component={NotesFieldArray} />
+                  <FieldArray
+                    name="notes"
+                    component={NotesFieldArray}
+                    showLinkedAccountOpt={this.isLADashboardEnabled}
+                  />
                 )}
               />
 
@@ -383,7 +399,7 @@ export default class TransferNew extends Component {
                         .catch(() => {});
                     }}
                   >
-                    Discard
+                    Cancel
                   </button>
                 )}
                 <AsyncButton

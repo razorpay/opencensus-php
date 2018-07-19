@@ -51,7 +51,7 @@ const ReferralsListItem = props => {
             data-tip="Provide login to submerchant with merchant email."
             data-place="right"
           >
-            Create Login
+            Invite to Login
           </button>
         )}
       </td>

@@ -1,5 +1,8 @@
 import Plan from 'merchant/models/Plan';
-import { makeActionCollectionReducer, fetchAll } from 'rzp/modules/collection';
+import {
+  makeActionCollectionReducer,
+  fetchAll,
+} from 'merchant/modules/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 import { set } from 'rzp/utils/immutable';
 

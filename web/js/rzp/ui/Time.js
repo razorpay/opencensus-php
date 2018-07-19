@@ -18,7 +18,8 @@ class Time extends Component {
 
     const isRelative = (this.isRelative = 'relative' in otherProps);
 
-    const date = moment.unix(value);
+    const date =
+      typeof value === 'string' ? new moment(value) : moment.unix(value); // value could be of format = 2018-06-15T11:04:45Z
 
     this.state = {
       date,
