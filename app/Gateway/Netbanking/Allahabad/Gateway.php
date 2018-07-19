@@ -346,7 +346,7 @@ class Gateway extends Base\Gateway
     {
         $secret = $this->getSecret();
 
-        $sig_str = hash_hmac('sha256',$str,$secret);
+        $sig_str = hash_hmac('sha512',$str,$secret);
 
         return $sig_str;
     }

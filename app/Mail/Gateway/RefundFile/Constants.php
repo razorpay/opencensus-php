@@ -40,7 +40,7 @@ class Constants extends Base\Constants
 
     const SUBJECT_MAP = [
         Gateway::NETBANKING_CORPORATION => 'Corporation Netbanking refunds file for ',
-        Gateway::NETBANKING_ALLAHABAD   => 'Allahabad Netbanking refunds file for',
+        Gateway::NETBANKING_ALLAHABAD   => 'Allahabad Netbanking refunds file for ',
         Gateway::NETBANKING_HDFC        => 'HDFC Netbanking refunds file for ',
         Gateway::NETBANKING_ICICI       => 'Icici Netbanking refunds file for ',
         Gateway::NETBANKING_FEDERAL     => 'Federal Netbanking refunds file for ',
