@@ -50,7 +50,6 @@ class Terminal extends Base
             'gateway'                   => 'isg',
             'gateway_merchant_id'       => '12345',
             'gateway_terminal_id'       => '40120840',
-            'gateway_acquirer'          => 'hdfc',
             'card'                      => 1,
             'mc_mpan'                   => '5220240401208405',
             'visa_mpan'                 => '4403844012084006',

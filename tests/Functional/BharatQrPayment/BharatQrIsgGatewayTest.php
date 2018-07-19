@@ -9,14 +9,14 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class BharatQrIsgPaymentTest extends TestCase
+class BharatQrIsgGatewayTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/BharatQrIsgPaymentTestData.php';
+        $this->testDataFilePath = __DIR__ . '/BharatQrIsgGatewayTestData.php';
 
         parent::setUp();
 
@@ -58,6 +58,7 @@ class BharatQrIsgPaymentTest extends TestCase
 
         $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
 
+        $this->mockServerContent($content, $action);
         $this->mockServerContentFunction(function (&$content, $action = null) use ($request)
         {
             if ($action === Action::VERIFY)
@@ -301,4 +302,13 @@ class BharatQrIsgPaymentTest extends TestCase
 
         $this->assertNull($payment);
     }
+
+    protected function mockServerContent(& $content, $request)
+    {
+            if ($action === Action::VERIFY)
+            {
+                $content = $request['content'];
+            }
+    }
 }
+
