@@ -62,7 +62,7 @@ class Gateway extends Base\Gateway
 
         $sig_str = $this->getHashOfString($param_str);
 
-        $request['url'] .= '?bank_signature=' . $sig_str . '&parameter_string=' . $param_str;
+        $request['url'] .= '?bank_signaturte=' . $sig_str . '&parameter_string=' . $param_str;
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -247,7 +247,7 @@ class Gateway extends Base\Gateway
 
         $sig_str = $this->getHashOfString($str, '|');
 
-        $request['url'] .= '?bank_signature=' . $sig_str . '&parameter_string=' . $str;
+        $request['url'] .= '?bank_signaturte=' . $sig_str . '&parameter_string=' . $str;
 
         return $request;
     }
@@ -346,7 +346,7 @@ class Gateway extends Base\Gateway
     {
         $secret = $this->getSecret();
 
-        $sig_str = hash_hmac('sha256',$str,$secret);
+        $sig_str = hash_hmac('sha1',$str,$secret);
 
         return $sig_str;
     }
