@@ -280,7 +280,7 @@ class Repository extends Base\Repository
                               ->orWhere(Entity::MC_MPAN, '=', $mpan)
                               ->orWhere(Entity::RUPAY_MPAN, '=', $mpan);
                     })
-                    ->firstOrFail();
+                    ->first();
     }
 
     public function deleteOrFail($entity)

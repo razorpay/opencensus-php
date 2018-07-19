@@ -54,9 +54,9 @@ class Service extends Base\Service
 
             // before processing payment, we will call verify callback to check if the
             // notification was sent by the gateway or some other source .
-            $gatewayClass->verifyBharatQrCallback($gatewayResponse);
+            $gatewayClass->verifyBharatQrNotification($gatewayResponse);
         }
-        catch(Exception\GatewayErrorException $ex)
+        catch (Exception\GatewayErrorException $ex)
         {
             $this->trace->traceException($ex);
 

@@ -18,7 +18,6 @@ class Repository extends Base\Repository
 
     public function determineLiveOrTestModeByMerchantReference($merchantReference)
     {
-
         $obj = $this->connection(Mode::LIVE)->findByMerchantReference($merchantReference);
 
         if ($obj !== null)
