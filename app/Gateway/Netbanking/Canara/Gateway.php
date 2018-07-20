@@ -238,7 +238,7 @@ class Gateway extends Base\Gateway
             RequestFields::CLIENT_CODE                   => $this->getClientCode($paymentEntity[Payment\Entity::EMAIL]),
             RequestFields::CLIENT_ACCOUNT                => '',
             RequestFields::MERCHANT_CODE                 => $this->getMerchantCode(),
-            RequestFields::CURRENCY                      => Constants::INDIAN_CURRENCY,
+            RequestFields::CURRENCY                      => PaymentEntity::DEFAULT_CURRENCY,
             RequestFields::AMOUNT                        => $paymentEntity['amount'], // have to verify
             RequestFields::SERVICE_CHARGE                => 0,
             RequestFields::PAYMENT_ID                    => $paymentEntity['id'],
