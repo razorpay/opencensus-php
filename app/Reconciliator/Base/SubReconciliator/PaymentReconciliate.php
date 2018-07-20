@@ -27,6 +27,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_RBL,
         RequestProcessor\Base::NETBANKING_INDUSIND,
         RequestProcessor\Base::NETBANKING_CORPORATION,
+        RequestProcessor\Base::NETBANKING_CANARA,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
