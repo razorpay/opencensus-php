@@ -213,11 +213,13 @@ class Gateway extends Base\Gateway
     protected function getVerifyRequest($verify)
     {
         $input = $verify->input;
+
         $paymentEntity = $input['payment'];
 
         if ($this->action === Action::VERIFY)
         {
             $gatewayPayment = $verify->payment;
+
             $bankRefNumber = $gatewayPayment['bank_payment_id'];
         }
         elseif(($this->action === Action::CALLBACK) and
@@ -259,7 +261,7 @@ class Gateway extends Base\Gateway
             [
                 'gateway'           => $this->gateway,
                 'request'           => $request,
-                'payment_id'        => $input['payment']['id'],
+                'payment_id'        => $paymentEntity['id'],
                 'content'           => $data,
             ]
         );
