@@ -15,7 +15,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Models\Payment as PaymentEntity;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
 class Gateway extends Base\Gateway
@@ -170,7 +170,9 @@ class Gateway extends Base\Gateway
             $this->trace->info(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
                 [
-                    'content' => $content
+                    'paymentid' => $content[ResponseFields::PAYMENT_ID],
+                    'gateway'   => $this->gateway,
+                    'content'   => $content,
                 ]);
 
             throw new Exception\GatewayErrorException(
