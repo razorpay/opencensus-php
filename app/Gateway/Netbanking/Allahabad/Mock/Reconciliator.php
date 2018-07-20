@@ -14,7 +14,7 @@ class Reconciliator extends Base\RefundFile
     const PAYMENT_ENTITY = 'payment';
     const GATEWAY_ENTITY = 'gateway';
 
-    const BANK_REF_NUMBER = '';
+    const BANK_REF_NUMBER = '99999';
 
     protected static $fileToWriteName = 'Allahabad_Netbanking_Reconciliation';
 
@@ -88,10 +88,10 @@ class Reconciliator extends Base\RefundFile
 
             $data[] = [
                 'Bank Id' => '027',
-                'Trnx Date' => $trnxDate,
+                'Txn Date' => $trnxDate,
                 'Merchant Name' => '',
                 'Trnx Amount' => $amount,
-                'PGI Reference No.' => '',
+                'PGI Reference No.' => $row['payment']['id'],
                 'Bank Ref No.' => '',
             ];
 

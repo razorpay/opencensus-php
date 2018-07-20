@@ -49,7 +49,7 @@ class Server extends Base\Mock\Server
 
         $callbackUrl = $input[RequestFields::RETURN_URL];
 
-        $callbackUrl .= '?bank_signaturte='.$response[ResponseFields::CHECKSUM] .'&parameter_string='.$checksum_string;
+        $callbackUrl .= '?response_signaturte='.$response[ResponseFields::CHECKSUM] .'&parameter_string='.$checksum_string;
 
         $request = [
             'url'     => $callbackUrl,
@@ -139,7 +139,7 @@ class Server extends Base\Mock\Server
     {
         $secret = $this->getSecret();
 
-        $sig_str = hash_hmac('sha256',$str,$secret);
+        $sig_str = hash_hmac('sha1',$str,$secret);
 
         return $sig_str;
     }
