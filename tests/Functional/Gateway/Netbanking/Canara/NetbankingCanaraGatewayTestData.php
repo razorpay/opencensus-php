@@ -30,6 +30,7 @@ return [
         'verified' => null,
         'entity' => 'payment',
     ],
+
     'testPaymentNetbankingEntity' => [
         'action' => 'authorize',
         'amount' => 50000,
@@ -40,11 +41,13 @@ return [
         'entity' => 'netbanking',
         'bank_payment_id' => 'AB1234',
     ],
+
     'testPaymentVerifySuccessEntity' => [
         'bank_payment_id' => Server::BANK_REFERENCE_NUMBER,
         'received'        => true,
         'bank'            => 'CNRB',
     ],
+
     'testTamperedPayment' => [
         'response'  => [
             'content'     => [
@@ -57,15 +60,17 @@ return [
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
         ],
     ],
+
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => null,
         'received'        => false,
         'bank'            => 'CNRB',
         'status'          => null
     ],
+
     'testAuthorizeFailed' => [
         'response' => [
             'content'     => [
@@ -81,6 +86,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         ],
     ],
+
     'testVerifyAmountMismatch' => [
     'response'  => [
         'content'     => [
@@ -94,8 +100,31 @@ return [
     'exception' => [
         'class'                 => 'RZP\Exception\LogicException',
         'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+        ],
     ],
-]
+
+    'testVerifyMismatch' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\PaymentVerificationException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+
+    'testAuthFailedVerifySuccessEntity' => [
+        'bank_payment_id' => 'AB1234',
+        'received'        => false,
+        'bank'            => 'CNRB',
+        'status'          => 'EXECUTED'
+    ]
 
 ];
 

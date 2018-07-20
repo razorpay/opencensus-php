@@ -92,7 +92,7 @@ class Gateway extends Base\Gateway
         if ($verify->gatewaySuccess === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED);
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
     }
 
