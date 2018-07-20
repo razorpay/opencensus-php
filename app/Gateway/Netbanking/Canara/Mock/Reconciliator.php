@@ -1,0 +1,102 @@
+<?php
+
+namespace RZP\Gateway\Netbanking\Canara\Mock;
+
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+
+use RZP\Gateway\Base;
+use RZP\Models\Payment;
+use RZP\Models\FileStore;
+
+class Reconciliator extends Base\RefundFile
+{
+    const PAYMENT_ENTITY            = 'payment';
+    const GATEWAY_ENTITY            = 'gateway';
+    const BANK_REF_NUMBER           = 'AB1234';
+    const CUSTOMER_ACCOUNT_NO       = '100000';
+    const MERCHANT_CODE             = 'RAZORPAY';
+
+    protected static $fileToWriteName = 'Canara_Netbanking_Reconciliation';
+
+    public function generateReconciliation($input = null)
+    {
+        $input = [
+            'gateway' => 'netbanking_canara'
+        ];
+
+        $payments = $this->repo->payment->fetch($input, '10000000000000');
+
+        $inputData = [];
+
+        foreach ($payments as $payment)
+        {
+            $data[self::PAYMENT_ENTITY] = $payment->toArray();
+
+            $gatewayInput['payment_id'] = $payment[Payment\Entity::ID];
+
+            $gatewayPayment = $this->repo->netbanking->fetch($gatewayInput);
+
+            $data[self::GATEWAY_ENTITY] = $gatewayPayment[0]->toArray();
+
+            $inputData[] = $data;
+        }
+
+        return $this->generate($inputData);
+    }
+
+    public function generate($input)
+    {
+        list($totalAmount, $data) = $this->getReconciliationData($input);
+
+        $fileName = $this->getFileToWriteNameWithoutExt();
+
+        $txt = $this->generateText($data, '|');
+
+        $creator = $this->createFile(
+            FileStore\Format::TXT,
+            $txt,
+            $fileName,
+            FileStore\Type::CANARA_NETBANKING_REFUND
+        );
+
+        $file = $creator->get();
+
+        return [
+            'local_file_path' => $file['local_file_path'],
+            'count'           => count($data),
+            'file_name'       => basename($file['local_file_path']),
+            'total_amount'    => $totalAmount,
+        ];
+    }
+
+    protected function getReconciliationData(array $input)
+    {
+        $data = [];
+
+        $totalAmount = 0.0;
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
+                Timezone::IST)
+                ->format('d/m/Y H:i:s A');
+
+            $amount = $this->getFormattedAmount($row['payment']['amount']);
+
+            $data[] = [
+                self::BANK_REF_NUMBER,
+                self::CUSTOMER_ACCOUNT_NO,
+                $date,
+                $row['payment']['id'],
+                self::MERCHANT_CODE,
+                $amount,
+            ];
+
+            $totalAmount += floatval($amount);
+        }
+
+        return [$totalAmount,$data];
+    }
+}
