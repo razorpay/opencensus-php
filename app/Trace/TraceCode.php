@@ -1116,6 +1116,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Partners trace codes
     const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';
 
+    const FEE_CREDITS_THRESHOLD_ALERT                   = 'FEE_CREDITS_THRESHOLD_ALERT';
+
     // Excel reader debug trace codes
     const EXCEL_READER_IMPORT_CONFIG                    = 'EXCEL_READER_IMPORT_CONFIG';
 

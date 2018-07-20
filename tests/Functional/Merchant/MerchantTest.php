@@ -222,6 +222,19 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('groups', $result);
     }
 
+    public function testEditMerchantWithNullFeeCreditsThreshold()
+    {
+        $this->createMerchant();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $result = $this->startTest();
+
+        $this->assertArrayNotHasKey('groups', $result);
+    }
+
     public function testEditBulkMerchantAttributes()
     {
         $this->createMerchant([
@@ -530,6 +543,15 @@ class MerchantTest extends TestCase
     }
 
     public function testEditMerchantInvalidBrandColor()
+    {
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantFeeCreditsThresholdWithProxyAuth()
     {
         $this->createMerchant();
 
