@@ -146,18 +146,31 @@ class InvoiceTest extends TestCase
 
         $invoice = $this->fixtures->create('invoice');
 
-        $this->createMetricsMock()
-             ->expects($this->at(6))
-             ->method('count')
-             ->with(
-                'invoice_paid_total',
-                1,
-                [
-                    'is_partial_payment' => 0,
-                    'type'               => 'invoice',
-                    'has_batch'          => 0,
-                    'has_subscription'   => 0,
-                ]);
+        $metrics = $this->createMetricsMock();
+
+        $metrics->expects($this->at(4))
+                ->method('count')
+                ->with(
+                    'invoice_payment_attempts_total',
+                    1,
+                    [
+                        'is_partial_payment' => 0,
+                        'type'               => 'invoice',
+                        'has_batch'          => 0,
+                        'has_subscription'   => 0,
+                    ]);
+
+        $metrics->expects($this->at(7))
+                ->method('count')
+                ->with(
+                    'invoice_paid_total',
+                    1,
+                    [
+                        'is_partial_payment' => 0,
+                        'type'               => 'invoice',
+                        'has_batch'          => 0,
+                        'has_subscription'   => 0,
+                    ]);
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 
