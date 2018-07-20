@@ -4,9 +4,10 @@ import { SelectField, TextAreaField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
 import { adminPost } from 'common/fetch';
-import { splitAndFilter } from 'common/util';
-
-import { notifySuccess, closeModal, notifyError } from 'common/modal';
+import { splitAndFilter, snakeToTitleCase } from 'common/util';
+import { ModalContent } from 'component/Modal';
+import Table from 'ui/Table';
+import { closeModal, notifyError, openModal } from 'common/modal';
 
 BulkVerifyPayments.title = 'Bulk Verify Payments';
 export default function BulkVerifyPayments() {
@@ -37,10 +38,26 @@ export default function BulkVerifyPayments() {
               },
             }).then(response => {
               if (response) {
-                notifySuccess('Payments Verified successfully');
+                // Rendering the response object in the modal as a table
+                let fields = [
+                  ['Field', item => item[0]],
+                  ['Value', item => item[1]],
+                ];
+                let items = Object.keys(response)
+                  .reverse()
+                  .map(key => {
+                    let val = response[key] && response[key].toString();
+                    return [snakeToTitleCase(key), val];
+                  });
+
                 closeModal();
-              } else {
-                notifyError(response.data.errors[0]);
+                openModal(
+                  <ModalContent header="Bulk Payment Verification Response">
+                    <div class="bulk-response-modal">
+                      <Table items={items} fields={fields} />
+                    </div>
+                  </ModalContent>
+                );
               }
             });
           } else {
