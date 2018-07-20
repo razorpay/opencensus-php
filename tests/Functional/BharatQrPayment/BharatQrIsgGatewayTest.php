@@ -24,10 +24,6 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $this->fixtures->create('terminal:bharat_qr_isg_terminal');
 
-        $this->t3 = $this->fixtures->on('live')->create('terminal:bharat_qr_isg_terminal');
-
-        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
-
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
@@ -58,7 +54,6 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
 
-        $this->mockServerContent($content, $action);
         $this->mockServerContentFunction(function (&$content, $action = null) use ($request)
         {
             if ($action === Action::VERIFY)
@@ -253,28 +248,7 @@ class BharatQrIsgGatewayTest extends TestCase
         $this->assertEquals(count($bharatQr) , 1);
     }
 
-    public function testUnexpectedPaymentNotificationOnUnexpectedTerminal()
-    {
-        $request = $this->testData["testQrPaymentProcess"];
-
-        $this->ba->directAuth();
-
-        $this->getMockServer('isg')->fillBharatQrCallback($request['content'], null);
-
-        $this->mockServerContentFunction(function (&$content, $action = null) use ($request)
-        {
-            if ($action === Action::VERIFY)
-            {
-                $content = $request['content'];
-            }
-        }, $this->gateway);
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $responseArray = json_decode($response['original'], true);
-    }
-
-    public function testDecryptionFailurePaymentNotification()
+    public function testDecryptionFailureInPaymentNotification()
     {
         $request = $this->testData["testQrPaymentProcess"];
 
@@ -301,14 +275,6 @@ class BharatQrIsgGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertNull($payment);
-    }
-
-    protected function mockServerContent(& $content, $request)
-    {
-            if ($action === Action::VERIFY)
-            {
-                $content = $request['content'];
-            }
     }
 }
 

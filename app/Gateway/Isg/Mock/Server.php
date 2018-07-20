@@ -15,7 +15,7 @@ class Server extends Base\Mock\Server
     {
         if ($qrCode !== null)
         {
-            $request[Field::PRIMARY_ID] = strtoupper(substr($qrCode['id'], 3));
+            $request[Field::PRIMARY_ID] = substr($qrCode['id'], 3);
         }
 
         $encryptedCardNumber =  $this->getEncryptedString($request[Field::CONSUMER_PAN]);

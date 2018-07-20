@@ -30,6 +30,8 @@ class ResponseCode
         {
             return self::$responseCodeToErrorCodeMap[$code];
         }
+
+        return null;
     }
     public static function getResponseCodeMessage(string $code)
     {
@@ -37,5 +39,7 @@ class ResponseCode
         {
             return self::$map[$code];
         }
+
+        return null;
     }
 }

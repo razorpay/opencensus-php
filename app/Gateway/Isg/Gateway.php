@@ -54,7 +54,8 @@ class Gateway extends Base\Gateway
             'Not a Bharat Qr Payment',
             null,
             [
-                'input' => $input
+                'input'     => $input,
+                'gateway'   => $this->gateway,
             ]);
         }
     }
@@ -75,8 +76,7 @@ class Gateway extends Base\Gateway
             Field::TRANSACTION_ID     => $input[Field::TRANSACTION_ID],
             Field::PRIMARY_ID         => $input[Field::PRIMARY_ID],
             Field::TERMINAL_ID        => $input[TerminalEntity::TERMINAL_ID],
-            Field::TRANSACTION_DATE   => $this->getFormattedDate($input[Field::TRANSACTION_DATE_TIME],
-                                                                'Y-m-d'),
+            Field::TRANSACTION_DATE   => $this->getFormattedDate($input[Field::TRANSACTION_DATE_TIME]),
             Field::TRANSACTION_AMOUNT => $input[Field::TRANSACTION_AMOUNT],
         ];
 
@@ -89,15 +89,14 @@ class Gateway extends Base\Gateway
             Field::TRANSACTION_ID     => $gatewayPayment[Entity::BANK_REFERENCE_NUMBER],
             Field::PRIMARY_ID         => $gatewayPayment[Entity::MERCHANT_REFERENCE],
             Field::TRANSACTION_AMOUNT => $this->getFormattedAmount($gatewayPayment[Entity::AMOUNT]),
-            Field::TRANSACTION_DATE   => $this->getFormattedDate($gatewayPayment[Entity::TRANSACTION_DATE_TIME],
-                                                                'Y-m-d'),
+            Field::TRANSACTION_DATE   => $this->getFormattedDate($gatewayPayment[Entity::TRANSACTION_DATE_TIME]),
             Field::TERMINAL_ID        => $input[BaseEntity::TERMINAL][TerminalEntity::GATEWAY_TERMINAL_ID],
         ];
 
         return $attributes;
     }
 
-    protected function checkStatusCodeAndDescription($response, $input)
+    protected function checkStatusCode($response, $input)
     {
         if ($response[Field::STATUS_CODE] === Status::APPROVED)
         {
@@ -311,6 +310,8 @@ class Gateway extends Base\Gateway
         {
             return $aes->decryptString(hex2bin($string));
         }
+
+        return null;
     }
 
     protected function getEncryptedString($string)
@@ -342,7 +343,7 @@ class Gateway extends Base\Gateway
         return $qrData;
     }
 
-    public function verifyBharatQrCallback($input)
+    public function verifyBharatQrNotification($input)
     {
         $input = $input['callback_data'];
 
@@ -358,7 +359,7 @@ class Gateway extends Base\Gateway
 
         $response = $verify->verifyResponseContent;
 
-        $this->checkStatusCodeAndDescription($response, $input);
+        $this->checkStatusCode($response, $input);
 
         $this->checkVerifyCallbackResponse($response, $input);
     }
@@ -434,7 +435,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getFormattedDate(string $dateTime, $format)
+    protected function getFormattedDate(string $dateTime, $format = 'Y-m-d')
     {
         $date = Carbon::parse($dateTime)->format($format);
 
