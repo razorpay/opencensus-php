@@ -62,6 +62,12 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testCybersourceCaptureEntity'], $payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['verify_at']);
+
+        $this->assertNotNull($payment['verify_bucket']);
     }
 
     public function testGatewayCallbackWithEmptyInput()
@@ -83,6 +89,12 @@ class CybersourceGatewayTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['verify_at']);
+
+        $this->assertNull($payment['verify_bucket']);
     }
 
     public function testThreeDSAuthFailedPayment()

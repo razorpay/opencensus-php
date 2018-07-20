@@ -856,7 +856,10 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 $eciRaw,
-                $desc);
+                $desc,
+                [],
+                null,
+                Base\Action::AUTHENTICATE);
         }
 
         $this->eci = $eciRaw;
@@ -1610,7 +1613,7 @@ class Gateway extends Base\Gateway
         $desc = $desc ?: ResponseCode::getDescription($reasonCode);
 
         throw new Exception\GatewayErrorException(
-                $code, $reasonCode, $desc, null, null, $action);
+                $code, $reasonCode, $desc, [], null, $action);
     }
 
     protected function validateCallbackGatewayFields(array $input)
@@ -1634,7 +1637,7 @@ class Gateway extends Base\Gateway
             );
 
             throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED, null, null, [], null, Base\Action::AUTHENTICATE);
         }
     }
 
