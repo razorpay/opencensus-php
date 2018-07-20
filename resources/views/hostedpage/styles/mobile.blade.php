@@ -6,7 +6,7 @@
 
 <style>
     #mobile-container {
-        min-height: 100vh;
+        min-height: 80vh;
         width: 100%;
         max-width: 412px;
         margin: 0 auto;
@@ -20,7 +20,7 @@
     }
 
     #mobile-container .content {
-        height: 100vh;
+        height: 80vh;
         position: relative;
         z-index: 1;
     }
@@ -37,26 +37,17 @@
     }
 
     #mobile-container .back-btn {
-        font-size: 12px;
-        color: {{$primary_text}};
+        fill: {{$secondary_color}};
         background: transparent;
         outline: none;
         border: none;
-        position: absolute;
-        right: 0;
-        top: 2px;
-        padding: 0;
-        line-height: 24px;
-    }
-
-    @media (max-width: 360px) {
-        #mobile-container .back-btn {
-            top: -20px;
-        }
+        margin-left: -16px;
+        padding: 0 16px;
+        vertical-align: middle;
     }
 
     #mobile-container #form-section {
-        height: 100vh;
+        height: 80vh;
         z-index: 2;
     }
 

@@ -85,6 +85,7 @@ class Core extends Base\Core
                         ->generate($input);
 
         $this->trace->info(TraceCode::INVOICE_CREATED, $invoice->toArrayPublic());
+        $this->trace->count(Metric::INVOICE_CREATED_TOTAL, 1, $invoice->getMetricDimensions());
 
         $this->repo->loadRelations($invoice);
 
@@ -419,6 +420,8 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($invoice);
             });
+
+        $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, 1, $invoice->getMetricDimensions());
 
         InvoiceJob::dispatch($this->mode, InvoiceJob::EXPIRED, $invoice->getId());
 

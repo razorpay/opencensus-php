@@ -49,20 +49,15 @@ class PdfGenerator extends Base\Core
     {
         $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
 
-        $timeStarted = microtime(true);
+        $timeStarted = millitime();
 
         $html = $this->getHtml($viewPayload);
 
         $pdfContent = $this->getPdfContent($html);
 
-        $timeTaken = microtime(true) - $timeStarted;
+        $duration = millitime() - $timeStarted;
 
-        $this->trace->debug(
-            TraceCode::INVOICE_PDF_GEN_TIME_TAKEN,
-            [
-                'id'         => $this->invoice->getId(),
-                'time_taken' => $timeTaken,
-            ]);
+        $this->trace->histogram(Metric::INVOICE_PDF_GEN_DURATION_MILLISECONDS, $duration);
 
         return (new FileStore\Creator())
                     ->name($this->invoice->getPdfFilename())
