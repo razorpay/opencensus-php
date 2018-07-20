@@ -73,7 +73,7 @@
                     @include('hostedpage.partials.header')
                     <div>
                         @include('hostedpage.partials.description')
-                        <button class="btn btn--full" id="mobile-proceed-btn" onclick="window.RZP.toggleMobileForm()">PROCEED TO PAY</button>
+                        <a href="#form" class="btn btn--full" id="mobile-proceed-btn">PROCEED TO PAY</a>
                     </div>
                 </div>
                 @include('hostedpage.partials.form')
