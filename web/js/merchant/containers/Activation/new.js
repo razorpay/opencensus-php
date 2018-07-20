@@ -54,7 +54,8 @@ export class ActivationContainer extends React.Component {
     Promise.all([
       merchantFetch({
         url: 'merchant/activation',
-        mode: 'live',
+        // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
+        mode: !!accountId ? this.props.session.mode : 'live',
         accountId,
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
@@ -127,8 +128,9 @@ export class ActivationContainer extends React.Component {
   submitForm = data => {
     return merchantFetch({
       url: 'merchant/activation',
-      mode: 'live',
       method: 'post',
+      // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
+      mode: !!this.props.accountId ? this.props.session.mode : 'live',
       data: { submit: 1 },
       accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
     })
@@ -154,7 +156,8 @@ export class ActivationContainer extends React.Component {
   saveStep = data => {
     return merchantFetch({
       url: 'merchant/activation',
-      mode: 'live',
+      // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
+      mode: !!this.props.accountId ? this.props.session.mode : 'live',
       method: 'post',
       headers: {
         'content-type': 'application/json',
