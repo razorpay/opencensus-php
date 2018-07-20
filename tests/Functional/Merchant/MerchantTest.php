@@ -18,6 +18,7 @@ use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -2721,16 +2722,14 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
-        $this->fixtures->create('merchant', [
+        $merchant = $this->fixtures->create('merchant', [
             'id'     => '10000000000040',
             'email'  => 'test1@razorpay.com',
         ]);
 
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+        $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
-
-        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+        $merchant->reTag(["ref-10000000000000"]);
 
         $this->ba->proxyAuth();
 
@@ -2748,31 +2747,13 @@ class MerchantTest extends TestCase
 
             return true;
         });
-    }
 
-    public function testCreateSubmerchantLoginSameEmail()
-    {
-        $this->fixtures->create('merchant',[
-            'id'     => '10000000000040',
-            'email'  => 'test@razorpay.com',
-        ]);
-
-        $this->fixtures->user->createUserForMerchant('test@razorpay.com', '10000000000000');
-
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
-
-        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
-
-        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
+        Mail::assertNotQueued(MappedToAccount::class);
     }
 
     public function testCreateSubmerchantLoginPartnerAppMissing()
     {
-        $this->fixtures->create('merchant',[
+        $this->fixtures->create('merchant', [
             'id'     => '10000000000040',
             'email'  => 'test@razorpay.com',
         ]);
@@ -2795,7 +2776,7 @@ class MerchantTest extends TestCase
 
     public function testCreateSubmerchantLoginDuplicate()
     {
-        $this->fixtures->create('merchant',[
+        $merchant = $this->fixtures->create('merchant', [
             'id'     => '10000000000040',
             'email'  => 'test1@razorpay.com',
         ]);
@@ -2804,15 +2785,58 @@ class MerchantTest extends TestCase
 
         $this->fixtures->user->createUserForMerchant('test1@razorpay.com', '10000000000040');
 
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+        $this->fixtures->merchant->addFeatures(['aggregator']);
 
-        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
-
-        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+        $merchant->reTag(["ref-10000000000000"]);
 
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testCreateSubmerchantLoginUserExists()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'     => '10000000000040',
+            'email'  => 'test1@razorpay.com',
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant('test@razorpay.com', '10000000000000');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000040',
+            'user_id'     => $user['id'],
+            'role'        => 'owner'
+        ]);
+
+        $user2 = $this->fixtures->create('user', ['email' => 'test1@razorpay.com']);
+
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+
+        $merchant->reTag(["ref-10000000000000"]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(MappedToAccount::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertTrue($mailable->hasTo('test1@razorpay.com'));
+
+            return true;
+        });
+
+        Mail::assertNotQueued(PasswordResetMail::class);
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($merchant['id'], $user2['id']);
+
+        $this->assertEquals(1, count($mapping));
     }
 
     /**
@@ -2873,6 +2897,8 @@ class MerchantTest extends TestCase
 
             return true;
         });
+
+        Mail::assertNotQueued(MappedToAccount::class);
     }
 
     public function testAggregatorInviteSubMerchantToManageDash()
@@ -2908,6 +2934,8 @@ class MerchantTest extends TestCase
 
             return true;
         });
+
+        Mail::assertNotQueued(MappedToAccount::class);
     }
 
     public function testFullyManagedInviteSubMerchantToManageDash()
@@ -2945,6 +2973,28 @@ class MerchantTest extends TestCase
                 'role'        => 'owner']);
 
         $this->fixtures->user->createUserForMerchant('test1@razorpay.com', '10000000000040');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testAggregatorInviteSubMerchantToManageDashAlreadyOwner()
+    {
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000040',
+            'email'  => 'test@razorpay.com',
+        ]);
+
+        $this->fixtures->user->createUserForMerchant('test@razorpay.com', '10000000000000');
+
+        $this->fixtures->user->createUserForMerchant('invite.owner@razorpay.com', '10000000000040');
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
 

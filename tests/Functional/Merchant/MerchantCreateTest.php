@@ -250,16 +250,16 @@ class MerchantCreateTest extends TestCase
 
         $this->startTest();
 
+        $submerchant = $this->getLastEntity('merchant', true);
+
         Mail::assertQueued(CreateSubMerchantMail::class, function ($mail)
         {
             return $mail->hasTo('submerchant@razorpay.com', 'Submerchant 2');
         });
 
-        list($testMapping, $liveMapping) = $this->getLastMappingForBothModes();
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
 
-        $this->assertNull($testMapping);
-
-        $this->assertNull($liveMapping);
+        $this->assertEquals(1, count($mapping));
     }
 
     private function createUserMerchantMapping($merchantId, $role)
@@ -312,7 +312,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
 
         $this->assertEquals(1, count($mapping));
 
@@ -343,7 +343,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
 
         $this->assertEquals(1, count($mapping));
 
@@ -356,7 +356,7 @@ class MerchantCreateTest extends TestCase
 
         list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
-        $this->fixtures->create('user', ['email' => 'testsub@razorpay.com']);
+        $user2 = $this->fixtures->create('user', ['email' => 'testsub@razorpay.com']);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
 
@@ -374,9 +374,13 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
 
         $this->assertEquals(1, count($mapping));
+
+        $mapping2 = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user2['id']);
+
+        $this->assertEquals(1, count($mapping2));
 
         $this->verifyAccessMapEntries($app, $submerchant);
     }
@@ -403,7 +407,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
 
         // This should be empty once aggregator type's dashboard access is removed
         // in withEmail cases.
@@ -422,7 +426,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
 
         $this->assertEquals(1, count($mapping));
 
@@ -445,7 +449,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
 
         $this->assertEquals(1, count($mapping));
 
@@ -476,7 +480,7 @@ class MerchantCreateTest extends TestCase
 
         $submerchant = $this->getLastEntity('merchant', true);
 
-        $mapping = $this->getMerchantUserMapping($submerchant['id'], $user['id']);
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], $user['id']);
 
         $this->assertEquals(1, count($mapping));
 
@@ -685,14 +689,6 @@ class MerchantCreateTest extends TestCase
                 Header::ACCOUNT_ID          => '',
             ],
         ];
-    }
-
-    protected function getMerchantUserMapping($merchantId, $userId)
-    {
-        return DB::table('merchant_users')
-                    ->where('merchant_id', $merchantId)
-                    ->where('user_id', $userId)
-                    ->get();
     }
 
     protected function getLastMappingForBothModes()

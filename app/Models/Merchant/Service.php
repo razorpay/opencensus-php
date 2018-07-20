@@ -1896,9 +1896,21 @@ class Service extends Base\Service
 
         unset($input[User\Entity::MERCHANT_ID]);
 
-        $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $input[User\Entity::EMAIL]);
+        list($subMerchantUser, $createdNew) =
+            $this->createOrFetchUserAndAttachMerchant($subMerchant, $input[User\Entity::EMAIL]);
 
-        (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+        // If we create a new user we send him a password reset link to start using dasboard
+        // The reset flow will also confirm the user in the process.
+        // If we find an existing user with the sub-merchant email then we send a mail informing
+        // that he has access to sub-merchant account also now.
+        if ($createdNew === true)
+        {
+            (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+        }
+        else
+        {
+            (new User\Service)->postAccountMappedEmail($subMerchantUser, $subMerchant);
+        }
 
         $subMerchantUser = $subMerchantUser->toArrayPublic();
 
@@ -1906,10 +1918,12 @@ class Service extends Base\Service
     }
 
     /**
-     * In case of partners, we created the sub-merchant's user in case the email
+     * In case of partners, we create the sub-merchant's user in case the email
      * is different from partner's. There might be some rare cases where the user
      * with the provided email already exists, in which case we would want to attach
-     * that user to the sub-merchant created as owner.
+     * that user to the sub-merchant created as owner. Same can happen when trying to
+     * create login for a submerchant in the old aggregator model where we will
+     * just attach the user found instead of creating one.
      *
      * @param  Entity $subMerchant
      * @param  string $email
@@ -1949,6 +1963,10 @@ class Service extends Base\Service
     }
 
     /**
+     * In case of `create login` in the old aggregator flow, the email is taken from
+     * the sub-merchant for creating an owner for the account.
+     * In case of partner type aggregator the email comes in input.
+     *
      * @param  Entity $subMerchant
      * @param  Entity $partnerMerchant
      * @param  array $input
@@ -1969,6 +1987,13 @@ class Service extends Base\Service
 
         $subMerchantHasLessThanTwoOwners = ($subMerchant->owners()->count() <= 2);
 
+        //
+        // In case of a partner of type `aggregator`(only) having created a sub-merchant
+        // without providing email explicitly, we want to provide the ability to create
+        // an owner for the sub-merchant, with an email, later.
+        // In both old aggregator and partners flow, we never expect the total number of
+        // owners for a merchant to be greater than 2 (1 for partner and 1 for sub-merchant).
+        //
         if (($isAggregatorPartner === true) and
             ($subEmailIsSameAsPartner === true) and
             ($subMerchantHasLessThanTwoOwners === true))
@@ -2013,6 +2038,7 @@ class Service extends Base\Service
     {
         $ownerId = $merchant->primaryOwner()->getId();
 
+        // TODO: Remove when dashboard stops sending
         unset($input['user_id']);
 
         unset($input['account']);

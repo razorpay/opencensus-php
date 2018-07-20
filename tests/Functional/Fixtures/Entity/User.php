@@ -48,6 +48,14 @@ class User extends Base
             ]);
     }
 
+    public function getMerchantUserMapping($merchantId, $userId)
+    {
+        return DB::table('merchant_users')
+                    ->where('merchant_id', $merchantId)
+                    ->where('user_id', $userId)
+                    ->get();
+    }
+
     public function createUserForMerchant(string $email, string $merchantId)
     {
         $user = $this->fixtures->create('user', ['email' => $email]);

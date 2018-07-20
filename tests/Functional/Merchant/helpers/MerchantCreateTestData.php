@@ -222,7 +222,7 @@ return [
     ],
 
     'testCreateSubMerchantWrongUserRole' => [
-        'request'   => [
+        'request'  => [
             'url'     => '/submerchants',
             'method'  => 'POST',
             'content' => [
@@ -230,7 +230,7 @@ return [
                 'name' => 'new name',
             ],
         ],
-        'response'  => [
+        'response' => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
@@ -404,12 +404,12 @@ return [
     ],
 
     'testCreateSubMerchantByAggregatorWithoutApp' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'   => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
-                'id' => 'NewSubmerchant',
-                'name' => 'Submerchant',
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
                 'email' => 'testsub@razorpay.com',
             ],
         ],
@@ -447,9 +447,9 @@ return [
     ],
 
     'testCreateMarketplaceLinkedAccount' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
                 'id'      => '7gcKngYfqyDMjN',
                 'name'    => 'Linked Account 2',
@@ -467,9 +467,9 @@ return [
     ],
 
     'testCreateMarketplaceLinkedAccountWithoutEmail' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
                 'id'      => '7gcKngYfqyDMjN',
                 'name'    => 'Linked Account 2',
@@ -486,9 +486,9 @@ return [
     ],
 
     'testCreateLinkedAccountMaxPaymentLimit' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
                 'id'      => '7gcKngYfqyDMjN',
                 'name'    => 'Linked Account 4',
@@ -507,9 +507,9 @@ return [
     ],
 
     'testCreateMarketplaceLAWithoutEmailWithPartnerBank' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
                 'id'      => '7gcKngYfqyDMjN',
                 'name'    => 'Linked Account 2',
@@ -518,33 +518,33 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => '7gcKngYfqyDMjN',
-                'name'  => 'Linked Account 2',
+                'id'   => '7gcKngYfqyDMjN',
+                'name' => 'Linked Account 2',
             ],
         ],
     ],
 
     'testCreateSubMerchantWithoutEmailWithPartnerFMAndMarketplace' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
-                'id'      => '7gcKngYfqyDMjN',
-                'name'    => 'Linked Account 2',
+                'id'   => '7gcKngYfqyDMjN',
+                'name' => 'Linked Account 2',
             ],
         ],
         'response' => [
             'content' => [
-                'id'    => '7gcKngYfqyDMjN',
-                'name'  => 'Linked Account 2',
+                'id'   => '7gcKngYfqyDMjN',
+                'name' => 'Linked Account 2',
             ],
         ],
     ],
 
     'testCreateMarketplaceLAWithoutEmailWithPartnerFM' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
                 'id'      => '7gcKngYfqyDMjN',
                 'name'    => 'Linked Account 2',
@@ -553,16 +553,16 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => '7gcKngYfqyDMjN',
-                'name'  => 'Linked Account 2',
+                'id'   => '7gcKngYfqyDMjN',
+                'name' => 'Linked Account 2',
             ],
         ],
     ],
 
     'testLinkedAccountDefaultSchedule'   => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
                 'id'      => '7gbqextd68Co4t',
                 'name'    => 'Linked Account 3',
@@ -580,7 +580,7 @@ return [
     ],
 
     'testCreateLinkedAccountBatch' => [
-        'request' => [
+        'request'  => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
