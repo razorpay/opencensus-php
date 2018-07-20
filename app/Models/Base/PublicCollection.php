@@ -26,19 +26,6 @@ class PublicCollection extends Collection
         return $array;
     }
 
-    /**
-     * \Illuminate\Eloquent\Database\Collection::map() function uses toBase() function which returns
-     * an instance of Illuminate\Support\Collection and not \Illuminate\Eloquent\Database\Collection.
-     *
-     * Hence, when map() is called over PublicCollection the result is no longer an instance of PublicCollection.
-     *
-     * @return static
-     */
-    public function toBase()
-    {
-        return new static($this);
-    }
-
     public function toArrayAdmin()
     {
         $array[static::ENTITY] = $this->entity;
