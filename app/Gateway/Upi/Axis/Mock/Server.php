@@ -44,6 +44,7 @@ class Server extends Base\Mock\Server
         parent::authorize($input);
 
         $input = $this->parseInput($input);
+        s($input);
 
         $vpa = $input[2];
 
@@ -51,11 +52,11 @@ class Server extends Base\Mock\Server
 
         $content = [
             // Razorpay Payment Id
-            $input[1],
+            $input[2],
             // Bank Payment Id
             random_int(100000, 999999),
             // Amount
-            $input[3],
+            $input[4],
             '00',
             Status::SUCCESS,
             // Description
@@ -73,7 +74,7 @@ class Server extends Base\Mock\Server
         }
 
         $this->content($content);
-
+        s($content);
         return $this->makeResponse($content);
     }
 

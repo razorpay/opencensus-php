@@ -378,6 +378,7 @@ class Gateway
         self::UPI_HULK,
         self::UPI_SBI,
         self::SHARP,
+        self::UPI_AXIS,
     ];
 
     public static $headless = [
@@ -893,7 +894,8 @@ class Gateway
         Gateway::UPI_HULK,
         Gateway::WALLET_OLAMONEY,
         Gateway::NETBANKING_CORPORATION,
-        Gateway::SHARP
+        Gateway::SHARP,
+        Gateway::UPI_AXIS,
     ];
 
     /**

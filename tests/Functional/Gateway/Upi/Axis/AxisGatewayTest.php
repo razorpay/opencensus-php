@@ -52,7 +52,7 @@ class AxisGatewayTest extends TestCase
         $response = $this->getPaymentStatus($id);
 
         $status = $response['status'];
-
+        s($expectedStatus,$status);
         $this->assertEquals($expectedStatus, $status);
     }
 }

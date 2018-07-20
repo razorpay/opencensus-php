@@ -40,11 +40,10 @@ class Fields
      * @see https://drive.google.com/drive/u/0/folders/0B1MTSXtR53PfYldqNUIyLXlnSjA
      */
     const COLLECT       = [
-        self::MERCH_ID,
         self::UNQ_TXN_ID,
+        self::MERCH_ID,
         self::AMOUNT,
         self::CUSTOMER_VPA,
         self::CODE,
     ];
 }
-

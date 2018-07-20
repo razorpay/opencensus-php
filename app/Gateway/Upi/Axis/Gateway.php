@@ -88,8 +88,8 @@ class Gateway extends Base\Gateway
         $response = $this->parseGatewayResponse($response->body);
 
         $response[Entity::RECEIVED] = 1;
-
-//        $this->updateGatewayPaymentEntity($gatewayPayment, $response);
+        s($response);
+        $this->updateGatewayPaymentEntity($gatewayPayment, $response);
 
         $this->checkResponseStatus($response[Fields::CODE]);
 
@@ -407,6 +407,58 @@ class Gateway extends Base\Gateway
     protected function getMerchantCategoryCode(array $input)
     {
         return $input['merchant']['category'] ?: '6012';
+    }
+
+    /**
+     * Handles the S2S callback
+     * @param  array $input
+     * @return boolean
+     */
+    public function callback(array $input): array
+    {
+        parent::callback($input);
+
+        $content = $input['gateway'];
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        if ($gatewayPayment->getType() !== Base\Type::PAY)
+        {
+            assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
+        }
+
+        assertTrue($input['payment']['id'] === $content[ResponseFields::PAYMENT_ID]);
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+        $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
+
+        $this->checkResponseStatus($content[ResponseFields::STATUS]);
+
+        $this->updateGatewayPaymentResponse($gatewayPayment, $content);
+
+        // Gateways must return array in callback
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA => $gatewayPayment->getVpa()
+            ]
+        ];
+    }
+
+    protected function updateGatewayPaymentResponse($payment, array $response)
+    {
+        $attributes = $this->getMappedAttributes($response);
+
+        // To mark that we have received a response for this request
+        $attributes[Entity::RECEIVED] = 1;
+
+        $payment->fill($attributes);
+
+        $payment->generatePspData($attributes);
+
+        $this->repo->saveOrFail($payment);
     }
 
 }
