@@ -2,6 +2,7 @@
 
 namespace RZP\Mail\Gateway\RefundFile;
 
+use Illuminate\Support\Facades\Mail;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base;
 use RZP\Models\Payment\Gateway;
@@ -17,7 +18,7 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_BOB         => ['bob.netbanking.refunds@razorpay.com'],
         Gateway::NETBANKING_RBL         => ['settlements@razorpay.com'],
         Gateway::NETBANKING_INDUSIND    => ['settlements@razorpay.com'],
-        Gateway::NETBANKING_CANARA      => [''],
+        Gateway::NETBANKING_CANARA      => ['hosettlement@canarabank.com', 'hodbspg@canarabank.com'],
         Gateway::UPI_ICICI              => ['settlements@razorpay.com'],
         Gateway::WALLET_AIRTELMONEY     => ['settlements@razorpay.com'],
         Gateway::WALLET_PAYUMONEY       => ['settlements@razorpay.com']
@@ -44,6 +45,7 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_FEDERAL     => 'Federal Netbanking refunds file for ',
         Gateway::NETBANKING_BOB         => 'Bank of Baroda Netbanking refunds file for ',
         Gateway::NETBANKING_INDUSIND    => 'Indusind Netbanking refunds file for ',
+        Gateway::NETBANKING_CANARA      => 'Canara Netbanking refunds file for',
         Gateway::UPI_ICICI              => 'UPI Icici refunds file for ',
         Gateway::WALLET_AIRTELMONEY     => 'Airtelmoney refunds file for ',
         Gateway::WALLET_PAYUMONEY       => 'PayUMoney refunds file for ',
@@ -55,6 +57,7 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_HDFC        => MailTags::HDFC_NETBANKING_REFUNDS_MAIL,
         Gateway::NETBANKING_BOB         => MailTags::BOB_NETBANKING_REFUNDS_MAIL,
         Gateway::NETBANKING_ICICI       => MailTags::ICICI_NETBANKING_REFUNDS_MAIL,
+        Gateway::NETBANKING_CANARA      => MailTags::CANARA_NETBANKING_REFUNDS_MAIL,
         Gateway::UPI_ICICI              => MailTags::ICICI_UPI_REFUNDS_MAIL,
         Gateway::WALLET_AIRTELMONEY     => MailTags::AIRTEL_MONEY_REFUNDS_MAIL,
         Gateway::WALLET_PAYUMONEY       => MailTags::PAYU_MONEY_REFUNDS_MAIL,
@@ -66,6 +69,7 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_HDFC        => 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com',
         Gateway::NETBANKING_BOB         => 'Please find attached refunds information for Bank of Baroda',
         Gateway::NETBANKING_ICICI       => 'Please forward the ICICI Netbanking refunds file to UBPS operations team',
+        Gateway::NETBANKING_CANARA      => 'Please find attached refunds information for Canara Bank',
         Gateway::UPI_ICICI              => 'Please find attached refunds information for UPI',
         Gateway::WALLET_AIRTELMONEY     => 'Please find attached refunds information for AirtelMoney',
         Gateway::WALLET_PAYUMONEY       => 'Please find attached refunds information for PayUMoney',
@@ -79,5 +83,6 @@ class Constants extends Base\Constants
         Gateway::UPI_ICICI              => 'emails.message',
         Gateway::WALLET_AIRTELMONEY     => 'emails.message',
         Gateway::WALLET_PAYUMONEY       => 'emails.message',
+        GATEWAY::NETBANKING_CANARA      => 'emails.message'
     ];
 }
