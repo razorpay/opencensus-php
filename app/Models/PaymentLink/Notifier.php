@@ -6,7 +6,6 @@ use Mail;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Metric;
 use RZP\Mail\PaymentLink\PaymentRequest;
 
 class Notifier extends Base\Core
@@ -60,6 +59,8 @@ class Notifier extends Base\Core
                 Entity::EMAIL => $email,
             ]);
 
+        $this->trace->count(Metric::PAYMENT_PAGE_EMAIL_NOTIFY_TOTAL);
+
         $mailPayload = (new ViewSerializer($paymentLink))->serializeForInternal();
 
         $mailable = new PaymentRequest($mailPayload, $email);
@@ -67,8 +68,6 @@ class Notifier extends Base\Core
         try
         {
             Mail::send($mailable);
-
-            $this->pushNotifyCountMetric('email');
         }
         catch (\Throwable $ex)
         {
@@ -91,13 +90,13 @@ class Notifier extends Base\Core
      */
     protected function notifyBySms(Entity $paymentLink, string $contact)
     {
+        $this->trace->count(Metric::PAYMENT_PAGE_SMS_NOTIFY_TOTAL);
+
         $request = $this->getRavenSendPaymentLinkRequestInput($paymentLink, $contact);
 
         try
         {
             $this->raven->sendSms($request, false);
-
-            $this->pushNotifyCountMetric('sms');
         }
         catch (\Throwable $ex)
         {
@@ -135,14 +134,5 @@ class Notifier extends Base\Core
                 'invoice_link'  => $paymentLink->getShortUrl(),
             ],
         ];
-    }
-
-    protected function pushNotifyCountMetric(string $type)
-    {
-        $dimensions = [
-            Metric::LABEL_TYPE => $type,
-        ];
-
-        $this->trace->count(Metric::PAYMENT_PAGE_NOTIFIED_TOTAL, 1, $dimensions);
     }
 }

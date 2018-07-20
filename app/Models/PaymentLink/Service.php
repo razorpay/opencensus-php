@@ -3,7 +3,6 @@
 namespace RZP\Models\PaymentLink;
 
 use RZP\Models\Base;
-use RZP\Constants\Metric;
 
 class Service extends Base\Service
 {
@@ -78,8 +77,6 @@ class Service extends Base\Service
         $viewPayload = $this->core->getHostedViewPayload($paymentLink);
 
         $view = $this->core->getHostedViewTemplate($paymentLink);
-
-        $this->trace->count(Metric::PAYMENT_PAGE_VIEW_RENDERED_TOTAL);
 
         return [$view, $viewPayload];
     }

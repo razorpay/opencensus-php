@@ -2,7 +2,6 @@
 
 namespace RZP\Models\PaymentLink;
 
-use RZP\Constants\Metric;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payment;
@@ -62,7 +61,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($paymentLink);
 
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATED, $paymentLink->toArrayPublic());
-        $this->trace->count(Metric::PAYMENT_PAGE_CREATED_TOTAL);
 
         return $paymentLink;
     }
@@ -98,7 +96,6 @@ class Core extends Base\Core
         $this->updateShortUrlIfApplicable($paymentLink, $input);
 
         $this->trace->info(TraceCode::PAYMENT_LINK_UPDATED, $paymentLink->toArrayPublic());
-        $this->trace->count(Metric::PAYMENT_PAGE_UPDATED_TOTAL);
 
         return $paymentLink;
     }
@@ -208,6 +205,8 @@ class Core extends Base\Core
      */
     public function validateIsPaymentInitiatable(Entity $paymentLink, Payment\Entity $payment)
     {
+        $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_ATTEMPTS_TOTAL);
+
         // 1. Validates amount, if applicable
         $paymentLink->getValidator()->validatePaymentAmount($payment);
 
@@ -319,14 +318,14 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($paymentLink);
 
-        $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_COMPLETED_TOTAL);
-
         $this->trace->info(
             TraceCode::PAYMENT_LINK_UPDATED_POST_PAYMENT_CAPTURE,
             [
                 Entity::PAYMENT_ID => $payment->getId(),
                 E::PAYMENT_LINK    => $paymentLink->toArrayPublic(),
             ]);
+
+        $this->trace->count(Metric::PAYMENT_PAGE_PAID_TOTAL);
     }
 
     /**
@@ -667,13 +666,12 @@ class Core extends Base\Core
                 TraceCode::PAYMENT_LINK_PAYMENT_REFUND_ERROR, $tracePayload);
         }
 
+        // If refund was made, increments counter of at what payment status the refund was made
         if ($refund !== null)
         {
-            $dimensions = [
-                Metric::LABEL_STEP => $payment->getStatus(),
-            ];
+            $dimensions = ['payment_status' => $payment->getStatus()];
 
-            $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_REFUNDED_TOTAL, 1, $dimensions);
+            $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_REFUNDS_TOTAL, 1, $dimensions);
         }
 
         $tracePayload = array_merge($tracePayload, [E::REFUND => optional($refund)->toArrayPublic()]);
