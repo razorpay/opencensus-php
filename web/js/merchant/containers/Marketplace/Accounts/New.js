@@ -17,6 +17,9 @@ import * as NotificationsActions from 'rzp/modules/notifications';
 })
 @reduxForm({
   form: 'newAccount',
+  initialValues: {
+    account: true,
+  },
 })
 export default class AddAccount extends Component {
   state = {
@@ -24,11 +27,11 @@ export default class AddAccount extends Component {
   };
 
   componentWillMount() {
-    const account = this.props.account;
+    const accountData = this.props.accountData;
 
-    if (account) {
+    if (accountData) {
       this.props.initialize({
-        name: account.name,
+        name: accountData.name,
       });
     }
   }
@@ -51,12 +54,12 @@ export default class AddAccount extends Component {
   };
 
   render() {
-    const { handleSubmit, account } = this.props;
+    const { handleSubmit, accountData } = this.props;
 
     return (
       <div>
         <ModalHeader
-          title={account ? 'Edit Account' : 'Add Account'}
+          title={!!accountData ? 'Edit Account' : 'Add Account'}
           onCloseClick={this.props.closeModal}
         />
 
@@ -73,7 +76,7 @@ export default class AddAccount extends Component {
                   class="form-control"
                   autoFocus={true}
                   validate={required()}
-                  disabled={!!account}
+                  disabled={!!accountData}
                 />
                 <small class="help-block">
                   The business/individual name for the account, which will
@@ -96,7 +99,7 @@ export default class AddAccount extends Component {
             <div class="Modal__actions">
               <AsyncButton
                 class="btn btn-primary btn-block"
-                text={account ? 'Update' : 'Add'}
+                text={!!accountData ? 'Update' : 'Add'}
                 pendingText="Adding..."
                 onClick={handleSubmit(this.save)}
               />
