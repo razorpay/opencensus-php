@@ -349,7 +349,7 @@ class Gateway extends Base\Gateway
             return false;
         }
 
-        $expectedAmount = (int) $input['payment']['amount'];
+        $expectedAmount = $input['payment']['amount'];
 
         $actualAmount = (int) $content[ResponseFields::VER_AMOUNT];
 
