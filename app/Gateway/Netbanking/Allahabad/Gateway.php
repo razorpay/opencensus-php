@@ -238,7 +238,7 @@ class Gateway extends Base\Gateway
             RequestFields::USER_TYPE              => Constants::USER_TYPE,
             RequestFields::APP_TYPE               => Constants::RETAIL,
             RequestFields::STATFLG                => Constants::STATFLG,
-            //RequestFields::BANK_TRANSACTION_ID    => '',
+            RequestFields::BANK_TRANSACTION_ID    => $gatewayPayment['bank_payment_id'],
         ];
 
         $request = $this->getStandardRequestArray([],'get');
@@ -344,8 +344,8 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        $secret = $this->getSecret();
-
+        //$secret = $this->getSecret();
+        $secret = "rskq1r45hft42k3q4erxh123";
         $sig_str = hash_hmac('sha1',$str,$secret);
 
         return $sig_str;
