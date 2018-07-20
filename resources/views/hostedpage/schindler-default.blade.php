@@ -5,6 +5,12 @@
     $is_test_mode               = $data['is_test_mode'] ?? false;
     $has_udf                    = (empty($udf_schema) === false);
     $max_mobile_width           = 853;
+    $contact = [
+        'phone' => '1800 209 5438',
+        'email' => 'schindlerindia.in@schindler.com'
+    ];
+
+    $email_subject = 'Query for Payment Page Id: '. $payment_page_data['id'];
 ?>
 
 

@@ -2,13 +2,13 @@
 
 namespace RZP\Tests\Functional\Invoice;
 
-use Metrics;
-
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class InvoiceMetricTest extends TestCase
 {
+    use TestsMetrics;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -89,7 +89,7 @@ class InvoiceMetricTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->exactly(7))
+        $mock->expects($this->exactly(8))
              ->method('count')
              ->withConsecutive(
                 [
@@ -147,6 +147,15 @@ class InvoiceMetricTest extends TestCase
                     ],
                 ],
                 [
+                    'invoice_created_total',
+                    1,
+                    [
+                        'type'             => 'invoice',
+                        'has_batch'        => 0,
+                        'has_subscription' => 0,
+                    ],
+                ],
+                [
                     'http_requests_total',
                     1,
                     $expectedHttpMetricTags,
@@ -162,16 +171,5 @@ class InvoiceMetricTest extends TestCase
                 ]);
 
         $this->startTest();
-    }
-
-    protected function createMetricsMock()
-    {
-        $mock = $this->getMockBuilder(Metrics::class)
-                     ->setMethods(['count', 'gauge', 'histogram'])
-                     ->getMock();
-
-        $this->app->instance('metrics', $mock);
-
-        return $mock;
     }
 }
