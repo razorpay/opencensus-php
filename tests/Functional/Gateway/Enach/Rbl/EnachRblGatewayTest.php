@@ -298,6 +298,39 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('refunded', $payment['status']);
     }
 
+    public function testRegisterFailureReconciliation()
+    {
+        $payment = $this->createAcknowledgedEnachPayment(false);
+
+        $batchFile = $this->getBatchFileToUpload($payment, 'Rejected', 'M025', 'Desc from bank');
+
+        $url = '/admin/batches';
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'registration_status' => 'Rejected',
+                'error_message'       => 'Desc from bank',
+                'error_code'          => 'M025',
+            ],
+            $enach
+        );
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'recurring_status'         => 'rejected',
+                'recurring_failure_reason' => 'Payment processing failed due to invalid parameters',
+            ],
+            $token
+        );
+    }
+
     public function testDebitFileGeneration()
     {
         $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
