@@ -321,7 +321,7 @@ class Gateway extends Base\Gateway
 
         $response = $verify->verifyResponseContent;
 
-        if (($response[ResponseFields::RETURN_CODE] === Constants::SUCCESS_RETURN_CODE) and
+        if (($response[ResponseFields::RETURN_CODE] === Constants::SUCCESS) and
             (isset($response[ResponseFields::VERIFY_STATUS]) === true) and
             ($response[ResponseFields::VERIFY_STATUS] === Constants::SUCCESS_VERIFY_STATUS))
         {

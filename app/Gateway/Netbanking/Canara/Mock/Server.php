@@ -25,12 +25,6 @@ class Server extends Base\Mock\Server
 
         $this->content($content, 'authorize');
 
-        /*$callbackUrl = $input['DynamicUrl'];
-
-        $callbackUrl .= '?' . http_build_query($content);
-
-        return $callbackUrl;*/
-
         $callbackUrl = $this->route->getUrl('gateway_payment_callback_canara_get');
 
         $callbackUrl .= '?' . http_build_query($content);
@@ -90,7 +84,7 @@ class Server extends Base\Mock\Server
             ResponseFields::PUR_DATE                          => $input[ResponseFields::PUR_DATE],
             ResponseFields::VER_BANK_REFERENCE_NUMBER         => self::BANK_REFERENCE_NUMBER,
             ResponseFields::VER_AMOUNT                        => $input[ResponseFields::AMOUNT],              // have to verify
-            ResponseFields::RETURN_CODE                       => Constants::SUCCESS_RETURN_CODE,
+            ResponseFields::RETURN_CODE                       => Constants::SUCCESS,
             ResponseFields::VERIFY_STATUS                     => Constants::SUCCESS_VERIFY_STATUS,
         ];
     }
