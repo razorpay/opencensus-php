@@ -4,36 +4,24 @@ namespace RZP\Reconciliator\NetbankingAllahabad;
 
 class Constants
 {
-    const BANK_CODE             = 'merchant_code';
+    const BANK_CODE             = 'bank_code';
 
-    const COLUMN_CUSTOMER_EMAIL = 'customer_email';
+    const TXN_DATE             = 'txn_date';
 
-    const COLUMN_CURRENCY       = 'currency';
+    const MERCHANT_NAME         = 'merchant_name';
 
-    const COLUMN_PAYMENT_AMOUNT = 'transaction_amount';
+    const TRNX_AMOUNT           = 'transaction_amount';
 
-    const COLUMN_FEE            = 'fee';
+    const PGI_REFERENCE_NO    = 'pgi_reference_no.';
 
-    const COLUMN_PAYMENT_ID     = 'payment_id';
-
-    const ERROR_CODE            = 'error_code';
-
-    const BANK_PAYMENT_ID       = 'bank_payment_id';
-
-    const COLUMN_PAYMENT_DATE   = 'transaction_date';
-
-    const ERROR_DESCRIPTION     = 'error_description';
+    const BANK_REFERENCE_NO   = 'bank_reference_no.';
 
     const PAYMENT_COLUMN_HEADERS = [
-        self::COLUMN_MERCHANT_CODE,
-        self::COLUMN_CUSTOMER_EMAIL,
-        self::COLUMN_CURRENCY,
-        self::COLUMN_PAYMENT_AMOUNT,
-        self::COLUMN_FEE,
-        self::COLUMN_PAYMENT_ID,
-        self::ERROR_CODE,
-        self::BANK_PAYMENT_ID,
-        self::COLUMN_PAYMENT_DATE,
-        self::ERROR_DESCRIPTION,
+        self::BANK_CODE,
+        self::TXN_DATE,
+        self::MERCHANT_NAME,
+        self::TRNX_AMOUNT,
+        self::PGI_REFERENCE_NO,
+        self::BANK_REFERENCE_NO,
     ];
 }
