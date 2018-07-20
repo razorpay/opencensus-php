@@ -437,6 +437,29 @@ return [
         ],
     ],
 
+    'testPartnerAuthOnJsonpRouteAppMissing' => [
+        'request'   => [
+            'url'     => '/emi',
+            'method'  => 'get',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'DB Query Failed',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'   => Razorpay\OAuth\Exception\DBQueryException::class,
+            'message' => 'DB Query Failed',
+        ],
+    ],
+
     'testPartnerAuthOnJsonpRouteWrongMerchantForClient' => [
         'request'   => [
             'url'     => '/emi',

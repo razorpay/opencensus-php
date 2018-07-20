@@ -319,7 +319,7 @@
             });
 
 
-            var element = document.getElementById('udf_container');
+            var element = window.RZP.getEl('udf_container');
             var editor = new JSONEditor(element, {
                 form_name_root: "",
                 no_additional_properties: true,
@@ -383,7 +383,7 @@
                     if (window.RZP.checkIsDesktop()) {
                         parentEle = document.body;
                     } else {
-                        parentEle = document.getElementById('form-section');
+                        parentEle = window.RZP.getEl('form-section');
                     }
 
                     window.RZP.scrollTo(parentEle, errorEle, 300);
@@ -396,23 +396,26 @@
         }
 
         function removeForm() {
-            document.getElementById("udf_submit_btn").style.display='none';
+            window.RZP.getEl("udf_submit_btn").style.display='none';
             window.editor.destroy();
 
             document.getElementsByName('payment-form')[0].style.display = 'none';
             document.getElementsByName('payment-form')[0].innerHTML = '';
 
-            document.getElementById('testmode-warning').style.display = 'none';
+            var testModeEle = window.RZP.getEl('testmode-warning');
+            if (testModeEle) {
+                testModeEle.style.display = 'none';
+            }
 
             if (window.RZP.checkIsDesktop()) {
                 document.body.scrollTop = 0;
             } else {
-                document.getElementById('form-section').scrollTop = 0;
+                window.RZP.getEl('form-section').scrollTop = 0;
             }
         }
 
         function addListeners_Validators() {
-            document.getElementById('udf_submit_btn').addEventListener('click', submitForm);
+            window.RZP.getEl('udf_submit_btn').addEventListener('click', submitForm);
 
             window.RZP.addAmountValidation();
             window.RZP.addIntFieldsValidation();
@@ -427,14 +430,14 @@
 
             removeForm();
 
-            document.getElementById('success-section').style.display = 'block';
+            window.RZP.getEl('success-section').style.display = 'block';
 
-            document.getElementById('success-msg').innerHTML = 'You\'ve successfully paid ₹' + (amountPaid/100).toFixed(2);
-            document.getElementById('payment-id').innerHTML = 'Payment ID: ' + respPaymentId;
+            window.RZP.getEl('success-msg').innerHTML = 'You\'ve successfully paid ₹' + (amountPaid/100).toFixed(2);
+            window.RZP.getEl('payment-id').innerHTML = 'Payment ID: ' + respPaymentId;
         }
 
         function toggleMobileForm() {
-            var formEl = document.getElementById('form-section');
+            var formEl = window.RZP.getEl('form-section');
             if (window.RZP.hasClass(formEl, 'slideup')) {
                 window.RZP.removeClass(formEl, 'slideup');
             } else {
@@ -478,7 +481,7 @@
                 button = '<button class="btn-link showmore" onclick="window.RZP.toggleTrimDescription(false)"> Show More </button>';
             }
 
-            var ele = document.getElementById('payment-for');
+            var ele = window.RZP.getEl('payment-for');
             ele && (ele.innerHTML = desc + button);
         }
 
@@ -535,19 +538,29 @@
             }
         }
 
+        function getEl(id) {
+            return document.getElementById(id);
+        }
+
         function cleanHTML() {
             // Show content according to width
             if (checkIsDesktop()) {
-                document.getElementById('mobile-container').innerHTML = '';
-                document.getElementById('desktop-container').style.display = 'block';
+                getEl('mobile-container').innerHTML = '';
+                getEl('desktop-container').style.display = 'block';
 
                 removeElemsWithClass('mobile-el');
             } else {
 
-                document.getElementById('desktop-container').innerHTML = '';
-                document.getElementById('mobile-container').style.display = 'block';
+                getEl('desktop-container').innerHTML = '';
+                getEl('mobile-container').style.display = 'block';
 
                 document.body.style.overflow = 'hidden';
+
+                var browserHeight = document.documentElement.clientHeight;
+
+                getEl('mobile-container').style['min-height'] = browserHeight + 'px';
+                document.querySelector('#mobile-container .content').style['height'] = browserHeight + 'px';
+                document.querySelector('#mobile-container #form-section').style['height'] = browserHeight + 'px';
 
                 removeElemsWithClass('desktop-el');
             }
@@ -597,6 +610,7 @@
         global.cleanHTML = cleanHTML;
         global.easeInOutQuad = easeInOutQuad;
         global.scrollTo = scrollTo;
+        global.getEl = getEl;
 
 
     })(window.RZP = window.RZP || {});

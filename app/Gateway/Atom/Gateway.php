@@ -140,8 +140,8 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_HEADLESS_PARSING_FAILED,
-                null, 
-                null, 
+                null,
+                null,
                 [
                     'gateway' => $this->gateway,
                 ]
@@ -218,6 +218,33 @@ class Gateway extends Base\Gateway
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
         $verify->payment = $this->saveVerifyContent($verify);
+    }
+
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
+        {
+            return true;
+        }
+
+        throw new Exception\LogicException(
+            'Verify refund not implemented',
+            null,
+            [
+                'gateway'   => 'atom',
+                'refund_id' => $input['refund']['id'],
+            ]);
     }
 
     protected function verifyAmountMismatch(Base\Verify $verify, array $input, array $response, string $entity)

@@ -321,16 +321,6 @@ trait Capture
 
         $autoCaptured = $payment->getAutoCaptured();
 
-        if (($payment->isEmiMerchantSubvented() === true) and
-            ($autoCaptured === false))
-        {
-            $emiPlan = $payment->emiPlan;
-
-            $merchantPayback = $emiPlan->getMerchantPayback();
-
-            $captureAmount = Emi\Calculator::calculateSubventedAmount($captureAmount, $merchantPayback);
-        }
-
         if ($captureAmount !== $payment->getAmount())
         {
             throw new Exception\BadRequestException(
@@ -391,7 +381,7 @@ trait Capture
             return;
         }
 
-        $captureAmount = $discount->offer->getDiscountedAmount($order->getAmount());
+        $captureAmount = $discount->offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
     }
 
     /**
@@ -794,6 +784,10 @@ trait Capture
         }
 
         $invoice->updateStatusPostCapture();
+
+        $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
+        $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
+        $this->trace->count(Invoice\Metric::INVOICE_PAID_TOTAL, 1, $dimensions);
 
         $this->repo->saveOrFail($invoice);
     }

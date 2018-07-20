@@ -582,7 +582,7 @@ class Processor
         {
             $orderAmount = $order->getAmount();
 
-            $discountedAmount = $this->offer->getDiscountedAmount($orderAmount);
+            $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
         }
@@ -645,7 +645,7 @@ class Processor
             return $offers->first();
         }
 
-        new Exception\LogicException('Auto selection of offer is not implemented yet.');
+        throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
     }
 
     protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
@@ -1540,7 +1540,7 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice, true);
 
-        $invoice->getValidator()->validateInvoicePayable();
+        $invoice->getValidator()->validateInvoicePayable($payment);
 
         $payment->invoice()->associate($invoice);
     }

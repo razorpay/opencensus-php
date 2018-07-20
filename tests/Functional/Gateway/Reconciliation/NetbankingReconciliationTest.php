@@ -313,6 +313,8 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getLastEntity('transaction', true);
 
         $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHdfcPaymentReconciliation()

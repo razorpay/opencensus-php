@@ -500,7 +500,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_FEATURE_ONBOARDING_STATUS_INVALID                = 'The product onboarding status provided is invalid';
     const BAD_REQUEST_MERCHANT_FEATURE_ACTIVATION_FORM_ALREADY_SUBMITTED        = 'The product activation form is already submitted.';
 
-    const BAD_REQUEST_INVALID_ADMIN_EMAIL                                       = 'Email provided is not a valid email';
+    const BAD_REQUEST_INVALID_ADMIN_EMAIL                                       = 'Email provided is not a registered email';
     const BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME                              = 'Email provided does not have the correct hostname';
     const BAD_REQUEST_AUTHENTICATION_FAILED                                     = 'Authentication failed';
 

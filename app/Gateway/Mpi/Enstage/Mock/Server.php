@@ -135,7 +135,7 @@ class Server extends Base\Mock\Server
     {
         $decryptedString = $this->gateway->decrypt($data);
 
-        if ($decryptedString !== '123456')
+        if ($decryptedString === '999999')
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,

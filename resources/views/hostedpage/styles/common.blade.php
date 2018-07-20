@@ -1,4 +1,5 @@
 <?php
+    $rzp_prime_color    = '#528ff0';
     $canvas_bg          = '#f2f4f6';
     $primary_color      = '#0D2366';
     $secondary_color    = '#6F7691';
@@ -13,6 +14,7 @@
 
     * {
         box-sizing: border-box;
+        font-family: inherit;
     }
 
     html {
@@ -52,16 +54,17 @@
 
     #header-details {
         float: left;
+        display: table;
     }
 
     #header-details > div {
-        display: inline-block;
         vertical-align: middle;
     }
 
     #header-details #merchant-name {
         font-size: 24px;
-        max-width: 75%;
+        padding-left: 16px;
+        display: table-cell;
     }
 
     #header-logo {
@@ -74,7 +77,7 @@
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         background: {{$light_color}};
         padding: 8px;
-        margin-right: 16px;
+        display: inline-block;
     }
 
     #contact-details {
@@ -106,24 +109,34 @@
         line-height: 24px;
     }
 
+    a {
+        text-decoration: none;
+        color: {{$rzp_prime_color}};
+    }
+
+    .footer a, #footer-section a, #contact-details a {
+        color: inherit;
+    }
+
     ol, p {
         padding: 0;
-        margin: 20px 0 24px;
         font-size: 14px;
         line-height: 20px;
     }
 
     ol {
         padding-left: 15px;
+        margin: 16px 0 32px 0;
     }
 
     ol li {
-        margin-bottom: 24px;
+        margin-bottom: 10px;
     }
 
     p {
         white-space: pre-wrap;
         word-wrap: break-word;
+        margin-top: 20px;
     }
 
     .btn {

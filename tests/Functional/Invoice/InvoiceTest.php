@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -24,6 +25,7 @@ use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
  */
 class InvoiceTest extends TestCase
 {
+    use TestsMetrics;
     use PaymentTrait;
     use MocksDnsTrait;
     use CreatesInvoice;
@@ -143,6 +145,32 @@ class InvoiceTest extends TestCase
         $order = $this->createOrder();
 
         $invoice = $this->fixtures->create('invoice');
+
+        $metrics = $this->createMetricsMock();
+
+        $metrics->expects($this->at(4))
+                ->method('count')
+                ->with(
+                    'invoice_payment_attempts_total',
+                    1,
+                    [
+                        'is_partial_payment' => 0,
+                        'type'               => 'invoice',
+                        'has_batch'          => 0,
+                        'has_subscription'   => 0,
+                    ]);
+
+        $metrics->expects($this->at(7))
+                ->method('count')
+                ->with(
+                    'invoice_paid_total',
+                    1,
+                    [
+                        'is_partial_payment' => 0,
+                        'type'               => 'invoice',
+                        'has_batch'          => 0,
+                        'has_subscription'   => 0,
+                    ]);
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 
@@ -1862,6 +1890,18 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkView()
     {
+        $this->createMetricsMock()
+             ->expects($this->at(4))
+             ->method('count')
+             ->with(
+                'invoice_view_total',
+                1,
+                [
+                    'has_batch'        => 0,
+                    'has_subscription' => 0,
+                    'type'             => 'link',
+                ]);
+
         $this->createOrder();
 
         $this->createIssuedInvoice(['type' => 'link', 'description' => 'Sample description']);
@@ -1871,6 +1911,18 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkViewDraft()
     {
+        $this->createMetricsMock()
+             ->expects($this->at(4))
+             ->method('count')
+             ->with(
+                'invoice_view_total',
+                1,
+                [
+                    'has_batch'        => 0,
+                    'has_subscription' => 0,
+                    'type'             => 'link',
+                ]);
+
         $this->createDraftInvoice(['type' => 'link']);
 
         $this->callViewUrlAndMakeAssertions(
@@ -2197,6 +2249,30 @@ class InvoiceTest extends TestCase
 
     public function testExpireInvoices()
     {
+        $metrics = $this->createMetricsMock();
+
+        $metrics->expects($this->at(15))
+                ->method('count')
+                ->with(
+                    'invoice_expired_total',
+                    1,
+                    [
+                        'type'             => 'invoice',
+                        'has_batch'        => 0,
+                        'has_subscription' => 0,
+                    ]);
+
+        $metrics->expects($this->at(20))
+                ->method('count')
+                ->with(
+                    'invoice_expired_total',
+                    1,
+                    [
+                        'type'             => 'invoice',
+                        'has_batch'        => 0,
+                        'has_subscription' => 0,
+                    ]);
+
         // Issued invoice
         $this->createOrder();
         $this->fixtures->create('invoice');

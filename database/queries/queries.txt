@@ -4117,6 +4117,9 @@ ALTER TABLE payments
 ALTER TABLE batches
     ADD INDEX batches_subtype_index (`sub_type`);
 
+ALTER TABLE merchants
+    ADD COLUMN fee_credits_threshold BIGINT UNSIGNED AFTER fee_model
+
 ALTER table offers
     ADD COLUMN emi_subvention tinyint DEFAULT NULL AFTER flat_cashback,
     ADD COLUMN emi_durations varchar(255) DEFAULT NULL AFTER emi_subvention;

@@ -43,6 +43,11 @@ class Gateway extends Base\Gateway
         $this->secureCacheDriver = $this->app['config']->get('cache.secure_default');
     }
 
+    public function otpGenerate(array $input)
+    {
+        return $this->authorize($input);
+    }
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -59,7 +64,7 @@ class Gateway extends Base\Gateway
             return $this->authorizeRecurring($input);
         }
 
-        $authenticationGateway = $this->decideAuthenticationGateway();
+        $authenticationGateway = $this->decideAuthenticationGateway($input);
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
@@ -71,6 +76,11 @@ class Gateway extends Base\Gateway
         }
 
         return $this->authorizeNotEnrolled($input);
+    }
+
+    public function callbackOtpSubmit(array $input)
+    {
+        return $this->callback($input);
     }
 
     public function callback(array $input)
@@ -85,7 +95,7 @@ class Gateway extends Base\Gateway
 
 
         $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
-        
+
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
         $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
@@ -247,6 +257,8 @@ class Gateway extends Base\Gateway
      */
     protected function callAuthenticationGateway(array $input, $authenticationGateway)
     {
+        $this->authenticationGateway = $this->decideAuthenticationGateway($input);
+
         return $this->app['gateway']->call(
             $authenticationGateway,
             $this->action,
@@ -254,9 +266,23 @@ class Gateway extends Base\Gateway
             $this->mode);
     }
 
-    protected function decideAuthenticationGateway()
+    protected function decideAuthenticationGateway($input)
     {
-        return Payment\Gateway::MPI_BLADE;
+        $networkCode = $input['card']['network_code'];
+
+        if (($input['merchant']->isAxisExpressPayEnabled() === true) and
+            ($input['card']['issuer'] === 'UTIB') and
+            ($input['payment']['auth_type'] === 'otp') and
+            (in_array($networkCode, [Card\Network::MC, Card\Network::VISA], true) === true))
+        {
+            $authenticationGateway = Payment\Gateway::MPI_ENSTAGE;
+        }
+        else
+        {
+            $authenticationGateway = Payment\Gateway::MPI_BLADE;
+        }
+
+        return $authenticationGateway;
     }
 
     protected function authorizeRecurring(array $input)

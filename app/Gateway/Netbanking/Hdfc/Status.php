@@ -28,7 +28,7 @@ class Status
      * @return bool
      * @throws GatewayErrorException
      */
-    public static function isRegistrationSuccess($status)
+    public static function isRegistrationSuccess($status, $content)
     {
         $status = strtolower($status);
 
@@ -38,7 +38,7 @@ class Status
                 Error\ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 '',
                 '',
-                ['status' => $status]);
+                ['content' => $content]);
         }
 
         return ($status === self::REGISTRATION_SUCCESS);
