@@ -912,8 +912,20 @@ class Core extends Base\Core
 
             if ($partner->allowSubmerchantAccess() === true)
             {
-                // Attaches partners's user to the submerchant account as an owner
-                $this->attachSubMerchantOwner($partner->primaryOwner()->getId(), $submerchant);
+                if ($this->isPartnerUserAddedToSubmerchant($partner, $submerchant) === false)
+                {
+                    // Attaches partners's user to the submerchant account as an owner
+                    $this->attachSubMerchantOwner($partner->primaryOwner()->getId(), $submerchant);
+                }
+                else
+                {
+                    $this->trace->info(
+                        TraceCode::PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT,
+                        [
+                            'partner_id'     => $partner->getId(),
+                            'submerchant_id' => $submerchant->getId(),
+                        ]);
+                }
             }
 
             // If the mapping already exists, the existing entity is returned
@@ -927,6 +939,15 @@ class Core extends Base\Core
         });
 
         return $accessMap->toArrayPublic();
+    }
+
+    public function isPartnerUserAddedToSubmerchant(Entity $partner, Entity $submerchant): bool
+    {
+        $partnerUser = $partner->primaryOwner();
+
+        $ownerIds = $submerchant->owners()->getIds();
+
+        return (in_array($partnerUser->getId(), $ownerIds, true) === true);
     }
 
     /**
