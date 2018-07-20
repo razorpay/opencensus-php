@@ -349,7 +349,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
-    const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
     const INVOICE_PDF_GEN_SYNC                          = 'INVOICE_PDF_GEN_SYNC';
 
     const PROMOTION_CREATE_REQUEST                      = 'PROMOTION_CREATE_REQUEST';
