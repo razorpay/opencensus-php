@@ -29,7 +29,7 @@ class Gateway extends Base\Gateway
         $request = $this->getMandateCreationRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
-        
+
         $this->trace->info(TraceCode::GATEWAY_MANDATE_RESPONSE, [
             'gateway' => 'digio',
             'payment_id' => $input['payment']['id'],
@@ -177,7 +177,7 @@ class Gateway extends Base\Gateway
         $destinationBankIfsc = $input['token']->getIfsc();
         $bankCode = $this->getTerminalAccessCode($input);
 
-        $mcc = $this->input['merchant']->getCategory();
+        $mcc = $this->input['merchant']['category'];
 
         $traceContent = $content = [
             'mandate_request_id'            => $input['payment']['id'],
