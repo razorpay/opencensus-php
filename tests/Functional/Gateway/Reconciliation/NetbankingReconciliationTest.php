@@ -378,7 +378,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $payment = $this->createFailedPayment($this->gateway);
 
-        $this->createNetbanking($payment['id'], 'CNRB');
+        $this->createNetbanking($payment['id'], 'CNRB','F');
 
         $fileContents = $this->generateFile('canara', []);
 
