@@ -50,16 +50,6 @@ export default class BandAccountDetailsChange extends Component {
       return;
     }
 
-    // If entered details is same as previous one, throw error modal
-    if (currentBankAccount.account_number === body.account_number) {
-      this.props.showNotification({
-        type: 'error',
-        message:
-          'The entered account number is same as your previous Bank Account number.',
-      });
-      return;
-    }
-
     body.address_proof_url = this.state.file;
 
     return this.props.onSave(body);
