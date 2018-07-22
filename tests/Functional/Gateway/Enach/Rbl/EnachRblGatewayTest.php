@@ -466,7 +466,7 @@ class EnachRblGatewayTest extends TestCase
         $payment = $this->getDbEntityById('payment', $payment['id'])->toArray();
 
         $this->assertEquals('failed', $payment['status']);
-        $this->assertEquals('BAD_REQUEST_PAYMENT_INVALID_ACCOUNT', $payment['internal_error_code']);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN', $payment['internal_error_code']);
 
         $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
 
