@@ -92,7 +92,7 @@ class Reconciliator extends Base\RefundFile
                 'Merchant Name' => '',
                 'Trnx Amount' => $amount,
                 'PGI Reference No.' => $row['payment']['id'],
-                'Bank Ref No.' => '',
+                'Bank Ref No.' => '99999',
             ];
 
             $totalAmount += floatval($amount);

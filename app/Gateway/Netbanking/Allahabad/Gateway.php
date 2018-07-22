@@ -344,8 +344,8 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        //$secret = $this->getSecret();
-        $secret = "rskq1r45hft42k3q4erxh123";
+        $secret = $this->getSecret();
+
         $sig_str = hash_hmac('sha1',$str,$secret);
 
         return $sig_str;

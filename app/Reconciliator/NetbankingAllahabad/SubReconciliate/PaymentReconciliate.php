@@ -43,8 +43,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @return null|string
      */
     protected function getReconPaymentStatus(array $row)
-    {
-        $errorCode = $row[Constants::ERROR_CODE] ?? 0;
+    {   
 
         $bankPaymentId = $this->getReferenceNumber($row);
 
@@ -77,6 +76,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     private function getReconPaymentAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[Constants::COLUMN_PAYMENT_AMOUNT]);
+        return Base\Helper::getIntegerFormattedAmount($row[Constants::TRNX_AMOUNT]);
     }
 }
