@@ -35,7 +35,6 @@ class Gateway extends Base\Gateway
     protected $bank = 'allahabad';
 
     protected $map = [
-         RequestFields::ACCOUNT_NUMBER      => NetbankingEntity::ACCOUNT_NUMBER,
          RequestFields::MERCHANT_CODE       => NetbankingEntity::MERCHANT_CODE,
          RequestFields::AMOUNT              => NetbankingEntity::AMOUNT,
          RequestFields::ACCOUNT_NUMBER      => NetbankingEntity::ACCOUNT_NUMBER,
