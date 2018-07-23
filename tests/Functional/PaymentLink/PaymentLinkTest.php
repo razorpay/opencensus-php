@@ -53,6 +53,14 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Asserts fail attempt to create payment link with amount greater than max payment amount allowed for merchant
+     */
+    public function testCreatePaymentLinkWithTooLargeAmount()
+    {
+        $this->startTest();
+    }
+
     public function testFetchPaymentLink()
     {
         $this->createPaymentLink();

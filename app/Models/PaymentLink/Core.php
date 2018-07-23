@@ -49,10 +49,13 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATE_REQUEST, $input);
 
-        $paymentLink = (new Entity)->build($input);
+        $paymentLink = new Entity;
 
+        // Association of merchant must happens before build() call as the same is needed in validations
         $paymentLink->merchant()->associate($merchant);
         $paymentLink->user()->associate($user);
+
+        $paymentLink->build($input);
 
         $paymentLink->generateId();
 

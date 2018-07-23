@@ -21,7 +21,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100',
+        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
         Entity::CURRENCY      => 'required_with:amount|nullable|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable',
@@ -33,7 +33,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100',
+        Entity::AMOUNT        => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
         Entity::CURRENCY      => 'required_with:amount|nullable|in:INR',
         Entity::EXPIRE_BY     => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
@@ -86,6 +86,34 @@ class Validator extends Base\Validator
                 [
                     Entity::TIMES_PAYABLE => $value,
                 ]);
+        }
+    }
+
+    /**
+     * @param  string   $attribute
+     * @param  int|null $amount
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateAmount(string $attribute, int $amount = null)
+    {
+        $paymentLink = $this->entity;
+
+        // If amount is set, validations that it doesn't exceeds max payment amount allowed for merchant
+        if ($amount !== null)
+        {
+            $maxAmountAllowed = $paymentLink->merchant->getMaxPaymentAmount();
+
+            if ($amount > $maxAmountAllowed)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Amount exceeds maximum payment amount allowed',
+                    Entity::AMOUNT,
+                    [
+                        Entity::ID           => $paymentLink->getId(),
+                        Entity::AMOUNT       => $amount,
+                        'max_amount_allowed' => $maxAmountAllowed,
+                    ]);
+            }
         }
     }
 
