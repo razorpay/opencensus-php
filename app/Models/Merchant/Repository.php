@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\QueryCache\CacheQueries;
@@ -470,5 +471,14 @@ class Repository extends Base\Repository
                     ->users()
                     ->where('id', $userId)
                     ->first();
+    }
+
+    public function findByIdAndOrgId(string $id, string $orgId)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        return $this->newQuery()
+                    ->orgId($orgId)
+                    ->findOrFailPublic($id);
     }
 }

@@ -1117,6 +1117,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Partners trace codes
     const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';
     const PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT     = 'PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT';
+    const PARTNER_CREATE_ACCESS_MAP_REQUEST             = 'PARTNER_CREATE_ACCESS_MAP_REQUEST';
+    const PARTNER_DELETE_ACCESS_MAP_REQUEST             = 'PARTNER_DELETE_ACCESS_MAP_REQUEST';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

@@ -903,6 +903,13 @@ class Core extends Base\Core
      */
     public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant): array
     {
+        $this->trace->info(
+            TraceCode::PARTNER_CREATE_ACCESS_MAP_REQUEST,
+            [
+                'partner_id'     => $partner->getId(),
+                'submerchant_id' => $submerchant->getId(),
+            ]);
+
         $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
             $partnerApp = $this->getPartnerApp($partner);
@@ -931,6 +938,13 @@ class Core extends Base\Core
      */
     public function deletePartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
     {
+        $this->trace->info(
+            TraceCode::PARTNER_DELETE_ACCESS_MAP_REQUEST,
+            [
+                'partner_id'     => $partner->getId(),
+                'submerchant_id' => $submerchant->getId(),
+            ]);
+
         $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
             $partnerApp = $this->getPartnerApp($partner);
@@ -1070,7 +1084,7 @@ class Core extends Base\Core
 
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
     {
-        $tag = 'Ref-' . $partnerId;
+        $tag = 'ref-' . $partnerId;
 
         $tags = $this->deleteTag($merchant->getPublicId(), $tag);
 
