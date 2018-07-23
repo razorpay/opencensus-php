@@ -13,6 +13,7 @@ use Storage;
 
 use RZP\Trace\TraceCode;
 use RZP\Exception;
+use RZP\Models\FileStore\Utility;
 use RZP\Models\Base\UniqueIdEntity;
 
 class FileProcessor
@@ -72,8 +73,6 @@ class FileProcessor
 
     const LINES_FROM_TOP    = 'lines_from_top';
     const LINES_FROM_BOTTOM = 'lines_from_bottom';
-
-    const SETTLEMENT_STORAGE_PATH = 'files/settlement';
 
     /********************
      * Instance objects
@@ -164,7 +163,8 @@ class FileProcessor
 
         $fileName = (string) time() . '.' . $extension;
 
-        $filePath = storage_path(self::SETTLEMENT_STORAGE_PATH);
+        $filePath = Utility::getStorageDir();
+
         $filePath .= '/' . $fileName;
 
         Storage::disk('settlements')->put($fileName, $response->body);
@@ -377,7 +377,8 @@ class FileProcessor
 
         if ($move === true)
         {
-            $sourceFolderPath = storage_path(self::SETTLEMENT_STORAGE_PATH);
+            $sourceFolderPath = Utility::getStorageDir();
+
             $filePath = $sourceFolderPath . '/' . $fileName;
 
             $file->move($sourceFolderPath, $fileName);

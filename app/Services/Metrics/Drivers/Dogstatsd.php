@@ -64,7 +64,8 @@ class Dogstatsd extends Driver
     {
         $this->statsd->histogram(
             $this->getNamespacedMetric($metric),
-            $value,
+            // Some statsd schema & exporter issue histogram values are multiplied by 0.001, issue open on github.
+            $value * 1000,
             self::SAMPLE_RATE,
             $this->getModifiedDimensions($dimensions));
     }

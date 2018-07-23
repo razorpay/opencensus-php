@@ -915,6 +915,24 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchAuthorizedPaymentCountForMerchants(array $merchantIds)
+    {
+        $dateFormat = '\'%Y-%m-%d\'';
+
+        $minCreatedAt = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        return $this->newQuery()
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'COUNT(*) AS count,' .
+                       'DATE_FORMAT(FROM_UNIXTIME(created_at + 19800),' . $dateFormat . ') as dates'
+                    )
+                    ->where(Entity::STATUS, '=', Status::AUTHORIZED)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->where(Entity::CREATED_AT, '<', $minCreatedAt)
+                    ->groupBy([Entity::MERCHANT_ID, 'dates'])
+                    ->get();
+    }
+
     public function fetchAuthorizedSummary()
     {
         return $this->newQuery()

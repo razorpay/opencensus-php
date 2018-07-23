@@ -40,8 +40,8 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-        throw new Exception\LogicException(
-            'Payment id not found in either database',
+            throw new Exception\LogicException(
+                'Payment id not found in either database',
                 null,
                 [
                     'gateway'    => $gatewayDriver,
@@ -73,7 +73,11 @@ class GatewayController extends Controller
         if ($mode === null)
         {
             throw new Exception\LogicException(
-                'Payment id not found in either database: ' . $paymentId);
+                'Payment id not found in either database',
+                null,
+                [
+                    'payment_id' => $paymentId
+                ]);
         }
 
         $this->app['basicauth']->setMode($mode);

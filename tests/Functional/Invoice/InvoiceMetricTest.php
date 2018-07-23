@@ -2,13 +2,13 @@
 
 namespace RZP\Tests\Functional\Invoice;
 
-use Metrics;
-
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class InvoiceMetricTest extends TestCase
 {
+    use TestsMetrics;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -30,35 +30,39 @@ class InvoiceMetricTest extends TestCase
              ->method('count')
              ->withConsecutive(
                 [
-                    'eloquent_cache_misses_total',
+                    'cache_misses_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'key',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_writes_total',
+                    'cache_writes_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'key',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_misses_total',
+                    'cache_misses_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_writes_total',
+                    'cache_writes_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
@@ -68,10 +72,10 @@ class InvoiceMetricTest extends TestCase
                 ]);
 
         $mock->expects($this->once())
-             ->method('summary')
+             ->method('histogram')
              ->withConsecutive(
                 [
-                    'http_request_duration_microseconds',
+                    'http_request_duration_milliseconds.histogram',
                     $this->greaterThanOrEqual(0),
                     $expectedHttpMetricTags,
                 ]);
@@ -85,55 +89,45 @@ class InvoiceMetricTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $mock->expects($this->exactly(7))
+        $mock->expects($this->exactly(8))
              ->method('count')
              ->withConsecutive(
                 [
-                    'eloquent_cache_misses_total',
+                    'cache_misses_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'key',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_writes_total',
+                    'cache_writes_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'key',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_misses_total',
+                    'cache_misses_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
                     ],
                 ],
                 [
-                    'eloquent_cache_writes_total',
+                    'cache_writes_total',
                     1,
                     [
                         'version' => 'v1',
                         'entity'  => 'merchant',
+                        'type'    => 'query_cache',
                     ],
                 ],
-                // [
-                //     'traces_total',
-                //     1,
-                //     [
-                //         'code'            => 'INVOICE_CREATE_REQUEST',
-                //         'context_code'    => 'INVOICE_CREATE_REQUEST',
-                //         'level'           => 200,
-                //         'level_name'      => 'INFO',
-                //         'channel'         => 'Razorpay API',
-                //         'route'           => 'invoice_create',
-                //         'rzp_mode'        => 'test',
-                //         'rzp_merchant_id' => '10000000000000',
-                //     ],
-                // ],
                 [
                     'async_jobs_received_total',
                     1,
@@ -143,20 +137,6 @@ class InvoiceMetricTest extends TestCase
                         'async_job_name'       => 'RZP_Jobs_EsSync',
                     ],
                 ],
-                // [
-                //     'traces_total',
-                //     1,
-                //     [
-                //         'code'            => 'ES_SYNC_REQUEST',
-                //         'context_code'    => 'ES_SYNC_REQUEST',
-                //         'level'           => 100,
-                //         'level_name'      => 'DEBUG',
-                //         'channel'         => 'Razorpay API',
-                //         'route'           => 'invoice_create',
-                //         'rzp_mode'        => 'test',
-                //         'rzp_merchant_id' => '10000000000000',
-                //     ],
-                // ],
                 [
                     'async_jobs_processed_total',
                     1,
@@ -166,20 +146,15 @@ class InvoiceMetricTest extends TestCase
                         'async_job_name'       => 'RZP_Jobs_EsSync',
                     ],
                 ],
-                // [
-                //     'traces_total',
-                //     1,
-                //     [
-                //         'code'            => 'INVOICE_CREATED',
-                //         'context_code'    => 'INVOICE_CREATED',
-                //         'level'           => 200,
-                //         'level_name'      => 'INFO',
-                //         'channel'         => 'Razorpay API',
-                //         'route'           => 'invoice_create',
-                //         'rzp_mode'        => 'test',
-                //         'rzp_merchant_id' => '10000000000000',
-                //     ],
-                // ],
+                [
+                    'invoice_created_total',
+                    1,
+                    [
+                        'type'             => 'invoice',
+                        'has_batch'        => 0,
+                        'has_subscription' => 0,
+                    ],
+                ],
                 [
                     'http_requests_total',
                     1,
@@ -187,25 +162,14 @@ class InvoiceMetricTest extends TestCase
                 ]);
 
         $mock->expects($this->once())
-             ->method('summary')
+             ->method('histogram')
              ->withConsecutive(
                 [
-                    'http_request_duration_microseconds',
+                    'http_request_duration_milliseconds.histogram',
                     $this->greaterThanOrEqual(0),
                     $expectedHttpMetricTags,
                 ]);
 
         $this->startTest();
-    }
-
-    protected function createMetricsMock()
-    {
-        $mock = $this->getMockBuilder(Metrics::class)
-                     ->setMethods(['count', 'gauge', 'summary'])
-                     ->getMock();
-
-        $this->app->instance('metrics', $mock);
-
-        return $mock;
     }
 }

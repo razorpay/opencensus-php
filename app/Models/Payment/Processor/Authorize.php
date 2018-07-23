@@ -33,6 +33,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Jobs\RunShieldCheck;
@@ -68,6 +69,8 @@ trait Authorize
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+
+        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
 
         // this needs to be done after we have card entity as we need to know if
         // cards used in payment is international
@@ -1235,8 +1238,6 @@ trait Authorize
 
     protected function validateOfferIfApplicable(Payment\Entity $payment, array $input)
     {
-        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
-
         $offer = $this->offer;
 
         if ($offer !== null)
@@ -1303,6 +1304,12 @@ trait Authorize
         if ($payment->terminal->isPin() === true)
         {
             $payment->setAuthType(Payment\AuthType::PIN);
+        }
+
+        if (($this->canRunOtpPaymentFlow($payment) === true) and
+            ($payment->isMethodCardOrEmi() === true))
+        {
+            $payment->setAuthType(Payment\AuthType::OTP);
         }
     }
 
@@ -2348,26 +2355,7 @@ trait Authorize
         $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
                                             $iinEntity, $emiDuration);
 
-        $emiMerchantSubvention = $this->repo->merchant_emi_plans->fetchByMerchantAndEmiPlan(
-                                                                        $payment->merchant->getId(),
-                                                                        $emiPlan->getId());
-
         $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
-
-        if ($emiMerchantSubvention !== null)
-        {
-            $amount = $payment->getAmount();
-
-            $merchantPayback = $emiPlan->getMerchantPayback();
-
-            $baseAmount = Emi\Calculator::calculateSubventedAmount($amount, $merchantPayback);
-
-            $payment->setAmountAttribute($baseAmount);
-
-            $payment->setEmiSubvention(Emi\Subvention::MERCHANT);
-        }
-
-        $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);
 
         $payment->emiPlan()->associate($emiPlan);
     }
@@ -2826,8 +2814,10 @@ trait Authorize
             return;
         }
 
+        $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
+
         $discountInput = [
-            Discount\Entity::AMOUNT => $this->offer->getDiscount($order->getAmount()),
+            Discount\Entity::AMOUNT => $discountAmount,
         ];
 
         (new Discount\Service)->create($discountInput, $payment, $this->offer);
@@ -3610,10 +3600,29 @@ trait Authorize
         // we render the otp submission page to the user
         if ($payment->isMethodCardOrEmi() === true)
         {
-            if ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP)
+            if ($payment->card->iinRelation !== null)
             {
-                return true;
+                //
+                // This check is specifically for Hitachi Axis Expresspay
+                // Also, the order of the checks matter here since the second
+                // condition covers a superset.
+                //
+                if (($payment->getGateway() === Payment\Gateway::HITACHI) and
+                    ($this->isAuthTypeOtp($payment) === true) and
+                    ($payment->merchant->isAxisExpressPayEnabled() === true) and
+                    ($payment->card->iinRelation->supports(IIN\Flow::OTP) === true) and
+                    ($payment->card->iinRelation->getIssuer() === IFSC::UTIB))
+                {
+                    return true;
+                }
+
+                if ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP)
+                {
+                    return true;
+                }
             }
+
+            return false;
         }
 
         $wallet = $payment->getWallet();

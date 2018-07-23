@@ -295,22 +295,61 @@ return [
 
     'testEditMerchant' => [
         'request' => [
-            'content' => [
+            'raw' => json_encode([
                 'international' => '1',
                 'linked_account_kyc' => '1',
                 'website' => 'http://abc.com',
                 'category' => '1111',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
-                ]
-            ],
+                ],
+                'fee_credits_threshold'     => 1000
+            ]),
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
             'server' => [
                 // Case: In sign-up case we will not have any other headers
                 // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
                 'HTTP_X-Dashboard' => 'true',
-            ],
+            ]
+],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+                'international' => true,
+                'linked_account_kyc' => true,
+                'category' => 1111,
+                'website' => 'http://abc.com',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'fee_credits_threshold'    => 1000
+            ]
+        ]
+    ],
+
+    'testEditMerchantWithNullFeeCreditsThreshold' => [
+        'request' => [
+            'raw' => json_encode([
+                'international' => '1',
+                'linked_account_kyc' => '1',
+                'website' => 'http://abc.com',
+                'category' => '1111',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'fee_credits_threshold'     => null
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
         ],
         'response' => [
             'content' => [
@@ -322,7 +361,8 @@ return [
                 'website' => 'http://abc.com',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
-                ]
+                ],
+                'fee_credits_threshold'    => null
             ]
         ]
     ],
@@ -741,6 +781,25 @@ return [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
+    ],
+
+    'testEditMerchantFeeCreditsThresholdWithProxyAuth' => [
+        'request' => [
+            'raw' => json_encode([
+                'fee_credits_threshold'     => 1000
+            ]),
+            'url' => '/account/config',
+            'method' => 'put',
+            'server' => [
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'fee_credits_threshold'    => 1000
+            ]
+        ]
     ],
 
     'testEditMerchantInvalidInvoiceNameField' => [
@@ -2464,19 +2523,70 @@ return [
             'content' => [
                 'methods' => [
                     'emi_options' => [
+                        'AMEX' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 316389
+                            ],
+
+                            [
+                                'duration'   => 6,
+                                'interest'   => 12,
+                                'subvention' => 'customer',
+                                'min_amount' => 300000
+                            ],
+
+                        ],
                         'HDFC' => [
                             [
                                 'duration'   => 9,
                                 'interest'   => 12,
                                 'subvention' => 'customer',
-                                'min_amount' => 500000
+                                'min_amount' => 300000
                             ],
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutWithMultipleSubEmiOffers' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'emi_options' => [
+                        'AMEX' => [
                             [
                                 'duration'   => 9,
                                 'interest'   => 0,
                                 'subvention' => 'merchant',
-                                'min_amount' => 527315
-                            ]
+                                'min_amount' => 316389
+                            ],
+
+                            [
+                                'duration'   => 6,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 319149
+                            ],
+
+                        ],
+                        'HDFC' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 12,
+                                'subvention' => 'customer',
+                                'min_amount' => 300000
+                            ],
                         ]
                     ]
                 ]
@@ -2955,6 +3065,113 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+        ],
+    ],
+
+    'testCreateSubmerchantLogin' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginSameEmail' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The email has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginPartnerAppMissing' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'DB Query Failed',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'   => Razorpay\OAuth\Exception\DBQueryException::class,
+            'message' => 'DB Query Failed',
+        ],
+    ],
+
+    'testCreateSubmerchantLoginDuplicate' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The email has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateLinkedAccountLogin' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN,
+                ],
+            ],
+            'status_code' => 403,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginPartnerWithMarketplace' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
         ],
     ],
 

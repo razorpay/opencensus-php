@@ -27,7 +27,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         'amount'                        => 'required|integer',
-        'currency'                      => 'required|string|size:3',
+        'currency'                      => 'required|string|size:3|custom',
         'method'                        => 'required|string|custom',
         'vpa'                           => 'sometimes_if:method,upi|string|filled|max:100|custom',
         'aadhaar'                       => 'required_if:method,aeps|array',
@@ -91,7 +91,7 @@ class Validator extends Base\Validator
 
     protected static $captureRules = [
         Entity::AMOUNT               => 'required|integer',
-        Entity::CURRENCY             => 'required|in:INR,USD',
+        Entity::CURRENCY             => 'required|custom',
     ];
 
     protected static $bulkCaptureRules = [
@@ -149,7 +149,6 @@ class Validator extends Base\Validator
         'card_key',
         'amount',
         'bank',
-        'currency',
         'fee',
         'contact',
         'email',
@@ -680,10 +679,8 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateCurrency($input)
+    protected function validateCurrency($attribute, $currency)
     {
-        $currency = $input['currency'];
-
         if (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false)
         {
             throw new Exception\BadRequestException(

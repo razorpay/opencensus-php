@@ -562,7 +562,7 @@ class Gateway extends Base\Gateway
         {
             $merchantId = $this->input['merchant']['id'];
 
-            return $this->config[$merchantId];
+            return $this->config[$merchantId] ?? $this->config['live'];
         }
 
         return $this->config['test'];

@@ -36,7 +36,10 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
-            ['input' => $input]);
+            [
+                'input'       => $input,
+                'merchant_id' => $merchant->getId(),
+            ]);
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
@@ -697,6 +700,7 @@ class Core extends Base\Core
             // for a linked accounts activation
             //
             $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
+            $response['linked_account'] = true;
         }
 
         $currentActivationState = $merchant->currentActivationState();

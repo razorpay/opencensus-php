@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Order;
+use RZP\Models\Customer;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
@@ -37,7 +38,7 @@ class RecurringCharge extends Base
         $this->paymentProcessor->flushPaymentObjects();
     }
 
-    protected function createOrder(array & $entry)
+    protected function createOrder(array & $entry): Order\Entity
     {
         $orderCreateRequest = Helper::getOrderInput($entry);
 
@@ -48,9 +49,18 @@ class RecurringCharge extends Base
         return $order;
     }
 
+    protected function getCustomer(array $entry): Customer\Entity
+    {
+        $customerId = $entry[Header::RECURRING_CHARGE_CUSTOMER_ID];
+
+        return $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+    }
+
     protected function processPayment(array & $entry, Order\Entity $order)
     {
-        $recurringPaymentRequest = Helper::getPaymentInput($entry, $order);
+        $customer = $this->getCustomer($entry);
+
+        $recurringPaymentRequest = Helper::getPaymentInput($entry, $order, $customer);
 
         $this->paymentProcessor->process($recurringPaymentRequest);
 

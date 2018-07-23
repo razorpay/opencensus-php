@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN\Flow;
 use RZP\Models\Payment\Method;
@@ -88,15 +89,16 @@ class TransactionFilter extends Terminal\Filter
         if ($payment->isMethodCardOrEmi() === true)
         {
             $network = $payment->card->getNetworkCode();
+            $gateway = $terminal->getGateway();
 
             if ($payment->isBharatQr() === true)
             {
-                $supported = ((Gateway::isBharatQrCardNetworkSupported($network, $terminal->getGateway())) and
+                $supported = ((Gateway::isBharatQrCardNetworkSupported($network, $gateway)) and
                               (empty($terminal[strtolower($network) . '_mpan']) === false));
             }
             else
             {
-                $supported =  Gateway::isCardNetworkSupported($network, $terminal->getGateway(), $payment->isRecurring());
+                $supported = Gateway::isCardNetworkSupported($network, $gateway, $payment->isRecurring());
             }
 
             return $supported;
@@ -238,7 +240,7 @@ class TransactionFilter extends Terminal\Filter
             ($payment->card->isDebit() === true))
         {
             if (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) !== true) and
-                ($terminal->getGateway() !== Gateway::HITACHI))
+                ($terminal->isDebitRecurring() === false))
             {
                 return false;
             }
@@ -606,6 +608,17 @@ class TransactionFilter extends Terminal\Filter
                             {
                                 return true;
                             }
+
+                            //
+                            // Expresspay is supported on Hitachi.
+                            // Hence, it should be enabled only for axis MC/Visa cards.
+                            //
+                            if (($gateway === Payment\Gateway::HITACHI) and
+                                ($payment->card->iinRelation->supports(Flow::OTP) === true) and
+                                ($payment->card->getIssuer() === IFSC::UTIB))
+                            {
+                                return true;
+                            }
                         }
 
                         break;
@@ -636,6 +649,7 @@ class TransactionFilter extends Terminal\Filter
         return ($this->is3DSTerminal($terminal) === true);
     }
 
+    // @codingStandardsIgnoreLine
     protected function is3DSTerminal($terminal)
     {
         return (($terminal->isPin() === false) and ($terminal->isIvr() === false));
