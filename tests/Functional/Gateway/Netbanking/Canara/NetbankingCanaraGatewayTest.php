@@ -88,7 +88,7 @@ class NetbankingCanaraGatewayTest extends TestCase
 
         $verify = $this->verifyPayment($payment['id']);
 
-        assert($verify['payment']['verified'] === 1);
+        $this->assertEquals($verify['payment']['verified'], 1);
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
