@@ -116,7 +116,7 @@ class Repository extends Base\Repository
         $merchant = $this->merchant;
 
         if (((empty($merchant) === true) or
-            ($merchant->isLinkedAccount() === false)) and (($value === 'transfer') or $value = 'transfer.settlement'))
+            ($merchant->isLinkedAccount() === false)) and (($value === 'transfer') or ($value === 'transfer.settlement')))
         {
             throw new Exception\ExtraFieldsException("expand=transfer");
         }
