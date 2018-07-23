@@ -218,7 +218,7 @@ export default class CreateVirtualAccount extends Component {
                 <TypeAhead
                   options={customers}
                   disabled={customersLoading}
-                  class="virtual-account-powerselect"
+                  class="ps-in-modal"
                   searchIndices={['id', 'name', 'email', 'contact']}
                   placeholder={`${
                     customersLoading ? 'Loading...' : 'Select a customer'
