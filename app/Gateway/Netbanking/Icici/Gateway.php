@@ -228,7 +228,7 @@ class Gateway extends Base\Gateway
             // have an amount in the first auth request
             // We get amount as `'null'` in these cases.
             //
-            if ($callbackAmount !== 'null')
+            if ($callbackAmount !== 'null' and $callbackData[ResponseFields::PAID] === Status::Y)
             {
                 throw new Exception\GatewayErrorException(
                     ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED,
@@ -240,10 +240,16 @@ class Gateway extends Base\Gateway
                         'payment_id'    => $input['payment']['id'],
                     ]);
             }
+            else
+            {
+                $expectedAmount = $this->formatAmount($input['token']['max_amount'] / 100);
+                $actualAmount   = $this->formatAmount($callbackAmount);
+
+                $this->assertAmount($expectedAmount, $actualAmount);
+            }
         }
         else
         {
-
             $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
             $actualAmount   = $this->formatAmount($callbackAmount);
 
