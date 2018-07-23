@@ -39,16 +39,16 @@ class Allahabad extends Base
             $pid = 'Razor';
 
             $formattedData[] = [
-                'PID' => $pid,
-                'Bank Id' => '027',
-                'Merchant Name' => '',
-                'Txn Date' => $txnDate,
-                'Refund Date' => $refundDate,
-                'Bank Merchant Code' => '',
-                'Bank Ref No.' => '',
-                'PGI Reference No.' => '',
-                'Txn Amount' => $this->formatAmount($row['payment']['amount'] / 100),
-                'Refund' => $this->formatAmount($row['refund']['amount'] / 100),
+                'PID'                   => $pid,
+                'Bank Id'               => '027',
+                'Merchant Name'         => '',
+                'Txn Date'              => $txnDate,
+                'Refund Date'           => $refundDate,
+                'Bank Merchant Code'    => '',
+                'Bank Ref No.'          => '',
+                'PGI Reference No.'     => '',
+                'Txn Amount'            => $this->formatAmount($row['payment']['amount'] / 100),
+                'Refund'                => $this->formatAmount($row['refund']['amount'] / 100),
             ];
 
 
