@@ -2,20 +2,6 @@
 
 namespace RZP\Gateway\Netbanking\Allahabad;
 
-//use RZP\Exception;
-//use RZP\Constants\Mode;
-//use RZP\Models\Payment;
-//use RZP\Error\ErrorCode;
-//use RZP\Trace\TraceCode;
-//use RZP\Gateway\Base\Verify;
-//use RZP\Gateway\Netbanking\Base;
-//
-//use RZP\Gateway\Base\VerifyResult;
-//use RZP\Gateway\Base\AuthorizeFailed;
-//use RZP\Models\Payment\Verify\Action as VerifyAction;
-//use RZP\Gateway\Netbanking\Base;
-//use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
-
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;
@@ -35,12 +21,12 @@ class Gateway extends Base\Gateway
     protected $bank = 'allahabad';
 
     protected $map = [
-         RequestFields::MERCHANT_CODE       => NetbankingEntity::MERCHANT_CODE,
-         RequestFields::AMOUNT              => NetbankingEntity::AMOUNT,
-         RequestFields::ACCOUNT_NUMBER      => NetbankingEntity::ACCOUNT_NUMBER,
-         NetbankingEntity::RECEIVED         => NetbankingEntity::RECEIVED,
-         ResponseFields::PRODUCT_REF_NUMBER => NetbankingEntity::PAYMENT_ID,
-         ResponseFields::BANK_TRANSACTION_ID => NetbankingEntity::BANK_PAYMENT_ID,
+         RequestFields::MERCHANT_CODE         => NetbankingEntity::MERCHANT_CODE,
+         RequestFields::AMOUNT                => NetbankingEntity::AMOUNT,
+         RequestFields::ACCOUNT_NUMBER        => NetbankingEntity::ACCOUNT_NUMBER,
+         NetbankingEntity::RECEIVED           => NetbankingEntity::RECEIVED,
+         ResponseFields::PRODUCT_REF_NUMBER   => NetbankingEntity::PAYMENT_ID,
+         ResponseFields::BANK_TRANSACTION_ID  => NetbankingEntity::BANK_PAYMENT_ID,
     ];
 
     public function authorize(array $input)
@@ -53,15 +39,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray([],'post');
 
-        $param_str = http_build_query($content,null,'|');
+        $paramStr = http_build_query($content,null,'|');
 
-        $param_str = str_replace('%2F','/',$param_str);
+        $paramStr = urldecode($paramStr);
 
-        $param_str = str_replace('%3A',':',$param_str);
+        $sigStr = $this->getHashOfString($paramStr);
 
-        $sig_str = $this->getHashOfString($param_str);
-
-        $request['url'] .= '?bank_signaturte=' . $sig_str . '&parameter_string=' . $param_str;
+        $request['url'] .= '?bank_signaturte=' . $sigStr . '&parameter_string=' . $paramStr;
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -244,9 +228,9 @@ class Gateway extends Base\Gateway
 
         $str = http_build_query($data,null,'|');
 
-        $sig_str = $this->getHashOfString($str, '|');
+        $sigStr = $this->getHashOfString($str, '|');
 
-        $request['url'] .= '?bank_signaturte=' . $sig_str . '&parameter_string=' . $str;
+        $request['url'] .= '?bank_signaturte=' . $sigStr . '&parameter_string=' . $str;
 
         return $request;
     }
@@ -329,11 +313,11 @@ class Gateway extends Base\Gateway
 
         $array[1] = trim($array[1]);
 
-        $new_array = array();
+        $newArray = array();
 
-        $new_array[$array[0]]=$array[1];
+        $newArray[$array[0]]=$array[1];
 
-        return $new_array;
+        return $newArray;
     }
 
     public function formatAmount($amount): string
@@ -345,9 +329,9 @@ class Gateway extends Base\Gateway
     {
         $secret = $this->getSecret();
 
-        $sig_str = hash_hmac('sha1',$str,$secret);
+        $sigStr = hash_hmac('sha1',$str,$secret);
 
-        return $sig_str;
+        return $sigStr;
     }
 
     protected function getCallbackContentArray($content)
@@ -356,16 +340,16 @@ class Gateway extends Base\Gateway
 
         $array = explode('|',$str);
 
-        $new_array=array();
+        $newArray=array();
 
         foreach($array as $val)
         {
             $temp = explode('=',$val);
 
-            $new_array[$temp[0]]=$temp[1];
+            $newArray[$temp[0]]=$temp[1];
         }
 
-        return $new_array;
+        return $newArray;
     }
 
 }
