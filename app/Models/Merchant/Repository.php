@@ -498,6 +498,7 @@ class Repository extends Base\Repository
                     ->join(Table::MERCHANT_DETAIL, $merchantsMerchantIdColumn, $merchantDetailMerchantIdColumn)
                     ->where(AccessMap\Entity::ENTITY_TYPE, AccessMap\Entity::APPLICATION)
                     ->where(AccessMap\Entity::ENTITY_ID, $applicationId)
+                    ->orderBy(Table::MERCHANT . '.' . Entity::CREATED_AT, 'desc')
                     ->get();
     }
 
