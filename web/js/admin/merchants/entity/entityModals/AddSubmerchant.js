@@ -13,18 +13,12 @@ export default ({ merchantId }) => {
     return adminPost({
       url: `live_${merchantId}/merchants/${submerchantId}/access_maps`,
       headers: { ['X-Razorpay-Account']: merchantId },
-    })
-      .then(response => {
-        if (response) {
-          notifySuccess('Sub merchant added successfully');
-        } else {
-          response.data.errors.map(error => notifyError(error));
-        }
+    }).then(response => {
+      if (response) {
+        notifySuccess('Sub merchant added successfully');
         closeModal();
-      })
-      .catch(err => {
-        notifyError(JSON.stringify(err.response));
-      });
+      }
+    });
   };
 
   return (
