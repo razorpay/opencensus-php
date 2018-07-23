@@ -78,7 +78,7 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponseData(array $input)
     {
-        return [
+        $data = [
             ResponseFields::VER_CLIENT_ACCOUNT                => '',
             ResponseFields::VER_PAYMENT_ID                    => $input[ResponseFields::PAYMENT_ID],
             ResponseFields::PUR_DATE                          => $input[ResponseFields::PUR_DATE],
@@ -86,7 +86,11 @@ class Server extends Base\Mock\Server
             ResponseFields::VER_AMOUNT                        => $input[ResponseFields::AMOUNT],              // have to verify
             ResponseFields::RETURN_CODE                       => Constants::SUCCESS,
             ResponseFields::VERIFY_STATUS                     => Constants::SUCCESS_VERIFY_STATUS,
-        ];
+         ];
+
+        $this->content($data, Base\Action::VERIFY);
+
+        return $data;
     }
 
     protected function createXmlResponse(array $data)
