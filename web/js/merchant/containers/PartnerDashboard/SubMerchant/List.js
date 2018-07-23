@@ -4,7 +4,9 @@ import { connect } from 'react-redux';
 import ListContainer from 'merchant/containers/ListContainer';
 
 import { openModal, closeModal } from 'rzp/modules/modals';
+import { showNotification } from 'rzp/modules/notifications';
 import { fetchSubmerchants as fetchAll } from 'merchant/modules/collection';
+import { switchMerchant } from 'merchant/modules/session';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import StatsCard from 'rzp/ui/StatsCard';
@@ -46,22 +48,20 @@ const activationStatus = {
     ),
 };
 
-const switchMerchant = {
+const switchMerchantActionBtn = handleSwitchMerchant => ({
   title: 'Switch Merchant',
   value: item =>
     item.dashboard_access ? (
       <button
         class="btn btn-default btn-xs"
-        onClick={() => {
-          // TODO: write code for switching dashboard
-        }}
+        onClick={handleSwitchMerchant(item.id.replace('acc_', ''))}
       >
         Switch
       </button>
     ) : (
       'No Access'
     ),
-};
+});
 
 const switchMerchantAccessMap = {
   fully_managed: true,
@@ -80,6 +80,8 @@ const switchMerchantAccessMap = {
     fetchAll,
     openModal,
     closeModal,
+    switchMerchant,
+    showNotification,
   }
 )
 export default class SubMerchantsList extends ListContainer {
@@ -90,6 +92,20 @@ export default class SubMerchantsList extends ListContainer {
       size: 'small',
       component: <AddMerchant closeModal={this.props.closeModal} />,
     });
+  };
+
+  handleSwitchMerchant = merchantId => () => {
+    this.props
+      .switchMerchant(merchantId)
+      .then(() => {
+        window.location.reload();
+      })
+      .catch(errors => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
   };
 
   search = () => {};
@@ -139,7 +155,7 @@ export default class SubMerchantsList extends ListContainer {
               addedOn,
               activationStatus,
               ...(switchMerchantAccessMap[userPartnerType]
-                ? [switchMerchant]
+                ? [switchMerchantActionBtn(this.handleSwitchMerchant)]
                 : []),
             ]}
             {...this.props}

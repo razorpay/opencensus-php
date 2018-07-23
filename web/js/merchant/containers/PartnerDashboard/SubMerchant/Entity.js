@@ -1,9 +1,11 @@
 import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
+
 import { fetchSubmerchant } from 'merchant/modules/submerchant';
 import { switchMerchant } from 'merchant/modules/session';
 import { openModal } from 'rzp/modules/modals';
+import { showNotification } from 'rzp/modules/notifications';
 
 import Entity from 'merchant/components/PartnerDashboard/Submerchant/Entity';
 import InviteMerchant from './Invite';
@@ -22,7 +24,7 @@ const fullDetailsAccessMap = {
     userPartnerType: state.session.user.partner_type,
     ...state.submerchant,
   }),
-  { fetchSubmerchant, switchMerchant, openModal }
+  { fetchSubmerchant, switchMerchant, openModal, showNotification }
 )
 export default class SubmerchantEntityContainer extends Component {
   componentWillMount() {
