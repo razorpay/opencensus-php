@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Refund;
 use DB;
 use Carbon\Carbon;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -23,8 +24,11 @@ class Repository extends Base\Repository
         Entity::PAYMENT_ID      => 'sometimes|alpha_dash|min:14|max:18',
     );
 
+    // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = [
         Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::REVERSAL_ID     => 'filled|public_id|size:18',
+        self::EXPAND . '.*'     => 'filled|string|in:reversal|custom:expand',
     ];
 
     protected $appFetchParamRules = array(
@@ -42,7 +46,19 @@ class Repository extends Base\Repository
         Entity::BATCH_ID,
         Entity::PAYMENT_ID,
         Entity::TRANSACTION_ID,
+        Entity::REVERSAL_ID,
     ];
+
+    protected function validateExpand($attribute, $value)
+    {
+        $merchant = $this->merchant;
+
+        if (((empty($merchant) === true) or
+                ($merchant->isLinkedAccount() === false)) and $value === 'reversal')
+        {
+            throw new Exception\ExtraFieldsException("expand=reversal");
+        }
+    }
 
     protected function addQueryParamGateway($query, $params)
     {

@@ -22,4 +22,13 @@ class ReversalController extends Controller
 
         return ApiResponse::json($reversals);
     }
+
+    public function getLaReversal()
+    {
+        $input = Request::all();
+
+        $reversals = $this->service()->fetchLaReversals($input);
+
+        return ApiResponse::json($reversals);
+    }
 }

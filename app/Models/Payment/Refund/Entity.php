@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
 
     const ACQUIRER_DATA          = 'acquirer_data';
     const ARN                    = 'arn';
+    const REVERSAL               = 'reversal';
 
 
     protected static $sign = 'rfnd';
@@ -99,7 +100,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::RECEIPT,
         self::ACQUIRER_DATA,
-        self::CREATED_AT
+        self::CREATED_AT,
+        self::REVERSAL,
     ];
 
     protected $hiddenInReport = [self::ACQUIRER_DATA];

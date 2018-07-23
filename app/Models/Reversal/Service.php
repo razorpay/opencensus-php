@@ -3,6 +3,8 @@
 namespace RZP\Models\Reversal;
 
 use RZP\Models\Base;
+use RZP\Models\Reversal;
+use RZP\Models\Payment\Refund;
 
 class Service extends Base\Service
 {
@@ -22,5 +24,43 @@ class Service extends Base\Service
         $reversals = $this->repo->reversal->fetch($input, $merchantId);
 
         return $reversals->toArrayPublic();
+    }
+
+    public function fetchLaReversals($input): array
+    {
+        $merchantId = $this->merchant->getId();
+
+        $input['expand'] = ['reversal'];
+
+        $refunds = $this->repo->refund->fetch($input, $merchantId);
+
+        $reversals = [
+            "count"  => count($refunds),
+            "entity" => "collection",
+            "items"  => $this->createReversalsResponse($refunds),
+        ];
+
+        return $reversals;
+    }
+
+    private function createReversalsResponse($refunds)
+    {
+        $reversals = [];
+        foreach ($refunds as $refund)
+        {
+            $reversals[] = $this->createReversalResponseFromRefund($refund);
+        }
+
+        return $reversals;
+    }
+
+    private function createReversalResponseFromRefund($refund)
+    {
+        $result = $refund->toArrayPublic();
+
+        $reversalData = $result[Refund\Entity::REVERSAL];
+        $reversalData[Reversal\Entity::NOTES] = $result[Refund\Entity::NOTES];
+
+        return $reversalData;
     }
 }

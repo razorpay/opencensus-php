@@ -68,6 +68,7 @@ trait Reversal
      * @param  int            $amount
      *
      * @throws Exception\BadRequestException
+     * @return Base\Entity
      */
     protected function refundTransferPayment(Payment\Entity $payment, int $amount)
     {
