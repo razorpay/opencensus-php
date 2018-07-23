@@ -82,13 +82,14 @@ class Allahabad extends Base
         return $mailData;
     }
 
+
     protected function getFileToWriteNameWithoutExt()
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         return self::FILE_NAME.'_'.$time;
     }
-    
+
     public function formatAmount($amount): string
     {
         return number_format($amount , 2, '.', '');
