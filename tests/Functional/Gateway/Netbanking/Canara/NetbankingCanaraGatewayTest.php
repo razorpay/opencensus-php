@@ -103,7 +103,12 @@ class NetbankingCanaraGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['amount_refunded'], 50000); // have to change
-        $this->assertEquals($payment['amount'], $refund['amount']);
+
+        $refundEntity = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refundEntity['amount'], 50000); // should base amount be used here?
+
+        $this->assertEquals($refundEntity['gateway_refunded'], true);
     }
 
     public function testPartialRefund()
@@ -111,12 +116,19 @@ class NetbankingCanaraGatewayTest extends TestCase
         $payment = $this->doNetbankingCanaraAuthAndCapturePayment();
 
         // Refund the payment above partially
-        $refund = $this->refundPayment($payment['id'], 10000);   // have to change values here
+        $refund = $this->refundPayment($payment['id'], 10000);
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['amount_refunded'], 10000);
+
         $this->assertEquals($refund['amount'], 10000);
+
+        $refundEntity = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refundEntity['amount'], 10000); // should base amount be used here?
+
+        $this->assertEquals($refundEntity['gateway_refunded'], true);
     }
 
     public function testRefundExcelFile()
