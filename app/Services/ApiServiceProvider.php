@@ -57,6 +57,12 @@ class ApiServiceProvider extends BaseServiceProvider
 
             $entityClass::observe($entityObserverClass);
         }
+
+        // attaching payment observer since its invalidates
+        // the upi status on update
+        $entityClass = E::getEntityClass(E::PAYMENT);
+        $entityObserverClass = E::getEntityObserverClass(E::PAYMENT);
+        $entityClass::observe($entityObserverClass);
     }
 
     /**

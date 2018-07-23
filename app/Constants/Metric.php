@@ -49,4 +49,5 @@ class Metric
 
     //metric types
     const TYPE_QUERY_CACHE                      = 'query_cache';
+    const TYPE_UPI_POLLING                      = 'upi_polling';
 }
