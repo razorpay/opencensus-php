@@ -26,7 +26,7 @@ class Constants
     const HDFC_FSS         = 'hdfc_fss';
     const ENACH_RBL        = 'enach_rbl';
     const OBC              = 'obc';
-    const ALLA             = 'alla';
+    const ALLA             = 'allahabad';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -93,6 +93,7 @@ class Constants
         Type::REFUND => [
             self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::ALLA  => ['settlements@razorpay.com'],
         ],
 
         Type::COMBINED => [
