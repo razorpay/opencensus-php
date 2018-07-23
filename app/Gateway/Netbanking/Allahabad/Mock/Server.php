@@ -45,12 +45,11 @@ class Server extends Base\Mock\Server
 
         $response[ResponseFields::CHECKSUM] = $callback_checksum;
 
-        $this->content($response, 'authorize');
-
         $callbackUrl = $input[RequestFields::RETURN_URL];
 
-        $callbackUrl .= '?response_signaturte='.$response[ResponseFields::CHECKSUM] .'&parameter_string='.$checksum_string;
 
+        $callbackUrl .= '?parameter_string='.$checksum_string.'&response_signaturte='.$response[ResponseFields::CHECKSUM];
+        
         $request = [
             'url'     => $callbackUrl,
             'content' => [],
@@ -74,12 +73,14 @@ class Server extends Base\Mock\Server
     protected function getCallbackResponseData(array $input)
     {
         $data = [
-            ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
-            ResponseFields::BANK_TRANSACTION_ID     => 99999,
+            ResponseFields::PAID                    => Status::YES,
             ResponseFields::ITEM_CODE               => $input[RequestFields::ITEM_CODE],
             ResponseFields::PRODUCT_REF_NUMBER      => $input[RequestFields::PRODUCT_REF_NUMBER],
-            ResponseFields::PAID                    => Status::YES,
+            ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
+            ResponseFields::BANK_TRANSACTION_ID     => 99999,
         ];
+
+        $this->content($data, Base\Action::CALLBACK);
 
         return $data;
     }
