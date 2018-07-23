@@ -26,6 +26,7 @@ class Constants
     const HDFC_FSS         = 'hdfc_fss';
     const ENACH_RBL        = 'enach_rbl';
     const OBC              = 'obc';
+    const ALLA             = 'alla';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -35,6 +36,7 @@ class Constants
             self::HDFC,
             self::ICICI,
             self::CSB,
+            self::ALLA,
         ],
         Type::CLAIM => [
         ],
