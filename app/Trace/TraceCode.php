@@ -349,7 +349,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
-    const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
     const INVOICE_PDF_GEN_SYNC                          = 'INVOICE_PDF_GEN_SYNC';
 
     const PROMOTION_CREATE_REQUEST                      = 'PROMOTION_CREATE_REQUEST';
@@ -1097,6 +1096,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUERY_CACHE_FLUSH_ERROR                       = 'QUERY_CACHE_FLUSH_ERROR';
     const METRIC_CACHE_EVENT_ERROR                      = 'METRIC_CACHE_EVENT_ERROR';
 
+    //upi status cache
+    const UPI_CACHE_STORE_ERROR                         = 'UPI_CACHE_STORE_ERROR';
+    const UPI_CACHE_FLUSH_ERROR                         = 'UPI_CACHE_FLUSH_ERROR';
+    const UPI_CACHE_READ_ERROR                          = 'UPI_CACHE_READ_ERROR';
+
     // Account codes
     const ACCOUNT_CREATED                               = 'ACCOUNT_CREATED';
 
@@ -1119,6 +1123,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT     = 'PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT';
     const PARTNER_CREATE_ACCESS_MAP_REQUEST             = 'PARTNER_CREATE_ACCESS_MAP_REQUEST';
     const PARTNER_DELETE_ACCESS_MAP_REQUEST             = 'PARTNER_DELETE_ACCESS_MAP_REQUEST';
+
+    const FEE_CREDITS_THRESHOLD_ALERT                   = 'FEE_CREDITS_THRESHOLD_ALERT';
+
+    // Excel reader debug trace codes
+    const EXCEL_READER_IMPORT_CONFIG                    = 'EXCEL_READER_IMPORT_CONFIG';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

@@ -11,7 +11,7 @@ return [
             'method'  => 'post',
             'content' => [
                 'type' => 'direct_debit',
-                'token' =>  'ott',
+                'token' => 'ott',
             ],
         ],
         'response' => [
@@ -36,7 +36,7 @@ return [
             'method'  => 'post',
             'content' => [
                 'type' => 'direct_debit',
-                'token' =>  'ott',
+                'token' => 'ott',
             ],
         ],
         'response' => [
@@ -54,4 +54,19 @@ return [
             ],
         ],
     ],
+
+    'testCreateDirectDebitBatchValidateFile' => [
+       'request' => [
+            'url'     => '/batches/upload/validate',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'direct_debit',
+                'token' => 'ott',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ]
 ];

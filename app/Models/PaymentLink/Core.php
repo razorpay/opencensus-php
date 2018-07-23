@@ -205,6 +205,8 @@ class Core extends Base\Core
      */
     public function validateIsPaymentInitiatable(Entity $paymentLink, Payment\Entity $payment)
     {
+        $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_ATTEMPTS_TOTAL);
+
         // 1. Validates amount, if applicable
         $paymentLink->getValidator()->validatePaymentAmount($payment);
 
@@ -322,6 +324,8 @@ class Core extends Base\Core
                 Entity::PAYMENT_ID => $payment->getId(),
                 E::PAYMENT_LINK    => $paymentLink->toArrayPublic(),
             ]);
+
+        $this->trace->count(Metric::PAYMENT_PAGE_PAID_TOTAL);
     }
 
     /**
@@ -608,6 +612,8 @@ class Core extends Base\Core
                     $this->repo->saveOrFail($paymentLink);
                 }
             });
+
+        $this->trace->count(Metric::PAYMENT_PAGE_EXPIRED_TOTAL);
     }
 
     /**
@@ -628,6 +634,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_REQUEST, $tracePayload);
 
+        $refund = null;
+
         try
         {
             //
@@ -647,7 +655,6 @@ class Core extends Base\Core
             }
             else
             {
-                $refund = null;
                 $this->trace->critical(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_ERROR, $tracePayload);
             }
         }
@@ -657,6 +664,14 @@ class Core extends Base\Core
                 $e,
                 Logger::CRITICAL,
                 TraceCode::PAYMENT_LINK_PAYMENT_REFUND_ERROR, $tracePayload);
+        }
+
+        // If refund was made, increments counter of at what payment status the refund was made
+        if ($refund !== null)
+        {
+            $dimensions = ['payment_status' => $payment->getStatus()];
+
+            $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_REFUNDS_TOTAL, 1, $dimensions);
         }
 
         $tracePayload = array_merge($tracePayload, [E::REFUND => optional($refund)->toArrayPublic()]);

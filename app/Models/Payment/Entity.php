@@ -2772,4 +2772,11 @@ class Entity extends Base\PublicEntity
             (Netbanking::isCorporateBank($this->getBank()) === true)
         );
     }
+
+    public static function getCacheUpiStatusKey(string $id): string
+    {
+        parent::verifyIdAndStripSign($id);
+
+        return 'upi.polling.' . $id . '.status';
+    }
 }

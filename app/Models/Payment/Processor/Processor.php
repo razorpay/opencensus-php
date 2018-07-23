@@ -899,6 +899,13 @@ class Processor
      */
     public function getAsyncResponse($id)
     {
+        $response = $this->getUpiStatus($id);
+
+        if ($response !== null)
+        {
+            return $response;
+        }
+
         $payment = $this->retrieve($id);
 
         $order = $this->getOrderForPayment($payment);
@@ -930,9 +937,13 @@ class Processor
                     ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
             }
 
-            return [
+            $response = [
                 Payment\Entity::STATUS => Payment\Status::CREATED
             ];
+
+            $this->setUpiStatus($payment->getPublicId(), $response);
+
+            return $response;
         }
 
         $resource = $this->getCallbackMutexResource($payment);
@@ -1520,7 +1531,7 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice, true);
 
-        $invoice->getValidator()->validateInvoicePayable();
+        $invoice->getValidator()->validateInvoicePayable($payment);
 
         $payment->invoice()->associate($invoice);
     }
@@ -2180,5 +2191,51 @@ class Processor
         $this->repo->saveOrFail($order);
 
         $this->eventOrderPaid();
+    }
+
+    protected function getUpiStatus(string $id)
+    {
+        $key = Payment\Entity::getCacheUpiStatusKey($id);
+
+        try
+        {
+            return $this->cache->get($key);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_CACHE_READ_ERROR,
+                ['key' => $key]);
+        }
+    }
+
+    /**
+     * Key will be deleted from the cache when the upi
+     * payment entity gets updated. Deletion is in the
+     * observer class(Models/Payment/Observer.php).
+     *
+     * @param string $id
+     * @param array  $value
+     * @param float  $ttl
+     */
+    protected function setUpiStatus(string $id, array $value, float $ttl = 0.75)
+    {
+        $key = Payment\Entity::getCacheUpiStatusKey($id);
+
+        try
+        {
+            $this->cache->put($key, $value, $ttl);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_CACHE_STORE_ERROR,
+                ['key' => $key,
+                 '$value' => $value]);
+        }
     }
 }

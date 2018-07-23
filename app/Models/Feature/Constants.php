@@ -74,6 +74,7 @@ class Constants
     const ENABLE_VPA_VALIDATE             = 'enable_vpa_validate';
     const ALLOW_SUBMERCHANT_WITHOUT_EMAIL = 'allow_sub_without_email';
     const HDFC_DEBIT_SI                   = 'hdfc_debit_si';
+    const AXIS_EXPRESS_PAY                = 'axis_express_pay';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -176,6 +177,7 @@ class Constants
         self::ENABLE_VPA_VALIDATE             => true,
         self::ALLOW_SUBMERCHANT_WITHOUT_EMAIL => true,
         self::HDFC_DEBIT_SI                   => true,
+        self::AXIS_EXPRESS_PAY                => true,
     ];
 
     // Entity type constants
