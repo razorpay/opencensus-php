@@ -32,11 +32,12 @@ return [
     ],
 
     'testPaymentNetbankingEntity' => [
-        'bank_payment_id' => 'AB1234',
+        'bank_payment_id' => '99999',
         'received'        => true,
         'bank'            => 'ALLA',
-        'status'          => 'S',
+        'status'          => 'Y',
     ],
+
 
     'testPaymentVerifySuccessEntity' => [
         'received'        => true,
@@ -109,11 +110,49 @@ return [
         ],
     ],
 
+    'testAuthFailedVerifySuccess' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\PaymentVerificationException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+
+    'testAuthFailedVerifyFailedEntity' => [
+        'received'        => false,
+        'bank'            => 'ALLA',
+        'status'          => 'N'
+    ],
+
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => null,
         'received'        => false,
         'bank'            => 'ALLA',
         'status'          => null
+    ],
+
+    'testUserCancelledPayments' => [
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        ],
     ],
 
     'testAuthSuccessVerifyFailedNetbankingEntity' => [
