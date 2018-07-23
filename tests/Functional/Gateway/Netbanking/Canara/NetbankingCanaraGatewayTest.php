@@ -95,6 +95,7 @@ class NetbankingCanaraGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
     }
 
+
     public function testRefund()
     {
         $refund = $this->doNetbankingCanaraAuthCaptureAndRefundPayment();
@@ -165,10 +166,8 @@ class NetbankingCanaraGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                $content = [
-                    Canara\ResponseFields::RETURN_CODE => Canara\Constants::SAMPLE_FAILURE_RETURN_CODE,
-                    Canara\ResponseFields::VERIFY_STATUS => Canara\Constants::SAMPLE_FAILURE_VERIFY_STATUS
-                ];
+                $content[Canara\ResponseFields::RETURN_CODE]   = Canara\Constants::SAMPLE_FAILURE_CODE;
+                $content[Canara\ResponseFields::VERIFY_STATUS] = Canara\Constants::SAMPLE_FAILURE_VERIFY_STATUS;
             }
         });
     }
