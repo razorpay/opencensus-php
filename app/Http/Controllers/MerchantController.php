@@ -1022,7 +1022,9 @@ class MerchantController extends Controller
 
     public function getSubmerchantsDetails()
     {
-        $response = $this->service()->getSubmerchantsDetails();
+        $input = Request::all();
+
+        $response = $this->service()->getSubmerchantsDetails($input);
 
         return ApiResponse::json($response);
     }

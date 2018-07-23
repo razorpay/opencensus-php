@@ -2107,11 +2107,16 @@ class Service extends Base\Service
         return $submerchant->toArrayPartner();
     }
 
-    public function getSubmerchantsDetails(): array
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function getSubmerchantsDetails(array $input): array
     {
         $partner = $this->fetchPartner();
 
-        $submerchants = $this->core()->getSubmerchantsDetails($partner);
+        $submerchants = $this->core()->getSubmerchantsDetails($partner, $input);
 
         return $submerchants->toArrayPartner();
     }

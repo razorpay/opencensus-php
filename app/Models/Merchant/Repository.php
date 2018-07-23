@@ -62,6 +62,13 @@ class Repository extends Base\Repository
         Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
     ];
 
+    protected $proxyFetchParamRules = [
+        Entity::NAME                     => 'sometimes|string',
+        Entity::ID                       => 'sometimes|alpha_num|size:14',
+        Entity::EMAIL                    => 'sometimes|email',
+        Detail\Entity::ACTIVATION_STATUS => 'sometimes|string|max:30',
+    ];
+
     protected function validateAccountStatus($attribute, $value)
     {
         AccountStatus::validate($value);
@@ -475,10 +482,13 @@ class Repository extends Base\Repository
 
     /**
      * @param string $applicationId
+     * @param array  $params
      *
      * @return Base\PublicCollection
      */
-    public function fetchSubmerchantsByPartnerAppId(string $applicationId): Base\PublicCollection
+    public function fetchSubmerchantsByPartnerAppId(
+        string $applicationId,
+        array $params = array()): Base\PublicCollection
     {
         $merchantDetailRepo = $this->repo->merchant_detail;
 
@@ -492,14 +502,24 @@ class Repository extends Base\Repository
 
         $attributes = [$merchantDetailDbColumns, $this->dbColumn('*')];
 
-        return $this->newQuery()
+        $query = $this->newQuery()
                     ->select($attributes)
                     ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantIdColumn, $accessMapsMerchantIdColumn)
                     ->join(Table::MERCHANT_DETAIL, $merchantsMerchantIdColumn, $merchantDetailMerchantIdColumn)
                     ->where(AccessMap\Entity::ENTITY_TYPE, AccessMap\Entity::APPLICATION)
-                    ->where(AccessMap\Entity::ENTITY_ID, $applicationId)
-                    ->orderBy(Table::MERCHANT . '.' . Entity::CREATED_AT, 'desc')
-                    ->get();
+                    ->where(AccessMap\Entity::ENTITY_ID, $applicationId);
+
+        $this->buildQueryWithParams($query, $params);
+
+        $query->orderBy(Table::MERCHANT . '.' . Entity::CREATED_AT, 'desc')
+              ->orderBy(Table::MERCHANT . '.' . Entity::ID, 'desc');
+
+        return $query->get();
+    }
+
+    protected function addQueryParamActivationStatus($query, $params)
+    {
+        $query->where(Detail\Entity::ACTIVATION_STATUS, '=', $params[Detail\Entity::ACTIVATION_STATUS]);
     }
 
     /**

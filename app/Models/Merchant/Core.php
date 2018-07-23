@@ -1090,13 +1090,13 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function getSubmerchantsDetails(Entity $partner): Base\PublicCollection
+    public function getSubmerchantsDetails(Entity $partner, array $input): Base\PublicCollection
     {
         $partnerApp = $this->getPartnerApp($partner);
 
         $merchants = $this->repo
                           ->merchant
-                          ->fetchSubmerchantsByPartnerAppId($partnerApp->getId());
+                          ->fetchSubmerchantsByPartnerAppId($partnerApp->getId(), $input);
 
         $merchants = $merchants->map(function($merchant) use ($partner) {
             return $this->getPartnerSubmerchantData($partner, $merchant);
