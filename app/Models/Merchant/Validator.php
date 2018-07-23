@@ -489,7 +489,7 @@ class Validator extends Base\Validator
         // i.e merchant will have access to keys.
         // or if website is not null [this check to be removed later]
         if (($merchant->getHasKeyAccess() === true) or
-            (isset($website) === true))
+            (empty($website) === false))
         {
             $attributes[] = Entity::WEBSITE;
         }
