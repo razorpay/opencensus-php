@@ -14,6 +14,11 @@ use RZP\Models\Base\QueryCache\Constants;
 
 class CacheEventListener
 {
+    const DEFAULT_DIMENSIONS = [
+        'version' => 'none',
+        'entity'  => 'none',
+    ];
+
     protected $event;
 
     public function handle($event)
@@ -54,9 +59,16 @@ class CacheEventListener
 
     protected function getCacheEventType()
     {
-        if (str_contains($this->event->key, Constants::QUERY_CACHE_PREFIX) === true)
+        switch (true)
         {
-            return Metric::TYPE_QUERY_CACHE;
+            case str_contains($this->event->key, Constants::QUERY_CACHE_PREFIX):
+                return Metric::TYPE_QUERY_CACHE;
+
+            case str_contains($this->event->key, Constants::UPI_POLLING_CACHE_PREFIX):
+                return Metric::TYPE_UPI_POLLING;
+
+            default:
+                return null;
         }
     }
 
@@ -67,11 +79,9 @@ class CacheEventListener
             case Metric::TYPE_QUERY_CACHE:
                 return $this->getQueryCacheDimensions();
 
-            default :
-                throw new Exception\LogicException(
-                    'Unhandled cache metric event type.',
-                    null,
-                    ['cache event type' => $cacheEventType]);
+            case Metric::TYPE_UPI_POLLING:
+            default:
+                return self::DEFAULT_DIMENSIONS;
                 break;
         }
     }
