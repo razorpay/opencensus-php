@@ -27,6 +27,7 @@ class Gateway extends Base\Gateway
          NetbankingEntity::RECEIVED           => NetbankingEntity::RECEIVED,
          ResponseFields::PRODUCT_REF_NUMBER   => NetbankingEntity::PAYMENT_ID,
          ResponseFields::BANK_TRANSACTION_ID  => NetbankingEntity::BANK_PAYMENT_ID,
+         ResponseFields::PAID                 => NetbankingEntity::STATUS,
     ];
 
     public function authorize(array $input)
