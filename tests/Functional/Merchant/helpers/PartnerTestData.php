@@ -624,6 +624,23 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantProxyAuthSellerApp' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response'   => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AUTHENTICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testFetchPartnerSubmerchants' => [
         'request'  => [
             'url'     => '/submerchants',
