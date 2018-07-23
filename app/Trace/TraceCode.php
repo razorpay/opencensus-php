@@ -1096,6 +1096,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUERY_CACHE_FLUSH_ERROR                       = 'QUERY_CACHE_FLUSH_ERROR';
     const METRIC_CACHE_EVENT_ERROR                      = 'METRIC_CACHE_EVENT_ERROR';
 
+    //upi status cache
+    const UPI_CACHE_STORE_ERROR                         = 'UPI_CACHE_STORE_ERROR';
+    const UPI_CACHE_FLUSH_ERROR                         = 'UPI_CACHE_FLUSH_ERROR';
+    const UPI_CACHE_READ_ERROR                          = 'UPI_CACHE_READ_ERROR';
+
     // Account codes
     const ACCOUNT_CREATED                               = 'ACCOUNT_CREATED';
 
