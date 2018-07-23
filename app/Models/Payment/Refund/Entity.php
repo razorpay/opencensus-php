@@ -179,6 +179,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Gateway\Billdesk\Entity');
     }
 
+    public function reversal()
+    {
+        return $this->belongsTo('RZP\Models\Reversal\Entity', self::REVERSAL_ID);
+    }
+
     public function build(array $input = [])
     {
         $payment = func_get_arg(1);

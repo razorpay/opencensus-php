@@ -50,15 +50,15 @@ trait Reversal
         }
 
         // Refund the transfer payment - this debits the account balance
-        $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($input, $transferPayment)
+        $refund = $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($input, $transferPayment)
         {
-            (new Processor($transferPayment->merchant))
+            return (new Processor($transferPayment->merchant))
                 ->refundTransferPayment($transferPayment, $input[ReversalEntity::AMOUNT]);
         });
 
         // Reverse the associated transfer - this credits the marketplace balance
         return (new ReversalCore)
-                    ->createForMarketplaceRefund($transfer, $this->merchant, $input);
+                    ->createForMarketplaceRefund($transfer, $this->merchant, $refund, $input);
     }
 
     /**
@@ -104,6 +104,8 @@ trait Reversal
         $this->repo->saveOrFail($payment);
 
         $this->repo->saveOrFail($refund);
+
+        return $refund;
     }
 
     /**

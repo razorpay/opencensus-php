@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
@@ -26,6 +27,7 @@ class Core extends Base\Core
      *
      * @param  Transfer\Entity $transfer
      * @param  Merchant\Entity $merchant
+     * @param  Refund\Entity   $refund
      * @param array            $input
      *
      * @return Entity
@@ -33,6 +35,7 @@ class Core extends Base\Core
     public function createForMarketplaceRefund(
         Transfer\Entity $transfer,
         Merchant\Entity $merchant,
+        Refund\Entity $refund,
         array $input) : Entity
     {
         $this->trace->info(
@@ -61,6 +64,10 @@ class Core extends Base\Core
         $reversal->transaction()->associate($txn);
 
         $this->repo->saveOrFail($reversal);
+
+        $refund->reversal()->associate($reversal);
+
+        $this->repo->saveOrFail($refund);
 
         $this->traceSuccess(TraceCode::TRANSFER_REVERSAL_SUCCESS, $reversal);
 
