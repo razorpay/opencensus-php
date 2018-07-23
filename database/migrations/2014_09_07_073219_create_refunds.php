@@ -74,31 +74,31 @@ class CreateRefunds extends Migration
                   ->nullable();
 
 
-            $table->string(Payment::REFERENCE1)
+            $table->string(Refund::REFERENCE1)
                   ->nullable();
 
-            $table->string(Payment::REFERENCE2)
+            $table->string(Refund::REFERENCE2)
                   ->nullable();
 
-            $table->tinyInteger(Payment::REFERENCE3)
+            $table->tinyInteger(Refund::REFERENCE3)
                   ->nullable();
 
-            $table->tinyInteger(Payment::REFERENCE4)
+            $table->tinyInteger(Refund::REFERENCE4)
                   ->nullable();
 
-            $table->integer(Payment::REFERENCE5)
+            $table->integer(Refund::REFERENCE5)
                   ->nullable();
 
-            $table->integer(Payment::REFERENCE6)
+            $table->integer(Refund::REFERENCE6)
                   ->nullable();
 
-            $table->string(Payment::REFERENCE7)
+            $table->string(Refund::REFERENCE7)
                   ->nullable();
 
-            $table->string(Payment::REFERENCE8)
+            $table->string(Refund::REFERENCE8)
                   ->nullable();
 
-            $table->bigInteger(Payment::REFERENCE9)
+            $table->bigInteger(Refund::REFERENCE9)
                   ->unsigned()
                   ->nullable();
 
