@@ -650,12 +650,52 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'entity'           => 'merchant',
+                        'user'             => null,
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                    [
+                        'id'               => 'acc_10000000000011',
+                        'entity'           => 'merchant',
+                        'user'             => null,
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsFilters' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'name'              => 'random_name_1',
+                'email'             => 'user@example.com',
+                'id'                => '10000000000009',
+                'activation_status' => 'under_review',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
                     [
                         'id'               => 'acc_10000000000009',
                         'entity'           => 'merchant',
                         'user'             => null,
+                        'name'             => 'random_name_1',
                         'details'          => [
                             'activation_status' => 'under_review',
                         ],

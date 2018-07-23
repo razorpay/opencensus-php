@@ -695,32 +695,20 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchants()
     {
-        $this->allowAdminToAccessPartnerMerchant();
-
-        $this->allowAdminToAccessSubMerchant();
-
-        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
-
-        $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'under_review']);
-
-        $partnerData = $this->getDummyPartnerAttributes();
-
-        // Create an oauth application using factory
-        $app = $this->createOAuthApplication($partnerData);
-
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $this->createPartnerAndAddMultipleSubmerchants();
 
         $this->ba->adminProxyAuth();
 
-        $testData = $this->testData[__FUNCTION__];
+        $this->startTest();
+    }
 
-        $this->startTest($testData);
+    public function testFetchPartnerSubmerchantsFilters()
+    {
+        $this->createPartnerAndAddMultipleSubmerchants();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
     }
 
     public function testFetchPartnerSubmerchantProxyAuth()
@@ -834,5 +822,41 @@ class PartnerTest extends OAuthTestCase
         ];
 
         return $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+    }
+
+    protected function createPartnerAndAddMultipleSubmerchants()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
+
+        $this->allowAdminToAccessSubMerchant();
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'name' => 'random_name_1',
+            'email' => 'user@example.com',
+        ]);
+        $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'under_review']);
+
+        $submerchantId = '10000000000011';
+        $this->allowAdminToAccessMerchant($submerchantId);
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $app = $this->createOAuthApplication($partnerData);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => $submerchantId,
+            ]);
     }
 }
