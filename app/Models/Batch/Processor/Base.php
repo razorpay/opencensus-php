@@ -1050,7 +1050,7 @@ class Base extends BaseModel\Core
 
         //
         // In case of notes, the diff would be just 'notes', as the actual row will have values like notes[<key>].
-        // TODO: This mess is because of allowing(early bad decision) optional header row in CSV.
+        // Todo: This is because of allowing(early bad decision) optional header row in CSV.
         //
         if (($diff === []) or ($diff === [Batch\Header::NOTES]))
         {
@@ -1058,12 +1058,14 @@ class Base extends BaseModel\Core
 
             $headings = $firstRow;
         }
-
-        if (in_array(Batch\Header::NOTES, $headings) === true)
+        //
+        // Else 1) because notes is optional column and 2) valid header is not sent, we just assume that the file
+        // doesn't have notes column and so process it with headers - [notes]. It will give validation error in case of
+        // extra columns or other failures.
+        //
+        else
         {
             $headings = array_diff($headings, [Batch\Header::NOTES]);
-
-            $headings[] = 'notes[notes]';
         }
 
         return $headings;
