@@ -11,7 +11,7 @@ class Repository extends BaseRepository
     const ORG_ID = 'org_id';
     const ACTION_ID = 'action_id';
 
-    public function findByIdAndOrgId($id, $orgId, array $relations = [])
+    public function findByIdAndOrgId(string $id, string $orgId, array $relations = [])
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 

@@ -1576,7 +1576,7 @@ class Entity extends Base\PublicEntity
     /**
      * @return bool
      */
-    public function allowSubmerchantAccess(): bool
+    public function allowSubmerchantDashboardAccess(): bool
     {
         // Later change to only fully managed partners
         return (($this->isFullyManagedPartner() === true) or ($this->isAggregatorPartner() === true));
