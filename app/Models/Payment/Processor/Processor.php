@@ -582,7 +582,7 @@ class Processor
         {
             $orderAmount = $order->getAmount();
 
-            $discountedAmount = $this->offer->getDiscountedAmount($orderAmount);
+            $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
         }
@@ -645,7 +645,7 @@ class Processor
             return $offers->first();
         }
 
-        new Exception\LogicException('Auto selection of offer is not implemented yet.');
+        throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
     }
 
     protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
@@ -899,6 +899,13 @@ class Processor
      */
     public function getAsyncResponse($id)
     {
+        $response = $this->getUpiStatus($id);
+
+        if ($response !== null)
+        {
+            return $response;
+        }
+
         $payment = $this->retrieve($id);
 
         $order = $this->getOrderForPayment($payment);
@@ -930,9 +937,13 @@ class Processor
                     ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
             }
 
-            return [
+            $response = [
                 Payment\Entity::STATUS => Payment\Status::CREATED
             ];
+
+            $this->setUpiStatus($payment->getPublicId(), $response);
+
+            return $response;
         }
 
         $resource = $this->getCallbackMutexResource($payment);
@@ -1052,16 +1063,7 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        $payment->setVerified(null);
-        $payment->setVerifyBucket(0);
-
-        // If payment still doesnt exist we set verify_at as null
-        // So that this payment doesnt get picked up by any cron
-        // for verify
-        if ($payment->exists === false)
-        {
-            $payment->setVerifyAt(null);
-        }
+        $this->updateVerifyBucketOnPaymentFailure($exception);
 
         $this->repo->saveOrFail($payment);
 
@@ -1098,6 +1100,35 @@ class Processor
         $source = $riskData[Risk\Entity::SOURCE];
 
         (new Risk\Core)->logPaymentForSource($payment, $source, $riskData);
+    }
+
+    protected function updateVerifyBucketOnPaymentFailure(Exception\BaseException $e)
+    {
+        $payment = $this->payment;
+
+        $payment->setVerified(null);
+
+        $payment->setVerifyBucket(0);
+
+        //
+        // In case the gateway error exception is thrown on authenticate
+        // we set verify bucket to null
+        //
+        if ($e instanceof Exception\GatewayErrorException)
+        {
+            if (in_array($e->getAction(), \RZP\Gateway\Base\Action::$nonVerifiableActions, true) === true)
+            {
+                $payment->setNonVerifiable();
+            }
+        }
+
+        // If payment still doesnt exist we set verify_at as null
+        // So that this payment doesnt get picked up by any cron
+        // for verify
+        if ($payment->exists === false)
+        {
+            $payment->setNonVerifiable();
+        }
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
@@ -1520,7 +1551,7 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice, true);
 
-        $invoice->getValidator()->validateInvoicePayable();
+        $invoice->getValidator()->validateInvoicePayable($payment);
 
         $payment->invoice()->associate($invoice);
     }
@@ -2180,5 +2211,51 @@ class Processor
         $this->repo->saveOrFail($order);
 
         $this->eventOrderPaid();
+    }
+
+    protected function getUpiStatus(string $id)
+    {
+        $key = Payment\Entity::getCacheUpiStatusKey($id);
+
+        try
+        {
+            return $this->cache->get($key);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_CACHE_READ_ERROR,
+                ['key' => $key]);
+        }
+    }
+
+    /**
+     * Key will be deleted from the cache when the upi
+     * payment entity gets updated. Deletion is in the
+     * observer class(Models/Payment/Observer.php).
+     *
+     * @param string $id
+     * @param array  $value
+     * @param float  $ttl
+     */
+    protected function setUpiStatus(string $id, array $value, float $ttl = 0.75)
+    {
+        $key = Payment\Entity::getCacheUpiStatusKey($id);
+
+        try
+        {
+            $this->cache->put($key, $value, $ttl);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_CACHE_STORE_ERROR,
+                ['key' => $key,
+                 '$value' => $value]);
+        }
     }
 }

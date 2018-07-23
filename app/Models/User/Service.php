@@ -5,14 +5,14 @@ namespace RZP\Models\User;
 use Mail;
 use Hash;
 use Config;
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
-use RZP\Models\Admin\AdminLead;
 use RZP\Mail\User as UserMail;
-use RZP\Models\User;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Admin\AdminLead;
 
 class Service extends Base\Service
 {
@@ -219,7 +219,25 @@ class Service extends Base\Service
 
     public function confirmUserByData(array $input): array
     {
-        $user = (new Core)->confirmUserByData($input);
+        $user = null;
+
+        (new Entity)->getValidator()->validateInput('confirm', $input);
+
+        // need to validate if it is only a confirm_token or an email
+        if (empty($input[Entity::CONFIRM_TOKEN]) === false)
+        {
+            $user = $this->repo->user->findByToken($input[Entity::CONFIRM_TOKEN]);
+        }
+        else if (empty($input[Entity::EMAIL]) === false and $this->auth->isAdminAuth() === true)
+        {
+            $user = $this->repo->user->findByEmail($input[Entity::EMAIL]);
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+        }
+
+        $user = (new Core)->confirm($user);
 
         $data = $user->toArrayPublic();
 
@@ -342,7 +360,9 @@ class Service extends Base\Service
     }
 
     /**
-     * @param array $input
+     * @param  array $input
+     *
+     * @return array
      *
      * @throws Exception\BadRequestException
      */
@@ -369,6 +389,12 @@ class Service extends Base\Service
             ];
 
             (new Core)->changePassword($user, $changePasswordData);
+
+            // Password reset via mail essentially confirms the email.
+            if ($user->getConfirmedAttribute() === false)
+            {
+                (new Core)->confirm($user);
+            }
         }
 
         return ['success' => true];

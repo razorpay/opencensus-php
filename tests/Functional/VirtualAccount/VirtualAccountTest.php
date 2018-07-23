@@ -501,17 +501,23 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals("RAZRHAN10CHARDESC", $vba['account_number']);
     }
 
+    public function testCreateVirtualAccountBpcl()
+    {
+        $this->fixtures->merchant->setHandle('BPC');
+
+        $this->createVirtualAccount([], true, '0987654321');
+
+        $vba = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals("5432100987654321", $vba['account_number']);
+    }
+
     public function testCreateVirtualAccountDescriptorInvalidLength()
     {
-        // Shortening handle to 3 characters
-        $this->fixtures->merchant->setHandle('han');
+        $this->fixtures->merchant->setHandle('hand');
 
-        //
-        // 10 char descriptors were previously allowed
-        // with numeric VAs for 3char handle merchants.
-        //
-        // These are now completely blocked.
-        //
+        // 10 char descriptors only allowed
+        // for previleged merchants.
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() {

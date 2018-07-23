@@ -157,7 +157,7 @@ class NodalAccount extends NodalBase\FileProcessor
     protected function getPaymentType(BankAccount\Entity $ba, $amount, Attempt\Entity $attempt)
     {
         // Check RTGS time and minimum
-        $type = $this->getTransferMode($amount);
+        $type = $this->getTransferMode($amount, $ba->merchant);
 
         // Mode will be present only for attempts of type Refund
         if ($attempt->getMode() != null)

@@ -68,6 +68,12 @@ class Validator extends Base\Validator
         Entity::PASSWORD              => 'required'
     ];
 
+    protected static $oAuthLoginRules = [
+        Entity::OAUTH_ACCESS_TOKEN    => 'required|string|max:255',
+        Entity::OAUTH_PROVIDER_ID     => 'required|string|max:255',
+        Entity::EMAIL                 => 'required|max:255|email',
+    ];
+
     protected static $passwordAuthRules = [
         Entity::USERNAME              => 'required|alpha_dash|between:3,50',
         Entity::PASSWORD              => 'required|string|confirmed',

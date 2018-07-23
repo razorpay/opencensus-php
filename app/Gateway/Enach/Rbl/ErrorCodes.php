@@ -2,8 +2,11 @@
 
 namespace RZP\Gateway\Enach\Rbl;
 
+use RZP\Models\Batch;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\GatewayErrorException;
+use RZP\Models\Batch\Processor\Emandate\Debit\EnachRbl;
 
 class ErrorCodes
 {
@@ -281,20 +284,38 @@ class ErrorCodes
         self::DE09_RBL => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
     ];
 
-    public static function getRegistrationPublicErrorCode(string $errorCode)
+    public static function getRegistrationPublicErrorCode(array $row)
     {
-        $defaultErrorCode = ErrorCode::GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED;
+        $errorCode = $row[Batch\Header::ENACH_REGISTER_RETURN_CODE] ?? '';
 
-        $errorCode = self::$registerPublicErrorCodeMappings[$errorCode] ?? $defaultErrorCode;
+        self::throwInvalidResponseErrorIfCodeNotMapped($errorCode, self::$registerPublicErrorCodeMappings, $row);
+
+        $errorCode = self::$registerPublicErrorCodeMappings[$errorCode];
 
         return self::getDescriptionFromErrorCode($errorCode);
     }
 
-    public static function getDebitPublicErrorCode(string $errorCode)
+    public static function getDebitPublicErrorCode(array $row)
     {
-        $defaultErrorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+        $errorCode = $row[EnachRbl::GATEWAY_ERROR_CODE];
 
-        return self::$debitPublicErrorCodeMappings[$errorCode] ?? $defaultErrorCode;
+        self::throwInvalidResponseErrorIfCodeNotMapped($errorCode, self::$debitPublicErrorCodeMappings, $row);
+
+        return self::$debitPublicErrorCodeMappings[$errorCode];
+    }
+
+    protected static function throwInvalidResponseErrorIfCodeNotMapped($errorCode, array $mapping, array $content)
+    {
+        if (isset($mapping[$errorCode]) === false)
+        {
+            // Log the whole row, that way it'd be easier to debug based on token id or
+            // payment id in case it fails
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                'Gateway response code mapping not found.',
+                $content);
+        }
     }
 
     protected static function getDescriptionFromErrorCode($code)

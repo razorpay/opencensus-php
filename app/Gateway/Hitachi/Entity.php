@@ -90,11 +90,6 @@ class Entity extends Base\Entity
         $this->setAttribute(self::ACTION, $action);
     }
 
-    public function setAuthenticationGateway(string $authenticationGateway)
-    {
-        return $this->setAttribute(self::AUTHENTICATION_GATEWAY, $authenticationGateway);
-    }
-
     public function getRrn()
     {
         return $this->getAttribute(self::RRN);

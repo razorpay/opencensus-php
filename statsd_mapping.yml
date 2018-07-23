@@ -1,4 +1,16 @@
-# Configuration file for statsd_exporter agent running on each instance.
-# Mostly we will not use any sort of mapping but will point instance agent to pick configuration from this file. Just in
-# case we need to define any, this way it would not require instance bake.
+# Configuration file for statsd exporter agent
+# Ref: https://github.com/prometheus/statsd_exporter
+#
+# **NOTICE**
+# Changes in this file requires copy to exporter and its restart!
+#
 defaults:
+    # By default all histogram use following buckets
+    timer_type: histogram
+    buckets: [5, 30, 50, 80, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+mappings:
+  # Example of a particular metric using probably different bucket(not in this case, having just for sample)
+- match: api_http_request_duration_milliseconds.*
+  timer_type: histogram
+  buckets: [5, 30, 50, 80, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+  name: "api_http_request_duration_milliseconds"

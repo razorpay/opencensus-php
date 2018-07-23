@@ -62,6 +62,7 @@ class Validator extends Base\Validator
         Entity::WHITELISTED_IPS_LIVE . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
         Entity::WHITELISTED_IPS_TEST        => 'sometimes|array|max:5',
         Entity::WHITELISTED_IPS_TEST . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
+        Entity::FEE_CREDITS_THRESHOLD       => 'sometimes|integer|nullable'
     ];
 
     protected static $uniqueEmailRules = [
@@ -89,6 +90,7 @@ class Validator extends Base\Validator
         Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
         MerchantDetail::GSTIN            => 'sometimes|nullable|string|size:15',
         MerchantDetail::P_GSTIN          => 'sometimes|nullable|string',
+        Entity::FEE_CREDITS_THRESHOLD    => 'sometimes|integer|nullable',
     ];
 
     protected static $actionRules = [
@@ -157,8 +159,9 @@ class Validator extends Base\Validator
 
     protected static $createSubMerchantUserRules = [
         'merchant_id'           => 'required|alpha_num|size:14',
-        'password'              => 'required|between:7,50|confirmed|numbers|letters',
-        'password_confirmation' => 'required|between:7,50',
+        // TODO: Remove the following 2 lines after dashboard changes. These don't get used.
+        'password'              => 'sometimes|between:7,50|confirmed|numbers|letters',
+        'password_confirmation' => 'sometimes|between:7,50',
         Entity::EMAIL           => 'required|email',
     ];
 
@@ -407,7 +410,7 @@ class Validator extends Base\Validator
 
         if ($merchant->isPartner() === true)
         {
-            if (($merchant->isFullyManagedTypePartner() === false) and
+            if (($merchant->isFullyManagedPartner() === false) and
                 ($merchant->isOptionalEmailAllowedAggregator() === false))
             {
                 throw new Exception\BadRequestException(
@@ -486,7 +489,7 @@ class Validator extends Base\Validator
         // i.e merchant will have access to keys.
         // or if website is not null [this check to be removed later]
         if (($merchant->getHasKeyAccess() === true) or
-            (isset($website) === true))
+            (empty($website) === false))
         {
             $attributes[] = Entity::WEBSITE;
         }

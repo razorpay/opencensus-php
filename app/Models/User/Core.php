@@ -2,9 +2,8 @@
 
 namespace RZP\Models\User;
 
-use Config;
 use Hash;
-
+use Config;
 use Carbon\Carbon;
 use Illuminate\Hashing\BcryptHasher;
 
@@ -13,9 +12,8 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\RequestJob;
-use RZP\Jobs\MailChimpSubscribe;
 use RZP\Constants\Timezone;
+use RZP\Jobs\MailChimpSubscribe;
 
 class Core extends Base\Core
 {
@@ -61,29 +59,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($user);
 
         return $user;
-    }
-
-    public function confirmUserByData(array $input)
-    {
-        $user = null;
-
-        (new Entity)->getValidator()->validateInput('confirm', $input);
-
-        // need to validate if it is only a confirm_token or an email
-        if (empty($input[Entity::CONFIRM_TOKEN]) === false)
-        {
-            $user = $this->repo->user->findByToken($input[Entity::CONFIRM_TOKEN]);
-        }
-        else if (empty($input[Entity::EMAIL]) === false)
-        {
-            $user = $this->repo->user->findByEmail($input[Entity::EMAIL]);
-        }
-        else
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
-        }
-
-        return $this->confirm($user);
     }
 
     public function changePassword(Entity $user, array $input)

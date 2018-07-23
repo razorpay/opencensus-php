@@ -36,16 +36,20 @@
       "title": "Type Of Service",
       "enum": [
         "",
+        "New Installation",
         "Repair",
-        "Installation",
-        "Maintenance"
+        "Maintenance",
+        "Replacement",
+        "Others"
       ],
       "options": {
         "enum_titles": [
           "--Select--",
+          "New Installation",
           "Repair",
-          "Installation",
-          "Maintenance"
+          "Maintenance",
+          "Replacement",
+          "Others"
         ]
       }
     },

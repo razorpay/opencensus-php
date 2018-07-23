@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "38cdc106edeb48f43226378fa4bd855b",
+    "content-hash": "c0043e3fa39ed096f8b3e3b985079a54",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5454,12 +5454,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "a178cee3befbc9ced0c23061ba4ef21bd602b5b0"
+                "reference": "a287c9d18c9ffb44ee6e4f5352aacf916003eb5e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/a178cee3befbc9ced0c23061ba4ef21bd602b5b0",
-                "reference": "a178cee3befbc9ced0c23061ba4ef21bd602b5b0",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/a287c9d18c9ffb44ee6e4f5352aacf916003eb5e",
+                "reference": "a287c9d18c9ffb44ee6e4f5352aacf916003eb5e",
                 "shasum": ""
             },
             "require": {
@@ -5498,7 +5498,7 @@
                 "source": "https://github.com/razorpay/oauth/tree/master",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2018-06-26T17:54:18+00:00"
+            "time": "2018-07-16T07:23:18+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -5711,16 +5711,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "dev-logfile_permission",
+            "version": "2.0.13",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "a4bc5d404879e8c128edb4ea76d4aeca5af23f56"
+                "reference": "4a03a9be71aaba22462f6cd8c9645139c15f28cd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/a4bc5d404879e8c128edb4ea76d4aeca5af23f56",
-                "reference": "a4bc5d404879e8c128edb4ea76d4aeca5af23f56",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/4a03a9be71aaba22462f6cd8c9645139c15f28cd",
+                "reference": "4a03a9be71aaba22462f6cd8c9645139c15f28cd",
                 "shasum": ""
             },
             "require": {
@@ -5780,10 +5780,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/logfile_permission",
+                "source": "https://github.com/razorpay/trace/tree/2.0.13",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2018-07-05T12:16:07+00:00"
+            "time": "2018-07-17T17:44:27+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -9868,7 +9868,6 @@
         "razorpay/upi-clients": 20,
         "razorpay/ufh-sdk-php": 20,
         "razorpay/hodor": 20,
-        "razorpay/trace": 20,
         "razorpay/oauth": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20

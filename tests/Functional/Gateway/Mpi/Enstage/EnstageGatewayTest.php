@@ -30,11 +30,18 @@ class EnstageGatewayTest extends TestCase
 
     public function testSuccessful1yEnrolledCard()
     {
-        $this->authorizePayment();
+        $response = $this->authorizePayment();
 
-        $gatewayEntity = $this->getLastEntity('mpi_blade', true);
+        self::assertTrue($this->otpFlow);
 
-        $this->assertArraySelectiveEquals($this->testData[__FUNCTION__], $gatewayEntity);
+        $gatewayEntity = $this->getLastEntity('mpi', true);
+
+        self::assertArraySelectiveEquals($this->testData[__FUNCTION__], $gatewayEntity);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('otp', $payment['auth_type']);
+        self::assertEquals('mpi_enstage', $payment['gateway']);
     }
 
     public function testCardNotEnrolledfor3dSecure()
@@ -59,7 +66,6 @@ class EnstageGatewayTest extends TestCase
         $this->assertNotNull(Enrolled::N, $gatewayEntity['enrolled']);
 
         $this->assertEquals('mpi_enstage', $gatewayEntity['gateway']);
-
     }
 
     public function testAuthenticationError()
@@ -111,20 +117,20 @@ class EnstageGatewayTest extends TestCase
 
     protected function authorizePayment()
     {
-        $this->fixtures->edit('iin', '411146', ['flows' => ['otp' => '1']]);
-
-        $payment = $this->defaultAuthPayment([
-           'card' => [
-               'number'       => '4111466126747568',
-               'expiry_month' => '02',
-               'expiry_year'  => '21',
-               'cvv'          => 123,
-               'name'         => 'Test Card',
-           ],
-            'auth_type' => 'otp',
+        $this->fixtures->edit('iin', '411146', [
+            'issuer' => 'UTIB',
+            'flows' => [
+                'otp' => '1'
+            ]
         ]);
-        
-        return $payment;
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4111466126747568';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('123456');
+
+        return $this->doAuthPayment($payment);
     }
 
     public function testAuthenticationFailed()

@@ -530,3 +530,15 @@ if (! function_exists('amount_format_IN'))
         return money_format_IN(number_format($amount / 100, 2, '.', ''));
     }
 }
+
+if (! function_exists('millitime'))
+{
+    /**
+     * Gets current unix timestamp in milliseconds
+     * @return int
+     */
+    function millitime(): int
+    {
+        return round(microtime(true) * 1000);
+    }
+}

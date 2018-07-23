@@ -180,6 +180,7 @@ class Gateway
         Payment\Gateway::HITACHI,
         Payment\Gateway::UPI_HULK,
         Payment\Gateway::NETBANKING_AIRTEL,
+        Payment\Gateway::ATOM,
     ];
 
     public static $channels = [
@@ -624,6 +625,7 @@ class Gateway
             IFSC::GCBX,
             IFSC::GCUX,
             IFSC::GSCB,
+            IFSC::GSSX,
             IFSC::HDFC,
             IFSC::HSBC,
             IFSC::IBKL,
@@ -648,6 +650,8 @@ class Gateway
             IFSC::KSCB,
             IFSC::KUNS,
             IFSC::KVBL,
+            IFSC::KTBX,
+            IFSC::KBCX,
             IFSC::LBMX,
             IFSC::LCCX,
             IFSC::LKMX,
@@ -664,6 +668,7 @@ class Gateway
             IFSC::NOIX,
             IFSC::NSBX,
             IFSC::NSGX,
+            IFSC::NDCX,
             IFSC::ORBC,
             IFSC::PALX,
             IFSC::PCUX,
@@ -685,6 +690,7 @@ class Gateway
             IFSC::SVCB,
             IFSC::SWMX,
             IFSC::SYNB,
+            IFSC::SVNX,
             IFSC::TACX,
             IFSC::TCUB,
             IFSC::TECX,
