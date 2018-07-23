@@ -240,7 +240,7 @@ export default class TransferNew extends Component {
                     <TypeAhead
                       options={accounts.accounts}
                       disabled={accounts.loading}
-                      class="transfers-powerselect"
+                      class="ps-in-modal"
                       searchIndices={['id', 'name', 'email']}
                       placeholder={`${
                         accounts.loading
