@@ -227,6 +227,9 @@ class Gateway extends Base\Gateway
             // Since there's no hot payment, we would not
             // have an amount in the first auth request
             // We get amount as `'null'` in these cases.
+            // Cases:
+            // 1. Status => Y, AMT => null
+            // 2. Status => N, AMT => 99999
             //
             if ($callbackAmount !== 'null' and $callbackData[ResponseFields::PAID] === Status::Y)
             {
@@ -240,7 +243,7 @@ class Gateway extends Base\Gateway
                         'payment_id'    => $input['payment']['id'],
                     ]);
             }
-            else
+            else if ($callbackData[ResponseFields::PAID] === Status::N)
             {
                 $expectedAmount = $this->formatAmount($input['token']['max_amount'] / 100);
                 $actualAmount   = $this->formatAmount($callbackAmount);
