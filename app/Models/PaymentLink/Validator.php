@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
@@ -98,22 +99,24 @@ class Validator extends Base\Validator
     {
         $paymentLink = $this->entity;
 
-        // If amount is set, validations that it doesn't exceeds max payment amount allowed for merchant
-        if ($amount !== null)
+        if ($amount === null)
         {
-            $maxAmountAllowed = $paymentLink->merchant->getMaxPaymentAmount();
+            return;
+        }
 
-            if ($amount > $maxAmountAllowed)
-            {
-                throw new BadRequestValidationFailureException(
-                    'Amount exceeds maximum payment amount allowed',
-                    Entity::AMOUNT,
-                    [
-                        Entity::ID           => $paymentLink->getId(),
-                        Entity::AMOUNT       => $amount,
-                        'max_amount_allowed' => $maxAmountAllowed,
-                    ]);
-            }
+        // If amount is set, validate that it doesn't exceeds max payment amount allowed for merchant
+        $maxAmountAllowed = $paymentLink->merchant->getMaxPaymentAmount();
+
+        if ($amount > $maxAmountAllowed)
+        {
+            throw new BadRequestValidationFailureException(
+                'Amount exceeds maximum payment amount allowed',
+                Entity::AMOUNT,
+                [
+                    Entity::ID                          => $paymentLink->getId(),
+                    Entity::AMOUNT                      => $amount,
+                    Merchant\Entity::MAX_PAYMENT_AMOUNT => $maxAmountAllowed,
+                ]);
         }
     }
 
