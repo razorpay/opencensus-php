@@ -1059,6 +1059,13 @@ class Base extends BaseModel\Core
             $headings = $firstRow;
         }
 
+        if (in_array(Batch\Header::NOTES, $headings) === true)
+        {
+            $headings = array_diff($headings, [Batch\Header::NOTES]);
+
+            $headings[] = 'notes[notes]';
+        }
+
         return $headings;
     }
 
