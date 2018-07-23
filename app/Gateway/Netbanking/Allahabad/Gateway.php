@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Models\Payment\Action;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Currency\Currency;
@@ -16,6 +17,8 @@ use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'netbanking_allahabad';
 
     protected $bank = 'allahabad';

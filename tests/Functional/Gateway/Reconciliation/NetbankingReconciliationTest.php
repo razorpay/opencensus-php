@@ -369,6 +369,31 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertEquals(Status::PROCESSED, $batch['status']);
     }
 
+    public function testAllahabadFailedPaymentReconciliation()
+    {
+        $this->gateway = 'netbanking_allahabad';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $netbanking = $this->createNetbanking($payment['id'], 'ALLA', 'N');
+
+        $fileContents = $this->generateFile('allahabad', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingAllahabad', $uploadedFile);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity['status'], 'authorized');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+    }
+
     public function testIciciFailedPaymentReconciliation()
     {
         $this->gateway = 'netbanking_icici';
