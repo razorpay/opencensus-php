@@ -32,6 +32,8 @@ class PartnerTest extends OAuthTestCase
 
         $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
 
+        $this->fixtures->merchant_detail->create(['merchant_id' => self::DEFAULT_SUBMERCHANT_ID]);
+
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 
         $this->ba->privateAuth();
@@ -655,9 +657,9 @@ class PartnerTest extends OAuthTestCase
 
         $submerchant = $this->allowAdminToAccessSubMerchant();
 
-        $partnerUser = $this->createMerchantUser(self::DEFAULT_MERCHANT_ID);
+        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
 
-        $submerchantUser = $this->createMerchantUser(self::DEFAULT_SUBMERCHANT_ID);
+        $submerchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
 
         $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
 
@@ -679,7 +681,7 @@ class PartnerTest extends OAuthTestCase
             [
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
-                'merchant_id' => '10000000000011',
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
             ]);
 
         $this->ba->adminProxyAuth();
@@ -711,7 +713,7 @@ class PartnerTest extends OAuthTestCase
             [
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
-                'merchant_id' => '10000000000011',
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
             ]);
 
         $this->ba->adminProxyAuth();
@@ -727,9 +729,9 @@ class PartnerTest extends OAuthTestCase
 
         $submerchant = $this->allowAdminToAccessSubMerchant();
 
-        $partnerUser = $this->createMerchantUser(self::DEFAULT_MERCHANT_ID);
+        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
 
-        $submerchantUser = $this->createMerchantUser(self::DEFAULT_SUBMERCHANT_ID);
+        $submerchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
 
         $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
 
@@ -749,7 +751,7 @@ class PartnerTest extends OAuthTestCase
             [
                 'entity_type' => 'application',
                 'entity_id'   => $app->getId(),
-                'merchant_id' => '10000000000011',
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
             ]);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $partnerUser->getId());
