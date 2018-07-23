@@ -63,6 +63,18 @@ class NetbankingCanaraGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
     }
 
+    public function testAmountTampering()
+    {
+        $this->mockamountTampering();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $payment = $this->doNetbankingCanaraAuthAndCapturePayment();
+        });
+    }
+
     public function testAuthorizeFailed()
     {
         $data = $this->testData[__FUNCTION__];
@@ -195,13 +207,24 @@ class NetbankingCanaraGatewayTest extends TestCase
         });
     }
 
+    protected function mockamountTampering()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content[Canara\ResponseFields::AMOUNT] = '30000';
+            }
+        });
+    }
 
-    protected function mockAmountMismatch()
+    protected function mockVerifyAmountMismatch()
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
             if ($action === 'verify')
             {
+                s($content[Canara\ResponseFields::VER_AMOUNT]);
                 $content[Canara\ResponseFields::VER_AMOUNT] = '300';
             }
         });
