@@ -107,6 +107,19 @@ class NetbankingCanaraGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
     }
 
+    public function testAuthFailedVerifySuccess()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testAuthorizeFailed();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        });
+    }
 
     public function testRefund()
     {
