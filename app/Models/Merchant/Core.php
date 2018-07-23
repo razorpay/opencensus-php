@@ -910,23 +910,7 @@ class Core extends Base\Core
             // Maintained for backward compatibility
             $this->addSubMerchantReferral($partner, $submerchant);
 
-            if ($partner->allowSubmerchantAccess() === true)
-            {
-                if ($this->isPartnerUserAddedToSubmerchant($partner, $submerchant) === false)
-                {
-                    // Attaches partners's user to the submerchant account as an owner
-                    $this->attachSubMerchantOwner($partner->primaryOwner()->getId(), $submerchant);
-                }
-                else
-                {
-                    $this->trace->info(
-                        TraceCode::PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT,
-                        [
-                            'partner_id'     => $partner->getId(),
-                            'submerchant_id' => $submerchant->getId(),
-                        ]);
-                }
-            }
+            $this->allowSubmerchantDashboardAccessIfApplicable($partner, $submerchant);
 
             // If the mapping already exists, the existing entity is returned
             $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
@@ -939,15 +923,6 @@ class Core extends Base\Core
         });
 
         return $accessMap->toArrayPublic();
-    }
-
-    public function isPartnerUserAddedToSubmerchant(Entity $partner, Entity $submerchant): bool
-    {
-        $partnerUser = $partner->primaryOwner();
-
-        $ownerIds = $submerchant->owners()->getIds();
-
-        return (in_array($partnerUser->getId(), $ownerIds, true) === true);
     }
 
     /**
@@ -1100,5 +1075,46 @@ class Core extends Base\Core
         $tags = $this->deleteTag($merchant->getPublicId(), $tag);
 
         return $tags;
+    }
+
+    protected function isPartnerUserAddedToSubmerchant(Entity $partner, Entity $submerchant): bool
+    {
+        $partnerUser = $partner->primaryOwner();
+
+        $ownerIds = $submerchant->owners()->getIds();
+
+        return (in_array($partnerUser->getId(), $ownerIds, true) === true);
+    }
+
+    /**
+     * Maps the partner user to the submerchant account,
+     * if the partner merchant should have access to the submerchant's dashboard, and,
+     * if the partner user is not already mapped to the submerchant's account.
+     *
+     * @param Entity $partner
+     * @param Entity $submerchant
+     */
+    protected function allowSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant)
+    {
+        if ($partner->allowSubmerchantDashboardAccess() === false)
+        {
+            return;
+        }
+
+        if ($this->isPartnerUserAddedToSubmerchant($partner, $submerchant) === false)
+        {
+            // Attaches partners's user to the submerchant account as an owner
+            $this->attachSubMerchantOwner($partner->primaryOwner()->getId(), $submerchant);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT,
+                [
+                    'partner_id'     => $partner->getId(),
+                    'submerchant_id' => $submerchant->getId(),
+                ]);
+        }
+
     }
 }

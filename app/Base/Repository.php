@@ -795,7 +795,7 @@ class Repository extends \Razorpay\Spine\Repository
         return $entity;
     }
 
-    public function findByIdAndOrgId($id, $orgId, array $relations = [])
+    public function findByIdAndOrgId(string $id, string $orgId, array $relations = [])
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
