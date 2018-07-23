@@ -116,7 +116,7 @@ class Entity extends Base\PublicEntity
 
     public function bankAccount()
     {
-        return $this->belongsTo('RZP\Models\BankAccount\Entity');
+        return $this->belongsTo('RZP\Models\BankAccount\Entity')->withTrashed();
     }
 
     public function qrCode()

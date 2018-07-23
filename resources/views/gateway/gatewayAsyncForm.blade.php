@@ -359,7 +359,8 @@
           $('retry-btn').className = 'hide';
           $('message-txt').innerHTML = '<b>Select UPI App</b>Payment will be made to Razorpay\'s VPA';
           window.pollStatus = function(resp) {
-            if (!Object.keys(resp).length || /txnid=(undefined|null)/i.test(resp.response)) {
+            if (!Object.keys(resp).length || /txnId=(undefined|null|)(&|$)/i.test(resp.response)) {
+              fetchWait(cancel_url);
               $('cancel-btn').className = '';
               $('retry-btn').className = '';
               $('spinner').className = 'hide';

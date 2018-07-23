@@ -141,6 +141,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateUpiCollectTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreateTpvTerminalWithInvalidMethod()
     {
         $url = '/merchants/100000Razorpay/terminals';
@@ -277,6 +286,24 @@ class TerminalTest extends TestCase
         $content = $this->editTerminal($tid, $data);
 
         $this->assertEquals($content['type'], ['recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
+    }
+
+    public function testEditCollectTerminal()
+    {
+        $this->fixtures->create('terminal:shared_upi_icici_terminal', ['used' => true]);
+
+        $tid = Terminal\Shared::UPI_ICICI_RAZORPAY_TERMINAL;
+
+        $data = [
+            'gateway'                   => 'upi_icici',
+            'type'                      => [
+                'collect' => '1',
+            ],
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals($content['type'], ['non_recurring', 'collect']);
     }
 
     public function testEditAxisMigsTerminal()
