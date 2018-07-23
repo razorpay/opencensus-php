@@ -910,7 +910,7 @@ class Core extends Base\Core
             // Maintained for backward compatibility
             $this->addSubMerchantReferral($partner, $submerchant);
 
-            $this->allowSubmerchantDashboardAccessIfApplicable($partner, $submerchant);
+            $this->assignSubmerchantDashboardAccessIfApplicable($partner, $submerchant);
 
             // If the mapping already exists, the existing entity is returned
             $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
@@ -1094,7 +1094,7 @@ class Core extends Base\Core
      * @param Entity $partner
      * @param Entity $submerchant
      */
-    protected function allowSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant)
+    protected function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant)
     {
         if ($partner->allowSubmerchantDashboardAccess() === false)
         {
