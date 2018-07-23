@@ -459,8 +459,7 @@ class PaymentLinkTest extends TestCase
 
         $this->createPaymentLink(self::TEST_PL_ID, $attributes);
 
-        // TODO: Have this & assert error message once view has been implemented
-        // $this->callViewUrlAndMakeAssertions();
+        $this->callViewUrlAndMakeAssertions(self::TEST_PL_ID, 200, 'Inactive Page');
     }
 
     // -------------------- Protected methods --------------------
@@ -502,16 +501,19 @@ class PaymentLinkTest extends TestCase
         $this->assertArraySelectiveEquals($expected, $paymentLink->toArray());
     }
 
-    protected function callViewUrlAndMakeAssertions(string $id = self::TEST_PL_ID, int $code = 200, string $error = null)
+    protected function callViewUrlAndMakeAssertions(
+        string $id = self::TEST_PL_ID,
+        int $code = 200,
+        string $message = null)
     {
         $response = $this->call('GET', "/v1/payment_links/pl_{$id}/view");
 
         $response->assertStatus($code);
 
-        // If there is an error message expected assert that
-        if (empty($error) === false)
+        // If there is an message expected, assert that it exists in the response content
+        if (empty($message) === false)
         {
-            $this->assertContains($error, $response->getContent());
+            $this->assertContains($message, $response->getContent());
         }
     }
 }
