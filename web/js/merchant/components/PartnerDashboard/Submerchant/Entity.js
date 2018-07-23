@@ -19,7 +19,7 @@ export default props => {
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
             <span>{submerchant.name || 'Default Name'}</span>
-            {submerchant.dashboard_access && (
+            {/* submerchant.dashboard_access && (
               <div class="btn-toolbar pull-right">
                 <button
                   onClick={() => {
@@ -30,7 +30,7 @@ export default props => {
                   Switch Merchant
                 </button>
               </div>
-            )}
+            ) */}
           </div>
           <Alert type="error" message={error} />
           <div class="SliderPanel__Body">
