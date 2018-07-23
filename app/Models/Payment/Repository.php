@@ -926,11 +926,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByTransferIdAndMerchant(string $transferId, string $accountId)
+    public function findByTransferIdAndMerchant(string $transferId, string $accountId, array $relations = [])
     {
         return $this->newQuery()
                     ->where(Entity::TRANSFER_ID, $transferId)
                     ->merchantId($accountId)
+                    ->with($relations)
                     ->firstOrFailPublic();
     }
 

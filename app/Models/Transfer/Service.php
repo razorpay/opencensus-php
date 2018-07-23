@@ -97,6 +97,19 @@ class Service extends Base\Service
         return $reversal->toArrayPublic();
     }
 
+    public function fetchLaTransfer(string $id): array
+    {
+        $this->validateLinkedAccount();
+
+        $merchantId = $this->merchant->getId();
+
+        $relations = ['transfer', 'transfer.recipientSettlement'];
+
+        $payment = $this->repo->payment->findByTransferIdAndMerchant($id, $merchantId, $relations);
+
+        return $this->createTransferResponseFromPayment($payment);
+    }
+
     public function fetchLaTransfers(array $input)
     {
         $this->validateLinkedAccount();
@@ -118,15 +131,22 @@ class Service extends Base\Service
         $transfers = [];
         foreach ($payments as $payment)
         {
-            $result = $payment->toArrayPublic();
-
-            $transferData = $result[Payment\Entity::TRANSFER];
-            $transferData[Transfer\Entity::NOTES] = $result[Payment\Entity::NOTES];
+            $transferData = $this->createTransferResponseFromPayment($payment);
 
             $transfers[] = $transferData;
         }
 
         return $transfers;
+    }
+
+    private function createTransferResponseFromPayment($payment)
+    {
+        $result = $payment->toArrayPublic();
+
+        $transferData = $result[Payment\Entity::TRANSFER];
+        $transferData[Transfer\Entity::NOTES] = $result[Payment\Entity::NOTES];
+
+        return $transferData;
     }
 
     protected function validateLinkedAccount()
