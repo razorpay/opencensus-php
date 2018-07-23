@@ -49,7 +49,7 @@ class Server extends Base\Mock\Server
 
 
         $callbackUrl .= '?parameter_string='.$checksum_string.'&response_signaturte='.$response[ResponseFields::CHECKSUM];
-        
+
         $request = [
             'url'     => $callbackUrl,
             'content' => [],
