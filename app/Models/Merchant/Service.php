@@ -1882,7 +1882,7 @@ class Service extends Base\Service
         }
         else
         {
-            $this->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
+            $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
         }
 
         return [$subMerchantUser, $created];
