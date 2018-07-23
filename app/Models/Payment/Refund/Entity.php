@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID         = 'transaction_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const BATCH_ID               = 'batch_id';
+    const REVERSAL_ID            = 'reversal_id';
 
     const GATEWAY_REFUNDED       = 'gateway_refunded';
     const REFERENCE1             = 'reference1';
