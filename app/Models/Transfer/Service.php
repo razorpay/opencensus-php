@@ -4,11 +4,11 @@ namespace RZP\Models\Transfer;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Trace\TraceCode;
-use RZP\Models\Reversal;
 use RZP\Models\Payment;
-use RZP\Models\Transfer;
 use RZP\Error\ErrorCode;
+use RZP\Models\Reversal;
+use RZP\Models\Transfer;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as EntityConstant;
 
 class Service extends Base\Service
@@ -121,7 +121,11 @@ class Service extends Base\Service
         // fetching by payments fetch to handle notes search.
         $payments = $this->repo->payment->fetch($input, $merchantId);
 
-        $transfersResponse = $this->createResponse($payments);
+        $transfersResponse = [
+            "count"  => count($payments),
+            "entity" => "collection",
+            "items"  => $this->createResponse($payments),
+        ];
 
         return $transfersResponse;
     }
