@@ -8,6 +8,7 @@ use Gateway\Upi\Axis;
 use RZP\Gateway\Upi\Axis\Action;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Base;
+use RZP\Gateway\Upi\Axis\Fields;
 use RZP\Gateway\Upi\Axis\Status;
 use RZP\Gateway\Utility;
 use RZP\Gateway\Upi\Base\Entity as UPIEntity;
@@ -24,7 +25,6 @@ class Server extends Base\Mock\Server
         Action::COLLECT      => 17,
         Action::VERIFY       => 14,
         Action::REFUND       => 20,
-        Action::VALIDATE_VPA => 14,
     ];
 
     /**
@@ -33,7 +33,6 @@ class Server extends Base\Mock\Server
      */
     const RESPONSE_FIELD_COUNT = [
         Action::AUTHORIZE       => 17,
-        Action::VALIDATE_VPA    => 14,
         Action::VERIFY          => 21,
         Action::CALLBACK        => 21,
         Action::REFUND          => 21,
@@ -44,27 +43,15 @@ class Server extends Base\Mock\Server
         parent::authorize($input);
 
         $input = $this->parseInput($input);
-        s($input);
 
-        $vpa = $input[2];
+        $vpa = $input['customerVpa'];
 
         $this->validateAuthorizeInput($input);
 
         $content = [
-            // Razorpay Payment Id
-            $input[2],
-            // Bank Payment Id
-            random_int(100000, 999999),
-            // Amount
-            $input[4],
-            '00',
-            Status::SUCCESS,
-            // Description
-            'Transaction Collect request initiated successfully',
-            // Payer VA
-            $vpa,
-            // Payee VA
-            'razorpay@hdfcbank',
+            Fields::CODE => '000',
+            Fields::RESULT => 'SUCCESS',
+            Fields::DATA => $this->generateRandomString(30),
         ];
 
         if ($vpa === 'failedcollect@hdfcbank')
@@ -74,39 +61,6 @@ class Server extends Base\Mock\Server
         }
 
         $this->content($content);
-        s($content);
-        return $this->makeResponse($content);
-    }
-
-    public function validateVpa(string $input)
-    {
-        $this->action = Action::VALIDATE_VPA;
-
-        $input = $this->parseInput($input, Action::VALIDATE_VPA);
-
-        $this->validateActionInput($input, Action::VALIDATE_VPA);
-
-        $content = [
-            // Razorpay Payment Id
-            $input[1],
-            // Customer VPA
-            $input[2],
-            // Customer name
-            'User Name',
-            // Status
-            Status::VPA_AVAILABLE,
-            // Description
-            'Customer vpa is valid',
-        ];
-
-        if ($input[2] === 'invalidvpa@hdfcbank')
-        {
-            $content[3] = Status::VPA_NOT_AVAILABLE;
-            $content[4] = 'Customer vpa not valid';
-        }
-
-        $this->content($content, 'validate_vpa');
-
         return $this->makeResponse($content);
     }
 
@@ -114,20 +68,7 @@ class Server extends Base\Mock\Server
     {
         $input = json_decode($input, true);
 
-        $encryptedInput = $input['requestMsg'];
-
-        $res = $this->decrypt($encryptedInput);
-
-        $arr = explode('|', $res);
-
-        $actualFieldLength = count($arr);
-        $expectedFieldLength = self::REQUEST_FIELD_COUNT[$action];
-
-        $message = $actualFieldLength . ' is not equal to expected ' . $expectedFieldLength;
-
-        assertTrue($actualFieldLength === $expectedFieldLength, $message);
-
-        return $arr;
+        return $input;
     }
 
     public function decrypt($data)
@@ -165,19 +106,7 @@ class Server extends Base\Mock\Server
     {
         $action = $this->action;
 
-        // There are lots of empty "additional fields" in the response
-        // that are currently expected to be filled with NA
-        // The number of such fields depends on the request (auth|refund|etc)
-        // We calculate the number of such fields and add it as a padding
-        // with array_merge
-
-        $paddingCount = self::RESPONSE_FIELD_COUNT[$action] - count($data);
-
-        $data = array_merge($data, array_fill(count($data), $paddingCount, 'NA'));
-
-        $content = implode('|', $data);
-
-        $content = strtoupper(bin2hex($this->encrypt($content)));
+        $content = json_encode($data);
 
         $response = parent::makeResponse($content);
 
@@ -203,5 +132,73 @@ class Server extends Base\Mock\Server
     protected function getPublicKey()
     {
         return file_get_contents(__DIR__ . '/keys/mockclient.pub');
+    }
+
+    public function getAsyncCallbackContent(array $upiEntity, array $payment)
+    {
+        $this->action = Action::CALLBACK;
+
+        $content = $this->callbackResponseContent($upiEntity, $payment);
+
+        $this->content($content,'callback');
+
+        $response = $this->makeResponse($content);
+
+        return [
+            'meRes' => $response->content()
+        ];
+    }
+
+    protected function callbackResponseContent(array $upiEntity, array $payment)
+    {
+        $status = Status::SUCCESS;
+
+        switch ($payment['vpa'])
+        {
+            case 'failed@hdfcbank':
+                $status = Status::FAILED;
+                break;
+        }
+
+        return [
+            $upiEntity['gateway_payment_id'],
+            $upiEntity['payment_id'],
+            $this->formatAmount($payment['amount']),
+            '2017:12:01 00:00:02',
+            $status,
+            'Transaction success',
+            '00',
+            // Approval Number
+            random_integer(5),
+            $payment['vpa'],
+            // NPCI Reference Id
+            random_integer(16),
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'PNB!10000000000!PNBI1111111!8966829290'
+        ];
+    }
+    /**
+     * @param  int    $amount amount in paise
+     * @return string
+     */
+    protected function formatAmount(int $amount): string
+    {
+        return number_format($amount / 100 ,2, '.', '');
+    }
+
+
+    public function generateRandomString($length = 10) {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
     }
 }

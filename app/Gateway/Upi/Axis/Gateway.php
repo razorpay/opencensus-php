@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Axis;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Gateway\Mpi\Enstage\Field;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
@@ -35,15 +36,8 @@ class Gateway extends Base\Gateway
      */
     const DEFAULT_PAYEE_VPA = 'razaorpay@axis';
 
-    // Transaction Types
-    const P2P = 'P2P';
-    const P2M = 'P2M';
-
-    const PAY = 'PAY';
-
     const FIELD_LENGTH = [
         Action::AUTHORIZE => 17,
-        Action::VALIDATE_VPA => 14,
         Action::REFUND => 20,
         Action::VERIFY => 14,
     ];
@@ -77,8 +71,6 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-//        $this->validateVpa($input['payment']);
-
         parent::action($input, Action::AUTHORIZE);
 
         $request =  $this->getAuthorizeRequestArray($input);
@@ -87,11 +79,12 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body);
 
-        $response[Entity::RECEIVED] = 1;
         s($response);
+
+
         $this->updateGatewayPaymentEntity($gatewayPayment, $response);
 
-        $this->checkResponseStatus($response[Fields::CODE]);
+//        $this->checkResponseStatus($response[Fields::CODE]);
 
         $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
 
@@ -116,7 +109,7 @@ class Gateway extends Base\Gateway
     protected function getGatewayEntityAttributes(array $input, string $action = Action::AUTHORIZE)
     {
         $attrs = [
-            Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
+            Entity::GATEWAY_MERCHANT_ID => 'RAZAORPAY',
             Entity::VPA                 => $input['payment']['vpa'],
             Entity::ACTION              => $action,
             Entity::TYPE                => Base\Type::COLLECT,
@@ -151,86 +144,16 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * We need to validate that the user's VPA is valid before proceeding with the payment
-     * @param array $input
-     */
-    public function validateVpa(array $input)
-    {
-        parent::action($input, Action::VALIDATE_VPA);
-
-        $request = $this->getValidateVpaRequestArray($input);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $response = $this->parseGatewayResponse($response->body, Action::VALIDATE_VPA);
-
-        $this->checkResponseStatus($response[Fields::VPA_STATUS], Status::VPA_AVAILABLE);
-    }
-
-    protected function getValidateVpaRequestArray(array $input): array
-    {
-        $data = [
-            $this->getMerchantId(),
-            random_alpha_string(10),
-            $input['vpa'],
-            'T'
-        ];
-
-        $content = $this->transformRequestArrayToContent($data);
-
-        $request = $this->getStandardRequestArray($content);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_SUPPORT_REQUEST,
-            [
-                'decrypted_content' => $data,
-                'encrypted'         => $content,
-                'gateway'           => $this->gateway,
-                'action'            => Action::VALIDATE_VPA,
-            ]);
-
-        return $request;
-    }
-
-    /**
      * Formats a request content array to a proper string
      * that is sent to the server in POST body
      * @param  array  $data request array
      * @return string post body
      */
-    protected function transformRequestArrayToContent(array $data)
+    protected function transformRequestArrayToContent(array $data): string
     {
-        $extraFields = self::FIELD_LENGTH[$this->action] - count($data);
+        $json = json_encode($data);
 
-        // We have space for 10 extra fields that we don't use
-        $suffixArray = array_fill(0, $extraFields, 'NA');
-
-        $data = array_merge($data, $suffixArray);
-
-        // Drop any `|` in any of the field values
-        $data = array_map(function($e)
-        {
-            return str_replace('|', '', $e);
-        }, $data);
-
-        $data = implode('|', $data);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
-            [
-                'data'              => $data,
-                'gateway'           => $this->gateway,
-                'action'            => $this->action
-            ]);
-
-        $msg = $this->encrypt($data);
-
-        $json = [
-            'requestMsg'    => $msg,
-            'pgMerchantId'  => $this->getMerchantId(),
-        ];
-
-        return json_encode($json);
+        return $json;
     }
 
     /**
@@ -247,32 +170,7 @@ class Gateway extends Base\Gateway
             'gateway'           => $this->gateway,
             'type'              => $type
         ]);
-
-        $response = $this->decrypt($responseBody);
-        s($response);
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response]);
-
-        $type = strtoupper($type);
-
-        $fields = constant(__NAMESPACE__ . "\Fields::$type");
-
-        $values = explode('|', $response);
-
-        $result = [];
-
-        foreach ($fields as $index => $key)
-        {
-            $result[$key]     =   $values[$index];
-        }
-
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-            'body'              => $responseBody,
-            'decrypted'         => $response,
-            'parsed'            => $result,
-            'gateway'           => $this->gateway,
-            'type'              => $type
-        ]);
-        return $result;
+        return $this->jsonToArray($responseBody);
     }
 
     /**
@@ -337,21 +235,32 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        // The order is defined in the docs
-        // See README.md
+        $checksumdata='RAZAORPAY'.'RAZAORPAYAPP'.$payment['id'].$payment['id'].$this->formatAmount($payment['amount']).$this->getPaymentRemark($input).'INR'.'ORDERID'.$payment['vpa'].(string) $input['upi']['expiry_time'];
+        s($checksumdata);
+        $checksum = "";
+        openssl_public_encrypt($checksumdata,$checksum,'-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAroCi3XYzve05XEWsNFH8
+Zz/XvUSboLmJe/mw/8nQ1EqzipHf+YcW9O2QFPqN/04qgor6V1TkRy8omYRGKkyi
+CGcVnkcR+2ijlHdrSW6MPSL2uuCAmQym72+WJ6EYplROwMtcL4Mo69BbjgYtiIgt
+mqPumBaz1PJSsqtChExf9VHGaW0611UV9slwwq+FAe/fqE75ULwK9bscgDrhtnd/
+pxvJJWiGasncHMCpqK88zyWoBlVx3/6y3nAnH2YIcvFdZFcznPfnzZEvUer8jNBp
+0uy5UmG8PUqSabmNBoAFSTwsDl/8mLKS884nwJ1ez1pF5Nwmhw/Nm/qSAGu2NG/m
+8wIDAQAB
+-----END PUBLIC KEY-----
+');
 
         $data = [
-            $this->getMerchantId(),
-            'RAZAORPAYAPP',
-            $payment['id'],
-            $payment['id'],
-            $this->formatAmount($payment['amount']),
-            $this->getPaymentRemark($input),
-            'INR',
-            'ORDERID',
-            $payment['vpa'],
-            $input['upi']['expiry_time'],
-            'SID',
+            Fields::MERCH_ID => 'RAZAORPAY',
+            Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
+            Fields::UNQ_TXN_ID => $payment['id'],
+            Fields::UNQ_CUST_ID => $payment['id'],
+            Fields::AMOUNT => $this->formatAmount($payment['amount']),
+            Fields::TXN_DTL => $this->getPaymentRemark($input),
+            Fields::CURRENCY => 'INR',
+            Fields::ORDER_ID => 'ORDERID',
+            Fields::CUSTOMER_VPA => $payment['vpa'],
+            Fields::EXPIRY => (string) $input['upi']['expiry_time'],
+            Fields::CHECKSUM => strtoupper(bin2hex($checksum)),
         ];
 
         $content = $this->transformRequestArrayToContent($data);
