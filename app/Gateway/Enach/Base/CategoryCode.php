@@ -28,9 +28,9 @@ class CategoryCode
         '6012' => self::L001,
     ];
 
-    public static function getCategoryCodeFromMcc(string $mcc)
+    public static function getCategoryCodeFromMcc($mcc)
     {
-        if (isset(self::$mccToCategoryCodeMapping[$mcc]) === true)
+        if (($mcc !== null) and (isset(self::$mccToCategoryCodeMapping[$mcc]) === true))
         {
             return self::$mccToCategoryCodeMapping[$mcc];
         }

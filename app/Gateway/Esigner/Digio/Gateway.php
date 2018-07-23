@@ -177,7 +177,7 @@ class Gateway extends Base\Gateway
         $destinationBankIfsc = $input['token']->getIfsc();
         $bankCode = $this->getTerminalAccessCode($input);
 
-        $mcc = $this->input['merchant']['category'];
+        $mcc = $this->input['terminal']['category'];
 
         $traceContent = $content = [
             'mandate_request_id'            => $input['payment']['id'],
