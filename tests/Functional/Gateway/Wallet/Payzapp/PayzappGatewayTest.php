@@ -59,6 +59,16 @@ class PayzappGatewayTest extends TestCase
             $this->testData['testPaymentPayzappEntity'], $payment);
     }
 
+    public function testOnlyMerchantIdPresentinCallbackResponse()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payzapp');
+
+        $this->mockOnlyMerchantIdPresentInResponse();
+
+        $payment = $this->doAuthPayment($payment);
+
+    }
+
     public function testRefundPayment()
     {
         // $this->markTestSkipped();
@@ -162,5 +172,18 @@ class PayzappGatewayTest extends TestCase
         }
 
         return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function mockOnlyMerchantIdPresentInResponse()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action ==='authorize')
+                {
+                    unset($content['resCode']);
+                    unset($content['resDesc']);
+                }
+            });
     }
 }
