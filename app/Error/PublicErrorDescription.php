@@ -632,8 +632,12 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME                             = 'The merchant request name is invalid';
     const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                      = 'The merchant request submissions are missing';
 
+    // Partners
     const BAD_REQUEST_PARTNER_TYPE_INVALID                                      = 'Partner type is invalid';
     const BAD_REQUEST_PARTNER_TYPE_REQUIRED                                     = 'Partner type is required';
+    const SERVER_ERROR_PARTNER_APP_NOT_FOUND                                    = 'Partner app could not be found';
+    const BAD_REQUEST_INVALID_PARTNER_ACTION                                    = 'Invalid partner action';
+    const BAD_REQUEST_PARTNER_CONTEXT_NOT_SET                                   = 'Partner context must be set';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
