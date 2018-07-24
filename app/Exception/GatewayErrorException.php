@@ -9,6 +9,8 @@ class GatewayErrorException extends RecoverableException
 {
     protected $twoFaError = false;
 
+    protected $action = null;
+
     protected $twoFaErrorCodes = [
         ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
         ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
@@ -21,7 +23,8 @@ class GatewayErrorException extends RecoverableException
         $gatewayErrorCode = null,
         $gatewayErrorDesc = null,
         $data = [],
-        \Exception $previous = null)
+        \Exception $previous = null,
+        $action = null)
     {
         parent::__construct('', $code, $previous);
 
@@ -32,6 +35,8 @@ class GatewayErrorException extends RecoverableException
         $this->setGatewayErrorCodeAndDesc(
             $gatewayErrorCode,
             $gatewayErrorDesc);
+
+        $this->action = $action;
     }
 
     public function markTwoFaError()
@@ -70,9 +75,19 @@ class GatewayErrorException extends RecoverableException
         $this->message = $message;
     }
 
+    public function setAction($action)
+    {
+        $this->action = $action;
+    }
+
     public function isCritical()
     {
         return (ErrorClass::isCritical($this->getError()->getClass()) === true);
+    }
+
+    public function getAction()
+    {
+        return $this->action;
     }
 
     protected function isTwoFaError($errorCode)

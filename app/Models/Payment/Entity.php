@@ -886,6 +886,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AUTO_CAPTURED, $autoCaptured);
     }
 
+    public function setNonVerifiable()
+    {
+        $this->setVerifyBucket(null);
+
+        $this->setVerifyAt(null);
+    }
+
     public function setVerifyBucket($verifyBucket = 0)
     {
         $this->setAttribute(self::VERIFY_BUCKET, $verifyBucket);

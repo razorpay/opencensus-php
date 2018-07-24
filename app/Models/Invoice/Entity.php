@@ -813,6 +813,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::LINK);
     }
 
+    public function isNotTypeInvoice(): bool
+    {
+        return ($this->isTypeInvoice() === false);
+    }
+
     public function isTypeInvoice(): bool
     {
         return ($this->getType() === Type::INVOICE);
