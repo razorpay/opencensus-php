@@ -26,12 +26,14 @@ class Constants
     const HDFC_FSS         = 'hdfc_fss';
     const ENACH_RBL        = 'enach_rbl';
     const OBC              = 'obc';
+    const CANARA             = 'canara';
 
     /**
      * Stores a mapping of valid banks for each file type
      */
     const SUPPORTED_TARGETS = [
         Type::REFUND => [
+            self::CANARA,
             self::HDFC,
             self::ICICI,
             self::CSB,
@@ -89,8 +91,9 @@ class Constants
 
     const RECIPIENTS_MAP = [
         Type::REFUND => [
-            self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
-            self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::HDFC   => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
+            self::ICICI  => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::CANARA => ['hosettlement@canarabank.com', 'hodbspg@canarabank.com ']
         ],
 
         Type::COMBINED => [

@@ -6,8 +6,11 @@ use Mail;
 use Excel;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File;
 use RZP\Gateway\Netbanking\Canara;
 use RZP\Tests\Functional\TestCase;
+use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
@@ -180,6 +183,27 @@ class NetbankingCanaraGatewayTest extends TestCase
         $this->checkMailQueue();
     }
 
+    public function testRefundFileGeneration()
+    {
+        Mail::fake();
+
+        $this->createRefunds();
+
+        $this->alterPaymentsDateToYesterday();
+
+        $this->alterRefundsDateToYesterday();
+
+        $this->ba->appAuth();
+
+        $data = $this->generateGatewayFile('canara', 'refund');
+
+        $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
+
+        $this->checkRefundTxtData($data['items'][0], $file);
+
+        $this->checkMailQueue();
+    }
+
     public function doNetbankingCanaraAuthAndCapturePayment()
     {
         $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
@@ -252,12 +276,14 @@ class NetbankingCanaraGatewayTest extends TestCase
         $payment = $this->doNetbankingCanaraAuthAndCapturePayment();
 
         $refund = $this->refundPayment($payment['id'], 10000);
+
         $refund = $this->refundPayment($payment['id']);
     }
 
     protected function alterPaymentsDateToYesterday()
     {
         $payments = $this->getEntities('payment', [], true);
+
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)->addMinutes(30)->timestamp;
 
         foreach ($payments['items'] as $payment)
@@ -279,6 +305,61 @@ class NetbankingCanaraGatewayTest extends TestCase
         {
             $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
+    }
+
+    protected function checkRefundTxtData(array $data, array $file)
+    {
+        $this->assertNotNull($data[File\Entity::FILE_GENERATED_AT]);
+
+        $this->assertNotNull($data[File\Entity::SENT_AT]);
+
+        $this->assertNull($data[File\Entity::FAILED_AT]);
+
+        $this->assertNull($data[File\Entity::ACKNOWLEDGED_AT]);
+
+        $filePath = storage_path('files/filestore') . '/' . $file['location'];
+
+        $this->assertTrue(file_exists($filePath));
+
+        $refundsFileContents = file($filePath);
+
+        $refundAmounts = [1 => '500.00', 2 => '100.00', 3 => '400.00'];
+
+        $columns = [
+                    'TRANSACTION DATE AND TIME',
+                    'Refund Date',
+                    'BANK_REF_NO',
+                    'PG_REF_NUM',
+                    'Refund Reference',
+                    'Transaction Amount',
+                    'Refund Amount'];
+
+        foreach ($refundsFileContents as $key => $row)
+        {
+            $refundsFileRow = explode('|', $row);
+
+            $lastValue = array_pop($refundsFileRow);
+
+            $lastValue = str_replace(array("\n", "\r"), '', $lastValue);
+
+            array_push($refundsFileRow, $lastValue);
+
+            if($key === 0)
+            {
+                $this->assertEquals($refundsFileRow, $columns);
+            }
+            else
+            {
+                $this->assertEquals($refundsFileRow[6], $refundAmounts[$key]);
+            }
+
+            // Asserting that the file contains 7 columns
+            $this->assertEquals(count($refundsFileRow), 7);
+        }
+
+        $this->assertEquals(4, count($refundsFileContents));
+
+       // unlink($filePath);
     }
 
     protected function checkRefundFileData($data)

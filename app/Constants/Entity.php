@@ -375,6 +375,7 @@ class Entity
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_CANARA      => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_INDUSIND    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Base::class,
