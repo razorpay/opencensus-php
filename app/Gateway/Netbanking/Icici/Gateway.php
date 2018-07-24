@@ -231,7 +231,7 @@ class Gateway extends Base\Gateway
             // 1. Status => Y, AMT => null
             // 2. Status => N, AMT => 99999
             //
-            if ($callbackAmount !== 'null' and $callbackData[ResponseFields::PAID] === Status::Y)
+            if (($callbackAmount !== 'null') and ($callbackData[ResponseFields::PAID] === Status::Y))
             {
                 throw new Exception\GatewayErrorException(
                     ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED,
