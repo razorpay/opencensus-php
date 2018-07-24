@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Models\Batch;
+use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
@@ -596,12 +597,17 @@ class Validator extends Base\Validator
      * Invoice is only payable if it's not deleted and is in either
      * issued or partially_paid state.
      *
+     * @param Payment\Entity $payment
      * @return void
      * @throws BadRequestValidationFailureException
      */
-    public function validateInvoicePayable()
+    public function validateInvoicePayable(Payment\Entity $payment)
     {
         $invoice = $this->entity;
+
+        $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
+        $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
+        $this->getTrace()->count(Metric::INVOICE_PAYMENT_ATTEMPTS_TOTAL, 1, $dimensions);
 
         if ($invoice->trashed())
         {

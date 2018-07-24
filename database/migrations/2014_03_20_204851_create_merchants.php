@@ -80,6 +80,10 @@ class CreateMerchants extends Migration
             $table->tinyInteger(Merchant::FEE_MODEL)
                   ->default(FeeModel::getValueForFeeModelString(FeeModel::PREPAID));
 
+            $table->bigInteger(Merchant::FEE_CREDITS_THRESHOLD)
+                  ->unsigned()
+                  ->nullable();
+
             $table->tinyInteger(Merchant::REFUND_SOURCE)
                   ->default(RefundSource::getValueForRefundSourceString(RefundSource::BALANCE));
 

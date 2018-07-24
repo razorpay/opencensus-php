@@ -76,6 +76,7 @@ class Entity extends Base\PublicEntity
     const ARCHIVED_AT              = 'archived_at';
     const SUSPENDED_AT             = 'suspended_at';
     const NOTES                    = 'notes';
+    const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -202,6 +203,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
+        self::FEE_CREDITS_THRESHOLD,
     ];
 
     const CONFIG_LIST = [
@@ -212,6 +214,7 @@ class Entity extends Base\PublicEntity
         self::LOGO_URL,
         self::INVOICE_LABEL_FIELD,
         self::AUTO_CAPTURE_LATE_AUTH,
+        self::FEE_CREDITS_THRESHOLD,
     ];
 
     protected $public = [
@@ -261,6 +264,7 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
         self::MERCHANT_DETAIL,
+        self::FEE_CREDITS_THRESHOLD,
      ];
 
     protected $defaults = [
@@ -293,6 +297,7 @@ class Entity extends Base\PublicEntity
         self::NOTES                  => [],
         self::WHITELISTED_IPS_LIVE   => [],
         self::WHITELISTED_IPS_TEST   => [],
+        self::FEE_CREDITS_THRESHOLD  => null,
     ];
 
     protected $publicSetters = [
@@ -315,6 +320,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => 'bool',
         self::WHITELISTED_IPS_LIVE   => 'array',
         self::WHITELISTED_IPS_TEST   => 'array',
+        self::FEE_CREDITS_THRESHOLD  => 'int'
     ];
 
     protected $eventFields = [
@@ -407,6 +413,11 @@ class Entity extends Base\PublicEntity
     public function isMarketplace(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
+    }
+
+    public function isAxisExpressPayEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::AXIS_EXPRESS_PAY);
     }
 
     public function linkedAccountsRequireKyc(): bool
@@ -962,6 +973,11 @@ class Entity extends Base\PublicEntity
     public function getFeeModel()
     {
         return $this->getAttribute(self::FEE_MODEL);
+    }
+
+    public function getFeeCreditsThreshold()
+    {
+        return $this->getAttribute(self::FEE_CREDITS_THRESHOLD);
     }
 
     public function getRefundSource()

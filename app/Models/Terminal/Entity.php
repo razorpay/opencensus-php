@@ -970,6 +970,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::DEBIT_RECURRING) === true);
     }
 
+    public function isCollectTerminal()
+    {
+        return ($this->isTypeApplicable(Type::COLLECT) === true);
+    }
+
     public function isNo2fa()
     {
         return ($this->isTypeApplicable(Type::NO_2FA) === true);

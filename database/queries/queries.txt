@@ -3471,7 +3471,7 @@ ALTER TABLE enach
 ALTER TABLE invoices
     ADD COLUMN customer_shipping_addr_id CHAR(14) DEFAULT NULL AFTER customer_billing_addr_id,
     ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
-
+    
 ALTER TABLE enach
     ADD COLUMN registration_date INTEGER UNSIGNED AFTER registration_status,
     ADD INDEX enach_registration_date_index (registration_date);
@@ -4117,6 +4117,22 @@ ALTER TABLE payments
 ALTER TABLE batches
     ADD INDEX batches_subtype_index (`sub_type`);
 
+ALTER TABLE merchants
+    ADD COLUMN fee_credits_threshold BIGINT UNSIGNED AFTER fee_model
+
 ALTER table offers
     ADD COLUMN emi_subvention tinyint DEFAULT NULL AFTER flat_cashback,
     ADD COLUMN emi_durations varchar(255) DEFAULT NULL AFTER emi_subvention;
+    
+ALTER TABLE refunds
+    ADD COLUMN error_code VARCHAR(128) DEFAULT NULL AFTER status,
+    ADD COLUMN internal_error_code VARCHAR(255) DEFAULT NULL AFTER error_code,
+    ADD COLUMN error_description VARCHAR(255) DEFAULT NULL AFTER internal_error_code,
+    ADD COLUMN gateway VARCHAR(255) DEFAULT NULL AFTER error_description,
+    ADD COLUMN reference3 TINYINT(1) NULL AFTER reference2,
+    ADD COLUMN reference4 TINYINT(1) NULL AFTER reference3,
+    ADD COLUMN reference5 INT(11) DEFAULT NULL AFTER reference4,
+    ADD COLUMN reference6 INT(11) DEFAULT NULL AFTER reference5,
+    ADD COLUMN reference7 VARCHAR(255) DEFAULT NULL AFTER reference6,
+    ADD COLUMN reference8 VARCHAR(255) DEFAULT NULL AFTER reference7,
+    ADD COLUMN reference9 BIGINT UNSIGNED DEFAULT NULL AFTER reference8;
