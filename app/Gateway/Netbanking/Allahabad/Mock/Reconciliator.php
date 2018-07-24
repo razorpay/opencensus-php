@@ -85,14 +85,14 @@ class Reconciliator extends Base\RefundFile
                 ->format('d-M-y');
 
             $amount = $this->getFormattedAmount($row['payment']['amount']);
-
+            
             $data[] = [
                 'Bank Id' => '027',
                 'Txn Date' => $trnxDate,
-                'Merchant Name' => '',
+                'Merchant Name' => 'Razor',
                 'Trnx Amount' => $amount,
                 'PGI Reference No.' => $row['payment']['id'],
-                'Bank Ref No.' => '99999',
+                'Bank Ref No.' => $row['gateway']['bank_payment_id'],
             ];
 
             $totalAmount += floatval($amount);
