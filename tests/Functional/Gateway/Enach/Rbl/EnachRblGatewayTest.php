@@ -325,7 +325,7 @@ class EnachRblGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             [
                 'recurring_status'         => 'rejected',
-                'recurring_failure_reason' => 'Payment processing failed due to invalid parameters',
+                'recurring_failure_reason' => 'GATEWAY_ERROR',
             ],
             $token
         );

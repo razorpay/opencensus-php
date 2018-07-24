@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Enach\Rbl;
 
+use RZP\Error\Error;
 use RZP\Models\Batch;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -320,11 +321,8 @@ class ErrorCodes
 
     protected static function getDescriptionFromErrorCode($code)
     {
-        $code = strtoupper($code);
+        $error = new Error($code);
 
-        if (defined(PublicErrorDescription::class . '::' . $code))
-        {
-            return constant(PublicErrorDescription::class.'::'.$code);
-        }
+        return $error->getPublicErrorCode();
     }
 }
