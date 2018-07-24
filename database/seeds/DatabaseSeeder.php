@@ -1695,6 +1695,21 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::UPI_AXIS_RAZORPAY_TERMINAL,
+            'merchant_id'               => Account::DEMO_ACCOUNT,
+            'gateway'                   => Gateway::UPI_AXIS,
+            'card'                      => '0',
+            'netbanking'                => '0',
+            'upi'                       => '1',
+            'gateway_merchant_id'       => 'RAZAORPAY',
+            'gateway_terminal_id'       => '1234',
+            'gateway_merchant_id2'      => 'razaorpay@axis',
+            'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_axis_terminal_pass'),
+            'created_at'                => time(),
+            'updated_at'                => time(),The api key provided is invalid
+        ]);
+
+        DB::table(Table::TERMINAL)->insert([
             'id'                        => Terminal\Shared::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL,
             'merchant_id'               => Account::SHARED_ACCOUNT,
             'gateway'                   => Gateway::UPI_SBI,

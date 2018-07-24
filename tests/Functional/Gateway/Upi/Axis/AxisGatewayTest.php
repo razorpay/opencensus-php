@@ -78,4 +78,21 @@ class AxisGatewayTest extends TestCase
         $status = $response['status'];
         $this->assertEquals($expectedStatus, $status);
     }
+
+    public function testVerifyPayment()
+    {
+        // First we test that verification works
+        // for a captured payment
+        $paymentId = $this->testPayment();
+
+        $this->payment = $this->verifyPayment($paymentId);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertEquals($upi['account_number'], '004001551691');
+
+        $this->assertEquals($upi['ifsc'], 'ICIC0000000');
+
+//        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
 }

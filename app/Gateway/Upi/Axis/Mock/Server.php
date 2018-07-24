@@ -23,7 +23,7 @@ class Server extends Base\Mock\Server
      */
     const REQUEST_FIELD_COUNT = [
         Action::COLLECT      => 17,
-        Action::VERIFY       => 14,
+        Action::VERIFY       => 4,
         Action::REFUND       => 20,
     ];
 
@@ -33,7 +33,7 @@ class Server extends Base\Mock\Server
      */
     const RESPONSE_FIELD_COUNT = [
         Action::AUTHORIZE       => 17,
-        Action::VERIFY          => 21,
+        Action::VERIFY          => 3,
         Action::CALLBACK        => 21,
         Action::REFUND          => 21,
     ];
@@ -45,6 +45,8 @@ class Server extends Base\Mock\Server
         $input = $this->parseInput($input);
 
         $vpa = $input['customerVpa'];
+
+        s($input);
 
         $this->validateAuthorizeInput($input);
 
@@ -200,5 +202,47 @@ class Server extends Base\Mock\Server
             $randomString .= $characters[rand(0, $charactersLength - 1)];
         }
         return $randomString;
+    }
+
+    public function verify($input)
+    {
+        $input = $this->parseInput($input, Action::VERIFY);
+
+        parent::verify($input);
+
+        $this->validateActionInput($input);
+
+        $app = App::getFacadeRoot();
+
+        $paymentId = $input['unqTxnId'];
+
+        $payment = $app['repo']->payment->find($paymentId);
+
+        $response = $this->getDefaultVerifyResponse($input, $payment);
+
+        $this->content($response,'verify');
+
+        return $this->makeResponse($response, Action::VERIFY);
+    }
+
+    protected function getDefaultVerifyResponse(array $input, $payment): array
+    {
+        return [
+            Fields::CODE => '00',
+            Fields::RESULT => 'Successful',
+            Fields::DATA => [
+            Fields::MERCHANT_TRANSACTION_ID => 'CPAGA471420261',
+            Fields::W_COLLECT_TXN_ID => "AXI91977318751526881521496367600647",
+            Fields::MERCH_ID =>  "RAZAORPAY",
+            Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
+            Fields::CUSTOMER_VPA =>  $payment['vpa'],
+            Fields::TXN_TIME => "25-MAY-17 01.59.59.741000 PM",
+            Fields::TXN_AMOUNT => $payment['amount'],
+            Fields::RRN => "714513318376",
+            Fields::DEBIT_ACCOUNT_NUM => "076010100236133",
+            Fields::DEBIT_IFSC_CODE => "AXIS0000076",
+            Fields::CHECKSUM => "dc251c30924ec8d2aed7ab0e15dc209e66b3f3efec934484b1b6be822214296d",
+            ]
+        ];
     }
 }

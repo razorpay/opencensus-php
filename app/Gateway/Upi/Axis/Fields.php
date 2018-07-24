@@ -33,6 +33,11 @@ class Fields
     const GATEWAY_RESPONSE_CODE = 'gatewayResponseCode';
     const GATEWAY_RESPONSE_MESSAGE = 'gatewayResponseMessage';
     const RRN = 'rrn';
+    const W_COLLECT_TXN_ID = 'wCollectTxnId';
+    const TXN_TIME = 'txnTime';
+    const TXN_AMOUNT = 'txnAmount';
+    const DEBIT_ACCOUNT_NUM = 'debitAccountNum';
+    const DEBIT_IFSC_CODE = 'debitIfscCode';
 
     /**
      * These are the expected field orders

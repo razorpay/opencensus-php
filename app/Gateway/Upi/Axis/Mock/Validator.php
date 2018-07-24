@@ -21,5 +21,11 @@ class Validator extends Base\Validator
         'checkSum' => 'required|string|max:10000',
     ];
 
+    protected static $verifyRules = [
+        'merchId' => 'required|alpha_num|size:9',
+        'merchChanId' => 'required|alpha_num|size:12',
+        'unqTxnId' => 'required|string|max:255',
+        'checkSum' => 'required|string|max:10000',
+    ];
 
 }

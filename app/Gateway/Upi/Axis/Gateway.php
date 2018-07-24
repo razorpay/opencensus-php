@@ -15,6 +15,8 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
+use phpseclib\Crypt\RSA;
+
 
 class Gateway extends Base\Gateway
 {
@@ -173,51 +175,6 @@ class Gateway extends Base\Gateway
         return $this->jsonToArray($responseBody);
     }
 
-    /**
-     * This is the key used to encrypt requests
-     * @return string public key
-     */
-    protected function getEncryptionKey()
-    {
-        return $this->config['gateway_encryption_key'];
-    }
-
-    /**
-     * Encrypts data
-     *
-     * @param $plaintext
-     *
-     * @return string
-     */
-    public function encrypt($plaintext)
-    {
-        return $this->getCipherInstance()
-            ->encrypt($plaintext);
-    }
-
-    /**
-     * Returns a Crypto instance
-     * @return Crypto class instance
-     * @return Crypto
-     */
-    protected function getCipherInstance()
-    {
-        return new Crypto($this->getEncryptionKey());
-    }
-
-    /**
-     * Decrypts responses from the Mindgate API
-     *
-     * @param string $cipherText
-     *
-     * @return string
-     */
-    public function decrypt(string $cipherText)
-    {
-        return $this->getCipherInstance()
-            ->decrypt($cipherText);
-    }
-
     private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
     {
         if ($status !== $successStatus)
@@ -235,19 +192,7 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $checksumdata='RAZAORPAY'.'RAZAORPAYAPP'.$payment['id'].$payment['id'].$this->formatAmount($payment['amount']).$this->getPaymentRemark($input).'INR'.'ORDERID'.$payment['vpa'].(string) $input['upi']['expiry_time'];
-        s($checksumdata);
-        $checksum = "";
-        openssl_public_encrypt($checksumdata,$checksum,'-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAroCi3XYzve05XEWsNFH8
-Zz/XvUSboLmJe/mw/8nQ1EqzipHf+YcW9O2QFPqN/04qgor6V1TkRy8omYRGKkyi
-CGcVnkcR+2ijlHdrSW6MPSL2uuCAmQym72+WJ6EYplROwMtcL4Mo69BbjgYtiIgt
-mqPumBaz1PJSsqtChExf9VHGaW0611UV9slwwq+FAe/fqE75ULwK9bscgDrhtnd/
-pxvJJWiGasncHMCpqK88zyWoBlVx3/6y3nAnH2YIcvFdZFcznPfnzZEvUer8jNBp
-0uy5UmG8PUqSabmNBoAFSTwsDl/8mLKS884nwJ1ez1pF5Nwmhw/Nm/qSAGu2NG/m
-8wIDAQAB
------END PUBLIC KEY-----
-');
+        //$checksumdata='RAZAORPAY'.'RAZAORPAYAPP'.$payment['id'].$payment['id'].$this->formatAmount($payment['amount']).$this->getPaymentRemark($input).'INR'.'ORDERID'.$payment['vpa'].(string) $input['upi']['expiry_time'];
 
         $data = [
             Fields::MERCH_ID => 'RAZAORPAY',
@@ -258,10 +203,18 @@ pxvJJWiGasncHMCpqK88zyWoBlVx3/6y3nAnH2YIcvFdZFcznPfnzZEvUer8jNBp
             Fields::TXN_DTL => $this->getPaymentRemark($input),
             Fields::CURRENCY => 'INR',
             Fields::ORDER_ID => 'ORDERID',
-            Fields::CUSTOMER_VPA => $payment['vpa'],
+            Fields::CUSTOMER_VPA => 'vijay@axis',//$payment['vpa'],
             Fields::EXPIRY => (string) $input['upi']['expiry_time'],
-            Fields::CHECKSUM => strtoupper(bin2hex($checksum)),
+            Fields::S_ID => '',
         ];
+
+        $dataStr = implode('', $data);
+
+        $checksum = $this->encrypt($dataStr);
+
+        $data[Fields::CHECKSUM] = bin2hex($checksum);
+        s($data);
+
 
         $content = $this->transformRequestArrayToContent($data);
 
@@ -275,6 +228,7 @@ pxvJJWiGasncHMCpqK88zyWoBlVx3/6y3nAnH2YIcvFdZFcznPfnzZEvUer8jNBp
                 'gateway'           => $this->gateway,
                 'payment_id'        => $payment['id'],
             ]);
+        s($request);
         return $request;
     }
 
@@ -303,6 +257,8 @@ pxvJJWiGasncHMCpqK88zyWoBlVx3/6y3nAnH2YIcvFdZFcznPfnzZEvUer8jNBp
 
         $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
 
+
+        $description = trim($description);
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
 
@@ -368,6 +324,218 @@ pxvJJWiGasncHMCpqK88zyWoBlVx3/6y3nAnH2YIcvFdZFcznPfnzZEvUer8jNBp
         $payment->generatePspData($attributes);
 
         $this->repo->saveOrFail($payment);
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function runPaymentVerifyFlow($verify)
+    {
+        // This payment is the gateway entity payment.
+        // Also sets this gateway payment in the verify object's payment.
+        $gatewayPayment = $this->getPaymentToVerify($verify);
+
+        if (($gatewayPayment === null) and
+            ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_PAYMENT_VERIFY,
+                [
+                    'payment_id' => $verify->input['payment']['id'],
+                    'message'    => 'payment id not found in the gateway database',
+                    'gateway'    => $this->gateway
+                ]
+            );
+
+            return null;
+        }
+
+        $this->sendPaymentVerifyRequest($verify);
+        $this->verifyPayment($verify);
+
+        if (($verify->amountMismatch === true) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\RuntimeException(
+                'Payment amount verification failed.',
+                [
+                    'payment_id' => $this->input['payment']['id'],
+                    'gateway'    => $this->gateway
+                ]
+            );
+        }
+        if (($verify->match === false) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify);
+        }
+
+        return $verify->getDataToTrace();
+    }
+
+    protected function getPaymentVerifyRequestArray($input)
+    {
+        $payment = $input['payment'];
+
+//        $checksumdata='RAZAORPAY'.'RAZAORPAYAPP'.$payment['id'];
+//        $checksum = "";
+//        openssl_public_encrypt($checksumdata,$checksum,'');
+
+        $data = [
+            Fields::MERCH_ID => 'RAZAORPAY',
+            Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
+            Fields::UNQ_TXN_ID => $payment['id'],
+            Fields::CHECKSUM => 'to be done',
+        ];
+
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = [
+            'Content-Type' => 'text/plain'
+        ];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data
+            ]);
+
+        return $request;
+    }
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $input = $verify->input;
+        $request = $this->getPaymentVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->parseGatewayResponse($response->body, Action::VERIFY);
+
+//        $bankDetails = $this->parseBankAccountDetails($content[Fields::BANK_REFERENCE]);
+
+//        $content = array_merge($content, $bankDetails);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
+        return $content;
+    }
+
+    protected function parseBankAccountDetails($bankReference)
+    {
+        $fields = constant(__NAMESPACE__ . '\ResponseFields::BANK_DETAILS');
+
+        $values = explode(Fields::BANK_REFERENCE_SEPARATOR, $bankReference);
+
+        $bankReferenceArray = [];
+
+        $index = 0;
+
+        if (empty($values) === false)
+        {
+            foreach ($fields as $key)
+            {
+                if ($values[$index] !== Fields::NO_BANK_DETAIL)
+                {
+                    $bankReferenceArray[$key] = $values[$index];
+                }
+
+                $index++;
+            }
+
+        }
+
+        return $bankReferenceArray;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $this->checkApiSuccess($verify);
+
+//        $this->checkGatewaySuccess($verify);
+
+        $status = VerifyResult::STATUS_MATCH;
+
+        // If both don't match we have a status mis match
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $input = $verify->input;
+
+        if ($verify->gatewaySuccess === true)
+        {
+            $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+            $actualAmount = number_format($content[Fields::AMOUNT], 2, '.', '');
+
+            $verify->amountMismatch = ($paymentAmount !== $actualAmount);
+        }
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
+
+        $content[Entity::RECEIVED] = 1;
+
+        $this->updateGatewayPaymentEntity($verify->payment, $content);
+    }
+
+    private function checkGatewaySuccess(Verify $verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $verify->gatewaySuccess = ($content[Fields::STATUS] === Status::SUCCESS);
+    }
+
+    protected function getCipherInstance(): RSA
+    {
+
+        $rsa = new RSA();
+
+        $rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
+
+        return $rsa;
+    }
+
+    /**
+     * Encrypts data before sending it to Axis
+     * @param  string $data
+     * @return string
+     */
+    protected function encrypt(string $data): string
+    {
+        $rsa = $this->getCipherInstance();
+
+        $rsa->loadKey('-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAl3x5rqnoQtzCsVJsrdS+
+LO10KSVL76T5y5lr4Q3ci2kPwIsh/oA5tE+fhYyLjDDi+jOwSvwcOS2ZexWpImOp
+OCAmxq5dowGF4dHc4AwaihV4+SjkNiRhDyyzTwhafntsbpqfLLL/f6Tk79xstIKf
+lSLzCW1RQ1sUuCe/VZvYqYquDiFucW2ZI36A0XO2JrwuOkwuSXUOv1SApoVN6gLT
+e2PwSyyNtQPoXO4+u3b9pXUvx5wcYO4uTpA2Ym9S6/EJm5+DjaN1c1DGdwbUITZC
+nb+ZuF4oIUB8xCqmWDXZYy7Q0aO0tviHg6sFOs2MrxwjXAa2NaQbrcCnQ8bXu0qe
+UQIDAQAB
+-----END PUBLIC KEY-----');
+
+        return $rsa->encrypt($data);
     }
 
 }
