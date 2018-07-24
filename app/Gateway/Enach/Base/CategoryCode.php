@@ -30,7 +30,7 @@ class CategoryCode
 
     public static function getCategoryCodeFromMcc($mcc)
     {
-        if (($mcc !== null) and (isset(self::$mccToCategoryCodeMapping[$mcc]) === true))
+        if (isset(self::$mccToCategoryCodeMapping[$mcc]) === true)
         {
             return self::$mccToCategoryCodeMapping[$mcc];
         }
