@@ -4,9 +4,14 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
+use RZP\Gateway\Base\Action;
+use RZP\Constants\Mode as RZPMode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Allahabad extends Base
@@ -20,9 +25,13 @@ class Allahabad extends Base
     const GATEWAY_CODE                = IFSC::ALLA;
     const PAYMENT_TYPE_ATTRIBUTE      = Payment\Entity::BANK;
 
+    protected $config;
+
     protected function formatDataForFile(array $data)
     {
         $formattedData = [];
+
+        $this->loadGatewayConfig();
 
         foreach ($data as $index => $row)
         {
@@ -37,16 +46,16 @@ class Allahabad extends Base
                 ->format('d/m/Y');
 
             $pid = 'Razor';
-
+            
             $formattedData[] = [
                 'PID'                   => $pid,
                 'Bank Id'               => '027',
-                'Merchant Name'         => '',
+                'Merchant Name'         => $pid,
                 'Txn Date'              => $txnDate,
                 'Refund Date'           => $refundDate,
-                'Bank Merchant Code'    => '',
-                'Bank Ref No.'          => '',
-                'PGI Reference No.'     => '',
+                'Bank Merchant Code'    => $this->getMerchantId($row[ConstantsEntity::TERMINAL]),
+                'Bank Ref No.'          => $row['gateway']['bank_payment_id'],
+                'PGI Reference No.'     => $row['payment']['id'],
                 'Txn Amount'            => $this->formatAmount($row['payment']['amount'] / 100),
                 'Refund'                => $this->formatAmount($row['refund']['amount'] / 100),
             ];
@@ -93,5 +102,24 @@ class Allahabad extends Base
     public function formatAmount($amount): string
     {
         return number_format($amount , 2, '.', '');
+    }
+
+    protected function loadGatewayConfig()
+    {
+        $configGatewayStr = 'gateway.' . self::GATEWAY;
+
+        $this->config = $this->app['config']->get($configGatewayStr);
+    }
+
+    protected function getMerchantId($terminal): string
+    {
+        $merchantId = $this->config['test_merchant_id'];
+
+        if ($this->mode === RZPMode::LIVE)
+        {
+            $merchantId = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+        }
+
+        return $merchantId;
     }
 }
