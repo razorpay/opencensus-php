@@ -564,6 +564,19 @@
 
                 removeElemsWithClass('desktop-el');
             }
+
+            if (!window.RZP.checkIsDesktop()) {
+                var initialLoad = true;
+
+                window.location.hash = ''; // Remove any hash. Page must load with description.
+                window.onhashchange = function(e) {
+                    if (initialLoad) {
+                        initialLoad = false;
+                    } else {
+                        window.RZP.toggleMobileForm();
+                    }
+                }
+            }
         }
 
         function easeInOutQuad (t, b, c, d) {
