@@ -59,14 +59,20 @@ class PayzappGatewayTest extends TestCase
             $this->testData['testPaymentPayzappEntity'], $payment);
     }
 
-    public function testOnlyMerchantIdPresentinCallbackResponse()
+    public function testInvalidCallbackResponse()
     {
         $payment = $this->getDefaultWalletPaymentArray('payzapp');
 
-        $this->mockOnlyMerchantIdPresentInResponse();
+        $this->mockInvalidCallbackResResponse();
 
-        $payment = $this->doAuthPayment($payment);
+        $testData = $this->testData[__FUNCTION__];
 
+         $this->runRequestResponseFlow(
+            $testData,
+             function() use ($payment)
+             {
+                $this->doAuthPayment($payment);
+             });
     }
 
     public function testRefundPayment()
@@ -174,7 +180,7 @@ class PayzappGatewayTest extends TestCase
         return $this->submitPaymentCallbackRequest($request);
     }
 
-    protected function mockOnlyMerchantIdPresentInResponse()
+    protected function mockInvalidCallbackResResponse()
     {
         $this->mockServerContentFunction(
             function(& $content, $action = null)
