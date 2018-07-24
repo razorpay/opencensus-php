@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Models\Payment\Action;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Mode as RZPMode;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -113,14 +114,14 @@ class Gateway extends Base\Gateway
             RequestFields::PAYEE_ID               => Constants::PAYEE_ID,
             RequestFields::ITEM_CODE              => $input['payment']['id'],
             RequestFields::PRODUCT_REF_NUMBER     => $input['payment']['id'],
-            RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount'] / 100),
+            RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount'])/ 100,
             RequestFields::CURRENCY               => Currency::INR,
             RequestFields::RETURN_URL             => $input['callbackUrl'],
             RequestFields::CG                     => Status::YES,
             RequestFields::LANGUAGE_ID            => Constants::USER_LANG_ID,
             RequestFields::USER_TYPE              => Constants::USER_TYPE,
             RequestFields::APP_TYPE               => Constants::RETAIL,
-            RequestFields::MERCHANT_CODE          => Constants::MERCHANT_CODE,
+            RequestFields::MERCHANT_CODE          => $this->getMerchantId(),
         ];
 
         return $data;
@@ -219,7 +220,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAYEE_ID               => Constants::PAYEE_ID,
             RequestFields::ITEM_CODE              => $input['payment']['id'],
             RequestFields::PRODUCT_REF_NUMBER     => $input['payment']['id'],
-            RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount'] / 100),
+            RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount'])/ 100,
             RequestFields::CURRENCY               => Currency::INR,
             RequestFields::LANGUAGE_ID            => Constants::USER_LANG_ID,
             RequestFields::USER_TYPE              => Constants::USER_TYPE,
@@ -354,6 +355,19 @@ class Gateway extends Base\Gateway
         }
 
         return $newArray;
+    }
+
+
+    protected function getMerchantId(): string
+    {
+        $merchantId = $this->getLiveMerchantId();
+
+        if ($this->mode === RZPMode::TEST)
+        {
+            $merchantId = $this->getTestMerchantId();
+        }
+
+        return $merchantId;
     }
 
 }
