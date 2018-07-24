@@ -334,6 +334,20 @@ class XmlseclibsAdapter
         $key = $objXMLSecDSig->locateKey();
 
         /**
+         * At this point we know whether the signature is valid or not.
+         * However, we have used the cert provided in the PARes itself
+         * to verify the signature, which is not very secure. We need
+         * to make sure that the cert is verifiable using our own
+         * CERT STORE.
+         */
+        list($certVerify, $leaf) = $this->verifyCertStore($signatureNode);
+
+        if ($certVerify === false)
+        {
+            return false;
+        }
+
+        /**
          * We iterate through the KeyInfo tag here and figure out what type
          * of key is being used. This is by the first child of KeyInfo, which
          * is X509Data in our case.
@@ -346,7 +360,8 @@ class XmlseclibsAdapter
          * will populate the x509Certificate inside the key along with its
          * thumbprint (which is a sha1 of the entire cert).
          */
-        XMLSecEnc::staticLocateKeyInfo($key, $signatureNode);
+        $key->loadKey($leaf['pem'], false, true);
+        // XMLSecEnc::staticLocateKeyInfo($key, $signatureNode);
 
         // Make sure that we have a valid key here.
         $this->assert($key->key !== null, "Key Locator should work");
@@ -369,15 +384,6 @@ class XmlseclibsAdapter
          * 0 = verification failed
          */
         $signatureVerifyResult = $objXMLSecDSig->verify($key);
-
-        /**
-         * At this point we know whether the signature is valid or not.
-         * However, we have used the cert provided in the PARes itself
-         * to verify the signature, which is not very secure. We need
-         * to make sure that the cert is verifiable using our own
-         * CERT STORE.
-         */
-        $certVerify = $this->verifyCertStore($signatureNode);
 
         /**
          * Since the above internally calls openssl_verify, we are returned
@@ -410,8 +416,6 @@ class XmlseclibsAdapter
      */
     protected function verifyCertStore(DomElement $signatureNode)
     {
-        $result = true;
-
         // An Array of X509 certificate objects
         $certs = $this->locateAllCerts($signatureNode);
 
@@ -420,45 +424,53 @@ class XmlseclibsAdapter
 
         foreach ($certs as $cert)
         {
-            $verify = $this->verifySingleCert($cert['x509']);
-
-            $result = ($result and $verify);
-        }
-
-        if ($result === false)
-        {
-            return false;
+            // if a single cert is invalid, return failure
+            if ($this->verifySingleCert($cert['x509']) === false)
+            {
+                return [false, null];
+            }
         }
 
         // Dump values for all signing combinations
-
-        $startResult = $result;
-        $rootCert = $certs[2];
-
-        // If either of these succeeds, we are good with the chain
-        // Assumption: First cert is the leaf cert
-        $verify1 = $this->verifyCertChain($startResult, $certs[0], $certs[1], $certs[2]);
-        $verify2 = $this->verifyCertChain($startResult, $certs[0], $certs[2], $certs[1]);
-
-        if ($verify2 === true)
-        {
-            $rootCert = $certs[1];
-        }
-
-        $result = ($verify1 or $verify2);
-
-        $rootFingerprint = XMLSecurityKey::getRawThumbprint($rootCert['pem']);
-
         $verifyFingerprint = false;
 
-        if (in_array($rootFingerprint, $this->rootCertFingerprints, true))
+        // find the root certificate
+        foreach ($certs as $key => $cert)
         {
-            $verifyFingerprint = true;
+            $fp = XMLSecurityKey::getRawThumbprint($cert['pem']);
+
+            if (in_array($fp, $this->rootCertFingerprints, true) === true)
+            {
+                $rootCert = $cert;
+
+                $rootFingerprint = $fp;
+
+                $verifyFingerprint = true;
+
+                // remove the root certificate from the list of certificates,
+                // we will permute over the remaining certificates
+                unset($certs[$key]);
+                break;
+            }
         }
 
-        $result = ($result and $verifyFingerprint);
+        $result = $verifyFingerprint;
+        $leaf = null;
 
-        return $result;
+        if ($verifyFingerprint === true)
+        {
+            $certs = array_values($certs);
+
+            // If either of these succeeds, we are good with the chain
+            $verify1 = $this->verifyCertChain($result, $certs[0], $certs[1], $rootCert);
+            $verify2 = $this->verifyCertChain($result, $certs[1], $certs[0], $rootCert);
+
+            $leaf = ($verify1 === true) ? $certs[0] : $certs[1];
+
+            $result = ($verify1 or $verify2);
+        }
+
+        return [$result, $leaf];
     }
 
     /**
