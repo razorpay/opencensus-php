@@ -94,7 +94,7 @@ class Constants
         Type::REFUND => [
             self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
-            self::ALLA  => ['settlements@razorpay.com'],
+            //self::ALLA  => ['settlements@razorpay.com'],
         ],
 
         Type::COMBINED => [

@@ -85,7 +85,7 @@ class Reconciliator extends Base\RefundFile
                 ->format('d-M-y');
 
             $amount = $this->getFormattedAmount($row['payment']['amount']);
-            
+
             $data[] = [
                 'Bank Id' => '027',
                 'Txn Date' => $trnxDate,
