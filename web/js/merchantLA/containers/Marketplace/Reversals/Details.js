@@ -1,0 +1,49 @@
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { fetchReversal } from 'merchantLA/modules/marketplace/reversal';
+
+import ReversalDetails from 'merchantLA/components/Marketplace/Reversals/Details';
+
+@connect(state => state.reversal, {
+  fetchReversal,
+})
+export default class ReversalDetailsContainer extends Component {
+  fetchData(reversalId) {
+    if (!reversalId) {
+      return;
+    }
+
+    this.props.fetchReversal(reversalId);
+  }
+
+  componentWillMount() {
+    this.fetchData(this.props.id);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.id !== nextProps.id) {
+      this.fetchData(nextProps.id);
+    }
+  }
+
+  render() {
+    const { entity, loading, errors, onClose } = this.props;
+    let statusMsg = {};
+
+    if (errors) {
+      statusMsg = {
+        type: 'error',
+        message: errors,
+      };
+    }
+
+    return (
+      <ReversalDetails
+        reversal={entity}
+        isLoading={loading}
+        statusMsg={statusMsg}
+        onClose={onClose}
+      />
+    );
+  }
+}
