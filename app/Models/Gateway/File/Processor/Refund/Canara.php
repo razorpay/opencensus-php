@@ -32,21 +32,22 @@ class Canara extends Base
     const GATEWAY_CODE           = IFSC::CNRB;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const BANK_CODE              = 'CNRB';
+    const HEADERS                = [
+                                     'TRANSACTION DATE AND TIME',
+                                     'Refund Date',
+                                     'BANK_REF_NO',
+                                     'PG_REF_NUM',
+                                     'Refund Reference',
+                                     'Transaction Amount',
+                                     'Refund Amount'
+                                    ];
 
     //protected $config;
 
     protected function formatDataForFile(array $data)
     {
 
-        $content[]    = [
-                        'TRANSACTION DATE AND TIME',
-                        'Refund Date',
-                        'BANK_REF_NO',
-                        'PG_REF_NUM',
-                        'Refund Reference',
-                        'Transaction Amount',
-                        'Refund Amount'
-                        ];
+        $content = [];
 
         foreach ($data as $row)
         {
@@ -76,7 +77,11 @@ class Canara extends Base
                         ];
         }
 
-        return $this->generateText($content,'|', true);
+        $initialLine = $this->getInitialLine('|');
+
+        $formattedData = $this->getTextData($content, $initialLine, '|');
+
+        return $formattedData;
     }
 
     protected function getFormattedAmount($amount)
