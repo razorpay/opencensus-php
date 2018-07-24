@@ -886,6 +886,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AUTO_CAPTURED, $autoCaptured);
     }
 
+    public function setNonVerifiable()
+    {
+        $this->setVerifyBucket(null);
+
+        $this->setVerifyAt(null);
+    }
+
     public function setVerifyBucket($verifyBucket = 0)
     {
         $this->setAttribute(self::VERIFY_BUCKET, $verifyBucket);
@@ -2771,5 +2778,12 @@ class Entity extends Base\PublicEntity
             ($this->isNetbanking() === true) and
             (Netbanking::isCorporateBank($this->getBank()) === true)
         );
+    }
+
+    public static function getCacheUpiStatusKey(string $id): string
+    {
+        parent::verifyIdAndStripSign($id);
+
+        return 'upi.polling.' . $id . '.status';
     }
 }
