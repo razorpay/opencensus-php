@@ -499,11 +499,6 @@ return [
         'test_hash_secret'   => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
     ],
 
-    'netbanking_allahabad' => [
-        'test_merchant_id_2' => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID'),
-        'test_merchant_id'   => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID_2'),
-        'test_hash_secret'   => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_HASH_SECRET'),
-    ],
 
     'sharp' => [
     ],
