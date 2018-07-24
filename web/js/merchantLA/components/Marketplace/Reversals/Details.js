@@ -11,7 +11,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 export default class ReversalDetails extends Component {
   render() {
-    const { reversal, transfer, isLoading, onClose } = this.props;
+    const { reversal, isLoading, onClose } = this.props;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -37,13 +37,10 @@ export default class ReversalDetails extends Component {
 
             <div class="SliderPanel__Body">
               <div class="panel-body">
-                <EntityDetailRow label="Linked Account">
+                <EntityDetailRow label="Parent Account">
                   <Definition>
-                    <span>{transfer.recipient_details.name}</span>
-                    {transfer.recipient_details.email && (
-                      <span>{transfer.recipient_details.email}</span>
-                    )}
-                    <code>{transfer.recipient}</code>
+                    <span>Flipkart parent merchant</span>
+                    <span>Show some email??</span>
                   </Definition>
                 </EntityDetailRow>
 
@@ -68,7 +65,7 @@ export default class ReversalDetails extends Component {
                   label="Source ID"
                   value={() => (
                     <div>
-                      <Link to={`/route/transfers/${reversal.transfer_id}`}>
+                      <Link to={`/transfers/${reversal.transfer_id}`}>
                         {reversal.transfer_id}
                       </Link>
                     </div>
