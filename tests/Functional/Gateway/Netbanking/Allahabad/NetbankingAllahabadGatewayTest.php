@@ -53,7 +53,7 @@ class NetbankingAllahabadGatewayTest extends TestCase
         $this->assertTestResponse($payment);
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
-
+        
         $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
     }
 
@@ -206,7 +206,7 @@ class NetbankingAllahabadGatewayTest extends TestCase
         // gateway file generation route is an internal auth
         $this->ba->appAuth();
 
-        $data = $this->generateGatewayFile('allahabad', 'refund');
+        $data = $this->generateGatewayFile('allahabad', 'combined');
 
         $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
 
@@ -272,9 +272,9 @@ class NetbankingAllahabadGatewayTest extends TestCase
                 $payment = $this->getDbLastEntity('payment');
 
                 $createdAt = Carbon::yesterday(Timezone::IST)
-                    ->addHours(10)
-                    ->addMinutes(45)
-                    ->getTimestamp();
+                                ->addHours(10)
+                                ->addMinutes(45)
+                                ->getTimestamp();
 
                 $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
                 $this->fixtures->edit('payment', $payment['id'], ['authorized_at' => $createdAt]);
@@ -317,11 +317,15 @@ class NetbankingAllahabadGatewayTest extends TestCase
 
     protected function checkMailQueue(array $file)
     {
-        Mail::assertQueued(RefundFileMail::class, function ($mail)
-        {
-            $body = 'Please find attached refunds information for Allahabad Netbanking';
+        Mail::assertSent(DailyFile::class, function ($mail) use ($file)
+        {   s($mail->viewData);
+            $this->assertEquals(1500, $mail->viewData['amount']['claims']);
+            $this->assertEquals(1100, $mail->viewData['amount']['refunds']);
+            $this->assertEquals(400, $mail->viewData['amount']['total']);
 
-            $this->assertEquals($body, $mail->viewData['body']);
+            $this->assertEquals('3', $mail->viewData['count']['claims']);
+            $this->assertEquals('3', $mail->viewData['count']['refunds']);
+            $this->assertEquals('6', $mail->viewData['count']['total']);
 
             return true;
         });
@@ -338,10 +342,4 @@ class NetbankingAllahabadGatewayTest extends TestCase
                 }
             });
     }
-
-
-
-
-
-
 }
