@@ -159,13 +159,13 @@ class ViewDataSerializer extends Base\Core
         ];
 
         //
-        // Additionally, if it's type=link and description is blank we fill it with first line item's description else
-        // name. This is because for type=link, description should have been mandatory but for legacy reasons, line items
-        // or description is expected. Only a few merchants have continued using it so and we are communicating them
-        // to stop using it that way(deprecation). For now doing so doesn't require change in view, mails etc and is
-        // UX wise is as expected.
+        // Additionally, if it's non-invoice and description is blank we fill it with first line item's description
+        // else name. This is because for non-invoice, description should have been mandatory but for legacy reasons,
+        // line items or description is expected. Only a few merchants have continued using it so and we are
+        // communicating them to stop using it that way(deprecation). For now doing so doesn't require change in view,
+        // mails etc and is UX wise is as expected.
         //
-        if (($this->invoice->isTypeLink() === true) and (blank($serialized[Entity::DESCRIPTION]) === true))
+        if (($this->invoice->isNotTypeInvoice() === true) and (blank($serialized[Entity::DESCRIPTION]) === true))
         {
             $serialized[Entity::DESCRIPTION] = optional($this->invoice->lineItems->first())->getDescriptionElseName();
         }

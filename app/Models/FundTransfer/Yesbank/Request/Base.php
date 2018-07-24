@@ -4,14 +4,25 @@ namespace RZP\Models\FundTransfer\Yesbank\Request;
 
 use Config;
 use Requests_Hooks;
-
+use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Settlement\Channel;
-use RZP\Models\FundTransfer\Base\Initiator\RequestProcessor;
+use RZP\Models\FundTransfer\Base\Initiator\ApiProcessor;
 
-abstract class Base extends RequestProcessor
+abstract class Base extends ApiProcessor
 {
     const TIMEOUT = 30;
+
+    // Identifiers used store the response data
+    const PAYMENT_REF_NO        = 'payment_ref_no';
+    const UTR                   = 'utr';
+    const BANK_STATUS_CODE      = 'bank_status_code';
+    const PAYMENT_DATE          = 'payment_date';
+    const BANK_SUB_STATUS_CODE  = 'sub_status_code';
+    const REFERENCE_NUMBER      = 'reference_number';
+    const REMARK                = 'remark';
+    const TRANSFER_TYPE         = 'transfer_type';
+    const MODE                  = 'mode';
 
     protected $appId;
 
@@ -20,6 +31,8 @@ abstract class Base extends RequestProcessor
     protected $baseUrl;
 
     protected $customerId;
+
+    protected $urlIdentifier;
 
     protected $accountNumber;
 
@@ -38,8 +51,6 @@ abstract class Base extends RequestProcessor
         $this->accountNumber = $this->config['account_number'];
 
         $this->baseUrl = $this->config['url'];
-
-        $this->accountNumber = $this->config['account_number'];
 
         $this->appId = $this->config['app_id'];
 
@@ -72,9 +83,9 @@ abstract class Base extends RequestProcessor
     public function requestHeaders(): array
     {
         return [
-            'Content-Type'        => 'application/xml',
             'X-IBM-Client-Id'     => $this->config['client_id'],
             'X-IBM-Client-Secret' => $this->config['client_password'],
+            'Content-Type'        => $this->getContentType()
         ];
     }
 
@@ -100,59 +111,6 @@ abstract class Base extends RequestProcessor
         return $options;
     }
 
-    protected function getClientCertificate(): string
-    {
-        $certPath = $this->getGatewayCertDirPath();
-
-        $certFile = $certPath . '/' . $this->getClientCertificateName();
-
-        // Download cert file from vault if already not present and store locally
-        if (file_exists($certFile) === false)
-        {
-            $cert = $this->config['client_certificate'];
-
-            $cert = str_replace('\n', PHP_EOL, $cert);
-
-            file_put_contents($certFile, $cert);
-        }
-
-        return $certFile;
-    }
-
-    protected function getClientCertificateKey(): string
-    {
-        $certPath = $this->getGatewayCertDirPath();
-
-        $certFile = $certPath . '/' . $this->getClientCertificateKeyName();
-
-        // Download cert key file from vault if already not present and store locally
-        if (file_exists($certFile) === false)
-        {
-            $key = $this->config['client_certificate_key'];
-
-            $key = str_replace('\n', PHP_EOL, $key);
-
-            file_put_contents($certFile, $key);
-        }
-
-        return $certFile;
-    }
-
-    protected function getClientCertificateName(): string
-    {
-        return $this->config['certificate_name'];
-    }
-
-    protected function getGatewayCertDirPath(): string
-    {
-        return $this->config['certificate_path'];
-    }
-
-    protected function getClientCertificateKeyName(): string
-    {
-        return $this->config['certificate_key_name'];
-    }
-
     public function setCurlSslOpts($curl)
     {
         curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
@@ -160,12 +118,63 @@ abstract class Base extends RequestProcessor
         curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientCertificateKey());
     }
 
+    /**
+     * {{@inheritdoc}}
+     */
     public function processResponse(\Requests_Response $response): array
     {
-        // TODO: fund transfer and status request process will go here
-        return [];
+        $responseBody = json_decode($response->body, true);
+
+        $additionalInfo =  [
+            'fund_transfer_attempt_id' => $this->entity->getId(),
+            'settlement_id'            => $this->entity->getSourceId()
+        ];
+
+        if ($response->status_code !== 200)
+        {
+            throw new LogicException('Invalid response from api', null, $response + $additionalInfo);
+        }
+
+        if (isset($responseBody[Constants::FAULT_RESPONSE_IDENTIFIER]) === true)
+        {
+            return $this->extractFailedData($responseBody[Constants::FAULT_RESPONSE_IDENTIFIER]);
+        }
+        else if (isset($responseBody[$this->responseIdentifier]) === true)
+        {
+            return $this->extractSuccessfulData($responseBody[$this->responseIdentifier]);
+        }
+
+        throw new LogicException('Invalid response from api', null, $response + $additionalInfo);
     }
 
+    /**
+     * Gives the content type for the request
+     *
+     * @return string
+     */
+    protected function getContentType(): string
+    {
+        return 'application/json';
+    }
+
+    /**
+     * Return null when the value is empty
+     *
+     * @param $value
+     *
+     * @return null
+     */
+    protected function getNullOnEmpty($value)
+    {
+        return (empty($value) === true) ? null : $value;
+    }
+
+    /**
+     * Sets the entity on which operation has to be performed
+     *
+     * @param BaseModel\Entity $entity
+     * @return $this
+     */
     public function setEntity(BaseModel\Entity $entity)
     {
         $this->entity = $entity;
@@ -204,4 +213,45 @@ abstract class Base extends RequestProcessor
      * @return string
      */
     protected abstract function mockGenerateSuccessResponse(): string;
+
+    /**
+     * Extracts data from response when response received is a valid success response.
+     * For success response `Body` attribute will be present and header.status wont we a failure status
+     *
+     * @param array $response
+     *
+     * @return array
+     *
+     * sample response :
+     * [
+     *  'payment_ref_no'   => 'some reference',
+     *  'bank_status_code' => 'bank status code',
+     *  'payment_date'     => null,
+     *  'reference_number' => null,
+     *  'utr'              => null,
+     *  'remark'           => 'failure reason'
+     * ]
+     */
+    protected abstract function extractSuccessfulData(array $response): array;
+
+    /**
+     *
+     * Extracts data from response when response received is a failure response.
+     * Failure response are response without `Body` attribute and header.status will be any of failure status
+     *
+     * @param array $response
+     *
+     * @return array
+     *
+     * sample response :
+     * [
+     *  'payment_ref_no'   => 'some reference',
+     *  'bank_status_code' => 'bank status code',
+     *  'payment_date'     => null,
+     *  'reference_number' => null,
+     *  'utr'              => null,
+     *  'remark'           => 'failure reason'
+     * ]
+     */
+    protected abstract function extractFailedData(array $response): array;
 }
