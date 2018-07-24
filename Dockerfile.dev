@@ -16,7 +16,7 @@ ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 
 VOLUME ['/app']
 WORKDIR /app
-RUN apk add --no-cache apache2 php7-apache2 musl php7-mysqlnd && \
+RUN apk add --no-cache apache2 apache2-ctl php7-apache2 musl php7-mysqlnd && \
     sed -i 's#PidFile "/run/.*#Pidfile /tmp/run/httpd.pid"#g' /etc/apache2/conf.d/mpm.conf && \
     sed -i 's/#LoadModule rewrite_module*/LoadModule rewrite_module/' /etc/apache2/httpd.conf
 
