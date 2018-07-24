@@ -554,7 +554,7 @@ trait Refund
                 $this->callGatewayFunction(Payment\Action::REFUND, $data);
             }
 
-            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+            $this->refund->setStatusProcessed();
 
             $gatewayRefunded = true;
         }
@@ -563,6 +563,8 @@ trait Refund
             $this->tracePaymentFailed(
                 $e->getError(),
                 TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->updateRefundFailed($e);
         }
         catch (\Throwable $e)
         {
@@ -593,7 +595,7 @@ trait Refund
                 $this->callGatewayFunction(Payment\Action::REVERSE, $data);
             }
 
-            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+            $this->refund->setStatusProcessed();
 
             $reversed = true;
         }
@@ -602,6 +604,8 @@ trait Refund
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REVERSE_FAILURE);
+
+            $this->updateRefundFailed($e);
         }
         catch (\Throwable $e)
         {
@@ -619,6 +623,19 @@ trait Refund
         }
 
         return $reversed;
+    }
+
+    protected function updateRefundFailed($exception)
+    {
+        $error = $exception->getError();
+
+        $code = $error->getPublicErrorCode();
+
+        $desc = $error->getDescription();
+
+        $internalCode = $error->getInternalErrorCode();
+
+        $this->refund->setError($code, $desc, $internalCode);
     }
 
     protected function recordTransactionForRefund()
@@ -821,7 +838,7 @@ trait Refund
         }
         else
         {
-            $refund->setStatus(Payment\Refund\Status::PROCESSED);
+            $refund->setStatusProcessed();
         }
 
         $refund->setGatewayRefunded($refundedOnGateway);
@@ -1179,6 +1196,8 @@ trait Refund
                     TraceCode::PAYMENT_REFUND_FAILURE);
 
             $this->refund->setStatus(Payment\Refund\Status::FAILED);
+
+            $this->updateRefundFailed($e);
         }
 
         return $refunded;
