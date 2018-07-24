@@ -175,11 +175,11 @@ class Status extends Base
     /**
      * {@inheritdoc}
      */
-    protected function mockGenerateSuccessResponse(): array
+    protected function mockGenerateSuccessResponse(): string
     {
         $status = ValidStatus::getSuccessfulStatus();
 
-        return [
+        return json_encode([
             $this->responseIdentifier => [
                 'Header'    => [
                     'TranID'      => rand(),
@@ -208,17 +208,17 @@ class Status extends Base
                     'Signature' => 'Signature'
                 ]
             ]
-        ];
+        ]);
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function mockGenerateFailedResponse(): array
+    protected function mockGenerateFailedResponse(): string
     {
         $status = ValidStatus::FAILURE;
 
-        return [
+        return json_encode([
             $this->responseIdentifier => [
                 'Header'    => [
                     'TranID'      => rand(),
@@ -231,6 +231,6 @@ class Status extends Base
                     'Error_Desc'  => 'Reconciliation'
                 ],
             ]
-        ];
+        ]);
     }
 }

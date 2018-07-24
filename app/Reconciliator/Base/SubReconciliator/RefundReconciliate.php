@@ -733,7 +733,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     protected function setGatewayTransactionId(string $gatewayTransactionId, PublicEntity $gatewayRefund)
     {
-        $dbGatewayTransactionId = $gatewayRefund->getGatewayTransactionId();
+        $dbGatewayTransactionId = (string) $gatewayRefund->getGatewayTransactionId();
 
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
