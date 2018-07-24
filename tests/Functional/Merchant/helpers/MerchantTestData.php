@@ -295,22 +295,61 @@ return [
 
     'testEditMerchant' => [
         'request' => [
-            'content' => [
+            'raw' => json_encode([
                 'international' => '1',
                 'linked_account_kyc' => '1',
                 'website' => 'http://abc.com',
                 'category' => '1111',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
-                ]
-            ],
+                ],
+                'fee_credits_threshold'     => 1000
+            ]),
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
             'server' => [
                 // Case: In sign-up case we will not have any other headers
                 // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
                 'HTTP_X-Dashboard' => 'true',
-            ],
+            ]
+],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+                'international' => true,
+                'linked_account_kyc' => true,
+                'category' => 1111,
+                'website' => 'http://abc.com',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'fee_credits_threshold'    => 1000
+            ]
+        ]
+    ],
+
+    'testEditMerchantWithNullFeeCreditsThreshold' => [
+        'request' => [
+            'raw' => json_encode([
+                'international' => '1',
+                'linked_account_kyc' => '1',
+                'website' => 'http://abc.com',
+                'category' => '1111',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'fee_credits_threshold'     => null
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
         ],
         'response' => [
             'content' => [
@@ -322,7 +361,8 @@ return [
                 'website' => 'http://abc.com',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
-                ]
+                ],
+                'fee_credits_threshold'    => null
             ]
         ]
     ],
@@ -741,6 +781,25 @@ return [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
+    ],
+
+    'testEditMerchantFeeCreditsThresholdWithProxyAuth' => [
+        'request' => [
+            'raw' => json_encode([
+                'fee_credits_threshold'     => 1000
+            ]),
+            'url' => '/account/config',
+            'method' => 'put',
+            'server' => [
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'fee_credits_threshold'    => 1000
+            ]
+        ]
     ],
 
     'testEditMerchantInvalidInvoiceNameField' => [

@@ -25,9 +25,9 @@ class Transfer extends Base
 
     protected $responseIdentifier = Constants::TRANSFER_RESPONSE_IDENTIFIER;
 
-    public function __construct()
+    public function __construct(string $purpose)
     {
-        parent::__construct();
+        parent::__construct($purpose);
 
         $this->urlIdentifier = $this->config['fund_transfer_url_suffix'];
     }
@@ -173,11 +173,11 @@ class Transfer extends Base
     /**
      * {@inheritdoc}
      */
-    protected function mockGenerateSuccessResponse(): array
+    protected function mockGenerateSuccessResponse(): string
     {
         $status = ValidStatus::getSuccessfulStatus();
 
-        return [
+        return json_encode([
             $this->responseIdentifier => [
                 'Header'    => [
                     'TranID'      => $this->entity->getId(),
@@ -202,15 +202,15 @@ class Transfer extends Base
                     'Signature' => 'Signature'
                 ]
             ]
-        ];
+        ]);
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function mockGenerateFailedResponse(): array
+    protected function mockGenerateFailedResponse(): string
     {
-        return [
+        return json_encode([
             $this->responseIdentifier => [
                 'Header'    => [
                     'TranID'      => $this->entity->getId(),
@@ -226,8 +226,6 @@ class Transfer extends Base
                     'Signature' => 'Signature'
                 ]
             ]
-        ];
+        ]);
     }
-
-
 }

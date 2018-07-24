@@ -427,4 +427,27 @@ return [
             'gateway_error_code'    => '30',
         ],
     ],
+
+    'testExpressPayNotEnrolled' => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 50000,
+        'method'            => 'card',
+        'status'            => 'authorized',
+        'two_factor_auth'   => 'not_applicable',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'            => 'hitachi',
+        'terminal_id'        => '100HitachiTmnl',
+        'entity'             => 'payment',
+    ],
 ];

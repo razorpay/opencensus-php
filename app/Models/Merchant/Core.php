@@ -32,6 +32,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
 class Core extends Base\Core
@@ -797,12 +798,31 @@ class Core extends Base\Core
     }
 
     /**
-     * @param  Entity $merchant
-     * @return null|OAuthApp\Entity
+     * @param Entity $merchant
+     *
+     * @return mixed
+     * @throws BadRequestException
      */
     public function getPartnerApp(Entity $merchant)
     {
-        return (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
+        // For pure platforms, no internal partner app is created
+        (new Validator)->validateIsNonPurePlatformPartner($merchant);
+
+        try
+        {
+            $app = (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
+        }
+        catch (DBQueryException $ex)
+        {
+            throw new BadRequestException(
+                ErrorCode::SERVER_ERROR_PARTNER_APP_NOT_FOUND,
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        return $app;
     }
 
     /**
@@ -854,7 +874,7 @@ class Core extends Base\Core
      */
     public function unmarkAsPartner(Entity $merchant): Entity
     {
-        (new Validator)->validateIfNotAPartner($merchant);
+        (new Validator)->validateIsPartner($merchant);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant)
         {
@@ -867,6 +887,72 @@ class Core extends Base\Core
         });
 
         return $merchant;
+    }
+
+    /**
+     * This function also adds ref-tag and creates user-merchant mapping in addition to the
+     * access map. The aggregator user is mapped to submerchant as an owner in cases of
+     * fully managed and aggregator type partners. The aggregator type will not get mapped
+     * in the future, it is only kept for backward compatibility.
+     *
+     * @param Entity $partner
+     * @param Entity $submerchant
+     *
+     * @return array
+     * @throws BadRequestException
+     */
+    public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant): array
+    {
+        $this->trace->info(
+            TraceCode::PARTNER_CREATE_ACCESS_MAP_REQUEST,
+            [
+                'partner_id'     => $partner->getId(),
+                'submerchant_id' => $submerchant->getId(),
+            ]);
+
+        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
+        {
+            $partnerApp = $this->getPartnerApp($partner);
+
+            // Maintained for backward compatibility
+            $this->addSubMerchantReferral($partner, $submerchant);
+
+            $this->assignSubmerchantDashboardAccessIfApplicable($partner, $submerchant);
+
+            // If the mapping already exists, the existing entity is returned
+            $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
+                            $submerchant,
+                            [
+                                AccessMap\Entity::APPLICATION_ID => $partnerApp->getId(),
+                            ]);
+
+            return $accessMap;
+        });
+
+        return $accessMap->toArrayPublic();
+    }
+
+    /**
+     * @param Entity $partner
+     * @param Entity $submerchant
+     */
+    public function deletePartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
+    {
+        $this->trace->info(
+            TraceCode::PARTNER_DELETE_ACCESS_MAP_REQUEST,
+            [
+                'partner_id'     => $partner->getId(),
+                'submerchant_id' => $submerchant->getId(),
+            ]);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
+        {
+            $partnerApp = $this->getPartnerApp($partner);
+
+            (new AccessMap\Core)->deleteMappingForOAuthApp($submerchant, $partnerApp->getId());
+
+            $this->removeSubMerchantReferralTag($submerchant, $partner->getId());
+        });
     }
 
     /**
@@ -921,5 +1007,128 @@ class Core extends Base\Core
         $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());
 
         return $app;
+    }
+
+    public function addSubMerchantReferral($aggregratorMerchant, $account)
+    {
+        $tagInputData = [
+            'tags' => ['ref-' . $aggregratorMerchant->id],
+        ];
+
+        $this->addTags($account->id, $tagInputData);
+    }
+
+    /**
+     * @param string $ownerId
+     * @param Entity $subMerchant
+     */
+    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
+    {
+        $userMerchantMappingInputData = [
+            'action'      => 'attach',
+            'role'        => 'owner',
+            'merchant_id' => $subMerchant->getId(),
+        ];
+
+        (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
+    }
+
+    /**
+     * used for deleting a single tag of a merchant
+     * @param string $id
+     * @param string $tagName tag which has to be deleted
+     */
+    public function deleteTag($id, $tagName)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $merchant->untag($tagName);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * used for adding tags to merchant
+     * This function uses retag(), which overwrites all previous tags
+     * with the ones passed in the $input array
+     *
+     * @param string $id
+     * @param array  $input which contains the tags of the merchant
+     * @param bool   $slackNotify
+     *
+     * @return
+     */
+    public function addTags($id, $input, $slackNotify = false)
+    {
+        (new Validator)->validateInput('addTags', $input);
+
+        $this->trace->info(TraceCode::MERCHANT_TAGS_ADD, $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $tags = $input['tags'];
+
+        $merchant->retag($tags);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        if ($slackNotify === true)
+        {
+            $this->logActionToSlack($merchant, SlackActions::TAGGED, $input);
+        }
+
+        return $merchant->tagNames();
+    }
+
+    protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
+    {
+        $tag = 'ref-' . $partnerId;
+
+        $tags = $this->deleteTag($merchant->getPublicId(), $tag);
+
+        return $tags;
+    }
+
+    protected function isPartnerUserAddedToSubmerchant(Entity $partner, Entity $submerchant): bool
+    {
+        $partnerUser = $partner->primaryOwner();
+
+        $ownerIds = $submerchant->owners()->getIds();
+
+        return (in_array($partnerUser->getId(), $ownerIds, true) === true);
+    }
+
+    /**
+     * Maps the partner user to the submerchant account,
+     * if the partner merchant should have access to the submerchant's dashboard, and,
+     * if the partner user is not already mapped to the submerchant's account.
+     *
+     * @param Entity $partner
+     * @param Entity $submerchant
+     */
+    protected function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant)
+    {
+        if ($partner->allowSubmerchantDashboardAccess() === false)
+        {
+            return;
+        }
+
+        if ($this->isPartnerUserAddedToSubmerchant($partner, $submerchant) === false)
+        {
+            // Attaches partners's user to the submerchant account as an owner
+            $this->attachSubMerchantOwner($partner->primaryOwner()->getId(), $submerchant);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT,
+                [
+                    'partner_id'     => $partner->getId(),
+                    'submerchant_id' => $submerchant->getId(),
+                ]);
+        }
+
     }
 }

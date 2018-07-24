@@ -820,6 +820,9 @@ final class Route
         // Generic Lambda handler
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
 
+        // Partner routes
+        'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
+        'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
     ];
 
     public static $public = [
@@ -1565,7 +1568,11 @@ final class Route
         'merchant_requests_get',
         'merchant_requests_bulk_update',
         'merchant_activation_bulk_assign_reviewer',
-        'merchant_activation_reviewers'
+        'merchant_activation_reviewers',
+
+        // Partners
+        'merchants_access_map_create',
+        'merchants_access_map_delete',
     ];
 
     public static $routePermission = [
@@ -1886,6 +1893,8 @@ final class Route
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
         'invoice_issue_by_batch'                   => '*',
         'invoice_notify_by_batch'                  => '*',
+        'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
+        'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
     ];
 
     public static $direct = [

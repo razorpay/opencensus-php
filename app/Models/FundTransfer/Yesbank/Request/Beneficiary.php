@@ -120,6 +120,14 @@ class Beneficiary extends Base
     }
 
     /**
+     * {@inheritdoc}
+     */
+    protected function getContentType(): string
+    {
+        return 'application/xml';
+    }
+
+    /**
      * Parses the soap response in array format
      *
      * @param string $body
@@ -162,7 +170,7 @@ class Beneficiary extends Base
 
         return [
             'channel'        => $this->channel,
-            'beneficiary_id' => $response[Constants::BENEFICIARY_CODE],
+            'beneficiary_id' => $response[Constants::BENEFICIARY_CD],
         ] + $this->getErrorDetails($error[Constants::ITEM]);
     }
 

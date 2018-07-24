@@ -56,9 +56,9 @@ class User extends Base
                     ->get();
     }
 
-    public function createUserForMerchant(string $email, string $merchantId)
+    public function createUserForMerchant(string $merchantId, array $attributes = array())
     {
-        $user = $this->fixtures->create('user', ['email' => $email]);
+        $user = $this->fixtures->create('user', $attributes);
 
         $mappingData = ['user_id' => $user['id'], 'merchant_id' => $merchantId, 'role' => 'owner'];
 

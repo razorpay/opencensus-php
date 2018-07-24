@@ -1,7 +1,7 @@
 <?php
     $intro_note = 'Welcome to the Schindler Group. Now, pay your Schindler service bill in 4 simple steps :';
     $instructions = array('Enter the details for the service you availed.', 'Choose the method of payment. ', 'Pay the amount. ', 'Receive online confirmation and get a confirmation email.');
-    $end_note =  'In case of any doubts, please reach out to Schindler on the contact details mentioned.';
+    $end_note =  'In case of any doubts, please reach out to Schindler on';
 ?>
 <div id="description-section">
     <div class="heading" style="font-size: 18px;">
@@ -20,11 +20,12 @@
         @endforeach
     </ol>
 
-    <p>{{$end_note}}</p>
-
+    <p style="opacity: 0.8">{{$end_note}} <a href="mailto:{{$contact['email']}}?subject={{$email_subject}}" target="_blank">{{$contact['email']}}</a> or <a href="tel:{{$contact['phone']}}">{{$contact['phone']}}</a></p>
 
     <div class="footer description-footer">
-        Powered by
-        <img src="https://cdn.razorpay.com/logo.svg" />
+        <a href="https://razorpay.com/" target="_blank">
+            Powered by
+            <img src="https://cdn.razorpay.com/logo.svg" />
+        </a>
     </div>
 </div>
