@@ -129,6 +129,36 @@ class BankTransferTest extends TestCase
         $this->assertEquals($attempt['utr'], $refund['arn']);
     }
 
+    public function testBankTransferRefundYesbank()
+    {
+        $channel = Channel::YESBANK;
+
+        $this->createRefund($channel);
+
+        $content = $this->initiateTransfer(
+            $channel,
+            Attempt\Purpose::REFUND);
+
+
+        $data = $this->reconcileOnlineSettlements($channel, false);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertNotNull($attempt['utr']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+
+        // Process entities
+        $this->reconcileEntitiesForChannel($channel);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+        $this->assertNotNull($attempt['utr']);
+    }
+
     public function testBankTransferFundTransferAttemptBulkUpdate()
     {
         $this->testBankTransferRefund();
@@ -257,7 +287,7 @@ class BankTransferTest extends TestCase
         // IMPS refunds are permitted...
         $this->refundPayment($payment['id'], 4000000);
 
-         // ...but they don't actually work
+        // ...but they don't actually work
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
         $this->assertEquals('failed', $refund['status']);
@@ -314,7 +344,7 @@ class BankTransferTest extends TestCase
         // IMPS refunds are permitted...
         $this->refundPayment($payment['id'], 4000000);
 
-         // ...but they don't actually work
+        // ...but they don't actually work
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
         $this->assertEquals('failed', $refund['status']);

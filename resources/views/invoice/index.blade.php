@@ -4,6 +4,7 @@
     <title>Invoice</title>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta name="robots" content="noindex">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
 
     <?php date_default_timezone_set('Asia/Kolkata') ?>

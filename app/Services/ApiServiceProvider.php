@@ -186,6 +186,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new RazorXClient($app);
         });
 
+        $this->app->singleton('beam', function($app)
+        {
+            return new BeamClient($app);
+        });
+
         $this->registerShield();
 
         $this->registerApiMutex();
@@ -250,6 +255,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'sns',
             'pincodesearch',
             'razorx',
+            'beam',
         ];
     }
 

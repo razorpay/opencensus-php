@@ -5,8 +5,9 @@ namespace RZP\Models\FundTransfer\Base\Initiator;
 use App;
 use Request;
 use Requests;
+use RZP\Trace\TraceCode;
 
-abstract class RequestProcessor extends NodalAccount
+abstract class ApiProcessor extends NodalAccount
 {
     /**
      * Holds request method
@@ -56,17 +57,17 @@ abstract class RequestProcessor extends NodalAccount
      * Response trace will be recorded if this variable is set
      * and trace is recorded against this trace code
      *
-     * @var null
+     * @var string
      */
-    protected $responseTraceCode = null;
+    protected $responseTraceCode = TraceCode::SETTLEMENT_API_RESPONSE;
 
     /**
      * Request trace will be recorded if this variable is set
      * and trace is recorded against this trace code
      *
-     * @var null
+     * @var string
      */
-    protected $requestTraceCode = null;
+    protected $requestTraceCode = TraceCode::SETTLEMENT_API_REQUEST;
 
     public function method(string $method): self
     {
@@ -152,12 +153,11 @@ abstract class RequestProcessor extends NodalAccount
      */
     private function collectRequestData()
     {
-        $this
-            ->url($this->requestUrl())
-            ->body($this->requestBody())
-            ->method($this->requestMethod())
-            ->headers($this->requestHeaders())
-            ->options($this->requestOptions());
+        $this->url($this->requestUrl())
+             ->body($this->requestBody())
+             ->method($this->requestMethod())
+             ->headers($this->requestHeaders())
+             ->options($this->requestOptions());
     }
 
     /**
@@ -168,11 +168,6 @@ abstract class RequestProcessor extends NodalAccount
      */
     private function traceResponse(\Requests_Response $response)
     {
-        if($this->responseTraceCode === null)
-        {
-            return;
-        }
-
         $this->trace->info(
             $this->responseTraceCode,
             [
@@ -187,11 +182,6 @@ abstract class RequestProcessor extends NodalAccount
      */
     private function traceRequest()
     {
-        if($this->requestTraceCode === null)
-        {
-            return;
-        }
-
         $this->trace->info(
             $this->requestTraceCode,
             [
@@ -222,6 +212,87 @@ abstract class RequestProcessor extends NodalAccount
 
         return $response;
     }
+
+    /**
+     * Gets the certificate file location
+     * if the file doesn't exist then create a client certificate file based on configuration provided
+     *
+     * @return string
+     */
+    protected function getClientCertificate(): string
+    {
+        $certPath = $this->getGatewayCertDirPath();
+
+        $certFile = $certPath . '/' . $this->getClientCertificateName();
+
+        // Download cert file from vault if already not present and store locally
+        if (file_exists($certFile) === false)
+        {
+            $cert = $this->config['client_certificate'];
+
+            $cert = str_replace('\n', PHP_EOL, $cert);
+
+            file_put_contents($certFile, $cert);
+        }
+
+        return $certFile;
+    }
+
+    /**
+    * Give the certificate key file location
+    * if the file doesnt exist then create a client key file based on configuration provided
+    *
+    * @return string
+    */
+    protected function getClientCertificateKey(): string
+    {
+        $certPath = $this->getGatewayCertDirPath();
+
+        $certFile = $certPath . '/' . $this->getClientCertificateKeyName();
+
+        // Download cert key file from vault if already not present and store locally
+        if (file_exists($certFile) === false)
+        {
+            $key = $this->config['client_certificate_key'];
+
+            $key = str_replace('\n', PHP_EOL, $key);
+
+            file_put_contents($certFile, $key);
+        }
+
+        return $certFile;
+    }
+
+    /**
+    * give the client certificate file name
+    *
+    * @return string
+    */
+    protected function getClientCertificateName(): string
+    {
+        return $this->config['certificate_name'];
+    }
+
+    /**
+     * Gives the certificate directory
+     *
+     * @return string
+     */
+    protected function getGatewayCertDirPath(): string
+    {
+        return $this->config['certificate_path'];
+    }
+
+    /**
+    * Gives the certificate key file name
+    *
+    * @return string
+    */
+    protected function getClientCertificateKeyName(): string
+    {
+        return $this->config['certificate_key_name'];
+    }
+
 
     /**
      *

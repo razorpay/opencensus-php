@@ -75,6 +75,7 @@ class Constants
     const ALLOW_SUBMERCHANT_WITHOUT_EMAIL = 'allow_sub_without_email';
     const HDFC_DEBIT_SI                   = 'hdfc_debit_si';
     const AXIS_EXPRESS_PAY                = 'axis_express_pay';
+    const BANK_TRANSFER_REFUND            = 'bank_transfer_refund';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -178,6 +179,7 @@ class Constants
         self::ALLOW_SUBMERCHANT_WITHOUT_EMAIL => true,
         self::HDFC_DEBIT_SI                   => true,
         self::AXIS_EXPRESS_PAY                => true,
+        self::BANK_TRANSFER_REFUND            => true,
     ];
 
     // Entity type constants

@@ -338,6 +338,189 @@ return [
         ],
     ],
 
+    'testAddPartnerAccessMapSubmerchantAccessUnauthorized' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddPartnerAccessMap' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'merchant_id' => '10000000000009',
+                'entity_type' => 'application',
+            ],
+        ],
+    ],
+
+
+    'testAddPartnerAccessMapForDiffOrgSubmerchant' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'testAddAccessMapWithoutPartnerContext' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_CONTEXT_NOT_SET,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddAccessMapToPurePlatform' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testAddAccessMapToNonPartner' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testAddPartnerAccessMapAgain' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testRemovePartnerAccessMap' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'DELETE',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ]
+    ],
+
+    'testRemoveNonExistingPartnerAccessMap' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'DELETE',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+    ],
+
+    'testRemovePartnerAccessMapAgain' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'DELETE',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+    ],
+
     'testApprovingPurePlatformDeactivationRequest' => [
         'request'   => [
             'url'     => '/merchant/requests/100000RandomId',
@@ -388,6 +571,21 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
+        ],
+    ],
+
+    'testNoSubmerchantAccountAccessForReseller' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
         ],
     ],
 ];

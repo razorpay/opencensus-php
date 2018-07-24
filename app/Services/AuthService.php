@@ -139,7 +139,10 @@ class AuthService
 
             throw new Exception\ServerErrorException(
                 'Error completing the request',
-                ErrorCode::SERVER_ERROR_AUTH_SERVICE_FAILURE
+                ErrorCode::SERVER_ERROR_AUTH_SERVICE_FAILURE,
+                [
+                    'message' => $e->getMessage(),
+                ]
             );
         }
 
