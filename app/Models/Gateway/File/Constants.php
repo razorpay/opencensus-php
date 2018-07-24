@@ -26,7 +26,7 @@ class Constants
     const HDFC_FSS         = 'hdfc_fss';
     const ENACH_RBL        = 'enach_rbl';
     const OBC              = 'obc';
-    const CANARA             = 'canara';
+    const CANARA           = 'canara';
 
     /**
      * Stores a mapping of valid banks for each file type
