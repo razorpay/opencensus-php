@@ -53,7 +53,7 @@ class NetbankingAllahabadGatewayTest extends TestCase
         $this->assertTestResponse($payment);
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
-        
+
         $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
     }
 

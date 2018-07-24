@@ -46,7 +46,7 @@ class Allahabad extends Base
                 ->format('d/m/Y');
 
             $pid = 'Razor';
-            
+
             $formattedData[] = [
                 'PID'                   => $pid,
                 'Bank Id'               => '027',
