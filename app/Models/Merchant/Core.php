@@ -1077,19 +1077,30 @@ class Core extends Base\Core
         return $tags;
     }
 
+    /**
+     * @param Entity $partner
+     * @param string $submerchantId
+     *
+     * @return Entity
+     */
     public function getSubmerchantDetails(Entity $partner, string $submerchantId): Entity
     {
         $partnerApp = $this->getPartnerApp($partner);
 
         $merchant = $this->repo
                          ->merchant
-                         ->findSubmerchantByIdAndPartnerAppId($partnerApp->getId(), $submerchantId);
+                         ->findSubmerchantByIdAndPartnerAppId($submerchantId, $partnerApp->getId());
 
         $merchant = $this->getPartnerSubmerchantData($partner, $merchant);
 
         return $merchant;
     }
 
+    /**
+     * @param Entity $partner
+     *
+     * @return PublicCollection
+     */
     public function getSubmerchantsDetails(Entity $partner): Base\PublicCollection
     {
         $partnerApp = $this->getPartnerApp($partner);
@@ -1159,16 +1170,9 @@ class Core extends Base\Core
             Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS)
         ];
 
-        $nonPartnerPrimaryOwner = $this->getNonPartnerPrimaryOwner($partner, $submerchant);
+        $owner = $this->getNonPartnerPrimaryOwner($partner, $submerchant);
 
-        if ($nonPartnerPrimaryOwner === null)
-        {
-            $submerchant[Entity::USER] = null;
-        }
-        else
-        {
-            $submerchant[Entity::USER] = $nonPartnerPrimaryOwner->toArrayPublic();
-        }
+        $submerchant[Entity::USER] = ($owner !== null) ? $owner->toArrayPublic() : null;
 
         $submerchant[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($submerchant);
 
@@ -1190,14 +1194,9 @@ class Core extends Base\Core
     {
         $owners = $merchant->owners();
 
-        $partnerUserEmail = null;
-
         $partnerUser = $partner->primaryOwner();
 
-        if ($partnerUser !== null)
-        {
-           $partnerUserEmail = $partnerUser->getEmail();
-        }
+        $partnerUserEmail = ($partnerUser !== null) ? $partnerUser->getEmail() : null;
 
         foreach ($owners as $owner)
         {
@@ -1223,12 +1222,8 @@ class Core extends Base\Core
 
         $loggedInPartnerUser = $this->app['basicauth']->getUser();
 
-        if ($loggedInPartnerUser === null)
-        {
-            return false;
-        }
-
-        if (in_array($loggedInPartnerUser->getId(), $userIds, true) === true)
+        if (($loggedInPartnerUser !== null) and
+            (in_array($loggedInPartnerUser->getId(), $userIds, true) === true))
         {
             return true;
         }

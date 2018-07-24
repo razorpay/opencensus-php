@@ -503,14 +503,14 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param string $applicationId
      * @param string $submerchantId
+     * @param string $applicationId
      *
      * @return Entity
      */
     public function findSubmerchantByIdAndPartnerAppId(
-        string $applicationId,
-        string $submerchantId): Entity
+        string $submerchantId,
+        string $applicationId): Entity
     {
         $merchantDetailRepo = $this->repo->merchant_detail;
 

@@ -82,7 +82,12 @@ class PublicEntity extends UniqueIdEntity
         self::ENTITY,
     ];
 
-    protected $partnerSetters    = [
+    /**
+     * Fields exposed to the partners
+     *
+     * @var array
+     */
+    protected $partnerSetters = [
         self::ID,
     ];
 
@@ -165,6 +170,11 @@ class PublicEntity extends UniqueIdEntity
         return $array;
     }
 
+    /**
+     * toArrayPartner() comprises of all Public attributes and a few additional attributes exposed only to the partners.
+     *
+     * @return array
+     */
     public function toArrayPartner(): array
     {
         $publicAttributes = $this->toArrayPublic();
@@ -244,6 +254,9 @@ class PublicEntity extends UniqueIdEntity
         }
     }
 
+    /**
+     * @param array $array
+     */
     public function setPartnerAttributes(array & $array)
     {
         foreach ($this->partnerSetters as $attr)
