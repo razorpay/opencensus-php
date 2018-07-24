@@ -1097,7 +1097,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function getSubmerchantDetails(Entity $partner, string $submerchantId): Entity
+    public function getSubmerchant(Entity $partner, string $submerchantId): Entity
     {
         $partnerApp = $this->getPartnerApp($partner);
 
@@ -1115,7 +1115,7 @@ class Core extends Base\Core
      *
      * @return PublicCollection
      */
-    public function getSubmerchantsDetails(Entity $partner): Base\PublicCollection
+    public function listSubmerchants(Entity $partner): Base\PublicCollection
     {
         $partnerApp = $this->getPartnerApp($partner);
 
@@ -1123,7 +1123,8 @@ class Core extends Base\Core
                           ->merchant
                           ->fetchSubmerchantsByPartnerAppId($partnerApp->getId());
 
-        $merchants = $merchants->map(function($merchant) use ($partner) {
+        $merchants = $merchants->map(function($merchant) use ($partner)
+        {
             return $this->getPartnerSubmerchantData($partner, $merchant);
         });
 

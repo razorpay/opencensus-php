@@ -2096,22 +2096,22 @@ class Service extends Base\Service
         return $accessMap;
     }
 
-    public function getSubmerchantDetails(string $submerchantId): array
+    public function getSubmerchant(string $submerchantId): array
     {
         Account\Entity::verifyIdAndSilentlyStripSign($submerchantId);
 
         $partner = $this->fetchPartner();
 
-        $submerchant = $this->core()->getSubmerchantDetails($partner, $submerchantId);
+        $submerchant = $this->core()->getSubmerchant($partner, $submerchantId);
 
         return $submerchant->toArrayPartner();
     }
 
-    public function getSubmerchantsDetails(): array
+    public function listSubmerchants(): array
     {
         $partner = $this->fetchPartner();
 
-        $submerchants = $this->core()->getSubmerchantsDetails($partner);
+        $submerchants = $this->core()->listSubmerchants($partner);
 
         return $submerchants->toArrayPartner();
     }
@@ -2153,7 +2153,13 @@ class Service extends Base\Service
         return $partner;
     }
 
-    protected function fetchSubmerchant($submerchantId): Entity
+    /**
+     * @param string $submerchantId
+     *
+     * @return Entity
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function fetchSubmerchant(string $submerchantId): Entity
     {
         // The submerchant should belong to the same org as of the admin
         /** @var Entity $submerchant */

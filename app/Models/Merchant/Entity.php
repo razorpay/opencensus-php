@@ -144,8 +144,8 @@ class Entity extends Base\PublicEntity
     const PIVOT                     = 'pivot';
 
     // Partner array keys
-    const DETAILS                   = 'details';
     const USER                      = 'user';
+    const DETAILS                   = 'details';
     const DASHBOARD_ACCESS          = 'dashboard_access';
 
     protected $entity = 'merchant';

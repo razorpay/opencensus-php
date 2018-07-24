@@ -18,10 +18,6 @@ class PublicEntity extends UniqueIdEntity
 
     const MERCHANT_ID           = 'merchant_id';
 
-    const DETAILS               = 'details';
-
-    const USER                  = 'user';
-
     /**
      * General constant used as key for hold of collection of ids
      * in various cases.
