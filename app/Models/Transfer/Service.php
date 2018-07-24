@@ -103,7 +103,10 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
+        Transfer\Entity::verifyIdAndStripSign($id);
+
         $relations = ['transfer', 'transfer.recipientSettlement'];
+
 
         $payment = $this->repo->payment->findByTransferIdAndMerchant($id, $merchantId, $relations);
 
