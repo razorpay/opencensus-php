@@ -50,7 +50,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR_INVALID_PARAMETERS,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
             'status_code' => 502,
