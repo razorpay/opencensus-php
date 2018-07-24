@@ -26,6 +26,21 @@ class Service extends Base\Service
         return $reversals->toArrayPublic();
     }
 
+    public function fetchLaReversal($id): array
+    {
+        $merchantId = $this->merchant->getId();
+
+        $relations = ['reversal'];
+
+        Reversal\Entity::verifyIdAndStripSign($id);
+
+        $refund = $this->repo->refund->findByReversalIdAndMerchant($id, $merchantId, $relations);
+
+        $reversal = $this->createReversalResponseFromRefund($refund);
+
+        return $reversal;
+    }
+
     public function fetchLaReversals($input): array
     {
         $merchantId = $this->merchant->getId();

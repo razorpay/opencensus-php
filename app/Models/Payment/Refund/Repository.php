@@ -183,6 +183,15 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
+    public function findByReversalIdAndMerchant(string $reversalId, string $accountId, array $relations = [])
+    {
+        return $this->newQuery()
+                    ->where(Entity::REVERSAL_ID, $reversalId)
+                    ->merchantId($accountId)
+                    ->with($relations)
+                    ->firstOrFailPublic();
+    }
+
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
         return $this->fetchBetweenTimestampWithRelations(
