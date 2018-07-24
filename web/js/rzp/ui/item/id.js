@@ -10,7 +10,7 @@ const baseUrl = {
   trf: '/route/transfers/',
   disp: '/disputes/',
   // acc: '/route/accounts/',
-  // rvrsl: '/route/reversals/',
+  rvrsl: '/route/reversals/',
 };
 
 const sources = {
