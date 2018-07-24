@@ -214,19 +214,17 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        if ($this->action === Action::VERIFY and isset($verify->payment['bank_payment_id']))
+        {
+
+            $bankRefNumber = $verify->payment['bank_payment_id'];
+        }
+        elseif($this->action === Action::CALLBACK)
+        {
+            $bankRefNumber = $input['gateway'][ResponseFields::BANK_REFERENCE_NUMBER];
+        }
+
         $paymentEntity = $input['payment'];
-
-        if ($this->action === Action::VERIFY)
-        {
-            $gatewayPayment = $verify->payment;
-
-            $bankRefNumber = $gatewayPayment['bank_payment_id'];
-        }
-        elseif(($this->action === Action::CALLBACK) and
-                (isset($input['gateway'][ResponseFields::BANK_REFERENCE_NUMBER]) === true))
-        {
-                $bankRefNumber = $input['gateway'][ResponseFields::BANK_REFERENCE_NUMBER];
-        }
 
         $data = [
             RequestFields::MODE_OF_TRANSACTION           => Constants::MODE_OF_TRANSACTION_VERIFY,
