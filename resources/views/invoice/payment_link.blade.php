@@ -111,9 +111,9 @@ $invoice_status                 = $invoice_data['status'];
                     desc += '...';
                     button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
                 }
-            }
 
-            document.getElementById('payment-for').innerHTML = desc + button;
+                document.getElementById('payment-for').innerHTML = desc + button;
+            }
         }
     </script>
 
