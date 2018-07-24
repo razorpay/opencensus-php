@@ -17,6 +17,7 @@ $invoice_status                 = $invoice_data['status'];
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
+    <meta name="robots" content="noindex">
 
     @if (isset($invoice_data))
         <meta property="og:title" content="Payment of Rs. {{amount_format_IN($invoice_data['amount'])}} requested by {{$invoice_data['merchant_label']}} for {{$invoice_data['description']}}">
@@ -111,9 +112,9 @@ $invoice_status                 = $invoice_data['status'];
                     desc += '...';
                     button = '<button class="btn-link showmore" onclick="toggleTrimDescription(false)"> Show More </button>';
                 }
-            }
 
-            document.getElementById('payment-for').innerHTML = desc + button;
+                document.getElementById('payment-for').innerHTML = desc + button;
+            }
         }
     </script>
 

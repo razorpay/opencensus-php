@@ -116,7 +116,7 @@ class Initiator extends Base\Core
 
         $data += $response;
 
-        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $slackData);
+        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
         (new SlackNotification)->success('setl_initiate', $slackData);
 
@@ -151,12 +151,23 @@ class Initiator extends Base\Core
      */
     protected function getLimitForChannel(string $channel)
     {
-        if ($channel === Channel::AXIS)
+        switch ($channel)
         {
-            return 1000;
-        }
+            case Channel::AXIS:
+                return 1000;
 
-        return null;
+            case Channel::YESBANK:
+                return 100;
+
+            case Channel::ICICI:
+                return null;
+
+            case Channel::KOTAK:
+                return null;
+
+            default:
+                return 100;
+        }
     }
 
     /**

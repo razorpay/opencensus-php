@@ -44,6 +44,8 @@
         margin-left: -16px;
         padding: 0 16px;
         vertical-align: middle;
+        display: inline-block;
+        line-height: 12px;
     }
 
     #mobile-container #form-section {
@@ -68,6 +70,8 @@
         position: absolute;
         bottom: 0;
         z-index: 100;
+        text-align: center;
+        line-height: 36px;
         background-image: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 100%);
     }
 

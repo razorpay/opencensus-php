@@ -19,6 +19,7 @@
     <head>
         <title>Payment Page - {{$payment_page_data['title']}}</title>
         <meta charset="utf-8">
+        <meta name="robots" content="noindex">
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
         <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
 
@@ -73,7 +74,7 @@
                     @include('hostedpage.partials.header')
                     <div>
                         @include('hostedpage.partials.description')
-                        <button class="btn btn--full" id="mobile-proceed-btn" onclick="window.RZP.toggleMobileForm()">PROCEED TO PAY</button>
+                        <a href="#form" class="btn btn--full" id="mobile-proceed-btn">PROCEED TO PAY</a>
                     </div>
                 </div>
                 @include('hostedpage.partials.form')

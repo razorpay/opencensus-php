@@ -1575,6 +1575,18 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PARTNER_TYPE, $partnerType);
     }
 
+    /**
+     * @return bool
+     */
+    public function allowSubmerchantDashboardAccess(): bool
+    {
+        // Later change to only fully managed partners
+        return (($this->isFullyManagedPartner() === true) or ($this->isAggregatorPartner() === true));
+    }
+
+    /**
+     * @return bool
+     */
     public function isNonPurePlatformPartner(): bool
     {
         return (($this->isPartner() === true) and ($this->getPartnerType() !== Constants::PURE_PLATFORM));

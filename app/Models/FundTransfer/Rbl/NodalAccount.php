@@ -5,28 +5,26 @@ namespace RZP\Models\FundTransfer\Rbl;
 use App;
 use Config;
 
-use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Rbl\Request\Transfer;
 use RZP\Models\FundTransfer\Rbl\Request\Beneficiary;
-use RZP\Models\FundTransfer\Rbl\Reconciliation\Status;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Models\FundTransfer\Rbl\Reconciliation\StatusProcessor;
 
 class NodalAccount extends NodalBase\NodalAccount
 {
-    protected $trace;
-
     protected $config;
 
     protected $transferStatus = [];
 
-    public function __construct(string $purpose)
+    public function __construct(string $purpose = null)
     {
-        parent::__construct();
+        parent::__construct($purpose);
 
-        $this->trace = App::getFacadeRoot()['trace'];
+        $this->channel = Channel::RBL;
 
         $this->initStats();
     }
@@ -41,11 +39,25 @@ class NodalAccount extends NodalBase\NodalAccount
         return $responseArray;
     }
 
+    /**
+     * Will update the status of attempts to initiated
+     * Will add the attempts ids in the queue
+     *
+     * @param PublicCollection $attempts
+     * @return array
+     */
     public function initiateTransfer(PublicCollection $attempts): array
     {
-        $transfer   = new Transfer();
-
         $this->updateAttemptStatus($attempts);
+
+        return $this->process($attempts);
+    }
+
+    public function process(PublicCollection $attempts): array
+    {
+        $transfer = new Transfer($this->purpose);
+
+        $processedCount = 0;
 
         foreach($attempts as $entity)
         {
@@ -74,28 +86,13 @@ class NodalAccount extends NodalBase\NodalAccount
                 continue;
             }
 
+            $processedCount++;
+
             (new StatusProcessor($response))->updateTransferStatus();
-
-            $status = $transfer->isValidSuccessResponse();
-
-            $this->updateTransferStatus($status);
         }
 
+        $this->updateTransferStatus($processedCount);
+
         return $this->transferStatus;
-    }
-
-    protected function initStats()
-    {
-        $this->transferStatus = [
-            strtolower(Status::SUCCESS)  => 0,
-            strtolower(Status::FAILURE)  => 0
-        ];
-    }
-
-    protected function updateTransferStatus(bool $status)
-    {
-        $key = strtolower(($status === true) ? Status::SUCCESS : Status::FAILURE);
-
-        $this->transferStatus[$key]++;
     }
 }
