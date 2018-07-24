@@ -10,13 +10,6 @@ use RZP\Models\FileStore;
 
 abstract class FileProcessor extends NodalAccount
 {
-    public function __construct(string $purpose)
-    {
-        parent::__construct();
-
-        $this->purpose = $purpose;
-    }
-
     public function initiateTransfer(Base\PublicCollection $attempts): array
     {
         $this->updateAttemptStatus($attempts);
