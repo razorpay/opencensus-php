@@ -4,6 +4,7 @@ import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 
@@ -64,24 +65,30 @@ export default props => {
                   )}
                 </EntityDetailRow>
 
-                {showFullDetails && (
-                  <div class="pair-group-item">
-                    {submerchant.user ? (
-                      <Fragment>
-                        <strong>{submerchant.user.email}</strong> is invited to
-                        manage dashboard
-                      </Fragment>
-                    ) : (
-                      <Fragment>
-                        <a class="btn-link" onClick={props.onInviteMerchant}>
-                          Invite
-                        </a>{' '}
-                        the merchant to sign up on Razorpay, and manage the
-                        account
-                      </Fragment>
+                <ShowWhen myRole="owner admin manager">
+                  {showFullDetails &&
+                    props.userPartnerType === 'aggregator' && (
+                      <div class="pair-group-item">
+                        {submerchant.user ? (
+                          <Fragment>
+                            <strong>{submerchant.user.email}</strong> is
+                            managing the dashboard for this merchant
+                          </Fragment>
+                        ) : (
+                          <Fragment>
+                            <a
+                              class="btn-link"
+                              onClick={props.onInviteMerchant}
+                            >
+                              Invite
+                            </a>{' '}
+                            the merchant to sign up on Razorpay, and manage the
+                            account
+                          </Fragment>
+                        )}
+                      </div>
                     )}
-                  </div>
-                )}
+                </ShowWhen>
               </div>
             </div>
           </div>

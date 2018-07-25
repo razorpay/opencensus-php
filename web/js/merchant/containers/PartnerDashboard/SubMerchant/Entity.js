@@ -61,6 +61,7 @@ export default class SubmerchantEntityContainer extends Component {
           showFullDetails={fullDetailsAccessMap[userPartnerType]}
           switchMerchant={switchMerchant}
           onInviteMerchant={this.handleInviteClick}
+          userPartnerType={userPartnerType}
         />
       </div>
     );

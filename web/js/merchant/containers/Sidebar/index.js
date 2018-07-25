@@ -180,7 +180,7 @@ export default class Sidebar extends Component {
                     )}
                   </ShowWhen>
                   {isPartner && (
-                    <ShowWhen myRole="owner manager admin">
+                    <ShowWhen notMyRole="sellerapp">
                       <MainNavLink
                         label="Partner Dashboard"
                         icon="i i-partner text-success"

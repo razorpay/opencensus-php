@@ -12,6 +12,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import StatsCard from 'rzp/ui/StatsCard';
 import HeaderAction from 'rzp/ui/HeaderAction';
 
+import ShowWhen from 'merchant/components/ShowWhen';
 import { getTime } from 'rzp/ui/item';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 import {
@@ -114,15 +115,17 @@ export default class SubMerchantsList extends ListContainer {
     return (
       <div class="sub-merchants-list">
         <div class="content-wrapper sub-merchants-list--stats">
-          <HeaderAction>
-            <button
-              class="btn btn-primary pull-right"
-              onClick={this.handleAddMerchant}
-            >
-              <i class="i i-plus" />
-              Add New Merchant
-            </button>
-          </HeaderAction>
+          <ShowWhen myRole="owner manager admin">
+            <HeaderAction>
+              <button
+                class="btn btn-primary pull-right"
+                onClick={this.handleAddMerchant}
+              >
+                <i class="i i-plus" />
+                Add New Merchant
+              </button>
+            </HeaderAction>
+          </ShowWhen>
           <StatsCard
             title="Total transaction volume"
             value={humanReadableIndianCurrency(603000000)}
