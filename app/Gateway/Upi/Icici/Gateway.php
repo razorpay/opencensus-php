@@ -837,13 +837,13 @@ class Gateway extends Base\Gateway
 
         if ($isBharatQr === true)
         {
-            $response = $this->getBharatQrResponse($response);
+            $response = $this->getQrData($response);
         }
 
         return $response;
     }
 
-    protected function getBharatQrResponse(array $input)
+    protected function getQrData(array $input)
     {
         $qrData = [
             BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]),
