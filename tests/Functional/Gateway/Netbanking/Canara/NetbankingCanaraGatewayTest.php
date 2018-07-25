@@ -183,27 +183,6 @@ class NetbankingCanaraGatewayTest extends TestCase
         $this->checkMailQueue();
     }
 
-    public function testRefundFileGeneration()
-    {
-        Mail::fake();
-
-        $this->createRefunds();
-
-        $this->alterPaymentsDateToYesterday();
-
-        $this->alterRefundsDateToYesterday();
-
-        $this->ba->appAuth();
-
-        $data = $this->generateGatewayFile('canara', 'refund');
-
-        $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
-
-        $this->checkRefundTxtData($data['items'][0], $file);
-
-        $this->checkMailQueue();
-    }
-
     public function doNetbankingCanaraAuthAndCapturePayment()
     {
         $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
