@@ -124,6 +124,9 @@ class Notifier extends Base\Core
             return false;
         }
 
+        $dimensions = $this->invoice->getMetricDimensions(['email_type' => 'issued']);
+        $this->trace->count(Metric::INVOICE_EMAIL_NOTIFY_TOTAL, 1, $dimensions);
+
         $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
 
         $fileData = [
@@ -173,6 +176,9 @@ class Notifier extends Base\Core
         {
             return false;
         }
+
+        $dimensions = $this->invoice->getMetricDimensions(['sms_type' => 'issued']);
+        $this->trace->count(Metric::INVOICE_SMS_NOTIFY_TOTAL, 1, $dimensions);
 
         $request = $this->getRavenSendInvoiceRequestInput($contact);
 

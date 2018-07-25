@@ -24,6 +24,7 @@ class MailTags
     const HDFC_BENEFICIARY_MAIL            = 'hdfc_beneficiary_mail';
 
     const YESBANK_BENEFICIARY_MAIL         = 'yesbank_beneficiary_mail';
+    const YESBANK_SETTLEMENT               = 'yesbank_settlement';
 
     const RBL_SETTLEMENT                   = 'rbl_settlement';
 
@@ -93,6 +94,7 @@ class MailTags
 
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
+    const FEE_CREDITS_ALERT                = 'fee_credits_alert';
     const IRCTC_REFUND_REPORT              = 'irctc_refund_report';
     const AUTH_REMINDER                    = 'auth_reminder';
     const HOLIDAY_NOTIFICATION             = 'holiday_notification';

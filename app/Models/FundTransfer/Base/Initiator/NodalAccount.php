@@ -14,7 +14,13 @@ use RZP\Models\FundTransfer\Batch\Entity;
 
 abstract class NodalAccount extends Base\Core
 {
+    const SUCCESS               = 'success';
+
+    const FAILED                = 'failed';
+
     const MIN_RTGS_AMOUNT       = 200000;
+
+    const MAX_IMPS_AMOUNT       = 200000;
 
     const RTGS_CUTOFF_HOUR      = 15;
 
@@ -38,14 +44,18 @@ abstract class NodalAccount extends Base\Core
 
     protected $summary = [];
 
-    public function __construct()
+    protected $purpose = null;
+
+    protected $transferStatus = [];
+
+    public function __construct(string $purpose = null)
     {
+        $this->purpose = $purpose;
+
         $this->initSummary();
 
         parent::__construct();
     }
-
-    protected $purpose           = null;
 
     protected function isRefund(): bool
     {
@@ -217,6 +227,27 @@ abstract class NodalAccount extends Base\Core
         ];
     }
 
+    /**
+     * This is used to initialize the response status for the API based nodal accounts
+     */
+    protected function initStats()
+    {
+        $this->transferStatus = [
+            self::SUCCESS      => 0,
+            self::FAILED       => 0,
+        ];
+    }
+
+    /**
+     * This is used to update the response status for the API based nodal accounts
+     */
+    protected function updateTransferStatus(int $initiated)
+    {
+        $this->transferStatus[self::SUCCESS] = $initiated;
+
+        $this->transferStatus[self::FAILED] = $this->count - $initiated;
+    }
+
     protected function updateSummary($type, $amount)
     {
         $this->summary['total']['count']++;
@@ -225,5 +256,4 @@ abstract class NodalAccount extends Base\Core
         $this->summary[$type]['amount'] += $amount;
         $this->summary[$type]['count']++;
     }
-
 }

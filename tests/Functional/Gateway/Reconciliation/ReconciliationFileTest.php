@@ -5,6 +5,7 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
+use RZP\Models\Payment\Refund;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
@@ -743,13 +744,14 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
-    private function overrideHdfcOnusRefund(array $payment, array $forceOverride = [], $gateway = 'fss')
+    private function overrideHdfcOnusRefund(array $refund, array $forceOverride = [], $gateway = 'fss')
     {
-        $facade = $this->overrideHdfcPayment($payment, $forceOverride, $gateway);
+        $facade = $this->overrideHdfcPayment($refund, $forceOverride, $gateway);
 
         $facade['rec_fmt'] = 'CVD';
         $facade[HdfcRefundRecon::COLUMN_ARN]       = "'(Onus transaction)";
-        $facade[HdfcRefundRecon::COLUMN_REFUND_ID] = $payment['refund_id'];
+        $facade[HdfcRefundRecon::COLUMN_REFUND_ID] = $refund['refund_id'];
+        $facade[HdfcRefundRecon::COLUMN_GATEWAY_TRANSACTION_ID] = $refund['gateway_transaction_id'];
 
         return $facade;
     }
@@ -977,19 +979,23 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $refund1 = $this->getNewRefundEntity(true);
-        $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
+        $refund = $this->getNewRefundEntity(true);
+        $gatewayRefund = $this->getDbLastEntityToArray('hdfc');
 
-        $this->assertNull($refund1['arn']);
+        $this->assertNull($refund[Refund\Entity::ARN]);
 
-        $entries[] = $this->overrideHdfcOnusRefund($gatewayPayment1);
+        $entries[] = $this->overrideHdfcOnusRefund($gatewayRefund);
 
         $file = $this->writeToExcelFile($entries, 'fss');
         $this->runForFiles([$file], 'HDFC');
 
-        $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
+        $updatedRefund = $this->getDbEntityById('refund', $refund['id'])->toArrayAdmin();
 
-        $this->assertEquals($entries[0][HdfcRefundRecon::COLUMN_SEQUENCE_NUMBER], "'" . $updatedRefund1['arn']);
+        $updatedGatewayRefund = $this->getDbLastEntityToArray('hdfc');
+
+        $this->assertEquals($gatewayRefund['ref'], $updatedRefund[Refund\Entity::ARN]);
+
+        $this->assertEquals($updatedRefund[Refund\Entity::ARN], $updatedGatewayRefund['arn_no']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }

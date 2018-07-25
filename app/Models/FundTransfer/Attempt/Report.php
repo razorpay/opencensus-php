@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\FileStore\Utility;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Mail\Settlement\Report as ReportEmail;
@@ -128,7 +129,7 @@ class Report extends Base\Core
         do {
             $records = $this->repo
                             ->fund_transfer_attempt
-                            ->getFailedAttemptsInitiatedAtBetweenTime(
+                            ->getFailedAttemptsCreatedBetweenTime(
                                 $channel,
                                 $this->startTime,
                                 $this->endTime,
@@ -261,7 +262,7 @@ class Report extends Base\Core
 
     protected function getFileNameForReport()
     {
-        $dir  = storage_path('files/settlement');
+        $dir  = Utility::getStorageDir();
 
         $date = Carbon::today(Timezone::IST)->format('Y-M-d');
 

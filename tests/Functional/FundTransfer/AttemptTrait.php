@@ -47,23 +47,6 @@ trait AttemptTrait
         $this->assertEquals($sourceCount, $content[$channel]['count']);
     }
 
-    protected function assertInitiateOnlineTransferResponseSuccess(
-        string $channel, array $content, int $sourceCount, bool $failureTest)
-    {
-        $this->assertArrayHasKey($channel, $content);
-
-        $this->assertEquals($sourceCount, $content[$channel]['count']);
-
-        if ($failureTest === false)
-        {
-            $this->assertEquals($sourceCount, $content[$channel]['success']);
-        }
-        else
-        {
-            $this->assertEquals($sourceCount, $content[$channel]['failure']);
-        }
-    }
-
     protected function initiateTransferViaFileAndAssertSuccess(
         string $channel, string $purpose, int $sourceCount, string $sourceType)
     {
@@ -94,8 +77,6 @@ trait AttemptTrait
         $this->createDataForChannel($channel, $purpose, $setlCount, $sourceType);
 
         $content = $this->initiateTransfer($channel, $purpose, $failureTest);
-
-        $this->assertInitiateOnlineTransferResponseSuccess($channel, $content, $setlCount, $failureTest);
     }
 
     protected function createDataAndAssertInitiateTransferSuccess(string $channel, int $setlCount, string $sourceType)

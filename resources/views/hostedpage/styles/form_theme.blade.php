@@ -1,5 +1,5 @@
 <?php
-    $primary_text    = '#528FF0';
+    $rzp_prime_color    = '#528FF0';
     $secondary_color = '#6F7691';
     $text_red        = '#F05150';
 ?>
@@ -39,7 +39,7 @@
     }
 
     .form-group input:focus {
-        border: 1px solid {{$primary_text}};
+        border: 1px solid {{$rzp_prime_color}};
     }
 
     .form-group select {

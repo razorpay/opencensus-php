@@ -6,6 +6,7 @@ use phpseclib\Crypt\AES;
 
 use Config;
 use RZP\Models\Settlement;
+use RZP\Models\FileStore\Utility;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\FundTransfer\Axis\Headings;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
@@ -44,7 +45,7 @@ class FileGenerator extends Generator
 
         $filename = 'NRPSS_' . str_random(10);
 
-        $dir = $this->getStorageDir();
+        $dir = Utility::getStorageDir();
 
         $file = $this->createExcelFile($reconData, $filename, $dir);
 

@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\QrPayment;
 
-use RZP\Exception;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;

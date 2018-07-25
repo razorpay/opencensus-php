@@ -181,6 +181,8 @@ class Name
     const DB_META_QUERY                       = 'db_meta_query';
     const OAUTH_SYNC_MERCHANT_MAP             = 'oauth_sync_merchant_map';
     const ADMIN_BATCH_CREATE                  = 'admin_batch_create';
+    const EDIT_PARTNERS                       = 'edit_partners';
+    const VIEW_PARTNERS                       = 'view_partners';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
