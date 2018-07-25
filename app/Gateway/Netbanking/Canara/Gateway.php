@@ -90,10 +90,35 @@ class Gateway extends Base\Gateway
 
         $this->checkGatewaySuccess($verify);
 
+        $verify->amountMismatch = $this->getVerifyAmountMismatch($verify);
+
+        if ($verify->amountMismatch === true)
+        {
+            throw new Exception\LogicException(
+                'Amount tampering found.',
+                ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+                null,
+                null,
+                [
+                    'callback_response' => $input['gateway'],
+                    'verify_response'   => $verify->verifyResponseContent,
+                    'payment_id'        => $input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
+        }
+
         if ($verify->gatewaySuccess === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                null,
+                null,
+                [
+                    'callback_response' => $input['gateway'],
+                    'verify_response'   => $verify->verifyResponseContent,
+                    'payment_id'        => $input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
         }
     }
 
