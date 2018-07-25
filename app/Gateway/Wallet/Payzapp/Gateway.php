@@ -281,7 +281,7 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT,
                 null,
                 null,
-                $input);
+                ['response' => $input]);
         }
 
         $resCode = (int) $input['resCode'];

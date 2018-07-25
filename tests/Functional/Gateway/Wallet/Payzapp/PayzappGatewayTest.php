@@ -185,7 +185,7 @@ class PayzappGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
-                if ($action ==='authorize')
+                if ($action === 'authorize')
                 {
                     unset($content['resCode']);
                     unset($content['resDesc']);
