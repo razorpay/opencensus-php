@@ -765,17 +765,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
-    //
-    // As setGateway is protected method
-    // we didn't want to make it public just
-    // to set gateway for bharat qr payment
-    // so a new method
-    //
-    public function setGatewayForBharatQr(string $gateway)
-    {
-        $this->setGateway($gateway);
-    }
-
     /**
      * This should be kept as protected so the gateway is only
      * set via associateTerminal function

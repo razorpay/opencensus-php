@@ -26,6 +26,7 @@ class Constants
     const RECON             = 'recon';
     const SETTLEMENT_ALERTS = 'settlement_alert';
     const PRODUCT_OAUTH     = 'product_oauth';
+    const BEAM_FAILURE      = 'beam_failure';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT           => 'support@razorpay.com',
@@ -68,5 +69,6 @@ class Constants
         self::DISPUTES      => 'Razorpay Risk Team',
         self::RECON         => 'Reconciliation Summary',
         self::PRODUCT_OAUTH => 'Product OAuth',
+        self::BEAM_FAILURE   => 'Beam Request Failure'
     ];
 }

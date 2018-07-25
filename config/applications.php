@@ -214,4 +214,8 @@ return [
         'url'     => env('OTPELF_BASE_URL'),
         'api_key' => env('OTPELF_API_KEY'),
     ],
+
+    'beam' => [
+        'url' => env('BEAM_URL')
+    ]
 ];

@@ -87,6 +87,12 @@ abstract class Driver
         // Must use getMultiple() method because that only uses the cache
         $dimensions['instance'] = $ec2->getMultiple(['LocalIpv4'])['LocalIpv4'] ?? 'other';
 
+        // Adds rzp_mode dimension, if doesn't exists already
+        if (isset($dimensions['rzp_mode']) === false)
+        {
+            $dimensions['rzp_mode'] = app()['rzp.mode'] ?? 'none';
+        }
+
         return $dimensions;
     }
 
