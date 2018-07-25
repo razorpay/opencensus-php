@@ -277,12 +277,11 @@ class Gateway extends Base\Gateway
         //For some payments the rescode is not present in the response. this should not happen
         if (isset($input['resCode']) === false)
         {
-
-            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT,
-                                                      null,
-                                                      null,
-                                                      $input);
-
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT,
+                null,
+                null,
+                $input);
         }
 
         $resCode = (int) $input['resCode'];
