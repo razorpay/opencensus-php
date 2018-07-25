@@ -101,10 +101,18 @@ class Transfer extends Base
     {
         if ($this->isRefund() === true)
         {
+            $beneName = $this->entity->bankAccount->getBeneficiaryName();
+
+            // Remove all numbers from the name
+            $normalizedName = $words = preg_replace('/\d+/', '', $beneName);
+
+            // Name should have length between 5 - 35
+            $beneName = (strlen($normalizedName) < 5) ? 'Not Available' : substr($normalizedName, 0, 35);
+
             return [
                 Constants::BENEFICIARY_DETAILS => [
                     Constants::BENEFICIARY_NAME       => [
-                        Constants::FULL_NAME => $this->entity->bankAccount->getBeneficiaryName() ?? 'Not Available',
+                        Constants::FULL_NAME => $beneName,
                     ],
                     Constants::BENEFICIARY_CONTACT    => json_decode('{}'),
                     Constants::BENEFICIARY_ACCOUNT_NO => $this->entity->bankAccount->getAccountNumber(),

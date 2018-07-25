@@ -184,7 +184,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getFailedAttemptsInitiatedAtBetweenTime(
+    public function getFailedAttemptsCreatedBetweenTime(
         string $channel,
         int $startTime,
         int $endTime,
@@ -194,7 +194,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::FAILED)
                     ->where(Entity::CHANNEL, $channel)
-                    ->whereBetween(Entity::INITIATE_AT, [$startTime, $endTime])
+                    ->whereBetween(Entity::CREATED_AT, [$startTime, $endTime])
                     ->with(['merchant', 'source'])
                     ->take($limit)
                     ->skip($offset)

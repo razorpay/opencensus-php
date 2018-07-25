@@ -8,6 +8,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Payment\Refund\Entity as Refund;
 use RZP\Models\Transaction\Entity as Transaction;
+use RZP\Models\BankAccount\Entity as BankAccount;
 
 class CreateRefunds extends Migration
 {
@@ -73,7 +74,6 @@ class CreateRefunds extends Migration
             $table->integer(Refund::LAST_ATTEMPTED_AT)
                   ->nullable();
 
-
             $table->string(Refund::REFERENCE1)
                   ->nullable();
 
@@ -95,7 +95,7 @@ class CreateRefunds extends Migration
             $table->string(Refund::REFERENCE7)
                   ->nullable();
 
-            $table->string(Refund::REFERENCE8)
+            $table->string(Refund::BANK_ACCOUNT_ID)
                   ->nullable();
 
             $table->bigInteger(Refund::REFERENCE9)

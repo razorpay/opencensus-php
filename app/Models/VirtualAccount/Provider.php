@@ -8,6 +8,7 @@ use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Models\Card\Network;
 use RZP\Models\BharatQr\Tags;
 use RZP\Models\Merchant\Account;
 use RZP\Models\BharatQr\Constants;
@@ -253,7 +254,7 @@ class Provider
             Tags::MERCHANT_NAME . $this->getLengthAndValue(Constants::MERCHANT_NAME),
             Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
             Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
-            $this->getBharatQrAdditionalDetailTlv($qrCode),
+            $this->getBharatQrAdditionalDetailTlv($qrCode, $merchantIdentifiers),
         ];
 
         $qrString =  implode('', $tagArray);
@@ -325,16 +326,24 @@ class Provider
         // In case of upi payments we need to send reference with
         // prefix. This is how they identify our payments
         //
-        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getId());
+        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR .
+                                   $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getId());
 
         $upiString = $rupayRidTlv . $transactionReferenceTlv;
 
         return Tags::UPI_VPA_REFERENCE . strlen($upiString) . $upiString;
     }
 
-    protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode)
+    protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode, array $merchantIdentifiers)
     {
         $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getId());
+
+        if (isset($merchantIdentifiers['rupay_tid']) === true)
+        {
+            $terminalIdTlv = Tags::TERMINAL_ID . $this->getLengthAndValue($merchantIdentifiers['rupay_tid']);
+
+            $idTlv .= $terminalIdTlv;
+        }
 
         $additionalDetailsString = $idTlv;
 
@@ -410,6 +419,11 @@ class Provider
             if ($terminal === null)
             {
                 continue;
+            }
+
+            if ($bharatQrNetwork === Network::RUPAY)
+            {
+                $identifiers['rupay_tid'] = $terminal->getGatewayTerminalId();
             }
 
             $terminal = $terminal->toArray();
