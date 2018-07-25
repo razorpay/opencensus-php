@@ -40,7 +40,7 @@ const successImg = '/img/activation/submit-success.svg';
     updateSession,
   }
 )
-export class ActivationContainer extends React.Component {
+export default class ActivationContainer extends React.Component {
   state = {
     data: null,
     categories: null,
@@ -350,10 +350,15 @@ export class ActivationContainer extends React.Component {
       );
     } else {
       modalClass = 'Activation--wizard';
+      const formData = {
+        ...data,
+        business_category:
+          data.business_category || (data.business_model ? 'others' : null),
+      };
       content = (
         <ActivationWizard
           accountId={this.props.accountId}
-          data={data}
+          data={formData}
           ref={refId => (this.wizard = refId)}
           categories={categories}
           isFormTouched={this.state.isFormTouched}
@@ -378,6 +383,8 @@ export class ActivationContainer extends React.Component {
     );
   }
 }
+
+ActivationContainer.MODAL_MASK_CLASS = 'Activation';
 
 /*
  * Success screen is shown only when the user has submitted the form. It's not shown in linked account activation but only main form.
@@ -492,62 +499,3 @@ const excludedFieldsInForm = [
   'activation_progress',
   'allowed_next_activation_statuses',
 ];
-
-/*
-* This component is temporary and will be removed once the old activation form is removed
-* */
-@connect(
-  state => ({
-    user: state.session.user,
-  }),
-  {}
-)
-export default class ActivationDecider extends React.Component {
-  // Component to show old activation wizard if old user and progress is > 25% ~ effectively only 1st step done
-  render() {
-    let Component = <ActivationContainer {...this.props} />;
-
-    let isLinkedAccountForm = !!this.props.accountId;
-
-    // Showing new activation form for linked-accounts
-    if (isOldUser(this.props.user) && !isLinkedAccountForm) {
-      let modalClass = 'Activation--wizard Activation--wizard--old';
-      let content = (
-        <React.Fragment>
-          <div class="modal-header">
-            <h3 class="modal-title">Activation Form</h3>
-          </div>
-          <OldActivationWizard {...this.props} />
-        </React.Fragment>
-      );
-
-      // Accounts List also provides onClose fn. prop
-      Component =
-        this.props.onClose && this.props.closeUrl ? (
-          <Modal
-            class={'animate-down ' + modalClass}
-            onClose={this.props.onClose}
-          >
-            <ModalContent>{content}</ModalContent>
-          </Modal>
-        ) : (
-          <div class="ActivationContainer">{content}</div>
-        );
-    }
-
-    return Component;
-  }
-}
-
-ActivationDecider.MODAL_MASK_CLASS = 'Activation';
-
-function isOldUser(user) {
-  if (!user) {
-    return false; // Fallback to new
-  }
-
-  let currentTime = 1523407001; // New activation form launch Day: 28 May, 8:00pm
-  let isCreatedEarlier = user.created_at < currentTime;
-
-  return isCreatedEarlier;
-}
