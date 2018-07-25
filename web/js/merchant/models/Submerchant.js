@@ -10,13 +10,19 @@ export default class Submerchant extends GenericEntity {
       method: 'POST',
       appendModeInURL: false,
       data,
-    }).then(response => response.data);
+    }).then(response => ({
+      ...response.data,
+      // will remove these two lines once api fixes it
+      id: 'acc_' + response.data.id,
+      dashboard_access: true,
+    }));
   }
 
   invite(submerchantId, data) {
     return ajax(
       {
-        url: `/submerchant/user/${submerchantId}`,
+        // replacing `acc_` since api doesn't support it
+        url: `/submerchant/user/${submerchantId.replace('acc_', '')}`,
         method: 'POST',
         data: {
           ...data,
