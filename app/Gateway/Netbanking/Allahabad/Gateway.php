@@ -104,7 +104,6 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-
     protected function getAuthRequestData($input)
     {
         $data = [
@@ -139,7 +138,6 @@ class Gateway extends Base\Gateway
                 'Failed checksum verification');
         }
     }
-
 
     protected function checkCallbackStatus(array $content)
     {
@@ -200,7 +198,6 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestData($verify)
     {
-
         $input = $verify->input;
 
         if ($this->action === Action::VERIFY)
@@ -357,7 +354,6 @@ class Gateway extends Base\Gateway
         return $newArray;
     }
 
-
     protected function getMerchantId(): string
     {
         $merchantId = $this->getLiveMerchantId();
@@ -369,5 +365,5 @@ class Gateway extends Base\Gateway
 
         return $merchantId;
     }
-
 }
+
