@@ -9,19 +9,18 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 
 use RZP\Base;
-use RZP\Constants\Timezone;
 use RZP\Exception;
-use RZP\Models\Payment;
 use Razorpay\IFSC\IFSC;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
-use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\VirtualAccount\Receiver;
 
 class Validator extends Base\Validator
 {
@@ -121,14 +120,15 @@ class Validator extends Base\Validator
     ];
 
     protected static $transferRules = [
-        'transfers'                  => 'required|array',
-        'transfers.*.customer'       => 'sometimes|public_id',
-        'transfers.*.account'        => 'sometimes|public_id',
-        'transfers.*.amount'         => 'required|integer|min:100',
-        'transfers.*.currency'       => 'required|string|size:3',
-        'transfers.*.notes'          => 'sometimes|notes',
-        'transfers.*.on_hold'        => 'sometimes|boolean',
-        'transfers.*.on_hold_until'  => 'sometimes|epoch',
+        'transfers'                        => 'required|array',
+        'transfers.*.customer'             => 'sometimes|public_id',
+        'transfers.*.account'              => 'sometimes|public_id',
+        'transfers.*.amount'               => 'required|integer|min:100',
+        'transfers.*.currency'             => 'required|string|size:3',
+        'transfers.*.notes'                => 'sometimes|notes',
+        'transfers.*.linked_account_notes' => 'sometimes|array',
+        'transfers.*.on_hold'              => 'sometimes|boolean',
+        'transfers.*.on_hold_until'        => 'sometimes|epoch',
     ];
 
     protected static $getFlowsRules = [

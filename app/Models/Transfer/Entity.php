@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID            = 'transaction_id';
     const RECIPIENT_SETTLEMENT_ID   = 'recipient_settlement_id';
     const RECIPIENT_SETTLEMENT      = 'recipient_settlement';
+    const LINKED_ACCOUNT_NOTES      = 'linked_account_notes';
 
     // Report fields
     const SETTLEMENT_INITIATED_ON = 'settlement_initiated_on';
@@ -67,6 +68,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
+        self::LINKED_ACCOUNT_NOTES,
     ];
 
     protected $visible = [
@@ -91,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::RECIPIENT_SETTLEMENT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::LINKED_ACCOUNT_NOTES,
     ];
 
     protected $public = [
@@ -110,6 +113,7 @@ class Entity extends Base\PublicEntity
         self::RECIPIENT_SETTLEMENT_ID,
         self::RECIPIENT_SETTLEMENT,
         self::CREATED_AT,
+        self::LINKED_ACCOUNT_NOTES,
     ];
 
     protected $publicSetters = [
@@ -120,6 +124,7 @@ class Entity extends Base\PublicEntity
         self::RECIPIENT_SETTLEMENT_ID,
         self::TRANSACTION_ID,
         self::ENTITY,
+        self::LINKED_ACCOUNT_NOTES,
     ];
 
     protected $appends = [
@@ -344,6 +349,20 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECIPIENT_SETTLEMENT_ID, $recipientSettlementId);
     }
 
+    public function setLinkedAccountNotesAttribute($laNotes)
+    {
+        $notes = $this->getNotes();
+
+        if (empty($laNotes) === false)
+        {
+            $laNotes = implode(",", $laNotes);
+
+            $notes[self::LINKED_ACCOUNT_NOTES] = $laNotes;
+
+            $this->setNotes($notes->toArray());
+        }
+    }
+
     // -------------------- End Setters ---------------------------
 
     /**
@@ -427,6 +446,21 @@ class Entity extends Base\PublicEntity
         if ($txnId !== null)
         {
             $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedId($txnId);
+        }
+    }
+
+    public function setPublicLinkedAccountNotesAttribute(array & $attributes)
+    {
+        $notes = $this->getNotes();
+
+        if ((empty($notes) === false) and (empty($notes[self::LINKED_ACCOUNT_NOTES]) === false))
+        {
+            $attributes[self::LINKED_ACCOUNT_NOTES] = explode(",", $notes[self::LINKED_ACCOUNT_NOTES]);
+            unset($attributes[self::NOTES][self::LINKED_ACCOUNT_NOTES]);
+        }
+        else
+        {
+            $attributes[self::LINKED_ACCOUNT_NOTES] = [];
         }
     }
 

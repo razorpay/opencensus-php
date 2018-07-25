@@ -70,6 +70,7 @@ trait Transfer
             Payment\Entity::ON_HOLD         => $input['on_hold'] ?? 0,
             Payment\Entity::ON_HOLD_UNTIL   => $input['on_hold_until'] ?? null,
             Payment\Entity::METHOD          => Payment\Method::TRANSFER,
+            Payment\Entity::NOTES           => $input['notes'],
         ];
 
         if ($originPayment !== null)

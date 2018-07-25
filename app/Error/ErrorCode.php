@@ -456,6 +456,7 @@ class ErrorCode
     const BAD_REQUEST_NOTES_KEY_CANNOT_BE_ARRAY                                     = 'BAD_REQUEST_NOTES_KEY_CANNOT_BE_ARRAY';
     const BAD_REQUEST_NOTES_KEY_TOO_LARGE                                           = 'BAD_REQUEST_NOTES_KEY_TOO_LARGE';
     const BAD_REQUEST_NOTES_VALUE_TOO_LARGE                                         = 'BAD_REQUEST_NOTES_VALUE_TOO_LARGE';
+    const BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                              = 'BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING';
     const BAD_REQUEST_INVALID_TRANSACTION_AMOUNT                                    = 'BAD_REQUEST_INVALID_TRANSACTION_AMOUNT';
 
     const BAD_REQUEST_UNKNOWN_SCHEDULE                                              = 'BAD_REQUEST_UNKNOWN_SCHEDULE';

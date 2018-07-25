@@ -207,7 +207,6 @@ class Core extends Base\Core
                             $transfer->getId(),
                             $transfer->getToId());
 
-
         $payment->setOnHold($transferOnHold);
 
         $payment->setOnHoldUntil($transferOnHoldUntil);
@@ -349,6 +348,10 @@ class Core extends Base\Core
 
         $transfer = $this->createTransfer($source, $to, $input, $merchant);
 
+        $laNotes = $this->getLaNotes($input);
+
+        $input[Transfer\Entity::NOTES] = $laNotes;
+
         $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $originPayment);
 
         $transferPayment->transfer()->associate($transfer);
@@ -356,6 +359,37 @@ class Core extends Base\Core
         $this->repo->saveOrFail($transferPayment);
 
         return $transfer;
+    }
+
+    /**
+     * Extract lanotes from transfer notes.
+     * @param array $input
+     *
+     * @throws \RZP\Exception\BadRequestException
+     * @return array
+     */
+    private function getLaNotes(array $input)
+    {
+        $transferNotes = $input[Entity::NOTES] ?? [];
+
+        $laNotesKeys = $input[Entity::LINKED_ACCOUNT_NOTES] ?? [];
+
+        $laNotes = [];
+
+        if ((empty($laNotesKeys) === false) and (is_array($laNotesKeys) === true))
+        {
+            $laNotes = array_only($transferNotes, $laNotesKeys);
+
+            if (count($laNotes) !== count($laNotesKeys))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
+                    null,
+                    array_intersect(array_keys($laNotes), $laNotesKeys));
+            }
+        }
+
+        return $laNotes;
     }
 
     protected function verifyFeatureAllowed(string $feature, Merchant\Entity $merchant)
