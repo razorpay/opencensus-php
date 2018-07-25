@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
 import DetailRow from 'merchant/components/DetailRow';
+import ViewCredentials from './ViewCredentials';
 
 @connect(null, {
   openModal,
@@ -11,7 +12,10 @@ import DetailRow from 'merchant/components/DetailRow';
 })
 export default class PartnerCredentials extends Component {
   handleViewClick = mode => () => {
-    // TODO: write code for handleViewClick
+    this.props.openModal({
+      size: 'small',
+      component: <ViewCredentials mode={mode} />,
+    });
   };
 
   render() {
