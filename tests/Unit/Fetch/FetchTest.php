@@ -186,6 +186,17 @@ class FetchTest extends TestCase
     {
         $entities = (new \ReflectionClass(E::class))->getConstants();
 
+        $staticVariables = (new \ReflectionClass(E::class))->getStaticProperties();
+
+        $externalEntities = $staticVariables['externalServiceClass'];
+
+        // Have to remove the external entities, as corresponding entities doesn't exist on API
+        $entities = array_filter($entities, function ($value, $key) use ($externalEntities) {
+
+            return ((is_array($value) === false) and (isset($externalEntities[$value]) === false));
+
+        }, ARRAY_FILTER_USE_BOTH);
+
         $fetchs = [];
 
         array_forget($entities, ['CACHED_ENTITIES', 'KEYLESS_ALLOWED_ENTITIES']);

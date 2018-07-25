@@ -153,6 +153,8 @@
     var data = {!!utf8_json_encode($data['data'])!!};
     // Async Payment data //
 
+    try { CheckoutBridge.setPaymentID(data.payment_id) } catch(e){}
+
     var request_url = data.request.url;
     var key_id = '{{ App::getFacadeRoot()['basicauth']->getPublicKey() }}';
     var payment_base = '{{$data["api"]}}/v1/payments/' + data.payment_id;
@@ -357,7 +359,8 @@
           $('retry-btn').className = 'hide';
           $('message-txt').innerHTML = '<b>Select UPI App</b>Payment will be made to Razorpay\'s VPA';
           window.pollStatus = function(resp) {
-            if (!Object.keys(resp).length || /txnid=(undefined|null)/i.test(resp.response)) {
+            if (!Object.keys(resp).length || /txnId=(undefined|null|)(&|$)/i.test(resp.response)) {
+              fetchWait(cancel_url);
               $('cancel-btn').className = '';
               $('retry-btn').className = '';
               $('spinner').className = 'hide';

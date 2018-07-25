@@ -54,6 +54,17 @@ return [
             ],
         ],
 
+        PermissionCategory::PARTNER => [
+            Permission::VIEW_PARTNERS => [
+                'description' => 'View partner details',
+                'assignable'  => true,
+            ],
+            Permission::EDIT_PARTNERS => [
+                'description' => 'Edit partner details',
+                'assignable'  => true,
+            ],
+        ],
+
         PermissionCategory::MERCHANT_DETAIL => [
             Permission::VIEW_MERCHANT_BALANCE => [
                 'description' => 'View merchant balance in merchant details',
@@ -213,7 +224,7 @@ return [
             Permission::ADD_RECONCILIATION_FILE => '',
             Permission::ADD_SETTLEMENT_RECONCILIATION => '',
             Permission::RETRY_SETTLEMENT => '',
-            Permission::EDIT_MERCHANT_INVOICE_GSTIN => '',
+            Permission::MERCHANT_INVOICE_EDIT => '',
             Permission::SEND_NEWSLETTER => '',
             Permission::TRIGGER_DUMMY_ERROR => '',
             Permission::MAKE_API_CALL => '',
@@ -258,6 +269,7 @@ return [
 
         PermissionCategory::SETTLEMENT  => [
             Permission::SETTLEMENT_BULK_UPDATE  => '',
+            Permission::CREATE_NODAL_ACCOUNT_TRANSFER => '',
         ],
 
         PermissionCategory::DISPUTE => [
@@ -283,6 +295,11 @@ return [
             ],
             Permission::CREATE_PRICING_PLAN => [
                 'description' => 'create pricing plan',
+                'assignable'  => true,
+                'workflow'    => true
+            ],
+            Permission::UPDATE_PRICING_PLAN => [
+                'description' => 'update pricing plan',
                 'assignable'  => true,
                 'workflow'    => true
             ],
@@ -532,6 +549,10 @@ return [
         PermissionCategory::BATCH => [
             Permission::RETRY_BATCH => [
                 'description' => 'Retry batch processing',
+                'assignable'  => true,
+            ],
+            Permission::ADMIN_BATCH_CREATE => [
+                'description' => 'Create admin type batches',
                 'assignable'  => true,
             ]
         ],

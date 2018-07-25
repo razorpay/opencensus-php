@@ -31,7 +31,30 @@ class ValidationFields
             Entity::CONTACT_NAME,
             Entity::PROMOTER_ADDRESS_URL,
             Entity::PROMOTER_PAN_NAME,
-            Entity::TRANSACTION_REPORT_EMAIL,
+    ];
+
+    // There are limited total fields for Individual and Not-yet-registered business types
+    const DASHBOARD_FIELDS_LIMITED = [
+            Entity::ADDRESS_PROOF_URL,
+            Entity::BANK_ACCOUNT_NAME,
+            Entity::BANK_ACCOUNT_NUMBER,
+            Entity::BANK_BRANCH_IFSC,
+            Entity::BUSINESS_DBA,
+            Entity::BUSINESS_NAME,
+            Entity::BUSINESS_OPERATION_ADDRESS,
+            Entity::BUSINESS_OPERATION_CITY,
+            Entity::BUSINESS_OPERATION_PIN,
+            Entity::BUSINESS_OPERATION_STATE,
+            Entity::BUSINESS_REGISTERED_ADDRESS,
+            Entity::BUSINESS_REGISTERED_CITY,
+            Entity::BUSINESS_REGISTERED_PIN,
+            Entity::BUSINESS_REGISTERED_STATE,
+            Entity::BUSINESS_TYPE,
+            Entity::CONTACT_EMAIL,
+            Entity::CONTACT_MOBILE,
+            Entity::CONTACT_NAME,
+            Entity::PROMOTER_ADDRESS_URL,
+            Entity::PROMOTER_PAN_NAME,
     ];
 
     /**

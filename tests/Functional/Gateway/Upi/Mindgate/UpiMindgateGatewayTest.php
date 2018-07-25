@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
+use RZP\Constants\Mode;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Merchant\Account;
@@ -127,6 +128,43 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('HDFC', $upi['bank']);
         $this->assertEquals('hdfc', $upi['acquirer']);
         $this->assertEquals('hdfcbank', $upi['provider']);
+    }
+
+    public function testIntentAuthorizeFailed()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNull($payment['vpa']);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['payer_va'] = 'random@rzp';
+            }
+        });
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('random@rzp', $payment['vpa']);
     }
 
     public function testUpiAmountCap()
@@ -465,6 +503,90 @@ class UpiMindgateGatewayTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals($refund['attempts'], 2);
+    }
+
+    public function testBankDetailsAreSaved()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->mockServerContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'callback')
+                {
+                    $content[16] = 'PNB!1000000000!PNB10010010!9800000000';
+                }
+            });
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertEquals($upi['account_number'], '1000000000');
+
+        $this->assertEquals($upi['ifsc'], 'PNB10010010');
+
+    }
+
+    public function testBankDetailsAreNotSavedInCaseFailed()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->mockServerContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'callback')
+                {
+                    $content[16] = 'NA!109090902020!NA!NA';
+                }
+            });
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upi['account_number']);
+
+        $this->assertNull($upi['ifsc']);
+
+    }
+
+    public function testValidateVpaSuccess()
+    {
+        Gateway::$upiValidateVpaGateways[Mode::TEST] = [Gateway::UPI_MINDGATE];
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaFailure()
+    {
+        Gateway::$upiValidateVpaGateways[Mode::TEST] = [Gateway::UPI_MINDGATE];
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 
     protected function checkPaymentStatus($id, $expectedStatus)

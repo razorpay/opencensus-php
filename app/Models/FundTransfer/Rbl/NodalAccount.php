@@ -5,27 +5,26 @@ namespace RZP\Models\FundTransfer\Rbl;
 use App;
 use Config;
 
-use RZP\Models\FundTransfer\Rbl\Request\Beneficiary;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Rbl\Request\Transfer;
-use RZP\Models\FundTransfer\Rbl\Reconciliation\Status;
+use RZP\Models\FundTransfer\Rbl\Request\Beneficiary;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
-use RZP\Models\FundTransfer\Rbl\Reconciliation\ResponseProcessor;
+use RZP\Models\FundTransfer\Rbl\Reconciliation\StatusProcessor;
 
 class NodalAccount extends NodalBase\NodalAccount
 {
-    protected $trace;
-
     protected $config;
 
     protected $transferStatus = [];
 
-    public function __construct()
+    public function __construct(string $purpose = null)
     {
-        parent::__construct();
+        parent::__construct($purpose);
 
-        $this->trace = App::getFacadeRoot()['trace'];
+        $this->channel = Channel::RBL;
 
         $this->initStats();
     }
@@ -40,79 +39,60 @@ class NodalAccount extends NodalBase\NodalAccount
         return $responseArray;
     }
 
+    /**
+     * Will update the status of attempts to initiated
+     * Will add the attempts ids in the queue
+     *
+     * @param PublicCollection $attempts
+     * @return array
+     */
     public function initiateTransfer(PublicCollection $attempts): array
     {
-        $transfer   = new Transfer();
-
-        $reconciler = new ResponseProcessor();
-
         $this->updateAttemptStatus($attempts);
+
+        return $this->process($attempts);
+    }
+
+    public function process(PublicCollection $attempts): array
+    {
+        $transfer = new Transfer($this->purpose);
+
+        $processedCount = 0;
 
         foreach($attempts as $entity)
         {
-            try {
-                $response = $transfer->setEntity($entity)
+            try
+            {
+                // Calling init will reset all the data of previous request
+                $response = $transfer->init()
+                                     ->setEntity($entity)
                                      ->makeRequest();
 
                 $this->repo->saveOrFail($entity);
 
                 $this->repo->saveOrFail($entity->source);
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
-                $this->trace->info(
-                    TraceCode::RBL_NODAL_TRANSFER_REQUEST_FAILED,
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::NODAL_TRANSFER_REQUEST_FAILED,
                     [
+                        'channel'    => $this->channel,
                         'entity_id'  => $entity->getId()
                     ]);
 
                 continue;
             }
 
-            $reconciler->reconcile($response, $transfer->getMode());
+            $processedCount++;
 
-            $status = $this->isValidSuccessResponse($response);
-
-            $this->updateTransferStatus($status);
+            (new StatusProcessor($response))->updateTransferStatus();
         }
+
+        $this->updateTransferStatus($processedCount);
 
         return $this->transferStatus;
-    }
-
-    protected function initStats()
-    {
-        $this->transferStatus = [
-            strtolower(Status::SUCCESS)  => 0,
-            strtolower(Status::FAILURE)  => 0
-        ];
-    }
-
-    protected function updateTransferStatus(bool $status)
-    {
-        $key = strtolower(($status === true) ? Status::SUCCESS : Status::FAILURE);
-
-        $this->transferStatus[$key]++;
-    }
-
-    /**
-     * Validates if the current request was executed successfully or not
-     *
-     * @param array $response
-     *
-     * @return bool
-     */
-    protected function isValidSuccessResponse(array $response): bool
-    {
-        $responseBody = $response['Single_Payment_Corp_Resp'];
-
-        if ((isset($responseBody['Header']['Status']) === false) or
-            ($responseBody['Header']['Status'] === Status::FAILURE))
-        {
-            $this->trace->error(TraceCode::RBL_NODAL_FAILURE_RESPONSE, $response);
-
-            return false;
-        }
-
-        return true;
     }
 }

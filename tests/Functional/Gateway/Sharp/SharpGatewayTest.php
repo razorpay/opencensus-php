@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Functional\Gateway\Sharp;
 
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use Cache;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class SharpGatewayTest extends TestCase
 {
@@ -319,6 +321,106 @@ class SharpGatewayTest extends TestCase
         $this->otpCommonFlow('400000');
     }
 
+    public function testValidateVpaSuccess()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaFailure()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaInvalid()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaForForbiddenMerchant()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    /*
+     * Creating mindgate terminal as sharp will do direct s2spayment for upi.
+     * we need to avoid that and check the response flow from cache
+    */
+    public function testUpiPaymentCacheFlow()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $this->gateway = 'upi_mindgate';
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $this->setupCacheMock(str_after($paymentId, 'pay_'));
+
+        $this->assertEquals('async', $response['type']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        //to make sure the data is from cache
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->assertEquals(['success' => true], $response);
+
+        $response = $this->checkPaymentStatus($paymentId, null);
+
+        $this->assertNotNull('razorpay_payment_id', $response);
+
+        $this->assertEquals($response['razorpay_payment_id'], $payment['id']);
+    }
+
+    public function testUpiPaymentCacheMissFlow()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $this->gateway = 'upi_mindgate';
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $this->setupCacheMissMock(str_after($paymentId, 'pay_'));
+
+        $this->assertEquals('async', $response['type']);
+
+        // catches the exception
+        $this->checkPaymentStatus($paymentId, 'created');
+    }
+
     protected function otpCommonFlow($otp)
     {
         $this->fixtures->merchant->enableWallet('10000000000000', 'olamoney');
@@ -337,5 +439,75 @@ class SharpGatewayTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    protected function checkPaymentStatus($id, $expectedStatus)
+    {
+        $response = $this->getPaymentStatus($id);
+
+        if($expectedStatus === null)
+        {
+            return $response;
+        }
+
+        $status = $response['status'];
+
+        $this->assertEquals($expectedStatus, $status);
+    }
+
+    protected function setupCacheMock($paymentId)
+    {
+        $key = "upi.polling." . $paymentId . ".status";
+
+         Cache::shouldReceive('get')
+            ->once()
+            ->with($key)
+            ->andReturnUsing(function()
+            {
+                return null;
+            });
+
+        Cache::shouldReceive('put')
+            ->once()
+            ->with($key, ['status' => 'created'], 0.75)
+            ->andReturn(null);
+
+        Cache::shouldReceive('get')
+            ->once()
+            ->with($key)
+            ->andReturnUsing(function()
+            {
+                return ['status' => 'created'];
+            });
+
+        Cache::shouldReceive('forget')
+            ->once()
+            ->with($key)
+            ->andReturnUsing(function()
+            {
+                return null;
+            });
+
+        Cache::shouldReceive('get')
+            ->once()
+            ->with($key)
+            ->andReturnUsing(function()
+            {
+                return null;
+            });
+    }
+
+    protected function setupCacheMissMock($paymentId)
+    {
+        $key = "upi.polling." . $paymentId . ".status";
+
+        Cache::shouldReceive('get')
+            ->once()
+            ->with($key)
+            ->andReturnUsing(function()
+            {
+                throw new Exception\RuntimeException(
+                    "Test Exception");
+            });
     }
 }

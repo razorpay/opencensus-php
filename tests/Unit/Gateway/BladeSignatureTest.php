@@ -10,9 +10,9 @@ use RobRichards\XMLSecLibs\XMLSecurityKey;
 use RobRichards\XMLSecLibs\XMLSecurityDSig;
 use UnexpectedValueException;
 
-use RZP\Gateway\Blade\XmlseclibsAdapter;
-use RZP\Gateway\Blade\Gateway as BladeGateway;
-use RZP\Gateway\Blade\Mock\Gateway as BladeMockGateway;
+use RZP\Gateway\Mpi\Blade\XmlseclibsAdapter;
+use RZP\Gateway\Mpi\Blade\Gateway as BladeGateway;
+use RZP\Gateway\Mpi\Blade\Mock\Gateway as BladeMockGateway;
 use RZP\Tests\TestCase;
 //use Gateway\Blade\XmlseclibsAdapter;
 
@@ -93,6 +93,8 @@ class BladeSignatureTest extends TestCase
 
     public function testXmlSecLibAdapterVerifyWithCurrentDate()
     {
+        Carbon::create(2017, 9, 35, 12);
+
         $ret = $this->runVerifyOnXml('PARes.xml');
 
         $this->assertFalse($ret, "XmlseclibsAdapter should fail validation because of cert date");
@@ -118,9 +120,14 @@ class BladeSignatureTest extends TestCase
         $this->validateSignatue('IciciPares.txt');
     }
 
-    protected function validateSignatue($file)
+    public function testParesWithInvertedChain()
     {
-        $knownDate = Carbon::create(2017, 3, 25, 12);
+        $this->validateSignatue('WlpAcsPares.txt', Carbon::create(2018, 6, 28, 12));
+    }
+
+    protected function validateSignatue($file, $dt = null)
+    {
+        $knownDate = $dt ?: Carbon::create(2017, 3, 25, 12);
 
         Carbon::setTestNow($knownDate);
 
@@ -136,7 +143,7 @@ class BladeSignatureTest extends TestCase
         }
         catch (Exception $e)
         {
-
+            ;
         }
 
         $this->assertEquals(null, $e);

@@ -4,16 +4,9 @@ namespace RZP\Http\BasicAuth;
 
 use App;
 
-use RZP\Http\Route;
-use RZP\Models\Order;
 use RZP\Constants\Mode;
-use RZP\Models\Invoice;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Customer;
 use RZP\Constants\Entity as E;
-use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 
 /**

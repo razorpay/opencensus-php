@@ -25,6 +25,18 @@ class Type
     // Terminal to be used for ATM PIN transactions
     const PIN               = 'pin';
 
+    // Terminals For Bharat Qr payments
+    const BHARAT_QR         = 'bharat_qr';
+
+    // Terminals to be used for Debit recurring
+    const DEBIT_RECURRING   = 'debit_recurring';
+
+    // Terminals to be used for Moto payments
+    const MOTO              = 'moto';
+
+    // Terminal to be used for Collect UPI payments
+    const COLLECT           = 'collect';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -33,6 +45,10 @@ class Type
         self::NO_2FA,
         self::PAY,
         self::PIN,
+        self::BHARAT_QR,
+        self::DEBIT_RECURRING,
+        self::MOTO,
+        self::COLLECT,
     ];
 
     protected static $bitPosition = [
@@ -43,6 +59,10 @@ class Type
         self::NO_2FA            => 5,
         self::PAY               => 6,
         self::PIN               => 7,
+        self::BHARAT_QR         => 8,
+        self::DEBIT_RECURRING   => 9,
+        self::MOTO              => 10,
+        self::COLLECT           => 11,
     ];
 
     /**

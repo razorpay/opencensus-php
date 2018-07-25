@@ -224,7 +224,7 @@ class BrokerTransactionReport extends BasicEntityReport
 
         if ($payment->getGateway() === 'billdesk')
         {
-            return $payment->billdesk->getBankReferenceNo();
+            return $payment->billdesk->getBankPaymentId();
         }
         else if ($payment->getRelation('netbanking') !== null)
         {

@@ -27,6 +27,9 @@ class CreateQrCodeTable extends Migration
 
             $table->char(QrCode::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
 
+            $table->string(QrCode::REFERENCE)
+                  ->nullable();
+
             $table->char(QrCode::PROVIDER, 50);
 
             $table->char(QrCode::ENTITY_ID, QrCode::ID_LENGTH);
@@ -37,13 +40,17 @@ class CreateQrCodeTable extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->text(QrCode::QR_STRING);
+            $table->text(QrCode::QR_STRING)
+                  ->nullable();
 
-            $table->string(QrCode::SHORT_URL, 255);
+            $table->string(QrCode::SHORT_URL, 255)
+                  ->nullable();
 
             $table->integer(QrCode::CREATED_AT);
 
             $table->integer(QrCode::UPDATED_AT);
+
+            $table->index(QrCode::REFERENCE);
 
             $table->index(QrCode::ENTITY_ID);
 

@@ -98,14 +98,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,
             'gateway_error_code'  => null
         ],
     ],
@@ -175,6 +175,80 @@ return [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
             'gateway_error_code'  => null
+        ],
+    ],
+
+    'testValidateVpaSuccess' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'success@razorpay',
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'vpa'       => 'success@razorpay',
+                'success'   => true,
+            ],
+        ]
+    ],
+
+    'testValidateVpaFailure' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'invalidvpa@razorpay',
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'vpa'       => 'invalidvpa@razorpay',
+                'success'   => false,
+            ],
+        ]
+    ],
+
+    'testValidateVpaInvalid' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'razorpay',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+        ],
+    ],
+
+    'testValidateVpaForForbiddenMerchant' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'razorpay',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
         ],
     ],
 ];

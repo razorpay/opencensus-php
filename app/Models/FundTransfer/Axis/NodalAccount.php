@@ -13,10 +13,10 @@ use RZP\Encryption\Type;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
-use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Encryption\AESEncryption;
-use RZP\Mail\Settlement\AxisSettlement;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Mail\Settlement\Settlement as SettlementMail;
+use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 
 class NodalAccount extends NodalBase\FileProcessor
 {
@@ -41,9 +41,9 @@ class NodalAccount extends NodalBase\FileProcessor
 
     protected $id = null;
 
-    public function __construct()
+    public function __construct(string $purpose)
     {
-        parent::__construct();
+        parent::__construct($purpose);
 
         $this->date = Carbon::today(Timezone::IST)->format('n/j/y');
 
@@ -176,6 +176,8 @@ class NodalAccount extends NodalBase\FileProcessor
     {
         $mode = $this->getPaymentType($amount, $ba);
 
+        $this->updateSummary($mode, $amount);
+
         $mode = self::MODE_MAPPING[$mode];
 
         $formattedAmount = (float) sprintf('%0.2f', $amount);
@@ -207,19 +209,23 @@ class NodalAccount extends NodalBase\FileProcessor
             return Mode::IFT;
         }
 
-        $mode = $this->getTransferMode($amount);
+        $mode = $this->getTransferMode($amount, $ba->merchant);
 
         return $mode;
     }
 
     protected function sendAxisTransferMail(array $fileData)
     {
-        $data['body'] = json_encode($this->data, JSON_PRETTY_PRINT);
+        $data = [
+            'channel'    => $this->channel,
+            'summary'    => $this->summary,
+            'file_data'  => $fileData,
+            'body'       => json_encode($this->data, JSON_PRETTY_PRINT),
+            'recipients' => 'axis.nodal.transfers@razorpay.com'
+        ];
 
-        $data['file_data'] = $fileData;
+        $settlementMail = new SettlementMail($data);
 
-        $axisSettlementMail = new AxisSettlement($data);
-
-        Mail::queue($axisSettlementMail);
+        Mail::queue($settlementMail);
     }
 }

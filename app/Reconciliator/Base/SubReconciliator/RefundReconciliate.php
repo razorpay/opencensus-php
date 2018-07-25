@@ -49,6 +49,14 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     public function runReconciliate($row)
     {
+        //
+        // Resetting row attributes here which could have been set during
+        // reconciliation of a particular row. This is mainly done for
+        // resetting failUnprocessedRow attribute which should be reset
+        // for each row.
+        //
+        $this->resetRowProcessingAttributes();
+
         $rowDetails = $this->getRowDetailsStructured($row);
 
         if (empty($rowDetails) === true)
@@ -106,7 +114,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'message'       => 'Unable to perform one of the reconciliation actions -> ' . $ex->getMessage(),
                     'row'           => $row,
                     'extra_details' => $this->extraDetails,
-                    'gateway'       => get_called_class()
+                    'gateway'       => $this->gateway
                 ]);
 
             $this->trace->traceException($ex);
@@ -117,12 +125,12 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
     }
 
-    public function resetProcessingAttributes()
+    public function resetRowProcessingAttributes()
     {
         $this->payment = null;
         $this->refund  = null;
 
-        parent::resetProcessingAttributes();
+        parent::resetRowProcessingAttributes();
     }
 
     protected function getReconRefundAmount(array $row)
@@ -152,7 +160,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $validRefundAmount = $this->validateRefundAmountEqualsReconAmount($row);
 
-        $validRefundDetails = ($validPaymentStatus and $validRefundAmount);
+        $validCurrencyCode = $this->validateRefundCurrencyEqualsReconCurrency($row);
+
+        $validRefundDetails = (($validPaymentStatus === true) and
+                               ($validRefundAmount === true) and
+                               ($validCurrencyCode === true));
 
         return $validRefundDetails;
     }
@@ -168,7 +180,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'trace_code' => TraceCode::RECON_MISMATCH,
                     'message'    => 'Payment status is failed.',
                     'payment_id' => $this->payment->getId(),
-                    'gateway'    => get_called_class()
+                    'gateway'    => $this->gateway
                 ]);
 
             return false;
@@ -192,7 +204,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                         'trace_code'    => TraceCode::RECON_MISMATCH,
                         'message'       => 'Refund transaction not found in DB',
                         'refund_id'     => $this->refund->getId(),
-                        'gateway'       => get_called_class()
+                        'gateway'       => $this->gateway
                     ]);
 
                 return false;
@@ -258,7 +270,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'message'       => 'Refund transaction create failed with -> ' . $ex->getMessage(),
                     'payment_id'    => $this->payment->getId(),
                     'refund_id'     => $this->refund->getId(),
-                    'gateway'       => get_called_class(),
+                    'gateway'       => $this->gateway,
                 ]);
 
             $this->trace->traceException($ex);
@@ -278,7 +290,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                 'message'       => 'Attempting to create refund transaction in recon',
                 'payment_id'    => $this->payment->getId(),
                 'refund_id'     => $this->refund->getId(),
-                'gateway'       => get_called_class()
+                'gateway'       => $this->gateway
             ]);
 
         $processor = new Payment\Processor\Processor($this->refund->merchant);
@@ -320,7 +332,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'message'    => 'Corresponding payment for the refund not found in DB.',
                     'row'        => $row,
                     'refund_id'  => $refundId,
-                    'gateway'    => get_called_class()
+                    'gateway'    => $this->gateway
                 ]);
 
             throw new ReconciliationException(
@@ -336,10 +348,16 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $arn = $this->getArn($row);
 
+        $gatewayTransactionId = $this->getGatewayTransactionId($row);
+
+        $referenceNumber = $this->getReferenceNumber($row);
+
         $rowDetails = [
-            BaseReconciliate::REFUND_ID             => $refundId,
-            BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
-            BaseReconciliate::ARN                   => $arn,
+            BaseReconciliate::REFUND_ID              => $refundId,
+            BaseReconciliate::GATEWAY_SETTLED_AT     => $gatewaySettledAt,
+            BaseReconciliate::ARN                    => trim($arn),
+            BaseReconciliate::REFERENCE_NUMBER       => trim($referenceNumber),
+            BaseReconciliate::GATEWAY_TRANSACTION_ID => trim($gatewayTransactionId),
         ];
 
         return $rowDetails;
@@ -363,7 +381,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'message'    => 'Refund ID being sent in the file is not as expected.',
                     'row'        => $row,
                     'refund_id'  => $refundId,
-                    'gateway'    => get_called_class()
+                    'gateway'    => $this->gateway
                 ]);
 
             return null;
@@ -381,11 +399,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
             {
                 $this->messenger->raiseReconAlert(
                     [
-                        'trace_code' => TraceCode::RECON_MISMATCH,
-                        'message' => 'Unable to create a refund on API after finding it missing',
-                        'row' => $row,
-                        'refund_id' => $refundId,
-                        'gateway' => get_called_class(),
+                        'trace_code'    => TraceCode::RECON_MISMATCH,
+                        'message'       => 'Unable to create a refund on API after finding it missing',
+                        'row'           => $row,
+                        'refund_id'     => $refundId,
+                        'gateway'       => $this->gateway,
                     ]);
 
                 return null;
@@ -420,7 +438,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                 'message'    => 'Refund not found in DB. -> ' . $ex->getMessage(),
                 'row'        => $row,
                 'refund_id'  => $refundId,
-                'gateway'    => get_called_class()
+                'gateway'    => $this->gateway
             ]);
 
         $paymentId = $this->getPaymentId($row);
@@ -436,11 +454,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'row' => $row,
-                    'message' => 'Unable to get the payment ID or amount from the refund recon file',
-                    'refund_id' => $refundId,
+                    'row'           => $row,
+                    'message'       => 'Unable to get the payment ID or amount from the refund recon file',
+                    'refund_id'     => $refundId,
                     'refund_amount' => $refundAmount,
-                    'payment_id' => $paymentId,
+                    'payment_id'    => $paymentId,
                 ]);
 
             return false;
@@ -479,6 +497,20 @@ class RefundReconciliate extends Foundation\SubReconciliate
         return true;
     }
 
+
+    /**
+     * Checks if currency in recon file matches the actual currency in refund entity
+     * Implementation to be provided by child clasess
+     *
+     * @param  array $row Row data
+     *
+     * @return bool
+     */
+    protected function validateRefundCurrencyEqualsReconCurrency(array $row) : bool
+    {
+        return true;
+    }
+
     /**
      * If this is being implemented in the child class,
      * the setter for storing the arn should be present
@@ -488,6 +520,33 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * @return null
      */
     protected function getArn(array $row)
+    {
+        return null;
+    }
+
+    /**
+     * If this is being implemented in the child class,
+     * the setter for storing the arn should be present
+     * in the gateway entity.
+     *
+     * @param $row array
+     * @return null
+     */
+    protected function getGatewayTransactionId(array $row)
+    {
+        return null;
+    }
+
+    /**
+     * If this is being implemented in the child class,
+     * the setter for storing the payment reference_number
+     * should be present in the gateway entity.
+     *
+     * @param $row array
+     *
+     * @return null
+     */
+    protected function getReferenceNumber(array $row)
     {
         return null;
     }
@@ -539,10 +598,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     $this->messenger->raiseReconAlert(
                         [
                             'trace_code'    => TraceCode::RECON_MISMATCH,
+                            'info_code'     => 'DUPLICATE_ROW',
                             'message'       => 'Arn number for the refund entity does not match',
                             'row'           => $rowDetails,
                             'refund_id'     => $refund->getId(),
-                            'gateway'       => get_called_class(),
+                            'gateway'       => $this->gateway,
                             'refund_arn'    => $currentArn,
                         ]);
 
@@ -570,7 +630,30 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $this->persistGatewayArn($rowDetails, $gatewayRefund);
 
+        $this->persistReferenceNumber($rowDetails, $gatewayRefund);
+
+        $this->persistGatewayTransactionId($rowDetails, $gatewayRefund);
+
         $this->repo->saveOrFail($gatewayRefund);
+    }
+
+    /**
+     * Saving the Bank Payment Id from reconciliator file
+     * Replacing existing value or adding it to the DB
+     *
+     * @param array        $rowDetails
+     * @param PublicEntity $gatewayRefund
+     */
+    protected function persistReferenceNumber(array $rowDetails, PublicEntity $gatewayRefund)
+    {
+        if (empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === true)
+        {
+            return;
+        }
+
+        $referenceNumber = $rowDetails[BaseReconciliate::REFERENCE_NUMBER];
+
+        $this->setReferenceNumberInGateway($referenceNumber, $gatewayRefund);
     }
 
     /**
@@ -605,6 +688,24 @@ class RefundReconciliate extends Foundation\SubReconciliate
     }
 
     /**
+     * Sets the arn number in the corresponding gateway
+     *
+     * @param $rowDetails array
+     * @param $gatewayRefund PublicEntity
+     */
+    protected function persistGatewayTransactionId(array $rowDetails, PublicEntity $gatewayRefund)
+    {
+        if (empty($rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID]) === true)
+        {
+            return;
+        }
+
+        $gatewayTransactionId = $rowDetails[BaseReconciliate::GATEWAY_TRANSACTION_ID];
+
+        $this->setGatewayTransactionId($gatewayTransactionId, $gatewayRefund);
+    }
+
+    /**
      * This function is implemented in the child class
      * Every gateway has a different name mapped for "arn"
      * e.g. : hdfc calls it 'arn_no'
@@ -618,5 +719,73 @@ class RefundReconciliate extends Foundation\SubReconciliate
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {
         return;
+    }
+
+    /**
+     * The reason that it is implemented this way is because different
+     * gateway entities may have different attribute names to store the
+     * gateway Transaction ID.
+     * So, other gateways can implement this function with the
+     * appropriate setter.
+     *
+     * @param string       $gatewayTransactionId
+     * @param PublicEntity $gatewayRefund
+     */
+    protected function setGatewayTransactionId(string $gatewayTransactionId, PublicEntity $gatewayRefund)
+    {
+        $dbGatewayTransactionId = (string) $gatewayRefund->getGatewayTransactionId();
+
+        if ((empty($dbGatewayTransactionId) === false) and
+            ($dbGatewayTransactionId !== $gatewayTransactionId))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'                => TraceCode::RECON_MISMATCH,
+                    'info_code'                 => 'DATA_MISMATCH',
+                    'message'                   => 'Reference number in db is not same as in recon',
+                    'payment_id'                => $this->payment->getId(),
+                    'db_reference_number'       => $dbGatewayTransactionId,
+                    'recon_reference_number'    => $gatewayTransactionId,
+                    'gateway'                   => $this->gateway
+                ]);
+
+            return;
+        }
+
+        $gatewayRefund->setGatewayTransactionId($gatewayTransactionId);
+    }
+
+    /**
+     * The reason that it is implemented this way is because different
+     * gateway entities may have different attribute names to store the
+     * reference number.
+     * So, other gateways can implement this function with the
+     * appropriate setter.
+     *
+     * @param string       $referenceNumber
+     * @param PublicEntity $gatewayRefund
+     */
+    protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayRefund)
+    {
+        $dbReferenceNumber = $gatewayRefund->getBankPaymentId();
+
+        if ((empty($dbReferenceNumber) === false) and
+            ($dbReferenceNumber !== $referenceNumber))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'                => TraceCode::RECON_MISMATCH,
+                    'info_code'                 => 'DATA_MISMATCH',
+                    'message'                   => 'Reference number in db is not same as in recon',
+                    'payment_id'                => $this->payment->getId(),
+                    'db_reference_number'       => $dbReferenceNumber,
+                    'recon_reference_number'    => $referenceNumber,
+                    'gateway'                   => $this->gateway
+                ]);
+
+            return;
+        }
+
+        $gatewayRefund->setBankPaymentId($referenceNumber);
     }
 }

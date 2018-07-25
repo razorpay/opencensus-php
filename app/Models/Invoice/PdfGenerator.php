@@ -19,7 +19,7 @@ class PdfGenerator extends Base\Core
 
     const INVOICE_PDF_TEMPLATES_KEY = 'invoices.pdf.templates';
 
-    const CACHE_DEFAULT_TTL         = 900; // In seconds (=15 min)
+    const CACHE_DEFAULT_TTL         = 15; // In minutes
 
     const TEMPLATE_FILE             = 'template_file';
     const CSS_FILE                  = 'css_file';
@@ -49,20 +49,15 @@ class PdfGenerator extends Base\Core
     {
         $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
 
-        $timeStarted = microtime(true);
+        $timeStarted = millitime();
 
         $html = $this->getHtml($viewPayload);
 
         $pdfContent = $this->getPdfContent($html);
 
-        $timeTaken = microtime(true) - $timeStarted;
+        $duration = millitime() - $timeStarted;
 
-        $this->trace->debug(
-            TraceCode::INVOICE_PDF_GEN_TIME_TAKEN,
-            [
-                'id'         => $this->invoice->getId(),
-                'time_taken' => $timeTaken,
-            ]);
+        $this->trace->histogram(Metric::INVOICE_PDF_GEN_DURATION_MILLISECONDS, $duration);
 
         return (new FileStore\Creator())
                     ->name($this->invoice->getPdfFilename())
@@ -84,7 +79,7 @@ class PdfGenerator extends Base\Core
             'footer-font-size'  => '9',
             'footer-center'     => 'Page [page] of [topage]',
             'dpi'               => 290,
-            'zoom'              => 1.28,
+            'zoom'              => 1,
             'ignoreWarnings'    => false,
             'encoding'          => 'UTF-8',
         ];

@@ -129,7 +129,7 @@ class Gateway extends Base\Gateway
     {
         return [
             'acquirer' => [
-                Payment\Entity::REFERENCE1 => $gatewayPayment->getBankReferenceNo()
+                Payment\Entity::REFERENCE1 => $gatewayPayment->getBankPaymentId()
             ]
         ];
     }
@@ -680,7 +680,7 @@ class Gateway extends Base\Gateway
         {
             $verify->apiSuccess = false;
 
-            $amountRefunded = (int) ($content['RefAmount'] * 100);
+            $amountRefunded = intval($content['RefAmount']) * 100;
 
             // Check that refund amount matches.
             if ($amountRefunded !== $verify->input['payment']['amount_refunded'])

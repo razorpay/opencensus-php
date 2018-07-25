@@ -52,6 +52,50 @@ return [
         ],
     ],
 
+    'testGetPaymentFlows' => [
+        'request'  => [
+            'url'     => '/payment/flows',
+            'content' => [
+                'iin' => '112333',
+            ],
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'pin' => true,
+                'otp' => true,
+            ],
+        ],
+    ],
+
+    'testGetPaymentFlowsEmptyResponse' => [
+        'request'  => [
+            'url'     => '/payment/flows',
+            'content' => [
+                'iin' => '112333',
+            ],
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testGetPaymentOtpFlow' => [
+        'request'  => [
+            'url'     => '/payment/flows',
+            'content' => [
+                'iin' => '112333',
+            ],
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'otp' => true,
+            ],
+        ],
+    ],
+
     'testEditIinFailed' => [
         'request'   => [
             'url'     => '/iins/112333',
@@ -131,7 +175,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 21,
+                'count' => 22,
                 'items' => [
                     [
                     ]

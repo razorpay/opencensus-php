@@ -6,11 +6,11 @@ class Reconciliation extends Base
 {
     protected $channel;
 
-    public function __construct(array $data, string $channel)
+    public function __construct(array $data)
     {
-        parent::__construct($data);
+        $this->channel = $data['channel'];
 
-        $this->channel = $channel;
+        parent::__construct($data);
     }
 
     protected function getFromHeader()

@@ -10,7 +10,7 @@ return [
             'url'    => '/invitations',
             'method' => 'POST',
             'content' => [
-                'email'       => 'testTeamInvite@razorpay.com',
+                'email'       => 'testteaminvite@razorpay.com',
                 'role'        => 'manager',
                 'sender_name' => 'sender_name'
             ]
@@ -18,7 +18,7 @@ return [
         'response' => [
             'content' => [
                 'merchant_id' => '1000InviteMerc',
-                'email'       => 'testTeamInvite@razorpay.com',
+                'email'       => 'testteaminvite@razorpay.com',
                 'role'        => 'manager'
             ]
         ]
@@ -29,7 +29,7 @@ return [
             'url'     => '/invitations',
             'method'  => 'POST',
             'content' => [
-                'email'       => 'existingInvite@razorpay.com',
+                'email'       => 'existinginvite@razorpay.com',
                 'role'        => 'manager',
                 'token'       => str_random(40),
                 'sender_name' => 'sender_name'
@@ -39,7 +39,7 @@ return [
             'content' => [
                 'role'        => 'manager',
                 'user_id'     => '1000InviteUser',
-                'email'       => 'existingInvite@razorpay.com',
+                'email'       => 'existinginvite@razorpay.com',
                 'merchant_id' => '1000InviteMerc',
             ]
         ]
@@ -50,7 +50,7 @@ return [
             'url'     => '/invitations',
             'method'  => 'POST',
             'content' => [
-                'email'       => 'testTeamInvite@razorpay.com',
+                'email'       => 'testteaminvite@razorpay.com',
                 'role'        => 'manager',
                 'token'       => str_random(40),
                 'sender_name' => 'sender_name'
@@ -76,7 +76,7 @@ return [
             'url'     => '/invitations',
             'method'  => 'POST',
             'content' => [
-                'email'       => 'testTeamInvite@razorpay.com',
+                'email'       => 'testteaminvite@razorpay.com',
                 'role'        => 'boss',
                 'token'       => str_random(40),
                 'sender_name' => 'sender_name'
@@ -107,7 +107,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'email'       => 'testTeamInvite@razorpay.com',
+                'email'       => 'testteaminvite@razorpay.com',
                 'role'        => 'manager',
                 'merchant_id' => '1000InviteMerc',
             ]
@@ -121,13 +121,17 @@ return [
             'content' => [
                 'user_id' => '1000InviteUser',
             ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
                 'role'        => 'manager',
                 'user_id'     => '1000InviteUser',
                 'merchant_id' => '1000InviteMerc',
-                'email'       => 'testTeamInvite@razorpay.com',
+                'email'       => 'testteaminvite@razorpay.com',
             ]
         ]
     ],
@@ -138,6 +142,10 @@ return [
             'method'  => 'POST',
             'content' => [
                 'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
             ],
         ],
         'response' => [
@@ -157,6 +165,10 @@ return [
             'content' => [
                 'user_id' => '1000InviteUser',
             ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [
@@ -170,6 +182,32 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAcceptRandomValidInvitation' => [
+        'request' => [
+            'method'  => 'POST',
+            'content' => [
+                'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
         ],
     ],
 
@@ -282,7 +320,7 @@ return [
         'response' => [
             'content' => [
                 'role'        => 'manager',
-                'email'       => 'testTeamInvite@razorpay.com',
+                'email'       => 'testteaminvite@razorpay.com',
                 'merchant_id' => '1000InviteMerc',
             ]
         ]
@@ -308,6 +346,48 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ],
+    ],
+
+    'testGetInvitationsReceivedBeforeSignup' => [
+        'request' => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Email' => 'old@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'email' => "old@razorpay.com",
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetInvitationsReceivedPostSignup' => [
+        'request' => [
+            'method'  => 'GET',
+        ],
+        'server'  => [
+            'HTTP_X-Dashboard-User-Email' => 'old@razorpay.com',
+        ],
+        'response' => [
+            'content'     => [
+                'email' => "old@razorpay.com",
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetInvitationsSentToUpperCaseEmail' => [
+        'request' => [
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content'     => [
+                'email' => "upper_case@razorpay.com",
+            ],
+            'status_code' => 200,
         ],
     ],
 ];

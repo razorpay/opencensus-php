@@ -84,7 +84,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-        $this->validateVpa($input);
+        $this->validateVpa($input['payment']);
 
         parent::action($input, Action::AUTHORIZE);
 
@@ -142,7 +142,7 @@ class Gateway extends Base\Gateway
      * We need to validate that the user's VPA is valid before proceeding with the payment
      * @param array $input
      */
-    private function validateVpa(array $input)
+    public function validateVpa(array $input)
     {
         parent::action($input, Action::VALIDATE_VPA);
 
@@ -211,7 +211,9 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($encryptedResponse, Action::CALLBACK);
 
-        return $response;
+        $bankDetails = $this->parseBankAccountDetails($response[ResponseFields::BANK_REFERENCE]);
+
+        return array_merge($response, $bankDetails);
     }
 
     /**
@@ -620,7 +622,7 @@ class Gateway extends Base\Gateway
         $data = [
             $this->getMerchantId(),
             random_alpha_string(10),
-            $input['payment']['vpa'],
+            $input['vpa'],
             'T'
         ];
 

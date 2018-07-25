@@ -20,6 +20,49 @@ return [
         ],
     ],
 
+    'testFetchRuleVPAFilterForAdminAuth' => [
+        'request' => [
+            'url'     => '/admin/payment',
+            'method'  => 'get',
+            'content' => [
+                'vpa' => 'success1@razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'vpa' => 'success1@razorpay',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchCardQueryParams' => [
+        'request' => [
+            'url'     => '/admin/payment',
+            'method'  => 'get',
+            'content' => [
+                'iin'   => '411111',
+                'last4' => '1111',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'card_id' => 'card_100000001lcard',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testFetchRulesForPrivateWithExtraFieldsError' => [
         'request' => [
             'url'     => '/payments',

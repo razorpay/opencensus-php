@@ -6,6 +6,7 @@ use Mail;
 use Config;
 use ApiResponse;
 use Carbon\Carbon;
+use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -24,10 +25,16 @@ use RZP\Models\Admin\Action;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
+use RZP\Exception\LogicException;
+use RZP\Models\Settings\Accessor;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use Razorpay\OAuth\Exception\DBQueryException;
+use RZP\Models\Merchant\Request as MerchantRequest;
+
 class Core extends Base\Core
 {
     use Notify;
@@ -57,6 +64,10 @@ class Core extends Base\Core
 
         $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
+        $org = $this->repo->org->findOrFailPublic($input[Entity::ORG_ID]);
+
+        $merchant->org()->associate($org);
+
         $this->repo->saveOrFail($merchant);
 
         $this->addMerchantSupportingEntities($merchant);
@@ -85,22 +96,9 @@ class Core extends Base\Core
         bool $linkedAccount = true,
         bool $accountEntity = false)
     {
-        // We only check for email uniqueness if the email
-        // address is provided
-        if (isset($input['email']) === true)
-        {
-            $email['email'] = $input['email'];
+        $aggregatorMerchant->getValidator()->validateSubMerchantInput($input, $linkedAccount);
 
-            (new Validator)->validateInput('unique_email', $email);
-        }
-        else
-        {
-            $input['email'] = $aggregatorMerchant->getEmail();
-        }
-
-        $merchantData['name'] = $input['name'] ?? null;
-
-        (new Validator)->validateInput('edit_name', $merchantData);
+        $input['email'] = $input['email'] ?? $aggregatorMerchant->getEmail();
 
         if ($accountEntity === true)
         {
@@ -166,11 +164,15 @@ class Core extends Base\Core
     {
         if (isset($input[Entity::GROUPS]) === true)
         {
+            $this->repo->group->validateExists($input[Entity::GROUPS]);
+
             $this->repo->sync($merchant, Entity::GROUPS, $input[Entity::GROUPS]);
         }
 
         if (isset($input[Entity::ADMINS]) === true)
         {
+            $this->repo->admin->validateExists($input[Entity::ADMINS]);
+
             $this->repo->sync($merchant, Entity::ADMINS, $input[Entity::ADMINS]);
 
             if ($create === true)
@@ -267,11 +269,13 @@ class Core extends Base\Core
         {
             $parent = $this->repo->merchant->find($parentId);
 
-            if ((empty($parent) === false) and
-                (strtolower($merchant->getEmail()) === strtolower($parent->getEmail())))
+            if ((empty($parent) === false) and (strtolower($merchant->getEmail()) === strtolower($parent->getEmail())))
             {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
-                    Merchant\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+                    Merchant\Entity::EMAIL,
+                    $input[Merchant\Entity::EMAIL]
+                );
             }
         }
 
@@ -753,5 +757,378 @@ class Core extends Base\Core
                            ->all();
 
         return $emails;
+    }
+
+    /**
+     * Saves data from partner activation/deactivation requests into the settings table.
+     *
+     * @param Request\Entity $request
+     * @param array          $submissions
+     */
+    public function postPartnerSubmissions(MerchantRequest\Entity $request, array $submissions)
+    {
+        $parterType = $submissions[Entity::PARTNER_TYPE];
+
+        $data[Entity::PARTNER_TYPE] = $parterType;
+
+        $this->trace->info(
+            TraceCode::PARTNER_REQUEST_SUBMITTED,
+            [
+                Entity::PARTNER_TYPE       => $parterType,
+                MerchantRequest\Entity::ID => $request->getId(),
+            ]);
+
+        Accessor::for ($request, Constants::PARTNER)
+            ->upsert($data)
+            ->save();
+    }
+
+    /**
+     * @param Request\Entity $merchantRequest
+     *
+     * @return array
+     */
+    public function getPartnerSubmissions(MerchantRequest\Entity $merchantRequest): array
+    {
+        $settings = Accessor::for($merchantRequest, Constants::PARTNER)->all();
+
+        $response = $settings->toArray();
+
+        return $response;
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @return mixed
+     * @throws BadRequestException
+     */
+    public function getPartnerApp(Entity $merchant)
+    {
+        // For pure platforms, no internal partner app is created
+        (new Validator)->validateIsNonPurePlatformPartner($merchant);
+
+        try
+        {
+            $app = (new OAuthApp\Repository)->findActivePartnerApplicationByMerchantId($merchant->getId());
+        }
+        catch (DBQueryException $ex)
+        {
+            throw new BadRequestException(
+                ErrorCode::SERVER_ERROR_PARTNER_APP_NOT_FOUND,
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        return $app;
+    }
+
+    /**
+     * @param Request\Entity $merchantRequest
+     *
+     * @return Entity
+     * @throws LogicException
+     */
+    public function markAsPartner(MerchantRequest\Entity $merchantRequest): Entity
+    {
+        $submissions = $this->getPartnerSubmissions($merchantRequest);
+
+        if (empty($submissions[Entity::PARTNER_TYPE]) === true)
+        {
+            throw new LogicException(
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+                ErrorCode::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
+                $submissions);
+        }
+
+        $partnerType = $submissions[Entity::PARTNER_TYPE];
+
+        $merchant = $merchantRequest->merchant;
+
+        $validator = new Validator;
+
+        $validator->validateIsNotLinkedAccount($merchant);
+
+        $validator->validateIfAlreadyPartner($merchant);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType)
+        {
+            $merchant->setPartnerType($partnerType);
+
+            $this->repo->saveOrFail($merchant);
+
+            $this->createPartnerApp($merchant);
+        });
+
+        return $merchant;
+    }
+
+    /**
+     * Sets the Partner type attribute as null
+     *
+     * @param Entity $merchant
+     *
+     * @return Entity
+     */
+    public function unmarkAsPartner(Entity $merchant): Entity
+    {
+        (new Validator)->validateIsPartner($merchant);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->deletePartnerApp($merchant);
+
+            $merchant->setPartnerType();
+
+            $this->repo->saveOrFail($merchant);
+
+        });
+
+        return $merchant;
+    }
+
+    /**
+     * This function also adds ref-tag and creates user-merchant mapping in addition to the
+     * access map. The aggregator user is mapped to submerchant as an owner in cases of
+     * fully managed and aggregator type partners. The aggregator type will not get mapped
+     * in the future, it is only kept for backward compatibility.
+     *
+     * @param Entity $partner
+     * @param Entity $submerchant
+     *
+     * @return array
+     * @throws BadRequestException
+     */
+    public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant): array
+    {
+        $this->trace->info(
+            TraceCode::PARTNER_CREATE_ACCESS_MAP_REQUEST,
+            [
+                'partner_id'     => $partner->getId(),
+                'submerchant_id' => $submerchant->getId(),
+            ]);
+
+        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
+        {
+            $partnerApp = $this->getPartnerApp($partner);
+
+            // Maintained for backward compatibility
+            $this->addSubMerchantReferral($partner, $submerchant);
+
+            $this->assignSubmerchantDashboardAccessIfApplicable($partner, $submerchant);
+
+            // If the mapping already exists, the existing entity is returned
+            $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
+                            $submerchant,
+                            [
+                                AccessMap\Entity::APPLICATION_ID => $partnerApp->getId(),
+                            ]);
+
+            return $accessMap;
+        });
+
+        return $accessMap->toArrayPublic();
+    }
+
+    /**
+     * @param Entity $partner
+     * @param Entity $submerchant
+     */
+    public function deletePartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
+    {
+        $this->trace->info(
+            TraceCode::PARTNER_DELETE_ACCESS_MAP_REQUEST,
+            [
+                'partner_id'     => $partner->getId(),
+                'submerchant_id' => $submerchant->getId(),
+            ]);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
+        {
+            $partnerApp = $this->getPartnerApp($partner);
+
+            (new AccessMap\Core)->deleteMappingForOAuthApp($submerchant, $partnerApp->getId());
+
+            $this->removeSubMerchantReferralTag($submerchant, $partner->getId());
+        });
+    }
+
+    /**
+     * @param Entity $merchant
+     */
+    public function createPartnerApp(Entity $merchant)
+    {
+        if ($merchant->isPurePlatformPartner() === true)
+        {
+            // Don't create a dummy application for pure platforms
+            return;
+        }
+
+        $name = $merchant->getName();
+
+        // Default value is required because website is a required field to create oauth applications
+        $website = $merchant->getWebsite() ?? 'https://www.razorpay.com';
+
+        $appInput = [
+            'name'     => $name,
+            'website'  => $website,
+        ];
+
+        $logoUrl = $merchant->getLogoUrl();
+
+        // Do not send the logo_url parameter if it is null. Auth service will reject it.
+        if ($logoUrl !== null)
+        {
+            $appInput['logo_url'] = $logoUrl;
+        }
+
+        $app = app('authservice')->createApplication($appInput, $merchant->getId(), OAuthApp\Type::PARTNER);
+
+        return $app;
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    public function deletePartnerApp(Entity $merchant)
+    {
+        if ($merchant->isPurePlatformPartner() === true)
+        {
+            // A dummy application for pure platforms does not exist
+            return;
+        }
+
+        $app = $this->getPartnerApp($merchant);
+
+        $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());
+
+        return $app;
+    }
+
+    public function addSubMerchantReferral($aggregratorMerchant, $account)
+    {
+        $tagInputData = [
+            'tags' => ['ref-' . $aggregratorMerchant->id],
+        ];
+
+        $this->addTags($account->id, $tagInputData);
+    }
+
+    /**
+     * @param string $ownerId
+     * @param Entity $subMerchant
+     */
+    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
+    {
+        $userMerchantMappingInputData = [
+            'action'      => 'attach',
+            'role'        => 'owner',
+            'merchant_id' => $subMerchant->getId(),
+        ];
+
+        (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
+    }
+
+    /**
+     * used for deleting a single tag of a merchant
+     * @param string $id
+     * @param string $tagName tag which has to be deleted
+     */
+    public function deleteTag($id, $tagName)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $merchant->untag($tagName);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * used for adding tags to merchant
+     * This function uses retag(), which overwrites all previous tags
+     * with the ones passed in the $input array
+     *
+     * @param string $id
+     * @param array  $input which contains the tags of the merchant
+     * @param bool   $slackNotify
+     *
+     * @return
+     */
+    public function addTags($id, $input, $slackNotify = false)
+    {
+        (new Validator)->validateInput('addTags', $input);
+
+        $this->trace->info(TraceCode::MERCHANT_TAGS_ADD, $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $tags = $input['tags'];
+
+        $merchant->retag($tags);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        if ($slackNotify === true)
+        {
+            $this->logActionToSlack($merchant, SlackActions::TAGGED, $input);
+        }
+
+        return $merchant->tagNames();
+    }
+
+    protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
+    {
+        $tag = 'ref-' . $partnerId;
+
+        $tags = $this->deleteTag($merchant->getPublicId(), $tag);
+
+        return $tags;
+    }
+
+    protected function isPartnerUserAddedToSubmerchant(Entity $partner, Entity $submerchant): bool
+    {
+        $partnerUser = $partner->primaryOwner();
+
+        $ownerIds = $submerchant->owners()->getIds();
+
+        return (in_array($partnerUser->getId(), $ownerIds, true) === true);
+    }
+
+    /**
+     * Maps the partner user to the submerchant account,
+     * if the partner merchant should have access to the submerchant's dashboard, and,
+     * if the partner user is not already mapped to the submerchant's account.
+     *
+     * @param Entity $partner
+     * @param Entity $submerchant
+     */
+    protected function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant)
+    {
+        if ($partner->allowSubmerchantDashboardAccess() === false)
+        {
+            return;
+        }
+
+        if ($this->isPartnerUserAddedToSubmerchant($partner, $submerchant) === false)
+        {
+            // Attaches partners's user to the submerchant account as an owner
+            $this->attachSubMerchantOwner($partner->primaryOwner()->getId(), $submerchant);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT,
+                [
+                    'partner_id'     => $partner->getId(),
+                    'submerchant_id' => $submerchant->getId(),
+                ]);
+        }
+
     }
 }

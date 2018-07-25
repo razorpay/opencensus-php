@@ -17,6 +17,7 @@ class Type
     const HDFC_EMANDATE_DEBIT               = 'hdfc_emandate_debit';
 
     const RBL_ENACH_DEBIT                   = 'rbl_enach_debit';
+    const RBL_ENACH_REGISTER                = 'rbl_enach_register';
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
@@ -24,6 +25,8 @@ class Type
     const BOB_NETBANKING_CLAIMS             = 'bob_netbanking_claims';
 
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
+
+    const OBC_NETBANKING_REFUND             = 'obc_netbanking_refund';
 
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
@@ -130,7 +133,6 @@ class Type
      * Map of types allowed for each entity.
      */
     const TYPE_MAP = [
-
         self::BLANK => [
             self::KOTAK_NETBANKING_CLAIM,
             self::KOTAK_NETBANKING_REFUND,
@@ -138,6 +140,7 @@ class Type
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
             self::RBL_ENACH_DEBIT,
+            self::RBL_ENACH_REGISTER,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
@@ -179,6 +182,7 @@ class Type
             self::HDFC_FSS_FAILED_REFUND,
             self::MOCK_RECONCILIATION_FILE,
             self::GATEWAY_FAILED_REFUNDS,
+            self::OBC_NETBANKING_REFUND,
         ],
 
         Constants\Entity::BATCH => [
@@ -241,6 +245,7 @@ class Type
         self::HDFC_EMANDATE_REGISTER,
         self::HDFC_EMANDATE_DEBIT,
         self::RBL_ENACH_DEBIT,
+        self::RBL_ENACH_REGISTER,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
         self::CORPORATION_NETBANKING_REFUND,
@@ -271,6 +276,7 @@ class Type
         self::AXIS_CYBERSOURCE_FAILED_REFUND,
         self::MOCK_RECONCILIATION_FILE,
         self::GATEWAY_FAILED_REFUNDS,
+        self::OBC_NETBANKING_REFUND,
     ];
 
     /**
@@ -315,6 +321,7 @@ class Type
             self::HDFC_CYBERSOURCE_FAILED_REFUND,
             self::AXIS_CYBERSOURCE_FAILED_REFUND,
             self::HDFC_FSS_FAILED_REFUND,
+            self::OBC_NETBANKING_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
@@ -342,6 +349,7 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::YES_EMI_FILE_SFTP,
             self::RBL_ENACH_DEBIT,
+            self::RBL_ENACH_REGISTER,
         ],
 
         self::RECON_BUCKET_CONFIG => [

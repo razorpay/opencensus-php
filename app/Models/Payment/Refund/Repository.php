@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use DB;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
@@ -255,6 +256,59 @@ class Repository extends Base\Repository
             ->get();
 
         return $refunds;
+    }
+
+    public function fetchRefundsForGatewaysBetweenTimestamps($type, $gatewayCodes, $from, $to, $gateway)
+    {
+        $attrs = $this->dbColumn('*');
+
+        $query = $this->newQuery();
+
+        $refunds = $query->select($attrs)->join(
+            $this->repo->payment->getTableName(),
+            function ($join) use ($from, $to, $type, $gatewayCodes, $gateway)
+            {
+                $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
+                $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+                $rBaseAmount = $this->dbColumn(Refund\Entity::BASE_AMOUNT);
+
+                $pRepo        = $this->repo->payment;
+                $pId          = $pRepo->dbColumn(Payment\Entity::ID);
+                $pType        = $pRepo->dbColumn($type);
+                $pGateway     = $pRepo->dbColumn(Payment\Entity::GATEWAY);
+                $gatewayCodes = (array) $gatewayCodes;
+
+                $join->on($rPaymentId, '=', $pId)
+                     ->where($rCreatedAt, '>=', $from)
+                     ->where($rCreatedAt, '<=', $to)
+                     ->whereIn($pType, $gatewayCodes)
+                     ->where($pGateway, '=', $gateway)
+                     ->where($rBaseAmount, '!=', 0);
+            })
+            ->with('payment')
+            ->get();
+
+        return $refunds;
+    }
+
+    public function fetchFailedRefundsByGateway()
+    {
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
+
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $data =  $this->newQuery()
+                       ->select(DB::raw('payments.gateway as gateway, count(*) AS count'))
+                       ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                       ->where($refundStatus, '=', Refund\STATUS::FAILED)
+                       ->groupBy($paymentGateway)
+                       ->get();
+
+        return $data;
     }
 
     public function fetchFailedRefundsForGatewayBetweenTimestamps($from, $to, $gateway)

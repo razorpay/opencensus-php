@@ -83,8 +83,29 @@ class Service extends Base\Service
         }
     }
 
+    public function updatePricingPlanRule($planId, $ruleId, $input)
+    {
+        $this->trace->info(
+            TraceCode::PRICING_PLAN_RULE_UPDATE_ATTEMPT,
+            ['id' => $ruleId, $input]);
+
+        $rule = (new Pricing\Core)->editPlanRule($planId, $ruleId, $input);
+
+        $this->trace->info(
+            TraceCode::PRICING_PLAN_RULE_UPDATE_SUCCESS,
+            [$rule->toArray()]);
+
+        return $rule->toArray();
+    }
+
     public function deletePricingPlanRuleForce($planId, $ruleId)
     {
+        $rule = $this->repo->pricing->getPricingPlanRule($planId, $ruleId);
+
+        $this->app['workflow']
+             ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
+             ->handle($rule, (new \stdClass));
+
         $flag = $this->repo->pricing->deletePlanRuleForce($planId, $ruleId);
 
         if ($flag === true)

@@ -19,11 +19,11 @@ use RZP\Models\Customer;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Models\PaymentLink;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Methods;
-use RZP\Models\Plan\Subscription\Addon;
-use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
 use RZP\Models\Risk;
@@ -44,9 +44,11 @@ class Processor
     use OtpResend;
     use Topup;
     use FraudDetector;
+    use HeadlessOtp;
     use Payout;
     use Reversal;
     use Transfer;
+    use Vpa;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -123,6 +125,12 @@ class Processor
      * @var Order\Entity
      */
     protected $order;
+    /**
+     * @var Offer\Entity
+     */
+    protected $offer;
+
+    protected $receiver;
     protected $segment;
 
     protected $verifyRefundStatus;
@@ -174,12 +182,13 @@ class Processor
     public function flushPaymentObjects()
     {
         $this->order   = null;
+        $this->offer   = null;
         $this->payment = null;
         $this->refund  = null;
         $this->type    = null;
     }
 
-    public function process(array $input): array
+    public function process(array $input, $gatewayInput = []): array
     {
         $this->setMethodForInput($input);
 
@@ -202,7 +211,7 @@ class Processor
         // This flow is being used for only hosted (Shopify).
         $this->checkSignature($input, $payment);
 
-        return $this->authorize($payment, $input);
+        return $this->authorize($payment, $input, $gatewayInput);
     }
 
     public function getPayment(): Payment\Entity
@@ -317,7 +326,7 @@ class Processor
                 'url'     => $this->route->getUrlWithPublicAuthInQueryParam($currentRouteName),
                 'method'  => 'POST',
                 'content' => [
-                    'input' => $input,
+                    'input' => array_assoc_flatten($input, '%s[%s]'),
                     'bank_details' => $emandateMethods['emandate'][$input[Payment\Entity::BANK]],
                 ]
             ],
@@ -352,7 +361,7 @@ class Processor
                 'request' => [
                     'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
                     'method'  => 'POST',
-                    'content' => $input,
+                    'content' => array_assoc_flatten($input, '%s[%s]'),
                 ],
                 'method' => 'wallet',
                 'version' => '1',
@@ -405,6 +414,44 @@ class Processor
         return $coproto;
     }
 
+    /**
+     * This function is used while creating the Qr codes. It will
+     * create dummy payment and fetch terminal corresponding to that.
+     *
+     * @param array $input
+     *
+     * @return mixed
+     */
+    public function processAndReturnTerminal(array & $input)
+    {
+        $receiver = $input[Payment\Entity::RECEIVER];
+
+        unset($input[Payment\Entity::RECEIVER]);
+
+        $this->tracePaymentNewRequest($input);
+
+        $terminal = $this->repo->beginTransactionAndRollback(
+            function() use ($input, $receiver)
+            {
+                //
+                // We only create a dummy payment entity for purpose
+                // of bharat qr terminal selection and returning it.
+                // It's not going to be saved in the database.
+                //
+                $payment = $this->buildPaymentEntity($input);
+
+                $payment->receiver()->associate($receiver);
+
+                $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
+
+                $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
+
+                return $selectedTerminals[0] ?? null;
+            });
+
+        return $terminal;
+    }
+
     public function processAndReturnFees(array & $input)
     {
         $this->tracePaymentNewRequest($input);
@@ -440,11 +487,12 @@ class Processor
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = [
-            'originalAmount'    => $input['amount'],
-            'fees'              => $fee,
-            'razorpay_fee'      => $fee - $tax,
-            'tax'               => $tax,
-            'amount'            => $input['amount'] + $fee,
+            'originalAmount'  => $input['amount'],
+            'original_amount' => $input['amount'],
+            'fees'            => $fee,
+            'razorpay_fee'    => $fee - $tax,
+            'tax'             => $tax,
+            'amount'          => $input['amount'] + $fee,
         ];
 
         // Set new input amount and fees
@@ -527,15 +575,98 @@ class Processor
 
         $order = $this->fetchOrderFromInput($input);
 
-        if (($order !== null) and
+        $this->setOfferForPaymentFromOrderOrInput($payment, $input);
+
+        if (($this->offer !== null) and
             ($order->isDiscountApplicable() === true))
         {
             $orderAmount = $order->getAmount();
 
-            $discountedAmount = $order->offer->getDiscountedAmount($orderAmount);
+            $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
         }
+    }
+
+    protected function setOfferForPaymentFromOrderOrInput(Payment\Entity $payment, array $input)
+    {
+        $order = $payment->order;
+
+        $offer = null;
+
+        // When offer is forced, we do not expect offer_id in the payment input.
+        // Instead we retrieve the offer to be applied (we can figure
+        // this out ourselves from the payment) and validate it.
+        if (($order->hasOffers() === true) and
+            ($order->isOfferForced() === true))
+        {
+            $offer =  $this->selectForcedOfferForPayment($order);
+        }
+        // If offer is not forced, we expect it in the payment input. If it is
+        // not present there, we assume the customer is opting to not use an offer.
+        else if (isset($input[Payment\Entity::OFFER_ID]) === true)
+        {
+            $offer = $this->validateAndFetchOffer($payment, $input);
+        }
+
+        $this->offer = $offer;
+
+        if ($this->offer !== null)
+        {
+            $payment->associateOffer($this->offer);
+
+            $this->trace->info(TraceCode::OFFER_SELECTED_FOR_PAYMENT, [
+                'offer_id'   => $offer->getPublicId(),
+                'payment_id' => $payment->getPublicId(),
+                'order_id'   => $order->getPublicId(),
+            ]);
+        }
+    }
+
+    /**
+     * A forced offer is when merchant has decided that an offer is to be used
+     * for a payment, and the customer does not have a choice to opt out of it.
+     *
+     * - In its simplest form, an offer is associated
+     *   with the order, and we use it for the payment.
+     * - Merchant can also associated multiple offers with a payment, wherein
+     *   only one would be applicable for the payment itself (eg. one offer for each method).
+     *   TODO: Implement auto selection of offer from order->offers, based on payment
+     *
+     * @param  Order\Entity $order
+     * @return Offer\Entity
+     */
+    protected function selectForcedOfferForPayment(Order\Entity $order): Offer\Entity
+    {
+        $offers = $order->offers;
+
+        if ($offers->count() === 1)
+        {
+            return $offers->first();
+        }
+
+        throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
+    }
+
+    protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
+    {
+        $offerId = $input[Payment\Entity::OFFER_ID];
+
+        Offer\Entity::verifyIdAndStripSign($offerId);
+
+        // If offer is present in the payment request, we need to validate it against the order.
+        if ($payment->order->offers->contains($offerId) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+            [
+                'offer_id' => $offer->getPublicId(),
+                'order_id' => $order->getPublicId(),
+            ]);
+        }
+
+        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
+
+        return $offer;
     }
 
     protected function checkSignature($input, $payment)
@@ -768,6 +899,13 @@ class Processor
      */
     public function getAsyncResponse($id)
     {
+        $response = $this->getUpiStatus($id);
+
+        if ($response !== null)
+        {
+            return $response;
+        }
+
         $payment = $this->retrieve($id);
 
         $order = $this->getOrderForPayment($payment);
@@ -799,9 +937,13 @@ class Processor
                     ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
             }
 
-            return [
+            $response = [
                 Payment\Entity::STATUS => Payment\Status::CREATED
             ];
+
+            $this->setUpiStatus($payment->getPublicId(), $response);
+
+            return $response;
         }
 
         $resource = $this->getCallbackMutexResource($payment);
@@ -921,8 +1063,7 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        $payment->setVerified(null);
-        $payment->setVerifyBucket(0);
+        $this->updateVerifyBucketOnPaymentFailure($exception);
 
         $this->repo->saveOrFail($payment);
 
@@ -959,6 +1100,35 @@ class Processor
         $source = $riskData[Risk\Entity::SOURCE];
 
         (new Risk\Core)->logPaymentForSource($payment, $source, $riskData);
+    }
+
+    protected function updateVerifyBucketOnPaymentFailure(Exception\BaseException $e)
+    {
+        $payment = $this->payment;
+
+        $payment->setVerified(null);
+
+        $payment->setVerifyBucket(0);
+
+        //
+        // In case the gateway error exception is thrown on authenticate
+        // we set verify bucket to null
+        //
+        if ($e instanceof Exception\GatewayErrorException)
+        {
+            if (in_array($e->getAction(), \RZP\Gateway\Base\Action::$nonVerifiableActions, true) === true)
+            {
+                $payment->setNonVerifiable();
+            }
+        }
+
+        // If payment still doesnt exist we set verify_at as null
+        // So that this payment doesnt get picked up by any cron
+        // for verify
+        if ($payment->exists === false)
+        {
+            $payment->setNonVerifiable();
+        }
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
@@ -1032,35 +1202,21 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminalId = $this->payment->getTerminalId();
+        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
+
+        if ($terminal === null)
+        {
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                null,
+                ['payment_id' => $this->payment->getId()]);
+        }
 
         $gateway = $this->payment->getGateway();
-
-        $terminal = null;
-
-        // This will be removed after terminal association with bharat qr payments
-        if (($terminalId !== null) or
-            (Payment\Gateway::isValidBharatQrGateway($gateway) === false))
-        {
-            $terminal = $this->repo->terminal->fetchForPayment($this->payment);
-
-            if ($terminal === null)
-            {
-                throw new Exception\LogicException(
-                    'Terminal should not be null here',
-                    null,
-                    ['payment_id' => $this->payment->getId()]);
-            }
-        }
 
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
-
-        if (Payment\Gateway::isValidBharatQrGateway($this->payment->getGateway()) === true)
-        {
-            $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
-        }
 
         // Wrapping all gateway call, We can take actions on Exception here.
         try
@@ -1096,7 +1252,7 @@ class Processor
 
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
-        if ($this->merchant->isFeeBearerCustomer())
+        if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $this->verifyProvidedFee($payment, $input);
         }
@@ -1105,7 +1261,7 @@ class Processor
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
 
-        $this->modifyAmountForDiscountedOfferIfApplicable($payment, $input);
+        $this->validateAndSetPaymentLinkIfApplicable($payment, $input);
 
         $this->validateAndSetReceiverIfApplicable($payment, $input);
 
@@ -1259,8 +1415,10 @@ class Processor
      * amount and verify that it's the same as received from checkout.
      *
      * @param Payment\Entity $payment
-     * @param $input
+     * @param                $input
+     *
      * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestException
      */
     protected function verifyProvidedFee(Payment\Entity $payment, array $input)
     {
@@ -1276,10 +1434,15 @@ class Processor
         // and the fees re-calculated again. Ideally, this should be 0.
         $feeDifference = $input['fee'] - $payment->getFee();
 
-        if (abs($feeDifference) > 5)
+        if (abs($feeDifference) !== 0)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Payment failed because fees or tax was tampered');
+           throw new Exception\BadRequestValidationFailureException(
+               'Payment failed because fees or tax was tampered',
+               Payment\Entity::FEE,
+                [
+                    'checkout_fee'      => $input['fee'],
+                    'calculated_fee'    => $payment->getFee(),
+                ]);
         }
     }
 
@@ -1357,6 +1520,21 @@ class Processor
         $payment->receiver()->associate($receiver);
     }
 
+    protected function validateAndSetPaymentLinkIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (array_key_exists(Payment\Entity::PAYMENT_LINK_ID, $input) === false)
+        {
+            return;
+        }
+
+        $paymentLinkId = $input[Payment\Entity::PAYMENT_LINK_ID];
+        $paymentLink   = $this->repo->payment_link->findByPublicIdAndMerchant($paymentLinkId, $this->merchant);
+
+        (new PaymentLink\Core)->validateIsPaymentInitiatable($paymentLink, $payment);
+
+        $payment->paymentLink()->associate($paymentLink);
+    }
+
     protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)
     {
         if ($this->order === null)
@@ -1373,7 +1551,7 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice, true);
 
-        $invoice->getValidator()->validateInvoicePayable();
+        $invoice->getValidator()->validateInvoicePayable($payment);
 
         $payment->invoice()->associate($invoice);
     }
@@ -1509,11 +1687,6 @@ class Processor
         }
     }
 
-    protected function notifyDashboard($type, $entity)
-    {
-        Dashboard::send($type, $entity);
-    }
-
     protected function getMerchantBankAccount(Merchant\Entity $merchant): BankAccount\Entity
     {
         $ba = $merchant->bankAccount;
@@ -1550,6 +1723,16 @@ class Processor
     {
         // Bank transfers are auto-captured only if they are expected. This is checked later.
         if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        //
+        // Post payment authorization payment link's payments are actually auto captured but there is more logic in
+        // the flow and in handling capture failures etc which is all done in specific method(easy to move out to a
+        // service) triggered from postPaymentAuthorizeProcessing() method.
+        //
+        if ($payment->hasPaymentLink() === true)
         {
             return false;
         }
@@ -1958,25 +2141,6 @@ class Processor
             return false;
         }
 
-        if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
-        {
-            return false;
-        }
-
-        //
-        // TODO: route check to be changed after refactor
-        //
-        // If this is hit while creating a payment, gateway would not have been set yet.
-        // Hence, gateway check in the previous block would not work.
-        // This function is hit in the refund flow also, in which the gateway
-        // would have been set already.
-        // The gateway would be set AFTER the payment is created and processed.
-        //
-        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
-        {
-            return false;
-        }
-
         return true;
     }
 
@@ -2030,5 +2194,68 @@ class Processor
                 Payment\Entity::ID              => $payment->getId(),
                 Payment\Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt()
             ]);
+    }
+
+    public function fixAttemptedOrder($payment, $order)
+    {
+        $this->payment = $payment;
+
+        $offer = $this->selectForcedOfferForPayment($order);
+
+        $this->payment->associateOffer($offer);
+
+        $this->postPaymentAuthorizeOfferProcessing($this->payment);
+
+        $this->updateOrderStatusPaidIfApplicable($order, $this->payment);
+
+        $this->repo->saveOrFail($order);
+
+        $this->eventOrderPaid();
+    }
+
+    protected function getUpiStatus(string $id)
+    {
+        $key = Payment\Entity::getCacheUpiStatusKey($id);
+
+        try
+        {
+            return $this->cache->get($key);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_CACHE_READ_ERROR,
+                ['key' => $key]);
+        }
+    }
+
+    /**
+     * Key will be deleted from the cache when the upi
+     * payment entity gets updated. Deletion is in the
+     * observer class(Models/Payment/Observer.php).
+     *
+     * @param string $id
+     * @param array  $value
+     * @param float  $ttl
+     */
+    protected function setUpiStatus(string $id, array $value, float $ttl = 0.75)
+    {
+        $key = Payment\Entity::getCacheUpiStatusKey($id);
+
+        try
+        {
+            $this->cache->put($key, $value, $ttl);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_CACHE_STORE_ERROR,
+                ['key' => $key,
+                 '$value' => $value]);
+        }
     }
 }

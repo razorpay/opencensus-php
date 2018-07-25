@@ -13,10 +13,13 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Constants\Mode as RZPMode;
 use RZP\Models\Payment\Gateway as PG;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\GatewayErrorException;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     const PAYEE_ID = 'Razorpay';
 
     const CALLBACK_URL = 'https://www.api.razorpay.com';
@@ -401,6 +404,13 @@ class Gateway extends Base\Gateway
         $contentToEncode = $this->computeStringToEncode(array_values($contentToEncrypt));
 
         $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
+
+        if ($input['merchant']->isTPVRequired())
+        {
+            $content[RequestFields::ACCOUNT_NUM] = $input['order']['account_number'];
+        }
+
+        $content[RequestFields::NARRATION] = substr($input['merchant']->getFilteredDba(), 0, 20);
 
         $request = $this->getStandardRequestArray($content);
 

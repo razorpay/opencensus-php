@@ -76,6 +76,11 @@ class Gateway extends Base\Gateway
             $this->handleFailure($data);
         }
 
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount   = number_format((float) $data[ResponseFields::AMOUNT], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
+
         return $this->getCallbackResponseData($input);
     }
 

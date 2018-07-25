@@ -3,6 +3,8 @@
 namespace RZP\Models\Workflow\Action\Checker;
 
 use RZP\Models\Workflow\Base;
+use RZP\Models\Workflow\Step;
+use RZP\Models\Workflow\Action;
 
 class Entity extends Base\Entity
 {
@@ -28,9 +30,6 @@ class Entity extends Base\Entity
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
-        self::ADMIN_ID,
-        self::ACTION_ID,
-        self::STEP_ID,
         self::APPROVED,
     ];
 
@@ -69,6 +68,16 @@ class Entity extends Base\Entity
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
+    }
+
+    public function action()
+    {
+        return $this->belongsTo(Action\Entity::class);
+    }
+
+    public function step()
+    {
+        return $this->belongsTo(Step\Entity::class);
     }
 
     /*

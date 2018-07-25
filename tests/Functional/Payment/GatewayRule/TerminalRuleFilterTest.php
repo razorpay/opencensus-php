@@ -192,6 +192,18 @@ class TerminalRuleFilterTest extends TestCase
         $this->runTestCase($test, $merchant);
     }
 
+    public function testRecurringRule()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $test = $this->testData[__FUNCTION__];
+
+        $this->runTestCase($test, $merchant);
+    }
+
     public function testAmountFilter()
     {
         $this->fixtures->create('terminal:shared_hdfc_terminal');

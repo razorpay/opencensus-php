@@ -3,12 +3,16 @@
 namespace RZP\Models\BankAccount;
 
 use App;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use RZP\Models\Base;
-use RZP\Models\VirtualAccount;
 use Razorpay\IFSC\IFSC;
-use RZP\Exception;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\VirtualAccount;
+
+/**
+ * @property Merchant\Entity     $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
@@ -59,9 +63,6 @@ class Entity extends Base\PublicEntity
     protected $entity = 'bank_account';
 
     protected $fillable = [
-        self::MERCHANT_ID,
-        self::ENTITY_ID,
-        self::TYPE,
         self::IFSC_CODE,
         self::MOBILE_BANKING_ENABLED,
         self::BENEFICIARY_NAME,
@@ -130,6 +131,10 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::MOBILE_BANKING_ENABLED => 'bool',
+    ];
+
+    protected $ignoredRelations = [
+        'source',
     ];
 
     protected $generateIdOnCreate = true;
@@ -258,6 +263,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_CODE);
     }
 
+    public function getBeneficiaryCity()
+    {
+        return $this->getAttribute(self::BENEFICIARY_CITY);
+    }
+
     public function getMpin()
     {
         return $this->getAttribute(self::MPIN);
@@ -271,6 +281,11 @@ class Entity extends Base\PublicEntity
     public function getMobileBankingEnabled()
     {
         return $this->getAttribute(self::MOBILE_BANKING_ENABLED);
+    }
+
+    public function getBeneficiaryAddress1()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS1);
     }
 
     public function setMobileBankingEnabled($mobileBankingEnabled)

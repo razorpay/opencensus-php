@@ -3,8 +3,9 @@
 namespace RZP\Models\Discount;
 
 use RZP\Models\Base;
-use RZP\Models\Payment;
 use RZP\Models\Offer;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -19,6 +20,10 @@ class Core extends Base\Core
         $discount->offer()->associate($offer);
 
         $this->repo->saveOrFail($discount);
+
+        $this->trace->info(TraceCode::OFFER_DISCOUNT_CREATED, [
+            'discount'   => $discount->toArrayPublic(),
+        ]);
 
         return $discount;
     }

@@ -71,16 +71,23 @@ final class Result
     /**
      * Result codes received in response for payment
      */
-    const CAPTURED          = 'CAPTURED';
-    const APPROVED          = 'APPROVED';
-    const SUCCESS           = 'SUCCESS';
-    const NOT_CAPTURED      = 'NOT CAPTURED';
-    const NOT_APPROVED      = 'NOT APPROVED';
-    const DENIED_BY_RISK    = 'DENIED BY RISK';
-    const HOST_TIMEOUT      = 'HOST TIMEOUT';
-    const AUTH_ERROR        = 'AUTH ERROR';
-    const CANCELED          = 'CANCELED';
-    const NOT_SUPPORTED     = 'NOT SUPPORTED';
+    const CAPTURED            = 'CAPTURED';
+    const APPROVED            = 'APPROVED';
+    const SUCCESS             = 'SUCCESS';
+    const NOT_CAPTURED        = 'NOT CAPTURED';
+    const NOT_APPROVED        = 'NOT APPROVED';
+    const DENIED_BY_RISK      = 'DENIED BY RISK';
+    const HOST_TIMEOUT        = 'HOST TIMEOUT';
+    const AUTH_ERROR          = 'AUTH ERROR';
+    const CANCELED            = 'CANCELED';
+    const NOT_SUPPORTED       = 'NOT SUPPORTED';
+    const AUTH_ERROR_IPAY     = 'AUTH+ERROR';
+    const NOT_SUPPORTED_IPAY  = 'NOT+SUPPORTED';
+    const NOT_CAPTURED_IPAY   = 'NOT+CAPTURED';
+    const NOT_APPROVED_IPAY   = 'NOT+APPROVED';
+    const DENIED_BY_RISK_IPAY = 'DENIED+BY+RISK';
+    const HOST_TIMEOUT_IPAY   = 'HOST+TIMEOUT';
+    const DENIED_CAPTURE      = 'Transaction denied due to previous capture check failure ( Validate Original Transaction )';
 
     protected static $successResultCodes = array(
         self::APPROVED,
@@ -110,6 +117,10 @@ final class Result
                 break;
             case 'AUTH ERROR':
                 $result = self::AUTH_ERROR;
+                $success = false;
+                break;
+            case 'AUTH+ERROR':
+                $result = self::AUTH_ERROR_IPAY;
                 $success = false;
                 break;
             default:

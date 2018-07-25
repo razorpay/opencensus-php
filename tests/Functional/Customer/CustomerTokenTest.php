@@ -182,6 +182,38 @@ class CustomerTokenTest extends TestCase
         $this->assertArrayNotHasKey(Token\Entity::RECURRING_DETAILS, $token);
     }
 
+    public function testFetchTokenCardWithFlows()
+    {
+        $token = $this->fixtures->create('token', [
+            'method'  => 'card',
+            'card_id' => '100000001lcard',
+            'bank'    => null,
+            'wallet'  => null
+        ]);
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'otpelf']);
+
+        $this->fixtures->edit('iin', 411111, ['flows' => $flows]);
+
+        $token = $this->getTokenById('token_' . $token['id']);
+
+        self::assertFalse($token[Token\Entity::RECURRING]);
+        self::assertEquals(2, count($token['card']['flows']));
+
+        // We never display the keys below to the public
+        self::assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);
+        self::assertArrayNotHasKey(Token\Entity::RECURRING_FAILURE_REASON, $token);
+
+        self::assertArrayNotHasKey(Token\Entity::RECURRING_DETAILS, $token);
+    }
+
+
     public function testFetchTokenCardRecurringWithStatus()
     {
         $token = $this->fixtures->create(
@@ -282,6 +314,37 @@ class CustomerTokenTest extends TestCase
         $this->assertNotNull($token[Token\Entity::RECURRING_DETAILS]);
 
         $this->assertNull($token[Token\Entity::RECURRING_DETAILS][Token\Entity::RECURRING_STATUS_SHORT]);
+    }
+
+    public function testFetchTokenAuthType()
+    {
+        $token = $this->fixtures->create(
+            'token',
+            [
+                'method' => 'emandate',
+                'recurring' => true,
+                'recurring_status' => 'confirmed',
+                'auth_type' => 'netbanking'
+            ]);
+
+        $token = $this->getTokenById('token_' . $token['id']);
+
+        $this->assertNotNull($token[Token\Entity::AUTH_TYPE]);
+        $this->assertEquals('netbanking', $token[Token\Entity::AUTH_TYPE]);
+
+        $token = $this->fixtures->create(
+            'token',
+            [
+                'method' => 'emandate',
+                'recurring' => true,
+                'recurring_status' => 'confirmed',
+                'auth_type' => 'aadhaar'
+            ]);
+
+        $token = $this->getTokenById('token_' . $token['id']);
+
+        $this->assertNotNull($token[Token\Entity::AUTH_TYPE]);
+        $this->assertEquals('aadhaar', $token[Token\Entity::AUTH_TYPE]);
     }
 
     protected function mockSession()

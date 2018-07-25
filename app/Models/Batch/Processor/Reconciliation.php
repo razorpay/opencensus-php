@@ -68,7 +68,7 @@ class Reconciliation extends Base
 
     protected function saveInputFile(File $file): FileStore\Creator
     {
-        $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
+        $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArrayTrace());
 
         // We need the original file name with extension while moving the recon file
         // to local directory used by UFH
@@ -143,7 +143,21 @@ class Reconciliation extends Base
      */
     protected function processEntries(array & $entries)
     {
+        $this->resetReconBatchAttributes();
+
         $this->gatewayReconciliator->startReconciliationV2($entries, $this->batch);
+    }
+
+    /**
+     * We are setting existing success count and failure count to 0.
+     * This is important in case when a failed batch retried, batch will have non-zero success count
+     * and failure count. We are resetting because batch file gets processed again and
+     * success count and failure count will be set again.
+     */
+    protected function resetReconBatchAttributes()
+    {
+        $this->batch->setSuccessCount(0);
+        $this->batch->setFailureCount(0);
     }
 
     protected function postProcessEntries(array & $entries)
@@ -215,7 +229,7 @@ class Reconciliation extends Base
         // If sheetNames returned is empty, ensure that the gateway does not perform
         // any operation based on the sheet name.
         //
-        $sheetNames = $this->gatewayReconciliator->getSheetNames();
+        $sheetNames = $this->gatewayReconciliator->getSheetNames($inputFileDetails);
 
         $startRow = $this->gatewayReconciliator->getStartRow($inputFileDetails);
 
@@ -252,7 +266,7 @@ class Reconciliation extends Base
 
         $delimiter = $this->gatewayReconciliator->getDelimiter();
 
-        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $delimiter);
+        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $delimiter, $this->batch->getGateway());
 
         $totalCount += count($csvArray);
 

@@ -6,12 +6,14 @@ use Carbon\Carbon;
 use  Mail;
 
 use RZP\Constants\Entity;
+use RZP\Exception\GatewayTimeoutException;
 use RZP\Mail\Gateway\EMandate\Base as Email;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
-use RZP\Models\Customer\Token;
+use RZP\Models\Customer\Token\Entity as TokenEntity;
+use RZP\Models\Customer\Token\RecurringStatus;
 use RZP\Models\FileStore\Type;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment;
@@ -74,6 +76,56 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
     }
 
+    public function testEMandateInitialPaymentLateAuth()
+    {
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'emandateauth')
+            {
+                throw new GatewayTimeoutException('Gateway timed out');
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->authorizedFailedPayment($payment['id']);
+
+        $token = $this->getLastEntity(Entity::TOKEN, true);
+
+        $this->assertArraySelectiveEquals(
+            [
+                TokenEntity::RECURRING_STATUS => RecurringStatus::CONFIRMED,
+                TokenEntity::METHOD           => 'emandate',
+                TokenEntity::BANK             => 'UTIB',
+                TokenEntity::GATEWAY_TOKEN    => '123123123',
+            ],
+            $token
+        );
+
+        $netbanking = $this->getLastEntity(Entity::NETBANKING, true);
+
+        $this->assertArraySelectiveEquals(
+            [
+                NetbankingEntity::STATUS   => '000',
+                NetbankingEntity::SI_TOKEN => '123123123',
+                NetbankingEntity::BANK     => 'UTIB',
+            ],
+            $netbanking
+        );
+    }
+
     public function testRefundEmandateInitialPaymentWithFeeCredit()
     {
         $this->fixtures->create('credits', [
@@ -112,6 +164,10 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->refundPayment($payment['id']);
 
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $refund = $this->getLastEntity(Entity::REFUND, true);
+
+        $this->assertEquals('processed', $refund['status']);
 
         $this->assertEquals(0, $payment['amount_refunded']);
         $this->assertEquals('refunded', $payment['status']);
@@ -345,6 +401,8 @@ class NetbankingAxisEMandateTest extends TestCase
 
     public function testPaymentVerifyAmountMismatch()
     {
+        $this->markTestSkipped('for inital: amount is not received. for auto, it\'s s2s req-response');
+
         $payment = $this->payment;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);

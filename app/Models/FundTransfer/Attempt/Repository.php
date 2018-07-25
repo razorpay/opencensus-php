@@ -28,7 +28,7 @@ class Repository extends Base\Repository
 
     protected function validateSourceType($attribute, $value)
     {
-        return Type::validateType($value);
+        Type::validateType($value);
     }
 
     protected function addQueryParamSourceId($query, $params)
@@ -65,8 +65,14 @@ class Repository extends Base\Repository
      * Those are never in created state, but this may change in the future,
      * so source_type filter is added anyway.
      *
-     * @param  int    $initiateAtTimestamp Upper limit limit on initiate_at
-     * @param  array  $relations Relations required in the process
+     * @param int      $initiateAtTimestamp Upper limit limit on initiate_at
+     * @param string   $purpose
+     * @param null     $type
+     * @param string   $channel
+     * @param int|null $limit
+     * @param array    $relations           Relations required in the process
+     *
+     * @return Base\PublicCollection
      */
     public function getCreatedAttemptsBeforeTimestamp(
         int $initiateAtTimestamp,
@@ -103,12 +109,20 @@ class Repository extends Base\Repository
 
     /**
      * Fetches all attempts pending reconciliation between given timestamps (both including)
+     *
+     * @param string $channel
+     * @param string $status
+     * @param null   $from
+     * @param null   $to
+     * @param int    $limit
+     * @param int    $offset
+     *
+     * @return mixed
      */
     public function getAttemptsBetweenTimestampsWithStatus(
-        $from = null, $to = null, string $status, string $channel)
+        string $channel, string $status, $from = null, $to = null, $limit = null, int $offset = null)
     {
         $query = $this->newQuery()
-                      ->select([Entity::ID, Entity::BATCH_FUND_TRANSFER_ID])
                       ->where(Entity::STATUS, $status)
                       ->where(Entity::CHANNEL, $channel)
                       ->whereNotNull(Entity::BANK_STATUS_CODE);
@@ -118,7 +132,23 @@ class Repository extends Base\Repository
             $query = $query->whereBetween(Entity::CREATED_AT, [$from, $to]);
         }
 
-        return $query->get();
+        if ($limit !== null)
+        {
+            $query->take($limit);
+        }
+
+        if ($offset !== null)
+        {
+            $query->skip($offset);
+        }
+
+        //
+        // Here we are fetching the data in random order because
+        // in API mode we always fetch 100 attempts for reconciliation.
+        // We do this because if we pick latest records then there is
+        // a chance that few transactions wont be reconciled at all.
+        //
+        return $query->inRandomOrder()->get();
     }
 
     public function getAttemptsBetweenTimestamps(string $status, string $channel, int $from = null, int $to = null)
@@ -149,6 +179,23 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, Status::INITIATED)
                     ->whereBetween(Entity::INITIATE_AT, [$startTime, $endTime])
                     ->with(['merchant'])
+                    ->take($limit)
+                    ->skip($offset)
+                    ->get();
+    }
+
+    public function getFailedAttemptsInitiatedAtBetweenTime(
+        string $channel,
+        int $startTime,
+        int $endTime,
+        int $limit = 2000,
+        int $offset = 0)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::FAILED)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->whereBetween(Entity::INITIATE_AT, [$startTime, $endTime])
+                    ->with(['merchant', 'source'])
                     ->take($limit)
                     ->skip($offset)
                     ->get();

@@ -3,7 +3,9 @@
 namespace RZP\Models\Offer;
 
 use RZP\Exception;
+use RZP\Models\Emi;
 use RZP\Models\Base;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -16,25 +18,43 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Core extends Base\Core
 {
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     public function create(array $input)
     {
         $merchant = $this->merchant;
 
-        $this->verifyIdAndStripSignForLinkedOfferIds($input);
+        $resource = 'offer_create_' . $merchant->getId();
 
-        $offer = new Entity;
+        return $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($input, $merchant)
+            {
+                $this->verifyIdAndStripSignForLinkedOfferIds($input);
 
-        $offer->merchant()->associate($merchant);
+                $offer = new Entity;
 
-        $offer = $offer->build($input);
+                $offer->merchant()->associate($merchant);
 
-        $this->checkConflictingOffers($offer);
+                $offer = $offer->build($input);
 
-        $this->repo->saveOrFail($offer);
+                $this->validateMerchant($merchant, $input);
 
-        $this->traceNonExistingIins($offer, $merchant);
+                $this->checkConflictingOffers($offer);
 
-        return $offer;
+                $this->repo->saveOrFail($offer);
+
+                $this->traceNonExistingIins($offer, $merchant);
+
+                return $offer;
+            });
     }
 
     public function update(Entity $offer, array $input)
@@ -76,37 +96,24 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function validateOfferApplicableOnPayment(Payment\Entity $payment)
+    public function validateOfferApplicableOnPayment(Entity $offer, Payment\Entity $payment)
     {
-        if ($payment->getApiOrderId() === null)
-        {
-            return;
-        }
+        $verbose = true;
 
-        $order = $this->repo->order->fetchForPayment($payment);
+        $checker = new Checker($offer, $verbose);
 
-        if (($order === null) or
-            ($order->hasOffer() === false))
-        {
-            return;
-        }
-
-        $appliedOffer = $order->offer;
-
-        $offerChecker = new Checker($appliedOffer, true);
-
-        if ($offerChecker->checkOfferApplicableOnPayment($payment) === false)
+        if ($checker->checkApplicabilityForPayment($payment) === false)
         {
             $this->trace->info(
                 TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT,
                 [
                     'payment_id' => $payment->getId(),
-                    'offer_id'   => $appliedOffer->getId()
+                    'offer_id'   => $offer->getId()
                 ]);
 
-            if ($appliedOffer->shouldBlockPayment() === true)
+            if ($offer->shouldBlockPayment() === true)
             {
-                $errorMessage = $appliedOffer->getErrorMessage();
+                $errorMessage = $offer->getErrorMessage();
 
                 throw new Exception\BadRequestValidationFailureException($errorMessage);
             }
@@ -116,7 +123,7 @@ class Core extends Base\Core
             TraceCode::OFFER_APPLIED_ON_PAYMENT,
             [
                 'payment_id' => $payment->getId(),
-                'offer_id'   => $appliedOffer->getId()
+                'offer_id'   => $offer->getId()
             ]);
     }
 
@@ -156,6 +163,26 @@ class Core extends Base\Core
         }
 
         return $applicableOffers;
+    }
+
+    public function fetchAndValidateOfferForOrder(string $id, Order\Entity $order)
+    {
+        $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $verbose = true;
+
+        $checker = new Checker($offer, $verbose);
+
+        if ($checker->checkApplicabilityOnOrder($order) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+            [
+                'offer_id' => $offer->getPublicId(),
+                'order_id' => $order->getPublicId(),
+            ]);
+        }
+
+        return $offer;
     }
 
     public function fetchSharedOffers()
@@ -209,7 +236,32 @@ class Core extends Base\Core
         // required to uniquely define an offer
         $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $this->merchant->getId());
 
-        if ($existingOffers->count() > 0)
+        /**
+         * This will check if any existing offer with
+         * same emi duration exists. For example
+         * existing offer has null emi_durations that
+         * means all emi durations are valid. So any
+         * new offer with same issuer and any emi duration like
+         * 3 will fail
+         */
+        if ($offer->getEmiSubvention() === true)
+        {
+            $existingDurations = [];
+
+            $existingOffers->each(function ($existingOffer) use(& $existingDurations) {
+                $existingOfferDuration = $existingOffer[Entity::EMI_DURATIONS] ?: Emi\Entity::VALID_DURATIONS;
+
+                $existingDurations = array_merge($existingDurations, $existingOfferDuration);
+            });
+
+            $offerEmiDurations = $offer->getEmiDurations() ?: Emi\Entity::VALID_DURATIONS;
+
+            if (empty(array_intersect($offerEmiDurations, $existingDurations)) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
+            }
+        }
+        else if($existingOffers->count() > 0)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
         }
@@ -256,6 +308,29 @@ class Core extends Base\Core
                     'merchant_id'       => $merchant->getId(),
                     'non_existing_iins' => array_values($nonExistingIins),
                 ]);
+        }
+    }
+
+    protected function validateMerchant(Merchant\Entity $merchant, array & $input)
+    {
+        if($merchant->isShared() === true)
+        {
+            return;
+        }
+
+        if(empty($input[Entity::PAYMENT_METHOD]) === true)
+        {
+            return;
+        }
+
+        $merchantPaymentMethods = $merchant->methods;
+
+        $method = $input[Entity::PAYMENT_METHOD];
+
+        if($merchantPaymentMethods->isMethodEnabled($method) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Payment method not enabled for the merchant : $method", Entity::PAYMENT_METHOD);
         }
     }
 }

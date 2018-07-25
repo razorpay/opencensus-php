@@ -2,7 +2,13 @@
 
 namespace RZP\Providers;
 
+use Config;
+use Metrics;
+use Barryvdh\Debugbar;
+use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
+
+use RZP\Http\RequestContext;
 use RZP\Trace\ApiTraceProcessor;
 
 class FirstServiceProvider extends ServiceProvider
@@ -21,11 +27,17 @@ class FirstServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->registerDebugbarIfApplicable();
+
         $this->registerRequestGetIdMacro();
 
         $this->registerRequestSetTaskIdMacro();
 
         $this->registerRequestGetTaskIdMacro();
+
+        $this->registerRequestContext();
+
+        $this->registerTraceMetricMacros();
     }
 
     public function boot()
@@ -70,6 +82,20 @@ class FirstServiceProvider extends ServiceProvider
     }
 
     /**
+     * Register Debugbar ServiceProvider and Facade for API Inspector
+     * for debug mode, non-production requests.
+     */
+    protected function registerDebugbarIfApplicable()
+    {
+        if ((Config::get('app.debug') === true) and
+            ($this->app->environment() !== 'production'))
+        {
+            $this->app->register(Debugbar\ServiceProvider::class);
+            AliasLoader::getInstance()->alias('Debugbar', Debugbar\Facade::class);
+        }
+    }
+
+    /**
      * Registers a getTaskId macro on request. It uses the X-Razorpay-TaskId header value
      * if present, else generates a new one.If api is the source of new task id, then uses
      * the request id value instead of generating new one
@@ -102,6 +128,39 @@ class FirstServiceProvider extends ServiceProvider
             $this->taskId = $taskId;
 
             return $this->taskId;
+        });
+    }
+
+    protected function registerRequestContext()
+    {
+        $this->app->singleton('request.ctx', function($app) { return new RequestContext($app); });
+    }
+
+    /**
+     * Registers metric methods(as macros) on trace instance
+     */
+    protected function registerTraceMetricMacros()
+    {
+        $trace = $this->app['trace'];
+
+        $trace->macro('count', function (string $metric, int $times = 1, array $dimensions = [])
+        {
+            Metrics::count($metric, $times, $dimensions);
+        });
+
+        $trace->macro('gauge', function (string $metric, float $value, array $dimensions = [])
+        {
+            Metrics::gauge($metric, $value, $dimensions);
+        });
+
+        $trace->macro('histogram', function (string $metric, float $value, array $dimensions = [])
+        {
+            Metrics::histogram($metric, $value, $dimensions);
+        });
+
+        $trace->macro('summary', function (string $metric, float $value, array $dimensions = [])
+        {
+            Metrics::summary($metric, $value, $dimensions);
         });
     }
 }

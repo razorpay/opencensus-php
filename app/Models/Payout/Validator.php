@@ -25,16 +25,21 @@ class Validator extends Base\Validator
     protected static $merchantPayoutRules = [
         Entity::PURPOSE         => 'required|string|max:30|in:settlement',
         Entity::METHOD          => 'required|string',
-        Entity::AMOUNT          => 'required|integer|max:500000000',
+        Entity::AMOUNT          => 'required|integer|max:800000000',
         Entity::CURRENCY        => 'required|size:3',
     ];
 
     protected static $merchantRules = [
         Entity::MERCHANT_ID    => 'required|string|size:14',
-        Entity::AMOUNT         => 'sometimes|integer|max:500000000',
+        Entity::AMOUNT         => 'sometimes|integer|max:800000000',
         Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
         Entity::MODULO         => 'sometimes|integer|min:100',
         Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
+    ];
+
+    protected static $payoutRetryRules = [
+        'ids'    => 'required|array',
+        'ids.*'  => 'required|public_id|size:19'
     ];
 
     protected static $createValidators = [

@@ -4,6 +4,7 @@ namespace RZP\Models\Base;
 
 use App;
 use RZP\Base;
+use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Base\RepositoryManager;
 
@@ -38,6 +39,11 @@ class Service
     protected $merchant;
 
     /**
+     * @var User\Entity
+     */
+    protected $user;
+
+    /**
      * Repository manager instance
      * @var RepositoryManager
      */
@@ -69,13 +75,15 @@ class Service
             $this->mode = $this->app['rzp.mode'];
         }
 
-        $this->merchant = $this->app['basicauth']->getMerchant();
-
         $this->trace = $this->app['trace'];
 
         $this->repo = $this->app['repo'];
 
         $this->auth = $this->app['basicauth'];
+
+        $this->merchant = $this->auth->getMerchant();
+
+        $this->user = $this->auth->getUser();
 
         $this->slack = $this->app['slack'];
     }
@@ -85,7 +93,7 @@ class Service
         return new static;
     }
 
-    public function core()
+    public function core(): Core
     {
         if ($this->core !== null)
         {

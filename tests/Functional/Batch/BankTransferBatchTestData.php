@@ -8,7 +8,7 @@ return [
 
     'testCreateBatchOfBankTransferTypeQueued' => [
         'request' => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
                 'type' => 'bank_transfer',
@@ -32,7 +32,7 @@ return [
 
     'testCreateBatchOfBankTransferTypeStatus' => [
         'request' => [
-            'url'     => '/batches',
+            'url'     => '/admin/batches',
             'method'  => 'post',
             'content' => [
                 'type' => 'bank_transfer',

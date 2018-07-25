@@ -11,7 +11,6 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         Entity::NAME                    => 'required|string',
         Entity::PERCENTAGE              => 'sometimes|nullable|integer',
-        Entity::PRICING_RULE_ID         => 'sometimes|nullable|string',
         Entity::AMOUNT                  => 'required|integer',
     );
 }

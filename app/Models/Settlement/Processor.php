@@ -8,9 +8,12 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
+use RZP\Models\BankAccount;
+use RZP\Models\Merchant as MerchantModel;
 
 class Processor extends Base\Core
 {
@@ -21,6 +24,11 @@ class Processor extends Base\Core
     protected $input;
 
     protected $mutex;
+
+    /**
+     * Merchant keyed by ID for easy access later
+     */
+    protected $merchants = null;
 
     const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING_%s';
 
@@ -136,16 +144,16 @@ class Processor extends Base\Core
                 TraceCode::SETTLEMENT_ATTEMPT_ENTITIES_CREATED,
                 $response);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::SETTLEMENT_INITIATE_FAILED,
+                TraceCode::SETTLEMENT_CREATE_FAILED,
                 ['channel' => $channel]
             );
 
-            $this->settlementFailure($channel, $e, TraceCode::SETTLEMENT_INITIATE_FAILED);
+            $this->settlementFailure($channel, $e, TraceCode::SETTLEMENT_CREATE_FAILED);
         }
 
         return $response;
@@ -165,7 +173,7 @@ class Processor extends Base\Core
 
             $response = $this->retrySettlements($setlIds);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->settlementFailure(null, $e, TraceCode::SETTLEMENT_RETRY_FAILED);
         }
@@ -230,8 +238,6 @@ class Processor extends Base\Core
      *              'txnCount' => 'some integer'
      *          ]
      *      ]
-     *
-     * @throws SettlementFailureException
      */
     protected function createDailySettlements(): array
     {
@@ -243,7 +249,13 @@ class Processor extends Base\Core
         {
             $mids = $this->getMerchantsOnDailySettlement();
 
-            $merchants = $this->repo->merchant->findMany($mids);
+            $merchants = $this->repo->merchant->findMany(
+                            $mids,
+                            [
+                                MerchantModel\Entity::ID,
+                                MerchantModel\Entity::CHANNEL,
+                                MerchantModel\Entity::HOLD_FUNDS
+                            ]);
 
             $this->setlTime = Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -261,8 +273,7 @@ class Processor extends Base\Core
                 $mid = $merchant->getId();
 
                 // Get all transactions due settlement till yesterday end of day
-                $txns = $this->repo->transaction->fetchUnsettledTransactions(
-                            $settledAtCutoff, $channel, [$mid]);
+                $txns = $this->fetchRequiredEntities($settledAtCutoff, $channel, [$mid]);
 
                 $filteredTxns = $this->filterTransactionsForSettlement($txns);
 
@@ -279,18 +290,55 @@ class Processor extends Base\Core
                 $response[$channel]['txnCount'] += $setlResponse['txn_count'];
             }
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::DAILY_SETTLEMENT_INITIATE_FAILED
+                TraceCode::DAILY_SETTLEMENT_CREATE_FAILED
             );
 
-            $this->settlementFailure($channel, $e, TraceCode::DAILY_SETTLEMENT_INITIATE_FAILED);
+            $this->settlementFailure($channel, $e, TraceCode::DAILY_SETTLEMENT_CREATE_FAILED);
         }
 
         return $response;
+    }
+
+    /**
+     * This method must fetch all the entities that will be required to create
+     * the desired entities in settlement process. Note, we DO NOT want to
+     * eager load any relationship for any of the entities. We instead want
+     * to query it separately, and key it on an appropriate value for
+     * easy access later.
+     *
+     * @param int $settledAtCutOff
+     * @param string $channel
+     * @param array $inMids
+     * @param array $notInMids
+     * @return mixed
+     */
+    protected function fetchRequiredEntities(
+        int $settledAtCutOff, string $channel, array $inMids = [], array $notInMids = [])
+    {
+        $txns = $this->repo->transaction->fetchUnsettledTransactions(
+                    $settledAtCutOff, $channel, $inMids, $notInMids);
+
+        $mids = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
+
+        $mids = array_unique($mids);
+
+        $this->merchants = $this->repo
+                                ->merchant
+                                ->findManyWithRelations(
+                                    $mids,
+                                    ['balance', 'bankAccount'],
+                                    [
+                                        MerchantModel\Entity::ID,
+                                        MerchantModel\Entity::PARENT_ID
+                                    ])
+                                ->keyBy(MerchantModel\Entity::ID);
+
+        return $txns;
     }
 
     protected function makeResponse($channels)
@@ -372,6 +420,17 @@ class Processor extends Base\Core
         return $groupedTxns;
     }
 
+    protected function getMerchantsToSkipForUsualSettlement(): array
+    {
+        $dailySetlMids = $this->getMerchantsOnDailySettlement();
+
+        $skipMfIds = MerchantModel\Preferences::NO_SETTLEMENT_MIDS;
+
+        $skipMids = array_merge($dailySetlMids, $skipMfIds);
+
+        return $skipMids;
+    }
+
     protected function getMerchantsOnDailySettlement()
     {
         $features = [Feature\Constants::DAILY_SETTLEMENT];
@@ -385,9 +444,9 @@ class Processor extends Base\Core
 
     protected function createSettlements($channel): array
     {
-        $skipMids = $this->getMerchantsOnDailySettlement();
+        $skipMids = $this->getMerchantsToSkipForUsualSettlement();
 
-        $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime, $channel, [], $skipMids);
+        $txns = $this->fetchRequiredEntities($this->setlTime, $channel, [], $skipMids);
 
         $groupedTxns = $this->filterTransactionsForSettlement($txns);
 
@@ -405,7 +464,9 @@ class Processor extends Base\Core
     {
         $this->setlTime = Carbon::now()->getTimestamp();
 
-        if (($this->mode === Mode::TEST) and
+        $isTestMode = $this->isTestMode();
+
+        if (($isTestMode === true) and
             (empty($input['testSettleTimeStamp']) === false))
         {
             $this->setlTime = $input['testSettleTimeStamp'];
@@ -416,8 +477,9 @@ class Processor extends Base\Core
 
     protected function shouldProcessSettlements($input)
     {
-        if (($this->mode === Mode::TEST) and
-            ($this->env === 'testing'))
+        $isTestMode = $this->isTestMode();
+
+        if ($isTestMode === true)
         {
             return [true, null];
         }
@@ -461,7 +523,26 @@ class Processor extends Base\Core
         // No settlements after five PM but allow settlements file upload anytime
         // before that, we want to do it before 8 am as well as that allows us
         // some time for fixing things before settlement window opens.
-        if (($this->setlTime >= $sixPm) and ($this->env !== 'testing'))
+        if ($this->setlTime >= $sixPm)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Will decide where to impose time constain on settlement process.
+     * This is done based on mode and environment.
+     *  - no constrains on `test` mode
+     *  - no constraint on `qa` and `testing` environments
+     *
+     * @return bool
+     */
+    protected function isTestMode(): bool
+    {
+        if (($this->mode === Mode::TEST) or
+            (in_array($this->env, ['testing', 'perf', 'func'], true) === true))
         {
             return true;
         }

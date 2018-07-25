@@ -15,4 +15,5 @@ class ResponseFields
     const REFERENCE_ID       = 'REFERENCE_ID_ARRAY';
     const TRANSACTION_STATUS = 'RetrieveTransactionStatus';
     const STATUS_RECORD      = 'RetrieveTransactionStatus_REC';
+    const AMOUNT             = 'ENTRY_AMOUNT_ARRAY';
 }

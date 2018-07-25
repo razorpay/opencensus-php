@@ -49,7 +49,12 @@ class Axis extends Base
                 Headings::GATEWAY_MERCHANT_ID         => $payment->terminal->getGatewayMerchantId(),
                 Headings::CUSTOMER_UID                => $token->getGatewayToken(),
                 Headings::CUSTOMER_NAME               => $token->customer->getName(),
-                Headings::DEBIT_ACCOUNT               => $token->getAccountNumber(),
+                // If the account number starts with 0 and the file is
+                // opened with MS-Excel, it trims the 0 since it treats
+                // the account number as an integer rather than a string.
+                // Adding a `'` in the start ensures that MS-Excel
+                // treats it as a string and not an integer.
+                Headings::DEBIT_ACCOUNT               => '\'' . $token->getAccountNumber(),
                 Headings::AMOUNT                      => $this->getFormattedAmount($payment->getAmount()),
                 Headings::ADDITIONAL_INFO_1           => '',
                 Headings::ADDITIONAL_INFO_2           => '',

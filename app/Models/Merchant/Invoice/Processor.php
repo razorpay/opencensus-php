@@ -71,7 +71,7 @@ class Processor extends Base\Core
             // sum over fees & tax for different commission types
             foreach ($this->invoiceBreakup as $type => $values)
             {
-                $this->calculateFeesForInvoiceByType($type, $isCorrection);
+                $this->invoiceBreakup[$type] = $this->calculateFeesForInvoiceByType($type, $isCorrection);
             }
 
             // create entities
@@ -126,33 +126,82 @@ class Processor extends Base\Core
     /**
      * Populate the map of Type of Commission with its Amount and Tax values
      *
-     * @param string @type
-     * @param bool $isCorrection
+     * @param string $type
+     * @param bool   $isCorrection
+     *
+     * @return array
      */
-    protected function calculateFeesForInvoiceByType(string $type, bool $isCorrection)
+    public function calculateFeesForInvoiceByType(string $type, bool $isCorrection)
     {
-        $txns = $this->repo
-                     ->transaction
-                     ->fetchFeesAndTaxForTransactionsByType(
-                         $this->merchantId,
-                         $this->beginTimestamp,
-                         $this->endTimestamp,
-                         $type,
-                         $isCorrection);
+        $transactionFeeAmount = [];
 
-        if (empty($txns) === true)
+        $paymentFeeAmount = $this->repo
+                                 ->payment
+                                 ->fetchFeesAndTaxForPaymentByType(
+                                     $this->merchantId,
+                                     $this->beginTimestamp,
+                                     $this->endTimestamp,
+                                     $type,
+                                     $isCorrection);
+
+        $paymentAmounts = $this->formatFeesForInvoice($paymentFeeAmount);
+
+        if ($type === Type::OTHERS)
         {
-            return;
+            $transactionFeeAmount = $this->repo
+                                         ->transaction
+                                         ->fetchFeesAndTaxForTransactions(
+                                             $this->merchantId,
+                                             $this->beginTimestamp,
+                                             $this->endTimestamp);
         }
 
-        $txnData = $txns->getAttributes();
+        $transactionAmounts = $this->formatFeesForInvoice($transactionFeeAmount);
 
-        $fees = $txnData['fee'];
+        return [
+            Entity::TAX     => $paymentAmounts[Entity::TAX] + $transactionAmounts[Entity::TAX],
+            Entity::AMOUNT  => $paymentAmounts[Entity::AMOUNT] + $transactionAmounts[Entity::AMOUNT],
+        ];
+    }
 
-        $tax = $txnData['tax'];
+    /**
+     * Formats the invoice fee result in generalized format
+     *
+     * @param $feeDetails
+     * @return array
+     * [
+     *  'amount' => 0,
+     *  'tax'    => 0,
+     * ]
+     */
+    protected function formatFeesForInvoice($feeDetails): array
+    {
+        if (empty($feeDetails) === true)
+        {
+            $this->trace->error(
+                TraceCode::MERCHANT_INVOICE_QUERY_TIMEOUT,
+                [
+                    'merchant_id' => $this->merchantId,
+                    'month'       => $this->month,
+                    'year'        => $this->year
+                ]);
 
-        $this->invoiceBreakup[$type][Entity::AMOUNT] = $fees - $tax;
-        $this->invoiceBreakup[$type][Entity::TAX] = $tax;
+            return [
+                Entity::TAX    => 0,
+                Entity::AMOUNT => 0,
+            ];
+        }
+
+        $details = $feeDetails->getAttributes();
+
+        $fees = $details['fee'];
+
+        $tax = $details['tax'];
+
+        return [
+            Entity::TAX    => $tax,
+            Entity::AMOUNT => $fees - $tax,
+        ];
     }
 
     protected function initializeVars()

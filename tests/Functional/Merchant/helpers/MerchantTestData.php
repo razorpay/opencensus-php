@@ -295,22 +295,61 @@ return [
 
     'testEditMerchant' => [
         'request' => [
-            'content' => [
+            'raw' => json_encode([
                 'international' => '1',
                 'linked_account_kyc' => '1',
                 'website' => 'http://abc.com',
                 'category' => '1111',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
-                ]
-            ],
+                ],
+                'fee_credits_threshold'     => 1000
+            ]),
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
             'server' => [
                 // Case: In sign-up case we will not have any other headers
                 // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
                 'HTTP_X-Dashboard' => 'true',
-            ],
+            ]
+],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+                'international' => true,
+                'linked_account_kyc' => true,
+                'category' => 1111,
+                'website' => 'http://abc.com',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'fee_credits_threshold'    => 1000
+            ]
+        ]
+    ],
+
+    'testEditMerchantWithNullFeeCreditsThreshold' => [
+        'request' => [
+            'raw' => json_encode([
+                'international' => '1',
+                'linked_account_kyc' => '1',
+                'website' => 'http://abc.com',
+                'category' => '1111',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'fee_credits_threshold'     => null
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
         ],
         'response' => [
             'content' => [
@@ -322,7 +361,8 @@ return [
                 'website' => 'http://abc.com',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
-                ]
+                ],
+                'fee_credits_threshold'    => null
             ]
         ]
     ],
@@ -698,23 +738,25 @@ return [
     ],
 
     'testEditMerchantConfig' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'brand_color' => '00bcd4',
-                'handle'      => 'LOLO',
+                'brand_color'         => '00bcd4',
+                'handle'              => 'LOLO',
+                'invoice_label_field' => 'business_name',
             ],
-            'url' => '/account/config',
-            'method' => 'put',
-            'server' => [
+            'url'     => '/account/config',
+            'method'  => 'put',
+            'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
         ],
         'response' => [
             'content' => [
-                'id'          => '10000000000000',
-                'brand_color' => '#00BCD4',
-                'handle'      => 'LOLO',
+                'id'                  => '10000000000000',
+                'brand_color'         => '#00BCD4',
+                'handle'              => 'LOLO',
+                'invoice_label_field' => 'business_name',
             ]
         ]
     ],
@@ -737,6 +779,48 @@ return [
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantFeeCreditsThresholdWithProxyAuth' => [
+        'request' => [
+            'raw' => json_encode([
+                'fee_credits_threshold'     => 1000
+            ]),
+            'url' => '/account/config',
+            'method' => 'put',
+            'server' => [
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'fee_credits_threshold'    => 1000
+            ]
+        ]
+    ],
+
+    'testEditMerchantInvalidInvoiceNameField' => [
+        'request'   => [
+            'content' => [
+                'invoice_label_field' => 'random',
+            ],
+            'url'     => '/account/config',
+            'method'  => 'put',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected invoice label field is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -1340,6 +1424,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'mode'  => 'test',
                 'magic' => false,
             ],
         ],
@@ -1415,6 +1500,34 @@ return [
                         'payment_method'  => 'wallet',
                         'issuer'          => 'olamoney',
                         'display_text'    => 'Merchant specific offer',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithMultipleOrderOffers' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => null
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name' => 'Test Offer',
+                        'payment_method' => 'card',
+                        'payment_network' => 'VISA',
+                        'issuer' => 'HDFC',
+                    ],
+                    [
+                        'name' => 'Test Offer',
+                        'payment_method' => 'card',
+                        'payment_network' => 'VISA',
+                        'issuer' => 'HDFC',
                     ]
                 ]
             ],
@@ -1642,6 +1755,36 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithEmiOffer' => [
+        'request' => [
+            'url'    => null,
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity'         => 'methods',
+                    'card'           => true,
+                    'credit_card'    => true,
+                    'debit_card'     => true,
+                    'emi'            => true,
+                    'emi_plans'      => [],
+                    'emi_options'    => [],
+                    'emi_subvention' => 'customer'
+                    ],
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'emi',
+                        'display_text'    => 'Some display text',
+                        'original_amount' => 100000,
+                        'amount'          => 100000,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithAllCardGeatewayDowntime' => [
         'request' => [
             'url' => '/preferences',
@@ -1728,7 +1871,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 20,
+                'count' => 15,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1784,41 +1927,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBBJ',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBHY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBMY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'STBP',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBTR',
                         ],
                     ],
                     [
@@ -1883,7 +1991,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 21,
+                'count' => 16,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1946,41 +2054,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBBJ',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBHY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBMY',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'STBP',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SBTR',
                         ],
                     ],
                     [
@@ -2233,11 +2306,6 @@ return [
                                 'IDFB',
                                 'JSBP',
                                 'NKGS',
-                                'SBBJ',
-                                'SBHY',
-                                'SBMY',
-                                'STBP',
-                                'SBTR',
                                 'SCBL',
                                 'SVCB',
                                 'SYNB',
@@ -2455,19 +2523,70 @@ return [
             'content' => [
                 'methods' => [
                     'emi_options' => [
+                        'AMEX' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 316389
+                            ],
+
+                            [
+                                'duration'   => 6,
+                                'interest'   => 12,
+                                'subvention' => 'customer',
+                                'min_amount' => 300000
+                            ],
+
+                        ],
                         'HDFC' => [
                             [
                                 'duration'   => 9,
                                 'interest'   => 12,
                                 'subvention' => 'customer',
-                                'min_amount' => 500000
+                                'min_amount' => 300000
                             ],
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutWithMultipleSubEmiOffers' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'emi_options' => [
+                        'AMEX' => [
                             [
                                 'duration'   => 9,
                                 'interest'   => 0,
                                 'subvention' => 'merchant',
-                                'min_amount' => 527315
-                            ]
+                                'min_amount' => 316389
+                            ],
+
+                            [
+                                'duration'   => 6,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 319149
+                            ],
+
+                        ],
+                        'HDFC' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 12,
+                                'subvention' => 'customer',
+                                'min_amount' => 300000
+                            ],
                         ]
                     ]
                 ]
@@ -2931,7 +3050,7 @@ return [
                 'email' => 'differentemail@razorpay.com'
             ],
             'server' => [
-                'HTTP_' . \RZP\Http\BasicAuth\BasicAuth::ACCOUNT_HEADER_KEY => '10000000000044',
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000044',
             ],
         ],
         'response'  => [
@@ -2947,5 +3066,126 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
         ],
-    ]
+    ],
+
+    'testCreateSubmerchantLogin' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginSameEmail' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The email has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginPartnerAppMissing' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'DB Query Failed',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'   => Razorpay\OAuth\Exception\DBQueryException::class,
+            'message' => 'DB Query Failed',
+        ],
+    ],
+
+    'testCreateSubmerchantLoginDuplicate' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The email has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateLinkedAccountLogin' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN,
+                ],
+            ],
+            'status_code' => 403,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginPartnerWithMarketplace' => [
+        'request' => [
+            'url' => '/submerchant/user/10000000000040',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testOfferCheckoutPreferences' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => null
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

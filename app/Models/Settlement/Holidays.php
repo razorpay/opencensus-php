@@ -134,6 +134,9 @@ class Holidays
             3 => [
                 30 => 'Good Friday',
             ],
+            6 => [
+                16 => 'Id-Ul-Fitr',
+            ],
             8 => [
                 15 => 'Independece Day',
                 22 => 'Bakri ID (ld- UI-Zuha)',
@@ -195,6 +198,42 @@ class Holidays
         }
 
         return $workingDay;
+    }
+
+    /**
+     * Gives the timestamp of working day after adding the offset
+     * It'll add the offset to the timestamp passed and
+     * if there any holidays in between then the those many days will be added
+     *
+     * @param int $timestamp
+     * @param int $hour
+     * @param int $minute
+     *
+     * @return int
+     */
+    public static function addOffsetedWorkingTime(int $timestamp, int $hour = 0, int $minute = 0): int
+    {
+        $time = Carbon::createFromTimestamp($timestamp, Timezone::IST);
+
+        $finalTimestamp = $time->copy()
+            ->addHour($hour)
+            ->addMinute($minute);
+
+        $diff = $time->diffInDays($finalTimestamp);
+
+        while ($diff > 0)
+        {
+            $time->addDay();
+
+            if(!self::isWorkingDay($time) === true)
+            {
+                $finalTimestamp->addDay();
+
+                $diff--;
+            }
+        }
+
+        return $finalTimestamp->getTimestamp();
     }
 
     /**

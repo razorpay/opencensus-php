@@ -21,12 +21,17 @@ class MailTags
     const AXIS_BENEFICIARY_MAIL            = 'axis_beneficiary_mail';
 
     const HDFC_SETTLEMENT_FILES            = 'hdfc_settlement_files';
+    const HDFC_BENEFICIARY_MAIL            = 'hdfc_beneficiary_mail';
+
+    const YESBANK_BENEFICIARY_MAIL         = 'yesbank_beneficiary_mail';
+    const YESBANK_SETTLEMENT               = 'yesbank_settlement';
 
     const RBL_SETTLEMENT                   = 'rbl_settlement';
 
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
 
-    const NULL_UTR_REPORT                  = 'null_utr_report';
+    const FTA_RECON_REPORT                 = 'fta_recon_report';
+    const FTA_CRITICAL_ERROR               = 'fta_critical_error';
 
     const CORPORATION_NETBANKING_REFUNDS_MAIL   = 'corporation_netbanking_refunds_mail';
     const HDFC_NETBANKING_REFUNDS_MAIL          = 'hdfc_netbanking_refunds_mail';
@@ -68,6 +73,8 @@ class MailTags
     const ECOD                             = 'ecod';
     const LINK                             = 'link';
 
+    const PAYMENT_LINK_PAYMENT_REQUEST     = 'payment_link_payment_request';
+
     const SUBSCRIPTION_AUTHENTICATED       = 'subscription_authenticated';
     const SUBSCRIPTION_CHARGED             = 'subscription_charged';
     const SUBSCRIPTION_PENDING             = 'subscription_pending';
@@ -83,9 +90,11 @@ class MailTags
     const AXIS_EMANDATE_DEBIT_MAIL         = 'axis_emandate_debit_mail';
 
     const RBL_ENACH_DEBIT_MAIL             = 'rbl_enach_debit_mail';
+    const RBL_ENACH_REGISTER_MAIL          = 'rbl_enach_register_mail';
 
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
+    const FEE_CREDITS_ALERT                = 'fee_credits_alert';
     const IRCTC_REFUND_REPORT              = 'irctc_refund_report';
     const AUTH_REMINDER                    = 'auth_reminder';
     const HOLIDAY_NOTIFICATION             = 'holiday_notification';
@@ -102,6 +111,8 @@ class MailTags
     const ADMIN_CREATE                     = 'admin_create';
     const WELCOME                          = 'welcome';
     const ACCOUNT_ACTIVATED                = 'account_activated';
+    const SUB_MERCHANT_ADDED               = 'sub_merchant_added';
+    const AFFILIATE_ADDED                  = 'affiliate_added';
 
     const ICICI_FILES                      = 'icici_files';
 

@@ -12,6 +12,7 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middleware = [
+        Middleware\InspectorAccess::class,
         Middleware\TrustedProxy::class,
         \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
         Middleware\VerifyHttps::class,
@@ -24,10 +25,10 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
-            \RZP\Http\Middleware\EncryptCookies::class,
+            Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
-            \RZP\Http\Middleware\TemporaryStartSession::class,
+            Middleware\TemporaryStartSession::class,
             // \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             // \RZP\Http\Middleware\VerifyCsrfToken::class,
         ],
@@ -39,12 +40,12 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'throttle'           => \RZP\Http\Middleware\Throttle::class,
-        'auth'               => \RZP\Http\Middleware\Authenticate::class,
-        'admin_access'       => \RZP\Http\Middleware\AdminAccess::class,
-        'user_access'        => \RZP\Http\Middleware\UserAccess::class,
-        'workflow'           => \RZP\Http\Middleware\Workflow::class,
-        'merchant_ip_filter' => \RZP\Http\Middleware\MerchantIpFilter::class,
-        'event_tracker'      => \RZP\Http\Middleware\EventTracker::class,
+        'throttle'           => Middleware\Throttle::class,
+        'auth'               => Middleware\Authenticate::class,
+        'admin_access'       => Middleware\AdminAccess::class,
+        'user_access'        => Middleware\UserAccess::class,
+        'workflow'           => Middleware\Workflow::class,
+        'merchant_ip_filter' => Middleware\MerchantIpFilter::class,
+        'event_tracker'      => Middleware\EventTracker::class,
     ];
 }

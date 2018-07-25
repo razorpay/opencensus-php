@@ -7,7 +7,7 @@ use Symfony\Component\DomCrawler\Crawler;
 
 trait PaymentBladeTrait
 {
-    protected function runPaymentCallbackFlowBlade($response, &$callback = null)
+    protected function runPaymentCallbackFlowMpiBlade($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
 

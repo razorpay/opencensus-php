@@ -11,6 +11,7 @@ class Preferences
     const MID_SOCH             = '6QGdVzDAIpBniU';
     const MID_ZOMATO           = '6H7N6hlcv29OMG';
     const MID_IPAY             = '6VS1z0fmis8fn6';
+    const MID_CUREFIT          = '6vwsEbqse39D4d';
     const MID_DSPBLACKROCK     = '7thBRSDflu7NHL';
     const MID_GOALWISE_TPV     = '7BfRNg10LH7N6T';
     const MID_GOALWISE_NON_TPV = '8ytYezIThlseJd';
@@ -18,13 +19,33 @@ class Preferences
     const MID_MONEYVIEW        = '8hXTLsmoM3F6PH';
     const MID_WEALTHY          = '8lv4idBRY4C9c0';
     const MID_PIGGY            = '9IjdEkLQb0j2ro';
-    const MID_ENDURANCE        = ['9YAQd3b47mdIQY', '9ZO8jNaR0OORNH'];
     const MID_SHELL            = '9LMdTQdjgMJ6uR';
     const MID_SHELL_2          = '9R0AsTqocyuP1W';
     const MID_PAISABAZAAR      = '9dhe2WRR0XCQz6';
     const MID_BPCL             = '9C04GG1wPzKCUP';
     const MID_SRI_CHAITANYA    = '8f9o3YjPGZEcdU';
+    const MID_UBER             = '82LK42BGTN2bOe';
+    const MID_AMIT_MAHBUBANI   = '7SVOQZGZuwHr4I';
     const DEMO_ACCOUNT         = '100DemoAccount';
+    const MID_ENDURANCE        = [
+        '9YAQd3b47mdIQY', '9ZO8jNaR0OORNH', '9Y9m9XscC6Kh4W',
+        '8WRMdGzG1z5Eqw', '9naAGQdroegWIX', '9Y9m9XscC6Kh4W',
+        '9okVtwZr5vLm4K', '9oklLp2FhXTolM', 'A0ERwPs8muf9YS',
+        'A0GNi6PHlqy5zX', 'A0HuEfx39zhjr9', 'A5ONBRrNJ7dS1K',
+        'A5MmRVEM3qf6QJ', 'A5OZ1qi9tgwnZB', 'A5OeZOCaeyQQ8Q',
+    ];
+    const MID_IRCTC = [
+        '8byazTDARv4Io0',
+        'AEPXwjSlJJhfUl',
+        '9m4CChGex4ENkR',
+        'AEsxERLbWiBuUG',
+        '8ST00QgEPT14cE',
+        '8YPFnW5UOM91H7',
+        '90xVmQJTCEJ6GH'
+    ];
+    const MID_CLEARTAX         = 'AGQJfLbWcmjxDX';
+    const MID_APARTMENTADDA    = '9NVPPQuTqF4cYx';
+    const MID_INVEZTA          = '8YQygO7pzP3Gut';
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here
@@ -75,6 +96,30 @@ class Preferences
     ];
 
     const X_AGGREGATOR_HEADER = 'x-aggregator';
+
+    //
+    // Skip settlements for few merchants
+    // Details in: https://github.com/razorpay/api/issues/5830
+    // Temporary, until https://github.com/razorpay/api/pull/6161
+    // is merged
+    //
+    const NO_SETTLEMENT_MIDS = [
+        self::MID_GOALWISE_NON_TPV,
+        self::MID_GOALWISE_TPV,
+        self::MID_MONEYVIEW,
+        self::MID_WEALTHY,
+        self::MID_PIGGY,
+        self::MID_PAISABAZAAR,
+        self::MID_BPCL,
+        self::MID_SRI_CHAITANYA,
+        self::MID_CLEARTAX,
+        self::MID_APARTMENTADDA,
+        self::MID_INVEZTA,
+    ];
+
+    const ONLY_NEFT_SETTLEMENT_MIDS = [
+        self::MID_PIGGY,
+    ];
 
     public static function checkZohoHeaders(Headers $headers)
     {

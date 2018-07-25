@@ -10,25 +10,36 @@ class Customer extends Base
         $this->fixtures->create('customer:app_tokens');
         $this->fixtures->create('customer:tokens');
         $this->fixtures->create('customer:bank_accounts');
+        $this->fixtures->on('live')->create('customer:customers');
+        $this->fixtures->on('test');
     }
 
-    protected $customers = array(
-        array(
+
+    protected $customers = [
+        [
             'id'            => '100000customer',
             'name'          => 'test',
             'email'         => 'test@razorpay.com',
             'contact'       => '1234567890',
             'merchant_id'   => '10000000000000'
-        ),
+        ],
 
-        array(
+        [
             'id'            => '10000gcustomer',
             'name'          => 'test',
             'email'         => 'test@razorpay.com',
             'contact'       => '+919988776655',
             'merchant_id'   => '100000Razorpay'
-        ),
-    );
+        ],
+        [
+            'id'                 => '100011customer',
+            'global_customer_id' => '10000gcustomer',
+            'name'               => 'test',
+            'email'              => 'test@razorpay.com',
+            'contact'            => '1234567890',
+            'merchant_id'        => '10000000000000'
+        ],
+    ];
 
     protected $customerApps = array(
         array(
@@ -40,7 +51,7 @@ class Customer extends Base
     );
 
     protected $customerTokens = array(
-        array(
+        [
             'id'            => '1000custwallet',
             'token'         => '100wallettoken',
             'customer_id'   => '100000customer',
@@ -48,9 +59,10 @@ class Customer extends Base
             'wallet'        => 'paytm',
             'bank'          => null,
             'card_id'       => null,
-            'used_at'       => 10
-        ),
-        array(
+            'used_at'       => 10,
+            'created_at'    => 1500000000,
+        ],
+        [
             'id'            => '100000custbank',
             'token'         => '10000banktoken',
             'customer_id'   => '100000customer',
@@ -58,9 +70,10 @@ class Customer extends Base
             'bank'          => 'HDFC',
             'wallet'        => null,
             'card_id'       => null,
-            'used_at'       => 10
-        ),
-        array(
+            'used_at'       => 10,
+            'created_at'    => 1500000001,
+        ],
+        [
             'id'            => '100000custcard',
             'token'         => '10000cardtoken',
             'customer_id'   => '100000customer',
@@ -69,9 +82,10 @@ class Customer extends Base
             'wallet'        => null,
             'recurring'     => false,
             'card_id'       => '100000000lcard',
-            'used_at'       => 10
-        ),
-        array(
+            'used_at'       => 10,
+            'created_at'    => 1500000002,
+        ],
+        [
             'id'            => '100001custcard',
             'token'         => '10001cardtoken',
             'customer_id'   => '100000customer',
@@ -79,9 +93,10 @@ class Customer extends Base
             'bank'          => null,
             'wallet'        => null,
             'card_id'       => '100000001lcard',
-            'used_at'       => 10
-        ),
-        array(
+            'used_at'       => 10,
+            'created_at'    => 1500000003,
+        ],
+        [
             'id'            => '10000custgcard',
             'token'         => '1000gcardtoken',
             'customer_id'   => '10000gcustomer',
@@ -90,8 +105,9 @@ class Customer extends Base
             'card_id'       => '100000000gcard',
             'bank'          => null,
             'wallet'        => null,
-            'used_at'       => 10
-        ),
+            'used_at'       => 10,
+            'created_at'    => 1500000004,
+        ],
     );
 
     protected $bankAccounts = array(

@@ -4,17 +4,20 @@ namespace RZP\Models\Card\IIN;
 
 class Flow
 {
-    const _3DS      = 1;
-    const PIN       = 2;
-    const OTP       = 4;
-    const IFRAME    = 8;
-    const MAGIC     = 16;
+    const _3DS         = 1;
+    const PIN          = 2;
+    const OTP          = 4;
+    const IFRAME       = 8;
+    const MAGIC        = 16;
+    const HEADLESS_OTP = 32;
 
     protected static $flows = [
-        '3ds'       => self::_3DS,
-        'pin'       => self::PIN,
-        'otp'       => self::OTP,
-        'magic'     => self::MAGIC,
+        '3ds'           => self::_3DS,
+        'pin'           => self::PIN,
+        'otp'           => self::OTP,
+        'iframe'        => self::IFRAME,
+        'magic'         => self::MAGIC,
+        'headless_otp'  => self::HEADLESS_OTP,
     ];
 
     /**

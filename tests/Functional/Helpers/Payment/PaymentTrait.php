@@ -20,24 +20,29 @@ use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 
 trait PaymentTrait
 {
-    use EntityActionTrait;
+    use PaymentEbsTrait;
+    use PaymentFssTrait;
     use PaymentAmexTrait;
     use PaymentAtomTrait;
-    use PaymentAxisGeniusTrait;
-    use PaymentAxisMigsTrait;
-    use PaymentBilldeskTrait;
     use PaymentHdfcTrait;
-    use PaymentNetbankingTrait;
+    use PaymentAuthTrait;
     use PaymentPaytmTrait;
     use PaymentSharpTrait;
-    use PaymentMobikwikTrait;
-    use PaymentCybersourceTrait;
-    use PaymentHitachiTrait;
     use PaymentBladeTrait;
-    use PaymentFirstDataTrait;
-    use PaymentEbsTrait;
+    use EntityActionTrait;
+    use PaymentHitachiTrait;
+    use PaymentMobikwikTrait;
+    use PaymentOlamoneyTrait;
     use PaymentCreationTrait;
-    use PaymentFssTrait;
+    use PaymentAxisMigsTrait;
+    use PaymentBilldeskTrait;
+    use PaymentFirstDataTrait;
+    use PaymentAxisGeniusTrait;
+    use PaymentNetbankingTrait;
+    use PaymentFreechargeTrait;
+    use PaymentCybersourceTrait;
+    use PaymentTraitMpiEnstage;
+    use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
 
     use RequestResponseFlowTrait
@@ -137,9 +142,19 @@ trait PaymentTrait
             $payment = $this->getDefaultPaymentArray();
         }
 
-        $payment['view'] = 'json';
-
         $content = $this->getFeesForPayment($payment);
+
+        return $content;
+    }
+
+    protected function createAndGetFeesForPaymentS2S($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $content = $this->getFeesForPaymentS2S($payment);
 
         return $content;
     }
@@ -657,6 +672,19 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function getFeesForPaymentS2S($payment)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/fees',
+            'content' => $payment
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function capturePayment($id, $amount, $currency = 'INR', $verifyAmount = 0)
     {
         $request = array(
@@ -1011,7 +1039,6 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArray();
 
         unset($payment['card']);
-        $payment['merchant_id'] = '10000000000000';
         $payment['status'] = 'authorized';
         $payment['refund_status'] = 'none';
         $payment['amount_authorized'] = $payment['amount'];
@@ -1582,45 +1609,6 @@ trait PaymentTrait
         $this->app->instance('maxmind', $maxmind);
     }
 
-    protected function mockTokenex()
-    {
-        $tokenex = Mockery::mock('RZP\Services\TokenEx')->makePartial();
-
-        $this->app->instance('card.tokenex', $tokenex);
-
-        $tokenex->shouldReceive('sendRequest')
-                ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-                ->andReturnUsing(function ($route, $method, $input)
-                {
-                    $response = [
-                        'Error' => '',
-                        'ReferenceNumber' => '15102913382030662954',
-                        'Success' => true,
-                    ];
-
-                    switch ($route)
-                    {
-                        case 'REST/Tokenize':
-                            $response['Token'] = base64_encode($input['Data']);
-                            break;
-
-                        case 'REST/Detokenize':
-                            $response['Value'] = base64_decode($input['Token']);
-                            break;
-
-                        case 'REST/ValidateToken':
-                            $response['Valid'] = true;
-                            break;
-
-                        case 'REST/DeleteToken':
-                            break;
-                    }
-                    return $response;
-                });
-
-        $this->app->instance('card.tokenex', $tokenex);
-    }
-
     public function startGatewayRefundRecordCron($gateway)
     {
         $request = [
@@ -1700,5 +1688,44 @@ trait PaymentTrait
                 '',
                 Action::BLOCK);
         });
+    }
+
+    protected function mockTokenex()
+    {
+        $tokenex = Mockery::mock('RZP\Services\TokenEx')->makePartial();
+
+        $this->app->instance('card.tokenex', $tokenex);
+
+        $tokenex->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+                $response = [
+                    'Error' => '',
+                    'ReferenceNumber' => '15102913382030662954',
+                    'Success' => true,
+                ];
+
+                switch ($route)
+                {
+                    case 'REST/Tokenize':
+                        $response['Token'] = base64_encode($input['Data']);
+                        break;
+
+                    case 'REST/Detokenize':
+                        $response['Value'] = base64_decode($input['Token']);
+                        break;
+
+                    case 'REST/ValidateToken':
+                        $response['Valid'] = true;
+                        break;
+
+                    case 'REST/DeleteToken':
+                        break;
+                }
+                return $response;
+            });
+
+        $this->app->instance('card.tokenex', $tokenex);
     }
 }

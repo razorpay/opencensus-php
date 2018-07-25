@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Batch\Processor\Emandate\Acknowledge;
 
+use Config;
 use RZP\Error;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Enach\Rbl\Status;
 use RZP\Gateway\Base\Action as GatewayAction;
@@ -16,7 +19,6 @@ class EnachRbl extends Base
 {
     const PAYMENT_ID         = 'payment_id';
     const UMRN               = 'umrn';
-    const REFERENCE_ID       = 'reference_id';
     const ACKNOWLEDGE_STATUS = 'acknowledge_status';
     const ACCOUNT_NUMBER     = 'account_number';
     const TOKEN_STATUS       = 'token_status';
@@ -24,47 +26,56 @@ class EnachRbl extends Base
 
     protected $gateway = Payment\Gateway::ENACH_RBL;
 
-    // Return single XML row as multiple entries
-    protected function parseFile(string $filePath): array
+    /**
+     * Overriding parseExcelSheets() because of different startRow.
+     * Ideally, we should store `$startRow` in a variable and then use.
+     * @param  string $filePath
+     * @return array
+     */
+    protected function parseExcelSheets($filePath)
     {
-        $xmlObject = simplexml_load_file($filePath);
+        Config::set('excel.import.force_sheets_collection', true);
+        Config::set('excel.import.heading', 'original');
+        Config::set('excel.import.startRow', 2);
 
-        return [
-            ['data' => json_decode(json_encode($xmlObject), true)]
-        ];
+        $sheets = $this->parseExcelFile($filePath, ['ACKNOWLEDGMENT REPORT']);
+
+        //
+        // Resetting startRow to 1 again
+        //
+        Config::set('excel.import.startRow', 1);
+
+        return $sheets[0];
     }
 
     protected function processEntry(array & $entry)
     {
-        $row = $entry['data'];
+        $entry = array_map('trim', $entry);
 
-        $data = $this->getDataFromRow($row);
+        $content = $this->getDataFromRow($entry);
 
-        $this->updateEntities($data);
+        $this->updateEntities($content);
 
         $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
 
     /**
-     * @param  array $row
+     * @param  array $entry
      * @return array
      */
-    protected function getDataFromRow(array & $row): array
+    protected function getDataFromRow(array $entry): array
     {
-        $details = $row['MndtAccptncRpt']['UndrlygAccptncDtls'];
-        $headerRow = $row['MndtAccptncRpt']['GrpHdr'];
+        $tokenStatus = $this->getTokenStatus($entry);
 
-        $originalMandate = $details['OrgnlMndt']['OrgnlMndt'];
-        $status = trim($details['AccptncRslt']['Accptd']);
+        $status = (($tokenStatus === Token\RecurringStatus::INITIATED) ? true : false);
 
         return [
-            self::PAYMENT_ID         => trim($originalMandate['MndtReqId']),
-            self::UMRN               => trim($originalMandate['MndtId']),
-            self::REFERENCE_ID       => $headerRow['MsgId'],
-            self::ACKNOWLEDGE_STATUS => $status,
-            self::ACCOUNT_NUMBER     => trim($originalMandate['DbtrAcct']['Id']['Othr']['Id']),
-            self::TOKEN_STATUS       => $this->getTokenStatus($status),
-            self::ERROR_MESSAGE      => $this->getTokenErrorMessage($status),
+            self::PAYMENT_ID            => $entry[Batch\Header::ENACH_ACK_REF_1],
+            self::UMRN                  => $entry[Batch\Header::ENACH_ACK_UMRN],
+            self::ACKNOWLEDGE_STATUS    => $status,
+            self::ACCOUNT_NUMBER        => $entry[Batch\Header::ENACH_ACK_ACNO],
+            self::TOKEN_STATUS          => $tokenStatus,
+            self::ERROR_MESSAGE         => $this->getTokenErrorMessage($tokenStatus, $entry),
         ];
     }
 
@@ -100,12 +111,16 @@ class EnachRbl extends Base
                 ]);
         }
 
+        $oldRecurringStatus = $token->getRecurringStatus();
+
         $this->repo->transaction(function() use ($token, $content)
         {
             $this->updateGatewayPaymentEntity($content);
 
             $this->updateTokenEntity($token, $content);
         });
+
+        (new Payment\Processor\Processor($payment->merchant))->eventTokenStatus($token, $oldRecurringStatus);
     }
 
     /**
@@ -170,6 +185,7 @@ class EnachRbl extends Base
         $tokenParams = [
             Token\Entity::RECURRING_STATUS          => $newStatus,
             Token\Entity::RECURRING_FAILURE_REASON  => $content[self::ERROR_MESSAGE],
+            Token\Entity::ACKNOWLEDGED_AT           => Carbon::now(Timezone::IST)->getTimestamp()
         ];
 
         (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
@@ -177,9 +193,10 @@ class EnachRbl extends Base
         $this->repo->saveOrFail($token);
     }
 
-    protected function getTokenStatus(string $gatewayTokenStatus): string
+    protected function getTokenStatus(array $entry): string
     {
-        if (Status::isAcknowledgeSuccess($gatewayTokenStatus) === true)
+        if ((empty($entry[Batch\Header::ENACH_ACK_UMRN]) === false) and
+            (strlen($entry[Batch\Header::ENACH_ACK_UMRN]) > 10))
         {
             return Token\RecurringStatus::INITIATED;
         }
@@ -187,14 +204,14 @@ class EnachRbl extends Base
         return Token\RecurringStatus::REJECTED;
     }
 
-    protected function getTokenErrorMessage(string $gatewayTokenStatus)
+    protected function getTokenErrorMessage(string $tokenStatus, array $entry)
     {
-        if (Status::isAcknowledgeSuccess($gatewayTokenStatus) === true)
+        if ($tokenStatus === Token\RecurringStatus::INITIATED)
         {
             return null;
         }
 
-        return 'FAILED';
+        return $entry[Batch\Header::ENACH_ACK_ACK_DESC] ?? 'Failed';
     }
 
     protected function getGatewayAttributes(array $content): array
@@ -202,7 +219,6 @@ class EnachRbl extends Base
         return [
             EnachEntity::ACKNOWLEDGE_STATUS   => $content[self::ACKNOWLEDGE_STATUS],
             EnachEntity::UMRN                 => $content[self::UMRN],
-            EnachEntity::GATEWAY_REFERENCE_ID => $content[self::REFERENCE_ID],
         ];
     }
 }

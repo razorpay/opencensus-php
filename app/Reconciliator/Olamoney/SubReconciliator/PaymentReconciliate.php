@@ -12,10 +12,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID         = 'Unique Bill Id';
-    const COLUMN_SERVICE_TAX        = 'Service Tax';
-    const COLUMN_FEE                = 'Tdr deducted in Rs';
-    const COLUMN_SETTLED_AT         = 'Date of Settlement';
+    const COLUMN_PAYMENT_ID         = 'unique_bill_id';
+    const COLUMN_SERVICE_TAX        = ['service_tax', 'goods_and_services_tax'];
+    const COLUMN_FEE                = 'tdr_deducted_in_rs';
+    const COLUMN_SETTLED_AT         = 'date_of_settlement';
     const SETTLEMENT_DATE_FORMAT    = 'Y-m-d H:i:s.u';
 
     protected function getPaymentId(array $row)
@@ -27,16 +27,44 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
-        // Convert service tax into paise
-        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
+        $serviceTax = null;
 
-        return round($serviceTax);
+        //
+        // In new MIS files, we are getting GST with
+        // column name Goods And Services Tax
+        //
+        $serviceTaxColumn = array_first(self::COLUMN_SERVICE_TAX, function ($cst) use ($row)
+        {
+            return (isset($row[$cst]) === true);
+        });
+
+        if ($serviceTaxColumn === null)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_SERVICE_TAX[0]);
+
+            return null;
+        }
+
+        // Convert service tax into basic unit of currency (ex: paise)
+        $serviceTax = Base\Helper::getIntegerFormattedAmount($row[$serviceTaxColumn]);
+
+        return $serviceTax;
     }
 
     protected function getGatewayFee($row)
     {
+        //
+        // This should be isset not empty as fee can be 0 also.
+        //
+        if (isset($row[self::COLUMN_FEE]) === false)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_FEE);
+
+            return null;
+        }
+
         // Convert fee into basic unit of currency (ex: paise)
-        $fee = floatval($row[self::COLUMN_FEE]) * 100;
+        $fee = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
 
         // Already in basic unit of currency. Hence, no conversion needed
         $serviceTax = $this->getGatewayServiceTax($row);

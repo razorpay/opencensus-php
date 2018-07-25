@@ -17,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
 use RZP\Models\Payment\Status;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Constants\Entity as ConstantsEntity;
 
 class Gateway
@@ -314,6 +315,31 @@ class Gateway
         $this->mock = $mock;
     }
 
+    /**
+     * if bharatQr payment is not successful $valid will be set to false in BharatQr Service,in
+     * that case the reason of the failure is shared with gateway using exception thrown
+     * else the value of $valid will be true and we will send the respective response to gateway.
+     */
+    public function getBharatQrResponse(bool $valid, $gatewayInput = null, $exception = null)
+    {
+        if ($valid === true)
+        {
+            $xml = '<RESPONSE>OK</RESPONSE>';
+        }
+        else
+        {
+            $xml = '<RESPONSE>NOK</RESPONSE>';
+        }
+
+        $response = \Response::make($xml);
+
+        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
+
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
+    }
+
     protected function checkApiSuccess(Verify $verify)
     {
         $verify->apiSuccess = true;
@@ -495,6 +521,19 @@ class Gateway
             $request['options'] = [];
         }
 
+        //
+        // Intentionally setting verify to null, so Requests does not use its default
+        // cacert (which is outdated), and curl ends up using the OS cacert by default.
+        //
+        // Ref:
+        // [1] Requests::get_default_options
+        // [2] Requests_Transport_cURL -> requesst
+        //
+        if (isset($request['options']['verify']) === false)
+        {
+            $request['options']['verify'] = null;
+        }
+
         if (isset($request['headers']) === false)
         {
             $request['headers'] = [];
@@ -631,6 +670,11 @@ class Gateway
     }
 
     public function preProcessServerCallback($input): array
+    {
+        return $input;
+    }
+
+    public function verifyBharatQrNotification($input)
     {
         return $input;
     }
@@ -951,6 +995,16 @@ class Gateway
 
         $gatewayCertPath = $certificatePath . '/' . $this->getGatewayCertDirName();
 
+        if (file_exists($gatewayCertPath) === false)
+        {
+            //
+            // We are using 077 permissions because default is 0777
+            // We want recursive generation of path for this case
+            // http://php.net/manual/en/function.mkdir.php
+            //
+            mkdir($gatewayCertPath, 0777, true);
+        }
+
         return $gatewayCertPath;
     }
 
@@ -1117,12 +1171,12 @@ class Gateway
 
     protected function isBharatQrPayment(): bool
     {
-        return (empty($this->input['bharat_qr']) === false);
-
+        return ((empty($this->input['payment'][Payment\Entity::RECEIVER_TYPE]) === false) and
+                ($this->input['payment'][Payment\Entity::RECEIVER_TYPE] === Receiver::QR_CODE));
     }
 
     /**
-     * Retuns the external mock url
+     * Returns the external mock url
      * Used for gateway testing using mock in func
      * Appends the gateway string and relative url for the external mock domain
      *

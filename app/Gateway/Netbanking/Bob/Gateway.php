@@ -67,11 +67,36 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($this->formatAmount($input['payment']['amount']), $content[ResponseFields::AMOUNT]);
 
-        $this->saveCallbackResponse($content, $input);
+        $gatewayPayment = $this->saveCallbackResponse($content, $input);
 
         $this->checkCallbackStatus($content);
 
+        $this->verifyCallback($input, $gatewayPayment);
+
         return $this->getCallbackResponseData($input);
+    }
+
+    protected function verifyCallback(array $input, $gatewayPayment)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkVerifyGatewaySuccess($verify);
+
+        //
+        // If verify returns false, we throw an error as
+        // authorize request / response has been tampered with
+        //
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     public function verify(array $input)
@@ -101,13 +126,13 @@ class Gateway extends Base\Gateway
             // via URL params and without adding the '?' separator
             RequestFields::CALLBACK_URL     => $input['callbackUrl'] . '?',
             RequestFields::PAYMENT_ID       => $payment[Payment::ID],
-            RequestFields::CUSTOMER_TYPE    => $customerType,
         ];
 
         $encryptedData = $this->getEncryptor()->encryptData($content);
 
         $requestData = [
-            RequestFields::ENCRYPTED_DATA => $encryptedData
+            RequestFields::ENCRYPTED_DATA => $encryptedData,
+            RequestFields::CUSTOMER_TYPE  => $customerType,
         ];
 
         // Since live mode relative URL is different, we set the type of URL to AUTHORIZE_LIVE
@@ -186,6 +211,8 @@ class Gateway extends Base\Gateway
             Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
+
+        return $gatewayPayment;
     }
 
     // -------------------- Callback helper methods end -----------------

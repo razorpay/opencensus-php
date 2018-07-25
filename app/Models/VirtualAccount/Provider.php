@@ -2,19 +2,19 @@
 
 namespace RZP\Models\VirtualAccount;
 
-use Config;
 use Lib\CRC16;
-use RZP\Base\Luhn;
 use RZP\Exception;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
+use RZP\Models\Terminal;
+use RZP\Models\Card\Network;
 use RZP\Models\BharatQr\Tags;
-use RZP\Models\BharatQr\Lengths;
 use RZP\Models\Merchant\Account;
-use RZP\Models\Card\NetworkName;
 use RZP\Models\BharatQr\Constants;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Provider
 {
@@ -54,7 +54,7 @@ class Provider
             'numeric' => [
                 'default' => '222333',
                 'handle'  => '222333',
-                'special' => '222333',
+                'special' => '543210',
             ],
             'alpha_numeric' => [
                 'default' => null,
@@ -90,7 +90,7 @@ class Provider
             'numeric' => [
                 'default' => '111222',
                 'handle'  => '111222',
-                'special' => '111222',
+                'special' => '543210',
             ],
             'alpha_numeric' => [
                 'default' => 'RAZO',
@@ -113,13 +113,15 @@ class Provider
         '139914' => '0',
         // YesBank
         '222333' => '00',
+        // BPCL has given a custom root for descriptor length 10.
+        '543210' => '',
     ];
 
     const PRIVILEGED_NUMERIC_HANDLE_MAPPING = [
         // BPCL gets 2223339
-        Preferences::MID_BPCL => '9',
+        Preferences::MID_BPCL => '',
         // Tests
-        Account::TEST_ACCOUNT => '9',
+        Account::TEST_ACCOUNT => '',
     ];
 
     const IFSC = [
@@ -235,26 +237,16 @@ class Provider
     {
         $pointOfInitiation = $this->getPointOfInitiation($qrCode);
 
-        $visaIdentifier = $this->generateBharatQrMerchantIdentifier(NetworkName::VISA);
-
-        $masterCardIdentifier =  $this->generateBharatQrMerchantIdentifier(NetworkName::MC);
-
-        $rupayIdentifier = $this->generateBharatQrMerchantIdentifier(NetworkName::RUPAY);
-
-        $visaTlv = Tags::VISA . $this->getLengthAndValue($visaIdentifier);
-
-        $masterCardTlv = Tags::MASTERCARD . $this->getLengthAndValue($masterCardIdentifier);
-
-        $rupayCardTlv = Tags::RUPAY . $this->getLengthAndValue($rupayIdentifier);
+        $merchantIdentifiers = $this->generateBharatQrMerchantIdentifier($qrCode);
 
         $tagArray = [
             Tags::VERSION . $this->getLengthAndValue(Constants::VERSION),
             Tags::POINT_OF_INITIATION . $this->getLengthAndValue($pointOfInitiation),
-            $visaTlv,
-            $masterCardTlv,
-            $rupayCardTlv,
-            $this->getBharatQrUpiTlv(),
-            $this->getBharatQrDynamicUpiTlv($qrCode),
+            $this->getIdentifierTlv(Tags::VISA, Terminal\Entity::VISA_MPAN, $merchantIdentifiers),
+            $this->getIdentifierTlv(Tags::MASTERCARD, Terminal\Entity::MC_MPAN, $merchantIdentifiers),
+            $this->getIdentifierTlv(Tags::RUPAY, Terminal\Entity::RUPAY_MPAN, $merchantIdentifiers),
+            $this->getBharatQrUpiTlv($merchantIdentifiers),
+            $this->getBharatQrDynamicUpiTlv($qrCode, $merchantIdentifiers),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
@@ -262,7 +254,7 @@ class Provider
             Tags::MERCHANT_NAME . $this->getLengthAndValue(Constants::MERCHANT_NAME),
             Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
             Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
-            $this->getBharatQrAdditionalDetailTlv($qrCode),
+            $this->getBharatQrAdditionalDetailTlv($qrCode, $merchantIdentifiers),
         ];
 
         $qrString =  implode('', $tagArray);
@@ -277,6 +269,16 @@ class Provider
         return $qrString;
     }
 
+    protected function getIdentifierTlv(string $tag, string $networkMpan, array $merchantIdentifiers)
+    {
+        if (empty($merchantIdentifiers[$networkMpan]) === false)
+        {
+            return $tag . $this->getLengthAndValue($merchantIdentifiers[$networkMpan]);
+        }
+
+        return null;
+    }
+
     protected function getPointOfInitiation($qrCode)
     {
         if (empty($qrCode->getAmount()) === true)
@@ -288,34 +290,60 @@ class Provider
         return Constants::DYNAMIC_POI;
     }
 
-    protected function getBharatQrUpiTlv()
+    protected function getBharatQrUpiTlv(array $merchantIdentifiers)
     {
+        $merchantVpa = $merchantIdentifiers[Terminal\Entity::VPA] ?? null;
+
+        // This happens when no terminal of upi
+        // bqr is assigned to the merchant.
+        if (empty($merchantVpa) === true)
+        {
+            return null;
+        }
+
         $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
-        $merchantVpaTlv = Tags::UPI_VPA_MERCHANT_VPA . $this->getLengthAndValue(Constants::MERCHANT_VPA);
+        $merchantVpaTlv = Tags::UPI_VPA_MERCHANT_VPA . $this->getLengthAndValue($merchantVpa);
 
         $upiString = $rupayRidTlv . $merchantVpaTlv;
 
         return Tags::UPI_VPA . strlen($upiString) . $upiString;
     }
 
-    protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode)
+    protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode, array $merchantIdentifiers)
     {
+        $merchantVpa = $merchantIdentifiers[Terminal\Entity::VPA] ?? null;
+
+        // This happens when no terminal of upi
+        // bqr is assigned to the merchant.
+        if (empty($merchantVpa) === true)
+        {
+            return null;
+        }
+
         $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
 
         //
         // In case of upi payments we need to send reference with
         // prefix. This is how they identify our payments
         //
-        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getId());
+        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR .
+                                   $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getId());
 
         $upiString = $rupayRidTlv . $transactionReferenceTlv;
 
         return Tags::UPI_VPA_REFERENCE . strlen($upiString) . $upiString;
     }
 
-    protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode)
+    protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode, array $merchantIdentifiers)
     {
         $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getId());
+
+        if (isset($merchantIdentifiers['rupay_tid']) === true)
+        {
+            $terminalIdTlv = Tags::TERMINAL_ID . $this->getLengthAndValue($merchantIdentifiers['rupay_tid']);
+
+            $idTlv .= $terminalIdTlv;
+        }
 
         $additionalDetailsString = $idTlv;
 
@@ -343,22 +371,103 @@ class Provider
      * This will generate merchant identifier using network
      * network could be Visa , MasterCard or Rupay
      *
-     * @param string $network
-     * @return string
+     * @param QrCode\Entity $qrCode
+     *
+     * @return array
+     * @throws Exception\LogicException
      */
-    protected function generateBharatQrMerchantIdentifier(string $network)
+    protected function generateBharatQrMerchantIdentifier(QrCode\Entity $qrCode)
     {
-        $acquirerCode = $this->getBharatQrAcquirerCode($network);
+        $cardIdentifiers = array_filter($this->getCardIdentifiers($qrCode));
 
-        $identifierPadding = Config::get('gateway.bharat_qr.identifier_padding');
+        $upiIdentifier = array_filter($this->getUpiIdentifier($qrCode));
 
-        $identifier = $acquirerCode . '0' . str_pad(strlen($identifierPadding), 8, '0', STR_PAD_LEFT);
+        $allIdentifiers = array_merge($cardIdentifiers, $upiIdentifier);
 
-        return $identifier . Luhn::computeCheckDigit($identifier);
+        //
+        // This is important to be here for the calling function.
+        //
+        if (count(array_filter($allIdentifiers)) === 0)
+        {
+            throw new Exception\LogicException(
+                'No identifiers found for the merchant',
+                null,
+                [
+                    'qr_code' => $qrCode->toArray()
+                ]);
+        }
+
+        return $allIdentifiers;
     }
 
-    protected function getBharatQrAcquirerCode(string $network)
+    protected function getCardIdentifiers(QrCode\Entity $qrCode): array
     {
-        return Config::get('gateway.bharat_qr.' . strtolower($network) . '_' . 'acquirer_code');
+        $identifiers = [];
+
+        $bharatQrNetworks = Payment\Gateway::getBharatQrCardNetworks();
+
+        foreach ($bharatQrNetworks as $bharatQrNetwork)
+        {
+            $mpanAttr = strtolower($bharatQrNetwork) . '_mpan';
+
+            $terminal = $this->getTerminalForMethod(Payment\Method::CARD, $qrCode, $bharatQrNetwork);
+
+            //
+            // For a given network, we may not get any terminal at all. This is okay.
+            // If we don't, we just search for the next network's terminal
+            //
+            if ($terminal === null)
+            {
+                continue;
+            }
+
+            if ($bharatQrNetwork === Network::RUPAY)
+            {
+                $identifiers['rupay_tid'] = $terminal->getGatewayTerminalId();
+            }
+
+            $terminal = $terminal->toArray();
+
+            $identifiers[$mpanAttr] = $terminal[$mpanAttr];
+        }
+
+        return $identifiers;
+    }
+
+    protected function getUpiIdentifier(QrCode\Entity $qrCode): array
+    {
+        $terminal = $this->getTerminalForMethod(Payment\Method::UPI, $qrCode);
+
+        if ($terminal !== null)
+        {
+            $vpa = $terminal->getVpa();
+        }
+
+        $identifier[Terminal\Entity::VPA] = $vpa ?? null;
+
+        return $identifier;
+    }
+
+    /**
+     * This method will select the terminals using a dummy payment
+     * The terminals will have all the mpans which will be used to
+     * generate qr codes
+     *
+     * @param string        $method
+     * @param QrCode\Entity $qrCode
+     *
+     * @param string|null   $network
+     *
+     * @return mixed
+     */
+    protected function getTerminalForMethod(string $method, QrCode\Entity $qrCode, string $network = null)
+    {
+        $paymentArray = (new Payment\Entity)->getDummyPaymentArray($method, $network);
+
+        $paymentArray[Payment\Entity::RECEIVER] = $qrCode;
+
+        $paymentProcessor = new PaymentProcessor($qrCode->merchant);
+
+        return $paymentProcessor->processAndReturnTerminal($paymentArray);
     }
 }

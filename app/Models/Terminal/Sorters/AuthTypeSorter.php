@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
+use RZP\Models\Bank;
+use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 
@@ -12,6 +14,7 @@ class AuthTypeSorter extends Terminal\Sorter
     ];
 
     // Arrange card terminals in order of preferred auth type
+    // @codingStandardsIgnoreLine
     public function authTypeSorter($terminals)
     {
         $payment = $this->input['payment'];
@@ -31,6 +34,7 @@ class AuthTypeSorter extends Terminal\Sorter
 
         foreach ($preferredAuthentications as $authType)
         {
+            //
             // As the terminals are from the priority list
             // append to the terminal
             //
@@ -38,8 +42,8 @@ class AuthTypeSorter extends Terminal\Sorter
 
             foreach ($terminals as $key => $terminal)
             {
-
-                if ($terminal->isAuthTypeEnabled($authType) === true)
+                if (($terminal->isAuthTypeEnabled($authType) === true) and
+                    ($this->filterOtpAuthType($payment, $terminal, $authType) === true))
                 {
                     $orderedTerminals[] = $terminal;
 
@@ -49,5 +53,25 @@ class AuthTypeSorter extends Terminal\Sorter
         }
 
         return $orderedTerminals;
+    }
+
+    /**
+     * We are doing this because terminal selection for
+     * Axis OTP is kinda tricky where hitachi and HDFC both
+     * get selected but we don't want both of them to get
+     * selected
+     */
+    protected function filterOtpAuthType($payment, $terminal, $authType)
+    {
+        if (($authType === Payment\AuthType::OTP) and
+            ($payment->card->iinRelation !== null) and
+            ($payment->card->iinRelation->getIssuer() === Bank\IFSC::UTIB) and
+            ($payment->card->iinRelation->supports(Card\IIN\Flow::OTP) === true) and
+            ($payment->merchant->isAxisExpressPayEnabled() === true))
+        {
+            return ($terminal->getGateway() === Payment\Gateway::HITACHI);
+        }
+
+        return true;
     }
 }

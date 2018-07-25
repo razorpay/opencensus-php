@@ -6,7 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Models\Card;
+use RZP\Models\Emi;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -27,9 +27,10 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::NAME                => 'sometimes|filled|string|max:50',
         Entity::PAYMENT_METHOD      => 'filled|alpha|custom',
-        Entity::PAYMENT_METHOD_TYPE => 'filled|in:debit,credit',
+        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emi|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'filled|alpha',
-        Entity::ISSUER              => 'filled|alpha|custom',
+        Entity::ISSUER              => 'filled|string|custom',
+        Entity::INTERNATIONAL       => 'sometimes_if:payment_method,card,emi|boolean',
         Entity::IINS                => 'filled|array',
         Entity::PERCENT_RATE        => 'filled|integer|min:0|max:10000',
         Entity::MAX_CASHBACK        => 'filled|integer|min:0',
@@ -44,7 +45,24 @@ class Validator extends Base\Validator
         Entity::ENDS_AT             => 'required|epoch',
         Entity::DISPLAY_TEXT        => 'filled|string|max:255',
         Entity::ERROR_MESSAGE       => 'filled|string|max:255',
-        Entity::TERMS               => 'required|string'
+        Entity::TERMS               => 'required|string',
+    ];
+
+    protected static $emiSubventionRules = [
+        Entity::NAME                => 'sometimes|filled|string|max:50',
+        Entity::PAYMENT_METHOD      => 'required|in:emi',
+        Entity::ISSUER              => 'required_without:payment_network',
+        Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX',
+        Entity::EMI_SUBVENTION      => 'required|boolean|in:1',
+        Entity::EMI_DURATIONS       => 'sometimes|array|custom',
+        Entity::MIN_AMOUNT          => 'filled|integer|min:0',
+        Entity::MAX_PAYMENT_COUNT   => 'filled|integer|min:1',
+        Entity::PROCESSING_TIME     => 'filled|integer',
+        Entity::STARTS_AT           => 'filled|epoch',
+        Entity::ENDS_AT             => 'required|epoch',
+        Entity::DISPLAY_TEXT        => 'filled|string|max:255',
+        Entity::ERROR_MESSAGE       => 'filled|string|max:255',
+        Entity::TERMS               => 'required|string',
     ];
 
     protected static $editRules = [
@@ -67,6 +85,11 @@ class Validator extends Base\Validator
         Entity::FLAT_CASHBACK,
         Entity::MAX_PAYMENT_COUNT,
         Entity::LINKED_OFFER_IDS,
+        Entity::MAX_CASHBACK,
+    ];
+
+    protected static $emiSubventionValidators = [
+        Entity::MIN_AMOUNT,
     ];
 
     protected static $editValidators = [
@@ -77,11 +100,11 @@ class Validator extends Base\Validator
 
     protected function validatePaymentNetwork(array $input)
     {
-        $network = $input[Entity::PAYMENT_NETWORK] ?? null;
+        $networkCode = $input[Entity::PAYMENT_NETWORK] ?? null;
 
         $method = $input[Entity::PAYMENT_METHOD] ?? null;
 
-        if (empty($network) === true)
+        if (empty($networkCode) === true)
         {
             return;
         }
@@ -93,13 +116,13 @@ class Validator extends Base\Validator
                 "Payment network should be sent only for card offers");
         }
 
-        if (Network::isValidNetwork($network) === false)
+        if (Network::isValidNetworkCode($networkCode) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Payment network for card should be a valid card network');
+                'Payment network for card should be a valid card network code');
         }
 
-        if (Network::isUnsupportedNetwork($network) === true)
+        if (Network::isUnsupportedNetwork($networkCode) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'This card payment network is not supported');
@@ -161,12 +184,38 @@ class Validator extends Base\Validator
 
     protected function validateFlatCashback(array $input)
     {
-        if ((isset($input[Entity::FLAT_CASHBACK]) === true) and
-            ((isset($input[Entity::PERCENT_RATE]) === true) or
-             (isset($input[Entity::MAX_CASHBACK]) === true)))
+        if (isset($input[Entity::FLAT_CASHBACK]) === false)
+        {
+            return;
+        }
+
+        if ((isset($input[Entity::PERCENT_RATE]) === true) or
+             (isset($input[Entity::MAX_CASHBACK]) === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK);
+        }
+
+        if ((isset($input[Entity::MIN_AMOUNT]) === true) and
+            ($input[Entity::FLAT_CASHBACK] > $input[Entity::MIN_AMOUNT]))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Flat cashback cannot be greater than minimum amount', null, [
+                    Entity::FLAT_CASHBACK => $input[Entity::FLAT_CASHBACK],
+                    Entity::MIN_AMOUNT    => $input[Entity::MIN_AMOUNT],
+                ]);
+        }
+    }
+
+    protected function validateMaxCashback(array $input)
+    {
+        if ((isset($input[Entity::MAX_CASHBACK]) === true) and
+            (isset($input[Entity::PERCENT_RATE]) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MAX_CASHBACK_WITHOUT_PERCENT_RATE, null, [
+                    'attributes' => Entity::PERCENT_RATE,
+                ]);
         }
     }
 
@@ -191,7 +240,7 @@ class Validator extends Base\Validator
         if (is_associative_array($iins) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                        'Iins should be a valid array');
+                'IINs should be a valid array');
         }
 
         $paymentMethod = $input[Entity::PAYMENT_METHOD] ?? $this->entity->getPaymentMethod();
@@ -206,7 +255,18 @@ class Validator extends Base\Validator
         if (in_array($paymentMethod, $allowedPaymentMethods, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Iins can be only edited for card / emi offer');
+                'IINs can be only edited for card / emi offer');
+        }
+
+        $invalidIin = array_first($iins, function ($iin)
+        {
+            return strlen($iin) != 6;
+        });
+
+        if (empty($invalidIin) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid IIN : All IINs should have exactly 6 digits');
         }
     }
 
@@ -246,7 +306,7 @@ class Validator extends Base\Validator
         if (is_associative_array($linkedOfferIds) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                        'linked_offer_ids should be a valid array');
+                'linked_offer_ids should be a valid array');
         }
 
         // Checks if the offer on which we are linking offer ids has the max_payment_count attribute
@@ -255,8 +315,7 @@ class Validator extends Base\Validator
         if (empty($maxPaymentCount) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                        'linked_offer_ids can only be set for offer with max_payment_count');
-
+                'linked_offer_ids can only be set for offer with max_payment_count');
         }
 
         // Checks if all the linked offer ids belong to the merchant
@@ -267,7 +326,44 @@ class Validator extends Base\Validator
         if (empty($result) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                        'Linked offer ids submitted are not valid');
+                'Linked offer ids submitted are not valid');
+        }
+    }
+
+    protected function validateMinAmount(array $input)
+    {
+        if (isset($input[Entity::MIN_AMOUNT]) === false)
+        {
+            return;
+        }
+
+        $minAmount = $input[Entity::MIN_AMOUNT] ?? null;
+
+        $bank = $input[Entity::ISSUER] ?? null;
+
+        $network = $input[Entity::PAYMENT_NETWORK] ?? null;
+
+        $emiDurations = $input[Entity::EMI_DURATIONS] ?? [];
+
+        $requiredMinAmount = (new Emi\Core)->calculateMinAmountForPlans($emiDurations, $bank, $network);
+
+        if ($minAmount < $requiredMinAmount)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Min amount for this offer should be greater than $requiredMinAmount");
+        }
+    }
+
+    protected function validateEmiDurations(string $attribute, array $emiDurations)
+    {
+        $validDurations = Emi\Entity::VALID_DURATIONS;
+
+        $diff = array_diff($emiDurations, $validDurations);
+
+        if (empty($diff) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid emi durations given " . implode(", ", $diff));
         }
     }
 }

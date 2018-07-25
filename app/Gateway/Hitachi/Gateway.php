@@ -4,9 +4,9 @@ namespace RZP\Gateway\Hitachi;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Gateway\Mpi;
 use RZP\Models\Card;
 use RZP\Gateway\Base;
-use RZP\Gateway\Blade;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -16,6 +16,7 @@ use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
 
@@ -31,7 +32,6 @@ class Gateway extends Base\Gateway
     const CACHE_KEY = 'hitachi_%s_card_details';
     const CACHE_TTL = 20;
 
-
     const TIME_FORMAT = 'His';
     const DATE_FORMAT = 'md';
 
@@ -42,14 +42,20 @@ class Gateway extends Base\Gateway
         $this->secureCacheDriver = $this->app['config']->get('cache.secure_default');
     }
 
+    public function otpGenerate(array $input)
+    {
+        return $this->authorize($input);
+    }
+
     public function authorize(array $input)
     {
         parent::authorize($input);
 
-        if ((isset($input['qr_notification']) === true) and
-            ($input['qr_notification'] === true))
+        if ($this->isBharatQrPayment() === true)
         {
-            return $this->createGatewayPaymentEntityForQr($input);
+            $this->createGatewayPaymentEntityForQr($input);
+
+            return null;
         }
 
         if ($this->isSecondRecurringPaymentRequest($input) === true)
@@ -57,7 +63,9 @@ class Gateway extends Base\Gateway
             return $this->authorizeRecurring($input);
         }
 
-        $authResponse = $this->callAuthenticationGateway($input);
+        $authenticationGateway = $this->decideAuthenticationGateway($input);
+
+        $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
         if ($authResponse !== null)
         {
@@ -69,18 +77,31 @@ class Gateway extends Base\Gateway
         return $this->authorizeNotEnrolled($input);
     }
 
+    public function callbackOtpSubmit(array $input)
+    {
+        return $this->callback($input);
+    }
+
     public function callback(array $input)
     {
         parent::callback($input);
 
         $this->setCardNumberAndCvv($input);
 
-        $authResponse = $this->callAuthenticationGateway($input);
+        $mpiEntity = $this->app['repo']
+                          ->mpi
+                          ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
 
-        $this->authorizeEnrolled($input, $authResponse);
+        $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
+
+        $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+        $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
+
+        $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         // TODO: Add authenticate data for 2FA
-        return $this->getCallbackResponseData($input);
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function capture(array $input)
@@ -166,7 +187,7 @@ class Gateway extends Base\Gateway
 
             return [
                 'qr_data'           => $qrData,
-                'gateway_input'     => $input,
+                'callback_data'     => $input,
             ];
         }
 
@@ -200,13 +221,20 @@ class Gateway extends Base\Gateway
         $qrData = [
             BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]),
             BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($input[ResponseFields::MASKED_CARD_NUMBER], 0, 6),
-            BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::MASKED_CARD_NUMBER], 12, 4),
+            BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::MASKED_CARD_NUMBER], -4),
+            BharatQr\GatewayResponseParams::SENDER_NAME           => $input[ResponseFields::SENDER_NAME],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
-            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
-            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::AUTHORIZATION_ID],
+            BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::MID],
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[ResponseFields::PURCHASE_ID], 0, 14),
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::RRN],
         ];
 
         return $qrData;
+    }
+
+    protected function getIntegerFormattedAmount(string $amount)
+    {
+        return (int) number_format($amount, 0, '.', '');
     }
 
     protected function createGatewayPaymentEntityForQr($input)
@@ -225,13 +253,32 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return array|null
      */
-    protected function callAuthenticationGateway(array $input)
+    protected function callAuthenticationGateway(array $input, $authenticationGateway)
     {
         return $this->app['gateway']->call(
-            Payment\Gateway::BLADE,
+            $authenticationGateway,
             $this->action,
             $input,
             $this->mode);
+    }
+
+    protected function decideAuthenticationGateway($input)
+    {
+        $networkCode = $input['card']['network_code'];
+
+        if (($input['merchant']->isAxisExpressPayEnabled() === true) and
+            ($input['card']['issuer'] === 'UTIB') and
+            ($input['payment']['auth_type'] === 'otp') and
+            (in_array($networkCode, [Card\Network::MC, Card\Network::VISA], true) === true))
+        {
+            $authenticationGateway = Payment\Gateway::MPI_ENSTAGE;
+        }
+        else
+        {
+            $authenticationGateway = Payment\Gateway::MPI_BLADE;
+        }
+
+        return $authenticationGateway;
     }
 
     protected function authorizeRecurring(array $input)
@@ -274,9 +321,11 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
-        $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+        $gatewayEntity = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
 
         $this->checkErrorsAndThrowException($response);
+
+        return $gatewayEntity;
     }
 
     protected function sendPaymentVerifyRequest($verify)
@@ -404,20 +453,20 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
 
-        $content[RequestFields::AUTH_STATUS] = $authResponse[Blade\Entity::STATUS];
-        $content[RequestFields::ECI]         = $authResponse[Blade\Entity::ECI];
-        $content[RequestFields::XID]         = $authResponse[Blade\Entity::XID];
-        $content[RequestFields::ALGORITHM]   = $authResponse[Blade\Entity::CAVV_ALGORITHM];
+        $content[RequestFields::AUTH_STATUS] = $authResponse[Mpi\Base\Entity::STATUS];
+        $content[RequestFields::ECI]         = $authResponse[Mpi\Base\Entity::ECI];
+        $content[RequestFields::XID]         = $authResponse[Mpi\Base\Entity::XID];
+        $content[RequestFields::ALGORITHM]   = $authResponse[Mpi\Base\Entity::CAVV_ALGORITHM];
 
         $network = Network::getCode($this->input['card']['network']);
 
         if ($network === Card\Network::VISA)
         {
-            $content[RequestFields::CAVV2] = $authResponse[Blade\Entity::CAVV];
+            $content[RequestFields::CAVV2] = $authResponse[Mpi\Base\Entity::CAVV];
         }
         else if (($network === Card\Network::MC) or ($network === Card\Network::MAES))
         {
-            $content[RequestFields::UCAF] = $authResponse[Blade\Entity::CAVV];
+            $content[RequestFields::UCAF] = $authResponse[Mpi\Base\Entity::CAVV];
         }
         else
         {
@@ -532,6 +581,8 @@ class Gateway extends Base\Gateway
         $time = Carbon::now(Timezone::IST)->format(self::TIME_FORMAT);
         $date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
+        $currencyCode = Currency::getIsoCode($input['payment']['currency']);
+
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::AUTH,
             RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
@@ -545,6 +596,7 @@ class Gateway extends Base\Gateway
             RequestFields::ALGORITHM           => '',
             RequestFields::CAVV2               => '',
             RequestFields::UCAF                => '',
+            RequestFields::CURRENCY_CODE       => $currencyCode,
         ];
 
         return $content;
@@ -660,9 +712,9 @@ class Gateway extends Base\Gateway
             Entity::CARD_NETWORK       => $response[ResponseFields::CARD_NETWORK],
             Entity::AMOUNT             => $this->getIntegerFormattedAmount($response[ResponseFields::AMOUNT]),
             Entity::RRN                => $response[ResponseFields::RRN],
-            Entity::REQUEST_ID         => $response[ResponseFields::AUTHORIZATION_ID],
+            Entity::AUTH_ID            => $response[ResponseFields::AUTHORIZATION_ID],
             Entity::STATUS             => $response[ResponseFields::STATUS_CODE],
-            Entity::MERCHANT_REFERENCE => $response[ResponseFields::PURCHASE_ID],
+            Entity::MERCHANT_REFERENCE => substr($response[ResponseFields::PURCHASE_ID], 0 , 14),
         ];
 
         return $attributes;
@@ -731,12 +783,9 @@ class Gateway extends Base\Gateway
 
         $action = $action ?: $this->action;
 
-        if (empty($input['terminal']) === false)
-        {
-            $acquirer = $input['terminal']->getGatewayAcquirer();
+        $acquirer = $input['terminal']->getGatewayAcquirer();
 
-            $gatewayPayment->setAcquirer($acquirer);
-        }
+        $gatewayPayment->setAcquirer($acquirer);
 
         $gatewayPayment->setAction($action);
 
@@ -875,11 +924,6 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
-        if ($this->isBharatQrPayment() === true)
-        {
-            return $this->config['bharatqr_merchant_id'];
-        }
-
         $merchantId = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)
@@ -892,11 +936,6 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalId()
     {
-        if ($this->isBharatQrPayment() === true)
-        {
-            return $this->config['bharatqr_terminal_id'];
-        }
-
         $terminalId = $this->terminal['gateway_terminal_id'];
 
         if ($this->mode === Mode::TEST)

@@ -2,12 +2,11 @@
 
 namespace RZP\Tests\Functional\Admin;
 
-use Cache;
-use Carbon\Carbon;
 use Hash;
 use Mail;
+use Cache;
 use Mockery;
-
+use Carbon\Carbon;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
@@ -369,8 +368,8 @@ class AdminTest extends TestCase
     public function testLoginOauth()
     {
         $admin = $this->fixtures->create('admin', [
-            'org_id' => $this->orgId,
-            'email' => 'test@email.com',
+            'org_id'             => Org::RZP_ORG,
+            'email'              => 'test@email.com',
             'oauth_access_token' => 'test oauth token',
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
@@ -378,24 +377,6 @@ class AdminTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
-    }
-
-    public function testFailedLoginOauth()
-    {
-        $admin = $this->fixtures->create('admin', [
-            'org_id' => $this->orgId,
-            'email' => 'test@email.com',
-            'oauth_access_token' => 'test oauth token 2',
-            'oauth_provider_id'  => 'test oauth provider id',
-        ]);
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-
-        $admin = $this->getEntityById('admin', $admin->getId(), true);
-
-        $this->assertEquals($admin['failed_attempts'], 1);
     }
 
     public function testSelfEditAdminFailed()
@@ -755,55 +736,6 @@ class AdminTest extends TestCase
         $this->assertArrayNotHaskey($adminToken->getId(), $remainingTokenIds);
     }
 
-    public function testGetAdminByEmailOnAppAuth()
-    {
-        $admin = $this->fixtures->create('admin', [
-            Admin\Entity::ORG_ID  => $this->orgId,
-            Admin\Entity::EMAIL   => 'testadmin@rzp.com',
-            Admin\Entity::NAME    => 'test admin app auth',
-        ]);
-
-        $this->ba->appAuth();
-
-        $result = $this->startTest();
-    }
-
-    public function testEditAdminOnAppAuth()
-    {
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
-
-        $admin = $this->fixtures->create('admin', [
-            Admin\Entity::ORG_ID => $this->orgId,
-        ]);
-
-        $dummyGrp = $this->fixtures->create(
-            'group', ['org_id' => $this->orgId]);
-
-        $admin->roles()->sync([Org::ADMIN_ROLE]);
-
-        $admin->groups()->sync([$dummyGrp->getId()]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $admin->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $managerRole = Role\Entity::getSignedId(Org::MANAGER_ROLE);
-
-        $this->testData[__FUNCTION__]['request']['content']['roles'] = (array) $managerRole;
-
-        $group = Group\Entity::getSignedId(Org::DEFAULT_GRP);
-
-        $this->testData[__FUNCTION__]['request']['content']['groups'] = (array) $group;
-
-        $result = $this->startTest();
-
-        $this->assertEquals($result['roles'][0]['id'], $managerRole);
-
-        $this->assertEquals($result['groups'][0]['id'], $group);
-    }
-
     public function testCreateAdminWithoutPassword()
     {
         $this->startTest();
@@ -874,7 +806,7 @@ class AdminTest extends TestCase
 
         $this->assertCount(10, $result['fields']);
 
-        $this->assertCount(136, $result['entities']);
+        $this->assertCount(147, $result['entities']);
     }
 
     public function testFetchSoftDeletedEntityForAdmin()

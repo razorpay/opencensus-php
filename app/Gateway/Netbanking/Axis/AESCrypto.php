@@ -41,6 +41,8 @@ class AESCrypto
 
         $aes->setIV($this->iv);
 
+        $aes->setKeyLength(128);
+
         return $aes;
     }
 }

@@ -4,10 +4,12 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Payout\Status as PayoutStatus;
 use RZP\Models\Settlement\Status as SettlementStatus;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
+use RZP\Models\FundTransfer\Rbl\Reconciliation\Status as RblStatus;
 use RZP\Models\FundTransfer\Icici\Reconciliation\Status as IciciStatus;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Status as KotakStatus;
 use RZP\Models\FundTransfer\Hdfc\Reconciliation\Status as HdfcStatus;
 use RZP\Models\FundTransfer\Axis\Reconciliation\Status as AxisStatus;
+use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status as YesbankStatus;
 
 return [
     'testFileCreationSettlement' => [
@@ -57,6 +59,34 @@ return [
     'matchAttemptForReconSuccessAxis' => [
         'version'           => 'V3',
         'bank_status_code'  => 'Settled',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
+    'matchAttemptForReconSuccessRbl' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'SUCCESS',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
+    'matchAttemptForReconFailureRbl' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'Failure',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
+    'matchAttemptForReconSuccessYesbank' => [
+        'version'           => 'V3',
+        'bank_status_code'  => YesbankStatus::COMPLETED,
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
+    'matchAttemptForReconFailureYesbank' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'FAILED',
         'status'            => AttemptStatus::INITIATED,
         'failure_reason'    => null,
     ],
@@ -162,6 +192,23 @@ return [
         'failure_reason'   => 'Reconciliation',
     ],
 
+    'matchSettlementAttemptForReconFailureRbl' => [
+        'channel'          => Channel::RBL,
+        'version'          => 'V3',
+        'bank_status_code' => RblStatus::FAILURE,
+        'status'           => AttemptStatus::FAILED,
+        'failure_reason'   => 'Reconciliation',
+    ],
+
+    'matchSettlementAttemptForReconFailureYesbank' => [
+        'channel'          => Channel::YESBANK,
+        'version'          => 'V3',
+        'bank_status_code' => YesbankStatus::FAILED,
+        'status'           => AttemptStatus::FAILED,
+        'failure_reason'   => 'Reconciliation',
+    ],
+
+
     'testRetrySettlement' => [
         'attempts'                  => 2,
         'batch_fund_transfer_id'    => null,
@@ -183,4 +230,3 @@ return [
         'total_count'       => 1,
     ],
 ];
-

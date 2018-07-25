@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 use Razorpay\OAuth\Token;
+use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
 
 class AuthService
@@ -37,60 +38,81 @@ class AuthService
         $this->secret  = $this->config['secret'];
     }
 
-    public function createApplication(array $input, string $merchantId): array
+    public function createApplication(array $input, string $merchantId, string $type = null) : array
     {
         $input[Application\Entity::MERCHANT_ID] = $merchantId;
+
+        if ($type !== null)
+        {
+            $input[Application\Entity::TYPE] = $type;
+        }
 
         return $this->sendRequest('applications', Requests::POST, $input);
     }
 
-    public function getApplication(string $id, string $merchantId): array
+    public function getApplication(string $id, string $merchantId) : array
     {
         $input = [Application\Entity::MERCHANT_ID => $merchantId];
 
         return $this->sendRequest('applications/' . $id, Requests::GET, $input);
     }
 
-    public function getMultipleApplications(array $input, string $merchantId): array
+    public function getMultipleApplications(array $input, string $merchantId) : array
     {
         $input[Application\Entity::MERCHANT_ID] = $merchantId;
 
         return $this->sendRequest('applications', Requests::GET, $input);
     }
 
-    public function deleteApplication(string $id, string $merchantId): array
+    public function deleteApplication(string $id, string $merchantId) : array
     {
         $input = [Application\Entity::MERCHANT_ID => $merchantId];
 
         return $this->sendRequest('applications/' . $id, Requests::PUT, $input);
     }
 
-    public function updateApplication(string $id, array $input, string $merchantId): array
+    public function updateApplication(string $id, array $input, string $merchantId) : array
     {
         $input[Application\Entity::MERCHANT_ID] = $merchantId;
 
         return $this->sendRequest('applications/' . $id, Requests::PATCH, $input);
     }
 
-    public function getTokens(array $input, string $merchantId): array
+    public function getTokens(array $input, string $merchantId) : array
     {
         $input[Token\Entity::MERCHANT_ID] = $merchantId;
 
         return $this->sendRequest('tokens', Requests::GET, $input);
     }
 
-    public function getToken(string $id, array $input, string $merchantId): array
+    public function getToken(string $id, array $input, string $merchantId) : array
     {
         $input[Token\Entity::MERCHANT_ID] = $merchantId;
 
         return $this->sendRequest('tokens/' . $id, Requests::GET, $input);
     }
 
-    public function revokeToken(string $id, array $input, string $merchantId): array
+    public function revokeToken(string $id, array $input, string $merchantId) : array
     {
         $input[Token\Entity::MERCHANT_ID] = $merchantId;
 
         return $this->sendRequest('tokens/' . $id, Requests::PUT, $input);
+    }
+
+    public function createPartnerToken(string $appId, string $partnerMerchantId, string $subMerchantId) : array
+    {
+        $input = [
+            Client\Entity::APPLICATION_ID => $appId,
+            'partner_merchant_id'         => $partnerMerchantId,
+            'sub_merchant_id'             => $subMerchantId,
+        ];
+
+        return $this->sendRequest('tokens/partner', Requests::POST, $input);
+    }
+
+    public function createOAuthMigrationToken(array $input) : array
+    {
+        return $this->sendRequest('tokens/internal', Requests::POST, $input);
     }
 
     protected function sendRequest(
@@ -117,7 +139,10 @@ class AuthService
 
             throw new Exception\ServerErrorException(
                 'Error completing the request',
-                ErrorCode::SERVER_ERROR_AUTH_SERVICE_FAILURE
+                ErrorCode::SERVER_ERROR_AUTH_SERVICE_FAILURE,
+                [
+                    'message' => $e->getMessage(),
+                ]
             );
         }
 
@@ -165,7 +190,7 @@ class AuthService
     protected function getRequestParams(
         string $url,
         string $method,
-        array $data = null): array
+        array $data = null) : array
     {
         $url = $this->baseUrl . $url;
 

@@ -3,6 +3,7 @@
 namespace RZP\Models\LineItem;
 
 use RZP\Models\Base;
+use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
@@ -285,10 +286,7 @@ class Core extends Base\Core
      *
      * @return null
      */
-    protected function setItemAssociationAndModifyInput(
-        Entity $lineItem,
-        array & $input,
-        Merchant\Entity $merchant)
+    protected function setItemAssociationAndModifyInput(Entity $lineItem, array & $input, Merchant\Entity $merchant)
     {
         if (isset($input[Entity::ITEM_ID]) === false)
         {
@@ -299,52 +297,58 @@ class Core extends Base\Core
 
         $lineItem->item()->associate($item);
 
-        // Use item's values where line item detail is not present,
-        // and modify input for line item's build
+        // Use item's values where line item detail is not present, and modify input for line item's build
+        $itemFields = array_intersect_key($item->toArrayPublic(), array_flip(Entity::$itemFields));
 
-        $itemFields = array_intersect_key(
-                        $item->toArrayPublic(),
-                        array_flip(Entity::$itemFields));
+        //
+        // Line_item input allows one of: tax_id, tax_ids, tax_group_id & item supports only tax_id and tax_group_id.
+        // Hence, while copying over item's values, we ensure not to add both (tax_id and tax_ids) to line_item input,
+        // instead if item.tax_id exists, we push the value into line_item.tax_ids[]
+        //
+        if ((isset($input[Entity::TAX_IDS]) === true) and (isset($itemFields[Item\Entity::TAX_ID]) === true))
+        {
+            array_push($input[Entity::TAX_IDS], $itemFields[Item\Entity::TAX_ID]);
+
+            unset($itemFields[Item\Entity::TAX_ID]);
+        }
 
         $input = array_merge($itemFields, $input);
     }
 
-    /**
-     * Calculates and sets derived amounts of line item.
-     *
-     * @param Entity $lineItem
-     *
-     */
     protected function calculateAndSetAmountsOfLineItem(Entity $lineItem)
     {
-        // Gross amount = Quantity * Unit amount
-
-        $grossAmount = $lineItem->getAmount() * $lineItem->getQuantity();
+        list ($grossAmount, $taxAmount, $netAmount) = $this->calculateAmountsOfLineItem($lineItem);
 
         $lineItem->setGrossAmount($grossAmount);
+        $lineItem->setTaxAmount((int) round($taxAmount));
+        $lineItem->setNetAmount((int) round($netAmount));
+    }
 
-        // Tax amount = ∑(lineItem.taxes.tax_amount)
+    /**
+     * Calculates gross, tax and net amount for given line items basis all the taxes associated with it. Returns float
+     * (precise) value and it's up to caller to round it and store in table's amount column(which is int throughout) or
+     * do further operation etc on precise float.
+     * @param  Entity $lineItem
+     * @return array
+     */
+    public function calculateAmountsOfLineItem(Entity $lineItem): array
+    {
+        // Gross amount
+        $grossAmount = $lineItem->getAmount() * $lineItem->getQuantity();
 
-        $taxAmount = $lineItem->taxes()
-                              ->get()
-                              ->sum(function ($lineItemTax)
-                                {
-                                    return $lineItemTax->getTaxAmount();
-                                });
+        // Tax amount
+        $lineItemTaxes = $lineItem->taxes;
+        $taxableAmount = Tax\Calculator::getTaxableAmountOfLineItem($lineItem, $lineItemTaxes);
+        $taxAmount     = $lineItemTaxes->reduce(
+                            function ($carry, $lineItemTax) use ($lineItem, $taxableAmount)
+                            {
+                                return $carry + Tax\Calculator::getTaxAmount($lineItem, $taxableAmount, $lineItemTax);
+                            });
 
-        $lineItem->setTaxAmount($taxAmount);
+        // Net amount
+        $netAmount = $grossAmount + ($lineItem->isTaxInclusive() === false ? $taxAmount : 0);
 
-        // Net amount = Gross amount, if tax inclusive
-        //            = Gross amount + Tax amount, if not tax inclusive
-
-        $netAmount = $lineItem->getGrossAmount();
-
-        if ($lineItem->isTaxInclusive() === false)
-        {
-            $netAmount += $lineItem->getTaxAmount();
-        }
-
-        $lineItem->setNetAmount($netAmount);
+        return [$grossAmount, $taxAmount, $netAmount];
     }
 
     /**

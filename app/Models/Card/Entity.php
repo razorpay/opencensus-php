@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Bank\IFSC;
 
 /**
  * @property Merchant\Entity    $merchant
@@ -34,6 +35,7 @@ class Entity extends Base\PublicEntity
     const VAULT_TOKEN    = 'vault_token';
     const VAULT          = 'vault';
     const TRIVIA         = 'trivia';
+    const FLOWS          = 'flows';
 
     /**
      * Number and cvv are never saved in the database
@@ -45,10 +47,14 @@ class Entity extends Base\PublicEntity
 
     const COUNTRY_LENGTH = 2;
 
-    const DUMMY_EXPIRY_YEAR  = '2021';
-    const DUMMY_EXPIRY_MONTH = '12';
-    const DUMMY_CVV          = '123';
-    const DUMMY_CVV_AMEX     = '1234';
+    const DUMMY_EXPIRY_YEAR      = '2099';
+    const DUMMY_EXPIRY_MONTH     = '12';
+    const DUMMY_CVV              = '123';
+    const DUMMY_CVV_AMEX         = '1234';
+    const DUMMY_NAME             = 'dummy card';
+    const DUMMY_MASTERCARD_CARD  = '2221000000511237';
+    const DUMMY_VISA_CARD        = '4231560000511234';
+    const DUMMY_RUPAY_CARD       = '5085000000521234';
 
     const NETWORK_CODE = 'network_code';
 
@@ -101,6 +107,7 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::COUNTRY,
         self::INTERNATIONAL,
+        self::FLOWS,
         self::VAULT_TOKEN,
         self::VAULT,
         self::NETWORK_CODE,
@@ -122,6 +129,7 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::EXPIRY_MONTH,
         self::EXPIRY_YEAR,
+        self::FLOWS,
     ];
 
     protected $appends = [self::NETWORK_CODE];
@@ -320,6 +328,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LAST4);
     }
 
+    public function getLength()
+    {
+        return $this->getAttribute(self::LENGTH);
+    }
+
+    public function getMaskedCardNumber()
+    {
+        return $this->getIin() . 'XXXXXX' . $this->getLast4();
+    }
+
     public function getVaultToken()
     {
         return $this->getAttribute(self::VAULT_TOKEN);
@@ -419,6 +437,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ISSUER);
     }
 
+    public function getFlows()
+    {
+        $iin = $this->iinRelation;
+
+        // Allowing for Admin and App Auth(Priviledge)
+        $app  = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        // card can be linked with the shared merchant since it could have been
+        // saved via global card saving, hence use basic auth merchant
+        $merchant = $auth->getMerchant();
+
+        // if tokens are fetch on a auth where merchant context is not availale
+        // tokens are being fetched on admin auth use card merchant
+        if ($merchant === null)
+        {
+            $merchant = $this->merchant;
+        }
+
+        return $merchant->getPaymentFlows($iin);
+    }
+
     public function setPublicIssuerAttribute(array & $array)
     {
         // Allowing only for policy bazaar and shared merchant account
@@ -437,30 +478,12 @@ class Entity extends Base\PublicEntity
 
     public function setPublicIinAttribute(array & $array)
     {
-        // Allowing only for akbar travels, irctc merchants and shared merchant account
-        $allowedMerchantIds = [
-            '62UtF084z3H6RT',
-            '6o1ohA0HNz3B2S',
-            '6z1Uc42LAxBGpl',
-            '8ST00QgEPT14cE', // IRCTC WEB
-            '8YPFnW5UOM91H7', // IRCTC Mobile
-            '8byazTDARv4Io0', // IRCTC Air Ticketing
-            '9m4CChGex4ENkR', // IRCTC FTR
-            // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
-            '9YAQd3b47mdIQY', // Endurance
-            '9ZO8jNaR0OORNH', // Endurance
-            Merchant\Account::TEST_ACCOUNT,
-            Merchant\Account::SHARED_ACCOUNT,
-        ];
-
-        $cardMerchant = $this->getMerchantId();
-
         // Allowing for Admin and App Auth(Priviledge)
         $app  = \App::getFacadeRoot();
         $auth = $app['basicauth'];
 
         if (($auth->isPrivilegeAuth() === false) and
-            (in_array($cardMerchant, $allowedMerchantIds, true) === false))
+            ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_IIN) === false))
         {
             unset($array[self::IIN]);
         }
@@ -468,7 +491,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicExpiryMonthAttribute(array & $array)
     {
-        if ($this->issetPublicExpiryAllowed() === false)
+        if ($this->isPublicExpiryAllowed() === false)
         {
             unset($array[self::EXPIRY_MONTH]);
         }
@@ -476,7 +499,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicExpiryYearAttribute(array & $array)
     {
-        if ($this->issetPublicExpiryAllowed() === false)
+        if ($this->isPublicExpiryAllowed() === false)
         {
             unset($array[self::EXPIRY_YEAR]);
         }
@@ -497,7 +520,7 @@ class Entity extends Base\PublicEntity
         return (int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
     }
 
-    protected function issetPublicExpiryAllowed()
+    protected function isPublicExpiryAllowed()
     {
         $cardMerchant = $this->getMerchantId();
 
@@ -505,6 +528,8 @@ class Entity extends Base\PublicEntity
 
         $auth = $app['basicauth'];
 
+        // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
+        // https://razorpay.slack.com/archives/C3GF5LWJK/p1525965476000128
         $allowed = (($auth->isPrivilegeAuth() === false) and
                     (in_array($cardMerchant, Merchant\Preferences::MID_ENDURANCE, true) === true));
 
@@ -612,11 +637,22 @@ class Entity extends Base\PublicEntity
 
         $isSupportedDebitBank = in_array($issuer, Payment\Gateway::getIssuersSupportedForDebitCardRecurring(), true);
 
-        $debitCheck = (($type === Type::DEBIT) and
-                       ($isSupportedNetwork === true) and
-                       ((($isSupportedDebitBank === true) and
-                         ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true)) or
-                        ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true)));
+        $debitCheck = false;
+
+        if (($type === Type::DEBIT) and
+            ($isSupportedNetwork === true))
+        {
+            if ($issuer === IFSC::HDFC)
+            {
+                $debitCheck = (($merchant->isFeatureEnabled(Feature\Constants::HDFC_DEBIT_SI) === true) or
+                               ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
+            }
+            else if ($isSupportedDebitBank === true)
+            {
+                $debitCheck = (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true) or
+                               ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
+            }
+        }
 
         $creditCheck = (($type === Type::CREDIT) and
                         ($isSupportedNetwork === true));
@@ -633,19 +669,7 @@ class Entity extends Base\PublicEntity
             return false;
         }
 
-        $iin = $this->getIin();
-
-        $last4 = $this->getLast4();
-
         if ($this->iinRelation->isEnabled() === false)
-        {
-            return true;
-        }
-
-        $blackList = Card\BlackList::BLOCKED_IIN_LAST4;
-
-        if ((isset($blackList[$iin]) === true) and
-            (in_array($last4, $blackList[$iin])))
         {
             return true;
         }
@@ -670,7 +694,8 @@ class Entity extends Base\PublicEntity
             self::EXPIRY_MONTH => $this->getExpiryMonth(),
             self::EXPIRY_YEAR  => $this->getExpiryYear(),
             self::EMI          => $this->getEmi(),
-            self::ISSUER       => $this->getIssuer()
+            self::ISSUER       => $this->getIssuer(),
+            self::FLOWS        => $this->getFlows()
         ];
 
         return $attributes;
@@ -697,5 +722,35 @@ class Entity extends Base\PublicEntity
         }
 
         return $dummyCvv;
+    }
+
+    public function getDummyCardArray(string $network = null)
+    {
+        $card = [
+            Card\Entity::CVV          => self::DUMMY_CVV,
+            Card\Entity::NAME         => self::DUMMY_NAME,
+            Card\Entity::EXPIRY_MONTH => self::DUMMY_EXPIRY_MONTH,
+            Card\Entity::EXPIRY_YEAR  => self::DUMMY_EXPIRY_YEAR,
+        ];
+
+        switch ($network)
+        {
+            case Card\Network::MC:
+                $card[Card\Entity::NUMBER] = self::DUMMY_MASTERCARD_CARD;
+                break;
+
+            case Card\Network::VISA:
+                $card[Card\Entity::NUMBER] = self::DUMMY_VISA_CARD;
+                break;
+
+            case Card\Network::RUPAY:
+                $card[Card\Entity::NUMBER] = self::DUMMY_RUPAY_CARD;
+                break;
+
+            default:
+                break;
+        }
+
+        return $card;
     }
 }

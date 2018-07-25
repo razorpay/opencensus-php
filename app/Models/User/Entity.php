@@ -65,15 +65,10 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         self::ID,
         self::CONFIRM_TOKEN,
-        self::PASSWORD,
     ];
 
     protected static $modifiers = [
         self::EMAIL,
-    ];
-
-    protected static $unsetCreateInput = [
-        self::PASSWORD,
     ];
 
     protected $generateIdOnCreate = true;
@@ -107,11 +102,6 @@ class Entity extends Base\PublicEntity
         return $token;
     }
 
-    protected function generatePassword(array $input)
-    {
-        $this->setAttribute(self::PASSWORD, Hash::make($input[self::PASSWORD]));
-    }
-
     /**
      * Generates confirmation token
      */
@@ -120,22 +110,40 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONFIRM_TOKEN, $this->generateOneTimeUseToken(32));
     }
 
+    /**
+     * Order by owned first. In case of multiple owned merchants with same
+     * email, pick first. Followed by owned merchants with different emails.
+     */
     public function merchants()
     {
+        $sql = "CASE WHEN email=? AND role='owner' THEN 0
+                     WHEN role='owner' THEN 1
+                     else 2 END";
+
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
                     ->withPivot(self::ROLE)
-                    ->orderBy(self::NAME);
+                    ->orderByRaw($sql, [$this->getEmail()]);
     }
 
     public function invitations()
     {
-        return $this->hasMany(Invitation\Entity::class)
+        return $this->hasMany(Invitation\Entity::class, Invitation\Entity::EMAIL, Entity::EMAIL)
                     ->orderBy(Invitation\Entity::CREATED_AT, 'desc');
     }
 
     public function setConfirmTokenNull()
     {
         $this->setAttribute(self::CONFIRM_TOKEN, null);
+    }
+
+    protected function setPasswordAttribute($password)
+    {
+        $this->attributes[self::PASSWORD] = Hash::make($password);
+    }
+
+    public function getEmail()
+    {
+        return $this->getAttribute(self::EMAIL);
     }
 
     public function getPassword()

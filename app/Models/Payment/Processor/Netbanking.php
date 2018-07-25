@@ -50,6 +50,7 @@ class Netbanking
     const ACCOUNT_NUMBER_LENGTHS = [
         IFSC::UTIB => 15,
         IFSC::FDRL => 14,
+        IFSC::CSBK => 18,
     ];
 
     protected static $self = [
@@ -62,6 +63,7 @@ class Netbanking
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::ORBC,
         IFSC::CSBK,
         self::PUNB_R,
         self::BARB_R,
@@ -69,7 +71,8 @@ class Netbanking
 
     protected static $selfCorp = [
         self::ICIC_C,
-        self::UTIB_C
+        self::UTIB_C,
+        self::BARB_C
     ];
 
     protected static $selfTPV = [
@@ -79,18 +82,19 @@ class Netbanking
         IFSC::UTIB,
         IFSC::FDRL,
         IFSC::RATN,
-        // IFSC::INDB,
+        IFSC::INDB,
+        IFSC::CSBK,
     ];
 
     protected static $paytm = array(
         IFSC::CITI,
         IFSC::CIUB,
-        IFSC::CSBK,
+        // IFSC::CSBK,
         // IFSC::FDRL,
         IFSC::HDFC,
         IFSC::ICIC,
         IFSC::IDIB,
-        IFSC::INDB,
+        // IFSC::INDB,
         IFSC::IOBA,
         IFSC::JAKA,
         IFSC::KKBK,
@@ -115,7 +119,6 @@ class Netbanking
         IFSC::CNRB,
         IFSC::CORP,
         IFSC::COSB,
-        IFSC::CSBK,
         IFSC::DCBL,
         IFSC::DCBL,
         IFSC::DEUT,
@@ -124,9 +127,8 @@ class Netbanking
         IFSC::IDFB,
         // IFSC::FDRL,
         IFSC::IBKL,
-        IFSC::ICIC,
         IFSC::IDIB,
-        IFSC::INDB,
+        // IFSC::INDB,
         IFSC::IOBA,
         IFSC::JAKA,
         IFSC::JSBP,
@@ -135,10 +137,10 @@ class Netbanking
         IFSC::KVBL,
         IFSC::MAHB,
         IFSC::NKGS,
-        IFSC::ORBC,
+        // IFSC::ORBC,
         IFSC::PMCB,
         IFSC::PSIB,
-        IFSC::RATN,
+        // IFSC::RATN,
         IFSC::SBBJ,
         IFSC::SBHY,
         IFSC::SBIN,
@@ -158,7 +160,7 @@ class Netbanking
         IFSC::UTIB,
         IFSC::VIJB,
         IFSC::YESB,
-        self::BARB_R,
+        // self::BARB_R,
         self::PUNB_R,
         self::LAVB_R,
         self::BARB_C,
@@ -167,19 +169,16 @@ class Netbanking
     ];
 
     protected static $billdeskCorp = [
-        self::ICIC_C,
     ];
 
     protected static $billdeskTPV = [
-        IFSC::ALLA,
         IFSC::ANDB,
         IFSC::CIUB,
         IFSC::CORP,
         IFSC::IBKL,
-        IFSC::INDB,
+        // IFSC::INDB,
         IFSC::KVBL,
         self::LAVB_R,
-        IFSC::ICIC,
         IFSC::UTIB,
         IFSC::BKID,
         IFSC::SBBJ,
@@ -195,30 +194,34 @@ class Netbanking
         IFSC::BKID,
         IFSC::MAHB,
         IFSC::CNRB,
-        IFSC::CSBK,
         IFSC::CBIN,
         IFSC::CORP,
         IFSC::DCBL,
         IFSC::DEUT,
         IFSC::DLXB,
         IFSC::ESFB,
-        IFSC::FDRL,
+        // IFSC::FDRL,
         IFSC::IBKL,
         IFSC::IDIB,
         IFSC::IOBA,
-        IFSC::INDB,
+        // IFSC::INDB,
         IFSC::JAKA,
         IFSC::KARB,
         IFSC::KVBL,
         self::LAVB_R,
-        IFSC::ORBC,
+        // IFSC::ORBC,
         IFSC::PMCB,
         IFSC::PSIB,
         self::PUNB_R,
-        IFSC::RATN,
+        // IFSC::RATN,
         IFSC::SRCB,
         IFSC::SIBL,
         IFSC::SBIN,
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBMY,
+        IFSC::STBP,
+        IFSC::SBTR,
         IFSC::TMBL,
         IFSC::UCBA,
         IFSC::UBIN,
@@ -235,7 +238,7 @@ class Netbanking
         IFSC::DCBL,
         IFSC::DEUT,
         IFSC::DLXB,
-        IFSC::FDRL,
+        // IFSC::FDRL,
         IFSC::HDFC,
         IFSC::ICIC,
         IFSC::IBKL,
@@ -258,17 +261,16 @@ class Netbanking
         IFSC::CBIN,
         IFSC::CNRB,
         IFSC::CORP,
-        IFSC::CSBK,
         IFSC::DLXB,
         // IFSC::FDRL,
         IFSC::IDIB,
         IFSC::IOBA,
-        IFSC::INDB,
+        // IFSC::INDB,
         IFSC::JAKA,
         IFSC::KARB,
         IFSC::KKBK,
         IFSC::MAHB,
-        IFSC::ORBC,
+        // IFSC::ORBC,
         IFSC::PSIB,
         IFSC::SRCB,
         IFSC::UBIN,
@@ -294,9 +296,7 @@ class Netbanking
         */
     ];
 
-    protected static $defaultDisabled = [
-        IFSC::AIRP,
-    ];
+    protected static $defaultDisabled = [];
 
     protected static $ebsTPV = [];
 
@@ -426,23 +426,9 @@ class Netbanking
         return array_values(array_unique($banks));
     }
 
-    public static function removeDefaultDisableBanks(array $banks, $merchantId)
+    public static function removeDefaultDisableBanks(array $banks)
     {
-        $airtelNBEnabledMerchants = [
-            '6e9vU1F6c16Wgy', '4IAipsLXQZ8HfL', '7JzGtcGfAj1DuY', '7HgtXHJ0Mi7eEB', '5DT4a51hWyB2S2',
-            '4uObL8AHBqFNnP', '7kBHljwok8Fsom', '6knz9sdyiFESCn', '6LCgLZgRjTI8ws', '4bnk7yysqr5Wx5',
-            '4jrfbTLsua1pWJ', '6vYkkfMt0AH7Ze', '5yZ76HWrvL9g2l', '7JzHlJ4JTX9WOJ', '6grntKs55sEy3m',
-            '5S3KMEi1AqOkO3', '6yhs5uEKQo8ocV', '6uli25q6xe9PPv', '3d2EGdZF6CAYVc', '5PK4jJHD4KFumX',
-            '4G3OVwffGeJJ2p', '6vwsEbqse39D4d', '5XeKEGAanmFH5g', '67a0aqRNfZCdrS', '41pNQxEoQ2GDlT',
-            '2qXGMn4WT4sJYp', '6ZLRbyflpSBEEv', '60XSLJJUlJDtbr', '6ToAGQhTHC7G3s', '3HSIA6jNkKAVav',
-        ];
-
-        if (in_array($merchantId, $airtelNBEnabledMerchants, true) === false)
-        {
-            return array_diff($banks, self::getDefaultDisabledBanks());
-        }
-
-        return $banks;
+        return array_diff($banks, self::getDefaultDisabledBanks());
     }
 
     public static function getSupportedBanksInLiveMode()
@@ -534,7 +520,7 @@ class Netbanking
         return in_array($issuer, $gatewayExclusiveBanks, true) === true;
     }
 
-    public static function isCorporateTerminalRequired($bank)
+    public static function isCorporateBank($bank)
     {
         $corpExclusiveBank = array_merge(self::$selfCorp, self::$billdeskCorp);
 

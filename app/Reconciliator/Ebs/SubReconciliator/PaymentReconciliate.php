@@ -72,7 +72,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'trace_code'      => TraceCode::RECON_FAILURE,
                     'message'         => 'Unable to get payment amount!',
                     'row'             => $row,
-                    'gateway'         => get_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             throw new ReconciliationException('Unable to get payment amount for EBS from the recon file.');
@@ -170,11 +170,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
                     'message'         => 'Payment amount mismatch',
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
-                    'gateway'         => get_called_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             return false;

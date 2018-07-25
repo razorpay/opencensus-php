@@ -6,17 +6,15 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\Feature;
-use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN\Flow;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
-use RZP\Models\Customer\GatewayToken;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -37,6 +35,7 @@ class TransactionFilter extends Terminal\Filter
         'corporate',
         'mcc',
         'auth_type',
+        'bharat_qr',
     ];
 
     public function methodFilter($terminal)
@@ -90,8 +89,19 @@ class TransactionFilter extends Terminal\Filter
         if ($payment->isMethodCardOrEmi() === true)
         {
             $network = $payment->card->getNetworkCode();
+            $gateway = $terminal->getGateway();
 
-            return Gateway::isCardNetworkSupported($network, $terminal->getGateway(), $payment->isRecurring());
+            if ($payment->isBharatQr() === true)
+            {
+                $supported = ((Gateway::isBharatQrCardNetworkSupported($network, $gateway)) and
+                              (empty($terminal[strtolower($network) . '_mpan']) === false));
+            }
+            else
+            {
+                $supported = Gateway::isCardNetworkSupported($network, $gateway, $payment->isRecurring());
+            }
+
+            return $supported;
         }
 
         return true;
@@ -230,7 +240,7 @@ class TransactionFilter extends Terminal\Filter
             ($payment->card->isDebit() === true))
         {
             if (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) !== true) and
-                ($terminal->getGateway() !== Gateway::HITACHI))
+                ($terminal->isDebitRecurring() === false))
             {
                 return false;
             }
@@ -244,7 +254,7 @@ class TransactionFilter extends Terminal\Filter
         // All first recurring payments or payments made via public
         // auth need to go via 3DS Recurring terminals only.
         //
-        if ($payment->isSecondRecurring(true, $gatewayTokens) === false)
+        if ($payment->isSecondRecurring() === false)
         {
             return ($terminal->is3DSRecurring() === true);
         }
@@ -296,7 +306,14 @@ class TransactionFilter extends Terminal\Filter
         {
             $flow = $payment->getMetadata('flow', 'collect');
 
-            if ($flow === 'intent')
+            if ($payment->isBharatQr() === true)
+            {
+                if (empty($terminal->getVpa()) === true)
+                {
+                    return false;
+                }
+            }
+            else if ($flow === 'intent')
             {
                 $gateway = $terminal->getGateway();
 
@@ -319,11 +336,31 @@ class TransactionFilter extends Terminal\Filter
 
         if ($payment->isNetbanking() === true)
         {
+            // If terminal supports both corporate and retail,
+            // we can directly pass this filter
+            if ($terminal->isBankingTypeBoth() === true)
+            {
+                return true;
+            }
+
             $bank = $payment->getBank();
 
-            // If a bank does not require a corporate terminal
-            // a corporate terminal should not allow the payment.
-            return (Netbanking::isCorporateTerminalRequired($bank) === $terminal->isCorporate());
+            $terminalBankingTypes = $terminal->getBankingTypes();
+
+            // For corporate bank, the terminal should support corporate type
+            if ((Netbanking::isCorporateBank($bank) === true) and
+                (in_array(Terminal\BankingType::CORPORATE, $terminalBankingTypes) === true))
+            {
+                return true;
+            }
+            else if ((Netbanking::isCorporateBank($bank) === false) and
+                     (in_array(Terminal\BankingType::RETAIL, $terminalBankingTypes) === true))
+            {
+                return true;
+            }
+
+            // If the banking type in payment and terminal does not match
+            return false;
         }
 
         return true;
@@ -538,14 +575,47 @@ class TransactionFilter extends Terminal\Filter
                         $issuer = $payment->card->getIssuer();
 
                         //
-                        // Pin auth terminal is only selected when the terminal issuer supports pin auth
-                        // and card iin also supports the flow
+                        // Pin auth terminal is only selected when the terminal issuer
+                        // supports pin auth and card iin also supports the flow
                         //
                         if (($terminal->isPin() === true) and
                             (Gateway::isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer) === true))
                         {
                             if (($payment->card->iinRelation !== null) and
                                 ($payment->card->iinRelation->supports(Flow::PIN) === true))
+                            {
+                                return true;
+                            }
+                        }
+
+                        break;
+
+                    case Payment\AuthType::OTP:
+                        // We should select the terminal only if iin is set and flows are supported
+                        // by the IIN
+                        if ($payment->card->iinRelation !== null)
+                        {
+                            if (($terminal->isIvr() === true) and
+                                ($payment->card->iinRelation->supports(Flow::OTP) === true))
+                            {
+                                return true;
+                            }
+
+                            $gateway = $terminal->getGateway();
+
+                            if ((Gateway::supportsHeadlessBrowser($gateway) === true) and
+                                ($payment->card->iinRelation->supports(Flow::HEADLESS_OTP) === true))
+                            {
+                                return true;
+                            }
+
+                            //
+                            // Expresspay is supported on Hitachi.
+                            // Hence, it should be enabled only for axis MC/Visa cards.
+                            //
+                            if (($gateway === Payment\Gateway::HITACHI) and
+                                ($payment->card->iinRelation->supports(Flow::OTP) === true) and
+                                ($payment->card->getIssuer() === IFSC::UTIB))
                             {
                                 return true;
                             }
@@ -579,9 +649,10 @@ class TransactionFilter extends Terminal\Filter
         return ($this->is3DSTerminal($terminal) === true);
     }
 
+    // @codingStandardsIgnoreLine
     protected function is3DSTerminal($terminal)
     {
-        return ($terminal->isPin() === false);
+        return (($terminal->isPin() === false) and ($terminal->isIvr() === false));
     }
 
     protected function isTerminalWithMerchantMccAbsent(
@@ -601,5 +672,17 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function bharatQrFilter($terminal)
+    {
+        if ($this->input['payment']->isBharatQr() === true)
+        {
+            return ($terminal->isBharatQr() === true);
+        }
+        else
+        {
+            return ($terminal->isBharatQr() === false);
+        }
     }
 }

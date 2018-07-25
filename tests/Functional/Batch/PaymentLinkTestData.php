@@ -1,6 +1,9 @@
 <?php
 
+use Carbon\Carbon;
+
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -41,6 +44,32 @@ return [
         ],
         'response' => [
             'content' => [],
+        ],
+    ],
+
+    'testCreateBatchOfPaymentLinkTypeWithNewHeaderValues' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testCreateBatchOfPaymentLinkTypeWithNewHeaderValuesFileRows' => [
+        [
+            Header::INVOICE_NUMBER   => '#1',
+            Header::CUSTOMER_NAME    => 'test',
+            Header::CUSTOMER_EMAIL   => 'test@test.test',
+            Header::CUSTOMER_CONTACT => '9999998888',
+            Header::AMOUNT_IN_PAISE  => 500,
+            Header::DESCRIPTION      => 'test payment link',
+            Header::EXPIRE_BY        => null,
+            Header::PARTIAL_PAYMENT  => 'YES',
         ],
     ],
 
@@ -211,6 +240,52 @@ return [
         ],
     ],
 
+    'testCreateBatchWithHumanReadableExpireBy' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testCreateBatchWithHumanReadableExpireByFileRows' => [
+        [
+            Header::INVOICE_NUMBER   => '1',
+            Header::CUSTOMER_NAME    => null,
+            Header::CUSTOMER_EMAIL   => null,
+            Header::CUSTOMER_CONTACT => '9999998881',
+            Header::AMOUNT           => 500,
+            Header::DESCRIPTION      => 'Test payment link',
+            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(1)->format('d-m-Y H:i:s'),
+            Header::PARTIAL_PAYMENT  => 'YES',
+        ],
+        [
+            Header::INVOICE_NUMBER   => '2',
+            Header::CUSTOMER_NAME    => null,
+            Header::CUSTOMER_EMAIL   => null,
+            Header::CUSTOMER_CONTACT => '9999998882',
+            Header::AMOUNT           => 500,
+            Header::DESCRIPTION      => 'Test payment link',
+            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(2)->format('d-m-Y'),
+            Header::PARTIAL_PAYMENT  => 'YES',
+        ],
+        [
+            Header::INVOICE_NUMBER   => '3',
+            Header::CUSTOMER_NAME    => null,
+            Header::CUSTOMER_EMAIL   => null,
+            Header::CUSTOMER_CONTACT => '9999998885',
+            Header::AMOUNT           => 500,
+            Header::DESCRIPTION      => 'Test payment link',
+            Header::EXPIRE_BY        => Carbon::now(Timezone::IST)->addDays(3)->getTimestamp(),
+            Header::PARTIAL_PAYMENT  => 'YES',
+        ],
+    ],
+
     'testPaymentLinkStatsOfBatch' => [
         'request'  => [
             'url'    => '/batches/batch_00000000000001/stats',
@@ -220,8 +295,9 @@ return [
             'content' => [
                 'type'  => 'payment_link',
                 'stats' => [
-                    'batch_total'   => 4,
-                    'issued_count'  => 1,
+                    'batch_total'   => 6,
+                    'issued_count'  => 5,
+                    'created_count' => 5,
                     'paid_count'    => 2,
                     'expired_count' => 1,
                 ],
@@ -273,6 +349,30 @@ return [
                 ],
                 'orderAttributes'   => [
                     'id'                    => '100000004order'
+                ],
+            ],
+            [
+                'invoiceAttributes' => [
+                    'id'                    => '1000005invoice',
+                    'batch_id'              => '00000000000001',
+                    'order_id'              => '100000005order',
+                    'status'                => 'partially_paid',
+                ],
+                'orderAttributes'   => [
+                    'id'                    => '100000005order'
+                ],
+            ],
+            // Payment links created via batch won't be in draft
+            // state. This is however, added for test purpose only
+            [
+                'invoiceAttributes' => [
+                    'id'                    => '1000006invoice',
+                    'batch_id'              => '00000000000001',
+                    'order_id'              => '100000006order',
+                    'status'                => 'draft',
+                ],
+                'orderAttributes'   => [
+                    'id'                    => '100000006order'
                 ],
             ],
         ],

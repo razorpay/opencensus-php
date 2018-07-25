@@ -68,13 +68,16 @@ class Service extends Base\Service
 
     protected function updateTimePeriodIfApplicable(array & $input)
     {
-        // When called via cron, we update the timestamps for the gateway file for the
-        // to indicate the previous days time period
-        if ($this->app['basicauth']->isCron() === true)
-        {
-            $input[Entity::BEGIN] = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        // When called via cron, we update the timestamps for the
+        // gateway file for the to indicate the previous days time period.
 
-            $input[Entity::END] = Carbon::today(Timezone::IST)->getTimestamp() - 1;
+        if ($this->app['basicauth']->isCron() === false)
+        {
+            return;
         }
+
+        $input[Entity::BEGIN] = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        $input[Entity::END] = Carbon::today(Timezone::IST)->getTimestamp() - 1;
     }
 }

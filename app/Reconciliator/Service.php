@@ -10,7 +10,6 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
-use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
 
 class Service extends Base\Service
@@ -19,11 +18,29 @@ class Service extends Base\Service
      * List of gateways where we are doing recon processing via batch.
      */
     const BATCH_RECON_GATEWAYS = [
-        RequestProcessor\Base::JIOMONEY,
-        RequestProcessor\Base::FIRST_DATA,
+        RequestProcessor\Base::AXIS,
+        RequestProcessor\Base::HDFC,
+        RequestProcessor\Base::ATOM,
+        RequestProcessor\Base::KOTAK,
         RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::CARD_FSS,
+        RequestProcessor\Base::JIOMONEY,
+        RequestProcessor\Base::BILLDESK,
+        RequestProcessor\Base::UPI_ICICI,
+        RequestProcessor\Base::OLAMONEY,
+        RequestProcessor\Base::MOBIKWIK,
+        RequestProcessor\Base::FIRST_DATA,
+        RequestProcessor\Base::FREECHARGE,
+        RequestProcessor\Base::NETBANKING_CSB,
+        RequestProcessor\Base::NETBANKING_BOB,
+        RequestProcessor\Base::NETBANKING_OBC,
+        RequestProcessor\Base::NETBANKING_RBL,
+        RequestProcessor\Base::NETBANKING_AXIS,
+        RequestProcessor\Base::NETBANKING_ICICI,
+        RequestProcessor\Base::NETBANKING_FEDERAL,
+        RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK
     ];
 
     /**

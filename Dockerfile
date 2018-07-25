@@ -1,38 +1,41 @@
-FROM razorpay/containers:base-php7
+FROM razorpay/pithos:rzp-php7.1-nginx
 
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
-ENV GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
-ENV NR_INSTALL_SILENT true
-
-ARG NR_VERSION='8.0.0.204'
-
-COPY . /app/
-
-RUN chown -R apache.www-data /app && \
-    sed -i 's#PidFile "/run/.*#Pidfile /tmp/run/httpd.pid"#g' /etc/apache2/conf.d/mpm.conf && \
-    sed -i 's/#LoadModule rewrite_module*/LoadModule rewrite_module/' /etc/apache2/httpd.conf
-
-COPY ./dockerconf/entrypoint.sh /entrypoint.sh
 
 WORKDIR /app
 
-RUN apk --update add python py-pip openssl ca-certificates && \
-    apk --update add --virtual build-dependencies python-dev libffi-dev openssl-dev build-base  && \
-    wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 && \
-    chmod +x /usr/local/bin/dumb-init && \
-    pip install razorpay.alohomora==0.4 && \
-    apk del build-dependencies          && \
-    rm -rf /var/cache/apk/*
+# Hack to load php gnu-libiconv.so
+# https://github.com/docker-library/php/issues/240#issuecomment-327992638
+RUN apk add --allow-untrusted --no-cache \
+    --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
+    libxrender libx11-dev fontconfig zlib-dev gnu-libiconv \
+    ca-certificates wkhtmltopdf ttf-freefont dbus p7zip && \
+    #https://github.com/gliderlabs/docker-alpine/issues/30#issuecomment-372020089
+    update-ca-certificates 2>/dev/null && \
+    cd /tmp && git clone https://github.com/razorpay/docker-alpine-wkhtmltopdf.git && \
+    mv docker-alpine-wkhtmltopdf/wkhtmltopdf /usr/bin/wkhtmltopdf && \
+    rm -rf docker-alpine-wkhtmltopdf
 
-## TODO: move the newrelic install to base-nginx-php7 image
-RUN composer config -g github-oauth.github.com ${GIT_TOKEN} \
-    && composer install --no-interaction --optimize-autoloader \
-    && mkdir /opt && cd /opt \
-    && wget https://download.newrelic.com/php_agent/release/newrelic-php5-${NR_VERSION}-linux-musl.tar.gz \
-    && tar -xzvf newrelic-php5-${NR_VERSION}-linux-musl.tar.gz \
-    && ./newrelic-php5-${NR_VERSION}-linux-musl/newrelic-install install
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
+
+COPY composer.json composer.lock /app/
+
+# A single character change in this command will trigger a new
+# composer install
+RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
+    composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
+    rm -rf /root/.composer && \
+    composer clear-cache && \
+    echo ${GIT_COMMIT_HASH} > public/commit.txt && \
+    apk add --no-cache apache2 apache2-ctl php7-mysqlnd php7-apache2 musl && sed -i 's#PidFile "/run/.*#Pidfile /tmp/run/httpd.pid"#g' /etc/apache2/conf.d/mpm.conf && \
+    sed -i 's/#LoadModule rewrite_module*/LoadModule rewrite_module/' /etc/apache2/httpd.conf && \
+    mkdir /opt && chown -R apache:www-data /opt
+
+COPY --chown=apache:www-data . /app/
+
+# This step can't run without some classes from above step
+RUN composer dump-autoload && php artisan optimize
 
 EXPOSE 80
-
-ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
+ENTRYPOINT ["/app/dockerconf/entrypoint.sh"]

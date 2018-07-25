@@ -4,20 +4,15 @@ namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
 
-use RZP\Base\RuntimeManager;
-use RZP\Constants\Mode;
-use RZP\Dashboard\Dashboard;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Entity;
-use RZP\Models\Payment;
-use RZP\Models\Feature\Constants as FConstants;
+use RZP\Models\Transaction;
+use RZP\Base\RuntimeManager;
+use RZP\Dashboard\Dashboard;
 use RZP\Models\Merchant\Preferences;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Merchant\Entity as MerchantEntity;
 
 trait SettlementTrait
 {
@@ -34,10 +29,8 @@ trait SettlementTrait
 
         foreach ($txns as $txn)
         {
-            $merchant = $txn->merchant;
-
             // skip if txn not to be settled
-            if ($this->shouldSettle($merchant) === false)
+            if ($this->shouldSettle($txn) === false)
             {
                 continue;
             }
@@ -63,7 +56,7 @@ trait SettlementTrait
                 continue;
             }
 
-            $merchantId = $merchant->getId();
+            $merchantId = $txn->getMerchantId();
 
             $filterGroupedTxns[$merchantId] = ($filterGroupedTxns[$merchantId] ?? (new Base\PublicCollection));
 
@@ -121,11 +114,6 @@ trait SettlementTrait
 
     protected function skipForMutualFundsMarketplace($txn): bool
     {
-        // Settle only between 1pm and 2pm
-
-        // Is a submerchant of a mutual fund market place
-        $isSubMerchantOfMf = false;
-
         // Mutual Fund Marketplace Merchant ids
         $mfMids = [
             Preferences::MID_GOALWISE_TPV,
@@ -135,55 +123,50 @@ trait SettlementTrait
             Preferences::MID_PAISABAZAAR,
         ];
 
-        //
-        // Maps the mids that want to receive only 1 settlement per day,
-        // no matter what. They need all transactions till 1 pm to be
-        // settled by 3 pm.
-        //
-        $oneSetlPerDayMids = [
-            Preferences::MID_WEALTHY,
-            Preferences::MID_PAISABAZAAR,
-        ];
+        $mid = $txn->getMerchantId();
 
+        $merchant = $this->merchants[$mid];
+
+        $parentId = $merchant->getParentId();
+
+        // Check if it is a sub-merchant of a Mutual-fund account
         if (($txn->isTypePayment() === true) and
-            ($txn->merchant->isLinkedAccount() === true) and
-            (in_array($txn->merchant->getParentId(), $mfMids, true) === true))
-        {
-            $isSubMerchantOfMf = true;
-        }
-
-        if ($isSubMerchantOfMf === true)
+            ($merchant->isLinkedAccount() === true) and
+            (in_array($parentId, $mfMids, true) === true))
         {
             $now = Carbon::now(Timezone::IST)->getTimestamp();
 
             $onePm = Carbon::today(Timezone::IST)->hour(13)->getTimestamp();
 
-            $oneThirtyPm = Carbon::today(Timezone::IST)->hour(13)->minute(30)->getTimestamp();
-
             $twoPm = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
 
-            $twoTenPm = Carbon::today(Timezone::IST)->hour(14)->minute(10)->getTimestamp();
+            $twoThirtyPm = Carbon::today(Timezone::IST)->hour(14)->minute(30)->getTimestamp();
 
-            if ((in_array($txn->merchant->getParentId(), $oneSetlPerDayMids, true) === true) and
-                ($now > $oneThirtyPm))
-            {
-                return true;
-            }
-
-            //
-            // Settle transaction which needed to be settled before 2 pm today
-            // but for whatever reason weren't picked up then.
-            // In this case, the below condition of settlement window of 1-2 PM
-            // is not applicable, because these were due for settlement
-            // before 2 pm, and should have been picked up.
-            //
-            if (($txn->getSettledAt() <= $twoPm) and ($now > $twoPm))
+            // If settlement was delayed for some reason, beyond our control, settle ASAP
+            if ($this->isDelayedSettlement($txn) === true)
             {
                 return false;
             }
 
+            //
+            // Maps the mids that want to receive only 1 settlement per day.
+            // They need all transactions till 1 pm to be settled in the 1 pm cycle.
+            //
+            $oneSetlAt1PmMids = [
+                Preferences::MID_WEALTHY,
+                Preferences::MID_PAISABAZAAR,
+            ];
+
+            if ((in_array($parentId, $oneSetlAt1PmMids, true) === true) and
+                (($now < $onePm) or
+                 ($now >= $twoPm)))
+            {
+                return true;
+            }
+
+            // Normal MF settlement window is 1pm-2pm (2 settlements)
             if (($now < $onePm) or
-                ($now > $twoTenPm))
+                ($now > $twoThirtyPm))
             {
                 return true;
             }
@@ -192,17 +175,58 @@ trait SettlementTrait
         return false;
     }
 
+    /**
+     * Applicable only for Mutual Fund Transactions.
+     * That need to be settled only between 1-2 PM
+     *
+     * @param $txn
+     * @return bool
+     */
+    protected function isDelayedSettlement($txn): bool
+    {
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $twoPm = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
+
+        $today = Carbon::today(Timezone::IST)->getTimestamp();
+
+        //
+        // If the transaction was due settlement before today, but wasn't
+        // settled for whatever reason, we want to try to settle it immediately.
+        //
+        if ($txn->getSettledAt() < $today)
+        {
+            return true;
+        }
+
+        //
+        // Settle transaction which needed to be settled before 2 pm today
+        // but for whatever reason weren't picked up then.
+        // In this case, the below condition of settlement window of 1-2 PM
+        // is not applicable, because these were due for settlement
+        // before 2 pm, and should have been picked up.
+        //
+        if (($txn->getSettledAt() <= $twoPm) and ($now > $twoPm))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function createSettlementsFromTxns($txns, string $channel): array
     {
-        $merchant = $txns->first()->merchant;
+        $merchantId = $txns->first()->getMerchantId();
 
-        $this->trace->info(TraceCode::SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT, ['merchant' => $merchant->getId()]);
+        $merchant = $this->merchants[$merchantId];
+
+        $this->trace->info(TraceCode::SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT, ['merchant' => $merchantId]);
 
         list($setlAmount, $setlFee, $setlApiFee, $tax) = $this->getSettlementAmountsForMerchant($txns);
 
         $balance = $merchant->balance->getBalance();
 
-        if (($setlAmount <= 100) or ($setlAmount > $balance))
+        if (($setlAmount < 100) or ($setlAmount > $balance))
         {
             $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
                 [
@@ -253,7 +277,11 @@ trait SettlementTrait
 
         foreach ($txns as $txn)
         {
-            if (($txn->isTypePayment() === true) and ($txn->merchant->isLinkedAccount() === true))
+            $merchantId = $txn->getMerchantId();
+
+            $merchant = $this->merchants[$merchantId];
+
+            if (($txn->isTypePayment() === true) and ($merchant->isLinkedAccount() === true))
             {
                 $filteredTxnIds[] = $txn->getId();
             }
@@ -350,6 +378,13 @@ trait SettlementTrait
                 Trace::ERROR,
                 TraceCode::SETTLEMENT_SKIPPED,
                 $traceData);
+
+            $data = [
+                    'message' => 'Settlement Skipped. Check for Retry.',
+                    'status'  => SlackNotification::BAD,
+                ] + $traceData;
+
+            (new SlackNotification)->send($data);
         }
 
         return [$settlement, $bankTransferAtpt];
@@ -359,34 +394,16 @@ trait SettlementTrait
      * Settlement is done only bank account change is not recent as we need some
      * time till beneficiary is updated in kotak
      *
-     * @param MerchantEntity $merchant
+     * @param Transaction\Entity $txn
      *
      * @return bool
      * @throws Exception\LogicException
      */
-    protected function shouldSettle(MerchantEntity $merchant): bool
+    protected function shouldSettle(Transaction\Entity $txn): bool
     {
-        //
-        // Skip settlements for few merchants
-        // Details in: https://github.com/razorpay/api/issues/5830
-        // Temporary, until https://github.com/razorpay/api/pull/6161
-        // is merged
-        //
-        $skipMerchantIds = [
-            Preferences::MID_GOALWISE_NON_TPV,
-            Preferences::MID_GOALWISE_TPV,
-            Preferences::MID_MONEYVIEW,
-            Preferences::MID_WEALTHY,
-            Preferences::MID_PIGGY,
-            Preferences::MID_PAISABAZAAR,
-            Preferences::MID_BPCL,
-            Preferences::MID_SRI_CHAITANYA,
-        ];
+        $mid = $txn->getMerchantId();
 
-        if (in_array($merchant->getId(), $skipMerchantIds, true) === true)
-        {
-            return false;
-        }
+        $merchant = $this->merchants[$mid];
 
         $today = Carbon::today(Timezone::IST);
 
@@ -401,7 +418,9 @@ trait SettlementTrait
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
-        if ($merchant->bankAccount === null)
+        $bankAccount = $merchant->bankAccount;
+
+        if ($bankAccount === null)
         {
             throw new Exception\LogicException(
                 'No bank account mapped for merchant settlement',
@@ -410,7 +429,7 @@ trait SettlementTrait
         }
 
         if (($this->env !== 'testing') and
-            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
+            ($bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
         {
             $shouldSettle = false;
         }
@@ -436,15 +455,13 @@ trait SettlementTrait
         $this->trace->info($traceCode, $data);
 
         (new SlackNotification)->success('setl_initiate', $data);
-
-        Dashboard::send('settlement', $settlements);
     }
 
     protected function settlementFailure($channel, $e, $traceCode)
     {
         $e = new SettlementFailureException($channel, $e->getMessage(), null, $e);
 
-//        $this->failureNotification($e);
+        $this->failureNotification($e);
 
         throw $e;
     }

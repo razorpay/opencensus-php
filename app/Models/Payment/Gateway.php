@@ -5,11 +5,10 @@ namespace RZP\Models\Payment;
 use App;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
+use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
-use RZP\Models\Feature\Constants;
 use Razorpay\IFSC\IFSC as BaseIFSC;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
@@ -23,7 +22,8 @@ class Gateway
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
     const BILLDESK               = 'billdesk';
-    const BLADE                  = 'blade';
+    const MPI_BLADE              = 'mpi_blade';
+    const MPI_ENSTAGE            = 'mpi_enstage';
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
     const ESIGNER_DIGIO          = 'esigner_digio';
@@ -44,6 +44,7 @@ class Gateway
     const NETBANKING_RBL         = 'netbanking_rbl';
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
+    const NETBANKING_OBC         = 'netbanking_obc';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -55,6 +56,7 @@ class Gateway
     const CARD_FSS               = 'card_fss';
 
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
+    const WALLET_AMAZONPAY   = 'wallet_amazonpay';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
     const WALLET_SBIBUDDY    = 'wallet_sbibuddy';
@@ -141,6 +143,8 @@ class Gateway
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
+        self::NETBANKING_OBC,
+        self::NETBANKING_ICICI,
         self::WALLET_OPENWALLET,
     ];
 
@@ -171,8 +175,12 @@ class Gateway
         Payment\Gateway::CARD_FSS,
         Payment\Gateway::WALLET_PAYUMONEY,
         Payment\Gateway::WALLET_FREECHARGE,
+        Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::HITACHI,
+        Payment\Gateway::UPI_HULK,
+        Payment\Gateway::NETBANKING_AIRTEL,
+        Payment\Gateway::ATOM,
     ];
 
     public static $channels = [
@@ -180,7 +188,8 @@ class Gateway
         self::ATOM                => Settlement\Channel::ATOM,
         self::AXIS_GENIUS         => Settlement\Channel::KOTAK,
         self::AXIS_MIGS           => Settlement\Channel::KOTAK,
-        self::BLADE               => Settlement\Channel::KOTAK,
+        self::MPI_BLADE           => Settlement\Channel::KOTAK,
+        self::MPI_ENSTAGE         => Settlement\Channel::KOTAK,
         self::BILLDESK            => Settlement\Channel::KOTAK,
         self::EBS                 => Settlement\Channel::KOTAK,
         self::ENACH_RBL           => Settlement\Channel::KOTAK,
@@ -229,7 +238,8 @@ class Gateway
             self::AMEX,
             self::CYBERSOURCE,
             self::FIRST_DATA,
-            self::BLADE,
+            self::MPI_BLADE,
+            self::MPI_ENSTAGE,
             self::HITACHI,
             self::CARD_FSS,
         ],
@@ -250,6 +260,7 @@ class Gateway
             self::NETBANKING_RBL,
             self::NETBANKING_INDUSIND,
             self::NETBANKING_PNB,
+            self::NETBANKING_OBC,
             self::NETBANKING_CSB,
         ],
 
@@ -281,6 +292,7 @@ class Gateway
             self::WALLET_SBIBUDDY,
             self::WALLET_OPENWALLET,
             self::WALLET_MPESA,
+            self::WALLET_AMAZONPAY,
         ],
 
         Method::EMI => [
@@ -365,6 +377,12 @@ class Gateway
         self::SHARP,
     ];
 
+    public static $headless = [
+        self::CYBERSOURCE,
+        self::HITACHI,
+        self::HDFC,
+    ];
+
     /**
      * Each card gateway only support specific card networks.
      * This maintains a map of gateway to card network which
@@ -392,7 +410,11 @@ class Gateway
         self::AMEX => [
             Network::AMEX
         ],
-        self::BLADE => [
+        self::MPI_BLADE => [
+            Network::MC,
+            Network::VISA
+        ],
+        self::MPI_ENSTAGE => [
             Network::MC,
             Network::VISA
         ],
@@ -427,6 +449,16 @@ class Gateway
         self::CARD_FSS => [
             Network::MC,
             Network::VISA,
+            Network::RUPAY,
+        ],
+    ];
+
+    public static $bharatQrCardNetwork = [
+        // IMP: Order of networks matter!
+        self::HITACHI => [
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
         ],
     ];
 
@@ -449,6 +481,7 @@ class Gateway
         Wallet::SBIBUDDY    => Gateway::WALLET_SBIBUDDY,
         Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
         Wallet::MPESA       => Gateway::WALLET_MPESA,
+        Wallet::AMAZONPAY   => Gateway::WALLET_AMAZONPAY,
     ];
 
     public static $upiToGatewayMap = [
@@ -550,54 +583,145 @@ class Gateway
             IFSC::UTIB,
             IFSC::HDFC,
         ],
+        // Please keep this list sorted
+        // You can find the latest PDF version
+        // at https://www.npci.org.in/nach-e-mandates
         AuthType::AADHAAR => [
             IFSC::ABHY,
+            IFSC::ACUX,
+            IFSC::ADCC,
+            IFSC::AGCX,
+            IFSC::AJSX,
+            IFSC::AMAX,
+            IFSC::AMRX,
             IFSC::ANDB,
-            IFSC::UTIB,
-            IFSC::BKID,
-            IFSC::MAHB,
+            IFSC::APBL,
+            IFSC::APGB,
+            IFSC::BACB,
             IFSC::BCBM,
-            IFSC::CNRB,
+            IFSC::BGBX,
+            IFSC::BHSX,
+            IFSC::BKDN,
+            IFSC::BKID,
+            IFSC::BNPA,
+            IFSC::BURX,
             IFSC::CBIN,
+            IFSC::CHSX,
             IFSC::CITI,
+            IFSC::CMCX,
+            IFSC::CNRB,
+            IFSC::CORP,
+            IFSC::COSB,
+            IFSC::CSBK,
+            IFSC::CURX,
+            IFSC::DBSS,
             IFSC::DCBL,
+            IFSC::DDBX,
+            IFSC::DGBX,
+            IFSC::DSPX,
+            IFSC::ESFB,
             IFSC::FDRL,
+            IFSC::FGCB,
+            IFSC::GCBX,
+            IFSC::GCUX,
+            IFSC::GSCB,
+            IFSC::GSSX,
             IFSC::HDFC,
-            IFSC::ICIC,
+            IFSC::HSBC,
             IFSC::IBKL,
+            IFSC::ICIC,
             IFSC::IDFB,
             IFSC::INDB,
-            IFSC::KKBK,
-            IFSC::ORBC,
-            Netbanking::PUNB_R,
-            IFSC::RATN,
-            IFSC::SRCB,
-            IFSC::SCBL,
-            IFSC::SVCB,
-            IFSC::SYNB,
-            IFSC::ADCC,
-            IFSC::COSB,
-            IFSC::HSBC,
-            IFSC::SUTB,
-            IFSC::UCBA,
-            IFSC::UBIN,
-            IFSC::YESB,
-            IFSC::DBSS,
-            IFSC::BGBX,
-            IFSC::CORP,
-            IFSC::VARA,
-            IFSC::KVBL,
-            Netbanking::BARB_R,
-            IFSC::BKDN,
-            IFSC::CSBX,
-            IFSC::TMBL,
+            IFSC::IUCB,
+            IFSC::JANA,
+            IFSC::JASB,
+            IFSC::JHAX,
+            IFSC::JSBP,
+            IFSC::JSCX,
+            IFSC::JUCX,
             IFSC::KAIJ,
+            IFSC::KARB,
+            IFSC::KASX,
+            IFSC::KDCX,
+            IFSC::KHAX,
+            IFSC::KKBK,
+            IFSC::KNPX,
+            IFSC::KOCX,
+            IFSC::KSCB,
+            IFSC::KUNS,
+            IFSC::KVBL,
+            IFSC::KTBX,
+            IFSC::KBCX,
+            IFSC::LBMX,
+            IFSC::LCCX,
+            IFSC::LKMX,
+            IFSC::MAHB,
+            IFSC::MBCX,
+            IFSC::MERX,
+            IFSC::MHSX,
+            IFSC::MOGX,
+            IFSC::MSOX,
+            IFSC::NAIX,
+            IFSC::NALX,
+            IFSC::NCCX,
+            IFSC::NOBX,
+            IFSC::NOIX,
+            IFSC::NSBX,
+            IFSC::NSGX,
+            IFSC::NDCX,
+            IFSC::ORBC,
+            IFSC::PALX,
+            IFSC::PCUX,
+            IFSC::RAMX,
+            IFSC::RATN,
+            IFSC::RCUX,
+            IFSC::REBX,
+            IFSC::RGCX,
+            IFSC::SAGX,
+            IFSC::SCBL,
+            IFSC::SCCX,
+            IFSC::SDBX,
+            IFSC::SDCB,
+            IFSC::SHUX,
+            IFSC::SIBL,
+            IFSC::SRCB,
+            IFSC::STRX,
+            IFSC::SUTB,
+            IFSC::SVCB,
+            IFSC::SWMX,
+            IFSC::SYNB,
+            IFSC::SVNX,
+            IFSC::TACX,
+            IFSC::TCUB,
+            IFSC::TECX,
+            IFSC::TEHX,
+            IFSC::TGMB,
+            IFSC::TKUX,
+            IFSC::TMBL,
+            IFSC::TSAB,
+            IFSC::TSIX,
+            IFSC::UBIN,
+            IFSC::UCBA,
+            IFSC::UCBS,
+            IFSC::UCUX,
+            IFSC::UTIB,
+            IFSC::UTZX,
+            IFSC::VARA,
+            IFSC::VCCX,
+            IFSC::VIJX,
+            IFSC::VJSX,
+            IFSC::YESB,
+            IFSC::ZSGX,
+            IFSC::ZSHX,
+            Netbanking::BARB_R,
+            Netbanking::PUNB_R,
         ]
     ];
 
     public static $bharatQrGateways = [
         self::UPI_ICICI,
         self::HITACHI,
+        self::SHARP,
     ];
 
     public static $authTypeToEmandateGatewayMap = [
@@ -660,6 +784,10 @@ class Gateway
         IFSC::CSBX,
         IFSC::TMBL,
         IFSC::KAIJ,
+        IFSC::TACX,
+        IFSC::SIBL,
+        IFSC::ESFB,
+        IFSC::ACUX,
     ];
 
     /**
@@ -721,6 +849,10 @@ class Gateway
             IFSC::TMBL,
             IFSC::KAIJ,
             Netbanking::BARB_R,
+            IFSC::TACX,
+            IFSC::SIBL,
+            IFSC::ESFB,
+            IFSC::ACUX,
         ],
     ];
 
@@ -772,7 +904,7 @@ class Gateway
      * @var array
      */
     public static $internationalCardGateways = [
-        Gateway::BLADE,
+        Gateway::MPI_BLADE,
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
@@ -817,6 +949,7 @@ class Gateway
         //corp banks
         Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
         Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
+        Netbanking::BARB_C => Gateway::NETBANKING_BOB,
 
         // retail banks
         IFSC::ICIC         => Gateway::NETBANKING_ICICI,
@@ -828,6 +961,7 @@ class Gateway
         IFSC::KKBK         => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB         => Gateway::NETBANKING_AXIS,
         IFSC::RATN         => Gateway::NETBANKING_RBL,
+        IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
@@ -848,7 +982,6 @@ class Gateway
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
-
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
@@ -918,6 +1051,15 @@ class Gateway
         Gateway::UPI_ICICI,
         Gateway::UPI_HULK,
         Gateway::UPI_MINDGATE,
+    ];
+
+    public static $upiValidateVpaGateways = [
+        Mode::LIVE => [
+            Gateway::UPI_MINDGATE,
+        ],
+        Mode::TEST => [
+            Gateway::SHARP,
+        ],
     ];
 
     public static function getAcquirerName(string $acquirer)
@@ -1006,6 +1148,18 @@ class Gateway
         }
 
         return array_values(array_unique($banks));
+    }
+
+    public static function getBharatQrCardNetworks(): array
+    {
+        $networks = [];
+
+        foreach (self::$bharatQrCardNetwork as $bharatQrGateways)
+        {
+            $networks = array_merge($networks, $bharatQrGateways);
+        }
+
+        return array_values(array_unique($networks));
     }
 
     public static function getZeroRupeeEmandateBanks(): array
@@ -1163,6 +1317,11 @@ class Gateway
         return in_array($gateway, self::$asynchronous, true);
     }
 
+    public static function supportsHeadlessBrowser($gateway)
+    {
+        return in_array($gateway, self::$headless, true);
+    }
+
     public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)
     {
         // This means that all the networks are supported by the gateway for authAndCapture.
@@ -1227,6 +1386,12 @@ class Gateway
         }
 
         return $supported;
+    }
+
+    public static function isBharatQrCardNetworkSupported(string $network, string $gateway)
+    {
+        return ((array_key_exists($gateway, self::$bharatQrCardNetwork) === true) and
+                (in_array($network, self::$bharatQrCardNetwork[$gateway], true) === true));
     }
 
     public static function getNetworksSupportedForCardRecurring(): array
@@ -1313,5 +1478,12 @@ class Gateway
         }
 
         return $gateways;
+    }
+
+    public static function getGatewayForValidateVpaForMode(string $mode)
+    {
+        // Currently we are only using MindGate for live and Sharp for test, later when
+        // we have more gateways, we can introduce gateway selection logic here.
+        return self::$upiValidateVpaGateways[$mode][0];
     }
 }

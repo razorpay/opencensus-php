@@ -6,22 +6,83 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
+use RZP\Models\Merchant\Account;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
-use RZP\Models\Customer\Entity as Customer;
 
 class Core extends Base\Core
 {
+    const VA_BANK_ACCOUNT_GENERATION = 'va_bank_account_generation';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     public function create(
         array $input,
         Merchant $merchant,
-        Customer $customer = null,
+        Customer\Entity $customer = null,
         Order $order = null): Entity
     {
-        $virtualAccount = $this->createEntityAndAssociate($merchant);
+        //
+        // VA creation is a bit broken at the moment. Creation requires multiple entities (VA+receivers)
+        // to be committed to the DB, but while building receivers we also need to take a lock on the
+        // generated account number and do a DB query to check for uniqueness. This will require a
+        // refactor to be solved.
+        //
+        // For now, we're simply adding a global lock on VA creation to avoid duplicates being created.
+        //
+        $virtualAccount = $this->mutex->acquireAndRelease(
+            self::VA_BANK_ACCOUNT_GENERATION,
+            function() use ($input, $merchant, $customer, $order)
+            {
+                $virtualAccount = $this->createEntityAndAssociate($merchant);
 
+                return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
+            },
+            // The entire VA creation process inside this lock actually takes
+            // an avg of 10ms, so 1000x i.e. 10 seconds is more than adequate TTL
+            10,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+            // A process will generally not need to do multiple retries at all,
+            // since the retry times are adequate for the previous process to complete.
+            2,
+            // 2x and 4x of avg response time for this entire route (not just the process within the lock)
+            200,
+            400);
+
+        return $virtualAccount;
+    }
+
+    /**
+     * A static qr code for all the unexpected payments is picked.
+     */
+    public function createOrFetchSharedVirtualAccount()
+    {
+        $virtualAccountId = Entity::SHARED_ID;
+
+        $virtualAccount = $this->repo->virtual_account->find($virtualAccountId);
+
+        if ($virtualAccount === null)
+        {
+            $virtualAccount = $this->createSharedVirtualAccount();
+        }
+
+        return $virtualAccount;
+    }
+
+    protected function buildVirtualAccountAndReceivers(
+        Entity $virtualAccount,
+        array $input,
+        Customer\Entity $customer = null,
+        Order $order = null): Entity
+    {
         $virtualAccount = $this->repo->transaction(function() use ($virtualAccount, $input, $customer, $order)
         {
             $virtualAccount->build($input);
@@ -42,6 +103,30 @@ class Core extends Base\Core
         $this->eventVirtualAccountCreated($virtualAccount);
 
         return $virtualAccount;
+    }
+
+    protected function createSharedVirtualAccount()
+    {
+        $sharedMerchantId = $this->getDefaultMerchantId();
+
+        $merchant = $this->repo->merchant->find($sharedMerchantId);
+
+        $customer = (new Customer\Core)->createOrFetchSharedCustomer($merchant);
+
+        $virtualAccount = (new Entity)->setId(Entity::SHARED_ID);
+
+        $virtualAccount->merchant()->associate($merchant);
+
+        $input = [
+            Entity::RECEIVERS => [
+                Entity::TYPES => [
+                    Receiver::QR_CODE,
+                    Receiver::BANK_ACCOUNT
+                ]
+            ],
+        ];
+
+        return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, null);
     }
 
     public function createWithoutReceivers(array $input, Merchant $merchant)
@@ -95,7 +180,7 @@ class Core extends Base\Core
                 break;
 
             case Receiver::QR_CODE:
-                $this->verifyBharatQrEnabled();
+                $this->verifyBharatQrEnabled($virtualAccount->merchant);
                 break;
 
             default:
@@ -166,11 +251,11 @@ class Core extends Base\Core
         }
     }
 
-    protected function verifyBharatQrEnabled()
+    protected function verifyBharatQrEnabled(Merchant $merchant)
     {
         $feature = Feature\Constants::BHARAT_QR;
 
-        if ($this->merchant->isFeatureEnabled($feature) === false)
+        if ($merchant->isFeatureEnabled($feature) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
@@ -204,5 +289,21 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->fire('api.virtual_account.created', $eventPayload);
+    }
+
+    /**
+     * For unexpected payments, we use the demo page merchant. This merchant only
+     * exists on prod. For other envs, we use the test merchant, i.e. '10000000000000'.
+     */
+    protected function getDefaultMerchantId()
+    {
+        $defaultMerchantId = Account::DEMO_PAGE_ACCOUNT;
+
+        if ($this->env !== 'production')
+        {
+            $defaultMerchantId = Account::TEST_ACCOUNT;
+        }
+
+        return $defaultMerchantId;
     }
 }

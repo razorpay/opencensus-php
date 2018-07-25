@@ -28,6 +28,56 @@ return [
         ]
     ],
 
+    'testEditDisableWebhookOnPrivateAuth' => [
+        'request' => [
+            'url' => '/webhooks',
+            'content' => [
+                'url' => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+                'disable_on_failure' => '0',
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'disable on failure is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditDisableWebhookOnProxyAuth' => [
+        'request' => [
+            'url' => '/webhooks',
+            'content' => [
+                'url' => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+                'disable_on_failure' => '0',
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'url' => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => true,
+                ],
+                'active' => true,
+            ]
+        ]
+    ],
+
     'testCreateWebhookWhenAlreadyCreated' => [
         'request' => [
             'url' => '/webhooks',
@@ -240,6 +290,7 @@ return [
                 'payment.dispute.created',
                 'order.paid',
                 'invoice.paid',
+                'invoice.partially_paid',
                 'invoice.expired',
                 'vpa.edited',
                 'p2p.created',

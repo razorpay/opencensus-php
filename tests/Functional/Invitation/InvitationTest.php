@@ -52,7 +52,7 @@ class InvitationTest extends TestCase
         $this->fixtures->create('user',
                                 [
                                     'id'    => '1000InviteUser',
-                                    'email' => 'existingInvite@razorpay.com'
+                                    'email' => 'existinginvite@razorpay.com'
                                 ]);
 
         $this->startTest();
@@ -99,10 +99,10 @@ class InvitationTest extends TestCase
         $this->fixtures->create('user',
                                 [
                                     'id'    => '1000InviteUser',
-                                    'email' => 'testTeamInvite@razorpay.com'
+                                    'email' => 'testteaminvite@razorpay.com'
                                 ]);
 
-        $invitation = $this->fixtures->create('invitation');
+        $invitation = $this->fixtures->create('invitation', ['email' => 'testteaminvite@razorpay.com']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -137,10 +137,10 @@ class InvitationTest extends TestCase
                                 ]);
 
         $invitation = $this->fixtures->create('invitation',
-                                [
-                                    'user_id'     => '1000InviteUser',
-                                    'email'       => 'reject@razorpay.com'
-                                ]);
+                                                [
+                                                    'user_id'     => '1000InviteUser',
+                                                    'email'       => 'reject@razorpay.com'
+                                                ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -167,11 +167,39 @@ class InvitationTest extends TestCase
 
     public function testInvalidResponseToInvitation()
     {
-        $invitation = $this->fixtures->create('invitation', [ 'email' => 'asd']);
+        $this->fixtures->create('user',
+                                [
+                                    'id'    => '1000InviteUser',
+                                    'email' => 'reject@razorpay.com'
+                                ]);
+
+        $invitation = $this->fixtures->create('invitation',
+                                                [ 'user_id'     => '1000InviteUser',
+                                                  'email'       => 'reject@razorpay.com'
+                                                ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/hello';
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testAcceptRandomValidInvitation()
+    {
+        $this->fixtures->create('user',
+            [
+                'id'    => '1000InviteUser',
+                'email' => 'testteaminvite@razorpay.com'
+            ]);
+
+        $invitation = $this->fixtures->create('invitation', [ 'email' => 'other@razorpay.com']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
 
         $this->ba->appAuth();
 
@@ -278,5 +306,101 @@ class InvitationTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+    }
+
+    public function testGetInvitationsReceivedBeforeSignup()
+    {
+        $this->fixtures->create('invitation', ['email' => 'old@razorpay.com']);
+
+        $this->fixtures->create('invitation',
+            [
+                'email'       => 'old@razorpay.com',
+                'role'        => 'finance',
+            ]);
+
+        $this->fixtures->create('invitation', ['email' => 'someelse@razorpay.com']);
+
+        $user = $this->fixtures->create('user', ['email' => 'old@razorpay.com']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
+        $this->ba->appAuth();
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals(count($response['invitations']), 2);
+    }
+
+    public function testGetInvitationsReceivedPostSignup()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'old@razorpay.com']);
+
+        $this->fixtures->create('invitation', ['email' => 'someelse@razorpay.com']);
+
+        $this->fixtures->create('invitation', ['email' => 'old@razorpay.com']);
+
+        $this->fixtures->create('invitation',
+            [
+                'email'       => 'old@razorpay.com',
+                'role'        => 'finance',
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
+        $this->ba->appAuth();
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals(count($response['invitations']), 2);
+    }
+
+    public function testGetInvitationsSentToUpperCaseEmail()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'upper_case@razorpay.com']);
+
+        $invite = [
+            'role' => 'finance',
+            'email' => 'UPPER_Case@razorpay.com',
+            'sender_name' => 'sender'
+        ];
+
+        $this->sendInvitation($invite);
+
+        $this->fixtures->create('invitation',
+            [
+                'email'       => 'UPPER_Case@razorpay.com',
+                'role'        => 'finance',
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $this->ba->appAuth();
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals(count($response['invitations']), 1);
+    }
+
+    protected function sendInvitation($attributes)
+    {
+        $this->ba->proxyAuth();
+
+        $request['content'] = $attributes;
+
+        $request['url'] = '/invitations';
+
+        $request['method'] = 'POST';
+
+        $this->makeRequestAndGetContent($request);
     }
 }

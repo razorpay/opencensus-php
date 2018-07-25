@@ -607,8 +607,6 @@ class Creator extends Base\Core
 
     /**
      * Validates the Content before saving
-     *
-     * @throws Exception\LogicException
      */
     protected function validateBeforeSave()
     {
@@ -632,8 +630,6 @@ class Creator extends Base\Core
 
     /**
      * Validates the Mime and Extension before uploading
-     *
-     * @throws Exception\BadRequestValidationFailureException
      */
     protected function validateBeforeUpload()
     {
@@ -690,6 +686,7 @@ class Creator extends Base\Core
             case Format::TXT:
             case Format::ENC:
             case Format::PDF:
+            case Format::DAT:
             // When the extension of the file which need to be created has no standerd extension (in case of ASCII file)
             // we dont set the extestion while creating it, then `NONE` will match with it and process it as text file
             case Format::NONE:
@@ -805,13 +802,13 @@ class Creator extends Base\Core
         $fileNameWithoutExt = $this->file->getName();
 
         $fileMetadata = Formatter\ExcelFormatter::writeToExcelFile(
-            $this->content,
-            $fileNameWithoutExt,
-            $this->columnFormat,
-            $this->headers,
-            $this->file->getExtension(),
-            $this->getStorageDir(),
-            $this->sheetName);
+                                                        $this->content,
+                                                        $fileNameWithoutExt,
+                                                        $this->columnFormat,
+                                                        $this->headers,
+                                                        $this->file->getExtension(),
+                                                        $this->getStorageDir(),
+                                                        $this->sheetName);
 
         $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
     }
@@ -881,7 +878,7 @@ class Creator extends Base\Core
         $this->file->merchant()->associate($merchant);
     }
 
-    protected function getFullFileName()
+    public function getFullFileName()
     {
         $extension = $this->file->getExtension();
 

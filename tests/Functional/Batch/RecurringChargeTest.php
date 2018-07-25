@@ -68,6 +68,7 @@ class RecurringChargeTest extends TestCase
 
         $batch = $this->getLastEntity('batch', true);
         $this->assertEquals('processed', $batch['status']);
+        $this->assertEquals(200, $batch['processed_amount']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals('random receipt', $order['receipt']);
@@ -75,8 +76,6 @@ class RecurringChargeTest extends TestCase
         $this->assertEquals($order['notes']['notes_1'], 'random notes');
         $this->assertEquals($order['notes']['notes_2'], 123);
         $this->assertEquals($order['notes']['notes_3'], true);
-        $this->assertArrayNotHasKey('notes_4', $order['notes']);
-        $this->assertArrayNotHasKey('notes_5', $order['notes']);
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('INR', $payment['currency']);
@@ -96,11 +95,12 @@ class RecurringChargeTest extends TestCase
                 Batch\Header::RECURRING_CHARGE_CURRENCY    => 'INR',
                 Batch\Header::RECURRING_CHARGE_RECEIPT     => '',
                 Batch\Header::RECURRING_CHARGE_DESCRIPTION => null,
-                Batch\Header::RECURRING_CHARGE_NOTES_1     => 'random notes',
-                Batch\Header::RECURRING_CHARGE_NOTES_2     => 123,
-                Batch\Header::RECURRING_CHARGE_NOTES_3     => true,
-                Batch\Header::RECURRING_CHARGE_NOTES_4     => '',
-                Batch\Header::RECURRING_CHARGE_NOTES_5     => null,
+                'notes[notes_1]'                           => null,
+                'notes[notes_2]'                           => null,
+                'notes[notes_3]'                           => null,
+                'notes[notes_4]'                           => null,
+                'notes[notes_5]'                           => null,
+
             ],
             [
                 Batch\Header::RECURRING_CHARGE_TOKEN       => $this->token,
@@ -109,11 +109,12 @@ class RecurringChargeTest extends TestCase
                 Batch\Header::RECURRING_CHARGE_CURRENCY    => 'INR',
                 Batch\Header::RECURRING_CHARGE_RECEIPT     => 'random receipt',
                 Batch\Header::RECURRING_CHARGE_DESCRIPTION => 'random description',
-                Batch\Header::RECURRING_CHARGE_NOTES_1     => 'random notes',
-                Batch\Header::RECURRING_CHARGE_NOTES_2     => 123,
-                Batch\Header::RECURRING_CHARGE_NOTES_3     => true,
-                Batch\Header::RECURRING_CHARGE_NOTES_4     => '',
-                Batch\Header::RECURRING_CHARGE_NOTES_5     => null,
+                'notes[notes_1]'                           => 'random notes',
+                'notes[notes_2]'                           =>  123,
+                'notes[notes_3]'                           =>  true,
+                'notes[notes_4]'                           =>  '',
+                'notes[notes_5]'                           =>  null
+
             ],
         ];
     }

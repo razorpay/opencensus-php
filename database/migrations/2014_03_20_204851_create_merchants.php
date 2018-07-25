@@ -80,6 +80,10 @@ class CreateMerchants extends Migration
             $table->tinyInteger(Merchant::FEE_MODEL)
                   ->default(FeeModel::getValueForFeeModelString(FeeModel::PREPAID));
 
+            $table->bigInteger(Merchant::FEE_CREDITS_THRESHOLD)
+                  ->unsigned()
+                  ->nullable();
+
             $table->tinyInteger(Merchant::REFUND_SOURCE)
                   ->default(RefundSource::getValueForRefundSourceString(RefundSource::BALANCE));
 
@@ -89,6 +93,9 @@ class CreateMerchants extends Migration
             $table->tinyInteger(Merchant::HAS_KEY_ACCESS)
                   ->default(0);
 
+            $table->string(Merchant::PARTNER_TYPE, 255)
+                  ->nullable();
+
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable();
 
@@ -96,6 +103,9 @@ class CreateMerchants extends Migration
                   ->nullable();
 
             $table->text(Merchant::LOGO_URL)
+                  ->nullable();
+
+            $table->string(Merchant::INVOICE_LABEL_FIELD, 50)
                   ->nullable();
 
             $table->tinyInteger(Merchant::RISK_RATING);

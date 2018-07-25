@@ -118,6 +118,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::AMOUNT_DEDUCTED,
         self::GATEWAY_DISPUTE_ID,
         self::REASON_CODE,
         self::REASON_DESCRIPTION,
@@ -133,15 +134,16 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::PAYMENT_ID,
+        self::AMOUNT_DEDUCTED,
         self::RESPOND_BY,
         self::REASON_DESCRIPTION,
     ];
 
     protected $casts = [
-        self::AMOUNT          => 'int',
-        self::AMOUNT_DEDUCTED => 'int',
-        self::AMOUNT_REVERSED => 'int',
-        self::DEDUCT_AT_ONSET => 'bool',
+        self::AMOUNT              => 'int',
+        self::AMOUNT_DEDUCTED     => 'int',
+        self::AMOUNT_REVERSED     => 'int',
+        self::DEDUCT_AT_ONSET     => 'bool',
     ];
 
     protected $guarded = [self::ID];
@@ -213,6 +215,13 @@ class Entity extends Base\PublicEntity
     {
         $attributes[self::PAYMENT_ID] =
             Payment\Entity::getSignedId($this->getAttribute(self::PAYMENT_ID));
+    }
+
+    public function setPublicAmountDeductedAttribute(array & $attributes)
+    {
+        $netAmount = abs($this->getAmountDeducted() - $this->getAmountReversed());
+
+        $attributes[self::AMOUNT_DEDUCTED] = $netAmount;
     }
 
     public function setPublicRespondByAttribute(array & $attributes)
@@ -373,4 +382,12 @@ class Entity extends Base\PublicEntity
         return (in_array($this->getPhase(), $nonTransactionalPhases, true) === true);
     }
 
+    public function toArrayAdmin()
+    {
+        $array = parent::toArrayAdmin();
+
+        $array[self::AMOUNT_DEDUCTED] = $this->getAmountDeducted();
+
+        return $array;
+    }
 }

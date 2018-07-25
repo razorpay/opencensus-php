@@ -28,6 +28,10 @@ class Repository extends Base\Repository
         Entity::EMI                 => 'sometimes|in:0,1',
         Entity::ENABLED             => 'sometimes|in:0,1',
         Entity::NETWORK_CATEGORY    => 'sometimes|string|max:50',
+        Entity::MC_MPAN             => 'sometimes|string|size:16',
+        Entity::VISA_MPAN           => 'sometimes|string|size:16',
+        Entity::RUPAY_MPAN          => 'sometimes|string|size:16',
+        Entity::VPA                 => 'sometimes|string|max:20',
     );
 
     public function fetchForPayment(Payment\Entity $payment)
@@ -88,6 +92,14 @@ class Repository extends Base\Repository
         $this->addMerchantWhereCondition($query, [$mid]);
 
         return $query->get();
+    }
+
+    public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->first();
     }
 
     public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant)
@@ -258,25 +270,39 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findByGatewayMpan(string $mpan, string $gateway)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->where(function ($query) use ($mpan)
+                    {
+                        $query->where(Entity::VISA_MPAN, '=', $mpan)
+                              ->orWhere(Entity::MC_MPAN, '=', $mpan)
+                              ->orWhere(Entity::RUPAY_MPAN, '=', $mpan);
+                    })
+                    ->first();
+    }
+
     public function deleteOrFail($entity)
     {
         $count = $this->repo->payment->getTotalUsedCountForTerminal(
                     $entity->getId());
 
-        if ($count === 0)
+        return $this->transaction(function() use ($entity, $count)
         {
-            $entity->forceDelete();
+            if ($count === 0)
+            {
+                $entity->forceDelete();
 
-            return null;
-        }
-        else
-        {
-            $entity->deleteOrFail();
+                return null;
+            }
+            else
+            {
+                $entity->deleteOrFail();
 
-            return $this->newQuery()
-                        ->withTrashed()
-                        ->findOrFail($entity->getId());
-        }
+                return $entity;
+            }
+        });
     }
 
     public function restoreOrFail($terminal)
@@ -292,13 +318,13 @@ class Repository extends Base\Repository
             $terminal->getAttributes());
     }
 
-    public function addMerchantToTerminal(Entity $terminal, string $merchantId)
+    public function addMerchantToTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
-        $terminal->merchants()->attach($merchantId);
+        $terminal->merchants()->attach($merchant);
     }
 
-    public function removeMerchantFromTerminal(Entity $terminal, string $merchantId)
+    public function removeMerchantFromTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
-        $terminal->merchants()->detach($merchantId);
+        $terminal->merchants()->detach($merchant);
     }
 }

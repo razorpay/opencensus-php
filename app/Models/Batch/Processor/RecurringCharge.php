@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Order;
+use RZP\Models\Customer;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
@@ -12,6 +13,10 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 class RecurringCharge extends Base
 {
     const RESPONSE_PAYMENT_ID = 'razorpay_payment_id';
+
+    protected $paymentProcessor;
+
+    protected $orderCore;
 
     public function __construct(Entity $batch)
     {
@@ -33,7 +38,7 @@ class RecurringCharge extends Base
         $this->paymentProcessor->flushPaymentObjects();
     }
 
-    protected function createOrder(array & $entry)
+    protected function createOrder(array & $entry): Order\Entity
     {
         $orderCreateRequest = Helper::getOrderInput($entry);
 
@@ -44,9 +49,18 @@ class RecurringCharge extends Base
         return $order;
     }
 
+    protected function getCustomer(array $entry): Customer\Entity
+    {
+        $customerId = $entry[Header::RECURRING_CHARGE_CUSTOMER_ID];
+
+        return $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+    }
+
     protected function processPayment(array & $entry, Order\Entity $order)
     {
-        $recurringPaymentRequest = Helper::getPaymentInput($entry, $order);
+        $customer = $this->getCustomer($entry);
+
+        $recurringPaymentRequest = Helper::getPaymentInput($entry, $order, $customer);
 
         $this->paymentProcessor->process($recurringPaymentRequest);
 
@@ -57,6 +71,23 @@ class RecurringCharge extends Base
         $this->repo->saveOrFail($payment);
 
         $entry[Header::RECURRING_CHARGE_PAYMENT_ID] = $payment->getPublicId();
+    }
+
+    protected function postProcessEntries(array & $entries)
+    {
+        parent::postProcessEntries($entries);
+
+        $processedAmount = 0;
+
+        foreach ($entries as $entry)
+        {
+            if ($entry[Header::STATUS] === Status::SUCCESS)
+            {
+                $processedAmount += $entry[Header::RECURRING_CHARGE_AMOUNT];
+            }
+        }
+
+        $this->batch->setProcessedAmount($processedAmount);
     }
 
     protected function sendProcessedMail()

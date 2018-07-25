@@ -140,8 +140,8 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_HEADLESS_PARSING_FAILED,
-                null, 
-                null, 
+                null,
+                null,
                 [
                     'gateway' => $this->gateway,
                 ]
@@ -218,6 +218,33 @@ class Gateway extends Base\Gateway
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
         $verify->payment = $this->saveVerifyContent($verify);
+    }
+
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
+        {
+            return true;
+        }
+
+        throw new Exception\LogicException(
+            'Verify refund not implemented',
+            null,
+            [
+                'gateway'   => 'atom',
+                'refund_id' => $input['refund']['id'],
+            ]);
     }
 
     protected function verifyAmountMismatch(Base\Verify $verify, array $input, array $response, string $entity)
@@ -321,21 +348,36 @@ class Gateway extends Base\Gateway
             if ((empty($gatewayPayment[Entity::GATEWAY_PAYMENT_ID]) === false) and
                 ($gatewayPayment[Entity::GATEWAY_PAYMENT_ID] !== $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID]))
             {
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-                    null,
-                    null,
+                throw new Exception\LogicException(
+                    'Gateway Payment ID Mismatch',
+                    ErrorCode::SERVER_ERROR_GATEWAY_FIELD_MISMATCH,
                     [
+                        'payment_id'         => $gatewayPayment[Entity::PAYMENT_ID],
                         'gateway_payment_id' => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
                         'atomtxnId'          => $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID],
                         'gateway'            => $this->gateway,
                     ]
                 );
             }
-            else
+
+            if ((empty($gatewayPayment[Entity::BANK_PAYMENT_ID]) === false) and
+                ($gatewayPayment[Entity::BANK_PAYMENT_ID] !== $content[VerifyResponseFields::BANK_TRANSACTION_ID]))
             {
-                $attributes[Entity::GATEWAY_PAYMENT_ID] = $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID];
+                throw new Exception\LogicException(
+                    'Bank Payment ID Mismatch',
+                    ErrorCode::SERVER_ERROR_GATEWAY_FIELD_MISMATCH,
+                    [
+                        'payment_id'      => $gatewayPayment[Entity::PAYMENT_ID],
+                        'bank_payment_id' => $gatewayPayment[Entity::BANK_PAYMENT_ID],
+                        'bid'             => $content[VerifyResponseFields::BANK_TRANSACTION_ID],
+                        'gateway'         => $this->gateway,
+                    ]
+                );
             }
+
+            $attributes[Entity::GATEWAY_PAYMENT_ID] = $content[VerifyResponseFields::GATEWAY_TRANSACTION_ID];
+
+            $attributes[Entity::BANK_PAYMENT_ID] = $content[VerifyResponseFields::BANK_TRANSACTION_ID];
         }
 
         return $attributes;
@@ -551,11 +593,11 @@ class Gateway extends Base\Gateway
     {
         if ($this->action === Action::AUTHORIZE)
         {
-            $secret = $this->config['live_authorize_hash_secret'];
+            $secret = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
         }
         else if ($this->action === Action::CALLBACK)
         {
-            $secret = $this->config['live_callback_hash_secret'];
+            $secret = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2];
         }
 
         return $secret;

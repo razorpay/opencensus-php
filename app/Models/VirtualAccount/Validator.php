@@ -34,22 +34,17 @@ class Validator extends Base\Validator
         Entity::DESCRIPTOR => 'sometimes|alpha_num|max:10',
     ];
 
-    public function validateDescriptor($descriptor)
+    public function validateDescriptor($descriptor, $isPrivileged)
     {
         if ($descriptor === null)
         {
             return;
         }
 
-        $handle = $this->entity->merchant->getHandle();
-
         $descriptorLength = strlen($descriptor);
 
-        $handleLength = strlen($handle);
-
-        $rootLength = Receiver::ROOT_LENGTH;
-
-        if (($descriptorLength + $handleLength + $rootLength) > Receiver::ACCOUNT_NUMBER_LENGTH)
+        if (($descriptorLength > Receiver::DESCRIPTOR_LENGTH) and
+             ($isPrivileged === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,

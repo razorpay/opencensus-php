@@ -23,8 +23,6 @@ spec:
       containers:
       - args:
         - web
-        command:
-        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:

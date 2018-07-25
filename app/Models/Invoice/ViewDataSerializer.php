@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -31,7 +32,7 @@ class ViewDataSerializer extends Base\Core
         Entity::ISSUED_AT,
         Entity::DATE,
         Entity::EXPIRE_BY,
-        Entity::EXPIRED_AT
+        Entity::EXPIRED_AT,
     ];
 
     /**
@@ -43,7 +44,9 @@ class ViewDataSerializer extends Base\Core
     protected static $amounts = [
         Entity::AMOUNT,
         Entity::AMOUNT_DUE,
-        Entity::AMOUNT_PAID
+        Entity::AMOUNT_PAID,
+        Entity::TAX_AMOUNT,
+        Entity::GROSS_AMOUNT,
     ];
 
     /**
@@ -84,30 +87,40 @@ class ViewDataSerializer extends Base\Core
         return $serialized;
     }
 
-    protected function getMerchantKeyId(): string
+    /**
+     * @return string|null
+     */
+    protected function getMerchantKeyId()
     {
-        return $this->repo
-                    ->key
-                    ->getFirstActiveKeyForMerchantOrFail($this->merchant->getId())
-                    ->getPublicKey($this->mode);
+        return optional($this->repo->key->getFirstActiveKeyForMerchant($this->merchant->getId()))
+                ->getPublicKey($this->mode);
     }
 
     protected function serializeMerchantForHosted(): array
     {
+        $cin           = $this->merchant->getCompanyCin();
+        $gstin         = $this->merchant->getGstin();
+        $hasCinOrGstin = (($cin !== null) or ($gstin !== null));
+
         return [
-            'new_view_enabled' => (in_array('Hostedplv2', $this->merchant->liveTagNames(), true) === true),
-            'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
-            'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
-            'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
-            'name'             => $this->merchant->getBillingLabel(),
-            'id'               => $this->merchant->getId(),
+            'id'                               => $this->merchant->getId(),
+            'name'                             => $this->invoice->getMerchantLabel(),
+            'image'                            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
+            'brand_color'                      => get_rgb_value($this->merchant->getBrandColorOrDefault()),
+            'brand_text_color'                 => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
+            'cin'                              => $cin,
+            'gstin'                            => $gstin,
+            'has_cin_or_gstin'                 => $hasCinOrGstin,
+            'business_registered_address_text' => $this->merchant->getBusinessRegisteredAddressAsText(', '),
         ];
     }
 
     protected function serializeInvoiceForHosted(): array
     {
+        //
         // Reload is needed as from Payment\Processor\Notify, the invoice
         // object passed as part of construct does not have relations loaded.
+        //
         $this->repo->loadRelations($this->invoice);
 
         $serialized = $this->invoice->toArrayHosted();
@@ -122,27 +135,37 @@ class ViewDataSerializer extends Base\Core
 
     protected function addDerivedAttributesForInvoice(array & $serialized)
     {
-        // Ordered serialized payments of invoice
+        // In view, we show only captured(successful, not refunded) payments
         $serializedPayments = $this->invoice
-                                   ->load(Entity::PAYMENTS)
-                                   ->payments
-                                   ->sortByDesc(Entity::CREATED_AT)
-                                   ->values()
+                                   ->payments()
+                                   ->status(Payment\Status::CAPTURED)
+                                   ->get()
                                    ->toArrayHosted();
 
-        $serialized[Entity::IS_PAID]         = $this->invoice->isPaid();
-        $serialized[Entity::PAYMENTS]        = $serializedPayments;
-        $serialized[Entity::CALLBACK_URL]    = $this->invoice->getCallbackUrl();
-        $serialized[Entity::CALLBACK_METHOD] = $this->invoice->getCallbackMethod();
+        $serialized[Entity::IS_PAID]            = $this->invoice->isPaid();
+        $serialized[Entity::PAYMENTS]           = $serializedPayments;
+        $serialized[Entity::CALLBACK_URL]       = $this->invoice->getCallbackUrl();
+        $serialized[Entity::CALLBACK_METHOD]    = $this->invoice->getCallbackMethod();
+        $serialized[Entity::MERCHANT_GSTIN]     = $this->invoice->getMerchantGstin();
+        $serialized[Entity::MERCHANT_LABEL]     = $this->invoice->getMerchantLabel();
+        $serialized[Entity::SUPPLY_STATE_NAME]  = $this->invoice->getSupplyStateName();
+        $serialized[Entity::HAS_ADDRESS_OR_POS] = (($this->invoice->hasCustomerBillingAddress() === true) or
+                                                   ($this->invoice->hasCustomerShippingAddress() === true) or
+                                                   ($this->invoice->getSupplyStateCode() !== null));
+
+        $serialized[Entity::CUSTOMER_DETAILS] += [
+            Entity::BILLING_ADDRESS_TEXT  => optional($this->invoice->customerBillingAddress)->formatAsText(),
+            Entity::SHIPPING_ADDRESS_TEXT => optional($this->invoice->customerShippingAddress)->formatAsText(),
+        ];
 
         //
-        // Additionally, if it's type=link and description is blank we fill it with first line item's description else
-        // name. This is because for type=link, description should have been mandatory but for legacy reasons, line items
-        // or description is expected. Only a few merchants have continued using it so and we are communicating them
-        // to stop using it that way(deprecation). For now doing so doesn't require change in view, mails etc and is
-        // UX wise is as expected.
+        // Additionally, if it's non-invoice and description is blank we fill it with first line item's description
+        // else name. This is because for non-invoice, description should have been mandatory but for legacy reasons,
+        // line items or description is expected. Only a few merchants have continued using it so and we are
+        // communicating them to stop using it that way(deprecation). For now doing so doesn't require change in view,
+        // mails etc and is UX wise is as expected.
         //
-        if (($this->invoice->isTypeLink() === true) and (blank($serialized[Entity::DESCRIPTION]) === true))
+        if (($this->invoice->isNotTypeInvoice() === true) and (blank($serialized[Entity::DESCRIPTION]) === true))
         {
             $serialized[Entity::DESCRIPTION] = optional($this->invoice->lineItems->first())->getDescriptionElseName();
         }
@@ -153,18 +176,28 @@ class ViewDataSerializer extends Base\Core
         // Adds formatted invoice's amount attributes
         foreach (self::$amounts as $key)
         {
-            $serialized[$key . '_formatted'] = number_format($serialized[$key] / 100, 2);
+            $serialized[$key . '_formatted'] = amount_format_IN($serialized[$key]);
         }
 
-        // Adds formatted invoice's line item's amount attributes
+        // Adds formatted invoice's line item's & their tax's amount attributes
         array_walk(
             $serialized[Entity::LINE_ITEMS],
             function (& $lineItem, $idx)
             {
                 $lineItem += [
-                    'amount_formatted'       => number_format($lineItem[LineItem\Entity::AMOUNT] / 100, 2),
-                    'total_amount_formatted' => number_format($lineItem[LineItem\Entity::GROSS_AMOUNT] / 100, 2),
+                    'amount_formatted'       => amount_format_IN($lineItem[LineItem\Entity::AMOUNT]),
+                    'total_amount_formatted' => amount_format_IN($lineItem[LineItem\Entity::GROSS_AMOUNT]),
+                    'has_taxes'              => (bool) $lineItem[LineItem\Entity::TAXES],
                 ];
+
+                array_walk(
+                    $lineItem[LineItem\Entity::TAXES],
+                    function (& $tax, $idx)
+                    {
+                        $tax += [
+                            'tax_amount_formatted'  => amount_format_IN($tax[LineItem\Tax\Entity::TAX_AMOUNT]),
+                        ];
+                    });
             });
     }
 

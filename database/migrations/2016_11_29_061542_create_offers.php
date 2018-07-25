@@ -43,6 +43,9 @@ class CreateOffers extends Migration
             $table->string(Offer::ISSUER, Offer::ISSUER_LENGTH)
                   ->nullable();
 
+            $table->tinyInteger(Offer::INTERNATIONAL)
+                  ->nullable();
+
             $table->tinyInteger(Offer::ACTIVE)
                   ->default(1);
 
@@ -65,6 +68,12 @@ class CreateOffers extends Migration
                   ->nullable();
 
             $table->integer(Offer::FLAT_CASHBACK)
+                  ->nullable();
+
+            $table->tinyInteger(Offer::EMI_SUBVENTION)
+                  ->nullable();
+
+            $table->string(Offer::EMI_DURATIONS)
                   ->nullable();
 
             $table->integer(Offer::MAX_PAYMENT_COUNT)

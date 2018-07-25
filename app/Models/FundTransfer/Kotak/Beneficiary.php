@@ -11,40 +11,11 @@ use RZP\Models\FundTransfer\Base;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\BankAccount\Entity as BankAccount;
-use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
+use RZP\Models\FundTransfer\Base\Beneficiary\FileProcessor;
 
-class Beneficiary extends Base\Beneficiary
+class Beneficiary extends FileProcessor
 {
     protected $channel = Channel::KOTAK;
-
-    /**
-     * @param $bankAccounts
-     * @param array $input
-     *
-     * @return array
-     * @return array with keys 'signed_url'
-     *                         'local_file_path'
-     *                         'file_name'
-     *                         'merchants_count'
-     */
-    public function register(PublicCollection $bankAccounts, array $input = []): array
-    {
-        $data = $this->getData($bankAccounts);
-
-        $file = $this->generateFile($data);
-
-        $merchantCount = count($data);
-
-        $response = $this->makeResponse($file, $merchantCount);
-
-        $recipientEmails = $input[BankAccount::RECIPIENT_EMAILS] ?? null;
-
-        $mailData = array_merge($response, [BankAccount::RECIPIENT_EMAILS => $recipientEmails]);
-
-        $this->sendEmail($mailData);
-
-        return $response;
-    }
 
     protected function getData(PublicCollection $bankAccounts): array
     {
@@ -85,7 +56,7 @@ class Beneficiary extends Base\Beneficiary
         return $data;
     }
 
-    protected function generateFile(array $data): FileStore\Creator
+    protected function generateFile($data): FileStore\Creator
     {
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -101,23 +72,6 @@ class Beneficiary extends Base\Beneficiary
         return $file;
     }
 
-    protected function makeResponse(FileStore\Creator $file, int $merchantCount)
-    {
-        $fileDetails = $file->get();
-
-        $signedFileUrl = $file->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
-
-        $data = [
-            'signed_url'      => $signedFileUrl,
-            'local_file_path' => $fileDetails['local_file_path'],
-            'file_name'       => basename($fileDetails['local_file_path']),
-            'merchants_count' => $merchantCount,
-            'channel'         => $this->channel,
-        ];
-
-        return $data;
-    }
-
     protected function getFileToWriteNameWithoutExt(): string
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
@@ -127,12 +81,5 @@ class Beneficiary extends Base\Beneficiary
         $fileName = 'Kotak_Beneficiary_File' . '_' . $mode . '_' . $time;
 
         return $fileName;
-    }
-
-    protected function sendEmail(array $data)
-    {
-        $beneficiaryFileMail = new BeneficiaryFileMail($data, $this->channel, $data['merchants_count']);
-
-        Mail::queue($beneficiaryFileMail);
     }
 }

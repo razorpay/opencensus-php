@@ -5,14 +5,17 @@ namespace RZP\Tests\Functional\Batch;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Models\FileStore;
+use RZP\Models\Batch\Status;
 use RZP\Models\Batch as BatchModel;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 trait BatchTestTrait
 {
-    use FileHandlerTrait;
     use PaymentTrait;
+    use FileHandlerTrait;
+    use DbEntityFetchTrait;
 
     public function createAndPutExcelFileInRequest(array $entries, string $callee)
     {
@@ -53,6 +56,15 @@ trait BatchTestTrait
 
     public function assertFileExistsForBatchOfType(string $id, string $type)
     {
+        $file = $this->getFileForBatchOfType($id, $type);
+
+        $this->assertNotNull($file);
+
+        return $file;
+    }
+
+    protected function getFileForBatchOfType(string $id, string $type)
+    {
         BatchModel\Entity::verifyIdAndSilentlyStripSign($id);
 
         $file = FileStore\Entity::where(FileStore\Entity::TYPE, $type)
@@ -60,8 +72,31 @@ trait BatchTestTrait
                                 ->where(FileStore\Entity::ENTITY_ID, $id)
                                 ->first();
 
-        $this->assertNotNull($file);
-
         return $file;
+    }
+
+    /*
+     * Retries failed batch by Id.
+     */
+    protected function retryFailedBatch($id)
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'method' => 'POST',
+            'url'    => '/batches/' . $id . '/process'
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    /**
+     * Assert the status of processed batch.
+     */
+    protected function assertBatchStatus(string $expected)
+    {
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals($expected, $batch['status']);
     }
 }

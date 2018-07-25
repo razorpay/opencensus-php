@@ -51,6 +51,8 @@ class Entity extends Base\PublicEntity
     // order_id is a valid request parameter, but is mapped to entity_id
     const ORDER_ID             = 'order_id';
 
+    // Used for creating shared virtual account
+    const SHARED_ID            = 'ShrdVirtualAcc';
 
     protected $fillable = [
         self::NAME,
@@ -114,7 +116,7 @@ class Entity extends Base\PublicEntity
 
     public function bankAccount()
     {
-        return $this->belongsTo('RZP\Models\BankAccount\Entity');
+        return $this->belongsTo('RZP\Models\BankAccount\Entity')->withTrashed();
     }
 
     public function qrCode()

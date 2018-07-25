@@ -26,6 +26,9 @@ class Entity extends Base\PublicEntity
     const CURRENCY               = 'currency';
     const BASE_AMOUNT            = 'base_amount';
     const STATUS                 = 'status';
+    const ERROR_CODE             = 'error_code';
+    const INTERNAL_ERROR_CODE    = 'internal_error_code';
+    const ERROR_DESCRIPTION      = 'error_description';
     const NOTES                  = 'notes';
 
     //merchant reference number for refund if provided by merchant
@@ -35,9 +38,18 @@ class Entity extends Base\PublicEntity
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const BATCH_ID               = 'batch_id';
 
+    const GATEWAY                = 'gateway';
     const GATEWAY_REFUNDED       = 'gateway_refunded';
     const REFERENCE1             = 'reference1';
     const REFERENCE2             = 'reference2';
+    const REFERENCE3             = 'reference3';
+    const REFERENCE4             = 'reference4';
+    const REFERENCE5             = 'reference5';
+    const REFERENCE6             = 'reference6';
+    const REFERENCE7             = 'reference7';
+    const REFERENCE8             = 'reference8';
+    const REFERENCE9             = 'reference9';
+
     const ATTEMPTS               = 'attempts';
     const LAST_ATTEMPTED_AT      = 'last_attempted_at';
 
@@ -54,17 +66,17 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         self::ID,
         self::AMOUNT,
-        self::CURRENCY
+        self::CURRENCY,
+        self::GATEWAY
     ];
 
     protected $fillable = [
-        self::MERCHANT_ID,
-        self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
         self::RECEIPT,
         self::STATUS,
+        self::REFERENCE1,
     ];
 
     protected $visible = [
@@ -75,6 +87,10 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::BASE_AMOUNT,
         self::STATUS,
+        self::ERROR_CODE,
+        self::INTERNAL_ERROR_CODE,
+        self::ERROR_DESCRIPTION,
+        self::GATEWAY,
         self::GATEWAY_REFUNDED,
         self::NOTES,
         self::RECEIPT,
@@ -85,6 +101,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
+        self::REFERENCE1,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -204,6 +221,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CURRENCY, $this->payment->getCurrency());
     }
 
+    protected function generateGateway($input)
+    {
+        $this->setAttribute(self::GATEWAY, $this->payment->getGateway());
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -247,6 +269,21 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
+    public function getInternalErrorCode()
+    {
+        return $this->getAttribute(self::INTERNAL_ERROR_CODE);
+    }
+
+    public function getErrorDescription()
+    {
+        return $this->getAttribute(self::ERROR_DESCRIPTION);
     }
 
     public function getAttempts()
@@ -315,9 +352,25 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setError($errorCode, $errorDesc, $internalErrorCode)
+    {
+        $this->setAttribute(self::ERROR_CODE, $errorCode);
+        $this->setAttribute(self::ERROR_DESCRIPTION, $errorDesc);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
+    }
+
+    public function setErrorNull()
+    {
+        $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, null);
+        $this->setAttribute(self::ERROR_DESCRIPTION, null);
+    }
+
     public function setStatusProcessed()
     {
         $this->setAttribute(self::STATUS, Status::PROCESSED);
+
+        $this->setErrorNull();
     }
 
     public function setBaseAmount()
@@ -374,7 +427,10 @@ class Entity extends Base\PublicEntity
         // 'Goomo', 'Goomo', 'IRCTC Services'
         // 'Irctc Web', 'IRCTC Mob', 'IRCTC ecatering'
         // 'epaylater', 'Udacity', 'Accelerator',
-        // 'IRCTC FTR', 'KartRocket',
+        // 'IRCTC FTR', 'KartRocket', '1mg',
+        // 'Ixigo', 'Akbar Travels', 'Akbar Travels',
+        // 'Royal Bison', 'Pizza Hut', 'Pizza Hut',
+        // 'Pizza Hut', 'Stark', 'Stark',
 
         $merchantIds = [
             '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
@@ -386,7 +442,10 @@ class Entity extends Base\PublicEntity
             '8STmhcK1Gd1JVo', '7kBHljwok8Fsom', '8byazTDARv4Io0',
             '8ST00QgEPT14cE', '8YPFnW5UOM91H7', '90xVmQJTCEJ6GH',
             '6uli25q6xe9PPv', '4sW8jQ22JR4Bfi', '5wv2qnnBum6eXo',
-            '9m4CChGex4ENkR', '9pWQLj3B705mYh',
+            '9m4CChGex4ENkR', '9pWQLj3B705mYh', '6e9vU1F6c16Wgy',
+            '8RerE9oY0d7rbC', '6o1ohA0HNz3B2S', '62UtF084z3H6RT',
+            'A85zyC8z78QJnt', '9Am5NzeJvtuBFy', '97hA1mKLFFI4Bi',
+            '9GhIX26dnSuWKM', '9mr3eFWa79LBay', '9yEM7JR6WzZUds',
         ];
 
         $currentMerchantId = $this->getMerchantId();
@@ -448,6 +507,24 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::BATCH_ID);
     }
+
+    // ----------------------- Mutator ---------------------------------------------
+
+    protected function setReference1Attribute($reference1)
+    {
+        $trimmedReference1 = (blank($reference1) === true) ? null : trim($reference1);
+
+        $this->attributes[self::REFERENCE1] =  $trimmedReference1;
+    }
+
+    protected function setReference2Attribute($reference2)
+    {
+        $trimmedReference2 = (blank($reference2) === true) ? null : trim($reference2);
+
+        $this->attributes[self::REFERENCE2] =  $trimmedReference2;
+    }
+
+    // ----------------------- Mutator Ends ----------------------------------------
 
     /**
      * Adds the contact, email fields to the reports

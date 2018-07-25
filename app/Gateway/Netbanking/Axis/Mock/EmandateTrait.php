@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Axis\Mock;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
+use RZP\Gateway\Netbanking\Axis\AESCrypto;
 use RZP\Gateway\Netbanking\Axis\Emandate\Constants;
 use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
 use RZP\Gateway\Netbanking\Axis\Emandate\RequestFields;
@@ -96,6 +97,7 @@ trait EmandateTrait
             ResponseFields::TRANS_REF_NO    => 101714472,
             ResponseFields::TRANS_EXEC_TIME => $date,
             ResponseFields::PAYMENT_MODE    => Constants::PMD,
+            ResponseFields::MANDATE_NUMBER  => 123123123,
             ResponseFields::CHECKSUM        => $input[RequestFields::CHECKSUM]
         ];
 

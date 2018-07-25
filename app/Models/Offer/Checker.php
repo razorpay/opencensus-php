@@ -31,6 +31,7 @@ class Checker extends Base\Core
         Entity::PAYMENT_METHOD,
         Entity::IINS,
         Entity::ISSUER,
+        Entity::INTERNATIONAL,
         Entity::PAYMENT_NETWORK,
         Entity::PAYMENT_METHOD_TYPE,
         self::CARD_USAGE,
@@ -45,12 +46,9 @@ class Checker extends Base\Core
         $this->verbose = $verbose;
     }
 
-    public function checkOfferApplicableOnOrder(Order\Entity $order): bool
+    public function checkApplicabilityOnOrder(Order\Entity $order): bool
     {
         $this->order = $order;
-
-        // Validates order amount for offer
-        $this->offer->getDiscountedAmount($order->getAmount());
 
         $offerActive = $this->offer->isActive();
 
@@ -60,7 +58,7 @@ class Checker extends Base\Core
                 ($validOfferPeriod === true));
     }
 
-    public function checkOfferApplicableOnPayment(Payment\Entity $payment): bool
+    public function checkApplicabilityForPayment(Payment\Entity $payment): bool
     {
         $this->payment = $payment;
 
@@ -182,6 +180,29 @@ class Checker extends Base\Core
             default:
                 return false;
         }
+    }
+
+    protected function checkInternational(): bool
+    {
+        $isInternational = $this->offer->isInternational();
+
+        if (($isInternational === null) or ($this->payment->isMethodCardOrEmi() === false))
+        {
+            return true;
+        }
+
+        $card = $this->payment->card;
+
+        $result = ($card->isInternational() === $isInternational);
+
+        $this->traceCheckResult(TraceCode::OFFER_CARD_INTERNATIONAL_CHECK, [
+            'result'            => $result,
+            'offer_internation' => $isInternational,
+            'card_iin'          => $card->getIin(),
+            'international'     => $card->isInternational(),
+        ]);
+
+        return $result;
     }
 
     protected function checkIins(): bool

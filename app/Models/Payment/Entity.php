@@ -14,6 +14,7 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -22,10 +23,13 @@ use RZP\Models\Currency;
 use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
+use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Netbanking;
 
 /**
@@ -35,6 +39,7 @@ use RZP\Models\Payment\Processor\Netbanking;
  * @property Merchant\Entity        $merchant
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
+ * @property PaymentLink\Entity     $paymentLink
  */
 class Entity extends Base\PublicEntity
 {
@@ -54,6 +59,7 @@ class Entity extends Base\PublicEntity
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
     const TRANSFER_ID           = 'transfer_id';
+    const PAYMENT_LINK_ID       = 'payment_link_id';
     const RECEIVER_ID           = 'receiver_id';
     const RECEIVER_TYPE         = 'receiver_type';
     const INTERNATIONAL         = 'international';
@@ -101,11 +107,20 @@ class Entity extends Base\PublicEntity
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
+    // From 11 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
+    const REFERENCE11           = 'reference11';
+    const REFERENCE12           = 'reference12';
+    const REFERENCE13           = 'reference13';
+    const REFERENCE14           = 'reference14';
+    const REFERENCE15           = 'reference15';
+    const REFERENCE16           = 'reference16';
+    const REFERENCE17           = 'reference17';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
     // This is the bucket for the next verify and not the current verify.
     const VERIFY_BUCKET         = 'verify_bucket';
+    const VERIFY_AT             = 'verify_at';
     const CALLBACK_URL          = 'callback_url';
     const TAX                   = 'tax';
     const OTP_ATTEMPTS          = 'otp_attempts';
@@ -153,6 +168,8 @@ class Entity extends Base\PublicEntity
     const IFSC                  = 'ifsc';
     const ACCOUNT_NUMBER        = 'account_number';
 
+    const OFFER_ID              = 'offer_id';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -177,7 +194,6 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::ID,
-        self::MERCHANT_ID,
         self::AMOUNT,
         self::METHOD,
         self::EMI_PLAN_ID,
@@ -201,6 +217,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE2,
         self::DISPUTED,
         self::AUTH_TYPE,
+        self::RECURRING_TYPE,
     ];
 
     protected $visible = [
@@ -251,6 +268,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE2,
         self::ACQUIRER_DATA,
         self::TRANSFER_ID,
+        self::PAYMENT_LINK_ID,
         self::RECEIVER_ID,
         self::RECEIVER_TYPE,
         self::TRANSACTION_ID,
@@ -262,6 +280,7 @@ class Entity extends Base\PublicEntity
         self::VERIFIED,
         self::GATEWAY_CAPTURED,
         self::VERIFY_BUCKET,
+        self::VERIFY_AT,
         self::CALLBACK_URL,
         self::RECURRING,
         self::SAVE,
@@ -360,13 +379,15 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         'recurring',
         self::METADATA,
+        self::VERIFY_AT,
     ];
 
     protected $dates = [
         self::UPDATED_AT,
         self::CREATED_AT,
         self::AUTHORIZED_AT,
-        self::CAPTURED_AT
+        self::CAPTURED_AT,
+        self::VERIFY_AT,
     ];
 
     protected $hiddenInReport = [self::ACQUIRER_DATA];
@@ -400,6 +421,7 @@ class Entity extends Base\PublicEntity
         self::VERIFY_BUCKET        => null,
         self::TERMINAL_ID          => null,
         self::TRANSFER_ID          => null,
+        self::PAYMENT_LINK_ID      => null,
         self::DISPUTED             => false,
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
@@ -439,6 +461,7 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED      => 'bool',
         self::CONVERT_CURRENCY     => 'bool',
         self::DISPUTED             => 'bool',
+        self::VERIFY_BUCKET        => 'int',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -447,6 +470,8 @@ class Entity extends Base\PublicEntity
     const DUMMY_EMAIL = 'void@razorpay.com';
 
     const DUMMY_PHONE = '+919999999999';
+
+    const DUMMY_VPA = 'dummy@razorpay';
 
     // --------------------- Modifiers ---------------------------------------------
 
@@ -674,6 +699,14 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function generateVerifyAt($input)
+    {
+        // We want to set verify at as created at + 120
+        // so that for payments with status = created
+        // we can pick them after 2 min for verify.
+        $this->setVerifyAt(time() + 120);
+    }
+
     // --------------------- Generators Ends ---------------------------------------
 
     // ----------------------- Setters ---------------------------------------------
@@ -730,17 +763,6 @@ class Entity extends Base\PublicEntity
     public function setAmountPaidout(int $amount)
     {
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
-    }
-
-    //
-    // As setGateway is protected method
-    // we didn't want to make it public just
-    // to set gateway for bharat qr payment
-    // so a new method
-    //
-    public function setGatewayForBharatQr(string $gateway)
-    {
-        $this->setGateway($gateway);
     }
 
     /**
@@ -853,9 +875,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AUTO_CAPTURED, $autoCaptured);
     }
 
+    public function setNonVerifiable()
+    {
+        $this->setVerifyBucket(null);
+
+        $this->setVerifyAt(null);
+    }
+
     public function setVerifyBucket($verifyBucket = 0)
     {
         $this->setAttribute(self::VERIFY_BUCKET, $verifyBucket);
+    }
+
+    public function setVerifyAt($verifyAt)
+    {
+        $this->setAttribute(self::VERIFY_AT, $verifyAt);
     }
 
     public function setVerified($verified)
@@ -939,7 +973,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
-    public function setAuthType(string $authType)
+    public function setAuthType($authType)
     {
         $this->setAttribute(self::AUTH_TYPE, $authType);
     }
@@ -994,6 +1028,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
     }
 
+    public function setReceiverId(string $receiverId)
+    {
+        $this->setAttribute(self::RECEIVER_ID, $receiverId);
+    }
+
+    public function setReceiverType(string $receiverType)
+    {
+        $this->setAttribute(self::RECEIVER_TYPE, $receiverType);
+    }
+
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------
@@ -1039,6 +1083,20 @@ class Entity extends Base\PublicEntity
         $reason = mb_strtolower($reason);
 
         $this->attributes[self::CANCELLATION_REASON] = mb_substr($reason, 0, 255);
+    }
+
+    protected function setReference1Attribute($reference1)
+    {
+        $trimmedReference1 = (blank($reference1) === true) ? null : trim($reference1);
+
+        $this->attributes[self::REFERENCE1] =  $trimmedReference1;
+    }
+
+    protected function setReference2Attribute($reference2)
+    {
+        $trimmedReference2 = (blank($reference2) === true) ? null : trim($reference2);
+
+        $this->attributes[self::REFERENCE2] =  $trimmedReference2;
     }
 
 // ----------------------- Mutator Ends ----------------------------------------
@@ -1251,6 +1309,16 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::TRANSFER_ID));
     }
 
+    public function hasPaymentLink(): bool
+    {
+        return ($this->isAttributeNotNull(self::PAYMENT_LINK_ID));
+    }
+
+    public function getPaymentLinkId()
+    {
+        return $this->getAttribute(self::PAYMENT_LINK_ID);
+    }
+
     public function hasMetadata($key = null)
     {
         if ($key === null)
@@ -1342,6 +1410,12 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
     }
 
+    public function isPinAuth()
+    {
+        return (($this->getAttribute(self::METHOD) === Payment\Method::CARD) and
+            ($this->getAttribute(self::AUTH_TYPE) === AuthType::PIN));
+    }
+
     public function isUpi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
@@ -1355,6 +1429,11 @@ class Entity extends Base\PublicEntity
     public function isBankTransfer()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
+    }
+
+    public function isBharatQr()
+    {
+        return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
     }
 
     public function isGateway($gateway)
@@ -1429,7 +1508,7 @@ class Entity extends Base\PublicEntity
         {
             $order = $this->order;
 
-            if ($order->hasOffer() === true)
+            if ($order->hasOffers() === true)
             {
                 return true;
             }
@@ -1720,6 +1799,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VERIFY_BUCKET);
     }
 
+    public function getVerifyAt()
+    {
+        return $this->getAttribute(self::VERIFY_AT);
+    }
+
     public function getTerminalId()
     {
         return $this->getAttribute(self::TERMINAL_ID);
@@ -1735,71 +1819,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE2);
     }
 
-    /**
-     * @param bool                  $accessCheck For terminal selection, we need to ensure that it's either private
-     *                                           auth or privilege auth. If it's public auth, terminal selection
-     *                                           logic needs to treat it as first recurring only because in public
-     *                                           auth, it always needs to go via 2fa terminal.
-     *
-     * @param Base\PublicCollection $gatewayTokens
-     *
-     * @return bool
-     * @throws Exception\LogicException
-     */
-    public function isSecondRecurring($accessCheck = false, Base\PublicCollection $gatewayTokens = null)
+    public function isSecondRecurring()
     {
-        if ($this->isRecurring() === false)
+        if (($this->isRecurring() === true) and
+            ($this->isRecurringTypeAuto() === true))
         {
-            return false;
+            return true;
         }
 
-        $app = \App::getFacadeRoot();
-
-        if ($accessCheck === true)
-        {
-            $basicAuth = $app['basicauth'];
-
-            if (($basicAuth->isPrivateAuth() === false) and
-                ($basicAuth->isPrivilegeAuth() === false))
-            {
-                return false;
-            }
-        }
-
-        $token = $this->getGlobalOrLocalTokenEntity();
-
-        // Recurring payments should always have a token!
-        if ($token === null)
-        {
-            throw new Exception\LogicException(
-                'Token absent for recurring payment',
-                ErrorCode::SERVER_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT,
-                [
-                    'payment_id'    => $this->getId(),
-                    'access_check'  => $accessCheck,
-                ]);
-        }
-
-        //
-        // We use null check and not count here because gatewayTokens collection passed
-        // might have 0 items. In this case, we don't need to run the query again. The
-        // query would have already been run and the result could have been 0 items.
-        //
-        if ($gatewayTokens === null)
-        {
-            $reference = $this->getReferenceForGatewayToken();
-
-            $gatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
-        }
-
-        //
-        // We can have multiple gateway_tokens for a single token.
-        // Each gateway_token would correspond to a different gateway.
-        // This still means that this is second recurring since a
-        // gateway_token has already been created for the given token.
-        // The token can now be used without 2FA.
-        //
-        return ($gatewayTokens->count() > 0);
+        return false;
     }
 
     public function isEmiMerchantSubvented()
@@ -2148,8 +2176,13 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        // Adding test merchants PolicyBazaar, DSP Blackrock, Yatra merchant ID's
-        $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f', '7thBRSDflu7NHL', '87qTXzFTBLFN7i'];
+        // Adding test merchants PolicyBazaar, DSP Blackrock, Yatra, Zomato merchant ID's
+        $merchantIds = [
+            '10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f',
+            '7thBRSDflu7NHL', '87qTXzFTBLFN7i', '9sOd4xwUKox63N',
+            '9fI2f7tNoAmVhu', '6H7N6hlcv29OMG', '8tiqrk8Qpc47l9',
+            '6ZLE5BE57SExGF'
+        ];
 
         $currentMerchantId = $this->getMerchantId();
 
@@ -2372,6 +2405,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\Transfer\Entity', 'source');
     }
 
+    public function paymentLink()
+    {
+        return $this->belongsTo(PaymentLink\Entity::class);
+    }
+
     public function receiver()
     {
         return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID);
@@ -2380,6 +2418,11 @@ class Entity extends Base\PublicEntity
     public function netbanking()
     {
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
+    }
+
+    public function enach()
+    {
+        return $this->hasOne('RZP\Gateway\Enach\Base\Entity');
     }
 
     // using hasOne here as we need only the first billdesk entity, actual relation can be one-to-many
@@ -2401,6 +2444,30 @@ class Entity extends Base\PublicEntity
     public function discount()
     {
         return $this->hasOne('RZP\Models\Discount\Entity');
+    }
+
+    public function offers()
+    {
+        return $this->morphToMany(
+                        Offer\Entity::class,
+                        'entity',
+                        Table::ENTITY_OFFER)
+                    ->withTimestamps();
+    }
+
+    public function associateOffer(Offer\Entity $offer)
+    {
+        // Creates row in entity_offers table
+        $this->offers()->attach($offer);
+    }
+
+    /**
+     * Works cos we only associate one offer with payment
+     * @return Offer\Entity
+     */
+    public function getOffer()
+    {
+        return $this->offers->first();
     }
 
 // --------------- Relation to other entity section ends -----------------------
@@ -2624,7 +2691,7 @@ class Entity extends Base\PublicEntity
         // Since the first auth transaction would have already been
         // done, we don't need to do any MaxMind risk checks for this.
         //
-        if ($this->isSecondRecurring(true) === true)
+        if ($this->isSecondRecurring() === true)
         {
             return false;
         }
@@ -2655,6 +2722,31 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
     }
 
+    public function getDummyPaymentArray(string $method, string $network = null): array
+    {
+        $paymentArray =  [
+            self::CURRENCY    => Currency\Currency::INR,
+            self::METHOD      => $method,
+            self::AMOUNT      => 100,
+            self::DESCRIPTION => 'Dummy Payment',
+            self::CONTACT     => self::DUMMY_PHONE,
+            self::EMAIL       => self::DUMMY_EMAIL,
+        ];
+
+        switch ($method)
+        {
+            case Method::CARD:
+                $paymentArray[self::CARD] = (new Card\Entity)->getDummyCardArray($network);
+                break;
+
+            case Method::UPI:
+                $paymentArray[self::VPA] = self::DUMMY_VPA;
+
+        }
+
+        return $paymentArray;
+    }
+
     // Query scopes
 
     /**
@@ -2667,5 +2759,20 @@ class Entity extends Base\PublicEntity
     {
         $query->where(Entity::RECEIVER_ID, '=', $entity->getId())
               ->where(Entity::RECEIVER_TYPE, '=', $entity->getEntity());
+    }
+
+    public function isCorporateNetbanking()
+    {
+        return (
+            ($this->isNetbanking() === true) and
+            (Netbanking::isCorporateBank($this->getBank()) === true)
+        );
+    }
+
+    public static function getCacheUpiStatusKey(string $id): string
+    {
+        parent::verifyIdAndStripSign($id);
+
+        return 'upi.polling.' . $id . '.status';
     }
 }

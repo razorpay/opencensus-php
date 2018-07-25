@@ -57,6 +57,12 @@ class ApiServiceProvider extends BaseServiceProvider
 
             $entityClass::observe($entityObserverClass);
         }
+
+        // attaching payment observer since its invalidates
+        // the upi status on update
+        $entityClass = E::getEntityClass(E::PAYMENT);
+        $entityObserverClass = E::getEntityObserverClass(E::PAYMENT);
+        $entityClass::observe($entityObserverClass);
     }
 
     /**
@@ -110,6 +116,15 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new TokenEx($app);
+        });
+
+        $this->app->singleton('card.otpelf', function($app)
+        {
+            $mock = $app['config']->get('applications.otpelf.mock');
+
+            $implementation = $mock ? Mock\OtpElf::class : OtpElf::class;
+
+            return new $implementation($app);
         });
 
         $this->app->singleton('authservice', function($app)
@@ -169,6 +184,11 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('razorx', function($app)
         {
             return new RazorXClient($app);
+        });
+
+        $this->app->singleton('beam', function($app)
+        {
+            return new BeamClient($app);
         });
 
         $this->registerShield();
@@ -235,6 +255,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'sns',
             'pincodesearch',
             'razorx',
+            'beam',
         ];
     }
 
@@ -472,7 +493,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
             $implementation = $mock ? Mock\ShieldClient::class : ShieldClient::class;
 
-            return new $implementation($app);
+            return new $implementation;
         });
     }
 

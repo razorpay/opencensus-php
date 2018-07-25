@@ -4,8 +4,10 @@ namespace RZP\Tests\Functional\Gateway\Hitachi;
 
 use RZP\Models\Card;
 use RZP\Gateway\Hitachi;
+use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\Blade\Mock\CardNumber;
+use RZP\Gateway\Mpi\Enstage\Field;
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class HitachiGatewayTest extends TestCase
@@ -17,6 +19,8 @@ class HitachiGatewayTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/HitachiGatewayTestData.php';
 
         parent::setUp();
+
+        $this->otpFlow = false;
 
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
             'type' =>
@@ -523,6 +527,204 @@ class HitachiGatewayTest extends TestCase
             });
     }
 
+    public function testPaymentFlowWhenGatewayNullinMpi()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/',
+            'content' => $payment
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getFormDataFromResponse($response->getContent(), 'http://localhost');
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertEquals('created', $payment['status']);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->fixtures->edit('mpi', $mpi['id'], ['gateway' => null]);
+
+        $url = 'https://api.razorpay.com/v1/gateway/acs/mpi_blade';
+
+        $this->ba->publicAuth();
+
+        $request = $this->makeFirstGatewayPaymentMockRequest($url, 'POST', $content[2]);
+
+        $this->submitPaymentCallbackRequest($request);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testExpressPayEnrolledForAxisVisa()
+    {
+         $this->payment['card']['number'] = '4042416376957429';
+
+         $this->expressPayEnrolled('404241','Visa' );
+    }
+
+    public function testExpressPayEnrolledForAxisMaster()
+    {
+        $this->payment['card']['number'] = '5105175541117175';
+
+        $this->expressPayEnrolled('510517', 'Master');
+    }
+
+    public function testPinAuthPreferredAuthPin()
+    {
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'UTIB',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'  => '1',
+                'otp'  => '1',
+            ]
+        ]);
+
+        $this->payment['card']['number'] = '5567630000002004';
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '5567630000002004';
+
+        $payment['preferred_auth'] = ['pin'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['auth_type']);
+
+        $gatewayEntity = $this->getLastEntity('mpi', true);
+
+        $this->assertEquals('mpi_blade', $gatewayEntity['gateway']);
+    }
+
+    public function testExpressPayNotEnrolled()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action)
+            {
+                if ($action === 'otp_generate')
+                {
+                    $content[Field::RESPONSE_CODE] = '016';
+
+                    $content[Field::RES_DESC] = 'CARD NOT PARTICITIPATING IN 3ds';
+
+                    unset($content[Field::MESSAGE_HASH]);
+                }
+            }, Gateway::MPI_ENSTAGE
+
+        );
+
+        $this->createIin('402400', 'Visa');
+
+        //Selecting Axis Card
+        $this->payment['card']['number'] = '4024001104457538';
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        self::assertFalse($this->otpFlow);
+        self::assertTestResponse($payment);
+    }
+
+    public function testAuthencationGatewayForAxisMaestro()
+    {
+        $this->fixtures->merchant->addFeatures(['otpelf', 'axis_express_pay']);
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'UTIB',
+            'network' => 'Maestro',
+            'flows'   => [
+                '3ds'    => '1',
+                'headless_otp' => '1',
+            ],
+        ]);
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $this->doAuthPayment($this->payment);
+
+        $gatewayEnity = $this->getLastEntity('mpi', true);
+
+        $this->assertEquals('mpi_blade', $gatewayEnity['gateway']);
+    }
+
+    public function testAuthenticationGatewayExpressPayDisabled()
+    {
+        $this->fixtures->merchant->addFeatures('otpelf');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'UTIB',
+            'network' => 'MasterCard',
+            'flows'   => [
+                'otp' => '1',
+                '3ds' => '1',
+            ],
+        ]);
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $this->doAuthPayment($this->payment);
+
+        $gatewayEnity = $this->getLastEntity('mpi', true);
+
+        $this->assertEquals('mpi_blade', $gatewayEnity['gateway']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        self::assertFalse($this->otpFlow);
+        self::assertEquals('authorized', $payment['status']);
+        self::assertNull($payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+    }
+
+    //Enstage only supports AxisExpressPay
+    public function testAuthenticationGatewayForHdfc()
+    {
+        $this->fixtures->merchant->addFeatures(['otpelf', 'axis_express_pay']);
+
+        //Supports OTP flow for a different gateway
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'HDFC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                'otp' => '1',
+                '3ds' => '1',
+            ],
+        ]);
+
+        $this->doAuthPayment($this->payment);
+
+        $gatewayEnity = $this->getLastEntity('mpi', true);
+
+        $this->assertEquals('mpi_blade', $gatewayEnity['gateway']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['auth_type']);
+    }
+
     public function testVerifyPaymentwithblankPrn()
     {
         $this->mockBlankPrn();
@@ -577,5 +779,40 @@ class HitachiGatewayTest extends TestCase
         $hitachiPayment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(0, $hitachiPayment['verified']);
+    }
+
+    public function expressPayEnrolled($iin, $network)
+    {
+        $this->fixtures->merchant->addFeatures(['otpelf', 'axis_express_pay']);
+
+        $this->payment['auth_type'] = 'otp';
+
+        $this->createIin($iin, $network);
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('otp', $payment['auth_type']);
+
+        $gatewayEnity = $this->getLastEntity('mpi', true);
+
+        $this->assertEquals('mpi_enstage', $gatewayEnity['gateway']);
+
+        $this->assertTrue($this->otpFlow);
+    }
+
+    public function createIin($iin, $network)
+    {
+        $this->fixtures->iin->create([
+            'iin'     => $iin,
+            'country' => 'IN',
+            'issuer'  => 'UTIB',
+            'network' => $network,
+            'flows'   => [
+                'otp' => '1',
+                '3ds' => '1',
+            ],
+        ]);
     }
 }

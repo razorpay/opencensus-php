@@ -90,19 +90,31 @@ class Repository extends Base\Repository
         return $addresses->get();
     }
 
+    /**
+     * @param string      $id
+     * @param Base\Entity $entity
+     * @param string|null $type
+     *
+     * @return Entity
+     */
     public function findByPublicIdEntityAndTypeOrFail(
         string $id,
         Base\Entity $entity,
-        string $type): Entity
+        string $type = null): Entity
     {
         Entity::verifyIdAndStripSign($id);
 
-        return $this->newQuery()
-                    ->where(Entity::ID, $id)
-                    ->where(Entity::ENTITY_ID, $entity->getId())
-                    ->where(Entity::ENTITY_TYPE, $entity->getEntity())
-                    ->where(Entity::TYPE, $type)
-                    ->firstOrFailPublic();
+        $query = $this->newQuery()
+                      ->where(Entity::ID, $id)
+                      ->where(Entity::ENTITY_ID, $entity->getId())
+                      ->where(Entity::ENTITY_TYPE, $entity->getEntity());
+
+        if ($type !== null)
+        {
+            $query->where(Entity::TYPE, $type);
+        }
+
+        return $query->firstOrFailPublic();
     }
 
 }

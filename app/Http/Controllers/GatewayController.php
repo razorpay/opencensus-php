@@ -7,6 +7,7 @@ use Redirect;
 use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
@@ -15,6 +16,7 @@ use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Netbanking\Corporation;
 use RZP\Models\Gateway\Priority as GatewayPriority;
+use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 
 class GatewayController extends Controller
 {
@@ -39,8 +41,8 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-        throw new Exception\LogicException(
-            'Payment id not found in either database',
+            throw new Exception\LogicException(
+                'Payment id not found in either database',
                 null,
                 [
                     'gateway'    => $gatewayDriver,
@@ -72,7 +74,11 @@ class GatewayController extends Controller
         if ($mode === null)
         {
             throw new Exception\LogicException(
-                'Payment id not found in either database: ' . $paymentId);
+                'Payment id not found in either database',
+                null,
+                [
+                    'payment_id' => $paymentId
+                ]);
         }
 
         $this->app['basicauth']->setMode($mode);
@@ -131,6 +137,14 @@ class GatewayController extends Controller
                 $input = Request::getContent();
 
                 $data = $this->processServerCallback($input, $gateway);
+
+                break;
+
+            case Gateway::UPI_HULK:
+                $input['headers'] = Request::header();
+                $input['raw'] = Request::getContent();
+
+                $data = $this->processServerCallback($input, Gateway::UPI_HULK);
 
                 break;
 
@@ -234,6 +248,60 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
+    public function callbackAmazonpay()
+    {
+        $input = Request::all();
+
+        if (isset($input[AmazonResponse::SELLER_ORDER_ID]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                [
+                    'gateway' => Gateway::WALLET_AMAZONPAY,
+                    'input'   => $input,
+                ]);
+        }
+
+        $this->app['trace']->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway' => Gateway::WALLET_AMAZONPAY,
+                'input'   => $input,
+            ]);
+
+        $paymentId = $input[AmazonResponse::SELLER_ORDER_ID];
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        if (empty($mode) === true)
+        {
+            throw new Exception\LogicException(
+                'Payment id not found in either database',
+                null,
+                [
+                    'gateway'    => Gateway::WALLET_AMAZONPAY,
+                    'payment_id' => $paymentId,
+                ]);
+        }
+
+        \Database\DefaultConnection::set($mode);
+
+        $this->app['basicauth']->setMode($mode);
+
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
+        $publicPaymentId = $payment->getPublicId();
+
+        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
+        $publicKey = $keys->first()->getPublicKey($mode);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+
+        $query = http_build_query($input);
+
+        return Redirect::to($url . '?'. $query);
+    }
+
     protected function getNetbankingEntityAndModeByTraceId($traceId)
     {
         $app = $this->app;
@@ -256,6 +324,16 @@ class GatewayController extends Controller
         }
 
         return ['nb' => $nb, 'mode' => $mode];
+    }
+
+    /**
+     * Fetches list of all active downtimes as of now
+     */
+    public function getGatewayDowntimes(Downtime\Service $service)
+    {
+        $data = $service->getGatewayDowntimeDataForDashboard();
+
+        return ApiResponse::json($data);
     }
 
     /**

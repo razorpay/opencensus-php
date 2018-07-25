@@ -28,7 +28,7 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
         $gatewayPayment->fill($attributes);
 
-        $gatewayPayment->saveOrFail();
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }

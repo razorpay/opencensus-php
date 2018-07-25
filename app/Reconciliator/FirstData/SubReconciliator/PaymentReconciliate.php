@@ -57,13 +57,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
         catch (DbQueryException $ex)
         {
-            $this->trace->error(
-                    TraceCode::RECON_ALERT,
+            $this->trace->info(
+                    TraceCode::RECON_MISMATCH,
                     [
                         'info_code' => 'PAYMENT_ABSENT',
                         'message'   => 'Payment Id not found. Skipping',
                         'row'       => $row,
-                        'gateway'   => get_called_class()
+                        'gateway'   => $this->gateway
                     ]);
 
             $this->setFailUnprocessedRow(true);
@@ -135,11 +135,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
                     'message'         => 'Payment amount mismatch',
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
-                    'gateway'         => get_called_class()
+                    'gateway'         => $this->gateway
                 ]);
 
             return false;
@@ -180,7 +181,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'           => 'Unable to get the card locale. This is unexpected.',
                     'info_code'         => 'CARD_LOCALE_ABSENT',
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]
             );
 
@@ -221,7 +222,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'           => 'Unable to get the card trivia. This is unexpected.',
                     'info_code'         => 'CARD_TRIVIA_ABSENT',
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             // there is an anomaly if no card type is present in row
@@ -251,7 +252,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'message'           => 'Unable to get the card issuer.',
                     'info_code'         => 'CARD_ISSUER_ABSENT',
                     'row'               => $row,
-                    'gateway'           => get_class()
+                    'gateway'           => $this->gateway
                 ]);
 
             // there is an anomaly if no card category is present in row

@@ -60,7 +60,7 @@ class HdfcFss extends Base
                 self::TARNSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
                 self::REFUND_ID          => $row['refund']['id'],
                 self::PAYMENT_ID         => $row['payment']['id'],
-                self::APPROVAL_CODE      => $row['payment']['approval_code'],
+                self::APPROVAL_CODE      => $row['payment']['reference2'],
                 self::REFUND_AMOUNT     => $this->getFormattedAmount($row['refund']['amount']),
             ];
         }

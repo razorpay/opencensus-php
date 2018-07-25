@@ -321,16 +321,6 @@ trait Capture
 
         $autoCaptured = $payment->getAutoCaptured();
 
-        if (($payment->isEmiMerchantSubvented() === true) and
-            ($autoCaptured === false))
-        {
-            $emiPlan = $payment->emiPlan;
-
-            $merchantPayback = $emiPlan->getMerchantPayback();
-
-            $captureAmount = Emi\Calculator::calculateSubventedAmount($captureAmount, $merchantPayback);
-        }
-
         if ($captureAmount !== $payment->getAmount())
         {
             throw new Exception\BadRequestException(
@@ -384,7 +374,14 @@ trait Capture
             return;
         }
 
-        $captureAmount = $order->offer->getDiscountedAmount($order->getAmount());
+        $discount = $payment->discount;
+
+        if ($payment->discount === null)
+        {
+            return;
+        }
+
+        $captureAmount = $discount->offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
     }
 
     /**
@@ -520,11 +517,6 @@ trait Capture
         $this->triggerPaymentCapturedEvents();
 
         $this->notifyPaymentCaptured();
-
-        //
-        // Analytics
-        //
-        $this->notifyDashboard('payment', $this->payment);
     }
 
     /**
@@ -622,7 +614,8 @@ trait Capture
     {
         $payment = $this->payment;
 
-        if ($payment->isBankTransfer() === false)
+        if (($payment->isBankTransfer() === false) and
+            ($payment->isBharatQr() === false))
         {
             return;
         }
@@ -791,6 +784,10 @@ trait Capture
         }
 
         $invoice->updateStatusPostCapture();
+
+        $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
+        $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
+        $this->trace->count(Invoice\Metric::INVOICE_PAID_TOTAL, 1, $dimensions);
 
         $this->repo->saveOrFail($invoice);
     }

@@ -5,16 +5,22 @@ namespace RZP\Models\FundTransfer\Base\Initiator;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Batch\Entity;
-use RZP\Constants\Entity as EntityConstants;
 
 abstract class NodalAccount extends Base\Core
 {
+    const SUCCESS               = 'success';
+
+    const FAILED                = 'failed';
+
     const MIN_RTGS_AMOUNT       = 200000;
+
+    const MAX_IMPS_AMOUNT       = 200000;
 
     const RTGS_CUTOFF_HOUR      = 15;
 
@@ -22,21 +28,46 @@ abstract class NodalAccount extends Base\Core
 
     protected $batchFundTransfer = null;
 
-    protected $amount            = 0;
+    protected $amount = 0;
 
-    protected $fees              = 0;
+    protected $fees = 0;
 
-    protected $tax               = 0;
+    protected $tax = 0;
 
-    protected $count             = 0;
+    protected $count = 0;
 
-    protected $txnsCount         = 0;
+    protected $txnsCount = 0;
 
-    protected $channel           = null;
+    protected $channel = null;
 
-    protected $type              = null;
+    protected $type = null;
 
-    protected function getTransferMode($amount): string
+    protected $summary = [];
+
+    protected $purpose = null;
+
+    protected $transferStatus = [];
+
+    public function __construct(string $purpose = null)
+    {
+        $this->purpose = $purpose;
+
+        $this->initSummary();
+
+        parent::__construct();
+    }
+
+    protected function isRefund(): bool
+    {
+        return ($this->purpose === Attempt\Purpose::REFUND);
+    }
+
+    protected function isSettlement(): bool
+    {
+        return ($this->purpose === Attempt\Purpose::SETTLEMENT);
+    }
+
+    protected function getTransferMode($amount, Merchant\Entity $merchant): string
     {
         $rtgsCutoffTime = Carbon::createFromTime(
                                 self::RTGS_CUTOFF_HOUR,
@@ -52,6 +83,16 @@ abstract class NodalAccount extends Base\Core
             ($amount >= self::MIN_RTGS_AMOUNT))
         {
             $mode = Mode::RTGS;
+        }
+
+        //
+        // Need this only for Piggy merchants currently. Hence
+        // the check against parentId and not the merchantId.
+        // Temporary solution. Proper solution coming soon.
+        //
+        if (in_array($merchant->getParentId(), Merchant\Preferences::ONLY_NEFT_SETTLEMENT_MIDS, true) === true)
+        {
+            $mode = Mode::NEFT;
         }
 
         return $mode;
@@ -155,5 +196,64 @@ abstract class NodalAccount extends Base\Core
             default:
                 return 1;
         }
+    }
+
+    /**
+     * Initialize the Settlement summary variables
+     */
+    protected function initSummary()
+    {
+        $this->summary = [
+            'total' => [
+                'amount'    => 0,
+                'count'     => 0
+            ],
+            Mode::NEFT  => [
+                'amount'    => 0,
+                'count'     => 0
+            ],
+            Mode::RTGS  => [
+                'amount'    => 0,
+                'count'     => 0
+            ],
+            Mode::IFT   => [
+                'amount'    => 0,
+                'count'     => 0
+            ],
+            Mode::IMPS   => [
+                'amount'    => 0,
+                'count'     => 0
+            ],
+        ];
+    }
+
+    /**
+     * This is used to initialize the response status for the API based nodal accounts
+     */
+    protected function initStats()
+    {
+        $this->transferStatus = [
+            self::SUCCESS      => 0,
+            self::FAILED       => 0,
+        ];
+    }
+
+    /**
+     * This is used to update the response status for the API based nodal accounts
+     */
+    protected function updateTransferStatus(int $initiated)
+    {
+        $this->transferStatus[self::SUCCESS] = $initiated;
+
+        $this->transferStatus[self::FAILED] = $this->count - $initiated;
+    }
+
+    protected function updateSummary($type, $amount)
+    {
+        $this->summary['total']['count']++;
+        $this->summary['total']['amount'] += $amount;
+
+        $this->summary[$type]['amount'] += $amount;
+        $this->summary[$type]['count']++;
     }
 }
