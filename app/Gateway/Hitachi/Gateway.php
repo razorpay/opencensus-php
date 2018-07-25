@@ -32,7 +32,6 @@ class Gateway extends Base\Gateway
     const CACHE_KEY = 'hitachi_%s_card_details';
     const CACHE_TTL = 20;
 
-
     const TIME_FORMAT = 'His';
     const DATE_FORMAT = 'md';
 
@@ -92,7 +91,6 @@ class Gateway extends Base\Gateway
         $mpiEntity = $this->app['repo']
                           ->mpi
                           ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
-
 
         $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
 
@@ -257,8 +255,6 @@ class Gateway extends Base\Gateway
      */
     protected function callAuthenticationGateway(array $input, $authenticationGateway)
     {
-        $this->authenticationGateway = $this->decideAuthenticationGateway($input);
-
         return $this->app['gateway']->call(
             $authenticationGateway,
             $this->action,
