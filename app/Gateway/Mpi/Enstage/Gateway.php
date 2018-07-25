@@ -40,11 +40,11 @@ class Gateway extends Base\Gateway
         Field::MESSAGE_HASH    => 'messageHash',
     ];
 
-    public function __construct()
+    public function setGatewayParams($input, $mode, $terminal)
     {
-        parent::__construct();
+        parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->secureCacheDriver = $this->app['config']->get('cache.secure_default');
+        $this->secureCacheDriver = $this->getDriver($input);
     }
 
     /**
