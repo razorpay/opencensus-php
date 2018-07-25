@@ -33,7 +33,6 @@ class Constants
      */
     const SUPPORTED_TARGETS = [
         Type::REFUND => [
-            self::CANARA,
             self::HDFC,
             self::ICICI,
             self::CSB,
@@ -55,7 +54,8 @@ class Constants
             self::RBL,
             self::INDUSIND,
             self::OBC,
-            self::CSB
+            self::CSB,
+            self::CANARA,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -92,8 +92,7 @@ class Constants
     const RECIPIENTS_MAP = [
         Type::REFUND => [
             self::HDFC   => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
-            self::ICICI  => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
-            self::CANARA => ['hosettlement@canarabank.com', 'hodbspg@canarabank.com ']
+            self::ICICI  => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com']
         ],
 
         Type::COMBINED => [
@@ -105,6 +104,7 @@ class Constants
             self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
             self::OBC      => ['obc.netbanking.refunds@razorpay.com'],
             self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
+            self::CANARA => ['hosettlement@canarabank.com', 'hodbspg@canarabank.com ']
         ],
 
         Type::EMANDATE_REGISTER => [

@@ -22,6 +22,7 @@ class Type
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
     const CANARA_NETBANKING_REFUND          = 'canara_netbanking_refund';
+    const CANARA_NETBANKING_CLAIMS          = 'canara_netbanking_claims';
 
     const BOB_NETBANKING_REFUND             = 'bob_netbanking_refund';
     const BOB_NETBANKING_CLAIMS             = 'bob_netbanking_claims';
