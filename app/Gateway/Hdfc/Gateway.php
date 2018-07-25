@@ -838,7 +838,7 @@ class Gateway extends Base\Gateway
 
     // -------------------------Exceptions -----------------------------------------
 
-    protected function throwException($error, $safeRetry = false, $action = null)
+    protected function throwException($error, $safeRetry = false, $verifyAction = null)
     {
         // Mark error as false now to remove the stale state for future function calls.
         // @todo: refactor and remove this completely.
@@ -889,8 +889,6 @@ class Gateway extends Base\Gateway
                 else
                 {
                     $exception = new Exception\GatewayErrorException($apiErrorCode);
-
-                    $exception->setAction($action);
                 }
                 break;
 
@@ -898,10 +896,10 @@ class Gateway extends Base\Gateway
 
                 $exception = new Exception\GatewayErrorException($apiErrorCode);
 
-                $exception->setAction($action);
-
                 break;
         }
+
+        $exception->setAction($verifyAction);
 
         $exception->setGatewayErrorCodeAndDesc($gatewayErrorCode, $gatewayErrorDesc);
 
