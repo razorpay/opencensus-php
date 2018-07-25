@@ -37,6 +37,8 @@ class PublicController extends Controller
             'c'      => $this->getCacheStatus(),
             // sec redis
             'sc'     => $this->getCacheStatus('secure'),
+            // secure Elasticache
+            'sec'    => $this->getCacheStatus('secure_elasticache'),
             // Elastic search
             's'      => $this->getEsStatus(),
         ];
@@ -127,7 +129,8 @@ class PublicController extends Controller
         return View::make('public.callback_params', $data);
     }
 
-    public function renderEmbedded() {
+    public function renderEmbedded()
+    {
         return View::make('public.embedded', [
             'key'          => $this->ba->getPublicKey(),
             'options'      => json_encode(Request::all()),
