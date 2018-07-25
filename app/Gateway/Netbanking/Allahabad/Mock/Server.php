@@ -47,7 +47,6 @@ class Server extends Base\Mock\Server
 
         $callbackUrl = $input[RequestFields::RETURN_URL];
 
-
         $callbackUrl .= '?parameter_string='.$checksum_string.'&response_signaturte='.$response[ResponseFields::CHECKSUM];
 
         $request = [

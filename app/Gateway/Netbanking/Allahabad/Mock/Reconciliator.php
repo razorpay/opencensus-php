@@ -4,7 +4,6 @@ namespace RZP\Gateway\Netbanking\Allahabad\Mock;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
@@ -13,7 +12,6 @@ class Reconciliator extends Base\RefundFile
 {
     const PAYMENT_ENTITY = 'payment';
     const GATEWAY_ENTITY = 'gateway';
-
     const BANK_REF_NUMBER = '99999';
 
     protected static $fileToWriteName = 'Allahabad_Netbanking_Reconciliation';
@@ -87,7 +85,7 @@ class Reconciliator extends Base\RefundFile
             $amount = $this->getFormattedAmount($row['payment']['amount']);
 
             $data[] = [
-                'Bank Id' => '027',
+                'Bank Id' => '021',
                 'Txn Date' => $trnxDate,
                 'Merchant Name' => 'Razor',
                 'Trnx Amount' => $amount,
@@ -101,3 +99,4 @@ class Reconciliator extends Base\RefundFile
         return [$totalAmount,$data];
     }
 }
+
