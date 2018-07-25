@@ -30,8 +30,8 @@ export default class ReferralsListContainer extends ListContainer {
       component: (
         <CreateLogin
           referral={referral}
-          onSave={params => {
-            return this.props.createLogin(params);
+          onSave={merchantId => {
+            return this.props.createLogin(merchantId);
           }}
         />
       ),
