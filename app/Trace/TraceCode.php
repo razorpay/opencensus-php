@@ -1123,12 +1123,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SERVER_ERROR_LOG_RISK                         = 'SERVER_ERROR_LOG_RISK';
 
+    const BEAM_REQUEST                                  = 'BEAM_REQUEST';
+    const BEAM_RESPONSE                                 = 'BEAM_RESPONSE';
+    const BEAM_PUSH                                     = 'BEAM_PUSH';
+
     // Partners trace codes
     const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';
     const PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT     = 'PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT';
     const PARTNER_CREATE_ACCESS_MAP_REQUEST             = 'PARTNER_CREATE_ACCESS_MAP_REQUEST';
     const PARTNER_DELETE_ACCESS_MAP_REQUEST             = 'PARTNER_DELETE_ACCESS_MAP_REQUEST';
-
+  
     const FEE_CREDITS_THRESHOLD_ALERT                   = 'FEE_CREDITS_THRESHOLD_ALERT';
 
     // Excel reader debug trace codes
