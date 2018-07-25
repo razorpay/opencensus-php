@@ -50,7 +50,7 @@ export default class Invite extends Component {
         />
 
         <div class="modal-body">
-          <form onSubmit={handleSubmit(this.save)}>
+          <form>
             <div class="form-group">
               <label>E-mail ID</label>
               <Field
@@ -76,8 +76,8 @@ export default class Invite extends Component {
               <AsyncButton
                 text="Assign New E-mail ID"
                 pendingText="Assigning..."
-                type="submit"
                 class="btn btn-primary btn-block"
+                onClick={handleSubmit(this.save)}
               />
             </div>
           </form>

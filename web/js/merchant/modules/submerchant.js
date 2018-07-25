@@ -53,6 +53,13 @@ export default function(state = initialState, action) {
         item: {},
         error: action.payload.errors,
       });
+    case `${SUB_MERCHANT_INVITE}::SUCCESS`:
+      return merge(state, {
+        item: {
+          ...state.item,
+          user: action.payload,
+        },
+      });
 
     default:
       return state;
