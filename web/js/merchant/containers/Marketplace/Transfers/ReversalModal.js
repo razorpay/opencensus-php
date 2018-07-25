@@ -1,12 +1,13 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
-import * as NotificationsActions from 'rzp/modules/notifications';
-import AsyncButton from 'react-async-button';
+import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
+import NotesFieldArray from 'merchant/components/NotesFieldArray';
+import * as NotificationsActions from 'rzp/modules/notifications';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import Amount from 'rzp/ui/Amount';
+
 import {
   isBlank,
   rupeesToPaise,
@@ -75,6 +76,7 @@ const selector = formValueSelector('reversalModal');
   state => {
     let partial = selector(state, 'partial');
     let amountEntered = selector(state, 'amount');
+    let notesEntered = selector(state, 'notes');
 
     return {
       ...state.session,
@@ -82,6 +84,7 @@ const selector = formValueSelector('reversalModal');
       user: state.session.user,
       partial,
       amountEntered,
+      notesEntered,
     };
   },
   {
@@ -94,6 +97,9 @@ const selector = formValueSelector('reversalModal');
 )
 @reduxForm({
   form: 'reversalModal',
+  initialValues: {
+    notes: [{}],
+  },
 })
 export default class ReversalModal extends Component {
   static contextTypes = {
@@ -113,6 +119,7 @@ export default class ReversalModal extends Component {
     this.props.initialize({
       partial: false,
       amount: (transfer.amount - transfer.amount_reversed) / 100 + '',
+      notes: [{}],
     });
   }
 
@@ -134,10 +141,27 @@ export default class ReversalModal extends Component {
             };
           }
 
-          if (props.comment) {
+          let transformedNotes = props.notes;
+          const linked_account_notes = [];
+
+          if (transformedNotes && transformedNotes.length > 0) {
+            transformedNotes = transformedNotes.reduce((result, current) => {
+              result[current.key] = current.value;
+              if (this.isLADashboardEnabled && current.also_linked_account) {
+                linked_account_notes.push(current.key);
+              }
+              return result;
+            }, {});
+          }
+
+          if (this.isLADashboardEnabled) {
+            transformedNotes.linked_account_notes = linked_account_notes;
+          }
+
+          if (transformedNotes) {
             data = {
               ...(data || {}),
-              notes: { comment: props.comment },
+              notes: transformedNotes,
             };
           }
 
@@ -169,6 +193,10 @@ export default class ReversalModal extends Component {
       })
       .catch(() => {});
   };
+
+  get isLADashboardEnabled() {
+    return showWhenUtil({ featureEnabled: 'enable_la_dashboard' });
+  }
 
   render() {
     const { handleSubmit, transfer } = this.props;
@@ -215,12 +243,12 @@ export default class ReversalModal extends Component {
               )}
             </div>
             <div className="form-group">
-              <label>Comments (Optional)</label>
-              <Field
-                name="comment"
-                component={InputField}
-                class="form-control"
-                placeholder="Add an optional comment"
+              <label>Internal Notes</label>
+              <FieldArray
+                name="notes"
+                component={NotesFieldArray}
+                showLinkedAccountOpt={this.isLADashboardEnabled}
+                customAddMsg="+ Add New"
               />
             </div>
             <div class="Modal__actions">

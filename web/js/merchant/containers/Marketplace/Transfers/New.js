@@ -119,8 +119,8 @@ export default class TransferNew extends Component {
     let transformedNotes = notes;
     const linked_account_notes = [];
 
-    if (notes && notes.length > 0) {
-      transformedNotes = notes.reduce((result, current) => {
+    if (transformedNotes && transformedNotes.length > 0) {
+      transformedNotes = transformedNotes.reduce((result, current) => {
         result[current.key] = current.value;
         if (this.isLADashboardEnabled && current.also_linked_account) {
           linked_account_notes.push(current.key);
