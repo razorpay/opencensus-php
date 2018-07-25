@@ -5,12 +5,14 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Canara;
 use Mail;
 use Excel;
 use Carbon\Carbon;
+use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Gateway\Netbanking\Canara;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Entity as ConstantsEntity;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Payment\Verify\Status as VerifyStatus;
+use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
@@ -122,6 +124,29 @@ class NetbankingCanaraGatewayTest extends TestCase
         {
             $this->verifyPayment($payment['id']);
         });
+    }
+
+    public function testAuthFailedVerifyFailed()
+    {
+        $this->testAuthorizeFailed();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockFailedVerifyResponse();
+
+        $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
+
+        $this->assertEquals(false, $verify['gateway']['apiSuccess']);
+        $this->assertEquals(false, $verify['gateway']['gatewaySuccess']);
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        $this->assertEquals(Canara\Constants::SAMPLE_FAILURE_VERIFY_STATUS, $netbanking[Netbanking::STATUS]);
+        $this->assertEquals($verify[ConstantsEntity::PAYMENT][Payment\Entity::ID], $payment[Payment\Entity::ID]);
+        $this->assertEquals(VerifyStatus::SUCCESS, $payment[Payment\Entity::VERIFIED]);
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
     }
 
     public function testRefund()
