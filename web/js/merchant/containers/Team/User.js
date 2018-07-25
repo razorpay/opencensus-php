@@ -7,7 +7,6 @@ import { roles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
 import { updateUser, removeUser, fetchTeamDetails } from 'rzp/modules/team';
 
-const ROLES = without(roles, 'owner');
 @connect(
   state => {
     return {
@@ -72,13 +71,13 @@ export default class EditUser extends Component {
   render() {
     const { handleSubmit, user } = this.props;
 
+    const ROLES = user.role === 'owner' ? roles : without(roles, 'owner');
     return (
       <tr>
         <td>{user.email}</td>
         <td>{user.name}</td>
         <td>
           <Field name="role" component="select" class="form-control">
-            {user.role === 'owner' && <option value="owner">Owner</option>}
             {Object.keys(ROLES).map(role => (
               <option key={role} value={role}>
                 {ROLES[role].label}
