@@ -129,7 +129,7 @@ class Report extends Base\Core
         do {
             $records = $this->repo
                             ->fund_transfer_attempt
-                            ->getFailedAttemptsInitiatedAtBetweenTime(
+                            ->getFailedAttemptsCreatedBetweenTime(
                                 $channel,
                                 $this->startTime,
                                 $this->endTime,
