@@ -68,16 +68,6 @@ class CreateIsgGateway extends Migration
 
             $table->string(ISG::UPDATED_AT);
 
-            $table->foreign(ISG::PAYMENT_ID)
-                    ->references(Payment::ID)
-                    ->on(Table::PAYMENT)
-                    ->onDelete('restrict');
-
-            $table->foreign(ISG::REFUND_ID)
-                    ->references(Refund::ID)
-                    ->on(Table::REFUND)
-                    ->onDelete('restrict');
-
             $table->index(ISG::ACTION);
 
         });
@@ -90,6 +80,6 @@ class CreateIsgGateway extends Migration
      */
     public function down()
     {
-        //
+        Schema::drop('isg');
     }
 }

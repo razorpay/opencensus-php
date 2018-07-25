@@ -6,7 +6,7 @@ class Url
 {
     const TEST_DOMAIN       = 'http://mvisamobileuat.hdfcbank.com:3933/';
 
-    const LIVE_DOMAIN       = 'http://mvisamobileuat.hdfcbank.com:3933/';
+    const LIVE_DOMAIN       = '';
 
     const VERIFY            = 'merchant/aggregator/checkTransStatus/';
 }
