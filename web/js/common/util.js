@@ -213,3 +213,22 @@ export function keysToSentence(keys) {
 
   return sentence + ' ' + joiner;
 }
+
+/**
+ * @param {String} string
+ * @param {String} separator
+ * Split a string using the given separator, trim the values to remove whitespaces
+ * and remove falsy(like empty string) values from the array
+ */
+export function splitAndFilter(string, separator = '') {
+  let result = [];
+
+  string.split(separator).forEach(el => {
+    el = el.trim();
+    if (el) {
+      result.push(el);
+    }
+  });
+
+  return result;
+}

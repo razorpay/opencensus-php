@@ -3,13 +3,13 @@ import { states } from 'rzp/utils/constants';
 
 import { WarningSvg } from 'merchant/components/Home/GenericPanel';
 
-import Alert from 'rzp/ui/Forms/Alert';
 import { getDetailsForIFSC } from 'common/util';
 import { isValidGSTIN } from 'rzp/utils/rzp-utils';
 import {
   validateCIN,
   validateIFSC,
   validatePANCard,
+  isUrlLenient,
 } from 'rzp/utils/validators';
 
 // This is as per the value saved in BE database
@@ -27,7 +27,7 @@ const NOT_REGISTERED = 11; // 'Society'
 //const Others = 12 // Removed now
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
-const LLPIN_BusinessTypes = [LLP];
+export const LLPIN_BusinessTypes = [LLP];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
 
 const stateOptions = ['--Select--'].concat(
@@ -197,21 +197,21 @@ const businessModel = [
     {
       label: 'Website/App URL',
       _cmp: Input.Radio,
-      _name: 'app_type',
-      className: 'Input-vTop',
+      _name: 'has_url',
+      className: 'Input--vTop',
       options: [
         'Website/App',
         {
           label: 'We do not have either',
           description: (
-            <div class="warning-svg">
-              {WarningSvg()}
-              <span>
-                You will only be able to use Payment Links, Invoices and Smart
-                Collect via dashboard. To get complete access, simply update
-                your website anytime later.
-              </span>
-            </div>
+            <ul class="Input-desc-list">
+              <li>
+                You can accept payments by sending out Payment Links and
+                Invoices from Dashboard.
+              </li>
+              <li>You will not get access to live APIs.</li>
+              <li>You can upgrade anytime later by adding your website/app.</li>
+            </ul>
           ),
         },
       ],
@@ -221,7 +221,11 @@ const businessModel = [
       name: 'business_website',
       placeholder: 'Enter URL',
       type: 'url',
-      required: false,
+      validator: value => {
+        if (!isUrlLenient(value)) {
+          return 'Please enter a valid url';
+        }
+      },
       description: (
         <React.Fragment>
           The entered App/Website should contain:
@@ -254,7 +258,7 @@ const businessModel = [
         </React.Fragment>
       ),
       info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
-      _when: activation => activation.state.app_type !== '1',
+      _when: activation => activation.state.has_url === '0',
     },
   ],
 ];
@@ -266,7 +270,8 @@ const registrationDetails = [
     validator: validateCIN,
     required: true, // It's mandatory only for certain orgs
     maxLength: '21',
-    info: 'Example : U67190TN014PTC096978',
+    className: 'Input--capitalize',
+    info: 'Example : U67190TN2014PTC096978',
     _when: activation => {
       const currentBusinessType =
         activation.state.dirty.business_type ||
@@ -282,7 +287,8 @@ const registrationDetails = [
     label: 'LLPIN',
     name: 'company_cin',
     required: true, // It's mandatory only for LLP
-    info: 'Example : AAB-2933',
+    info: 'Example : AAB2933',
+    className: 'Input--capitalize',
     _when: activation =>
       activation.props.data.business_type &&
       LLPIN_BusinessTypes.indexOf(
@@ -293,6 +299,7 @@ const registrationDetails = [
     label: 'Company PAN Number',
     name: 'company_pan',
     placeholder: 'PAN Number',
+    className: 'Input--capitalize',
     info:
       'Mandatory for Companies. PAN details should be of the mentioned business only.',
     validator: validatePANCard,
@@ -304,7 +311,7 @@ const registrationDetails = [
       name: 'promoter_pan',
       placeholder: 'PAN Number',
       validator: validatePANCard,
-      className: 'Input--vTop',
+      className: 'Input--vTop Input--capitalize',
     },
     {
       label: 'PAN Owner Name',
@@ -390,7 +397,7 @@ const registrationDetails = [
       _name: 'has_gstin',
       label: 'GSTIN',
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
-      className: 'Input--vTop',
+      className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
       _when: excludeFor_Indiv_NotReg,
       description: function() {
@@ -416,7 +423,6 @@ const registrationDetails = [
       _autoRenderImpure: true, // Re-render to show the error
       placeholder: 'Enter GSTIN',
       size: 'small',
-      required: false,
       info:
         'The entered GST Number should match either of the Address given above.',
       validator: value => {
@@ -460,9 +466,9 @@ const bankAccountFields = [
         const bankAccountNumber = this.state.dirty.bank_account_number;
         const accountNo = this.state.account_no;
 
-        const isMatching = bankAccountNumber && bankAccountNumber == accountNo;
+        const isMatching = bankAccountNumber == accountNo;
 
-        if ((!!bankAccountNumber && !accountNo) || !isMatching) {
+        if (!!bankAccountNumber && (!accountNo || !isMatching)) {
           document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
         }
       },

@@ -220,6 +220,11 @@ const statusPillClasses = {
   rejected: 'label-danger',
 
   closed: 'label-danger',
+
+  // credit types
+  amount: 'label-primary',
+  fee: 'label-info',
+  refund: 'label-yellow',
 };
 
 export const statusPill = (status, emptyValue = '--') => {

@@ -214,6 +214,13 @@ class ApiRequestAny
 
                 $pass = Config::get('api.auth_guest_pass');
             }
+            else if ($clientType === 'internal')
+            {
+                // used only by the dasboard backend.
+                $baUser = 'live';
+
+                $pass = Config::get('api.auth_internal_pass');
+            }
         }
 
         // Set BasicAuth creds

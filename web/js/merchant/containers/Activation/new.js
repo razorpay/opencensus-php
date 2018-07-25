@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'rzp/modules/notifications';
 import { without } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
@@ -16,6 +16,11 @@ import User from 'merchant/models/User';
 
 import { withRouter } from 'react-router-dom';
 import { trackLinkClick, trackGoToConfig } from './ga_new';
+
+import { LLPIN_BusinessTypes } from 'component/merchant/Activation/ActivationFormMap';
+
+const welcomeImg = '/img/activation/welcome.svg';
+const successImg = '/img/activation/submit-success.svg';
 
 /*
 * ActivationContainer is used in:
@@ -35,7 +40,7 @@ import { trackLinkClick, trackGoToConfig } from './ga_new';
     updateSession,
   }
 )
-export class ActivationContainer extends React.Component {
+export default class ActivationContainer extends React.Component {
   state = {
     data: null,
     categories: null,
@@ -49,14 +54,15 @@ export class ActivationContainer extends React.Component {
     Promise.all([
       merchantFetch({
         url: 'merchant/activation',
-        mode: 'live',
+        // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
+        mode: !!accountId ? this.props.session.mode : 'live',
         accountId,
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
     ]).then(([data, categories]) => {
       const someDetailsFilled = isFormTouched(data.data);
 
-      if (someDetailsFilled) {
+      if (!someDetailsFilled) {
         this.preloadWelcomeAsset();
       }
 
@@ -74,12 +80,12 @@ export class ActivationContainer extends React.Component {
 
   preloadWelcomeAsset() {
     const welcome = new Image();
-    welcome.src = 'img/activation/welcome.svg';
+    welcome.src = welcomeImg;
   }
 
   preloadSuccessAsset() {
     const success = new Image();
-    success.src = 'img/activation/submit-success.svg';
+    success.src = successImg;
   }
 
   updateSession(data) {
@@ -122,8 +128,9 @@ export class ActivationContainer extends React.Component {
   submitForm = data => {
     return merchantFetch({
       url: 'merchant/activation',
-      mode: 'live',
       method: 'post',
+      // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
+      mode: !!this.props.accountId ? this.props.session.mode : 'live',
       data: { submit: 1 },
       accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
     })
@@ -149,7 +156,8 @@ export class ActivationContainer extends React.Component {
   saveStep = data => {
     return merchantFetch({
       url: 'merchant/activation',
-      mode: 'live',
+      // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
+      mode: !!this.props.accountId ? this.props.session.mode : 'live',
       method: 'post',
       headers: {
         'content-type': 'application/json',
@@ -173,9 +181,21 @@ export class ActivationContainer extends React.Component {
         let errors = [];
 
         if (err.errors) {
-          err.errors.forEach(err => {
-            if (err.toLowerCase().indexOf('status code') === -1) {
-              errors.push(err);
+          err.errors.forEach(er => {
+            if (er.toLowerCase().indexOf('status code') === -1) {
+              // TODO: BE treats LLPin as cin currently. So, gives error for cin, not LLPin. To revert when BE handles.
+              if (er.indexOf('cin') !== -1) {
+                const businessType = this.state.data.business_type;
+
+                if (
+                  businessType &&
+                  LLPIN_BusinessTypes.indexOf(Number(businessType)) !== -1
+                ) {
+                  er = er.replace('cin', 'llpin');
+                }
+              }
+
+              errors.push(er);
             }
           });
         }
@@ -330,10 +350,15 @@ export class ActivationContainer extends React.Component {
       );
     } else {
       modalClass = 'Activation--wizard';
+      const formData = {
+        ...data,
+        business_category:
+          data.business_category || (data.business_model ? 'others' : null),
+      };
       content = (
         <ActivationWizard
           accountId={this.props.accountId}
-          data={data}
+          data={formData}
           ref={refId => (this.wizard = refId)}
           categories={categories}
           isFormTouched={this.state.isFormTouched}
@@ -359,6 +384,8 @@ export class ActivationContainer extends React.Component {
   }
 }
 
+ActivationContainer.MODAL_MASK_CLASS = 'Activation';
+
 /*
  * Success screen is shown only when the user has submitted the form. It's not shown in linked account activation but only main form.
  * */
@@ -371,7 +398,7 @@ const SuccessScreen = _ => {
     <div class="Activation--success">
       <div class="Activation-title">
         <side-title>Activation Form submitted Successfully!</side-title>
-        <div class="submit-illustration" />
+        <img src={successImg} class="submit-illustration" />
       </div>
       <div class="Activation-info">
         <i class="i i-check" /> Activation Form Submitted
@@ -405,7 +432,7 @@ const WelcomeScreen = ({ openWizard }) => {
     <div class="Activation--welcome">
       <h3> Get Started with Activation</h3>
       <div class="underline" />
-      <div class="welcome-illustration" />
+      <img src={welcomeImg} class="welcome-illustration" />
       <div class="short-content">
         <p>
           Simply submit your business details and upload relevant proofs to
@@ -472,62 +499,3 @@ const excludedFieldsInForm = [
   'activation_progress',
   'allowed_next_activation_statuses',
 ];
-
-/*
-* This component is temporary and will be removed once the old activation form is removed
-* */
-@connect(
-  state => ({
-    user: state.session.user,
-  }),
-  {}
-)
-export default class ActivationDecider extends React.Component {
-  // Component to show old activation wizard if old user and progress is > 25% ~ effectively only 1st step done
-  render() {
-    let Component = <ActivationContainer {...this.props} />;
-
-    let isLinkedAccountForm = !!this.props.accountId;
-
-    // Showing new activation form for linked-accounts
-    if (isOldUser(this.props.user) && !isLinkedAccountForm) {
-      let modalClass = 'Activation--wizard Activation--wizard--old';
-      let content = (
-        <React.Fragment>
-          <div class="modal-header">
-            <h3 class="modal-title">Activation Form</h3>
-          </div>
-          <OldActivationWizard {...this.props} />
-        </React.Fragment>
-      );
-
-      // Accounts List also provides onClose fn. prop
-      Component =
-        this.props.onClose && this.props.closeUrl ? (
-          <Modal
-            class={'animate-down ' + modalClass}
-            onClose={this.props.onClose}
-          >
-            <ModalContent>{content}</ModalContent>
-          </Modal>
-        ) : (
-          <div class="ActivationContainer">{content}</div>
-        );
-    }
-
-    return Component;
-  }
-}
-
-ActivationDecider.MODAL_MASK_CLASS = 'Activation';
-
-function isOldUser(user) {
-  if (!user) {
-    return false; // Fallback to new
-  }
-
-  let currentTime = 1523407001; // New activation form launch Day: 28 May, 8:00pm
-  let isCreatedEarlier = user.created_at < currentTime;
-
-  return isCreatedEarlier;
-}

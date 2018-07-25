@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { withRouter } from 'react-router-dom';
 import { classList } from 'common/util';
 
@@ -322,7 +322,7 @@ export default class CreateNewContainer extends React.Component {
       delete reqPayload.expire_by;
     }
 
-    if (this.state.dirty.notes && Object.keys(this.state.dirty.notes).length) {
+    if (this.state.dirty.notes && !Object.keys(this.state.dirty.notes).length) {
       delete reqPayload.notes;
     }
 

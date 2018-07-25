@@ -1,6 +1,6 @@
 import { set, merge, remove } from 'rzp/utils/immutable';
 import Application from 'merchant/models/Application';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const FETCH_APPLICATIONS = 'FETCH_APPLICATIONS';
 const FETCH_CONNECTED_APPLICATIONS = 'FETCH_CONNECTED_APPLICATIONS';

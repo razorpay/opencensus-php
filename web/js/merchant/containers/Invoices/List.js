@@ -12,7 +12,7 @@ import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { track } from './ga';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 import OnboardingInvoices from './OnboardingInvoices';
 
@@ -155,7 +155,6 @@ export default class InvoicesListContainer extends ListContainer {
         <HeaderAction>
           <ShowWhen
             myRole="admin operations manager owner"
-            featureEnabled="Invoice"
           >
             <div class="btn-toolbar pull-right">
               <NavLink
