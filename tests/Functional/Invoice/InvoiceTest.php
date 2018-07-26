@@ -148,30 +148,6 @@ class InvoiceTest extends TestCase
 
         $metrics = $this->createMetricsMock();
 
-        $metrics->expects($this->at(4))
-                ->method('count')
-                ->with(
-                    'invoice_payment_attempts_total',
-                    1,
-                    [
-                        'is_partial_payment' => 0,
-                        'type'               => 'invoice',
-                        'has_batch'          => 0,
-                        'has_subscription'   => 0,
-                    ]);
-
-        $metrics->expects($this->at(7))
-                ->method('count')
-                ->with(
-                    'invoice_paid_total',
-                    1,
-                    [
-                        'is_partial_payment' => 0,
-                        'type'               => 'invoice',
-                        'has_batch'          => 0,
-                        'has_subscription'   => 0,
-                    ]);
-
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 
         Mail::assertQueued(InvoiceAuthorizedMail::class, function ($mail) use ($invoice)
@@ -2250,28 +2226,6 @@ class InvoiceTest extends TestCase
     public function testExpireInvoices()
     {
         $metrics = $this->createMetricsMock();
-
-        $metrics->expects($this->at(15))
-                ->method('count')
-                ->with(
-                    'invoice_expired_total',
-                    1,
-                    [
-                        'type'             => 'invoice',
-                        'has_batch'        => 0,
-                        'has_subscription' => 0,
-                    ]);
-
-        $metrics->expects($this->at(20))
-                ->method('count')
-                ->with(
-                    'invoice_expired_total',
-                    1,
-                    [
-                        'type'             => 'invoice',
-                        'has_batch'        => 0,
-                        'has_subscription' => 0,
-                    ]);
 
         // Issued invoice
         $this->createOrder();
