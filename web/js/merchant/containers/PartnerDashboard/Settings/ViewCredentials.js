@@ -21,7 +21,7 @@ export default class ViewCredentials extends Component {
   };
 
   render() {
-    const { mode } = this.props;
+    const { mode, credentials } = this.props;
     return (
       <div class="Partner-Dashboard__View-Credentials">
         <ModalHeader
@@ -33,18 +33,14 @@ export default class ViewCredentials extends Component {
           {/* client ID */}
           <div class="form-group">
             <label>Client ID</label>
-            <InputField
-              value="rzp_live_cN6iQyowfqwWF4"
-              disabled
-              class="form-control"
-            />
+            <InputField value={credentials.id} disabled class="form-control" />
           </div>
 
           {/* client Secret */}
           <div class="form-group toggle-password">
             <label>Client Secret</label>
             <InputField
-              value="rzp_live_cN6iQyowfqwWF4"
+              value={credentials.secret}
               type={this.state.showClientSecret ? 'text' : 'password'}
               disabled
               class="form-control"
