@@ -588,7 +588,6 @@ export default class HomeContainer extends Component {
 
       defaultPreset,
       keymetricsSectionTitle,
-      paymentInsightsTitle,
       recentActivityTitle,
       trafficSectionTitle,
     };

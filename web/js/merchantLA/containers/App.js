@@ -245,7 +245,6 @@ export default class App extends Component {
   };
 
   switchMerchant = merchant => {
-    console.log('...HEREE..');
     this.props
       .switchMerchant(merchant.id)
       .then(() => {
