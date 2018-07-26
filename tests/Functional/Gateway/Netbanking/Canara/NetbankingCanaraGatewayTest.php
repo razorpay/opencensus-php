@@ -149,65 +149,6 @@ class NetbankingCanaraGatewayTest extends TestCase
         $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
     }
 
-    public function testRefund()
-    {
-        $refund = $this->doNetbankingCanaraAuthCaptureAndRefundPayment();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($payment['amount_refunded'], 50000); // have to change
-
-        $refundEntity = $this->getLastEntity('refund', true);
-
-        $this->assertEquals($refundEntity['amount'], 50000); // should base amount be used here?
-
-        $this->assertEquals($refundEntity['gateway_refunded'], true);
-    }
-
-    public function testPartialRefund()
-    {
-        $payment = $this->doNetbankingCanaraAuthAndCapturePayment();
-
-        // Refund the payment above partially
-        $refund = $this->refundPayment($payment['id'], 10000);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($payment['amount_refunded'], 10000);
-
-        $this->assertEquals($refund['amount'], 10000);
-
-        $refundEntity = $this->getLastEntity('refund', true);
-
-        $this->assertEquals($refundEntity['amount'], 10000); // should base amount be used here?
-
-        $this->assertEquals($refundEntity['gateway_refunded'], true);
-    }
-
-    public function testRefundExcelFile()
-    {
-
-        Mail::fake();
-
-        // Generate 2 payments
-        $this->createRefunds();
-
-        $this->alterPaymentsDateToYesterday();
-
-        $this->alterRefundsDateToYesterday();
-
-        // Generating 3rd payment and leaving its created_at
-        // date to now unlike first 2 payments
-        $this->doNetbankingCanaraAuthCaptureAndRefundPayment();
-
-        // Hitting the refunds route on API - goes to RefundFile.php
-        $data = $this->generateRefundsExcelForNB('CNRB');
-
-        $this->checkRefundFileData($data);
-
-        $this->checkMailQueue();
-    }
-
     public function doNetbankingCanaraAuthAndCapturePayment()
     {
         $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
