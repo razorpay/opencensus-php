@@ -1,6 +1,7 @@
 <?php
     $intro_note = 'Welcome to Schindler. Now, pay your Schindler service bill in 4 simple steps :';
     $instructions = array('Enter the details for the service you availed.', 'Choose the method of payment. ', 'Pay the amount. ', 'Receive online confirmation and get a confirmation email.');
+    $note =  'Note: Usage of Credit Cards will attract charges';
     $end_note =  'In case of any doubts, please reach out to Schindler on';
 ?>
 <div id="description-section">
@@ -19,6 +20,8 @@
             <li>{{$ins}}</li>
         @endforeach
     </ol>
+
+    <p><b>{{$note}}</b></p>
 
     <p style="opacity: 0.8">{{$end_note}} <a href="mailto:{{$contact['email']}}?subject={{$email_subject}}" target="_blank">{{$contact['email']}}</a> or <a href="tel:{{$contact['phone']}}">{{$contact['phone']}}</a></p>
 
