@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Netbanking\Allahabad\Mock;
 
 use RZP\Gateway\Base;
-use RZP\Exception;
 use RZP\Models\Bank\IFSC;
 use RZP\Gateway\Netbanking\Allahabad\Status;
 use RZP\Gateway\Netbanking\Allahabad\RequestFields;
@@ -15,7 +14,7 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
-        $string_for_validation = $input['parameter_string'];
+        $stringForValidation = $input['parameter_string'];
 
         $sig = $input['bank_signaturte'];
 
@@ -23,7 +22,7 @@ class Server extends Base\Mock\Server
 
         parse_str($input['parameter_string'],$input);
 
-        $input['bank_signaturte']=$sig;
+        $input['bank_signaturte'] = $sig;
 
         parent::authorize($input);
 
@@ -33,21 +32,21 @@ class Server extends Base\Mock\Server
             unset($input['Action_ShoppingMall_Login_Init']);
         }
 
-        $this->validatechecksum($string_for_validation,$input);
+        $this->validatechecksum($stringForValidation, $input);
 
         $response = $this->getCallbackResponseData($input);
 
         $this->content($response, 'authorize');
 
-        $checksum_string = http_build_query($response,null,'|');
+        $checksumString = http_build_query($response,null,'|');
 
-        $callback_checksum = $this->getHashOfString($checksum_string);
+        $callbackChecksum = $this->getHashOfString($checksumString);
 
-        $response[ResponseFields::CHECKSUM] = $callback_checksum;
+        $response[ResponseFields::CHECKSUM] = $callbackChecksum;
 
         $callbackUrl = $input[RequestFields::RETURN_URL];
 
-        $callbackUrl .= '?parameter_string='.$checksum_string.'&response_signaturte='.$response[ResponseFields::CHECKSUM];
+        $callbackUrl .= '?parameter_string='.$checksumString.'&response_signaturte='.$response[ResponseFields::CHECKSUM];
 
         $request = [
             'url'     => $callbackUrl,
@@ -106,7 +105,6 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-
     protected function createVerifyResponseArray(array $input)
     {
         $responseArray = [
@@ -116,32 +114,27 @@ class Server extends Base\Mock\Server
         return $responseArray;
     }
 
-
     protected function getStringFromContent($content, $glue = '')
     {
         return implode($glue, $content);
     }
 
-    protected function validatechecksum($string_for_validation, $input)
+    protected function validatechecksum($stringForValidation, $input)
     {
-        $input_hash = $input['bank_signaturte'];
+        $inputHash = $input['bank_signaturte'];
 
-        $expected_hash=$this->getHashOfString($string_for_validation);
+        $expectedHash = $this->getHashOfString($stringForValidation);
 
-        if (hash_equals($expected_hash, $input_hash) !== true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Failed checksum verification');
-        }
+        $this->compareHashes($inputHash, $expectedHash);
     }
 
     protected function getHashOfString($str)
     {
         $secret = $this->getSecret();
 
-        $sig_str = hash_hmac('sha1',$str,$secret);
+        $sigStr = hash_hmac('sha1',$str,$secret);
 
-        return $sig_str;
+        return $sigStr;
     }
-
 }
+

@@ -4,13 +4,13 @@ namespace RZP\Reconciliator\NetbankingAllahabad;
 
 class Constants
 {
-    const BANK_CODE             = 'bank_code';
+    const BANK_CODE           = 'bank_code';
 
-    const TXN_DATE             = 'txn_date';
+    const TXN_DATE            = 'txn_date';
 
-    const MERCHANT_NAME         = 'merchant_name';
+    const MERCHANT_NAME       = 'merchant_name';
 
-    const TRNX_AMOUNT           = 'transaction_amount';
+    const TRNX_AMOUNT         = 'transaction_amount';
 
     const PGI_REFERENCE_NO    = 'pgi_reference_no.';
 
