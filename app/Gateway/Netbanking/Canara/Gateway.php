@@ -145,8 +145,8 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT                        => $paymentEntity['amount'], // have to verify
             RequestFields::SERVICE_CHARGE                => 0,
             RequestFields::PAYMENT_ID                    => $paymentEntity['id'],
-            RequestFields::SUCCESS_STATIC_FLAG           => 'N',
-            RequestFields::FAILURE_STATIC_FLAG           => 'N',
+            RequestFields::SUCCESS_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
+            RequestFields::FAILURE_STATIC_FLAG           => Constants::SUCCESS_AND_FAILURE_STATIC_FLAG,
             RequestFields::DATE                          => $this->getDate($paymentEntity[Payment\Entity::CREATED_AT]),
         ];
 
