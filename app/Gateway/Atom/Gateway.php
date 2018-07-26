@@ -64,7 +64,7 @@ class Gateway extends Base\Gateway
                   $content[AuthResponseFields::TRANSACTION_ID],
                   $content[AuthResponseFields::STATUS_CODE]) == false)
         {
-            throw Exception\GatewayErrorException(
+            throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 null,
                 null,

@@ -127,11 +127,11 @@ class Server extends Base\Mock\Server
             AuthResponseFields::DISCRIMINATOR       => 'NB',
         ];
 
-        $this->content($response, 'callback');
-
         $response[AuthResponseFields::SIGNATURE] = $this->generateHash($response, 'response');
 
         $this->content($response, 'hash');
+
+        $this->content($response, 'callback');
 
         return $response;
     }
