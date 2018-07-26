@@ -50,6 +50,7 @@ import {
   refundsReducer,
   settlementsReducer,
   disputesReducer,
+  submerchantsReducer,
 } from 'merchant/modules/collection';
 
 import {
@@ -111,4 +112,5 @@ export default combineReducers({
   states: statesReducer,
   taxes: taxesReducer,
   reports: reportsReducer,
+  submerchants: submerchantsReducer,
 });
