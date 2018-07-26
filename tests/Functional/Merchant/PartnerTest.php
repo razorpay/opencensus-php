@@ -699,6 +699,8 @@ class PartnerTest extends OAuthTestCase
 
         $this->allowAdminToAccessSubMerchant();
 
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
 
         $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'under_review']);
@@ -715,6 +717,29 @@ class PartnerTest extends OAuthTestCase
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
             ]);
+
+        $this->ba->adminProxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Tests the list submerchants api when there are no submerchants for the partner
+     */
+    public function testFetchPartnerSubmerchantsEmptyList()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $app = $this->createOAuthApplication($partnerData);
 
         $this->ba->adminProxyAuth();
 

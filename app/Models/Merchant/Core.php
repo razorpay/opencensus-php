@@ -1105,7 +1105,9 @@ class Core extends Base\Core
                          ->account
                          ->findSubmerchantByIdAndPartnerAppId($submerchantId, $partnerApp->getId());
 
-        $merchant = $this->getPartnerSubmerchantData($partner, $merchant);
+        $partnerUser = $partner->primaryOwner();
+
+        $merchant = $this->getPartnerSubmerchantData($merchant, $partnerUser);
 
         return $merchant;
     }
@@ -1123,9 +1125,11 @@ class Core extends Base\Core
                           ->account
                           ->fetchSubmerchantsByPartnerAppId($partnerApp->getId());
 
-        $merchants = $merchants->map(function($merchant) use ($partner)
+        $partnerUser = $partner->primaryOwner();
+
+        $merchants = $merchants->map(function($merchant) use ($partnerUser)
         {
-            return $this->getPartnerSubmerchantData($partner, $merchant);
+            return $this->getPartnerSubmerchantData($merchant, $partnerUser);
         });
 
         return $merchants;
@@ -1174,20 +1178,20 @@ class Core extends Base\Core
     /**
      * Sets the partner attributes in the instance of Merchant\Entity so that toArrayPartner() can be used later.
      *
-     * @param Entity $partner
-     * @param Entity $submerchant
+     * @param Entity      $submerchant
+     * @param User\Entity $partnerUser
      *
      * @return Entity
      */
-    protected function getPartnerSubmerchantData(Entity $partner, Entity $submerchant): Entity
+    protected function getPartnerSubmerchantData(Entity $submerchant, User\Entity $partnerUser): Entity
     {
         $submerchant[Entity::DETAILS] = [
             Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS)
         ];
 
-        $owner = $this->getNonPartnerPrimaryOwner($partner, $submerchant);
+        $submerchantOwner = $this->getNonPartnerPrimaryOwner($submerchant, $partnerUser);
 
-        $submerchant[Entity::USER] = ($owner !== null) ? $owner->toArrayPublic() : null;
+        $submerchant[Entity::USER] = ($submerchantOwner !== null) ? $submerchantOwner->toArrayPublic() : null;
 
         $submerchant[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($submerchant);
 
@@ -1200,22 +1204,18 @@ class Core extends Base\Core
      *
      * This function returns the first type of primary owner.
      *
-     * @param Entity $partner
-     * @param Entity $merchant
+     * @param Entity      $merchant
+     * @param User\Entity $partnerUser
      *
-     * @return null|User\Entity
+     * @return null
      */
-    protected function getNonPartnerPrimaryOwner(Entity $partner, Entity $merchant)
+    protected function getNonPartnerPrimaryOwner(Entity $merchant, User\Entity $partnerUser)
     {
         $owners = $merchant->owners();
 
-        $partnerUser = $partner->primaryOwner();
-
-        $partnerUserEmail = ($partnerUser !== null) ? $partnerUser->getEmail() : null;
-
         foreach ($owners as $owner)
         {
-            if ($owner->getEmail() !== $partnerUserEmail)
+            if ($owner->getEmail() !== $partnerUser->getEmail())
             {
                 return $owner;
             }
