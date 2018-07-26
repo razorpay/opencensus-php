@@ -13,6 +13,7 @@ use phpseclib\Crypt\AES;
 use RZP\Gateway\Base\AESCrypto;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\CardCacheTrait;
+use RZP\Gateway\Base as BaseGateway;
 
 class Gateway extends Base\Gateway
 {
@@ -427,7 +428,12 @@ class Gateway extends Base\Gateway
 
             default:
                 throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID,
+                    null,
+                    null,
+                    [],
+                    null,
+                    BaseGateway\Action::AUTHENTICATE);
 
         }
 
@@ -475,7 +481,9 @@ class Gateway extends Base\Gateway
                     'payment_id' => $paymentId,
                     'response_code' => $response[Field::RESPONSE_CODE],
                     'response_desc' => $response[Field::RES_DESC],
-                ]);
+                ],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
         }
     }
 
@@ -587,7 +595,12 @@ class Gateway extends Base\Gateway
 
             default:
                 throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID,
+                    null,
+                    null,
+                    [],
+                    null,
+                    BaseGateway\Action::AUTHENTICATE);
 
         }
 
