@@ -282,7 +282,9 @@ class Processor
         if ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
             (empty($payment->getAuthType()) === false) and
             (($payment->getAuthType() !== Payment\AuthType::AADHAAR) or
-             (empty($input[Payment\Entity::AADHAAR]['number']) === false)))
+             ((empty($input[Payment\Entity::AADHAAR]['number']) === false) or
+              (empty($input[Payment\Entity::AADHAAR]['vid']) === false)
+             )))
         {
             return null;
         }

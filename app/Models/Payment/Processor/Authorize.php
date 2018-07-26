@@ -1162,10 +1162,11 @@ trait Authorize
         }
 
         if (($payment->getAuthType() === Payment\AuthType::AADHAAR) and
-            (empty($input[Payment\Entity::AADHAAR]['number']) === true))
+            ((empty($input[Payment\Entity::AADHAAR]['number']) === true) and
+             (empty($input[Payment\Entity::AADHAAR]['vid']) === true)))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'The aadhaar[number] field is required.');
+                'The aadhaar[number] or aadhaar[vid] field is required.');
         }
 
         $bank = $payment->getBank();
@@ -2227,6 +2228,7 @@ trait Authorize
                 'local'             => $customer->isLocal(),
                 'card_id'           => $savedCardId,
                 'auth_type'         => $payment->getAuthType(),
+                'aadhaar_vid'       => $input[Payment\Entity::AADHAAR]['vid'] ?? null,
                 'account_number'    => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null,
                 'beneficiary_name'  => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? null,
                 'ifsc'              => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null,
@@ -2264,6 +2266,9 @@ trait Authorize
 
             $saveMethodInput[Token\Entity::AADHAAR_NUMBER] =
                     $input[Payment\Entity::AADHAAR]['number'] ?? null;
+
+            $saveMethodInput[Token\Entity::AADHAAR_VID] =
+                $input[Payment\Entity::AADHAAR]['vid'] ?? null;
 
             $saveMethodInput[Token\Entity::EXPIRED_AT] =
                     $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
