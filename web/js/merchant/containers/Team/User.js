@@ -11,7 +11,6 @@ import {
   fetchTeamDetails,
 } from 'merchant/modules/team';
 
-const ROLES = without(roles, 'owner');
 @connect(
   state => {
     return {
@@ -76,6 +75,7 @@ export default class EditUser extends Component {
   render() {
     const { handleSubmit, user } = this.props;
 
+    const ROLES = user.role === 'owner' ? roles : without(roles, 'owner');
     return (
       <tr>
         <td>{user.email}</td>
