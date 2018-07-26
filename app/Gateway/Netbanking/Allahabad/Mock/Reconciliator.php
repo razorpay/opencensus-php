@@ -3,16 +3,15 @@
 namespace RZP\Gateway\Netbanking\Allahabad\Mock;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 
 class Reconciliator extends Base\RefundFile
 {
     const PAYMENT_ENTITY = 'payment';
     const GATEWAY_ENTITY = 'gateway';
-    const BANK_REF_NUMBER = '99999';
 
     protected static $fileToWriteName = 'Allahabad_Netbanking_Reconciliation';
 
@@ -71,8 +70,6 @@ class Reconciliator extends Base\RefundFile
     {
         $data = [];
 
-        $index = 1;
-
         $totalAmount = 0.0;
 
         foreach ($input as $row)
@@ -85,18 +82,18 @@ class Reconciliator extends Base\RefundFile
             $amount = $this->getFormattedAmount($row['payment']['amount']);
 
             $data[] = [
-                'Bank Id' => '021',
-                'Txn Date' => $trnxDate,
-                'Merchant Name' => 'Razor',
-                'Trnx Amount' => $amount,
+                'Bank Id'           => '021',
+                'Txn Date'          => $trnxDate,
+                'Merchant Name'     => 'Razor',
+                'Trnx Amount'       => $amount,
                 'PGI Reference No.' => $row['payment']['id'],
-                'Bank Ref No.' => $row['gateway']['bank_payment_id'],
+                'Bank Ref No.'      => $row['gateway']['bank_payment_id'],
             ];
 
             $totalAmount += floatval($amount);
         }
 
-        return [$totalAmount,$data];
+        return [$totalAmount, $data];
     }
 }
 

@@ -6,12 +6,10 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
-use RZP\Gateway\Base\Action;
-use RZP\Constants\Mode as RZPMode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Constants\Mode as RZPMode;
 use RZP\Constants\Entity as ConstantsEntity;
-use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Allahabad extends Base
@@ -27,6 +25,9 @@ class Allahabad extends Base
 
     protected $config;
 
+    const PAYEE_ID   = 'Razor';
+    const BANK_CODE  = '027';
+
     protected function formatDataForFile(array $data)
     {
         $formattedData = [];
@@ -35,22 +36,14 @@ class Allahabad extends Base
 
         foreach ($data as $index => $row)
         {
-            $txnDate = Carbon::createFromTimestamp(
-                $row['payment']['created_at'],
-                Timezone::IST)
-                ->format('d/m/Y');
+            $txnDate = $this->createDateFormat($row['payment']['created_at']);
 
-            $refundDate = Carbon::createFromTimestamp(
-                $row['refund']['created_at'],
-                Timezone::IST)
-                ->format('d/m/Y');
-
-            $pid = 'Razor';
+            $refundDate = $this->createDateFormat($row['refund']['created_at']);
 
             $formattedData[] = [
-                'PID'                   => $pid,
-                'Bank Id'               => '027',
-                'Merchant Name'         => $pid,
+                'PID'                   => self::PAYEE_ID,
+                'Bank Id'               => self::BANK_CODE,
+                'Merchant Name'         => self::PAYEE_ID,
                 'Txn Date'              => $txnDate,
                 'Refund Date'           => $refundDate,
                 'Bank Merchant Code'    => $this->getMerchantId($row[ConstantsEntity::TERMINAL]),
@@ -59,9 +52,8 @@ class Allahabad extends Base
                 'Txn Amount'            => $this->formatAmount($row['payment']['amount'] / 100),
                 'Refund'                => $this->formatAmount($row['refund']['amount'] / 100),
             ];
-
-
         }
+
         $formattedData = $this->getTextData($formattedData);
 
         return $formattedData;
@@ -90,7 +82,6 @@ class Allahabad extends Base
 
         return $mailData;
     }
-
 
     protected function getFileToWriteNameWithoutExt()
     {
@@ -121,5 +112,11 @@ class Allahabad extends Base
         }
 
         return $merchantId;
+    }
+
+    protected function createDateFormat($timestamp)
+    {
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)
+                            ->format('d/m/Y');
     }
 }
