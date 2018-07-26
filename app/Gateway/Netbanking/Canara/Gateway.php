@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Netbanking\Canara;
 
 use Carbon\Carbon;
-use http\Env\Request;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -141,7 +140,7 @@ class Gateway extends Base\Gateway
             RequestFields::MODE_OF_TRANSACTION           => Constants::MODE_OF_TRANSACTION_PURCHASE,
             RequestFields::CLIENT_CODE                   => $this->getClientCode($paymentEntity[Payment\Entity::EMAIL]),
             RequestFields::CLIENT_ACCOUNT                => '',
-            RequestFields::MERCHANT_CODE                 => $this->getMerchantCode(),
+            RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
             RequestFields::CURRENCY                      => PaymentEntity::DEFAULT_CURRENCY,
             RequestFields::AMOUNT                        => $paymentEntity['amount'], // have to verify
             RequestFields::SERVICE_CHARGE                => 0,
@@ -174,7 +173,7 @@ class Gateway extends Base\Gateway
         return $clientCode;
     }
 
-    public function getMerchantCode()  // verify - have to add id somewhere
+    public function getMerchantId()  // TODO:: Merchant id has to be added, MID not recieeved from bank
     {
         $mid = $this->getLiveMerchantId();
 
@@ -255,7 +254,7 @@ class Gateway extends Base\Gateway
             RequestFields::MODE_OF_TRANSACTION           => Constants::MODE_OF_TRANSACTION_VERIFY,
             RequestFields::CLIENT_CODE                   => $this->getClientCode($paymentEntity[Payment\Entity::EMAIL]),
             RequestFields::CLIENT_ACCOUNT                => '',
-            RequestFields::MERCHANT_CODE                 => $this->getMerchantCode(),
+            RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
             RequestFields::CURRENCY                      => PaymentEntity::DEFAULT_CURRENCY,
             RequestFields::AMOUNT                        => $paymentEntity['amount'], // have to verify
             RequestFields::SERVICE_CHARGE                => 0,
@@ -387,7 +386,7 @@ class Gateway extends Base\Gateway
     public function getDate($createdat)
     {
         return $date = Carbon::createFromTimestamp($createdat, Timezone::IST)
-            ->format('d/m/Y+H:i:s');
+                             ->format('d/m/Y+H:i:s');
     }
 
     public function getCurrentDate()
