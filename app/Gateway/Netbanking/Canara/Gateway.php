@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Canara;
 
-use TransactionType;
+use RZP\Gateway\Netbanking\Canara\TransactionType;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Mode;

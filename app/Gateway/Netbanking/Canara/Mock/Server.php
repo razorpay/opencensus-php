@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Canara\Mock;
 
-use Respect\Validation\Rules\SubdivisionCode\ReSubdivisionCode;
+use RZP\Gateway\Netbanking\Canara\TransactionType;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Canara\RequestFields;
 use RZP\Gateway\Netbanking\Canara\ResponseFields;
@@ -56,7 +56,7 @@ class Server extends Base\Mock\Server
     protected function getCallbackResponseData(array $input)
     {
         $data = [
-            ResponseFields::ACTION                 => Constants::MODE_OF_TRANSACTION_PURCHASE,
+            ResponseFields::ACTION                 => TransactionType::AUTHORIZE,
             ResponseFields::MERCHANT_CODE          => $input[RequestFields::MERCHANT_CODE],
             ResponseFields::PAYMENT_ID             => $input[RequestFields::PAYMENT_ID],
             ResponseFields::AMOUNT                 => $input[RequestFields::AMOUNT],
