@@ -34,17 +34,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             Action::AUTHORIZE);
     }
 
-    /**
-     * MIS contains failed payments also. If error code is non zero
-     * and bank reference number is 0, status of payment is considered failed
-     * otherwise success.
-     *
-     * @param array $row
-     * @return null|string
-     */
     protected function getReconPaymentStatus(array $row)
     {   
-
         $bankPaymentId = $this->getReferenceNumber($row);
 
         if ((empty($errorCode) === false) and (empty($bankPaymentId) === true))

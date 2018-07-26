@@ -348,7 +348,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $payment = $this->createPayment('netbanking_allahabad');
 
-        $this->createNetbanking($payment['id'], 'ALLA', 'S');
+        $this->createNetbanking($payment['id'], 'ALLA', 'Y');
 
         $fileContents = $this->generateFile('allahabad', []);
 
