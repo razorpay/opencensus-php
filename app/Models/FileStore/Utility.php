@@ -9,6 +9,26 @@ use Razorpay\Trace\Logger as Trace;
 class Utility extends Base\Core
 {
     /**
+     * This return default storage directory
+     * If it doesn't exist then it creates it
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public static function getStorageDir(string $path = 'files/settlement'): string
+    {
+        $dir = storage_path($path);
+
+        if (file_exists($dir) === false)
+        {
+            (new self)->callFileOperation('mkdir', [$dir, 0777, true]);
+        }
+
+        return $dir;
+    }
+
+    /**
      * Call Given File Operation and tarce if it fails/errors out
      *
      * @param string $method File Operation

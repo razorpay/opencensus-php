@@ -765,17 +765,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
-    //
-    // As setGateway is protected method
-    // we didn't want to make it public just
-    // to set gateway for bharat qr payment
-    // so a new method
-    //
-    public function setGatewayForBharatQr(string $gateway)
-    {
-        $this->setGateway($gateway);
-    }
-
     /**
      * This should be kept as protected so the gateway is only
      * set via associateTerminal function
@@ -884,6 +873,13 @@ class Entity extends Base\PublicEntity
     public function setAutoCaptured($autoCaptured)
     {
         $this->setAttribute(self::AUTO_CAPTURED, $autoCaptured);
+    }
+
+    public function setNonVerifiable()
+    {
+        $this->setVerifyBucket(null);
+
+        $this->setVerifyAt(null);
     }
 
     public function setVerifyBucket($verifyBucket = 0)
@@ -2771,5 +2767,12 @@ class Entity extends Base\PublicEntity
             ($this->isNetbanking() === true) and
             (Netbanking::isCorporateBank($this->getBank()) === true)
         );
+    }
+
+    public static function getCacheUpiStatusKey(string $id): string
+    {
+        parent::verifyIdAndStripSign($id);
+
+        return 'upi.polling.' . $id . '.status';
     }
 }

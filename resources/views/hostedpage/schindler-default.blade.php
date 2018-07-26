@@ -5,6 +5,12 @@
     $is_test_mode               = $data['is_test_mode'] ?? false;
     $has_udf                    = (empty($udf_schema) === false);
     $max_mobile_width           = 853;
+    $contact = [
+        'phone' => '1800 209 5438',
+        'email' => 'schindlerindia.in@schindler.com'
+    ];
+
+    $email_subject = 'Query for Payment Page Id: '. $payment_page_data['id'];
 ?>
 
 
@@ -13,6 +19,7 @@
     <head>
         <title>Payment Page - {{$payment_page_data['title']}}</title>
         <meta charset="utf-8">
+        <meta name="robots" content="noindex">
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
         <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
 
@@ -67,7 +74,7 @@
                     @include('hostedpage.partials.header')
                     <div>
                         @include('hostedpage.partials.description')
-                        <button class="btn btn--full" id="mobile-proceed-btn" onclick="window.RZP.toggleMobileForm()">PROCEED TO PAY</button>
+                        <a href="#form" class="btn btn--full" id="mobile-proceed-btn">PROCEED TO PAY</a>
                     </div>
                 </div>
                 @include('hostedpage.partials.form')

@@ -956,6 +956,24 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     *   Generate and Send the beneficiary file to nodal account's bank
+     *   if a new merchant has been activated since
+     *   if (monday)  - 3 days
+     *   else         - 1 day
+     *
+     * @param array $input
+     * @param string $channel
+     *
+     * @return array
+     */
+    public function postMerchantBeneficiary(array $input, string $channel): array
+    {
+        $response = (new BankAccount\Beneficiary)->registerBetweenTimestamps($input, $channel);
+
+        return $response;
+    }
+
     public function getCheckoutPreferences($input)
     {
         $merchant = $this->merchant;
@@ -981,24 +999,6 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchantDetail);
 
         return $merchantDetail->toArrayGST();
-    }
-
-    /**
-     *   Generate and Send the beneficary file to nodal account's bank
-     *   if a new merchant has been activated since
-     *   if (monday)  - 3 days
-     *   else         - 1 day
-     *
-     * @param array $input
-     * @param string $channel
-     *
-     * @return array
-     */
-    public function postMerchantBeneficiary(array $input, string $channel): array
-    {
-        $response = (new BankAccount\Beneficiary)->registerBetweenTimestamps($input, $channel);
-
-        return $response;
     }
 
     /**
@@ -1851,6 +1851,8 @@ class Service extends Base\Service
 
         $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $input['email']);
 
+        (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+
         $subMerchantUser = $subMerchantUser->toArrayPublic();
 
         return $subMerchantUser;
@@ -1882,7 +1884,7 @@ class Service extends Base\Service
         }
         else
         {
-            $this->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
+            $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
         }
 
         return [$subMerchantUser, $created];
@@ -1895,8 +1897,6 @@ class Service extends Base\Service
         $subMerchantUser = (new User\Core)->create($userData);
 
         $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
-
-        (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
 
         return $subMerchantUser;
     }

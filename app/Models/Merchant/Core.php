@@ -881,6 +881,13 @@ class Core extends Base\Core
      */
     public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant): array
     {
+        $this->trace->info(
+            TraceCode::PARTNER_CREATE_ACCESS_MAP_REQUEST,
+            [
+                'partner_id'     => $partner->getId(),
+                'submerchant_id' => $submerchant->getId(),
+            ]);
+
         $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
             $partnerApp = $this->getPartnerApp($partner);
@@ -888,11 +895,7 @@ class Core extends Base\Core
             // Maintained for backward compatibility
             $this->addSubMerchantReferral($partner, $submerchant);
 
-            if ($partner->allowSubmerchantAccess() === true)
-            {
-                // Attaches partners's user to the submerchant account as an owner
-                $this->attachSubMerchantOwner($partner->primaryOwner()->getId(), $submerchant);
-            }
+            $this->assignSubmerchantDashboardAccessIfApplicable($partner, $submerchant);
 
             // If the mapping already exists, the existing entity is returned
             $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
@@ -913,6 +916,13 @@ class Core extends Base\Core
      */
     public function deletePartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
     {
+        $this->trace->info(
+            TraceCode::PARTNER_DELETE_ACCESS_MAP_REQUEST,
+            [
+                'partner_id'     => $partner->getId(),
+                'submerchant_id' => $submerchant->getId(),
+            ]);
+
         $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
             $partnerApp = $this->getPartnerApp($partner);
@@ -1052,10 +1062,51 @@ class Core extends Base\Core
 
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
     {
-        $tag = 'Ref-' . $partnerId;
+        $tag = 'ref-' . $partnerId;
 
         $tags = $this->deleteTag($merchant->getPublicId(), $tag);
 
         return $tags;
+    }
+
+    protected function isPartnerUserAddedToSubmerchant(Entity $partner, Entity $submerchant): bool
+    {
+        $partnerUser = $partner->primaryOwner();
+
+        $ownerIds = $submerchant->owners()->getIds();
+
+        return (in_array($partnerUser->getId(), $ownerIds, true) === true);
+    }
+
+    /**
+     * Maps the partner user to the submerchant account,
+     * if the partner merchant should have access to the submerchant's dashboard, and,
+     * if the partner user is not already mapped to the submerchant's account.
+     *
+     * @param Entity $partner
+     * @param Entity $submerchant
+     */
+    protected function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant)
+    {
+        if ($partner->allowSubmerchantDashboardAccess() === false)
+        {
+            return;
+        }
+
+        if ($this->isPartnerUserAddedToSubmerchant($partner, $submerchant) === false)
+        {
+            // Attaches partners's user to the submerchant account as an owner
+            $this->attachSubMerchantOwner($partner->primaryOwner()->getId(), $submerchant);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT,
+                [
+                    'partner_id'     => $partner->getId(),
+                    'submerchant_id' => $submerchant->getId(),
+                ]);
+        }
+
     }
 }

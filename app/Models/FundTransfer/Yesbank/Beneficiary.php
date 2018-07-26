@@ -8,10 +8,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Base;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\FundTransfer\Base\Beneficiary\RequestProcessor;
+use RZP\Models\FundTransfer\Base\Beneficiary\ApiProcessor;
 use RZP\Models\FundTransfer\Yesbank\Request\Beneficiary as BeneficiaryRequest;
 
-class Beneficiary extends RequestProcessor
+class Beneficiary extends ApiProcessor
 {
     protected $channel = Channel::YESBANK;
 
@@ -25,7 +25,7 @@ class Beneficiary extends RequestProcessor
     {
         $this->count = $bankAccounts->count();
 
-        $request = new BeneficiaryRequest();
+        $request = new BeneficiaryRequest;
 
         foreach ($bankAccounts as $bankAccount)
         {

@@ -32,15 +32,19 @@ class Gateway extends Base\Gateway
     const CACHE_KEY = 'hitachi_%s_card_details';
     const CACHE_TTL = 20;
 
-
     const TIME_FORMAT = 'His';
     const DATE_FORMAT = 'md';
 
-    public function __construct()
+    public function setGatewayParams($input, $mode, $terminal)
     {
-        parent::__construct();
+        parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->secureCacheDriver = $this->app['config']->get('cache.secure_default');
+        $this->secureCacheDriver = $this->getDriver($input);
+    }
+
+    public function otpGenerate(array $input)
+    {
+        return $this->authorize($input);
     }
 
     public function authorize(array $input)
@@ -59,7 +63,7 @@ class Gateway extends Base\Gateway
             return $this->authorizeRecurring($input);
         }
 
-        $authenticationGateway = $this->decideAuthenticationGateway();
+        $authenticationGateway = $this->decideAuthenticationGateway($input);
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
@@ -73,6 +77,11 @@ class Gateway extends Base\Gateway
         return $this->authorizeNotEnrolled($input);
     }
 
+    public function callbackOtpSubmit(array $input)
+    {
+        return $this->callback($input);
+    }
+
     public function callback(array $input)
     {
         parent::callback($input);
@@ -83,9 +92,8 @@ class Gateway extends Base\Gateway
                           ->mpi
                           ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
 
-
         $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
-        
+
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
         $gatewayEntity = $this->authorizeEnrolled($input, $authResponse);
@@ -213,11 +221,11 @@ class Gateway extends Base\Gateway
         $qrData = [
             BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]),
             BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($input[ResponseFields::MASKED_CARD_NUMBER], 0, 6),
-            BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::MASKED_CARD_NUMBER], 12, 4),
+            BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::MASKED_CARD_NUMBER], -4),
             BharatQr\GatewayResponseParams::SENDER_NAME           => $input[ResponseFields::SENDER_NAME],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::MID],
-            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[ResponseFields::PURCHASE_ID], 0, 14),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::RRN],
         ];
 
@@ -254,9 +262,23 @@ class Gateway extends Base\Gateway
             $this->mode);
     }
 
-    protected function decideAuthenticationGateway()
+    protected function decideAuthenticationGateway($input)
     {
-        return Payment\Gateway::MPI_BLADE;
+        $networkCode = $input['card']['network_code'];
+
+        if (($input['merchant']->isAxisExpressPayEnabled() === true) and
+            ($input['card']['issuer'] === 'UTIB') and
+            ($input['payment']['auth_type'] === 'otp') and
+            (in_array($networkCode, [Card\Network::MC, Card\Network::VISA], true) === true))
+        {
+            $authenticationGateway = Payment\Gateway::MPI_ENSTAGE;
+        }
+        else
+        {
+            $authenticationGateway = Payment\Gateway::MPI_BLADE;
+        }
+
+        return $authenticationGateway;
     }
 
     protected function authorizeRecurring(array $input)
@@ -692,7 +714,7 @@ class Gateway extends Base\Gateway
             Entity::RRN                => $response[ResponseFields::RRN],
             Entity::AUTH_ID            => $response[ResponseFields::AUTHORIZATION_ID],
             Entity::STATUS             => $response[ResponseFields::STATUS_CODE],
-            Entity::MERCHANT_REFERENCE => $response[ResponseFields::PURCHASE_ID],
+            Entity::MERCHANT_REFERENCE => substr($response[ResponseFields::PURCHASE_ID], 0 , 14),
         ];
 
         return $attributes;

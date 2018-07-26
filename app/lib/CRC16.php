@@ -29,7 +29,7 @@ class CRC16
 
         $hex = dechex($expectedCRC);
 
-        $crc =  str_pad($hex, self::CRC_LENGTH, '0', STR_PAD_LEFT);
+        $crc = str_pad($hex, self::CRC_LENGTH, '0', STR_PAD_LEFT);
 
         return strtoupper($crc);
     }
@@ -106,7 +106,7 @@ class CRC16
 
         $crcTable = $this->genCrc16TableMsb($poly);
 
-        for ($p = 1; $p <= sizeof($data); $p++)
+        for ($p = 1; $p <= count($data); $p++)
         {
             $crc = $crc << 8 & 0xFF00 ^ $crcTable[($crc >> 8 ^ $data[$p] & 0xFF)] & 0xFFFF;
         }

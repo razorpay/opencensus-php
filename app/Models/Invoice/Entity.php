@@ -798,9 +798,24 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::CUSTOMER_SHIPPING_ADDR_ID);
     }
 
+    public function hasBatch(): bool
+    {
+        return $this->isAttributeNotNull(self::BATCH_ID);
+    }
+
+    public function hasSubscription(): bool
+    {
+        return $this->isAttributeNotNull(self::SUBSCRIPTION_ID);
+    }
+
     public function isTypeLink(): bool
     {
         return ($this->getType() === Type::LINK);
+    }
+
+    public function isNotTypeInvoice(): bool
+    {
+        return ($this->isTypeInvoice() === false);
     }
 
     public function isTypeInvoice(): bool
@@ -867,6 +882,20 @@ class Entity extends Base\PublicEntity
         $ext     = FileStore\Format::PDF;
 
         return sanitizeFilename("Invoice $receipt from $from ($status).$ext");
+    }
+
+    /**
+     * Gets dimensions for metrics around invoice module
+     * @param  array $extra Additional key, value pair of dimensions
+     * @return array
+     */
+    public function getMetricDimensions(array $extra = []): array
+    {
+        return $extra + [
+            'type'             => (string) $this->getType(),
+            'has_batch'        => (int) $this->hasBatch(),
+            'has_subscription' => (int) $this->hasSubscription(),
+        ];
     }
 
     // -------------------------------------- End Getters ------------

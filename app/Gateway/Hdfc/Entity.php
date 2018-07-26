@@ -100,6 +100,11 @@ class Entity extends Base\Entity
         return $received;
     }
 
+    public function getGatewayTransactionId()
+    {
+        return $this->getAttribute('gateway_transaction_id');
+    }
+
     public function setReceived($value)
     {
         $this->setAttribute('received', $value);

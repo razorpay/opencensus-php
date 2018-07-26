@@ -80,6 +80,16 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconProcessSuccessForChannel($channel, Attempt\Type::SETTLEMENT, $failureTest);
     }
 
+    protected function verifySettlementReconProcessForYesbank($failureTest = false)
+    {
+        $channel = Channel::YESBANK;
+
+        $this->createDataAndAssertInitiateOnlineTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT, $failureTest);
+
+        $this->assertReconProcessSuccessForChannel($channel, Attempt\Type::SETTLEMENT, $failureTest);
+    }
+
     protected function verifySettlementReconFileProcessFailureKotak()
     {
         $channel = Channel::KOTAK;
@@ -198,6 +208,15 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
 
+    public function testSettlementReconcileEntitiesSuccessForYesbank()
+    {
+        $this->verifySettlementReconProcessForYesbank();
+
+        $this->reconcileEntitiesForChannel(Channel::YESBANK);
+
+        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+    }
+
     public function testSettlementReconcileEntitiesFailureForRbl()
     {
         $this->verifySettlementReconProcessForRbl(true);
@@ -205,6 +224,15 @@ class AttemptReconcileTest extends TestCase
         $content = $this->reconcileEntitiesForChannel(Channel::RBL);
 
         $this->assertOnlineReconcileEntitiesFailure($content, Channel::RBL);
+    }
+
+    public function testSettlementReconcileEntitiesFailureForYesbank()
+    {
+        $this->verifySettlementReconProcessForYesbank(true);
+
+        $content = $this->reconcileEntitiesForChannel(Channel::YESBANK);
+
+        $this->assertOnlineReconcileEntitiesFailure($content, Channel::YESBANK);
     }
 
     public function testPayoutReconcileEntitiesForKotak()

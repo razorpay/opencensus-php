@@ -341,7 +341,7 @@ return [
 
     'testAddPartnerAccessMapSubmerchantAccessUnauthorized' => [
         'request'   => [
-            'url'     => '/merchants/10000000000011/access_maps',
+            'url'     => '/merchants/10000000000009/access_maps',
             'method'  => 'POST',
             'server' => [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
@@ -365,7 +365,7 @@ return [
 
     'testAddPartnerAccessMap' => [
         'request'   => [
-            'url'     => '/merchants/10000000000011/access_maps',
+            'url'     => '/merchants/10000000000009/access_maps',
             'method'  => 'POST',
             'server' => [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
@@ -374,7 +374,7 @@ return [
         ],
         'response'  => [
             'content' => [
-                'merchant_id' => '10000000000011',
+                'merchant_id' => '10000000000009',
                 'entity_type' => 'application',
             ],
         ],
@@ -383,7 +383,7 @@ return [
 
     'testAddPartnerAccessMapForDiffOrgSubmerchant' => [
         'request'   => [
-            'url'     => '/merchants/10000000000011/access_maps',
+            'url'     => '/merchants/10000000000009/access_maps',
             'method'  => 'POST',
             'server' => [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
@@ -407,7 +407,7 @@ return [
 
     'testAddAccessMapWithoutPartnerContext' => [
         'request'   => [
-            'url'     => '/merchants/10000000000011/access_maps',
+            'url'     => '/merchants/10000000000009/access_maps',
             'method'  => 'POST',
             'content' => [],
         ],
@@ -428,7 +428,7 @@ return [
 
     'testAddAccessMapToPurePlatform' => [
         'request'   => [
-            'url'     => '/merchants/10000000000011/access_maps',
+            'url'     => '/merchants/10000000000009/access_maps',
             'method'  => 'POST',
             'server' => [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
@@ -452,7 +452,7 @@ return [
 
     'testAddAccessMapToNonPartner' => [
         'request'   => [
-            'url'     => '/merchants/10000000000011/access_maps',
+            'url'     => '/merchants/10000000000009/access_maps',
             'method'  => 'POST',
             'server' => [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
@@ -476,7 +476,7 @@ return [
 
     'testAddPartnerAccessMapAgain' => [
         'request'   => [
-            'url'     => '/merchants/10000000000011/access_maps',
+            'url'     => '/merchants/10000000000009/access_maps',
             'method'  => 'POST',
             'server' => [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
@@ -491,7 +491,7 @@ return [
 
     'testRemovePartnerAccessMap' => [
         'request'   => [
-            'url'     => '/merchants/10000000000011/access_maps',
+            'url'     => '/merchants/10000000000009/access_maps',
             'method'  => 'DELETE',
             'server' => [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
@@ -502,7 +502,7 @@ return [
 
     'testRemoveNonExistingPartnerAccessMap' => [
         'request'   => [
-            'url'     => '/merchants/10000000000011/access_maps',
+            'url'     => '/merchants/10000000000009/access_maps',
             'method'  => 'DELETE',
             'server' => [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
@@ -513,7 +513,7 @@ return [
 
     'testRemovePartnerAccessMapAgain' => [
         'request'   => [
-            'url'     => '/merchants/10000000000011/access_maps',
+            'url'     => '/merchants/10000000000009/access_maps',
             'method'  => 'DELETE',
             'server' => [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
@@ -614,7 +614,7 @@ return [
 
     'testNoSubmerchantAccountAccessForReseller' => [
         'request'   => [
-            'url'     => '/merchants/10000000000011/access_maps',
+            'url'     => '/merchants/10000000000009/access_maps',
             'method'  => 'POST',
             'server' => [
                 'HTTP_X-Razorpay-Account' => 'acc_10000000000000',

@@ -669,19 +669,7 @@ class Entity extends Base\PublicEntity
             return false;
         }
 
-        $iin = $this->getIin();
-
-        $last4 = $this->getLast4();
-
         if ($this->iinRelation->isEnabled() === false)
-        {
-            return true;
-        }
-
-        $blackList = Card\BlackList::BLOCKED_IIN_LAST4;
-
-        if ((isset($blackList[$iin]) === true) and
-            (in_array($last4, $blackList[$iin])))
         {
             return true;
         }

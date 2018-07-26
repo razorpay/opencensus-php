@@ -36,7 +36,10 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
-            ['input' => $input]);
+            [
+                'input'       => $input,
+                'merchant_id' => $merchant->getId(),
+            ]);
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
@@ -572,10 +575,12 @@ class Core extends Base\Core
 
     /**
      * This function is used for updating merchant website details
+     *
      * @param Entity $merchantDetails
-     * @param array $input
+     * @param array  $input
      *
      * @return Entity
+     * @throws \Exception
      */
     public function updateWebsiteDetails(Entity $merchantDetails, array $input): Entity
     {
@@ -593,14 +598,22 @@ class Core extends Base\Core
 
             $merchant = $merchantDetails->merchant;
 
-            // website is being synced to merchant entity as well
+            // Website is being synced to merchant entity as well
             $merchant->setWebsiteAttribute($input[Entity::BUSINESS_WEBSITE]);
 
             $this->repo->saveOrFail($merchant);
-
-            // admin must be notified through email about the website details update
-            $this->adminNotifyWebsiteDetailsUpdate($merchantDetails);
         });
+
+        //
+        // If the merchant is activated, admins must be notified via email about the website
+        // details update, so they can review the change.
+        // However, for a merchant who is not activated yet, this change is reviewed during
+        // merchant activation
+        //
+        if ($merchantDetails->merchant->isActivated() === true)
+        {
+            $this->adminNotifyWebsiteDetailsUpdate($merchantDetails);
+        }
 
         return $merchantDetails;
     }
@@ -697,6 +710,7 @@ class Core extends Base\Core
             // for a linked accounts activation
             //
             $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
+            $response['linked_account'] = true;
         }
 
         $currentActivationState = $merchant->currentActivationState();

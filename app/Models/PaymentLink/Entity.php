@@ -164,7 +164,6 @@ class Entity extends Base\PublicEntity
         self::TOTAL_AMOUNT_PAID  => 0,
         self::STATUS             => Status::ACTIVE,
         self::STATUS_REASON      => null,
-        self::USER_ID            => null,
         self::DESCRIPTION        => null,
         self::NOTES              => [],
         self::HOSTED_TEMPLATE_ID => null,

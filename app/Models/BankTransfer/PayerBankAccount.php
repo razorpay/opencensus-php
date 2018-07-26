@@ -8,6 +8,7 @@ use Razorpay\IFSC\IFSC;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Models\Bank\BankCodes;
 
 class PayerBankAccount extends Base\Core
 {
