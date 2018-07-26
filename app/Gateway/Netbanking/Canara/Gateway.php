@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Netbanking\Canara;
 
-use RZP\Gateway\Netbanking\Canara\TransactionType;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Mode;
@@ -73,7 +72,7 @@ class Gateway extends Base\Gateway
 
         $this->verifyCallback($input);
 
-        $gatewayPayment = $this->saveCallbackResponse($content);
+        $gatewayPayment = $this->saveCallbackResponse($content, $input['payment']);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -205,13 +204,13 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function saveCallbackResponse($content)
+    protected function saveCallbackResponse($content, $payment)
     {
         $content[NetbankingEntity::RECEIVED] = true;
 
-        $gatewayPayment = $this->getRepository()->findByPaymentIdAndActionOrFail(
-            $content[ResponseFields::PAYMENT_ID],
-            Action::AUTHORIZE);
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                                        $payment['id'],
+                                                    Action::AUTHORIZE);
 
         $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
