@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Canara;
 
+use TransactionType;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Mode;
@@ -137,7 +138,7 @@ class Gateway extends Base\Gateway
     {
         $paymentEntity = $input['payment'];
         $data = [
-            RequestFields::MODE_OF_TRANSACTION           => Constants::MODE_OF_TRANSACTION_PURCHASE,
+            RequestFields::MODE_OF_TRANSACTION           => TransactionType::AUTHORIZE,
             RequestFields::CLIENT_CODE                   => $this->getClientCode($paymentEntity[Payment\Entity::EMAIL]),
             RequestFields::CLIENT_ACCOUNT                => '',
             RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
@@ -251,7 +252,7 @@ class Gateway extends Base\Gateway
         $paymentEntity = $input['payment'];
 
         $data = [
-            RequestFields::MODE_OF_TRANSACTION           => Constants::MODE_OF_TRANSACTION_VERIFY,
+            RequestFields::MODE_OF_TRANSACTION           => TransactionType::VERIFY,
             RequestFields::CLIENT_CODE                   => $this->getClientCode($paymentEntity[Payment\Entity::EMAIL]),
             RequestFields::CLIENT_ACCOUNT                => '',
             RequestFields::MERCHANT_CODE                 => $this->getMerchantId(),
