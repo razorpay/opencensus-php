@@ -13,12 +13,14 @@ use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
 
 /**
  * @property Merchant $merchant
  */
 class Entity extends Base\PublicEntity
 {
+    use LinkedAccountNotesTrait;
     use NotesTrait;
 
     const ID                        = 'id';
@@ -349,20 +351,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECIPIENT_SETTLEMENT_ID, $recipientSettlementId);
     }
 
-    public function setLinkedAccountNotesAttribute($laNotes)
-    {
-        $notes = $this->getNotes();
-
-        if (empty($laNotes) === false)
-        {
-            $laNotes = implode(",", $laNotes);
-
-            $notes[self::LINKED_ACCOUNT_NOTES] = $laNotes;
-
-            $this->setNotes($notes->toArray());
-        }
-    }
-
     // -------------------- End Setters ---------------------------
 
     /**
@@ -446,21 +434,6 @@ class Entity extends Base\PublicEntity
         if ($txnId !== null)
         {
             $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedId($txnId);
-        }
-    }
-
-    public function setPublicLinkedAccountNotesAttribute(array & $attributes)
-    {
-        $notes = $this->getNotes();
-
-        if ((empty($notes) === false) and (empty($notes[self::LINKED_ACCOUNT_NOTES]) === false))
-        {
-            $attributes[self::LINKED_ACCOUNT_NOTES] = explode(",", $notes[self::LINKED_ACCOUNT_NOTES]);
-            unset($attributes[self::NOTES][self::LINKED_ACCOUNT_NOTES]);
-        }
-        else
-        {
-            $attributes[self::LINKED_ACCOUNT_NOTES] = [];
         }
     }
 

@@ -368,7 +368,7 @@ class Core extends Base\Core
      * @throws \RZP\Exception\BadRequestException
      * @return array
      */
-    private function getLaNotes(array $input)
+    public function getLaNotes(array $input)
     {
         $transferNotes = $input[Entity::NOTES] ?? [];
 

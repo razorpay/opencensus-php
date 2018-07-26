@@ -6,19 +6,22 @@ use RZP\Models\Base;
 use RZP\Models\Transfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
 
 class Entity extends Base\PublicEntity
 {
+    use LinkedAccountNotesTrait;
     use NotesTrait;
 
-    const ID             = 'id';
-    const MERCHANT_ID    = 'merchant_id';
-    const ENTITY_ID      = 'entity_id';
-    const ENTITY_TYPE    = 'entity_type';
-    const AMOUNT         = 'amount';
-    const CURRENCY       = 'currency';
-    const NOTES          = 'notes';
-    const TRANSACTION_ID = 'transaction_id';
+    const ID                    = 'id';
+    const MERCHANT_ID           = 'merchant_id';
+    const ENTITY_ID             = 'entity_id';
+    const ENTITY_TYPE           = 'entity_type';
+    const AMOUNT                = 'amount';
+    const CURRENCY              = 'currency';
+    const NOTES                 = 'notes';
+    const TRANSACTION_ID        = 'transaction_id';
+    const LINKED_ACCOUNT_NOTES  = 'linked_account_notes';
 
     // response attribute const
     const TRANSFER_ID = 'transfer_id';
@@ -33,6 +36,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
+        self::LINKED_ACCOUNT_NOTES,
     ];
 
     protected $visible = [
@@ -56,6 +60,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::NOTES,
         self::CREATED_AT,
+        self::LINKED_ACCOUNT_NOTES,
     ];
 
     protected $casts = [
@@ -70,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::TRANSFER_ID,
+        self::LINKED_ACCOUNT_NOTES
     ];
 
     protected $defaults = [
