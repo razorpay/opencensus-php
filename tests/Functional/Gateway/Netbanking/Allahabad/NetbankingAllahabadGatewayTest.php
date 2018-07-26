@@ -4,21 +4,17 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Allahabad;
 
 use Mail;
 use Excel;
-use RZP\Models\Payment;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
-use RZP\Gateway\Netbanking\Allahabad\RefundFile;
-use RZP\Models\Terminal\Options;
-use RZP\Constants\Entity as ConstantsEntity;
-use RZP\Gateway\Netbanking\Allahabad\ResponseFields;
-use RZP\Gateway\Netbanking\Allahabad\Status;
-use RZP\Tests\Functional\TestCase;
-use RZP\Models\Payment\Verify\Status as VerifyStatus;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Gateway\DailyFile;
+use RZP\Tests\Functional\TestCase;
+use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Gateway\Netbanking\Allahabad\Status;
+use RZP\Gateway\Netbanking\Allahabad\ResponseFields;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
 
 class NetbankingAllahabadGatewayTest extends TestCase
 {
@@ -44,8 +40,6 @@ class NetbankingAllahabadGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $terminal = $this->getLastEntity('terminal', true);
-
         $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -67,7 +61,7 @@ class NetbankingAllahabadGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
+        $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
     }
 
     public function testAuthorizeFailed()
@@ -83,7 +77,6 @@ class NetbankingAllahabadGatewayTest extends TestCase
                 $this->doAuthAndCapturePayment($this->payment);
             });
 
-        // Assert that we don't save any information into the netbanking entity
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
@@ -104,8 +97,7 @@ class NetbankingAllahabadGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking',true);
 
-        $this->assertTestResponse($gatewayPayment,'testPaymentFailedNetbankingEntity');
-
+        $this->assertTestResponse($gatewayPayment,'testTamperedPaymentNetbankingEntity');
     }
 
     public function testFailedChecksum()
@@ -119,36 +111,11 @@ class NetbankingAllahabadGatewayTest extends TestCase
             function()
             {
                 $this->doAuthAndCapturePayment($this->payment);
-            }
-        );
+            });
 
         $gatewayPayment = $this->getLastEntity('netbanking',true);
 
-        $this->assertTestResponse($gatewayPayment,'testPaymentFailedNetbankingEntity');
-
-    }
-
-    public function testPaymentSuccessVerifyFailed()
-    {
-        $data = $this->testData['testPaymentSuccessVerifyFail'];
-
-        $this->testPayment();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->mockPaymentVerifyFailed();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment['id']);
-            });
-
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertTestResponse($gatewayPayment, 'testAuthSuccessVerifyFailedNetbankingEntity');
-
+        $this->assertTestResponse($gatewayPayment,'testTamperedPaymentNetbankingEntity');
     }
 
     public function testAuthFailedVerifySuccess()
@@ -194,8 +161,11 @@ class NetbankingAllahabadGatewayTest extends TestCase
             {
                 $this->doAuthAndCapturePayment($this->payment);
             });
-    }
 
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testUserCancelledNetbankingEntity');
+    }
 
     public function testRefundFileGeneration()
     {
@@ -203,7 +173,6 @@ class NetbankingAllahabadGatewayTest extends TestCase
 
         $this->createRefundForFileGeneration();
 
-        // gateway file generation route is an internal auth
         $this->ba->appAuth();
 
         $data = $this->generateGatewayFile('allahabad', 'combined');
@@ -283,7 +252,6 @@ class NetbankingAllahabadGatewayTest extends TestCase
         );
     }
 
-
     protected function checkRefundExcelData(array $data, array $file)
     {
         $this->assertNotNull($data[File\Entity::FILE_GENERATED_AT]);
@@ -307,7 +275,6 @@ class NetbankingAllahabadGatewayTest extends TestCase
             $rowRefundAmount = trim($refundsFileRow[9]);
 
             assert(in_array($rowRefundAmount, $refundAmounts, true));
-
         }
 
         $this->assertEquals(3, count($refundFileContent));
@@ -318,7 +285,7 @@ class NetbankingAllahabadGatewayTest extends TestCase
     protected function checkMailQueue(array $file)
     {
         Mail::assertSent(DailyFile::class, function ($mail) use ($file)
-        {   s($mail->viewData);
+        {
             $this->assertEquals(1500, $mail->viewData['amount']['claims']);
             $this->assertEquals(1100, $mail->viewData['amount']['refunds']);
             $this->assertEquals(400, $mail->viewData['amount']['total']);

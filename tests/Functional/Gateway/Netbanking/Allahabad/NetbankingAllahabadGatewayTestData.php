@@ -32,17 +32,11 @@ return [
     ],
 
     'testPaymentNetbankingEntity' => [
+        'action'          => 'authorize',
         'bank_payment_id' => '99999',
         'received'        => true,
         'bank'            => 'ALLA',
         'status'          => 'Y',
-    ],
-
-
-    'testPaymentVerifySuccessEntity' => [
-        'received'        => true,
-        'bank'            => 'ALLA',
-        'status'          => RZP\Gateway\Netbanking\Allahabad\Status::YES,
     ],
 
     'testAuthorizeFailed' => [
@@ -65,15 +59,15 @@ return [
         'response' => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'          => PublicErrorCode::SERVER_ERROR,
                     'description'   => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 500,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\RuntimeException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
 
@@ -94,22 +88,6 @@ return [
         ],
     ],
 
-    'testPaymentSuccessVerifyFail' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => PaymentVerificationException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
-        ],
-    ],
-
     'testAuthFailedVerifySuccess' => [
         'response'  => [
             'content'     => [
@@ -127,13 +105,18 @@ return [
     ],
 
     'testAuthFailedVerifyFailedEntity' => [
-        'received'        => false,
+        'received'        => true,
         'bank'            => 'ALLA',
         'status'          => 'N'
     ],
 
     'testPaymentFailedNetbankingEntity' => [
-        'bank_payment_id' => null,
+        'received'        => true,
+        'bank'            => 'ALLA',
+        'status'          => 'N'
+    ],
+
+    'testTamperedPaymentNetbankingEntity' => [
         'received'        => false,
         'bank'            => 'ALLA',
         'status'          => null
@@ -144,20 +127,21 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
         ],
     ],
 
-    'testAuthSuccessVerifyFailedNetbankingEntity' => [
+    'testUserCancelledNetbankingEntity' => [
         'received'        => true,
         'bank'            => 'ALLA',
-        'status'          => 'N'
+        'status'          => 'C',
+        'bank_payment_id' => null,
     ],
-    ];
+];
