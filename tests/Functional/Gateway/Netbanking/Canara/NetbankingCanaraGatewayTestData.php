@@ -26,6 +26,7 @@ return [
             'merchant_order_id' => 'random order id',
         ],
         'gateway'           => 'netbanking_canara',
+        'reference1'        => 'AB1234',
         'signed'            => false,
         'verified'          => null,
         'entity'            => 'payment',
