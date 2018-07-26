@@ -6,6 +6,7 @@ import { ModalContent } from 'component/Modal';
 import { adminPut, adminPost } from 'common/fetch';
 import { snakeToTitleCase } from 'common/util';
 import { gateways, cardTypes, networks } from 'common/data';
+import AsyncButton from 'ui/AsyncButton';
 
 const supportedMethods = {
   netbanking: 'Netbanking',
@@ -114,7 +115,7 @@ export default class Entity extends Component {
       <ModalContent
         header={!isNew ? `Edit Downtime – ${id}` : 'Add a new Downtime'}
       >
-        <Form class="full-span downtime-form" onSubmit={this.onSubmit}>
+        <Form class="full-span downtime-form">
           <div>
             {isNew || scheduled ? (
               <CheckField
@@ -308,10 +309,18 @@ export default class Entity extends Component {
             />
 
             <footer class="text-right">
-              <div class="btn btn-default" onClick={closeModal}>
-                Close
-              </div>
-              {isEditable ? <button>Save</button> : ''}
+              {isEditable ? (
+                <AsyncButton
+                  text="Save"
+                  class="btn"
+                  pendingClass="small spinner"
+                  onSubmit={this.onSubmit}
+                />
+              ) : (
+                <button class="btn btn-default" onClick={closeModal}>
+                  Close
+                </button>
+              )}
             </footer>
           </div>
         </Form>
