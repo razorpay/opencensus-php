@@ -52,6 +52,12 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_NAME      => 'required|max:40|alpha_space_num',
     ];
 
+    protected static $addBankTransferRules = [
+        Entity::IFSC_CODE             => 'required|alpha_num|size:11',
+        Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
+        Entity::BENEFICIARY_NAME      => 'sometimes|max:40|alpha_space_num',
+    ];
+
     protected static $addBankAccountValidators = [
         Entity::BENEFICIARY_STATE
     ];
