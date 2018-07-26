@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Netbanking\Allahabad\Mock;
 
-use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Allahabad;
 
@@ -15,14 +14,14 @@ class Gateway extends Allahabad\Gateway
         $request = parent::authorize($input);
 
         $url = $this->route->getUrlWithPublicAuth(
-            'mock_netbanking_payment',
-            ['bank' => $this->bank]);
+                              'mock_netbanking_payment',
+                               ['bank' => $this->bank]);
 
         $parts = parse_url($request['url']);
 
-        $str=$parts['query'];
+        $str = $parts['query'];
 
-        $request['url'] = $url .'&'.$str;
+        $request['url'] = $url .'&'. $str;
 
         return $request;
     }
