@@ -531,6 +531,16 @@ class Entity extends Base\PublicEntity
         return Crypt::decrypt($aadhaarNumber);
     }
 
+    protected function getAadhaarVidAttribute($aadhaarVid)
+    {
+        if ($aadhaarVid === null)
+        {
+            return $aadhaarVid;
+        }
+
+        return Crypt::decrypt($aadhaarVid);
+    }
+
     public function setPublicRecurringDetailsAttribute(array & $array)
     {
         if ($this->getMethod() === Payment\Method::CARD)
