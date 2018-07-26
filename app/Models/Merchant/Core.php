@@ -1102,7 +1102,7 @@ class Core extends Base\Core
         $partnerApp = $this->getPartnerApp($partner);
 
         $merchant = $this->repo
-                         ->account
+                         ->merchant
                          ->findSubmerchantByIdAndPartnerAppId($submerchantId, $partnerApp->getId());
 
         $partnerUser = $partner->primaryOwner();
@@ -1122,7 +1122,7 @@ class Core extends Base\Core
         $partnerApp = $this->getPartnerApp($partner);
 
         $merchants = $this->repo
-                          ->account
+                          ->merchant
                           ->fetchSubmerchantsByPartnerAppId($partnerApp->getId());
 
         $partnerUser = $partner->primaryOwner();
@@ -1186,12 +1186,12 @@ class Core extends Base\Core
     protected function getPartnerSubmerchantData(Entity $submerchant, User\Entity $partnerUser): Entity
     {
         $submerchant[Entity::DETAILS] = [
-            Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS)
+            Detail\Entity::ACTIVATION_STATUS => $submerchant->merchantDetail->getActivationStatus()
         ];
 
         $submerchantOwner = $this->getNonPartnerPrimaryOwner($submerchant, $partnerUser);
 
-        $submerchant[Entity::USER] = ($submerchantOwner !== null) ? $submerchantOwner->toArrayPublic() : null;
+        $submerchant[Entity::USER] = ($submerchantOwner === null) ? null : $submerchantOwner->toArrayPublic();
 
         $submerchant[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($submerchant);
 

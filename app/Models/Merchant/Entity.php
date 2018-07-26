@@ -338,6 +338,12 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED_AT,
     ];
 
+    /**
+     * These attributes will be exposed when toArrayPartner() is called,
+     * along with the attributes defined in the $public array.
+     *
+     * @var array
+     */
     protected $partner = [
         self::DETAILS,
         self::USER,
@@ -1601,5 +1607,10 @@ class Entity extends Base\PublicEntity
     public function isNonPurePlatformPartner(): bool
     {
         return (($this->isPartner() === true) and ($this->getPartnerType() !== Constants::PURE_PLATFORM));
+    }
+
+    protected function setPartnerIdAttribute(array & $array)
+    {
+        $array[self::ID] = Account\Entity::getSignedId($array[self::ID]);
     }
 }
