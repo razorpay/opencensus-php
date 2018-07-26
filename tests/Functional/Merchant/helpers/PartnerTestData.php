@@ -598,7 +598,7 @@ return [
         'response' => [
             'content' => [
                 'id'               => 'acc_10000000000009',
-                'entity'           => 'merchant',
+                'entity'           => 'account',
                 'user'             => [],
                 'details'          => [
                     'activation_status' => 'under_review',
@@ -617,7 +617,7 @@ return [
         'response' => [
             'content' => [
                 'id'               => 'acc_10000000000009',
-                'entity'           => 'merchant',
+                'entity'           => 'account',
                 'user'             => [],
                 'dashboard_access' => true,
             ],
@@ -654,7 +654,7 @@ return [
                 'items'  => [
                     [
                         'id'               => 'acc_10000000000009',
-                        'entity'           => 'merchant',
+                        'entity'           => 'account',
                         'user'             => null,
                         'details'          => [
                             'activation_status' => 'under_review',

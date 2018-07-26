@@ -1190,11 +1190,6 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function setPartnerIdAttribute(array & $array)
-    {
-        $array[self::ID] = Account\Entity::getSignedId($array[self::ID]);
-    }
-
     public function getHoldFunds()
     {
         return $this->getAttribute(self::HOLD_FUNDS);

@@ -1102,7 +1102,7 @@ class Core extends Base\Core
         $partnerApp = $this->getPartnerApp($partner);
 
         $merchant = $this->repo
-                         ->merchant
+                         ->account
                          ->findSubmerchantByIdAndPartnerAppId($submerchantId, $partnerApp->getId());
 
         $merchant = $this->getPartnerSubmerchantData($partner, $merchant);
@@ -1120,7 +1120,7 @@ class Core extends Base\Core
         $partnerApp = $this->getPartnerApp($partner);
 
         $merchants = $this->repo
-                          ->merchant
+                          ->account
                           ->fetchSubmerchantsByPartnerAppId($partnerApp->getId());
 
         $merchants = $merchants->map(function($merchant) use ($partner)

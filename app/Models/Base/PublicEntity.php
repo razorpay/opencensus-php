@@ -78,15 +78,6 @@ class PublicEntity extends UniqueIdEntity
         self::ENTITY,
     ];
 
-    /**
-     * Fields exposed to the partners
-     *
-     * @var array
-     */
-    protected $partnerSetters = [
-        self::ID,
-    ];
-
     protected $embeddedRelations = [];
 
     /**
@@ -175,8 +166,6 @@ class PublicEntity extends UniqueIdEntity
     {
         $publicAttributes = $this->toArrayPublic();
 
-        $this->setPartnerAttributes($publicAttributes);
-
         $partnerAttributes = array_only($this->attributes, $this->partner);
 
         $array = array_merge($publicAttributes, $partnerAttributes);
@@ -245,19 +234,6 @@ class PublicEntity extends UniqueIdEntity
         foreach ($this->publicSetters as $attr)
         {
             $func = 'setPublic' . studly_case($attr) . 'Attribute';
-
-            $this->$func($array);
-        }
-    }
-
-    /**
-     * @param array $array
-     */
-    public function setPartnerAttributes(array & $array)
-    {
-        foreach ($this->partnerSetters as $attr)
-        {
-            $func = 'setPartner' . studly_case($attr) . 'Attribute';
 
             $this->$func($array);
         }
