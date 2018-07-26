@@ -50,6 +50,17 @@ export default [
       _name: 'hasDesc',
       _cmp: Input.Check,
       checkboxMaskLabel: ['+ Add description', '- Remove description'],
+      onChange: e => {
+        if (e.target.value == '1') {
+          setTimeout(
+            () =>
+              document
+                .querySelector('.PaymentLinks--Create-Form [name=description]')
+                .focus(),
+            10
+          );
+        }
+      },
       _autoRenderImpure: true,
     },
   ],
