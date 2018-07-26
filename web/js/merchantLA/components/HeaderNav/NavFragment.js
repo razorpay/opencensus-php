@@ -52,6 +52,8 @@ class NavFragment extends Component {
 
     const { showSwitchModeTooltip } = this.state;
 
+    console.log('....', onSwitchMerchant);
+
     return (
       <React.Fragment>
         <li>

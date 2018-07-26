@@ -150,22 +150,6 @@ class PaymentMethods extends Component {
       });
   }
 
-  onCSVData(csvUrl) {
-    const { startDate, endDate } = this.props,
-      { selectedAgg } = this.state;
-
-    this.setState({
-      csvData: {
-        name: `Payment Insights, ${moment(startDate).format(
-          csvDateFormat
-        )} to ${moment(endDate).format(csvDateFormat)} ${
-          selectedAgg.text
-        }(Razorpay).csv`,
-        url: csvUrl,
-      },
-    });
-  }
-
   onLevelChange(hierarchy) {
     this.setState({
       levels: getLevels(hierarchy),
@@ -288,20 +272,6 @@ class PaymentMethods extends Component {
             onCSVData={this.onCSVData}
           />
         </PanelBody>
-        <PanelFooter className="clearfix">
-          <div className="pull-left">
-            <LastUpdated at={this.state.lastUpdatedAt} />
-          </div>
-          <div className="pull-right">
-            <Link
-              target="_blank"
-              to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
-              onClick={() => trackGoToLinks('Payments', sectionTitle)}
-            >
-              View all payments from this date range
-            </Link>
-          </div>
-        </PanelFooter>
       </GenericPanel>
     );
   }

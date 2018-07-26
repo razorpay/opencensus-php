@@ -56,7 +56,6 @@ const bodyClass = ' analytics-v2-active';
 
 // used to show titles for sections and also GA
 const keymetricsSectionTitle = 'Transactions Overview',
-  paymentInsightsTitle = 'Payment Insights',
   trafficSectionTitle = 'Traffic split on platforms',
   recentActivityTitle = 'Recent Activity';
 

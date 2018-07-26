@@ -46,6 +46,8 @@ export default class ProfileDropdown extends Component {
   openSwitchMerchantModal = () => {
     const { user, onSwitchMerchant } = this.props;
 
+    console.log('reallly??', onSwitchMerchant);
+
     this.props.openModal({
       size: 'small',
       component: (
