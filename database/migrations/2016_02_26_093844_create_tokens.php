@@ -64,6 +64,9 @@ class CreateTokens extends Migration
             $table->string(Token::AADHAAR_NUMBER)
                   ->nullable();
 
+            $table->string(Token::AADHAAR_VID)
+                ->nullable();
+
             $table->text(Token::GATEWAY_TOKEN)
                   ->nullable();
 
