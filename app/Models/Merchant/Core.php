@@ -1233,7 +1233,7 @@ class Core extends Base\Core
      */
     protected function hasSubmerchantDashboardAccess(Entity $submerchant): bool
     {
-        $userIds = $submerchant->users()->get()->getIds();
+        $userIds = $submerchant->users->getIds();
 
         $loggedInPartnerUser = $this->app['basicauth']->getUser();
 

@@ -490,26 +490,13 @@ class Repository extends Base\Repository
      */
     public function fetchSubmerchantsByPartnerAppId(string $applicationId): Base\PublicCollection
     {
-        $merchantDetailRepo = $this->repo->merchant_detail;
+        $accessMapCreatedAt = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::CREATED_AT);
 
-        $merchantDetailDbColumns =  $merchantDetailRepo->dbColumn('*');
+        $query = $this->buildQueryToFetchSubmerchants($applicationId)
+                      ->orderBy($accessMapCreatedAt, 'desc')
+                      ->get();
 
-        $merchantDetailMerchantIdColumn = $merchantDetailRepo->dbColumn(Detail\Entity::MERCHANT_ID);
-
-        $merchantsMerchantIdColumn = $this->dbColumn(Entity::ID);
-
-        $accessMapsMerchantIdColumn = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::MERCHANT_ID);
-
-        $attributes = [$merchantDetailDbColumns, $this->dbColumn('*')];
-
-        return $this->newQuery()
-                    ->select($attributes)
-                    ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantIdColumn, $accessMapsMerchantIdColumn)
-                    ->join(Table::MERCHANT_DETAIL, $merchantsMerchantIdColumn, $merchantDetailMerchantIdColumn)
-                    ->where(AccessMap\Entity::ENTITY_TYPE, AccessMap\Entity::APPLICATION)
-                    ->where(AccessMap\Entity::ENTITY_ID, $applicationId)
-                    ->orderBy(Table::MERCHANT . '.' . Entity::CREATED_AT, 'desc')
-                    ->get();
+        return $query;
     }
 
     /**
@@ -522,25 +509,48 @@ class Repository extends Base\Repository
         string $submerchantId,
         string $applicationId): Entity
     {
+        $accessMapsMerchantId = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::MERCHANT_ID);
+
+        $query = $this->buildQueryToFetchSubmerchants($applicationId)
+                      ->where($accessMapsMerchantId, $submerchantId)
+                      ->firstOrFail();
+
+        return $query;
+    }
+
+    /**
+     * @param string $applicationId
+     *
+     * @return RZP\Base\BuilderEx
+     */
+    protected function buildQueryToFetchSubmerchants(string $applicationId)
+    {
         $merchantDetailRepo = $this->repo->merchant_detail;
 
-        $merchantDetailDbColumns =  $merchantDetailRepo->dbColumn('*');
+        $accessMapRepo = $this->repo->merchant_access_map;
 
-        $merchantDetailMerchantIdColumn = $merchantDetailRepo->dbColumn(Detail\Entity::MERCHANT_ID);
+        $merchantDetailColumns = $merchantDetailRepo->dbColumn('*');
 
-        $merchantsMerchantIdColumn = $this->dbColumn(Entity::ID);
+        $merchantsMerchantId = $this->dbColumn(Entity::ID);
 
-        $accessMapsMerchantIdColumn = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::MERCHANT_ID);
+        $merchantDetailsMerchantId = $merchantDetailRepo->dbColumn(Detail\Entity::MERCHANT_ID);
 
-        $attributes = [$merchantDetailDbColumns, $this->dbColumn('*')];
+        $accessMapsEntityType = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_TYPE);
 
-        return $this->newQuery()
-                    ->select($attributes)
-                    ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantIdColumn, $accessMapsMerchantIdColumn)
-                    ->join(Table::MERCHANT_DETAIL, $merchantsMerchantIdColumn, $merchantDetailMerchantIdColumn)
-                    ->where(AccessMap\Entity::ENTITY_TYPE, AccessMap\Entity::APPLICATION)
-                    ->where(AccessMap\Entity::ENTITY_ID, $applicationId)
-                    ->where(Table::MERCHANT_ACCESS_MAP . '.' . AccessMap\Entity::MERCHANT_ID, $submerchantId)
-                    ->firstOrFail();
+        $accessMapsEntityId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_ID);
+
+        $accessMapsMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+
+        $attributes = [$merchantDetailColumns, $this->dbColumn('*')];
+
+        $query = $this->newQuery()
+                      ->with(['users'])
+                      ->select($attributes)
+                      ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
+                      ->join(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
+                      ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
+                      ->where($accessMapsEntityId, $applicationId);
+
+        return $query;
     }
 }
