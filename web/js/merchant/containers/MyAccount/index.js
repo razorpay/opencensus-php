@@ -25,7 +25,7 @@ export default class MyAccount extends Component {
             <NavLink to="/addfunds">Add Funds</NavLink>
           </ShowWhen>
 
-          <ShowWhen notMyRole="sellerapp support" featureEnabled="Referral">
+          <ShowWhen notMyRole="sellerapp" featureEnabled="Referral">
             <NavLink to="/referrals">Referrals</NavLink>
           </ShowWhen>
 
