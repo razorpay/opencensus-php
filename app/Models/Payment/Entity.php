@@ -2777,4 +2777,21 @@ class Entity extends Base\PublicEntity
 
         return 'upi.polling.' . $id . '.status';
     }
+
+    public function getTransactionType()
+    {
+        if ($this->isRecurring() === true)
+        {
+            return $this->getRecurringType();
+        }
+
+        switch ( $this->getAuthType() )
+        {
+            case AuthType::SKIP:
+                return 'MOTO';
+
+            default:
+                return 'PG';
+        }
+    }
 }
