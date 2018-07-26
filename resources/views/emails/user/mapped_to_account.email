@@ -45,7 +45,7 @@
               <td class="center">
                 <br />
                 <h1><center>
-                  <span style="color:#222">Congratulations!</span>
+                  <span style="color:#222">Greetings!</span>
                 </center></h1>
               </td>
               <td class="expander"></td>
@@ -68,9 +68,9 @@
                     <td class="center welcome">
 
 <p>
-  You have been added as an owner on the {{{$org['business_name']}}} account with id: {{{$subMerchant['id']}}}.
+  You have been added to {{{$subMerchant['name']}}}'s {{{$org['business_name']}}} account with id: {{{$subMerchant['id']}}}.
   <br>
-  You can switch to the account from the Switch Merchant dropdown in the top panel of your {{{$org['business_name']}}} dashboard.
+  You can switch to the account from the Switch Merchant dropdown in the top panel on your dashboard.
 </p>
 
 <p>

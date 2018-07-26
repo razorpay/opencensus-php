@@ -50,7 +50,7 @@ class MappedToAccount extends Base\Mailable
     {
         $orgName = $this->org['display_name'];
 
-        $subject = sprintf("Added as owner to a team | %s", $orgName);
+        $subject = sprintf("Added to %s's Dashboard as Owner | %s", $this->subMerchant['name'], $orgName);
 
         $this->subject($subject);
 

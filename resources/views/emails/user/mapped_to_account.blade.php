@@ -45,7 +45,7 @@
               <td class="center" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; font-size: 14px; line-height: 19px; text-align: center; padding: 0px 0px 10px;">
                 <br>
                 <h1 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; padding: 0; margin: 0; line-height: 1.3; word-break: normal; margin-top: 40px; color: #f2f2f2; font-size: 32px; text-align: center; font-weight: bold;"><center style="width: 100%; min-width: 580px;">
-                  <span style="color:#222">Congratulations!</span>
+                  <span style="color:#222">Greetings!</span>
                 </center></h1>
               </td>
               <td class="expander" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; visibility: hidden; width: 0px; padding: 0 !important;"></td>
@@ -68,9 +68,9 @@
                     <td class="center welcome" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; font-size: 16px; color: #2d2d2d; line-height: 24px; background: white; margin: 10px 0px 10px 0px; text-align: center; padding: 0px 0px 10px;">
 
 <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-  You have been added as an owner on the {{{$org['business_name']}}} account with id: {{{$subMerchant['id']}}}.
+  You have been added to {{{$subMerchant['name']}}}'s {{{$org['business_name']}}} account with id: {{{$subMerchant['id']}}}.
   <br>
-  You can switch to the account from the Switch Merchant dropdown in the top panel of your {{{$org['business_name']}}} dashboard.
+  You can switch to the account from the Switch Merchant dropdown in the top panel on your dashboard.
 </p>
 
 <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
