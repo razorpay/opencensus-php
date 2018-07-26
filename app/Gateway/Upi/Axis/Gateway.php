@@ -82,7 +82,9 @@ class Gateway extends Base\Gateway
         {
             parent::action($input, Action::AUTHORIZE);
             $request =  $this->getCollectRequestArray($response);
-            s($request);
+            $request['headers'] = [
+                'Content-Type' => 'application/json',
+            ];
             $response1 = $this->sendGatewayRequest($request);
             $response1 = $this->parseGatewayResponse($response1->body);
             s($response);
@@ -110,6 +112,9 @@ class Gateway extends Base\Gateway
         parent::action($input, Action::FETCH_TOKEN);
 
         $request =  $this->getTokenRequestArray($input);
+        $request['headers'] = [
+            'Content-Type' => 'application/json',
+        ];
         s($request);
         $response = $this->sendGatewayRequest($request);
 
