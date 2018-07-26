@@ -110,7 +110,7 @@ class Gateway extends Base\Gateway
         parent::action($input, Action::FETCH_TOKEN);
 
         $request =  $this->getTokenRequestArray($input);
-
+        s($request);
         $response = $this->sendGatewayRequest($request);
 
         $response = $this->parseGatewayResponse($response->body);
