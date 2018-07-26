@@ -28,7 +28,7 @@ class Gateway extends Base\Gateway
         $request = $this->getMandateCreationRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
-        
+
         $this->trace->info(TraceCode::GATEWAY_MANDATE_RESPONSE, [
             'gateway' => 'digio',
             'payment_id' => $input['payment']['id'],
@@ -148,7 +148,8 @@ class Gateway extends Base\Gateway
         $content = [
             'signers' => [
                 [
-                    'identifier' => $this->getFormattedContact($input['payment']['contact'])
+                    'identifier' => $this->getFormattedContact($input['payment']['contact']),
+                    'vid'        => $input['token']->getAadhaarVid()
                 ]
             ],
             'expire_in_days' => 1,
@@ -183,6 +184,7 @@ class Gateway extends Base\Gateway
             'sponsor_bank_name'             => BankName::getName($bankCode),
             'destination_bank_id'           => $destinationBankIfsc,
             'destination_bank_name'         => BankName::getName($destinationBankIfsc),
+            // TODO: Remove sending aadhaar number later
             'aadhaar'                       => $input['token']->getAadhaarNumber(),
             'bank_identifier'               => substr($bankCode, 0, 4),
             'management_category'           => CategoryCode::A001,
