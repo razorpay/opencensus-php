@@ -4140,3 +4140,6 @@ ALTER TABLE refunds
 Alter table refunds
     CHANGE reference8 bank_account_id VARCHAR(255) DEFAULT NULL,
     ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE merchants
+    ADD COLUMN display_name VARCHAR(255) DEFAULT NULL AFTER billing_label;

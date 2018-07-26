@@ -88,8 +88,7 @@ class Validator extends Base\Validator
         Entity::INVOICE_LABEL_FIELD      => 'sometimes|filled|string|max:50|in:business_name,business_dba',
         Entity::AUTO_CAPTURE_LATE_AUTH   => 'sometimes|boolean',
         Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
-        MerchantDetail::GSTIN            => 'sometimes|nullable|string|size:15',
-        MerchantDetail::P_GSTIN          => 'sometimes|nullable|string',
+        Entity::DISPLAY_NAME             => 'sometimes|nullable|string|min:3|max:255',
         Entity::FEE_CREDITS_THRESHOLD    => 'sometimes|integer|nullable',
     ];
 
