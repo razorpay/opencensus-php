@@ -200,6 +200,7 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
         self::FEE_CREDITS_THRESHOLD,
+        self::DISPLAY_NAME,
     ];
 
     const CONFIG_LIST = [
@@ -211,6 +212,7 @@ class Entity extends Base\PublicEntity
         self::INVOICE_LABEL_FIELD,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::FEE_CREDITS_THRESHOLD,
+        self::DISPLAY_NAME,
     ];
 
     protected $public = [
@@ -261,6 +263,7 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST,
         self::MERCHANT_DETAIL,
         self::FEE_CREDITS_THRESHOLD,
+        self::DISPLAY_NAME,
      ];
 
     protected $defaults = [
@@ -975,6 +978,18 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFUND_SOURCE);
     }
 
+    public function getDisplayName()
+    {
+        $displayName = $this->getAttribute(self::DISPLAY_NAME);
+
+        if (empty($displayName) === false)
+        {
+            return $displayName . " - ". $this->getAttribute(self::NAME);
+        }
+
+        return $this->getAttribute(self::NAME);
+    }
+
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
     {
         $relativeLogoUrl = $this->getLogoUrl();
@@ -1536,6 +1551,7 @@ class Entity extends Base\PublicEntity
             self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
             self::LOGO_URL       => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
+            self::DISPLAY_NAME   => $this->getDisplayName(self::DISPLAY_NAME),
             self::PARTNER_TYPE   => $this->getAttribute(self::PARTNER_TYPE),
             self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
