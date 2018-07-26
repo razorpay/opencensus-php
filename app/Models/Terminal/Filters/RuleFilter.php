@@ -77,11 +77,15 @@ class RuleFilter extends Terminal\Filter
 
         $group = $rules->first()->getGroup();
 
+        $payment = $this->input['payment'];
+
+        $gatewayTokens = $this->input['gateway_tokens'];
+
         foreach ($terminals as $terminal)
         {
             foreach ($rules as $rule)
             {
-                $match = $rule->matches($terminal, $this->input['merchant']);
+                $match = $rule->matches($terminal, $this->input['merchant'], $payment, $gatewayTokens);
 
                 if ($match === true)
                 {
