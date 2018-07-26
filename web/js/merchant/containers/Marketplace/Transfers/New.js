@@ -129,10 +129,6 @@ export default class TransferNew extends Component {
       }, {});
     }
 
-    if (this.isLADashboardEnabled) {
-      transformedNotes.linked_account_notes = linked_account_notes;
-    }
-
     let holdData = {};
 
     if (this.props.onHold !== 'false') {
@@ -156,6 +152,7 @@ export default class TransferNew extends Component {
           account: prefixEntityValue('account', accountId),
           amount: rupeesToPaise(amount),
           notes: transformedNotes,
+          linked_account_notes: linked_account_notes,
           currency: 'INR',
           ...holdData,
         },

@@ -154,14 +154,11 @@ export default class ReversalModal extends Component {
             }, {});
           }
 
-          if (this.isLADashboardEnabled) {
-            transformedNotes.linked_account_notes = linked_account_notes;
-          }
-
           if (transformedNotes) {
             data = {
               ...(data || {}),
               notes: transformedNotes,
+              linked_account_notes: linked_account_notes,
             };
           }
 
