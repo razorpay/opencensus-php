@@ -83,10 +83,21 @@ trait HeadlessOtp
 
         $response = $this->app['card.otpelf']->otpSubmit($data);
 
-        if (($response['success'] === true) and
-            ($response['data']['action'] === 'submit_otp'))
+        if ($response['success'] === true)
         {
-            return $response['data']['data'];
+            switch ($response['data']['action'])
+            {
+                case 'submit_otp':
+                    return $response['data']['data'];
+                    break;
+                case 'page_resolved':
+                    if ($response['data']['data']['type'] === 'otp')
+                    {
+                        throw new Exception\GatewayErrorException(
+                            ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
+                    }
+                    break;
+            }
         }
 
         // Handle error codes
