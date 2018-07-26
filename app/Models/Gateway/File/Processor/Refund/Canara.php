@@ -4,17 +4,15 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
 
+use RZP\Gateway\Netbanking\Canara\RefundFileFields;
 use RZP\Models\Payment;
-use RZP\Models\Terminal;
 use RZP\Models\FileStore;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
-use RZP\Constants\Mode as RZPMode;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
-use RZP\Gateway\Netbanking\Canara\Gateway as CanaraGateway;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
@@ -32,15 +30,7 @@ class Canara extends Base
     const GATEWAY_CODE           = IFSC::CNRB;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const BANK_CODE              = 'CNRB';
-    const HEADERS                = [
-                                     'TRANSACTION DATE AND TIME',
-                                     'Refund Date',
-                                     'BANK_REF_NO',
-                                     'PG_REF_NUM',
-                                     'Refund Reference',
-                                     'Transaction Amount',
-                                     'Refund Amount'
-                                    ];
+    const HEADERS                = RefundFileFields::COLUMN_HEADERS;
 
     //protected $config;
 

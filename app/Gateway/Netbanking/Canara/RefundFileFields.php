@@ -11,4 +11,16 @@ class RefundFileFields
     const REFUND_REFERENCE            = 'Refund Reference';
     const TRANSACTION_AMOUNT          = 'Transaction Amount';
     const REFUND_AMOUNT               = 'Refund Amount';
+
+    const COLUMN_HEADERS              = [
+                                          self::TRANSACTION_DATE_TIME,
+                                          self::REFUND_DATE,
+                                          self::BANK_REF_NO,
+                                          self::PG_REF_NUM,
+                                          self::REFUND_REFERENCE,
+                                          self::TRANSACTION_AMOUNT,
+                                          self::REFUND_AMOUNT
+                                         ];
+
+
 }
