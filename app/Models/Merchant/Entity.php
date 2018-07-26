@@ -46,6 +46,7 @@ class Entity extends Base\PublicEntity
     const PRICING_PLAN_ID          = 'pricing_plan_id';
     const INTERNATIONAL            = 'international';
     const BILLING_LABEL            = 'billing_label';
+    const DISPLAY_NAME             = 'display_name';
     const TRANSACTION_REPORT_EMAIL = 'transaction_report_email';
     const RECEIPT_EMAIL_ENABLED    = 'receipt_email_enabled';
     const CHANNEL                  = 'channel';
