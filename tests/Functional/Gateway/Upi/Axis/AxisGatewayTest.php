@@ -34,6 +34,7 @@ class AxisGatewayTest extends TestCase
 
     public function testPayment($status = 'created')
     {
+
         unset($this->payment['description']);
 
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
@@ -45,27 +46,30 @@ class AxisGatewayTest extends TestCase
         $this->checkPaymentStatus($paymentId, $status);
 
         $upiEntity = $this->getLastEntity('upi', true);
-        //
-//        $payment = $this->getEntityById('payment', $paymentId, true);
+        s($upiEntity);
 
-//        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
-//        s($content);
-//        $response = $this->makeS2SCallbackAndGetContent($content);
-//        s($response);
-//        // We should have gotten a successful response
+        $payment = $this->getEntityById('payment', $paymentId, true);
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        s($content);
+        $response = $this->makeS2SCallbackAndGetContent($content);
+        s($response);
+        // We should have gotten a successful response
 //        $this->assertEquals(['success' => true], $response);
-//
-//        // The payment should now be authorized
-//        $payment = $this->getEntityById('payment', $paymentId, true);
-//        $this->assertEquals('authorized', $payment['status']);
-//
-//        $upiEntity = $this->getLastEntity('upi', true);
+
+        // The payment should now be authorized
+        s($paymentId);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        s($upiEntity);
 //        $this->assertNotNull($upiEntity['npci_reference_id']);
 //        $this->assertNotNull($upiEntity['gateway_payment_id']);
 //
 //        // Add a capture as well, just for completeness sake
-//        $this->capturePayment($paymentId, $payment['amount']);
-//
+        $this->capturePayment($paymentId, $payment['amount']);
+
 //        return $payment;
 
         return $paymentId;
@@ -95,4 +99,23 @@ class AxisGatewayTest extends TestCase
 
 //        $this->assertSame($this->payment['payment']['verified'], 1);
     }
+
+    protected function getDefaultUpiPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method'] = 'upi';
+        $payment['vpa'] = 'vijay@axis';
+
+        return $payment;
+    }
+
+    public function testRefundSuccess()
+    {
+        $paymentID = $this->testPayment();
+
+        // Attempt a partial refund
+        $this->refundPayment($paymentID, 10000);
+    }
 }
+

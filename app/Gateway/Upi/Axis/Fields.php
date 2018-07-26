@@ -38,6 +38,7 @@ class Fields
     const TXN_AMOUNT = 'txnAmount';
     const DEBIT_ACCOUNT_NUM = 'debitAccountNum';
     const DEBIT_IFSC_CODE = 'debitIfscCode';
+    const TOKEN = 'Token';
 
     /**
      * These are the expected field orders

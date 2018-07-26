@@ -25,4 +25,6 @@ class Status
     const VPA_NOT_AVAILABLE = 'VN';
 
     const FAILED = 'F';
+
+    const SUCCESSFUL = 'Successful';
 }

@@ -40,30 +40,35 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
+       $arr =  explode('/',parse_url($this->mockRequest['url'])['query']);
+       $token = $arr[sizeof($arr)-1];
         parent::authorize($input);
 
-        $input = $this->parseInput($input);
+        $content = [
+            Fields::CODE => '00',
+            Fields::RESULT => 'Accepted Collect Request',
+            Fields::DATA => [
+                Fields::MERCHANT_TRANSACTION_ID => 'TESTMERCHANTID:'.$token,
+                Fields::W_COLLECT_TXN_ID => $this->generateRandomString(10),
+            ]
+        ];
 
-        $vpa = $input['customerVpa'];
+        $this->content($content);
+        return $this->makeResponse($content);
+    }
 
-        s($input);
-
-        $this->validateAuthorizeInput($input);
-
+    public function fetchToken($input)
+    {
         $content = [
             Fields::CODE => '000',
             Fields::RESULT => 'SUCCESS',
             Fields::DATA => $this->generateRandomString(30),
         ];
 
-        if ($vpa === 'failedcollect@hdfcbank')
-        {
-            $content[3] = 'FAILED';
-            $content[4] = 'Transaction collect request failed';
-        }
-
         $this->content($content);
+
         return $this->makeResponse($content);
+
     }
 
     protected function parseInput($input, $action = Action::COLLECT)
@@ -153,8 +158,6 @@ class Server extends Base\Mock\Server
 
     protected function callbackResponseContent(array $upiEntity, array $payment)
     {
-        $status = Status::SUCCESS;
-
         switch ($payment['vpa'])
         {
             case 'failed@hdfcbank':
@@ -163,26 +166,19 @@ class Server extends Base\Mock\Server
         }
 
         return [
-            $upiEntity['gateway_payment_id'],
-            $upiEntity['payment_id'],
-            $this->formatAmount($payment['amount']),
-            '2017:12:01 00:00:02',
-            $status,
-            'Transaction success',
-            '00',
-            // Approval Number
-            random_integer(5),
-            $payment['vpa'],
-            // NPCI Reference Id
-            random_integer(16),
-            'NA',
-            'NA',
-            'NA',
-            'NA',
-            'NA',
-            'NA',
-            'PNB!10000000000!PNBI1111111!8966829290'
+            Fields::CUSTOMER_VPA => $upiEntity['vpa'],
+            Fields::MERCH_ID => 'RAZAORPAY',
+            Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
+            Fields::MERCHANT_TRANSACTION_ID => $upiEntity['payment_id'],
+            Fields::TRANSACTION_TIMESTAMP => date('j-F-Y'),
+            Fields::TRANSACTION_AMOUNT => $this->formatAmount($upiEntity['amount']),
+            Fields::GATEWAY_TRANSACTION_ID => $this->generateRandomString(20),
+            Fields::GATEWAY_RESPONSE_CODE => '00',
+            Fields::GATEWAY_RESPONSE_MESSAGE => 'Success',
+            Fields::RRN => "714513318376",
+            Fields::CHECKSUM => 'CHECKSUM NOT REQUIRED'
         ];
+
     }
     /**
      * @param  int    $amount amount in paise
@@ -237,12 +233,63 @@ class Server extends Base\Mock\Server
             Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
             Fields::CUSTOMER_VPA =>  $payment['vpa'],
             Fields::TXN_TIME => "25-MAY-17 01.59.59.741000 PM",
-            Fields::TXN_AMOUNT => $payment['amount'],
+            Fields::TXN_AMOUNT => $this->formatAmount($payment['amount']),
             Fields::RRN => "714513318376",
             Fields::DEBIT_ACCOUNT_NUM => "076010100236133",
             Fields::DEBIT_IFSC_CODE => "AXIS0000076",
             Fields::CHECKSUM => "dc251c30924ec8d2aed7ab0e15dc209e66b3f3efec934484b1b6be822214296d",
             ]
+        ];
+    }
+
+    public function refund($input)
+    {
+        parent::refund($input);
+
+        s($input);
+
+        $input = $this->parseInput($input, Action::REFUND);
+
+        $paymentId = $input[2];
+
+        $app = App::getFacadeRoot();
+
+        $payment = $app['repo']->payment->find($paymentId);
+
+        $response = $this->getDefaultRefundResponse($input, $payment);
+
+        if ($payment['vpa'] === 'failedrefund@hdfcbank')
+        {
+            $response[4] = Status::FAILED;
+        }
+
+        $this->content($response, 'refund');
+
+        return $this->makeResponse($response, Action::REFUND);
+    }
+
+    protected function getDefaultRefundResponse(array $input, $payment)
+    {
+        return [
+            // UPI Txn Id
+            random_int(100000, 999999),
+            // Refund Id
+            $input[1],
+            // Amount
+            $input[6],
+            date('Y:m:d h:i:s', time()),
+            // REFUND_SUCCESS is just S
+            Status::SUCCESS,
+            'Transaction success',
+            // response code
+            '00',
+            // Approval number
+            random_integer(12),
+            $payment['vpa'],
+            // NPCI UPI ID (customer reference number)
+            $input[4],
+            // Reference Id, currently null
+            'NA'
         ];
     }
 }

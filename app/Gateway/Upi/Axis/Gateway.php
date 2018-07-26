@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Upi\Axis;
 
+use Elasticsearch\Endpoints\FieldStats;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Gateway\Mpi\Enstage\Field;
@@ -73,20 +74,25 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-        parent::action($input, Action::AUTHORIZE);
-
-        $request =  $this->getAuthorizeRequestArray($input);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $response = $this->parseGatewayResponse($response->body);
-
-        s($response);
-
+        $response = $this->fetchToken($input);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $response);
 
-//        $this->checkResponseStatus($response[Fields::CODE]);
+        if($response[Fields::CODE] == '000')
+        {
+            parent::action($input, Action::AUTHORIZE);
+            $request =  $this->getCollectRequestArray($response);
+            s($request);
+            $response1 = $this->sendGatewayRequest($request);
+            $response1 = $this->parseGatewayResponse($response1->body);
+            s($response);
+            s($response1);
+        }
+
+        else
+        {
+            throw new \Exception();
+        }
 
         $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
 
@@ -97,6 +103,19 @@ class Gateway extends Base\Gateway
                 'vpa'   => $vpa
             ]
         ];
+    }
+
+    protected function fetchToken($input)
+    {
+        parent::action($input, Action::FETCH_TOKEN);
+
+        $request =  $this->getTokenRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body);
+
+        return $response;
     }
 
     /**
@@ -188,11 +207,9 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getAuthorizeRequestArray($input)
+    protected function getTokenRequestArray($input)
     {
         $payment = $input['payment'];
-
-        //$checksumdata='RAZAORPAY'.'RAZAORPAYAPP'.$payment['id'].$payment['id'].$this->formatAmount($payment['amount']).$this->getPaymentRemark($input).'INR'.'ORDERID'.$payment['vpa'].(string) $input['upi']['expiry_time'];
 
         $data = [
             Fields::MERCH_ID => 'RAZAORPAY',
@@ -203,7 +220,7 @@ class Gateway extends Base\Gateway
             Fields::TXN_DTL => $this->getPaymentRemark($input),
             Fields::CURRENCY => 'INR',
             Fields::ORDER_ID => 'ORDERID',
-            Fields::CUSTOMER_VPA => 'vijay@axis',//$payment['vpa'],
+            Fields::CUSTOMER_VPA => $payment['vpa'],
             Fields::EXPIRY => (string) $input['upi']['expiry_time'],
             Fields::S_ID => '',
         ];
@@ -213,8 +230,6 @@ class Gateway extends Base\Gateway
         $checksum = $this->encrypt($dataStr);
 
         $data[Fields::CHECKSUM] = bin2hex($checksum);
-        s($data);
-
 
         $content = $this->transformRequestArrayToContent($data);
 
@@ -228,8 +243,18 @@ class Gateway extends Base\Gateway
                 'gateway'           => $this->gateway,
                 'payment_id'        => $payment['id'],
             ]);
-        s($request);
         return $request;
+    }
+
+    protected function getCollectRequestArray($input,$content=[],$method = 'post', $type = null)
+    {
+        $request = array(
+            'url'       => $this->getUrl($type).'/'.$input[Fields::DATA],
+            'method'    => $method,
+            'content'   => $content,
+        );
+        return $request;
+
     }
 
     /**
@@ -281,6 +306,7 @@ class Gateway extends Base\Gateway
      */
     public function callback(array $input): array
     {
+        s($input);
         parent::callback($input);
 
         $content = $input['gateway'];
@@ -329,7 +355,6 @@ class Gateway extends Base\Gateway
     public function verify(array $input)
     {
         parent::verify($input);
-
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
@@ -358,7 +383,7 @@ class Gateway extends Base\Gateway
 
         $this->sendPaymentVerifyRequest($verify);
         $this->verifyPayment($verify);
-
+        s($verify->match);
         if (($verify->amountMismatch === true) and
             ($verify->throwExceptionOnMismatch))
         {
@@ -471,24 +496,26 @@ class Gateway extends Base\Gateway
 
         $this->checkApiSuccess($verify);
 
-//        $this->checkGatewaySuccess($verify);
+        $this->checkGatewaySuccess($verify);
 
         $status = VerifyResult::STATUS_MATCH;
 
         // If both don't match we have a status mis match
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
+            s($verify->gatewaySuccess,$verify->apiSuccess);
             $status = VerifyResult::STATUS_MISMATCH;
         }
 
         $input = $verify->input;
-
+        s($content);
         if ($verify->gatewaySuccess === true)
         {
-            $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+            $paymentAmount = number_format($input['payment']['amount']/ 100, 2, '.', '');
 
-            $actualAmount = number_format($content[Fields::AMOUNT], 2, '.', '');
+            $actualAmount = number_format($content[Fields::DATA][Fields::TXN_AMOUNT], 2, '.', '');
 
+            s($paymentAmount,$actualAmount);
             $verify->amountMismatch = ($paymentAmount !== $actualAmount);
         }
 
@@ -502,8 +529,7 @@ class Gateway extends Base\Gateway
     private function checkGatewaySuccess(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
-
-        $verify->gatewaySuccess = ($content[Fields::STATUS] === Status::SUCCESS);
+        $verify->gatewaySuccess = ($content[Fields::RESULT] === Status::SUCCESSFUL);
     }
 
     protected function getCipherInstance(): RSA
@@ -536,6 +562,103 @@ UQIDAQAB
 -----END PUBLIC KEY-----');
 
         return $rsa->encrypt($data);
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $attributes = $this->getGatewayEntityAttributes($input, Action::REFUND);
+
+        $refund = $this->createGatewayPaymentEntity($attributes);
+
+        $request =  $this->getRefundRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body, Action::REFUND);
+
+        $response[Entity::RECEIVED] = 1;
+
+        $this->updateGatewayPaymentEntity($refund, $response);
+
+        s($response);
+
+//        $this->checkResponseStatus($response[ResponseFields::STATUS], Status::REFUND_SUCCESS);
+    }
+
+    protected function getRefundRequestArray(array $input): array
+    {
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'],
+            Action::AUTHORIZE
+        );
+
+        $refund = $input['refund'];
+        // The order is defined in the docs
+        // See README.md
+
+        $data = [
+            Fields::MERCH_ID => 'RAZAORPAY',
+            Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
+            Fields::TXN_REFUND_ID => $this->getRefundId($refund),
+            Fields::MOB_NO => '909090909090',//$input['contact'],
+            Fields::TXN_REFUND_AMOUNT => $this->formatAmount($input['refund']['amount']),
+            Fields::UNQ_TXN_ID => $input['payment']['id'],
+            Fields::REFUND_REASON =>  $this->getRefundRemark($input),
+            Fields::S_ID => '',
+        ];
+
+        $dataStr = implode('', $data);
+
+        $checksum = $this->encrypt($dataStr);
+
+        $data[Fields::CHECKSUM] = bin2hex($checksum);
+
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'decrypted_content' => $data,
+                'encrypted'         => $content,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+                'refund_id'         => $input['refund']['id'],
+            ]);
+
+        return $request;
+    }
+
+    /**
+     * This is done in order to fix duplicate
+     * merchant transaction id issue in case
+     * refund is retried multiple times
+     *
+     * @return string
+     */
+    protected function getRefundId(array $refund)
+    {
+        return $refund['id'] . ($refund['attempts'] ?: '');
+    }
+
+    /**
+     * Returns a refund description, capped to 50 chars
+     * @param  array  $input
+     * @return string
+     */
+    protected function getRefundRemark(array $input): string
+    {
+        $description = $input['merchant']->getFilteredDba();
+
+        // Using ?: works with empty strings as well
+        // (because '' == false) === true
+        $description = $description ?: 'Razorpay';
+
+        return 'Refund for ' . substr($description, 0, 36);
     }
 
 }

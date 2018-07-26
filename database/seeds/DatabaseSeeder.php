@@ -1706,7 +1706,7 @@ class DatabaseSeeder extends Seeder
             'gateway_merchant_id2'      => 'razaorpay@axis',
             'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_axis_terminal_pass'),
             'created_at'                => time(),
-            'updated_at'                => time(),The api key provided is invalid
+            'updated_at'                => time(),
         ]);
 
         DB::table(Table::TERMINAL)->insert([

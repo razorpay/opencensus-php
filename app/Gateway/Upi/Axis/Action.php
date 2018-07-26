@@ -6,7 +6,10 @@ use RZP\Gateway\Base;
 
 class Action extends Base\Action
 {
-    const COLLECT       = 'collect';
+    const COLLECT = 'collect';
 
-    const VALIDATE_VPA  = 'validate_vpa';
+    const TOKEN = 'token';
+
+    const FETCH_TOKEN = 'fetch_token';
+
 }
