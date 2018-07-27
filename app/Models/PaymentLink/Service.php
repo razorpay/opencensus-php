@@ -71,6 +71,8 @@ class Service extends Base\Service
 
     public function getViewNameAndPayload(string $id)
     {
+        $this->trace->count(Metric::PAYMENT_PAGE_VIEW_TOTAL);
+
         /** @var Entity $paymentLink */
         $paymentLink = $this->repo->payment_link->findByPublicId($id);
 

@@ -274,15 +274,23 @@ class Gateway extends Base\Gateway
 
     protected function verifyPaymentCallbackResponse($input)
     {
-        if (isset($input['resCode']))
+        //For some payments the rescode is not present in the response. this should not happen
+        if (isset($input['resCode']) === false)
         {
-            $resCode = (int) $input['resCode'];
-
-            if ($resCode === 0)
-            {
-                return;
-            }
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT,
+                null,
+                null,
+                ['response' => $input]);
         }
+
+        $resCode = (int) $input['resCode'];
+
+        if ($resCode === 0)
+        {
+            return;
+        }
+
 
         //trace input
         $this->trace->error(
@@ -293,7 +301,7 @@ class Gateway extends Base\Gateway
         throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 $input['resCode'],
-                $input['resDesc']);
+                $input['resDesc'] ?? '');
     }
 
     protected function verifyPayment($verify)

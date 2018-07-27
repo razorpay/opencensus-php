@@ -252,6 +252,15 @@ class PaymentCreateController extends Controller
         return ApiResponse::json($payment);
     }
 
+    public function postOtpResendPrivate($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::PAYMENT)->otpResend($id, $input);
+
+        return $this->processCoprotoData($data);
+    }
+
     /*
      * Topup Wallet for a payment
      */

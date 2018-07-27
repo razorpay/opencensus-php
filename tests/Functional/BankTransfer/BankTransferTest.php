@@ -139,6 +139,34 @@ class BankTransferTest extends TestCase
             $channel,
             Attempt\Purpose::REFUND);
 
+        $data = $this->reconcileOnlineSettlements($channel, false);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertNotNull($attempt['utr']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+
+        // Process entities
+        $this->reconcileEntitiesForChannel($channel);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+        $this->assertNotNull($attempt['utr']);
+    }
+
+    public function testBankTransferRefundYesbankTpvPayment()
+    {
+        $channel = Channel::YESBANK;
+
+        $this->createTpvRefund();
+
+        $content = $this->initiateTransfer(
+            $channel,
+            Attempt\Purpose::REFUND);
 
         $data = $this->reconcileOnlineSettlements($channel, false);
 
@@ -362,7 +390,7 @@ class BankTransferTest extends TestCase
             'bank_account',
             $bankAccount['id'],
             [
-                'ifsc_code'=>'RAZR0000001'
+                'ifsc_code' => 'RAZR0000001'
             ]);
 
         $response = $this->makeRequestAndGetContent([
@@ -460,7 +488,7 @@ class BankTransferTest extends TestCase
         $this->assertEmpty($response['status']);
 
         // Only failed refunds can be retried
-        $this->fixtures->refund->edit($refund['id'], ['status'=>'failed']);
+        $this->fixtures->refund->edit($refund['id'], ['status' => 'failed']);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -537,7 +565,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('initiated', $attempt['status']);
 
         // Only failed refunds can be retried
-        $this->fixtures->refund->edit($refund['id'], ['status'=>'failed']);
+        $this->fixtures->refund->edit($refund['id'], ['status' => 'failed']);
 
         $response = $this->retryFailedRefund($refund['id'], [
             'bank_account' => [
@@ -1504,6 +1532,80 @@ class BankTransferTest extends TestCase
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
+    }
+
+
+    protected function createTpvRefund()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $this->gateway = 'atom';
+
+        $terminal = $this->fixtures->create('terminal:shared_atom_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTpv();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order =  $this->runRequestResponseFlow($data);
+
+        $payment['order_id'] = $order['id'];
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['bank_txn'] = '99999999';
+            $content['bank_name'] = 'SBIN';
+        });
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('atom', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['tpvPaymentNetbankingEntity'], $gatewayEntity);
+
+        $this->assertEquals($gatewayEntity['account_number'],
+                            $data['request']['content']['account_number']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertArraySelectiveEquals($data['request']['content'], $order);
+
+        $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
+
+        $response = $this->refundPayment($payment['id']);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($response['id'], $refund['id']);
+
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+
+        $this->assertEquals('initiated', $refund['status']);
+
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
+
+        $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals('SBIN0010411', $bankAccount['ifsc_code']);
+
+        $this->assertEquals($order['account_number'], $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+
+        $this->assertEquals('refund', $bankAccount['type']);
     }
 
     public function testUpdateReceiverData()

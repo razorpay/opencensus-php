@@ -35,7 +35,10 @@ class OtpElf
     public function otpResend(array $input)
     {
         $content = [
-
+            'payment_id' => $input['payment_id'],
+            'request'    => [
+                'action' => 'resend_otp',
+            ]
         ];
 
         $response = $this->sendRequest('/act', 'POST', $content);
