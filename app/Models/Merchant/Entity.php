@@ -1423,7 +1423,7 @@ class Entity extends Base\PublicEntity
      */
     public function owners()
     {
-        return $this->users()->where('role','owner')->get();
+        return $this->users()->where('role','owner');
     }
 
     /**
