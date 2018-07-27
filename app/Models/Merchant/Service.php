@@ -1851,6 +1851,8 @@ class Service extends Base\Service
 
         $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $input['email']);
 
+        (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+
         $subMerchantUser = $subMerchantUser->toArrayPublic();
 
         return $subMerchantUser;
@@ -1895,8 +1897,6 @@ class Service extends Base\Service
         $subMerchantUser = (new User\Core)->create($userData);
 
         $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
-
-        (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
 
         return $subMerchantUser;
     }
@@ -2096,13 +2096,13 @@ class Service extends Base\Service
         return $accessMap;
     }
 
-    public function getSubmerchantDetails(string $submerchantId): array
+    public function getSubmerchant(string $submerchantId): array
     {
         Account\Entity::verifyIdAndSilentlyStripSign($submerchantId);
 
         $partner = $this->fetchPartner();
 
-        $submerchant = $this->core()->getSubmerchantDetails($partner, $submerchantId);
+        $submerchant = $this->core()->getSubmerchant($partner, $submerchantId);
 
         return $submerchant->toArrayPartner();
     }
@@ -2112,11 +2112,11 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function getSubmerchantsDetails(array $input): array
+    public function listSubmerchants(array $input): array
     {
         $partner = $this->fetchPartner();
 
-        $submerchants = $this->core()->getSubmerchantsDetails($partner, $input);
+        $submerchants = $this->core()->listSubmerchants($partner, $input);
 
         return $submerchants->toArrayPartner();
     }
@@ -2158,7 +2158,13 @@ class Service extends Base\Service
         return $partner;
     }
 
-    protected function fetchSubmerchant($submerchantId): Entity
+    /**
+     * @param string $submerchantId
+     *
+     * @return Entity
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function fetchSubmerchant(string $submerchantId): Entity
     {
         // The submerchant should belong to the same org as of the admin
         /** @var Entity $submerchant */

@@ -823,8 +823,8 @@ final class Route
         // Partner routes
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
-        'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchantDetails'                          ],
-        'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@getSubmerchantsDetails'                         ],
+        'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
+        'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
     ];
 
     public static $public = [

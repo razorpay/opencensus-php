@@ -903,6 +903,13 @@ class Core extends Base\Core
      */
     public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant): array
     {
+        $this->trace->info(
+            TraceCode::PARTNER_CREATE_ACCESS_MAP_REQUEST,
+            [
+                'partner_id'     => $partner->getId(),
+                'submerchant_id' => $submerchant->getId(),
+            ]);
+
         $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
             $partnerApp = $this->getPartnerApp($partner);
@@ -910,7 +917,7 @@ class Core extends Base\Core
             // Maintained for backward compatibility
             $this->addSubMerchantReferral($partner, $submerchant);
 
-            $this->allowSubmerchantDashboardAccessIfApplicable($partner, $submerchant);
+            $this->assignSubmerchantDashboardAccessIfApplicable($partner, $submerchant);
 
             // If the mapping already exists, the existing entity is returned
             $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
@@ -931,6 +938,13 @@ class Core extends Base\Core
      */
     public function deletePartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
     {
+        $this->trace->info(
+            TraceCode::PARTNER_DELETE_ACCESS_MAP_REQUEST,
+            [
+                'partner_id'     => $partner->getId(),
+                'submerchant_id' => $submerchant->getId(),
+            ]);
+
         $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
             $partnerApp = $this->getPartnerApp($partner);
@@ -1070,27 +1084,41 @@ class Core extends Base\Core
 
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
     {
-        $tag = 'Ref-' . $partnerId;
+        $tag = 'ref-' . $partnerId;
 
         $tags = $this->deleteTag($merchant->getPublicId(), $tag);
 
         return $tags;
     }
 
-    public function getSubmerchantDetails(Entity $partner, string $submerchantId): Entity
+    /**
+     * @param Entity $partner
+     * @param string $submerchantId
+     *
+     * @return Entity
+     */
+    public function getSubmerchant(Entity $partner, string $submerchantId): Entity
     {
         $partnerApp = $this->getPartnerApp($partner);
 
         $merchant = $this->repo
                          ->merchant
-                         ->findSubmerchantByIdAndPartnerAppId($partnerApp->getId(), $submerchantId);
+                         ->findSubmerchantByIdAndPartnerAppId($submerchantId, $partnerApp->getId());
 
-        $merchant = $this->getPartnerSubmerchantData($partner, $merchant);
+        $partnerUser = $partner->primaryOwner();
+
+        $merchant = $this->getPartnerSubmerchantData($merchant, $partnerUser);
 
         return $merchant;
     }
 
-    public function getSubmerchantsDetails(Entity $partner, array $input): Base\PublicCollection
+    /**
+     * @param Entity $partner
+     * @param array  $input
+     *
+     * @return PublicCollection
+     */
+    public function listSubmerchants(Entity $partner, array $input): Base\PublicCollection
     {
         $partnerApp = $this->getPartnerApp($partner);
 
@@ -1098,8 +1126,11 @@ class Core extends Base\Core
                           ->merchant
                           ->fetchSubmerchantsByPartnerAppId($partnerApp->getId(), $input);
 
-        $merchants = $merchants->map(function($merchant) use ($partner) {
-            return $this->getPartnerSubmerchantData($partner, $merchant);
+        $partnerUser = $partner->primaryOwner();
+
+        $merchants = $merchants->map(function($merchant) use ($partnerUser)
+        {
+            return $this->getPartnerSubmerchantData($merchant, $partnerUser);
         });
 
         return $merchants;
@@ -1109,7 +1140,7 @@ class Core extends Base\Core
     {
         $partnerUser = $partner->primaryOwner();
 
-        $ownerIds = $submerchant->owners()->getIds();
+        $ownerIds = $submerchant->owners->getIds();
 
         return (in_array($partnerUser->getId(), $ownerIds, true) === true);
     }
@@ -1122,7 +1153,7 @@ class Core extends Base\Core
      * @param Entity $partner
      * @param Entity $submerchant
      */
-    protected function allowSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant)
+    protected function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant)
     {
         if ($partner->allowSubmerchantDashboardAccess() === false)
         {
@@ -1148,27 +1179,20 @@ class Core extends Base\Core
     /**
      * Sets the partner attributes in the instance of Merchant\Entity so that toArrayPartner() can be used later.
      *
-     * @param Entity $partner
-     * @param Entity $submerchant
+     * @param Entity      $submerchant
+     * @param User\Entity $partnerUser
      *
      * @return Entity
      */
-    protected function getPartnerSubmerchantData(Entity $partner, Entity $submerchant): Entity
+    protected function getPartnerSubmerchantData(Entity $submerchant, User\Entity $partnerUser): Entity
     {
         $submerchant[Entity::DETAILS] = [
-            Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS)
+            Detail\Entity::ACTIVATION_STATUS => $submerchant->merchantDetail->getActivationStatus()
         ];
 
-        $nonPartnerPrimaryOwner = $this->getNonPartnerPrimaryOwner($partner, $submerchant);
+        $submerchantOwner = $this->getNonPartnerPrimaryOwner($submerchant, $partnerUser);
 
-        if ($nonPartnerPrimaryOwner === null)
-        {
-            $submerchant[Entity::USER] = null;
-        }
-        else
-        {
-            $submerchant[Entity::USER] = $nonPartnerPrimaryOwner->toArrayPublic();
-        }
+        $submerchant[Entity::USER] = ($submerchantOwner === null) ? null : $submerchantOwner->toArrayPublic();
 
         $submerchant[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($submerchant);
 
@@ -1181,27 +1205,18 @@ class Core extends Base\Core
      *
      * This function returns the first type of primary owner.
      *
-     * @param Entity $partner
-     * @param Entity $merchant
+     * @param Entity      $merchant
+     * @param User\Entity $partnerUser
      *
-     * @return null|User\Entity
+     * @return null
      */
-    protected function getNonPartnerPrimaryOwner(Entity $partner, Entity $merchant)
+    protected function getNonPartnerPrimaryOwner(Entity $merchant, User\Entity $partnerUser)
     {
-        $owners = $merchant->owners();
-
-        $partnerUserEmail = null;
-
-        $partnerUser = $partner->primaryOwner();
-
-        if ($partnerUser !== null)
-        {
-           $partnerUserEmail = $partnerUser->getEmail();
-        }
+        $owners = $merchant->owners;
 
         foreach ($owners as $owner)
         {
-            if ($owner->getEmail() !== $partnerUserEmail)
+            if ($owner->getEmail() !== $partnerUser->getEmail())
             {
                 return $owner;
             }
@@ -1219,16 +1234,12 @@ class Core extends Base\Core
      */
     protected function hasSubmerchantDashboardAccess(Entity $submerchant): bool
     {
-        $userIds = $submerchant->users()->get()->getIds();
+        $userIds = $submerchant->users->getIds();
 
         $loggedInPartnerUser = $this->app['basicauth']->getUser();
 
-        if ($loggedInPartnerUser === null)
-        {
-            return false;
-        }
-
-        if (in_array($loggedInPartnerUser->getId(), $userIds, true) === true)
+        if (($loggedInPartnerUser !== null) and
+            (in_array($loggedInPartnerUser->getId(), $userIds, true) === true))
         {
             return true;
         }

@@ -425,6 +425,30 @@ return [
         ],
     ],
 
+    'testCreateUpiCollectTerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'             => 'upi_icici',
+                'upi'                 => 1,
+                'type'                => [
+                    'collect' => '1',
+                ],
+                'gateway_merchant_id'       => 'razorpay upi',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway' => 'upi_icici',
+                'upi'    => true,
+                'type'    => [
+                    'collect'
+                ],
+                'enabled' => true,
+            ],
+        ],
+    ],
+
     'testCreateTpvTerminalWithInvalidMethod' => [
         'request' => [
             'content' => [

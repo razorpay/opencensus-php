@@ -663,7 +663,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
 
-        $submerchantOwners = $submerchant->owners()->toArrayPublic();
+        $submerchantOwners = $submerchant->owners()->get()->toArrayPublic();
 
         $this->assertEquals(2, $submerchantOwners['count']);
 
@@ -711,6 +711,29 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    /**
+     * Tests the list submerchants api when there are no submerchants for the partner
+     */
+    public function testFetchPartnerSubmerchantsEmptyList()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $app = $this->createOAuthApplication($partnerData);
+
+        $this->ba->adminProxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+    }
+
     public function testFetchPartnerSubmerchantProxyAuth()
     {
         $this->allowAdminToAccessPartnerMerchant();
@@ -723,7 +746,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
 
-        $submerchantOwners = $submerchant->owners()->toArrayPublic();
+        $submerchantOwners = $submerchant->owners()->get()->toArrayPublic();
 
         $this->assertEquals(2, $submerchantOwners['count']);
 
@@ -839,6 +862,8 @@ class PartnerTest extends OAuthTestCase
         $submerchantId = '10000000000011';
         $this->allowAdminToAccessMerchant($submerchantId);
         $partnerData = $this->getDummyPartnerAttributes();
+
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
 
         // Create an oauth application using factory
         $app = $this->createOAuthApplication($partnerData);

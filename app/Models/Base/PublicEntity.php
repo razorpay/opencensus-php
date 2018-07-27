@@ -18,10 +18,6 @@ class PublicEntity extends UniqueIdEntity
 
     const MERCHANT_ID           = 'merchant_id';
 
-    const DETAILS               = 'details';
-
-    const USER                  = 'user';
-
     /**
      * General constant used as key for hold of collection of ids
      * in various cases.
@@ -82,11 +78,16 @@ class PublicEntity extends UniqueIdEntity
         self::ENTITY,
     ];
 
-    protected $partnerSetters    = [
+    protected $embeddedRelations = [];
+
+    /**
+     * Fields exposed to the partners
+     *
+     * @var array
+     */
+    protected $partnerSetters = [
         self::ID,
     ];
-
-    protected $embeddedRelations = [];
 
     /**
      * Fields exposed to public but only in AdminAuth. Please don't overuse it since this will removed anyways in a
@@ -165,6 +166,11 @@ class PublicEntity extends UniqueIdEntity
         return $array;
     }
 
+    /**
+     * toArrayPartner() comprises of all Public attributes and a few additional attributes exposed only to the partners.
+     *
+     * @return array
+     */
     public function toArrayPartner(): array
     {
         $publicAttributes = $this->toArrayPublic();
@@ -244,6 +250,9 @@ class PublicEntity extends UniqueIdEntity
         }
     }
 
+    /**
+     * @param array $array
+     */
     public function setPartnerAttributes(array & $array)
     {
         foreach ($this->partnerSetters as $attr)

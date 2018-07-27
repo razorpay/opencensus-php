@@ -71,8 +71,8 @@ class PublicCollection extends Collection
     public function toArrayPartner(): array
     {
         $array[static::ENTITY] = $this->entity;
-        $array[static::COUNT] = count($this->items);
-        $array[static::ITEMS] = $this->itemsToArrayPartner();
+        $array[static::COUNT]  = count($this->items);
+        $array[static::ITEMS]  = $this->itemsToArrayPartner();
 
         return $array;
     }

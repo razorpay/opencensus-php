@@ -32,7 +32,10 @@ class Type
     const DEBIT_RECURRING   = 'debit_recurring';
 
     // Terminals to be used for Moto payments
-    const MOTO   = 'moto';
+    const MOTO              = 'moto';
+
+    // Terminal to be used for Collect UPI payments
+    const COLLECT           = 'collect';
 
     protected static $types = [
         self::NON_RECURRING,
@@ -45,6 +48,7 @@ class Type
         self::BHARAT_QR,
         self::DEBIT_RECURRING,
         self::MOTO,
+        self::COLLECT,
     ];
 
     protected static $bitPosition = [
@@ -58,6 +62,7 @@ class Type
         self::BHARAT_QR         => 8,
         self::DEBIT_RECURRING   => 9,
         self::MOTO              => 10,
+        self::COLLECT           => 11,
     ];
 
     /**
