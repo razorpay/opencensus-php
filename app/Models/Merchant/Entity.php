@@ -345,6 +345,7 @@ class Entity extends Base\PublicEntity
      * @var array
      */
     protected $partner = [
+        self::ID,
         self::DETAILS,
         self::USER,
         self::DASHBOARD_ACCESS,

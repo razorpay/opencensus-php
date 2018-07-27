@@ -173,11 +173,13 @@ class PublicEntity extends UniqueIdEntity
      */
     public function toArrayPartner(): array
     {
+        $arrayAttributes = $this->attributesToArray();
+
+        $this->setPartnerAttributes($arrayAttributes);
+
+        $partnerAttributes = array_only($arrayAttributes, $this->partner);
+
         $publicAttributes = $this->toArrayPublic();
-
-        $this->setPartnerAttributes($publicAttributes);
-
-        $partnerAttributes = array_only($this->attributes, $this->partner);
 
         $array = array_merge($publicAttributes, $partnerAttributes);
 
