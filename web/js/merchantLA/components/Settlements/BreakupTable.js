@@ -9,10 +9,10 @@ import TableBody from 'rzp/ui/TableBody';
 
 function _getOverwrittenKey(title) {
   switch (title) {
-    case 'payment':
+    case 'transfer':
       return 'Transfer';
       break;
-    case 'refund':
+    case 'revesal':
       return 'Reversal';
       break;
   }
