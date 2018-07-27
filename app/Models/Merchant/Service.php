@@ -301,7 +301,7 @@ class Service extends Base\Service
 
         Mail::queue($createSubMerchantPartnerMail);
 
-        if ($subMerchant['email'] === $aggregator['email'])
+        if ($subMerchant[Entity::EMAIL] === $aggregator[Entity::EMAIL])
         {
             return;
         }
@@ -310,7 +310,7 @@ class Service extends Base\Service
 
         $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
 
-        $org['hostname'] = $this->auth->getOrgHostName();
+        $org[Org\Hostname\Entity::HOSTNAME] = $this->auth->getOrgHostName();
 
         $mailUserData = $createdNewUser ? $user : null;
 
@@ -1839,19 +1839,31 @@ class Service extends Base\Service
         /** @var Entity $subMerchant */
         $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $input['email'] = $subMerchant->getEmail();
+        $input[User\Entity::MERCHANT_ID] = $this->merchant->getId();
 
-        $input['merchant_id'] = $this->merchant->getId();
+        $input[User\Entity::EMAIL] = $this->validateAndGetEmailInput($subMerchant, $this->merchant, $input);
 
-        $this->validateAggregatorSubMerchantRelation($subMerchant, $input['merchant_id']);
+        $this->validateAggregatorSubMerchantRelation($subMerchant, $this->merchant);
 
         (new Merchant\Validator)->validateInput('createSubMerchantUser', $input);
 
-        unset($input['merchant_id']);
+        unset($input[User\Entity::MERCHANT_ID]);
 
-        $subMerchantUser = $this->createUserAndAttachMerchant($subMerchant, $input['email']);
+        list($subMerchantUser, $createdNew) =
+            $this->createOrFetchUserAndAttachMerchant($subMerchant, $input[User\Entity::EMAIL]);
 
-        (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+        // If we create a new user we send him a password reset link to start using dasboard
+        // The reset flow will also confirm the user in the process.
+        // If we find an existing user with the sub-merchant email then we send a mail informing
+        // that he has access to sub-merchant account also now.
+        if ($createdNew === true)
+        {
+            (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+        }
+        else
+        {
+            (new User\Service)->postAccountMappedEmail($subMerchantUser, $subMerchant);
+        }
 
         $subMerchantUser = $subMerchantUser->toArrayPublic();
 
@@ -1859,10 +1871,12 @@ class Service extends Base\Service
     }
 
     /**
-     * In case of partners, we created the sub-merchant's user in case the email
+     * In case of partners, we create the sub-merchant's user in case the email
      * is different from partner's. There might be some rare cases where the user
      * with the provided email already exists, in which case we would want to attach
-     * that user to the sub-merchant created as owner.
+     * that user to the sub-merchant created as owner. Same can happen when trying to
+     * create login for a submerchant in the old aggregator model where we will
+     * just attach the user found instead of creating one.
      *
      * @param  Entity $subMerchant
      * @param  string $email
@@ -1901,6 +1915,49 @@ class Service extends Base\Service
         return $subMerchantUser;
     }
 
+    /**
+     * In case of `create login` in the old aggregator flow, the email is taken from
+     * the sub-merchant for creating an owner for the account.
+     * In case of partner type aggregator the email comes in input.
+     *
+     * @param  Entity $subMerchant
+     * @param  Entity $partnerMerchant
+     * @param  array $input
+     *
+     * @return mixed
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateAndGetEmailInput(Entity $subMerchant, Entity $partnerMerchant, array $input)
+    {
+        if (empty($input[User\Entity::EMAIL]) === true)
+        {
+            return $subMerchant->getEmail();
+        }
+
+        $isAggregatorPartner = $partnerMerchant->isAggregatorPartner();
+
+        $subEmailIsSameAsPartner = ($subMerchant->getEmail() === $partnerMerchant->getEmail());
+
+        $subMerchantHasLessThanTwoOwners = ($subMerchant->owners()->count() <= 2);
+
+        //
+        // In case of a partner of type `aggregator`(only) having created a sub-merchant
+        // without providing email explicitly, we want to provide the ability to create
+        // an owner for the sub-merchant, with an email, later.
+        // In both old aggregator and partners flow, we never expect the total number of
+        // owners for a merchant to be greater than 2 (1 for partner and 1 for sub-merchant).
+        //
+        if (($isAggregatorPartner === true) and
+            ($subEmailIsSameAsPartner === true) and
+            ($subMerchantHasLessThanTwoOwners === true))
+        {
+            return $input[User\Entity::EMAIL];
+        }
+
+        throw new Exception\BadRequestValidationFailureException(
+            PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_MERCHANT_USER);
+    }
+
     public function formatUserCreationData(string $email, Merchant\Entity $subMerchant)
     {
         $dummyPass = bin2hex(random_bytes(20));
@@ -1932,8 +1989,9 @@ class Service extends Base\Service
 
     protected function createSubMerchantAndSetRelations(Entity $merchant, bool $isLinkedAccount, array $input)
     {
-        $ownerId = $input['user_id'];
+        $ownerId = $merchant->primaryOwner()->getId();
 
+        // TODO: Remove when dashboard stops sending
         unset($input['user_id']);
 
         unset($input['account']);
@@ -2018,7 +2076,13 @@ class Service extends Base\Service
         (new AccessMap\Service)->mapOAuthApplication($subMerchant->getId(), ['application_id' => $appId]);
     }
 
-    protected function validateAggregatorSubMerchantRelation(Entity $subMerchant, string $aggregatorMerchantId)
+    /**
+     * @param  Entity $subMerchant
+     * @param  Entity $aggregatorMerchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateAggregatorSubMerchantRelation(Entity $subMerchant, Entity $aggregatorMerchant)
     {
         if ($subMerchant->isLinkedAccount() === true)
         {
@@ -2027,19 +2091,16 @@ class Service extends Base\Service
 
         $referrer = $subMerchant->getReferrer();
 
-        $referrerNotEmptyAndSame = (empty($referrer) === false) and ($referrer === $aggregatorMerchantId);
+        $referrerNotEmptyAndSame = (empty($referrer) === false) and ($referrer === $aggregatorMerchant->getId());
 
         if ($referrerNotEmptyAndSame === true)
         {
             return;
         }
 
-        /** @var Entity $aggregatorMerchant */
-        $aggregatorMerchant = $this->repo->merchant->findOrFailPublic($aggregatorMerchantId);
-
         $isNonPurePlatformAggregator = $aggregatorMerchant->isNonPurePlatformPartner();
 
-        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchantId);
+        $isPartnerMerchantMapped = $this->isPartnerMerchantMapped($subMerchant->getId(), $aggregatorMerchant->getId());
 
         if (($isNonPurePlatformAggregator === true) and ($isPartnerMerchantMapped === true))
         {

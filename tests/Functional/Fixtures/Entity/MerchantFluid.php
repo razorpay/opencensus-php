@@ -153,7 +153,7 @@ class MerchantFluid extends Base
 
     public function addBankAccount(array $attributes = array())
     {
-        $name = random_alpha_string(10);
+        $name = random_string_special_chars(10);
 
         $code = substr(strtoupper($name), 0, 4);
 

@@ -1073,7 +1073,7 @@ class Core extends Base\Core
     {
         $partnerUser = $partner->primaryOwner();
 
-        $ownerIds = $submerchant->owners()->getIds();
+        $ownerIds = $submerchant->owners->getIds();
 
         return (in_array($partnerUser->getId(), $ownerIds, true) === true);
     }

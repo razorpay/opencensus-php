@@ -2,43 +2,30 @@
 
 namespace RZP\Mail\User;
 
-use Carbon\Carbon;
 use RZP\Mail\Base;
 use RZP\Models\User;
 
-class PasswordReset extends Base\Mailable
+class MappedToAccount extends Base\Mailable
 {
-    const EXPIRYTIME = 86400; //24 hours
-
     protected $org;
 
-    /**
-     * @var User\Entity
-     */
+    /** @var  User\Entity */
     protected $user;
 
-    protected $token;
+    /**
+     * @var array
+     */
+    protected $subMerchant;
 
-    protected $expiryTime;
-
-    public function __construct(User\Entity $user, $org)
+    public function __construct(User\Entity $user, array $org, array $submerchant)
     {
         parent::__construct();
 
         $this->user = $user->toArrayPublic();
 
-        list($this->token, $this->expiryTime) = $this->getTokenAndExpiry();
-
         $this->org = $org;
-    }
 
-    public function getTokenAndExpiry(): array
-    {
-        $expiryTime = Carbon::now()->timestamp + self::EXPIRYTIME;
-
-        $token = (new User\Core)->generateToken($this->user['id'], $expiryTime);
-
-        return [$token, $expiryTime];
+        $this->subMerchant = $submerchant;
     }
 
     protected function addRecipients()
@@ -63,7 +50,7 @@ class PasswordReset extends Base\Mailable
     {
         $orgName = $this->org['display_name'];
 
-        $subject = sprintf("%s - Password Reset Request", $orgName);
+        $subject = sprintf("Added to %s's Dashboard as Owner | %s", $this->subMerchant['name'], $orgName);
 
         $this->subject($subject);
 
@@ -73,10 +60,9 @@ class PasswordReset extends Base\Mailable
     protected function addMailData()
     {
         $data = [
-            'token'      => $this->token,
-            'org'        => $this->org,
-            'expiryTime' => $this->expiryTime,
-            'email'      => urlencode($this->user['email']),
+            'org'         => $this->org,
+            'subMerchant' => $this->subMerchant,
+            'user'        => $this->user,
         ];
 
         $this->with($data);
@@ -86,7 +72,7 @@ class PasswordReset extends Base\Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.user.password_reset');
+        $this->view('emails.user.mapped_to_account');
 
         return $this;
     }

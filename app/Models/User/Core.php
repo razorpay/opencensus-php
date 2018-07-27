@@ -9,6 +9,7 @@ use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -119,9 +120,12 @@ class Core extends Base\Core
     /**
      * This function is used to add new relationship between user and merchant
      * This uses laravel attach which will create a new mapping.
+     *
      * @param  Entity $user
-     * @param  array  $input
+     * @param  array $input
+     *
      * @return array
+     * @throws Exception\BadRequestException
      */
     protected function attach(Entity $user, array $input)
     {
@@ -136,6 +140,13 @@ class Core extends Base\Core
         $merchantId = $input[Entity::MERCHANT_ID];
 
         $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $mapping = $this->repo->merchant->getMerchantUserMapping($merchantId, $user->getId(), $input[Entity::ROLE]);
+
+        if (empty($mapping) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS);
+        }
 
         $this->repo->attach($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
 

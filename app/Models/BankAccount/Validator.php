@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes',
         Entity::IFSC_CODE                       => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,22',
-        Entity::BENEFICIARY_NAME                => 'required|between:4,120|alpha_space_num',
+        Entity::BENEFICIARY_NAME                => 'required|between:4,120|string',
         Entity::BENEFICIARY_ADDRESS1            => 'sometimes|max:30',
         Entity::BENEFICIARY_ADDRESS2            => 'sometimes|max:30',
         Entity::BENEFICIARY_ADDRESS3            => 'sometimes|max:30',
@@ -37,25 +37,25 @@ class Validator extends Base\Validator
     protected static $addVirtualBankAccountRules = [
         Entity::IFSC_CODE             => 'sometimes|alpha_num|nullable|max:13',
         Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
-        Entity::BENEFICIARY_NAME      => 'required|max:40|alpha_space_num',
+        Entity::BENEFICIARY_NAME      => 'required|max:40|string',
     ];
 
     protected static $editVirtualBankAccountRules = [
         Entity::IFSC_CODE             => 'sometimes|alpha_num|nullable|max:13',
         Entity::ACCOUNT_NUMBER        => 'sometimes|alpha_num|between:5,20',
-        Entity::BENEFICIARY_NAME      => 'sometimes|max:40|alpha_space_num',
+        Entity::BENEFICIARY_NAME      => 'sometimes|max:40|string',
     ];
 
     protected static $addPayoutDestinationRules = [
         Entity::IFSC_CODE             => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
-        Entity::BENEFICIARY_NAME      => 'required|max:40|alpha_space_num',
+        Entity::BENEFICIARY_NAME      => 'required|max:40|string',
     ];
 
     protected static $addBankTransferRules = [
         Entity::IFSC_CODE             => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
-        Entity::BENEFICIARY_NAME      => 'sometimes|max:40|alpha_space_num',
+        Entity::BENEFICIARY_NAME      => 'sometimes|max:40|string',
     ];
 
     protected static $addBankAccountValidators = [

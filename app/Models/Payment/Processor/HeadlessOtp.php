@@ -15,6 +15,27 @@ use RZP\Models\Payment\Analytics\Metadata;
 
 trait HeadlessOtp
 {
+    protected function getNextOtpAction(array $actions)
+    {
+        $map = [
+            'resend_otp' => 'otp_resend',
+        ];
+
+        $newActions = [
+            'otp_submit'
+        ];
+
+        foreach ((array) $actions as $action)
+        {
+            if (isset($map[$action]) === true)
+            {
+                $newActions[] = $map[$action];
+            }
+        }
+
+        return $newActions;
+    }
+
     protected function canRunHeadlessOtpFlow($payment)
     {
         if (($payment->isMethodCardOrEmi() === true) and
@@ -68,7 +89,9 @@ trait HeadlessOtp
         {
             $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
 
-            return ['url' => $this->getOtpSubmitUrl(), 'method' => 'POST'];
+            $content = $response['data']['data'];
+
+            return ['url' => $this->getOtpSubmitUrl(), 'content' => $content, 'method' => 'POST'];
         }
 
         return $request;
@@ -83,14 +106,43 @@ trait HeadlessOtp
 
         $response = $this->app['card.otpelf']->otpSubmit($data);
 
-        if (($response['success'] === true) and
-            ($response['data']['action'] === 'submit_otp'))
+        if ($response['success'] === true)
         {
-            return $response['data']['data'];
+            switch ($response['data']['action'])
+            {
+                case 'submit_otp':
+                    return $response['data']['data'];
+                    break;
+                case 'page_resolved':
+                    if ($response['data']['data']['type'] === 'otp')
+                    {
+                        throw new Exception\GatewayErrorException(
+                            ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
+                    }
+                    break;
+            }
         }
 
         // Handle error codes
         return [];
+    }
+
+    protected function resendHeadlessOtp($payment, $gatewayInput)
+    {
+        $data = [
+            'payment_id' => $payment->getId(),
+            'gateway'    => $gatewayInput,
+        ];
+
+        $response = $this->app['card.otpelf']->otpResend($data);
+
+        if (($response['success'] === true) and
+            ($response['data']['action'] === 'page_resolved'))
+        {
+            $content = $response['data']['data'];
+            
+            return ['url' => $this->getOtpSubmitUrl(), 'content' => $content, 'method' => 'POST'];
+        }
     }
 
     /**
