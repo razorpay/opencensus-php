@@ -40,6 +40,13 @@ class Fields
     const DEBIT_IFSC_CODE = 'debitIfscCode';
     const TOKEN = 'Token';
 
+
+    const CHECK_STATUS_MERCH_ID = 'merchid';
+    const CHECK_STATUS_MERCH_CHAN_ID = 'merchchanid';
+    const CHECK_STATUS_UNQ_TXN_ID = 'tranid';
+    const CHECK_STATUS_CHECKSUM = 'checksum';
+    const CHECK_STATUS_MOBILE_NO = 'mobilenumber';
+
     /**
      * These are the expected field orders
      * for the response we get from the API

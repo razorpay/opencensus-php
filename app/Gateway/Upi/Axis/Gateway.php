@@ -420,18 +420,24 @@ class Gateway extends Base\Gateway
 //        openssl_public_encrypt($checksumdata,$checksum,'');
 
         $data = [
-            Fields::MERCH_ID => 'RAZAORPAY',
-            Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
-            Fields::UNQ_TXN_ID => $payment['id'],
-            Fields::CHECKSUM => 'to be done',
+            Fields::CHECK_STATUS_MERCH_ID => 'RAZAORPAY',
+            Fields::CHECK_STATUS_MERCH_CHAN_ID => 'RAZAORPAYAPP',
+            Fields::CHECK_STATUS_UNQ_TXN_ID => $payment['id'],
+            Fields::CHECK_STATUS_MOBILE_NO => '918605456414',
         ];
+
+        $dataStr = implode('', $data);
+
+        $checksum = $this->encrypt($dataStr);
+
+        $data[Fields::CHECK_STATUS_CHECKSUM] = bin2hex($checksum);
 
         $content = $this->transformRequestArrayToContent($data);
 
         $request = $this->getStandardRequestArray($content);
 
         $request['headers'] = [
-            'Content-Type' => 'text/plain'
+            'Content-Type' => 'application/json'
         ];
 
         $this->trace->info(
@@ -441,6 +447,7 @@ class Gateway extends Base\Gateway
                 'decrypted_content' => $data
             ]);
 
+        s($request);
         return $request;
     }
 
@@ -608,7 +615,7 @@ UQIDAQAB
             Fields::MERCH_ID => 'RAZAORPAY',
             Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
             Fields::TXN_REFUND_ID => $this->getRefundId($refund),
-            Fields::MOB_NO => '909090909090',//$input['contact'],
+            Fields::MOB_NO => '918605456414',
             Fields::TXN_REFUND_AMOUNT => $this->formatAmount($input['refund']['amount']),
             Fields::UNQ_TXN_ID => $input['payment']['id'],
             Fields::REFUND_REASON =>  $this->getRefundRemark($input),
