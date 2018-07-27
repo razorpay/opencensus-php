@@ -62,13 +62,13 @@ class Gateway extends Base\Gateway
 
         if (isset($content[AuthResponseFields::AMOUNT],
                   $content[AuthResponseFields::TRANSACTION_ID],
-                  $content[AuthResponseFields::STATUS_CODE]) == false)
+                  $content[AuthResponseFields::STATUS_CODE]) === false)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 null,
                 null,
-                $input);
+                ['response' => $input]);
         }
 
         if ($content[AuthResponseFields::STATUS_CODE] !== Status::SUCCESS)
