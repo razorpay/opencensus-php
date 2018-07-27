@@ -90,12 +90,14 @@ export default class AddAccount extends Component {
               <div>
                 <Field name="email" component="input" class="form-control" />
                 <small class="help-block">
-                  The Razorpay sign-up link will be sent to this email.
+                  Your sub-merchant will receive a Razorpay sign-up link on this
+                  email.
                 </small>
 
                 <small class="help-block">
-                  If no email is provided, your email will be mapped as the
-                  registered email ID of this merchant.{' '}
+                  Note: If no email is provided, your email will be set as the
+                  registered email ID of this merchant. You can add email ID
+                  later.
                 </small>
               </div>
             </div>

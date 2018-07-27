@@ -11,7 +11,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 export default class ReversalDetails extends Component {
   render() {
-    const { reversal, isLoading, onClose } = this.props;
+    const { reversal, isLoading, onClose, parentAccountName } = this.props;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -39,8 +39,7 @@ export default class ReversalDetails extends Component {
               <div class="panel-body">
                 <EntityDetailRow label="Parent Account">
                   <Definition>
-                    <span>Flipkart parent merchant</span>
-                    <span>Show some email??</span>
+                    <b>{parentAccountName}</b>
                   </Definition>
                 </EntityDetailRow>
 

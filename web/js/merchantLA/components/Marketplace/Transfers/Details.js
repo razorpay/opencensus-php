@@ -77,7 +77,14 @@ export default class TransferDetails extends Component {
   }
 
   render() {
-    const { transfer, isLoading, statusMsg, reversals, onClose } = this.props;
+    const {
+      transfer,
+      isLoading,
+      statusMsg,
+      reversals,
+      onClose,
+      parentAccountName,
+    } = this.props;
 
     const nextWorkingDate = nextWorkingDay(
       moment()
@@ -112,7 +119,7 @@ export default class TransferDetails extends Component {
               <div class="panel-body">
                 <EntityDetailRow label="Parent Account">
                   <Definition>
-                    <b>Parent Name(Flipkart)</b>
+                    <b>{parentAccountName}</b>
                   </Definition>
                 </EntityDetailRow>
 
