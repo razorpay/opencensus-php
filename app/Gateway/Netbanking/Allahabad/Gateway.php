@@ -191,7 +191,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $verify->verifyResponseContent = $this->getResponseArray($response->body);
+        $verify->verifyResponseContent = $this->getVerifyResponse($response->body);
     }
 
     protected function getVerifyRequestData($verify)
@@ -291,7 +291,7 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function getResponseArray($response)
+    protected function getVerifyResponse($response)
     {
         $xml = (array) simplexml_load_string($response);
 

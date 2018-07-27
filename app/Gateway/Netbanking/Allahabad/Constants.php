@@ -11,7 +11,6 @@ class Constants
     const MODE_OF_PAYMENT_AUTH      = 'P';
     const MODE_OF_PAYMENT_VERIFY    = 'V';
     const STATFLG                   = 'H';
-    const MERCHANT_CODE             = 'BD10062018000001';
     const RETAIL                    = 'retail';
     const PAYEE_ID                  = 'RAZOR';
 }

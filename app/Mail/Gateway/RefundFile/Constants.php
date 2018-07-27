@@ -2,7 +2,6 @@
 
 namespace RZP\Mail\Gateway\RefundFile;
 
-use Illuminate\Auth\Access\Gate;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base;
 use RZP\Models\Payment\Gateway;
