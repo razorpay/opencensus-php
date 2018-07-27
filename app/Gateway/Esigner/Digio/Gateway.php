@@ -148,14 +148,18 @@ class Gateway extends Base\Gateway
         $content = [
             'signers' => [
                 [
-                    'identifier' => $this->getFormattedContact($input['payment']['contact']),
-                    'vid'        => $input['token']->getAadhaarVid()
+                    'identifier' => $this->getFormattedContact($input['payment']['contact'])
                 ]
             ],
             'expire_in_days' => 1,
             'enach_type'     => Type::CREATE,
             'content'        => $this->getEmandateData($input)
         ];
+
+        if ($input['token']->getAadhaarVid() !== null)
+        {
+            $content['signers']['vid'] = $input['token']->getAadhaarVid();
+        }
 
         return $this->getStandardRequestArray($content, 'POST', 'create');
     }
