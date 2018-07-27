@@ -663,7 +663,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
 
-        $submerchantOwners = $submerchant->owners()->toArrayPublic();
+        $submerchantOwners = $submerchant->owners()->get()->toArrayPublic();
 
         $this->assertEquals(2, $submerchantOwners['count']);
 
@@ -760,7 +760,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
 
-        $submerchantOwners = $submerchant->owners()->toArrayPublic();
+        $submerchantOwners = $submerchant->owners()->get()->toArrayPublic();
 
         $this->assertEquals(2, $submerchantOwners['count']);
 

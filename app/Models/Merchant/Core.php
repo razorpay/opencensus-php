@@ -1211,7 +1211,7 @@ class Core extends Base\Core
      */
     protected function getNonPartnerPrimaryOwner(Entity $merchant, User\Entity $partnerUser)
     {
-        $owners = $merchant->owners();
+        $owners = $merchant->owners;
 
         foreach ($owners as $owner)
         {

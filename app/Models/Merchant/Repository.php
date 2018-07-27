@@ -536,7 +536,7 @@ class Repository extends Base\Repository
         $accessMapsMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
 
         $query = $this->newQuery()
-                      ->with(['users', 'merchantDetail'])
+                      ->with(['users', 'merchantDetail', 'owners'])
                       ->select($this->dbColumn('*'))
                       ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
                       ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
