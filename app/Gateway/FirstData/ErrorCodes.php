@@ -112,6 +112,9 @@ class ErrorCodes
         'N:9993'          => 'Cardholder not return from Rupay',
         'N:tmout'         => 'Gateway timed out',
         '?:waiting RUPAY' => 'Waiting for Rupay',
+
+        // Refund related
+        'N:-5995'         => 'order too old to be referenced',
     ];
 
     protected static $errorCodeMap = [
@@ -220,6 +223,9 @@ class ErrorCodes
         'N:9993'          => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
         'N:tmout'         => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
         '?:waiting RUPAY' => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY,
+
+        // Refund Related
+        'N:-5995'         => ErrorCode::BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS,
     ];
 
     protected static $specialCases = [

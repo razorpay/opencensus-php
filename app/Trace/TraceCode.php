@@ -204,6 +204,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NODAL_TRANSFER_REQUEST_FAILED                 = 'NODAL_TRANSFER_REQUEST_FAILED';
     const NODAL_PAYMENT_STATUS_REQUEST                  = 'NODAL_PAYMENT_STATUS_REQUEST';
     const NODAL_PAYMENT_STATUS_RESPONSE                 = 'NODAL_PAYMENT_STATUS_RESPONSE';
+    const NODAL_TRANSFER_STATUS_UPDATE_FAILED           = 'NODAL_TRANSFER_STATUS_UPDATE_FAILED';
+    const SETTLEMENT_API_RESPONSE                       = 'NODAL_SETTLEMENT_API_RESPONSE';
+    const SETTLEMENT_API_REQUEST                        = 'NODAL_SETTLEMENT_API_REQUEST';
 
     const KOTAK_NODAL_BALANCE_REQUEST                   = 'KOTAK_NODAL_BALANCE_REQUEST';
     const KOTAK_NODAL_BALANCE_RESPONSE                  = 'KOTAK_NODAL_BALANCE_RESPONSE';
@@ -349,7 +352,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
-    const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
     const INVOICE_PDF_GEN_SYNC                          = 'INVOICE_PDF_GEN_SYNC';
 
     const PROMOTION_CREATE_REQUEST                      = 'PROMOTION_CREATE_REQUEST';
@@ -571,6 +573,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FTA_RECON_REPORT_FILE_CREATED             = 'FTA_RECON_REPORT_FILE_CREATED';
     const FTA_RECON_REPORT_INITIATED                = 'FTA_RECON_REPORT_INITIATED';
+    const LOCKED_FUND_TRANSFER_ATTEMPTS             = 'LOCKED_FUND_TRANSFER_ATTEMPTS';
     const SETTLEMENT_REVERSE_FILE_SKIPPED           = 'SETTLEMENT_REVERSE_FILE_SKIPPED';
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
@@ -605,6 +608,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_RETRY_REQUEST                  = 'SETTLEMENT_RETRY_REQUEST';
     const SETTLEMENTS_CHANNEL_BULK_UPDATE_REQUEST   = 'SETTLEMENTS_CHANNEL_BULK_UPDATE_REQUEST';
     const SETTLEMENTS_CHANNEL_BULK_UPDATE_RESPONSE  = 'SETTLEMENTS_CHANNEL_BULK_UPDATE_RESPONSE';
+    const ATTEMPT_RECONCILIATION_STATUS             = 'ATTEMPT_RECONCILIATION_STATUS';
     const SETTLEMENTS_CHANNEL_UPDATE_FAILED         = 'SETTLEMENTS_CHANNEL_UPDATE_FAILED';
     const SETTLEMENT_PROCESSED_WEBHOOOK_FAILED      = 'SETTLEMENT_PROCESSED_WEBHOOOK_FAILED';
     const CLIENT_CERTIFICATE_FILE_GENERATED         = 'CLIENT_CERTIFICATE_FILE_GENERATED';
@@ -1097,6 +1101,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUERY_CACHE_FLUSH_ERROR                       = 'QUERY_CACHE_FLUSH_ERROR';
     const METRIC_CACHE_EVENT_ERROR                      = 'METRIC_CACHE_EVENT_ERROR';
 
+    //upi status cache
+    const UPI_CACHE_STORE_ERROR                         = 'UPI_CACHE_STORE_ERROR';
+    const UPI_CACHE_FLUSH_ERROR                         = 'UPI_CACHE_FLUSH_ERROR';
+    const UPI_CACHE_READ_ERROR                          = 'UPI_CACHE_READ_ERROR';
+
     // Account codes
     const ACCOUNT_CREATED                               = 'ACCOUNT_CREATED';
 
@@ -1114,8 +1123,17 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SERVER_ERROR_LOG_RISK                         = 'SERVER_ERROR_LOG_RISK';
 
+    const BEAM_REQUEST                                  = 'BEAM_REQUEST';
+    const BEAM_RESPONSE                                 = 'BEAM_RESPONSE';
+    const BEAM_PUSH                                     = 'BEAM_PUSH';
+
     // Partners trace codes
     const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';
+    const PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT     = 'PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT';
+    const PARTNER_CREATE_ACCESS_MAP_REQUEST             = 'PARTNER_CREATE_ACCESS_MAP_REQUEST';
+    const PARTNER_DELETE_ACCESS_MAP_REQUEST             = 'PARTNER_DELETE_ACCESS_MAP_REQUEST';
+  
+    const FEE_CREDITS_THRESHOLD_ALERT                   = 'FEE_CREDITS_THRESHOLD_ALERT';
 
     // Excel reader debug trace codes
     const EXCEL_READER_IMPORT_CONFIG                    = 'EXCEL_READER_IMPORT_CONFIG';

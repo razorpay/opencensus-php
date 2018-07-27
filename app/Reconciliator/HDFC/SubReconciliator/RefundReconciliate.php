@@ -2,7 +2,9 @@
 
 namespace RZP\Reconciliator\HDFC;
 
+use RZP\Constants\Entity;
 use RZP\Reconciliator\Base;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
 
 class RefundReconciliate extends Base\RefundReconciliate
@@ -10,10 +12,10 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID          = 'merchant_trackid';
-    const COLUMN_REFUND_AMOUNT      = 'domestic_amt';
-    const COLUMN_ARN                = 'arn_no';
-    const COLUMN_SEQUENCE_NUMBER    = 'sequence_number';
+    const COLUMN_REFUND_ID                  = 'merchant_trackid';
+    const COLUMN_REFUND_AMOUNT              = 'domestic_amt';
+    const COLUMN_ARN                        = 'arn_no';
+    const COLUMN_GATEWAY_TRANSACTION_ID     = 'tran_id';
 
     const COLUMN_TERMINAL_NUMBER    = 'terminal_number';
 
@@ -24,6 +26,8 @@ class RefundReconciliate extends Base\RefundReconciliate
      * therefore if less than 10% of data is present, we don't mark row as failure.
      */
     const MIN_ROW_FILLED_DATA_RATIO = 0.10;
+
+    protected $gatewayRefund;
 
     /**
      * In case refund id is not set, function will return null,
@@ -76,6 +80,14 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $this->getRefundIdForFss($row);
     }
 
+    /**
+     * This function returns paymentId of refund using gateway refund entity.
+     * Flow comes here when we try to create missing refund in db. Hence,
+     * gateway refund is used here to get the payment id.
+     *
+     * @param array $row
+     * @return null
+     */
     protected function getPaymentId(array $row)
     {
         $refundId = $this->getRefundId($row);
@@ -96,6 +108,11 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $arn = null;
 
+        //
+        // In case ARN in MIS is empty we don't fill RRN in place of ARN because
+        // it can be empty because of issue in MIS file also, and later we can receive ARNs in updated MIS file.
+        // Saving RRN earlier and uploading correct file later will throw errors of mismatches and ARNs will not be updated.
+        //
         if (empty($row[self::COLUMN_ARN]) === false)
         {
             $arn = $row[self::COLUMN_ARN];
@@ -125,7 +142,23 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getGatewayRefund(string $refundId)
     {
-        $gatewayEntities = $this->repo->hdfc->findSuccessfulRefundByRefundId($refundId);
+        if ((empty($this->gatewayRefund) === false) and
+            ($this->gatewayRefund->getRefundId() === $refundId))
+        {
+            return $this->gatewayRefund;
+        }
+
+        $gatewayEntities = [];
+
+        if ($this->refund->getGateway() === Gateway::HDFC)
+        {
+            $gatewayEntities = $this->repo->hdfc->findSuccessfulRefundByRefundId($refundId);
+        }
+
+        if ($this->refund->getGateway() === Gateway::CYBERSOURCE)
+        {
+            $gatewayEntities = $this->repo->cybersource->findSuccessfulRefundByRefundId($refundId);
+        }
 
         if ($gatewayEntities->count() === 0)
         {
@@ -134,12 +167,34 @@ class RefundReconciliate extends Base\RefundReconciliate
 
         $refundEntity = $gatewayEntities->first();
 
+        $this->gatewayRefund = $refundEntity;
+
         return $refundEntity;
+    }
+
+    protected function getGatewayTransactionId(array $row)
+    {
+        $gatewayTransactionId = null;
+
+        if (empty($row[self::COLUMN_GATEWAY_TRANSACTION_ID]) === false)
+        {
+            $gatewayTransactionIdValue = str_replace("'", '', $row[self::COLUMN_GATEWAY_TRANSACTION_ID]);
+
+            if (filled($gatewayTransactionIdValue) === true)
+            {
+                $gatewayTransactionId = trim($gatewayTransactionIdValue);
+            }
+        }
+
+        return $gatewayTransactionId;
     }
 
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {
-        $gatewayRefund->setArnNo($arn);
+        if ($gatewayRefund->getEntityName() === Entity::HDFC)
+        {
+            $gatewayRefund->setArnNo($arn);
+        }
     }
 
     protected function isCybersource(array $row)
@@ -181,26 +236,45 @@ class RefundReconciliate extends Base\RefundReconciliate
     /**
      * In case of onus transaction, we don't receive ARN.
      * Storing 12 digit RRN in place of ARN, to share as a transaction reference with customers
-     * If that is also not set, ARN will be set as 'NA'
+     * If that is also not set, gateway transaction id is used in place of rrn.
      * @param array $row
      * @return string
      */
     protected function getRRNForOnusTransaction(array $row): string
     {
-        $sequenceNumber = 'NA';
+        $refundRrn = $this->getRefundRrn($row);
 
-        if (empty($row[self::COLUMN_SEQUENCE_NUMBER]) === false)
+        $rrn = (blank($refundRrn) === false) ?
+                $refundRrn :
+                $this->getGatewayTransactionId($row);
+
+        if (blank($rrn) === true)
         {
-            $columnSeqNumber = $row[self::COLUMN_SEQUENCE_NUMBER];
-
-            $sequenceNumberValue = str_replace("'", '', $columnSeqNumber);
-
-            if (filled($sequenceNumberValue) === true)
-            {
-                $sequenceNumber = trim($sequenceNumberValue);
-            }
+            $rrn = 'NA';
         }
 
-        return $sequenceNumber;
+        return $rrn;
+    }
+
+    /**
+     * Returns RRN from gateway refund entity
+     *
+     * @param array $row
+     * @return mixed
+     */
+    protected function getRefundRrn(array $row)
+    {
+        $rrn = null;
+
+        $refundId = $this->getRefundId($row);
+
+        $gatewayRefund = $this->getGatewayRefund($refundId);
+
+        if ($gatewayRefund !== null)
+        {
+            $rrn = $gatewayRefund->getRef();
+        }
+
+        return $rrn;
     }
 }

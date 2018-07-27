@@ -3,6 +3,7 @@
   <head>
     <title>Uber Payment</title>
     <meta charset="utf-8">
+    <meta name="robots" content="noindex">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
     <link rel="shortcut icon"type="image/x-icon" href="data:image/x-icon;,">
     <?php

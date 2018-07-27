@@ -145,6 +145,7 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::RECURRING,
         self::RECURRING_DETAILS,
+        self::AUTH_TYPE,
         self::USED_AT,
         self::CREATED_AT,
         // TODO: uncomment when we start accepting token as input

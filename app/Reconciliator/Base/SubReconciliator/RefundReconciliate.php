@@ -733,7 +733,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     protected function setGatewayTransactionId(string $gatewayTransactionId, PublicEntity $gatewayRefund)
     {
-        $dbGatewayTransactionId = $gatewayRefund->getGatewayTransactionId();
+        $dbGatewayTransactionId = (string) $gatewayRefund->getGatewayTransactionId();
 
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
@@ -743,6 +743,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'trace_code'                => TraceCode::RECON_MISMATCH,
                     'info_code'                 => 'DATA_MISMATCH',
                     'message'                   => 'Reference number in db is not same as in recon',
+                    'refund_id'                 => $this->refund->getId(),
                     'payment_id'                => $this->payment->getId(),
                     'db_reference_number'       => $dbGatewayTransactionId,
                     'recon_reference_number'    => $gatewayTransactionId,
@@ -767,7 +768,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayRefund)
     {
-        $dbReferenceNumber = $gatewayRefund->getBankPaymentId();
+        $dbReferenceNumber = (string) $gatewayRefund->getBankPaymentId();
 
         if ((empty($dbReferenceNumber) === false) and
             ($dbReferenceNumber !== $referenceNumber))
@@ -777,6 +778,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'trace_code'                => TraceCode::RECON_MISMATCH,
                     'info_code'                 => 'DATA_MISMATCH',
                     'message'                   => 'Reference number in db is not same as in recon',
+                    'refund_id'                 => $this->refund->getId(),
                     'payment_id'                => $this->payment->getId(),
                     'db_reference_number'       => $dbReferenceNumber,
                     'recon_reference_number'    => $referenceNumber,

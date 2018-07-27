@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -24,6 +25,7 @@ use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
  */
 class InvoiceTest extends TestCase
 {
+    use TestsMetrics;
     use PaymentTrait;
     use MocksDnsTrait;
     use CreatesInvoice;
@@ -143,6 +145,8 @@ class InvoiceTest extends TestCase
         $order = $this->createOrder();
 
         $invoice = $this->fixtures->create('invoice');
+
+        $metrics = $this->createMetricsMock();
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 
@@ -1862,6 +1866,18 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkView()
     {
+        $this->createMetricsMock()
+             ->expects($this->at(4))
+             ->method('count')
+             ->with(
+                'invoice_view_total',
+                1,
+                [
+                    'has_batch'        => 0,
+                    'has_subscription' => 0,
+                    'type'             => 'link',
+                ]);
+
         $this->createOrder();
 
         $this->createIssuedInvoice(['type' => 'link', 'description' => 'Sample description']);
@@ -1871,6 +1887,18 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkViewDraft()
     {
+        $this->createMetricsMock()
+             ->expects($this->at(4))
+             ->method('count')
+             ->with(
+                'invoice_view_total',
+                1,
+                [
+                    'has_batch'        => 0,
+                    'has_subscription' => 0,
+                    'type'             => 'link',
+                ]);
+
         $this->createDraftInvoice(['type' => 'link']);
 
         $this->callViewUrlAndMakeAssertions(
@@ -2197,6 +2225,8 @@ class InvoiceTest extends TestCase
 
     public function testExpireInvoices()
     {
+        $metrics = $this->createMetricsMock();
+
         // Issued invoice
         $this->createOrder();
         $this->fixtures->create('invoice');

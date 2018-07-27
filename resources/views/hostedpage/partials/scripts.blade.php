@@ -77,36 +77,45 @@
                 };
             })());
         }
-
         function addIntFieldsValidation() {
-            var formEle1 = document.querySelector('[data-schemapath="root.customer_id"]');
-            var formEle2 = document.querySelector('[data-schemapath="root.job_number"]');
+            var elements = ['root.customer_id', 'root.job_number'];
 
-            var integerFieldParent = [formEle1, formEle2];
+            for (var i = 0; i < elements.length; i++) {
+                var curEle = document.querySelector('[data-schemapath="'+ elements[i] +'"]');
 
-            for (var i = 0; i < integerFieldParent.length; i++) {
-                integerFieldParent[i].getElementsByTagName('input')[0].addEventListener('input', (function() {
-                    var prettyVal = '';
+                // Reset the field if copy pasted the value with non-digit characters
+                curEle.getElementsByTagName('input')[0].addEventListener('input', function(e) {
+                    var value = e.target.value;
 
-                    return function(e) {
-                        var value = e.target.value;
+                    if (value && value != Number(value)){
+                       e.target.value = '';
+                    }
+                });
 
-                        if (!value) {
-                            e.target.value = '';
+                // Not allowing keydown of non-digit characters
+                curEle.getElementsByTagName('input')[0].addEventListener('keydown', function(e) {
+                    var value = e.which;
 
-                            return;
+                    // Special keys like delete button, Alt, arrow keys etc must work
+                    function _isValueIn(value) {
+                        var specialKeys = [16, 18, 8, 46, 37, 38, 39, 40];
+                        var isIn = false;
+
+
+                        for (var i = 0; i < specialKeys.length; i++) {
+                            if (value == specialKeys[i]) {
+                                isIn = true;
+                                break;
+                            }
                         }
 
-                        var newValue = value.replace(/\D/g, '');
-
-                        if (newValue) {
-                            prettyVal = newValue;
-                        }
-
-                        e.target.value = prettyVal;
-
-                    };
-                })());
+                        return isIn;
+                    }
+                    // Cmd/Ctrl must be allowed since it might be used for shortcuts like Ctrl + A or Ctrl + L
+                    if (value && (value < 48 || value > 57) && !_isValueIn(value) && !e.ctrlKey && !e.metaKey) {
+                        e.preventDefault();
+                    }
+                });
             }
 
             var ele = document.querySelector('[data-validate="amount"]');
@@ -319,7 +328,7 @@
             });
 
 
-            var element = document.getElementById('udf_container');
+            var element = window.RZP.getEl('udf_container');
             var editor = new JSONEditor(element, {
                 form_name_root: "",
                 no_additional_properties: true,
@@ -383,7 +392,7 @@
                     if (window.RZP.checkIsDesktop()) {
                         parentEle = document.body;
                     } else {
-                        parentEle = document.getElementById('form-section');
+                        parentEle = window.RZP.getEl('form-section');
                     }
 
                     window.RZP.scrollTo(parentEle, errorEle, 300);
@@ -396,23 +405,26 @@
         }
 
         function removeForm() {
-            document.getElementById("udf_submit_btn").style.display='none';
+            window.RZP.getEl("udf_submit_btn").style.display='none';
             window.editor.destroy();
 
             document.getElementsByName('payment-form')[0].style.display = 'none';
             document.getElementsByName('payment-form')[0].innerHTML = '';
 
-            document.getElementById('testmode-warning').style.display = 'none';
+            var testModeEle = window.RZP.getEl('testmode-warning');
+            if (testModeEle) {
+                testModeEle.style.display = 'none';
+            }
 
             if (window.RZP.checkIsDesktop()) {
                 document.body.scrollTop = 0;
             } else {
-                document.getElementById('form-section').scrollTop = 0;
+                window.RZP.getEl('form-section').scrollTop = 0;
             }
         }
 
         function addListeners_Validators() {
-            document.getElementById('udf_submit_btn').addEventListener('click', submitForm);
+            window.RZP.getEl('udf_submit_btn').addEventListener('click', submitForm);
 
             window.RZP.addAmountValidation();
             window.RZP.addIntFieldsValidation();
@@ -427,14 +439,14 @@
 
             removeForm();
 
-            document.getElementById('success-section').style.display = 'block';
+            window.RZP.getEl('success-section').style.display = 'block';
 
-            document.getElementById('success-msg').innerHTML = 'You\'ve successfully paid ₹' + (amountPaid/100).toFixed(2);
-            document.getElementById('payment-id').innerHTML = 'Payment ID: ' + respPaymentId;
+            window.RZP.getEl('success-msg').innerHTML = 'You\'ve successfully paid ₹' + (amountPaid/100).toFixed(2);
+            window.RZP.getEl('payment-id').innerHTML = 'Payment ID: ' + respPaymentId;
         }
 
         function toggleMobileForm() {
-            var formEl = document.getElementById('form-section');
+            var formEl = window.RZP.getEl('form-section');
             if (window.RZP.hasClass(formEl, 'slideup')) {
                 window.RZP.removeClass(formEl, 'slideup');
             } else {
@@ -478,7 +490,7 @@
                 button = '<button class="btn-link showmore" onclick="window.RZP.toggleTrimDescription(false)"> Show More </button>';
             }
 
-            var ele = document.getElementById('payment-for');
+            var ele = window.RZP.getEl('payment-for');
             ele && (ele.innerHTML = desc + button);
         }
 
@@ -535,21 +547,44 @@
             }
         }
 
+        function getEl(id) {
+            return document.getElementById(id);
+        }
+
         function cleanHTML() {
             // Show content according to width
             if (checkIsDesktop()) {
-                document.getElementById('mobile-container').innerHTML = '';
-                document.getElementById('desktop-container').style.display = 'block';
+                getEl('mobile-container').innerHTML = '';
+                getEl('desktop-container').style.display = 'block';
 
                 removeElemsWithClass('mobile-el');
             } else {
 
-                document.getElementById('desktop-container').innerHTML = '';
-                document.getElementById('mobile-container').style.display = 'block';
+                getEl('desktop-container').innerHTML = '';
+                getEl('mobile-container').style.display = 'block';
 
                 document.body.style.overflow = 'hidden';
 
+                var browserHeight = document.documentElement.clientHeight;
+
+                getEl('mobile-container').style['min-height'] = browserHeight + 'px';
+                document.querySelector('#mobile-container .content').style['height'] = browserHeight + 'px';
+                document.querySelector('#mobile-container #form-section').style['height'] = browserHeight + 'px';
+
                 removeElemsWithClass('desktop-el');
+            }
+
+            if (!window.RZP.checkIsDesktop()) {
+                var initialLoad = true;
+
+                window.location.hash = ''; // Remove any hash. Page must load with description.
+                window.onhashchange = function(e) {
+                    if (initialLoad) {
+                        initialLoad = false;
+                    } else {
+                        window.RZP.toggleMobileForm();
+                    }
+                }
             }
         }
 
@@ -597,6 +632,7 @@
         global.cleanHTML = cleanHTML;
         global.easeInOutQuad = easeInOutQuad;
         global.scrollTo = scrollTo;
+        global.getEl = getEl;
 
 
     })(window.RZP = window.RZP || {});
@@ -715,4 +751,42 @@
         globalScope.hasRedirect        = hasRedirect;
         globalScope.redirectToCallback = redirectToCallback;
     }(window.RZP_DATA = window.RZP_DATA || {}));
+</script>
+
+{{-- Polyfills --}}
+<script>
+    (function() {
+        // Array.isArray polyfill
+        if(!Array.isArray) {
+            Array.isArray = function(arg) {
+                return Object.prototype.toString.call(arg) === '[object Array]';
+            };
+        }
+
+        // Object.assign polyfill
+        if (typeof Object.assign != 'function') {
+            Object.assign = function(target, varArgs) { // .length of function is 2
+                'use strict';
+                if (target == null) { // TypeError if undefined or null
+                    throw new TypeError('Cannot convert undefined or null to object');
+                }
+
+                var to = Object(target);
+
+                for (var index = 1; index < arguments.length; index++) {
+                    var nextSource = arguments[index];
+
+                    if (nextSource != null) { // Skip over if undefined or null
+                        for (var nextKey in nextSource) {
+                            // Avoid bugs when hasOwnProperty is shadowed
+                            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                                to[nextKey] = nextSource[nextKey];
+                            }
+                        }
+                    }
+                }
+                return to;
+            };
+        }
+    }());
 </script>

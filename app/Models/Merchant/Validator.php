@@ -62,6 +62,7 @@ class Validator extends Base\Validator
         Entity::WHITELISTED_IPS_LIVE . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
         Entity::WHITELISTED_IPS_TEST        => 'sometimes|array|max:5',
         Entity::WHITELISTED_IPS_TEST . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
+        Entity::FEE_CREDITS_THRESHOLD       => 'sometimes|integer|nullable'
     ];
 
     protected static $uniqueEmailRules = [
@@ -89,6 +90,7 @@ class Validator extends Base\Validator
         Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
         MerchantDetail::GSTIN            => 'sometimes|nullable|string|size:15',
         MerchantDetail::P_GSTIN          => 'sometimes|nullable|string',
+        Entity::FEE_CREDITS_THRESHOLD    => 'sometimes|integer|nullable',
     ];
 
     protected static $actionRules = [
@@ -366,6 +368,26 @@ class Validator extends Base\Validator
     }
 
     /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNonPurePlatformPartner(Entity $merchant)
+    {
+        // Block non partners and pure platforms
+        if ($merchant->isNonPurePlatformPartner() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::ID           => $merchant->getId(),
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]);
+        }
+    }
+
+    /**
      * Submerchant creation without providing an email explicitly is only allowed if
      * 1. The partner is of type fully-managed
      * 2. The partner is of type aggregator and has the feature allowing optional emails
@@ -487,7 +509,7 @@ class Validator extends Base\Validator
         // i.e merchant will have access to keys.
         // or if website is not null [this check to be removed later]
         if (($merchant->getHasKeyAccess() === true) or
-            (isset($website) === true))
+            (empty($website) === false))
         {
             $attributes[] = Entity::WEBSITE;
         }
@@ -731,12 +753,17 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
-    public function validateIfNotAPartner(Entity $merchant)
+    public function validateIsPartner(Entity $merchant)
     {
         if ($merchant->isPartner() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER);
+                ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::ID           => $merchant->getId(),
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]);
         }
     }
 

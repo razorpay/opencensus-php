@@ -24,8 +24,9 @@ class Notifier extends Base\Core
 
     /**
      * Sends email and sms notifications to a customer with a payment link
+     *
      * @param Entity $paymentLink
-     * @param array $input
+     * @param array  $input
      */
     public function notifyByEmailAndSms(Entity $paymentLink, array $input)
     {
@@ -45,6 +46,7 @@ class Notifier extends Base\Core
 
     /**
      * Sends email notification to a customer with a payment link
+     *
      * @param Entity $paymentLink
      * @param string $email
      */
@@ -56,6 +58,8 @@ class Notifier extends Base\Core
                 Entity::ID    => $paymentLink->getId(),
                 Entity::EMAIL => $email,
             ]);
+
+        $this->trace->count(Metric::PAYMENT_PAGE_EMAIL_NOTIFY_TOTAL);
 
         $mailPayload = (new ViewSerializer($paymentLink))->serializeForInternal();
 
@@ -80,13 +84,14 @@ class Notifier extends Base\Core
 
     /**
      * Sends sms notification to a customer with a payment link
+     *
      * @param  Entity $paymentLink
      * @param  string $contact
-     *
-     * @return bool
      */
     protected function notifyBySms(Entity $paymentLink, string $contact)
     {
+        $this->trace->count(Metric::PAYMENT_PAGE_SMS_NOTIFY_TOTAL);
+
         $request = $this->getRavenSendPaymentLinkRequestInput($paymentLink, $contact);
 
         try
@@ -108,6 +113,7 @@ class Notifier extends Base\Core
 
     /**
      * Prepares raven request input
+     *
      * @param  Entity $paymentLink
      * @param  string $contact
      *

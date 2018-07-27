@@ -1,4 +1,5 @@
 <?php
+    $rzp_prime_color    = '#528ff0';
     $canvas_bg          = '#f2f4f6';
     $primary_color      = '#0D2366';
     $secondary_color    = '#6F7691';
@@ -13,6 +14,7 @@
 
     * {
         box-sizing: border-box;
+        font-family: inherit;
     }
 
     html {
@@ -37,6 +39,10 @@
 
     body.has-redirect div.redirect-message {
         display: block;
+    }
+
+    b {
+        font-weight: 600;
     }
 
     #hostedpage-container {
@@ -107,24 +113,35 @@
         line-height: 24px;
     }
 
+    a {
+        text-decoration: none;
+        color: {{$rzp_prime_color}};
+        display: inline-block;
+    }
+
+    .footer a, #footer-section a, #contact-details a {
+        color: inherit;
+    }
+
     ol, p {
         padding: 0;
-        margin: 20px 0 24px;
         font-size: 14px;
         line-height: 20px;
     }
 
     ol {
         padding-left: 15px;
+        margin: 16px 0 32px 0;
     }
 
     ol li {
-        margin-bottom: 24px;
+        margin-bottom: 10px;
     }
 
     p {
         white-space: pre-wrap;
         word-wrap: break-word;
+        margin-top: 20px;
     }
 
     .btn {
@@ -137,6 +154,17 @@
         padding: 10px 16px;
         border-radius: 2px;
         overflow: auto;
+    }
+
+    .btn-link {
+        color: {{$rzp_prime_color}};
+        background: #fff;
+        border: 0;
+        cursor: pointer;
+        padding: 0;
+        font-size: 14px;
+        outline: none;
+        padding-left: 4px;
     }
 
     .text-underline {
@@ -158,11 +186,6 @@
 
     #secure-lock-icon {
         height: 16px;
-    }
-
-    .showmore {
-        padding-left: 10px;
-        margin-left: -9px;
     }
 
     .btn:active {

@@ -28,7 +28,7 @@ RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
     rm -rf /root/.composer && \
     composer clear-cache && \
     echo ${GIT_COMMIT_HASH} > public/commit.txt && \
-    apk add --no-cache apache2 php7-mysqlnd php7-apache2 musl && sed -i 's#PidFile "/run/.*#Pidfile /tmp/run/httpd.pid"#g' /etc/apache2/conf.d/mpm.conf && \
+    apk add --no-cache apache2 apache2-ctl php7-mysqlnd php7-apache2 musl && sed -i 's#PidFile "/run/.*#Pidfile /tmp/run/httpd.pid"#g' /etc/apache2/conf.d/mpm.conf && \
     sed -i 's/#LoadModule rewrite_module*/LoadModule rewrite_module/' /etc/apache2/httpd.conf && \
     mkdir /opt && chown -R apache:www-data /opt
 

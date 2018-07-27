@@ -6,11 +6,16 @@ use Mail;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\BankTransfer;
+use RZP\Models\Bank;
 use RZP\Models\Batch;
 use RZP\Models\Currency;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Models\Payment;
+use RZP\Models\Customer;
+use RZP\Models\BankAccount;
+use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 
@@ -205,7 +210,8 @@ trait Refund
     {
         $payment = $refund->payment;
 
-        if ($payment->isBankTransfer() === true)
+        if (($payment->isBankTransfer() === true) or
+            ($this->isFundTransferAttemptRefund($payment) === true))
         {
             return false;
         }
@@ -554,7 +560,7 @@ trait Refund
                 $this->callGatewayFunction(Payment\Action::REFUND, $data);
             }
 
-            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+            $this->refund->setStatusProcessed();
 
             $gatewayRefunded = true;
         }
@@ -563,6 +569,8 @@ trait Refund
             $this->tracePaymentFailed(
                 $e->getError(),
                 TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->updateRefundFailed($e);
         }
         catch (\Throwable $e)
         {
@@ -593,7 +601,7 @@ trait Refund
                 $this->callGatewayFunction(Payment\Action::REVERSE, $data);
             }
 
-            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+            $this->refund->setStatusProcessed();
 
             $reversed = true;
         }
@@ -602,6 +610,8 @@ trait Refund
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REVERSE_FAILURE);
+
+            $this->updateRefundFailed($e);
         }
         catch (\Throwable $e)
         {
@@ -619,6 +629,19 @@ trait Refund
         }
 
         return $reversed;
+    }
+
+    protected function updateRefundFailed($exception)
+    {
+        $error = $exception->getError();
+
+        $code = $error->getPublicErrorCode();
+
+        $desc = $error->getDescription();
+
+        $internalCode = $error->getInternalErrorCode();
+
+        $this->refund->setError($code, $desc, $internalCode);
     }
 
     protected function recordTransactionForRefund()
@@ -727,7 +750,11 @@ trait Refund
 
     protected function callRefundFunction($payment, $data)
     {
-        if ($this->shouldHitGatewayForRefund($payment) === true)
+        if ($this->isFundTransferAttemptRefund($payment) === true)
+        {
+            return $this->refundEmandateRblOrTpvPayment($payment);
+        }
+        else if ($this->shouldHitGatewayForRefund($payment) === true)
         {
             return $this->callGatewayRefundFunction($payment, $data);
         }
@@ -821,7 +848,7 @@ trait Refund
         }
         else
         {
-            $refund->setStatus(Payment\Refund\Status::PROCESSED);
+            $refund->setStatusProcessed();
         }
 
         $refund->setGatewayRefunded($refundedOnGateway);
@@ -1179,8 +1206,116 @@ trait Refund
                     TraceCode::PAYMENT_REFUND_FAILURE);
 
             $this->refund->setStatus(Payment\Refund\Status::FAILED);
+
+            $this->updateRefundFailed($e);
         }
 
         return $refunded;
+    }
+
+    protected function refundEmandateRblOrTpvPayment(Payment\Entity $payment)
+    {
+        if ($this->refund->getAmount() === 0)
+        {
+            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+
+            return true;
+        }
+
+        $refunded = false;
+
+        try
+        {
+            if ($this->refund->bankAccount === null)
+            {
+                $input = $this->getBankAccountInput($payment);
+
+                $this->createBankAccountForRefund($input);
+            }
+
+            (new FundTransferAttempt\Core)->createFundTransferAttempt($this->refund);
+
+            $this->refund->setStatus(Payment\Refund\Status::INITIATED);
+
+            $this->refund->setBatchFundTransferId(null);
+
+            $refunded = true;
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->app['segment']->trackPayment(
+                $this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->tracePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->refund->setStatus(Payment\Refund\Status::FAILED);
+        }
+
+        return $refunded;
+    }
+
+    protected function isFundTransferAttemptRefund(Payment\Entity $payment)
+    {
+        if (($this->isPaymentEmandateAndRblGateway($payment) === true) or
+            ($this->isPaymentTpvAndBankTransferRefund($payment) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getBankAccountInput(Payment\Entity $payment)
+    {
+        $input = [];
+
+        if ($this->isPaymentTpvAndBankTransferRefund($payment) === true)
+        {
+            $order = $payment->order;
+
+            $ifscCode = Bank\BankCodes::getIfscForBankCode($order->getBank());
+
+            $input[BankAccount\Entity::IFSC_CODE]          = $ifscCode;
+            $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $order->getAccountNumber();
+            $input[BankAccount\Entity::BENEFICIARY_NAME]   = '';
+        }
+
+        if ($this->isPaymentEmandateAndRblGateway($payment) === true)
+        {
+            $customer = $payment->customer;
+            $customerName = preg_replace('/[^a-zA-Z0-9 ]+/', '', $customer->getName());
+            $customerName = substr($customerName, 0, 35);
+
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            $input[BankAccount\Entity::IFSC_CODE]          = $token->getIfsc();
+            $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $token->getAccountNumber();
+            $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
+        }
+
+        if ((isset($input[BankAccount\Entity::IFSC_CODE]) === true) and
+            ($input[BankAccount\Entity::IFSC_CODE] === null))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'ifsc code is null while creating FTA entity'
+            );
+        }
+
+        return $input;
+    }
+
+    protected function createBankAccountForRefund(array $bankAccountInput)
+    {
+        $bankAccount = (new BankAccount\Core)->createBankAccountForSource(
+                    $bankAccountInput,
+                    $this->merchant,
+                    $this->refund,
+                    BankAccount\Type::REFUND,
+                    'addBankTransfer'
+                );
+
+        $this->refund->bankAccount()->associate($bankAccount);
     }
 }
