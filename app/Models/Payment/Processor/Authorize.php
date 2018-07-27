@@ -361,6 +361,15 @@ trait Authorize
                             ->with('data', $templateData)
                             ->render();
 
+            $next = ['otp_submit'];
+
+            if (isset($request['content']['next']) === true)
+            {
+                $next = $this->getNextOtpAction($request['content']['next']);
+
+                unset($request['content']['next']);
+            }
+
             $response = [
                 'type'       => 'otp',
                 'request'    => [
@@ -369,7 +378,7 @@ trait Authorize
                 ],
                 'version'    => 1,
                 'payment_id' => $payment->getPublicId(),
-                'next'       => ['otp_submit'],
+                'next'       => $next,
                 'gateway'    => $response['gateway'],
             ];
         }

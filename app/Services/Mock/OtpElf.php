@@ -15,14 +15,32 @@ class OtpElf extends BaseOtpElf
                 'data'   => [
                     'type' => 'otp',
                     'bank' => 'ICIC',
+                    'next' => [
+                        'submit_otp',
+                        'resend_otp',
+                    ]
                 ]
             ]
         ];
     }
 
-    public function otpResend(array $input, bool $mockInTestMode = true): array
+    public function otpResend(array $input): array
     {
-        return [self::SMS_ID => self::TEST_SMS_ID];
+        return [
+            'success' => true,
+            'data' => [
+                'action'     => 'page_resolved',
+                'data'       => [
+                    'type' => 'otp',
+                    'bank' => 'ICIC',
+                    'next' => [
+                        'submit_otp',
+                        'resend_otp',
+                    ]
+                ],
+                'payment_id' => $input['payment_id'],
+            ]
+        ];
     }
 
     public function otpSubmit(array $input): array
