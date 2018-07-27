@@ -403,7 +403,6 @@ class AtomGatewayTest extends TestCase
         {
             if ($action === 'callback')
             {
-                s($content);
                 unset($content[$field]);
             }
         });
