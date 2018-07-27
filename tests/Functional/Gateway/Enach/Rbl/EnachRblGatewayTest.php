@@ -104,6 +104,32 @@ class EnachRblGatewayTest extends TestCase
         $this->assertNotNull($enach['signed_xml']);
     }
 
+    public function testSuccessfulEsignGenerationWithNeitherVidNorAadhaar()
+    {
+        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        unset($payment['aadhaar']);
+
+        $this->doAuthPayment($payment);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertEquals('authorize', $enach['action']);
+        $this->assertEquals('UTIB', $enach['bank']);
+        $this->assertEquals('ratn', $enach['acquirer']);
+        $this->assertEquals(0, $enach['amount']);
+        $this->assertNotNull($enach['gateway_reference_id']);
+        $this->assertNotNull($enach['signed_xml']);
+    }
+
     public function testAuthenticationFailed()
     {
         $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
