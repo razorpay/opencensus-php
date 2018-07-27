@@ -655,7 +655,7 @@ return [
                     [
                         'id'               => 'acc_10000000000009',
                         'entity'           => 'merchant',
-                        'user'             => null,
+                        'user'             => [],
                         'details'          => [
                             'activation_status' => 'under_review',
                         ],
@@ -664,7 +664,7 @@ return [
                     [
                         'id'               => 'acc_10000000000011',
                         'entity'           => 'merchant',
-                        'user'             => null,
+                        'user'             => [],
                         'details'          => [
                             'activation_status' => null,
                         ],
@@ -694,7 +694,7 @@ return [
                     [
                         'id'               => 'acc_10000000000009',
                         'entity'           => 'merchant',
-                        'user'             => null,
+                        'user'             => [],
                         'name'             => 'random_name_1',
                         'details'          => [
                             'activation_status' => 'under_review',
