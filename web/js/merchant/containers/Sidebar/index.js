@@ -13,8 +13,8 @@ import { trackGoToActivation, trackGoToConfig } from './ga';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|credits|addfunds|referrals)/;
-const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications|applications\/new)/;
-const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
+const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|(applications\/new)|applications)/;
+const INVOICES_ROUTES_REGEX = /^\/((invoices\/new)|invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads)?/;
 const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans|addons)/;
@@ -70,7 +70,6 @@ export default class Sidebar extends Component {
   initializeRoutes(location) {
     let pathname = location.pathname;
     let routes = this.routes;
-    let invoicesRegex = INVOICES_ROUTES_REGEX;
 
     if (TRANSACTIONS_ROUTES_REGEX.test(pathname)) {
       routes.transactions = pathname.match(TRANSACTIONS_ROUTES_REGEX)[0];
@@ -78,8 +77,8 @@ export default class Sidebar extends Component {
       routes.account = pathname.match(ACCOUNTS_ROUTES_REGEX)[0];
     } else if (SETTINGS_ROUTES_REGEX.test(pathname)) {
       routes.settings = pathname.match(SETTINGS_ROUTES_REGEX)[0];
-    } else if (invoicesRegex.test(pathname)) {
-      routes.invoices = pathname.match(invoicesRegex)[0];
+    } else if (INVOICES_ROUTES_REGEX.test(pathname)) {
+      routes.invoices = pathname.match(INVOICES_ROUTES_REGEX)[0];
     } else if (MARKETPLACE_ROUTES_REGEX.test(pathname)) {
       routes.marketplace = pathname.match(MARKETPLACE_ROUTES_REGEX)[0];
     } else if (PAYMENTLINKS_ROUTES_REGEX.test(pathname)) {
