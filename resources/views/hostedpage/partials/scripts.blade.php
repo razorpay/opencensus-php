@@ -447,6 +447,7 @@
 
         function toggleMobileForm() {
             var formEl = window.RZP.getEl('form-section');
+
             if (window.RZP.hasClass(formEl, 'slideup')) {
                 window.RZP.removeClass(formEl, 'slideup');
             } else {
@@ -575,9 +576,14 @@
             }
 
             if (!window.RZP.checkIsDesktop()) {
-                var initialLoad = true;
+                var initialLoad;
+                var hash = window.location.hash;
 
-                window.location.hash = ''; // Remove any hash. Page must load with description.
+                if (hash) {
+                    window.location.hash = ''; // Remove any hash. Page must load with description.
+                    initialLoad = true;
+                }
+
                 window.onhashchange = function(e) {
                     if (initialLoad) {
                         initialLoad = false;
