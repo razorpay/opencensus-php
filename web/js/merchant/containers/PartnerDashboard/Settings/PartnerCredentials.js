@@ -8,7 +8,6 @@ import ViewCredentials from './ViewCredentials';
 
 @connect(
   state => ({
-    fetching: state.applications.loading,
     clientCredentials: state.applications.partnerApplication.clientCredentials,
   }),
   {
