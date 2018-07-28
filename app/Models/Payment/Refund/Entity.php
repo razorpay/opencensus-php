@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Refund;
 
 use App;
+use Metrics;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -310,6 +311,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACQUIRER_DATA);
     }
 
+    public function getLastAttemptedAt()
+    {
+        return $this->getAttribute(self::LAST_ATTEMPTED_AT);
+    }
+
     public function getChannel()
     {
         return $this->merchant->getChannel();
@@ -363,35 +369,69 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    private function pushStatusChangeMetrics($statusToChange)
+    public function pushStatusChangeMetrics($statusToChange)
     {
-        $trace = App::getFacadeRoot()['trace'];
-
         $dimensions = RefundMetric::getDimensions($this);
 
-        if (Status::isStatusTrackedForMetrics($statusToChange))
+        if (Status::isStatusTrackedForMetrics($statusToChange) === false)
         {
-            if (($statusToChange === Status::PROCESSED) and
-                ($this->isProcessed() === false))
-            {
-                $trace->count(RefundMetric::REFUND_TOTAL_PROCESSED, 1, $dimensions);
+            return;
+        }
 
-                $trace->histogram(
-                    RefundMetric::REFUND_PROCESS_TIME,
-                    $this->getRefundProcessedTimeInHours(),
-                    $dimensions
-                );
-            }
-            else if ($this->isStatusFailed())
-            {
-                $trace->count(RefundMetric::REFUND_TOTAL_FAILED, 1, $dimensions);
-            }
+        switch ($statusToChange)
+        {
+            case Status::PROCESSED:
+
+                $this->pushMetricsForProcessedStatusChange($dimensions);
+
+                break;
+
+            case Status::FAILED:
+
+                $this->pushMetricsForFailedStatusChange($dimensions);
+
+                break;
         }
     }
 
-    private function getRefundProcessedTimeInHours()
+    protected function pushMetricsForFailedStatusChange(array $dimensions)
     {
-        return ((time() - $this->getCreatedAt()) / 60.0 ) / 60.0;
+        if ($this->isStatusFailed() === false)
+        {
+            Metrics::count(RefundMetric::REFUND_TOTAL_FAILED, 1, $dimensions);
+        }
+    }
+
+    protected function pushMetricsForProcessedStatusChange(array $dimensions)
+    {
+        if ($this->isProcessed() === false)
+        {
+            Metrics::count(RefundMetric::REFUND_TOTAL_PROCESSED, 1, $dimensions);
+
+            Metrics::histogram(
+                RefundMetric::REFUND_PROCESS_TIME_FROM_CREATE,
+                $this->getRefundProcessedTimeFromCreateInHours(),
+                $dimensions
+            );
+        }
+        else if ($this->isStatusFailed() === true)
+        {
+            Metrics::histogram(
+                RefundMetric::REFUND_PROCESS_TIME_FROM_LAST_ATTEMPT,
+                $this->getRefundProcessedTimeFromLastAttemptInHours(),
+                $dimensions
+            );
+        }
+    }
+
+    protected function getRefundProcessedTimeFromCreateInHours()
+    {
+        return (($this->freshTimestamp() - $this->getCreatedAt()) / 60.0 ) / 60.0;
+    }
+
+    protected function getRefundProcessedTimeFromLastAttemptInHours()
+    {
+        return (($this->freshTimestamp() - $this->getLastAttemptedAt()) / 60.0 ) / 60.0;
     }
 
     public function setError($errorCode, $errorDesc, $internalErrorCode)

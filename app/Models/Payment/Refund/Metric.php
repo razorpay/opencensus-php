@@ -10,11 +10,12 @@ use RZP\Models\Payment\Refund\Entity as RefundEntity;
 final class Metric
 {
     // Counters
-    const REFUND_TOTAL_PROCESSED    = 'refund_total_processed';
-    const REFUND_TOTAL_FAILED       = 'refund_total_failed';
+    const REFUND_TOTAL_PROCESSED            = 'refund_total_processed';
+    const REFUND_TOTAL_FAILED               = 'refund_total_failed';
 
     // Histograms
-    const REFUND_PROCESS_TIME       = 'refund_process_time';
+    const REFUND_PROCESS_TIME_FROM_CREATE   = 'refund_process_time_from_create';
+    const REFUND_PROCESS_TIME_FROM_LAST_ATTEMPT   = 'refund_process_time_from_last_attempt';
 
 
     /**
