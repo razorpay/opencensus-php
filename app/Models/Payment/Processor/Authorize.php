@@ -2229,7 +2229,6 @@ trait Authorize
                 'local'             => $customer->isLocal(),
                 'card_id'           => $savedCardId,
                 'auth_type'         => $payment->getAuthType(),
-                'aadhaar_vid'       => $input[Payment\Entity::AADHAAR]['vid'] ?? null,
                 'account_number'    => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null,
                 'beneficiary_name'  => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? null,
                 'ifsc'              => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null,
