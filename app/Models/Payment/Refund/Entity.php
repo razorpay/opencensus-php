@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use App;
+
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -9,6 +11,7 @@ use RZP\Models\Currency;
 use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
+use RZP\Models\Payment\Refund\Metric as RefundMetric;
 
 /**
  * @property Payment\Entity     $payment
@@ -56,6 +59,11 @@ class Entity extends Base\PublicEntity
     const ARN                    = 'arn';
 
     const BANK_ACCOUNT_ID        = 'bank_account_id';
+
+    protected static $TRACKABLE_STATUSES = [
+        Status::PROCESSED,
+        Status::FAILED
+    ];
 
     protected static $sign = 'rfnd';
 
@@ -356,6 +364,34 @@ class Entity extends Base\PublicEntity
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);
+
+        $this->pushStatusChangeMetrics($status);
+    }
+
+    private function pushStatusChangeMetrics($status)
+    {
+        $trace = App::getFacadeRoot()['trace'];
+
+        if ($this->isStatusTrackedForMetrics($status))
+        {
+            if ($this->isProcessed())
+            {
+                $trace->count(RefundMetric::REFUND_TOTAL_PROCESSED, 1);
+            }
+            elseif ($this->isStatusFailed())
+            {
+                $trace->count(RefundMetric::REFUND_TOTAL_FAILED, 1);
+            }
+        }
+    }
+
+    private function isStatusTrackedForMetrics($status)
+    {
+        if (in_array($status, self::$TRACKABLE_STATUSES))
+        {
+            return true;
+        }
+        return false;
     }
 
     public function setError($errorCode, $errorDesc, $internalErrorCode)
@@ -374,7 +410,7 @@ class Entity extends Base\PublicEntity
 
     public function setStatusProcessed()
     {
-        $this->setAttribute(self::STATUS, Status::PROCESSED);
+        $this->setStatus(Status::PROCESSED);
 
         $this->setErrorNull();
     }
