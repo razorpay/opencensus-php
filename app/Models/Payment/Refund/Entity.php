@@ -60,11 +60,6 @@ class Entity extends Base\PublicEntity
 
     const BANK_ACCOUNT_ID        = 'bank_account_id';
 
-    protected static $TRACKABLE_STATUSES = [
-        Status::PROCESSED,
-        Status::FAILED
-    ];
-
     protected static $sign = 'rfnd';
 
     protected $entity = 'refund';
@@ -363,35 +358,40 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
-        $this->setAttribute(self::STATUS, $status);
-
         $this->pushStatusChangeMetrics($status);
+
+        $this->setAttribute(self::STATUS, $status);
     }
 
-    private function pushStatusChangeMetrics($status)
+    private function pushStatusChangeMetrics($statusToChange)
     {
         $trace = App::getFacadeRoot()['trace'];
 
-        if ($this->isStatusTrackedForMetrics($status))
+        $dimensions = RefundMetric::getDimensions($this);
+
+        if (Status::isStatusTrackedForMetrics($statusToChange))
         {
-            if ($this->isProcessed())
+            if (($statusToChange === Status::PROCESSED) and
+                ($this->isProcessed() === false))
             {
-                $trace->count(RefundMetric::REFUND_TOTAL_PROCESSED, 1);
+                $trace->count(RefundMetric::REFUND_TOTAL_PROCESSED, 1, $dimensions);
+
+                $trace->histogram(
+                    RefundMetric::REFUND_PROCESS_TIME,
+                    $this->getRefundProcessedTimeInHours(),
+                    $dimensions
+                );
             }
-            elseif ($this->isStatusFailed())
+            else if ($this->isStatusFailed())
             {
-                $trace->count(RefundMetric::REFUND_TOTAL_FAILED, 1);
+                $trace->count(RefundMetric::REFUND_TOTAL_FAILED, 1, $dimensions);
             }
         }
     }
 
-    private function isStatusTrackedForMetrics($status)
+    private function getRefundProcessedTimeInHours()
     {
-        if (in_array($status, self::$TRACKABLE_STATUSES))
-        {
-            return true;
-        }
-        return false;
+        return ((time() - $this->getCreatedAt()) / 60.0 ) / 60.0;
     }
 
     public function setError($errorCode, $errorDesc, $internalErrorCode)
