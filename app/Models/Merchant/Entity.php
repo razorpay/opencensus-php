@@ -1610,8 +1610,28 @@ class Entity extends Base\PublicEntity
         return (($this->isPartner() === true) and ($this->getPartnerType() !== Constants::PURE_PLATFORM));
     }
 
-    protected function setPartnerIdAttribute(array & $array)
+    /**
+     * Appends the merchant id with the Account entity's sign
+     *
+     * @param array $array
+     */
+    protected function setSignedId(array & $array)
     {
         $array[self::ID] = Account\Entity::getSignedId($array[self::ID]);
+    }
+
+    /**
+     * toArrayPartner() comprises of all Public attributes and a few additional attributes exposed only to the partners.
+     *
+     * @return array
+     */
+    public function toArrayPartner(): array
+    {
+        $array = parent::toArrayPartner();
+
+        // Prepend the Account id sign
+        $this->setSignedId($array);
+
+        return $array;
     }
 }
