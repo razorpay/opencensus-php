@@ -18,4 +18,22 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_num|size:14',
     ];
 
+    /**
+     * fetches reverals for a LA transfer by joining refunds
+     *
+     * @param string $transferId
+     * @param string $merchantId
+     *
+     * @return array|mixed
+     */
+    public function fetchLaReversalsOfTransfer(string $transferId, string $merchantId)
+    {
+        return $this->newQuery()
+                    ->join('refunds', 'refunds.reversal_id', '=', 'reversals.id')
+                    ->select('reversals.*', 'refunds.notes')
+                    ->where('reversals.entity_id', $transferId)
+                    ->where('reversals.entity_type', 'transfer')
+                    ->where('refunds.merchant_id', $merchantId)
+                    ->get();
+    }
 }

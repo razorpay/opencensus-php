@@ -54,6 +54,17 @@ class Service extends Base\Service
         return $reversals->toArrayPublic();
     }
 
+    public function fetchLaReversalsOfTransfer(string $transferId): array
+    {
+        $transferId = Entity::verifyIdAndStripSign($transferId);
+
+        $merchantId = $this->merchant->getId();
+
+        $reversals = $this->repo->reversal->fetchLaReversalsOfTransfer($transferId, $merchantId);
+
+        return $reversals->toArrayPublic();
+    }
+
     public function create(array $input): array
     {
         $transfer = $this->core->createForMerchant($input, $this->merchant);
@@ -106,7 +117,6 @@ class Service extends Base\Service
         Transfer\Entity::verifyIdAndStripSign($id);
 
         $relations = ['transfer', 'transfer.recipientSettlement'];
-
 
         $payment = $this->repo->payment->findByTransferIdAndMerchant($id, $merchantId, $relations);
 
