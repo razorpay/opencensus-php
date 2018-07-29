@@ -20,7 +20,7 @@ class PartnerSubmerchants extends Base
     {
         parent::__construct($batch);
 
-        $this->merchantCore = new Merchant\Core();
+        $this->merchantCore = new Merchant\Core;
     }
 
     /**
@@ -34,7 +34,7 @@ class PartnerSubmerchants extends Base
 
         $partner = $this->repo->merchant->findOrFail($partnerId);
 
-        // If the merchant is already a partner, skip the if block.
+        // Mark as partner only if the merchant is not a partner
         if ($partner->isPartner() === false)
         {
             if (empty($partnerType) === true)

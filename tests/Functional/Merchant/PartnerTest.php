@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant\Partner;
 
+use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
@@ -669,7 +670,17 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->proxyAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $entity = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(2, $entity['success_count']);
+
+        $this->assertEquals(0, $entity['failure_count']);
+
+        $this->assertInputFileExistsForBatch($response[Batch\Entity::ID]);
+
+        $this->assertOutputFileExistsForBatch($response[Batch\Entity::ID]);
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
