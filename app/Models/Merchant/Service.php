@@ -1845,18 +1845,8 @@ class Service extends Base\Service
         list($subMerchantUser, $createdNew) =
             $this->createOrFetchUserAndAttachMerchant($subMerchant, $input[User\Entity::EMAIL]);
 
-        // If we create a new user we send him a password reset link to start using dasboard
-        // The reset flow will also confirm the user in the process.
-        // If we find an existing user with the sub-merchant email then we send a mail informing
-        // that he has access to sub-merchant account also now.
-        if ($createdNew === true)
-        {
-            (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
-        }
-        else
-        {
-            (new User\Service)->postAccountMappedEmail($subMerchantUser, $subMerchant);
-        }
+        // Sends Account linked communication emails to users.
+        (new User\Service)->sendAccountLinkedCommunicationEmail($subMerchantUser, $subMerchant, $createdNew);
 
         $subMerchantUser = $subMerchantUser->toArrayPublic();
 
@@ -1905,6 +1895,7 @@ class Service extends Base\Service
 
         $role = Role::OWNER;
 
+        // For marketpalce linked account owner needs to be assinged.
         if ($subMerchant->isLinkedAccount() === true) {
             $role = Role::LINKED_ACCOUNT_OWNER;
         }
@@ -2028,9 +2019,12 @@ class Service extends Base\Service
             return [$subMerchant, $newUser, $createdNew];
         });
 
-        // This goes out to the aggregator + sub-merchant(if separate email)
-        // (skips if marketplace merchant)
-        if (($merchant->isMarketplace() and $isLinkedAccount) === false)
+        // Sends email to marketplace LA dashbaord enabled users.
+        if (($merchant->isMarketplace() and $isLinkedAccount) === true)
+        {
+            (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
+        }
+        else
         {
             $this->sendSubMerchantCreationMail($subMerchant, $merchant, $newUser, $createdNew);
         }
