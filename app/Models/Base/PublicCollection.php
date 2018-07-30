@@ -68,6 +68,15 @@ class PublicCollection extends Collection
         return $this->itemsToArrayHosted();
     }
 
+    public function toArrayPartner(): array
+    {
+        $array[static::ENTITY] = $this->entity;
+        $array[static::COUNT]  = count($this->items);
+        $array[static::ITEMS]  = $this->itemsToArrayPartner();
+
+        return $array;
+    }
+
     public function getIds()
     {
         $ids = array_map(function($item)
@@ -206,6 +215,15 @@ class PublicCollection extends Collection
         return array_map(function($item)
         {
             return $item->toArrayGateway();
+
+        }, $this->items);
+    }
+
+    protected function itemsToArrayPartner()
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayPartner();
 
         }, $this->items);
     }
