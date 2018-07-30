@@ -90,8 +90,8 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/team"
             component={MyAccount}
-            // myRole="linked_account_owner"
-            myRole="owner"
+            myRole="linked_account_owner"
+            // myRole="owner"
           />
           <Redirect to="/dashboard" />
         </Switch>

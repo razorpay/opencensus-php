@@ -78,8 +78,8 @@ export default class Profile extends Component {
           </div>
 
           <ShowWhen
-            myRole="owner"
-            // myRole="linked_account_owner"
+            //myRole="owner"
+            myRole="linked_account_owner"
           >
             <BankAccountDetails bankAccount={bankAccount} />
           </ShowWhen>
