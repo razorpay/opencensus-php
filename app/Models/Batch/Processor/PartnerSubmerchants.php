@@ -53,7 +53,6 @@ class PartnerSubmerchants extends Base
         {
             $submerchant = $this->repo->merchant->findOrFail($submerchantId);
 
-
             $this->merchantCore->createPartnerSubmerchantAccessMap($partner, $submerchant);
         }
 
