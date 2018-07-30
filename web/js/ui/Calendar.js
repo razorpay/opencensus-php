@@ -88,6 +88,35 @@ export default class CalendarPicker extends Component {
     return isBefore2015 || isPast; // can not select past dates
   };
 
+  getInputValue(value) {
+    let inpValue;
+
+    if (value) {
+      if (typeof value === 'object') {
+        inpValue = value.format(this.getFormat());
+      } else {
+        inpValue = value;
+        if (value.toString().length == 10) {
+          this.props.onDayChange &&
+            this.props.onDayChange(moment(value * 1000)); // Manual input
+        }
+      }
+    } else {
+      inpValue = '';
+    }
+
+    return inpValue;
+  }
+
+  componentDidMount() {
+    // Set the default value after first render
+    let inpEle = document.getElementById(this.props.name + '-date-input');
+
+    if (inpEle) {
+      inpEle.value = this.getInputValue(this.state.value);
+    }
+  }
+
   render() {
     const state = this.state;
 
@@ -140,21 +169,11 @@ export default class CalendarPicker extends Component {
       >
         {({ value }) => {
           let inpEle = document.getElementById(this.props.name + '-date-input');
+
           if (inpEle) {
-            if (value) {
-              if (typeof value === 'object') {
-                inpEle.value = value.format(this.getFormat());
-              } else {
-                inpEle.value = value;
-                if (value.toString().length == 10) {
-                  this.props.onDayChange &&
-                    this.props.onDayChange(moment(value * 1000)); // Manual input
-                }
-              }
-            } else {
-              inpEle.value = '';
-            }
+            inpEle.value = this.getInputValue(value);
           }
+
           return (
             <span tabIndex="0">
               <input
