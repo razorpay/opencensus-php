@@ -853,6 +853,8 @@ class Core extends Base\Core
 
         $validator->validateIfAlreadyPartner($merchant);
 
+        $validator->validatePartnerType($partnerType);
+
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType)
         {
             $merchant->setPartnerType($partnerType);

@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Validator extends Base\Validator
@@ -776,6 +777,19 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER);
 
+        }
+    }
+
+    public function validatePartnerType(string $partnerType)
+    {
+        if (in_array($partnerType, Constants::$partnerTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::PARTNER_TYPE => $partnerType,
+                ]);
         }
     }
 }
