@@ -187,6 +187,7 @@ class Throttler
             (int) $this->reqCtx->getProxy(),
             $this->reqCtx->getOAuthClientId(),
             $id,
+            $this->reqCtx->getUserId(),
             $ip
         ];
 
