@@ -127,8 +127,6 @@ class Entity extends Base\PublicEntity
         self::TERMS,
     ];
 
-
-    //TODO: ADD emi duration and emi subvention in public array.
     protected $public = [
         self::ID,
         self::ENTITY,
@@ -143,6 +141,8 @@ class Entity extends Base\PublicEntity
         self::PERCENT_RATE,
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
+        self::EMI_SUBVENTION,
+        self::EMI_DURATIONS,
         self::MIN_AMOUNT,
         self::MAX_PAYMENT_COUNT,
         self::LINKED_OFFER_IDS,
