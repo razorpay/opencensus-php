@@ -325,6 +325,7 @@ app
       $scope.sendDetails = function() {
         pushToDrip();
         invokeAdroll();
+        invokeGtag();
 
         // Fire linkedin Pixel.
         var i = new Image();
@@ -515,6 +516,18 @@ app
           };
           _onload();
         })();
+      };
+
+      /**
+       * Invokes GTAG for conversion tracking.
+       */
+      var invokeGtag = function invokeGtag() {
+        if (window.location.hostname != 'dashboard.razorpay.com') {
+          return;
+        }
+        gtag('event', 'conversion', {
+          send_to: 'AW-928471290/9KxkCP-1vIYBEPqx3boD',
+        });
       };
 
       // creates Drip lead if email present in params
