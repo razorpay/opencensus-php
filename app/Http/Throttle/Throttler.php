@@ -190,8 +190,14 @@ class Throttler
             $this->reqCtx->getOAuthClientId(),
             $id,
             $this->reqCtx->getUserId(),
-            $ip
+            $ip,
         ];
+
+        $extraArgs = $this->getExtraThrottleKeyArgsFromConfig();
+        if (count($extraArgs) > 0)
+        {
+            array_push($args, ...$extraArgs);
+        }
 
         return implode(':', $args);
     }
@@ -302,5 +308,45 @@ class Throttler
                $this->settings[K::GLOBAL]["{$key}"] ??
                // Again finally, the default by callee :)
                $default;
+    }
+
+    /**
+     * Returns extra arguments to be used for throttle identifier for specific route as configured
+     * @return array
+     */
+    protected function getExtraThrottleKeyArgsFromConfig(): array
+    {
+        $route  = $this->reqCtx->getRoute();
+        $config = $this->config['throttle_key'][$route] ?? null;
+
+        if ($config === null)
+        {
+            return [];
+        }
+
+        $routeParams   = $config['route_params'] ?? [];
+        $requestParams = $config['request_params'] ?? [];
+        $headerParams  = $config['header_params'] ?? [];
+
+        $args = [];
+
+        $request = $this->reqCtx->getRequest();
+
+        foreach ($routeParams as $k)
+        {
+            $args[] = $request->route()->parameter($k);
+        }
+
+        foreach ($requestParams as $k)
+        {
+            $args[] = $request->input($k);
+        }
+
+        foreach ($headerParams as $k)
+        {
+            $args[] = $request->headers->get($k);
+        }
+
+        return $args;
     }
 }
