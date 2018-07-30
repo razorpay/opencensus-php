@@ -25,7 +25,7 @@ export default class SettingsContainer extends Component {
   render() {
     const { isLoading } = this.props;
     return (
-      <div class="content-wrapper content-sm">
+      <div class="content-wrapper content-sm partner-settings">
         {isLoading ? (
           <div class="page-spinner-container">
             <Spinner />

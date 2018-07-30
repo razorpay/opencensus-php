@@ -21,7 +21,7 @@ export default class WebhookDetails extends Component {
       component: (
         <WebhookModal
           webhook={this.props.webhook}
-          appId={this.props.applicationId}
+          onSave={this.props.closeModal}
         />
       ),
     });
@@ -29,7 +29,7 @@ export default class WebhookDetails extends Component {
   render() {
     const webhook = this.props.webhook;
     return (
-      <div class="list-group details-row-container">
+      <div class="list-group details-row-container parnter-settings--webhook-details">
         {webhook ? (
           <Fragment>
             {/* Webhook URL */}
@@ -62,7 +62,10 @@ export default class WebhookDetails extends Component {
             />
           </Fragment>
         ) : (
-          <button onClick={this.openWebhookModal} class="btn btn-default m-t">
+          <button
+            onClick={this.openWebhookModal}
+            class="manage-webhook btn btn-default"
+          >
             Manage Webhook
           </button>
         )}
