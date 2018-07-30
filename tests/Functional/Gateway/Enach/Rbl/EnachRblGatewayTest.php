@@ -13,23 +13,29 @@ use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Mail\Gateway\EMandate\Base as Email;
 use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 
 class EnachRblGatewayTest extends TestCase
 {
-    use PaymentTrait;
+    use AttemptTrait;
     use TransactionTrait;
     use DbEntityFetchTrait;
+    use AttemptReconcileTrait;
 
     public function setUp()
     {
@@ -542,6 +548,198 @@ class EnachRblGatewayTest extends TestCase
         {
             $this->doAuthPayment($payment);
         }, \RZP\Exception\RuntimeException::class, 'Terminal should not be null');
+    }
+
+    public function testDebitFileReconciliationRefund()
+    {
+        $payment = $this->makeDebitPayment();
+
+        $fileStatuses = [
+            'status'     => 'PAID',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/pay_' . $payment['id'] . '/refund';
+        $testData['request']['content']['amount'] = $payment['amount'];
+
+        $this->ba->privateAuth();
+
+        $response = $this->refundPayment('pay_' . $payment['id']);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($response['id'], $refund['id']);
+
+        $this->assertEquals('pay_' . $payment['id'], $refund['payment_id']);
+
+        $this->assertEquals('initiated', $refund['status']);
+
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
+
+        $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals('UTIB0000123', $bankAccount['ifsc_code']);
+
+        $this->assertEquals('test', $bankAccount['beneficiary_name']);
+
+        $this->assertEquals('914010009305862', $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+
+        $this->assertEquals('refund', $bankAccount['type']);
+    }
+
+    public function testDebitFileReconciliationRefundOld()
+    {
+        $payment = $this->makeDebitPayment();
+
+        $fileStatuses = [
+            'status'     => 'PAID',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $attr = [
+            'payment' => $payment,
+            'status' => 'failed',
+            'gateway_refunded' => false,
+            'attempts' => 1,
+        ];
+
+        $refund = $this->fixtures->create('refund:from_payment', $attr);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->retryFailedRefund($refund['id']);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('pay_' . $payment['id'], $refund['payment_id']);
+
+        $this->assertEquals('initiated', $refund['status']);
+
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
+
+        $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals('UTIB0000123', $bankAccount['ifsc_code']);
+
+        $this->assertEquals('test', $bankAccount['beneficiary_name']);
+
+        $this->assertEquals('914010009305862', $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+
+        $this->assertEquals('refund', $bankAccount['type']);
+    }
+
+    public function testDebitFileReconciliationRefundFailedAttempt()
+    {
+        $payment = $this->makeDebitPayment();
+
+        $fileStatuses = [
+            'status'     => 'PAID',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $testData = $this->testData['testDebitFileReconciliationRefund'];
+
+        $this->ba->privateAuth();
+
+        $response = $this->refundPayment('pay_' . $payment['id']);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
+
+        $this->retryFailedRefund($refund['id']);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('pay_' . $payment['id'], $refund['payment_id']);
+
+        $this->assertEquals('initiated', $refund['status']);
+
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
+
+        $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals('UTIB0000123', $bankAccount['ifsc_code']);
+
+        $this->assertEquals('test', $bankAccount['beneficiary_name']);
+
+        $this->assertEquals('914010009305862', $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+
+        $this->assertEquals('refund', $bankAccount['type']);
+    }
+
+    public function testDebitFileReconciliationRefundBankTransfer()
+    {
+        $this->testDebitFileReconciliationRefund();
+
+        $channel = Channel::YESBANK;
+
+        $content = $this->initiateTransfer(
+            $channel,
+            Attempt\Purpose::REFUND);
+
+        $data = $this->reconcileOnlineSettlements($channel, false);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertNotNull($attempt['utr']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+
+        // Process entities
+        $this->reconcileEntitiesForChannel($channel);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+        $this->assertNotNull($attempt['utr']);
     }
 
     protected function makeDebitPayment()

@@ -8,7 +8,6 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Payment\Refund\Entity as Refund;
 use RZP\Models\Transaction\Entity as Transaction;
-use RZP\Models\BankAccount\Entity as BankAccount;
 
 class CreateRefunds extends Migration
 {

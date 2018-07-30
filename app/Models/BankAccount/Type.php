@@ -9,6 +9,7 @@ class Type
     const MERCHANT        = 'merchant';
     const CUSTOMER        = 'customer';
     const VIRTUAL_ACCOUNT = 'virtual_account';
+    const REFUND          = 'refund';
 
     public static function validateType($type)
     {

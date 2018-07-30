@@ -131,4 +131,20 @@ trait PaymentHitachiTrait
             }
         );
     }
+
+    protected function mockFormatErrorOnReversal()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'reverse')
+                {
+                    $content = [
+                        'response_code' => '30',
+                        'response_desc' => 'Format Error'
+                    ];
+                }
+            }
+        );
+    }
 }

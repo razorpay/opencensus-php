@@ -604,7 +604,7 @@ class Gateway extends Base\Gateway
                 ]);
 
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED, null, null, [], Base\Action::AUTHENTICATE);
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED, null, null, [], null, Base\Action::AUTHENTICATE);
         }
     }
 

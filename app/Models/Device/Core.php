@@ -118,7 +118,7 @@ class Core extends Base\Core
         $input1 = [
             'ifsc_code'             => 'RAZR0000001',
             'account_number'        => $customer->getContact() . '1',
-            'beneficiary_name'      => 'Test R4zorpay',
+            'beneficiary_name'      => 'Test R4zorpay:',
             'beneficiary_address1'  => 'address 1',
             'beneficiary_address2'  => 'address 2',
             'beneficiary_address3'  => 'address 3',
@@ -134,7 +134,7 @@ class Core extends Base\Core
         $input2 = [
             'ifsc_code'             => 'RAZR0000001',
             'account_number'        => $customer->getContact(),
-            'beneficiary_name'      => 'Test R4zorpay',
+            'beneficiary_name'      => 'Test R4zorpay:',
             'beneficiary_address1'  => 'address 1',
             'beneficiary_address2'  => 'address 2',
             'beneficiary_address3'  => 'address 3',

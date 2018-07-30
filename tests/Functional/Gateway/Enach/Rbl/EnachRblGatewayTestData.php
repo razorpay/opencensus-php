@@ -140,5 +140,21 @@ return [
                 ],
             ],
         ],
-    ]
+    ],
+
+    'testDebitFileReconciliationRefund' => [
+        'request' => [
+            'url' => '',
+            'method' => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 5000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
 ];

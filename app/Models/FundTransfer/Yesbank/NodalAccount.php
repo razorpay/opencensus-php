@@ -94,7 +94,9 @@ class NodalAccount extends NodalBase\NodalAccount
             }
             catch (\Throwable $e)
             {
-                $this->trace->info(
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
                     TraceCode::NODAL_TRANSFER_STATUS_UPDATE_FAILED,
                     $response
                 );
