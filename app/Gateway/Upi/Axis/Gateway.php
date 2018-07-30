@@ -23,6 +23,11 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    /**
+     * @var Crypto
+     */
+    protected $aesCrypto;
+
     const ACQUIRER = 'axis';
 
     protected $gateway = Payment\Gateway::UPI_AXIS;
@@ -71,13 +76,10 @@ class Gateway extends Base\Gateway
         parent::authorize($input);
 
         $attributes = $this->getGatewayEntityAttributes($input);
-
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
         $response = $this->fetchToken($input);
-
         $this->updateGatewayPaymentEntity($gatewayPayment, $response);
-
         if($response[Fields::CODE] == '000')
         {
             parent::action($input, Action::AUTHORIZE);
@@ -85,9 +87,9 @@ class Gateway extends Base\Gateway
             $request['headers'] = [
                 'Content-Type' => 'application/json',
             ];
+            s($request);
             $response1 = $this->sendGatewayRequest($request);
             $response1 = $this->parseGatewayResponse($response1->body);
-            s($response);
             s($response1);
         }
 
@@ -117,9 +119,8 @@ class Gateway extends Base\Gateway
         ];
         s($request);
         $response = $this->sendGatewayRequest($request);
-
         $response = $this->parseGatewayResponse($response->body);
-
+        s($response);
         return $response;
     }
 
@@ -254,7 +255,7 @@ class Gateway extends Base\Gateway
     protected function getCollectRequestArray($input,$content=[],$method = 'post', $type = null)
     {
         $request = array(
-            'url'       => $this->getUrl($type).'/'.$input[Fields::DATA],
+            'url'       => $this->getUrl($type).$input[Fields::DATA],
             'method'    => $method,
             'content'   => $content,
         );
@@ -672,5 +673,27 @@ UQIDAQAB
 
         return 'Refund for ' . substr($description, 0, 36);
     }
+
+    protected function createCryptoIfNotCreated()
+    {
+        if ($this->aesCrypto === null)
+        {
+            $this->aesCrypto = new AESCrypto(AES::MODE_ECB,'ezSbSIqWRthPAbzN');
+        }
+    }
+
+//    public function encrypt(string $stringToEncrypt)
+//    {
+//        $this->createCryptoIfNotCreated();
+//
+//        return $this->aesCrypto->encryptString($stringToEncrypt);
+//    }
+//
+//    public function decrypt(string $stringToDecrypt)
+//    {
+//        $this->createCryptoIfNotCreated();
+//
+//        return $this->aesCrypto->decryptString($stringToDecrypt);
+//    }
 
 }

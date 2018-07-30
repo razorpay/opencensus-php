@@ -22,10 +22,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyRules = [
-        'merchId' => 'required|alpha_num|size:9',
-        'merchChanId' => 'required|alpha_num|size:12',
-        'unqTxnId' => 'required|string|max:255',
-        'checkSum' => 'required|string|max:10000',
+        'merchid' => 'required|alpha_num|size:9',
+        'merchchanid' => 'required|alpha_num|size:12',
+        'tranid' => 'required|string|max:255',
+        'mobilenumber' => 'required|string|max:12',
+        'checksum' => 'required|string|max:10000',
     ];
 
 }

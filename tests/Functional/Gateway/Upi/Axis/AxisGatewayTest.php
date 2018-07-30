@@ -17,6 +17,13 @@ class AxisGatewayTest extends TestCase
 {
     use PaymentTrait;
 
+    /**
+     * Payment array
+     * @var array
+     */
+    protected $payment;
+
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/AxisGatewayTestData.php';
@@ -44,17 +51,17 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals('async', $response['type']);
 
         $this->checkPaymentStatus($paymentId, $status);
-
+//
 //        $upiEntity = $this->getLastEntity('upi', true);
 //        s($upiEntity);
-//
+////
 //        $payment = $this->getEntityById('payment', $paymentId, true);
 //        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
 //        s($content);
 //        $response = $this->makeS2SCallbackAndGetContent($content);
 //        s($response);
 //        // We should have gotten a successful response
-////        $this->assertEquals(['success' => true], $response);
+//        $this->assertEquals(['success' => true], $response);
 //
 //        // The payment should now be authorized
 //        s($paymentId);
@@ -117,5 +124,86 @@ class AxisGatewayTest extends TestCase
         // Attempt a partial refund
         $this->refundPayment($paymentID, 10000);
     }
+
+    public function testUpiAmountCap()
+    {
+        $this->payment['vpa'] = 'vijay@axis';
+
+        $payment = $this->payment;
+
+        $payment['amount'] = 2100000;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+    }
+
+    public function testVpaWithCapitalPspValidation($status = 'created')
+    {
+        $this->payment['vpa'] = 'vijay@AXiS';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $this->checkPaymentStatus($paymentId, $status);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        // We should have gotten a successful response
+        $this->assertEquals(['success' => true], $response);
+        $this->assertEquals('vijay@axis', $upiEntity[Entity::VPA]);
+
+    }
+
+    public function testVpaWithoutPspValidation()
+    {
+        $this->payment['vpa'] = 'invalidvpa';
+
+        $payment = $this->payment;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+    }
+
+    // API Payment = created
+    // Gateway = success
+    public function testVerificationFailure()
+    {
+        $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPayment($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($paymentId)
+        {
+            $this->verifyPayment($paymentId);
+        });
+    }
+
+
 }
 

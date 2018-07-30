@@ -158,13 +158,6 @@ class Server extends Base\Mock\Server
 
     protected function callbackResponseContent(array $upiEntity, array $payment)
     {
-        switch ($payment['vpa'])
-        {
-            case 'failed@hdfcbank':
-                $status = Status::FAILED;
-                break;
-        }
-
         return [
             Fields::CUSTOMER_VPA => $upiEntity['vpa'],
             Fields::MERCH_ID => 'RAZAORPAY',
@@ -210,7 +203,7 @@ class Server extends Base\Mock\Server
 
         $app = App::getFacadeRoot();
 
-        $paymentId = $input['unqTxnId'];
+        $paymentId = $input['tranid'];
 
         $payment = $app['repo']->payment->find($paymentId);
 
