@@ -2148,11 +2148,33 @@ class Service extends Base\Service
      */
     public function createPartnerAccessMap(string $merchantId): array
     {
-        list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId);
+        $partner = $this->fetchPartner();
+
+        $submerchant = $this->fetchSubmerchant($merchantId);
 
         $accessMap = $this->core()->createPartnerSubmerchantAccessMap($partner, $submerchant);
 
         return $accessMap;
+    }
+
+    public function getSubmerchant(string $submerchantId): array
+    {
+        Account\Entity::verifyIdAndSilentlyStripSign($submerchantId);
+
+        $partner = $this->fetchPartner();
+
+        $submerchant = $this->core()->getSubmerchant($partner, $submerchantId);
+
+        return $submerchant->toArrayPartner();
+    }
+
+    public function listSubmerchants(): array
+    {
+        $partner = $this->fetchPartner();
+
+        $submerchants = $this->core()->listSubmerchants($partner);
+
+        return $submerchants->toArrayPartner();
     }
 
     /**
@@ -2160,18 +2182,18 @@ class Service extends Base\Service
      */
     public function deletePartnerAccessMap(string $merchantId)
     {
-        list($partner, $submerchant) = $this->getPartnerAndSubMerchant($merchantId);
+        $partner = $this->fetchPartner();
+
+        $submerchant = $this->fetchSubmerchant($merchantId);
 
         $this->core()->deletePartnerSubmerchantAccessMap($partner, $submerchant);
     }
 
     /**
-     * @param string $merchantId
-     *
-     * @return array
+     * @return Entity
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function getPartnerAndSubMerchant(string $merchantId): array
+    protected function fetchPartner(): Entity
     {
         //
         // In the context of partners and submerchants -
@@ -2189,9 +2211,20 @@ class Service extends Base\Service
                 Entity::PARTNER_TYPE);
         }
 
+        return $partner;
+    }
+
+    /**
+     * @param string $submerchantId
+     *
+     * @return Entity
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function fetchSubmerchant(string $submerchantId): Entity
+    {
         // The submerchant should belong to the same org as of the admin
         /** @var Entity $submerchant */
-        $submerchant = $this->repo->merchant->findByIdAndOrgId($merchantId, $this->auth->getOrgId());
+        $submerchant = $this->repo->merchant->findByIdAndOrgId($submerchantId, $this->auth->getOrgId());
 
         /** @var Admin\Entity $admin */
         $admin = $this->auth->getAdmin();
@@ -2206,11 +2239,11 @@ class Service extends Base\Service
                 Entity::MERCHANT_ID,
                 [
                     'admin_id'       => $admin->getId(),
-                    'partner_id'     => $merchantId,
+                    'partner_id'     => $submerchantId,
                     'submerchant_id' => $submerchant->getId(),
                 ]);
         }
 
-        return [$partner, $submerchant];
+        return $submerchant;
     }
 }
