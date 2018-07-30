@@ -85,7 +85,7 @@ class Reconciliator extends Base\RefundFile
 
             $amount = $this->getFormattedAmount($row['payment']['amount']);
 
-            $data[] = [
+            $col = [
                 self::BANK_REF_NUMBER,
                 self::CUSTOMER_ACCOUNT_NO,
                 $date,
@@ -94,9 +94,18 @@ class Reconciliator extends Base\RefundFile
                 $amount,
             ];
 
+            $this->content($col, 'canara_recon');
+
             $totalAmount += floatval($amount);
+
+            $data[] = $col;
         }
 
         return [$totalAmount,$data];
+    }
+
+    public function content(& $content, $action = '')
+    {
+        return $content;
     }
 }
