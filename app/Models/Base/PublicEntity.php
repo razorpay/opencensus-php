@@ -81,15 +81,6 @@ class PublicEntity extends UniqueIdEntity
     protected $embeddedRelations = [];
 
     /**
-     * Fields exposed to the partners
-     *
-     * @var array
-     */
-    protected $partnerSetters = [
-        self::ID,
-    ];
-
-    /**
      * Fields exposed to public but only in AdminAuth. Please don't overuse it since this will removed anyways in a
      * cleanup effort after Entity Serializer PR is merged.
      *
@@ -173,11 +164,11 @@ class PublicEntity extends UniqueIdEntity
      */
     public function toArrayPartner(): array
     {
+        $arrayAttributes = $this->attributesToArray();
+
+        $partnerAttributes = array_only($arrayAttributes, $this->partner);
+
         $publicAttributes = $this->toArrayPublic();
-
-        $this->setPartnerAttributes($publicAttributes);
-
-        $partnerAttributes = array_only($this->attributes, $this->partner);
 
         $array = array_merge($publicAttributes, $partnerAttributes);
 
@@ -245,19 +236,6 @@ class PublicEntity extends UniqueIdEntity
         foreach ($this->publicSetters as $attr)
         {
             $func = 'setPublic' . studly_case($attr) . 'Attribute';
-
-            $this->$func($array);
-        }
-    }
-
-    /**
-     * @param array $array
-     */
-    public function setPartnerAttributes(array & $array)
-    {
-        foreach ($this->partnerSetters as $attr)
-        {
-            $func = 'setPartner' . studly_case($attr) . 'Attribute';
 
             $this->$func($array);
         }
