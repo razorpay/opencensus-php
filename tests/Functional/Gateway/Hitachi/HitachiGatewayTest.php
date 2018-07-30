@@ -492,6 +492,23 @@ class HitachiGatewayTest extends TestCase
         $this->paymentRefundReverseTestHelper($payment);
     }
 
+     public function testReverseFailureDuetoFormatError()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockFormatErrorOnReversal();
+
+        $this->refundAuthorizedPayment($payment['id']);
+
+        $gatewayEntity = $this->getLastEntity('hitachi', true);
+
+        $this->assertEquals('30', $gatewayEntity['pRespCode']);
+
+        $this->assertNull($gatewayEntity['pRRN']);
+    }
+
     public function testReverseFailure()
     {
         $this->doAuthPayment($this->payment);

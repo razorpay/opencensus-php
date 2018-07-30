@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Models\BankTransfer;
+namespace RZP\Models\Bank;
 
 use App;
 
-use RZP\Models\Bank\IFSC;
+use RZP\Models\BankTransfer;
 
 class BankCodes
 {
@@ -261,7 +261,7 @@ class BankCodes
     {
         $key = __CLASS__ . '::' . 'IFSC_' . strtoupper($bankCode);
 
-        if ((defined($key) === true) and (constant($key) === $type))
+        if ((defined($key) === true))
         {
             return constant($key);
         }
@@ -285,7 +285,7 @@ class BankCodes
      * @param  Entity $bankTransfer
      * @return string $account
      */
-    public static function modifyPayerAccountIfNeeded(string $account, Entity $bankTransfer)
+    public static function modifyPayerAccountIfNeeded(string $account, BankTransfer\Entity $bankTransfer)
     {
         $ifsc = $bankTransfer->getPayerIfsc();
 
@@ -293,7 +293,7 @@ class BankCodes
 
         $needle = substr($ifsc, 0, 4);
 
-        if ($bankTransfer->getMode() === Mode::IMPS)
+        if ($bankTransfer->getMode() === BankTransfer\Mode::IMPS)
         {
             $haystack = self::STRIP_LEADING_ZEROES_BANKS_IMPS;
 

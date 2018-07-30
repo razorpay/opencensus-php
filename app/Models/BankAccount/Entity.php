@@ -408,6 +408,15 @@ class Entity extends Base\PublicEntity
         $this->source()->associate($virtualAccount);
     }
 
+    public function associateSource(Base\Entity $entity, string $type)
+    {
+        Type::validateType($type);
+
+        $this->attributes[self::TYPE] = $type;
+
+        $this->source()->associate($entity);
+    }
+
     public function getRedactedAccountNumber()
     {
         $ac = $this->getAccountNumber();

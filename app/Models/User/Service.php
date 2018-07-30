@@ -5,6 +5,7 @@ namespace RZP\Models\User;
 use Mail;
 use Hash;
 use Config;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -355,6 +356,33 @@ class Service extends Base\Service
 
             Mail::queue($passwordResetMail);
         }
+
+        return ['success' => true];
+    }
+
+    /**
+     * This email goes to sub-merchant user when the aggregator/partner
+     * tries to create a login for him but the user account already
+     * exists and we just attach it to the sub-merchant in question.
+     *
+     * @param  Entity          $user
+     * @param  Merchant\Entity $submerchant
+     *
+     * @return array
+     */
+    public function postAccountMappedEmail(Entity $user, Merchant\Entity $submerchant)
+    {
+        $orgId = $this->auth->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+        $org['hostname'] = $this->auth->getOrgHostName();
+
+        $submerchantArray = $submerchant->toArrayPublic();
+
+        $accountMappedMail = new UserMail\MappedToAccount($user, $org, $submerchantArray);
+
+        Mail::queue($accountMappedMail);
 
         return ['success' => true];
     }

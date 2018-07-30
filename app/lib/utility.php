@@ -195,6 +195,16 @@ if (! function_exists('flatten_array'))
     }
 }
 
+if (! function_exists('random_string_special_chars'))
+{
+    function random_string_special_chars($length = 1)
+    {
+        $chars = 'abcdefghijklmnopqrstuvwxyz:';
+
+        return substr(str_shuffle($chars), 0, $length);
+    }
+}
+
 /**
  * We do not check for whether this function is defined already
  * If it is defined already by some other library (like phpunit)
