@@ -5753,12 +5753,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "6ada2cf3c6049bccd3a466a1cb1aa063fdd9a88a"
+                "reference": "c14d229601bbc76794f17827ff3e27d5bb45dbd4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/6ada2cf3c6049bccd3a466a1cb1aa063fdd9a88a",
-                "reference": "6ada2cf3c6049bccd3a466a1cb1aa063fdd9a88a",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/c14d229601bbc76794f17827ff3e27d5bb45dbd4",
+                "reference": "c14d229601bbc76794f17827ff3e27d5bb45dbd4",
                 "shasum": ""
             },
             "require": {
@@ -5822,7 +5822,7 @@
                 "source": "https://github.com/razorpay/trace/tree/metrics-handler",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2018-07-30T18:15:49+00:00"
+            "time": "2018-07-30T18:50:48+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",

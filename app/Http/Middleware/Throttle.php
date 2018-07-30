@@ -50,7 +50,7 @@ final class Throttle
     {
         $dimensions = $this->getMetricDimensions($request, $response);
 
-        app('trace')->count(Metric::HTTP_REQUESTS_TOTAL, 1, $dimensions);
+        app('trace')->count(Metric::HTTP_REQUESTS_TOTAL, $dimensions);
         app('trace')->histogram(Metric::HTTP_REQUEST_DURATION_MILLISECONDS, $duration, $dimensions);
     }
 

@@ -62,7 +62,7 @@ class CacheEventListener
 
         $dimensions[Metric::LABEL_TYPE] = $cacheEventType;
 
-        $this->trace->count($this->getMetricName(), 1, $dimensions);
+        $this->trace->count($this->getMetricName(), $dimensions);
     }
 
     protected function getCacheEventType()
