@@ -397,6 +397,43 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertNotNull($transactionEntity['reconciled_at']);
     }
 
+    public function testCanaraAmountMismatchReconciliation()
+    {
+        $this->gateway = 'netbanking_canara';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->createPayment($this->gateway);
+
+        $netbanking = $this->createNetbanking($payment['id'], 'CNRB');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'canara_recon')
+                {
+                    // Setting amount to 1 will cause payment amount validation to fail
+                    $content[5] = '1.00';
+                }
+            });
+
+        $fileContents = $this->generateFile('canara', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingCanara', $uploadedFile);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $testData = $this->testData['testCanaraReconBatchPartiallyProcessed'];
+
+        $this->assertArraySelectiveEquals($testData, $batch);
+    }
+
     public function testIciciFailedPaymentReconciliation()
     {
         $this->gateway = 'netbanking_icici';
