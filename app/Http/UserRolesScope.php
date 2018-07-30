@@ -49,7 +49,15 @@ class UserRolesScope
             // merchant routes
             'balance_fetch'                       => Role::allExceptSellerRole(),
             'bank_account_fetch'                  => Role::allExceptSellerRole(),
-            'merchant_activation_details'         => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE],
+            'merchant_activation_details'         => [
+                                                        Role::OWNER,
+                                                        Role::MANAGER,
+                                                        Role::ADMIN,
+                                                        Role::OPERATIONS,
+                                                        Role::FINANCE,
+                                                        Role::LINKED_ACCOUNT_OWNER,
+                                                        Role::LINKED_ACCOUNT_ADMIN
+                                                    ],
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],
             'merchant_edit_config_logo'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_fetch_config'               => Role::allExceptSellerRole(),
