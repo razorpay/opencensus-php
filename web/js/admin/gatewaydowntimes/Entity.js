@@ -89,6 +89,18 @@ export default class Entity extends Component {
     });
   };
 
+  handleMethodChange = e => {
+    this.setState({
+      paymentMethod: e.currentTarget.value,
+    });
+  };
+
+  handleScheduledFlagChange = () => {
+    this.setState({
+      scheduled: !this.state.scheduled,
+    });
+  };
+
   render() {
     let {
       id,
@@ -123,11 +135,7 @@ export default class Entity extends Component {
                 name="scheduled"
                 defaultChecked={scheduled}
                 disabled={!isNew}
-                onChange={e => {
-                  this.setState({
-                    scheduled: !this.state.scheduled,
-                  });
-                }}
+                onChange={this.handleScheduledFlagChange}
               />
             ) : (
               ''
@@ -178,11 +186,7 @@ export default class Entity extends Component {
               name="method"
               defaultValue={method || this.state.paymentMethod}
               disabled={!isNew || !isEditable}
-              onChange={e => {
-                this.setState({
-                  paymentMethod: e.currentTarget.value,
-                });
-              }}
+              onChange={this.handleMethodChange}
             >
               {Object.keys(supportedMethods).map(key => (
                 <option key={key} value={key}>
