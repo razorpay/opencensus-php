@@ -4,6 +4,8 @@ namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
 use Mail;
 
+use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Attempt;
 
 /**
@@ -17,40 +19,66 @@ use RZP\Models\FundTransfer\Attempt;
  */
 abstract class AttemptProcessor extends Processor
 {
-    protected function processReconciliation(array $input)
+    /**
+     * Makes status request for the ids mentioned and updated the status based on the response received
+     *
+     * @param PublicCollection $attempts
+     * @return array
+     */
+    public function reconcile(PublicCollection $attempts): array
     {
         $response  = [];
 
-        $batchSize = 100;
-
-        $offset    = 0;
-
-        do
+        if ($attempts->count() === 0)
         {
-            $attempts = $this->repo
-                             ->fund_transfer_attempt
-                             ->getAttemptsBetweenTimestampsWithStatus(
-                                 static::$channel,
-                                 Attempt\Status::INITIATED,
-                                 null,
-                                 null,
-                                 $batchSize,
-                                 $offset);
+            return [
+                'message' => 'No attempts to reconcile'
+            ];
+        }
 
-            $count = $attempts->count();
+        $summary = $this->startReconciliation($attempts);
 
-            $offset += $batchSize;
-
-            if ($count !== 0)
-            {
-                $summary = $this->startReconciliation($attempts);
-
-                $this->updateResponse($response, $summary);
-            }
-
-        } while ($count === $batchSize);
+        $this->updateResponse($response, $summary);
 
         return $response;
+    }
+
+    /**
+     * Takes lock on 100 attempts and process the same
+     * If the attempt is already locked then ignore them
+     *
+     * @param array $input
+     */
+    protected function processReconciliation(array $input)
+    {
+        $lock = new Attempt\Lock(static::$channel);
+
+        //
+        // We fetch 150 attempts considering there would be some attempt which is already in process
+        // even though we reconcile only 100 attempts at a time
+        //
+        $batchSize = 150;
+
+        $attempts = $this->repo
+                         ->fund_transfer_attempt
+                         ->getAttemptsBetweenTimestampsWithStatus(
+                             static::$channel,
+                             Attempt\Status::INITIATED,
+                             null,
+                             null,
+                             $batchSize);
+
+        $lockedAttempts = $lock->lockAttempts($attempts);
+
+        $response = $this->reconcile($lockedAttempts);
+
+        $lock->releaseAttempts($attempts);
+
+        $this->trace->info(
+            TraceCode::ATTEMPT_RECONCILIATION_STATUS,
+            [
+                'channel' => static::$channel,
+            ] + $response);
     }
 
     protected function updateResponse(array & $response, array $summary)

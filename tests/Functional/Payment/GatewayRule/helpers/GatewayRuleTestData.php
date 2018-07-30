@@ -5,6 +5,56 @@ use RZP\Error\PublicErrorCode;
 
 return [
     'testCreateGatewayRule' => [
+        // Create recurring type gateway rule for card
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'filter',
+                    'filter_type'      => 'select',
+                    'group'            => 'test',
+                    'gateway'          => 'axis_migs',
+                    'method'           => 'card',
+                    'method_type'      => 'credit',
+                    'network'          => 'VISA',
+                    'issuer'           => 'HDFC',
+                    'international'    => 0,
+                    'min_amount'       => 100,
+                    'max_amount'       => 500,
+                    'category2'        => 'ecommerce',
+                    'network_category' => 'ecommerce',
+                    'shared_terminal'  => 1,
+                    'gateway_acquirer' => 'axis',
+                    'recurring'        => true,
+                    'recurring_type'   => 'auto',
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'filter',
+                    'filter_type'      => 'select',
+                    'group'            => 'test',
+                    'gateway'          => 'axis_migs',
+                    'method'           => 'card',
+                    'method_type'      => 'credit',
+                    'network'          => 'VISA',
+                    'issuer'           => 'HDFC',
+                    'international'    => false,
+                    'min_amount'       => 1,
+                    'max_amount'       => 5,
+                    'category2'        => 'ecommerce',
+                    'network_category' => 'ecommerce',
+                    'shared_terminal'  => true,
+                    'gateway_acquirer' => 'axis',
+                    'admin'            => true,
+                    'recurring'        => true,
+                    'recurring_type'   => 'auto',
+                ],
+            ],
+        ],
         // Create sorter gateway rule for card
         [
             'request' => [
@@ -1324,6 +1374,42 @@ return [
                 'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
+        ],
+        // test update rule_type for recurring_type filter rule
+        [
+            'to_update' => [
+                'method'            => 'card',
+                'type'              => 'filter',
+                'filter_type'       => 'select',
+                'group'             => 'groupB',
+                'merchant_id'       => '10000000000000',
+                'gateway'           => 'hdfc',
+                'network'           => 'VISA',
+                'min_amount'        => 0,
+                'recurring'         => true,
+                'recurring_type'    => 'initial',
+            ],
+            'request' => [
+                'content' => [
+                    'filter_type' => 'reject',
+                    'group'       => 'groupB',
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'method'            => 'card',
+                    'type'              => 'filter',
+                    'filter_type'       => 'reject',
+                    'group'             => 'groupB',
+                    'merchant_id'       => '10000000000000',
+                    'gateway'           => 'hdfc',
+                    'network'           => 'VISA',
+                    'min_amount'        => 0,
+                    'recurring'         => true,
+                    'recurring_type'    => 'initial',
+                ]
+            ]
         ],
         // test update rule_type for filter rule
         [

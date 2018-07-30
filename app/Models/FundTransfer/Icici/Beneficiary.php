@@ -7,6 +7,8 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\FileStore;
+use RZP\Mail\Base\Constants;
+use RZP\Services\BeamClient;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\BankAccount\Entity as BankAccount;
@@ -15,6 +17,8 @@ use RZP\Models\FundTransfer\Base\Beneficiary\FileProcessor;
 
 class Beneficiary extends FileProcessor
 {
+    const BEAM_JOB_NAME = 'icici_settlement_beneficiary';
+
     protected $id;
 
     protected $channel = Channel::ICICI;
@@ -25,7 +29,6 @@ class Beneficiary extends FileProcessor
 
         $this->id = Base\UniqueIdEntity::generateUniqueId();
     }
-
 
     /**
      * @param $bankAccounts
@@ -54,6 +57,13 @@ class Beneficiary extends FileProcessor
         $mailData = array_merge($response, [BankAccount::RECIPIENT_EMAILS => $recipientEmails]);
 
         $this->sendEmail($mailData);
+
+        //
+        // Pushing to Beam after sending the email
+        // such that current beneficiary processing
+        // doesn't get affected by Beam errors.
+        //
+        $this->sendFile($file);
 
         return $response;
     }
@@ -111,6 +121,11 @@ class Beneficiary extends FileProcessor
     {
         $fileName = 'icici/outgoing/NRPSS_NRPSSBENEUPLD_' . $this->id;
 
+        if ($this->env === 'beta')
+        {
+            $fileName = 'icici/outgoing/TEST_BENEUPLD_' . $this->id;
+        }
+
         $metadata = $this->getH2HMetadata();
 
         $creator = new FileStore\Creator;
@@ -142,5 +157,48 @@ class Beneficiary extends FileProcessor
         $beneficiaryFileMail = new BeneficiaryFileMail($data, $this->channel, $data['merchants_count']);
 
         Mail::queue($beneficiaryFileMail);
+    }
+
+    /**
+     * @param FileStore\Creator $file
+     * Send file to bank through Beam
+     */
+    protected function sendFile(FileStore\Creator $file)
+    {
+        $data =  [
+            BeamClient::BEAM_PUSH_FILES   => [$file->getFullFileName()],
+            BeamClient::BEAM_PUSH_JOBNAME => self::BEAM_JOB_NAME
+        ];
+
+        $mailInfo   = $this->getBeamMailInfo($file);
+
+        // In seconds
+        $timelines = [15, 28, 56, 112, 225, 450, 900, 1800, 3600, 2*3600];
+
+        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+    }
+
+    /**
+     * Set beam mail data
+     * @param FileStore\Creator $file
+     * @return array
+     */
+    protected function getBeamMailInfo(FileStore\Creator $file): array
+    {
+        $recipient = Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS];
+
+        $subject   = 'Beneficiary file failure';
+
+        $fileParam = explode('/', $file->getFullFileName());
+
+        $body      = 'Hi,\n Beneficiary file send failed through Beam.\n'.
+                     'Channel  :: ' . $this->channel . '\n'.
+                     'Filename :: ' . $fileParam[count($fileParam) - 1] . '\n';
+
+        return [
+            'recipient' => $recipient,
+            'subject'   => $subject,
+            'body'      => $body
+        ];
     }
 }
