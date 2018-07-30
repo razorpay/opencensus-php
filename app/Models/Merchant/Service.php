@@ -22,6 +22,7 @@ use RZP\Models\Schedule;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\User\Role;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
@@ -101,21 +102,13 @@ class Service extends Base\Service
         //
         if ($isLinkedAccount === false)
         {
-            if ($isPartner === false)
-            {
-                if ($hasAggregatorFeature === false)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
-                }
+            if (($isPartner === false) and ($hasAggregatorFeature === false)) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
             }
-            else
-            {
-                if ($merchant->isPurePlatformPartner() === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
-                }
+            elseif ($merchant->isPurePlatformPartner() === true) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
             }
         }
 
@@ -1910,7 +1903,13 @@ class Service extends Base\Service
 
         $subMerchantUser = (new User\Core)->create($userData);
 
-        $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
+        $role = Role::OWNER;
+
+        if ($subMerchant->isLinkedAccount() === true) {
+            $role = Role::LINKED_ACCOUNT_OWNER;
+        }
+
+        $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant, $role);
 
         return $subMerchantUser;
     }
@@ -2020,9 +2019,9 @@ class Service extends Base\Service
                 // Partner and sub-merchant are connected via partner's app,
                 // this connect is used for multiple validity checks, web-hooks, etc
                 $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
-
-                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
             }
+
+            list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
 
             $this->repo->saveOrFail($subMerchant);
 
@@ -2044,7 +2043,8 @@ class Service extends Base\Service
         $subMerchantUser = null;
         $createdNew      = false;
 
-        if (($merchant->isPartner() === true) and ($subMerchant->getEmail() !== $merchant->getEmail()))
+        if ((($merchant->isPartner() === true) or ($merchant->isMarketplace() === true)) and
+            ($subMerchant->getEmail() !== $merchant->getEmail()))
         {
             list($subMerchantUser, $createdNew) =
                 $this->createOrFetchUserAndAttachMerchant($subMerchant, $subMerchant->getEmail());

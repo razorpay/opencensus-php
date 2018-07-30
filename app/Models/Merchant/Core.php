@@ -17,6 +17,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\User\Role;
 use RZP\Jobs\MerchantSync;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -1022,11 +1023,11 @@ class Core extends Base\Core
      * @param string $ownerId
      * @param Entity $subMerchant
      */
-    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
+    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant, $role = Role::OWNER)
     {
         $userMerchantMappingInputData = [
             'action'      => 'attach',
-            'role'        => 'owner',
+            'role'        => $role,
             'merchant_id' => $subMerchant->getId(),
         ];
 

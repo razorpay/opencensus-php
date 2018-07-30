@@ -4,13 +4,15 @@ namespace RZP\Models\User;
 
 class Role
 {
-    const MANAGER    = 'manager';
-    const OPERATIONS = 'operations';
-    const FINANCE    = 'finance';
-    const SUPPORT    = 'support';
-    const ADMIN      = 'admin';
-    const SELLERAPP  = 'sellerapp';
-    const OWNER      = 'owner';
+    const MANAGER               = 'manager';
+    const OPERATIONS            = 'operations';
+    const FINANCE               = 'finance';
+    const SUPPORT               = 'support';
+    const ADMIN                 = 'admin';
+    const SELLERAPP             = 'sellerapp';
+    const OWNER                 = 'owner';
+    const LINKED_ACCOUNT_OWNER  = 'linked_account_owner';
+    const LINKED_ACCOUNT_ADMIN  = 'linked_account_admin';
 
     const ALL_ROLES = [
         self::MANAGER,
