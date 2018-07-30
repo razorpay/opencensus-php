@@ -2,6 +2,7 @@ import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 
 import { fetchPartnerApplication } from 'merchant/modules/applications';
+import { fetchWebhooks } from 'merchant/modules/webhooks';
 
 import Spinner from 'rzp/ui/Spinner';
 
@@ -10,13 +11,15 @@ import WebhookDetails from './WebhookDetails';
 
 @connect(
   state => ({
-    isLoading: state.applications.loading,
+    isLoading: state.applications.loading || state.webhooks.loading,
   }),
-  { fetchPartnerApplication }
+  { fetchPartnerApplication, fetchWebhooks }
 )
 export default class SettingsContainer extends Component {
   componentWillMount() {
-    this.props.fetchPartnerApplication();
+    this.props.fetchPartnerApplication().then(response => {
+      this.props.fetchWebhooks({ application_id: response.id });
+    });
   }
 
   render() {
@@ -36,9 +39,7 @@ export default class SettingsContainer extends Component {
 
             <div class="panel panel-default">
               <div class="panel-heading">Partner Credentials</div>
-              <PartnerCredentials
-                clientCredentials={this.props.clientCredentials}
-              />
+              <PartnerCredentials />
             </div>
           </Fragment>
         )}

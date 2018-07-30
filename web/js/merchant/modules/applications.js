@@ -176,6 +176,7 @@ export default function(state = initialState, action) {
       return merge(state, {
         loading: false,
         partnerApplication: {
+          id: action.payload.id,
           clientCredentials: action.payload.client_details,
         },
       });
