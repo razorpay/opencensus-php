@@ -706,6 +706,34 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantsPaginationFilters' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'skip'  => 1,
+                'count' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000011',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchPartnerSubmerchantsEmptyList' => [
         'request'  => [
             'url'     => '/submerchants',

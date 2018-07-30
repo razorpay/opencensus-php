@@ -644,6 +644,15 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchPartnerSubmerchantsPaginationFilters()
+    {
+        $this->createPartnerAndAddMultipleSubmerchants();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
     /**
      * Tests the list submerchants api when there are no submerchants for the partner
      */
