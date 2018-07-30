@@ -2,7 +2,6 @@
 
 namespace RZP\Http\Middleware;
 
-use Metrics;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -51,8 +50,8 @@ final class Throttle
     {
         $dimensions = $this->getMetricDimensions($request, $response);
 
-        Metrics::count(Metric::HTTP_REQUESTS_TOTAL, 1, $dimensions);
-        Metrics::histogram(Metric::HTTP_REQUEST_DURATION_MILLISECONDS, $duration, $dimensions);
+        app('trace')->count(Metric::HTTP_REQUESTS_TOTAL, 1, $dimensions);
+        app('trace')->histogram(Metric::HTTP_REQUEST_DURATION_MILLISECONDS, $duration, $dimensions);
     }
 
     /**

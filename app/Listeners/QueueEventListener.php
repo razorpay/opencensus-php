@@ -24,7 +24,7 @@ class QueueEventListener
     {
         $this->event = $event;
 
-        Metrics::count($this->getMetricName(), 1, $this->getMetricDimensions());
+        app('trace')->count($this->getMetricName(), 1, $this->getMetricDimensions());
     }
 
     protected function getMetricName(): string

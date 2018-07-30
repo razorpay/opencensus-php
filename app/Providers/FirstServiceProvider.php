@@ -3,7 +3,6 @@
 namespace RZP\Providers;
 
 use Config;
-use Metrics;
 use Barryvdh\Debugbar;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
@@ -36,8 +35,6 @@ class FirstServiceProvider extends ServiceProvider
         $this->registerRequestGetTaskIdMacro();
 
         $this->registerRequestContext();
-
-        $this->registerTraceMetricMacros();
     }
 
     public function boot()
@@ -134,33 +131,5 @@ class FirstServiceProvider extends ServiceProvider
     protected function registerRequestContext()
     {
         $this->app->singleton('request.ctx', function($app) { return new RequestContext($app); });
-    }
-
-    /**
-     * Registers metric methods(as macros) on trace instance
-     */
-    protected function registerTraceMetricMacros()
-    {
-        $trace = $this->app['trace'];
-
-        $trace->macro('count', function (string $metric, int $times = 1, array $dimensions = [])
-        {
-            Metrics::count($metric, $times, $dimensions);
-        });
-
-        $trace->macro('gauge', function (string $metric, float $value, array $dimensions = [])
-        {
-            Metrics::gauge($metric, $value, $dimensions);
-        });
-
-        $trace->macro('histogram', function (string $metric, float $value, array $dimensions = [])
-        {
-            Metrics::histogram($metric, $value, $dimensions);
-        });
-
-        $trace->macro('summary', function (string $metric, float $value, array $dimensions = [])
-        {
-            Metrics::summary($metric, $value, $dimensions);
-        });
     }
 }

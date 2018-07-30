@@ -19,13 +19,21 @@ class CacheEventListener
         'entity'  => 'none',
     ];
 
+    /**
+     * @var string
+     */
     protected $event;
+
+    /**
+     * @var Trace
+     */
+    protected $trace;
 
     public function handle($event)
     {
         $this->event = $event;
 
-        $trace = App::getFacadeRoot()['trace'];
+        $this->trace = App::getFacadeRoot()['trace'];
 
         $cacheEventType = $this->getCacheEventType();
 
@@ -40,7 +48,7 @@ class CacheEventListener
         }
         catch (\Throwable $e)
         {
-            $trace->traceException(
+            $this->trace->traceException(
                 $e,
                 Trace::CRITICAL,
                 TraceCode::METRIC_CACHE_EVENT_ERROR
@@ -54,7 +62,7 @@ class CacheEventListener
 
         $dimensions[Metric::LABEL_TYPE] = $cacheEventType;
 
-        Metrics::count($this->getMetricName(), 1, $dimensions);
+        $this->trace->count($this->getMetricName(), 1, $dimensions);
     }
 
     protected function getCacheEventType()
