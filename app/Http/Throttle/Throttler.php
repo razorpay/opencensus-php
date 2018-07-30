@@ -176,8 +176,10 @@ class Throttler
               $this->reqCtx->getOAuthPublicToken() ?:
               $this->reqCtx->getInternalAppName();
 
-        // Only use ip address for public and direct routes
-        $ip = ($this->reqCtx->isPublicAuth() or $this->reqCtx->isDirectAuth()) ? $this->reqCtx->getRequest()->ip() : '';
+        // Only use ip address for 1) api's public, direct group routes, 2) dashboard_guest(internal) group routes
+        $ip = (($this->reqCtx->isPublicAuth() === true) or
+               ($this->reqCtx->isDirectAuth() === true) or
+               ($this->reqCtx->isDashboardGuest() === true)) ? $this->reqCtx->getRequest()->ip() : '';
 
         // E.g.: payments_create:live:private:0::10000000000000:
         $args = [

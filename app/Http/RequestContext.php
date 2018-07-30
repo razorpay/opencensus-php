@@ -266,6 +266,10 @@ final class RequestContext
         return ((strlen($this->key) === OAuth::PUBLIC_TOKEN_LENGTH) and (substr($this->key, 8, 7) === '_oauth_'));
     }
 
+    public function isDashboardGuest(): bool
+    {
+        return ($this->internalAppName === "dashboard_guest");
+    }
 
     /**
      * Protected Methods
