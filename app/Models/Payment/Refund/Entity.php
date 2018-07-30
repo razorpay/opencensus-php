@@ -47,7 +47,6 @@ class Entity extends Base\PublicEntity
     const REFERENCE5             = 'reference5';
     const REFERENCE6             = 'reference6';
     const REFERENCE7             = 'reference7';
-    const REFERENCE8             = 'reference8';
     const REFERENCE9             = 'reference9';
 
     const ATTEMPTS               = 'attempts';
@@ -56,6 +55,7 @@ class Entity extends Base\PublicEntity
     const ACQUIRER_DATA          = 'acquirer_data';
     const ARN                    = 'arn';
 
+    const BANK_ACCOUNT_ID        = 'bank_account_id';
 
     protected static $sign = 'rfnd';
 
@@ -102,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
         self::REFERENCE1,
+        self::BANK_ACCOUNT_ID,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -188,6 +189,11 @@ class Entity extends Base\PublicEntity
     public function netbanking()
     {
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
+    }
+
+    public function bankAccount()
+    {
+        return $this->belongsTo('RZP\Models\BankAccount\Entity');
     }
 
     public function billdesk()

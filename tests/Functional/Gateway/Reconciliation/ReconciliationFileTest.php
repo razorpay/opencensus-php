@@ -400,6 +400,29 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testHdfcCybersourceReconRefundFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $refund = $this->getNewRefundEntity(true);
+        $gatewayRefund = $this->getDbLastEntityToArray('cybersource');
+
+        $this->assertNull($refund[Refund\Entity::ARN]);
+
+        $entries[] = $this->overrideHdfcCybersourceOnusRefund($gatewayRefund);
+
+        $file = $this->writeToExcelFile($entries, 'cybersource');
+        $this->runForFiles([$file], 'HDFC');
+
+        $updatedRefund = $this->getDbEntityById('refund', $refund['id'])->toArrayAdmin();
+
+        $this->assertEquals($gatewayRefund['ref'], $updatedRefund[Refund\Entity::ARN]);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testAtomReconPaymentFile()
     {
         $this->fixtures->create('terminal:shared_atom_terminal');
@@ -706,6 +729,7 @@ class ReconciliationFileTest extends TestCase
 
         $facade['rec_fmt'] = 'CVD';
         $facade[HDFCPaymentRecon::COLUMN_PAYMENT_ID] = $payment['refund_id'];
+        $facade[HdfcRefundRecon::COLUMN_GATEWAY_TRANSACTION_ID] = $payment['gateway_transaction_id'];
 
         return $facade;
     }
@@ -720,9 +744,9 @@ class ReconciliationFileTest extends TestCase
         $facade['RRN']                                    = $gatewayPayment[CardFssEntity::REF];
         $facade['Auth/Approval Code']                     = $gatewayPayment[CardFssEntity::AUTH];
         $facade['payment gateway transaction id']         = $gatewayPayment[CardFssEntity::GATEWAY_TRANSACTION_ID];
-        $facade['MSF Amount']                                    = $facade['transaction amount'] * 0.009 * (-1);
-        $facade['MSF Tax Amount']                         = $facade['MSF Amount'] / 5.6;
-        $facade['settlement amount']                      = $facade['transaction amount'] - $facade['MSF Amount'] - $facade['MSF Tax Amount'];
+        $facade['MSF Amount']                             = $facade['transaction amount'] * 0.009 * (-1);
+        $facade['GST On MSF']                             = $facade['MSF Amount'] / 5.6;
+        $facade['settlement amount']                      = $facade['transaction amount'] - $facade['MSF Amount'] - $facade['GST On MSF'];
 
         return $facade;
     }
@@ -752,6 +776,16 @@ class ReconciliationFileTest extends TestCase
         $facade[HdfcRefundRecon::COLUMN_ARN]       = "'(Onus transaction)";
         $facade[HdfcRefundRecon::COLUMN_REFUND_ID] = $refund['refund_id'];
         $facade[HdfcRefundRecon::COLUMN_GATEWAY_TRANSACTION_ID] = $refund['gateway_transaction_id'];
+
+        return $facade;
+    }
+
+    private function overrideHdfcCybersourceOnusRefund(array $refund, array $forceOverride = [], $gateway = 'fss')
+    {
+        $facade = $this->testData['facades']['hdfc_cybersource'];
+
+        $facade[HdfcRefundRecon::COLUMN_REFUND_ID]   = $refund['refund_id'];
+        $facade[HDFCPaymentRecon::COLUMN_AUTH_CODE]  = "'" . random_integer(6);
 
         return $facade;
     }

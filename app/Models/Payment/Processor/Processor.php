@@ -2213,6 +2213,7 @@ class Processor
         $this->eventOrderPaid();
     }
 
+
     protected function getUpiStatus(string $id)
     {
         $key = Payment\Entity::getCacheUpiStatusKey($id);
@@ -2257,5 +2258,29 @@ class Processor
                 ['key' => $key,
                  '$value' => $value]);
         }
+    }
+
+    protected function isPaymentEmandateAndRblGateway(Payment\Entity $payment)
+    {
+        if (($payment->isEmandate() === true) and
+            ($payment->getGateway() === Payment\Gateway::ENACH_RBL))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isPaymentTpvAndBankTransferRefund(Payment\Entity $payment)
+    {
+        if (($payment->hasOrder() === true) and
+            ($payment->isTpvMethod() === true) and
+            ($this->merchant->isTPVRequired() === true) and
+            ($this->merchant->isFeatureEnabled(Feature::BANK_TRANSFER_REFUND) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
