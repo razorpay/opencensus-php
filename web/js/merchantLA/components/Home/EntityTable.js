@@ -12,7 +12,7 @@ import { titleCase, formatFromNow } from 'rzp/utils/rzp-utils';
 const StatusLabel = ({ status, entity, children, ...otherProps }) => {
   let Label =
     entity === 'settlement' ? SettlementStatusLabel : PaymentStatusLabel;
-  status = status || 'refunded';
+  status = status || 'reversed';
 
   return (
     <Label status={status} {...otherProps}>

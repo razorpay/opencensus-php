@@ -87,8 +87,12 @@ export default class Content extends Component {
           <Route path="/reports" component={Reports} />
 
           <Route path="/profile" component={MyAccount} />
-          <Route path="/team" component={MyAccount} />
-
+          <ShowWhenRoute
+            path="/team"
+            component={MyAccount}
+            myRole="linked_account_owner"
+            // myRole="owner"
+          />
           <Redirect to="/dashboard" />
         </Switch>
       </ErrorBoundary>

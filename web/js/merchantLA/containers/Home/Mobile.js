@@ -8,7 +8,6 @@ import Sticky from 'rzp/ui/Sticky';
 import DateRangePicker from 'rzp/ui/DateRangePicker';
 
 import KeyMetrics from 'merchantLA/containers/Home/KeyMetrics';
-import PaymentMethods from 'merchantLA/containers/Home/PaymentMethods';
 import RecentActivity from 'merchantLA/containers/Home/RecentActivity';
 import Traffic from 'merchantLA/containers/Home/Traffic';
 
@@ -47,7 +46,6 @@ class AnalyticsMobile extends Component {
       onFirstStepClose,
       showOnboardingBannerFirstStep,
       keymetricsSectionTitle,
-      paymentInsightsTitle,
       recentActivityTitle,
       trafficSectionTitle,
       windowWidth,
@@ -123,15 +121,6 @@ class AnalyticsMobile extends Component {
             isAdmin={isAdmin}
             analyticsFetch={analyticsFetch}
             onFilterChange={onFilterChange}
-            isMobile={true}
-          />
-          <p className="section-title">{paymentInsightsTitle}</p>
-          <PaymentMethods
-            startDate={startDate}
-            endDate={endDate}
-            mode={mode}
-            analyticsFetch={analyticsFetch}
-            sectionTitle={paymentInsightsTitle}
             isMobile={true}
           />
           {showGroupingByPtfm && (

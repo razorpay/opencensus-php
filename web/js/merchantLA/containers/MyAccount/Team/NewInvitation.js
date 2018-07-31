@@ -25,6 +25,7 @@ const selector = formValueSelector('newInvitation');
   form: 'newInvitation',
   initialValues: {
     email: '',
+    role: 'linked_account_admin',
   },
 })
 export default class NewInvitation extends Component {
