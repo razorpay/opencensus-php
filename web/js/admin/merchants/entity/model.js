@@ -96,6 +96,7 @@ export default class Model extends BaseModel {
       if (user.permissions.find(perm => perm === 'view_merchant_requests')) {
         const requestType = !!data.partner_type ? 'deactivation' : 'activation';
         this.fetchPartnerActivationRequest(requestType);
+        this.fetchPartnerSubmerchants();
       }
     });
   }
@@ -250,6 +251,44 @@ export default class Model extends BaseModel {
         };
       }
     });
+  };
+
+  @action
+  fetchPartnerSubmerchants = () => {
+    return this.request(
+      'fetchPartnerSubmerchants',
+      this.fetchFn(`live_${this.merchantId}/submerchants`)
+    ).then(data => {
+      this.merchant = {
+        ...this.merchant, //to force re-render
+        submerchants: [...data.items],
+      };
+    });
+  };
+
+  @action
+  deleteSubmerchant = submerchantId => {
+    return this.request(
+      'deleteSubmerchant',
+      adminDelete({
+        url: `live_${this.merchantId}/merchants/${submerchantId.replace(
+          'acc_',
+          ''
+        )}/access_maps`,
+        headers: { ['X-Razorpay-Account']: this.merchantId },
+      }).then(response => {
+        if (response) {
+          notifySuccess('Submerchant deleted successfully');
+
+          this.merchant = {
+            ...this.merchant,
+            submerchants: this.merchant.submerchants.filter(
+              submerchant => submerchant.id !== submerchantId
+            ),
+          };
+        }
+      })
+    );
   };
 
   @action

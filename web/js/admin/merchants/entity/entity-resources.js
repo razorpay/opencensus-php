@@ -57,6 +57,22 @@ function _getAdminsFields(adminsMap) {
   ];
 }
 
+function _getSubmerchantFields(deleteSubmerchant) {
+  return [
+    [
+      'Actions',
+      item => (
+        <div class="link danger" onClick={() => deleteSubmerchant(item.id)}>
+          Delete
+        </div>
+      ),
+    ],
+    ['Merchant Id', item => item.id],
+    ['Merchant Email', item => item.email],
+    ['Merchant Name', item => item.name],
+  ];
+}
+
 function _getPricingPlansFields() {
   return [
     ['Feature', item => item.feature || 'payment'],
@@ -320,6 +336,7 @@ export function getDetailsViewMap(model) {
     bankDetails,
     creditsLogs,
     adminsMap,
+    submerchants,
   } = model.merchant;
 
   return [
@@ -359,6 +376,18 @@ export function getDetailsViewMap(model) {
       value: details.partner_type
         ? snakeToTitleCase(details.partner_type)
         : _getBoolIcon(false),
+    },
+    {
+      label: 'Submerchants',
+      toHide: !details.partner_type,
+      children: () => (
+        <div>
+          <Table
+            items={submerchants}
+            fields={_getSubmerchantFields(model.deleteSubmerchant)}
+          />
+        </div>
+      ),
     },
     {
       label: 'Marketplace Merchant',
