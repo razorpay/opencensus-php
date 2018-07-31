@@ -35,4 +35,33 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         return [];
     }
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
+                    'message'         => 'Payment amount mismatch',
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
+                    'row'             => $row,
+                    'gateway'         => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getReconPaymentAmount(array $row)
+    {
+        if (empty($row[ReconciliationFields::TRANSACTION_AMOUNT]) === false)
+        {
+            return Base\Helper::getIntegerFormattedAmount($row[ReconcilationFields::TXN_ORG_AMOUNT]);
+        }
+    }
 }
