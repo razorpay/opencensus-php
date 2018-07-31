@@ -3,6 +3,7 @@
 namespace RZP\Models\Reversal;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Payment\Refund;
 
@@ -28,6 +29,8 @@ class Service extends Base\Service
 
     public function fetchLaReversal($id): array
     {
+        (new Merchant\Service)->validateLinkedAccount();
+
         $merchantId = $this->merchant->getId();
 
         $relations = ['reversal'];
@@ -43,6 +46,8 @@ class Service extends Base\Service
 
     public function fetchLaReversals($input): array
     {
+        (new Merchant\Service)->validateLinkedAccount();
+
         $merchantId = $this->merchant->getId();
 
         $input['expand'] = ['reversal'];

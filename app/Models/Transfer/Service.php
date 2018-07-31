@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Transfer;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
@@ -56,6 +55,8 @@ class Service extends Base\Service
 
     public function fetchLaReversalsOfTransfer(string $transferId): array
     {
+        (new Merchant\Service)->validateLinkedAccount();
+
         $transferId = Entity::verifyIdAndStripSign($transferId);
 
         $merchantId = $this->merchant->getId();
@@ -110,7 +111,7 @@ class Service extends Base\Service
 
     public function fetchLaTransfer(string $id): array
     {
-        $this->validateLinkedAccount();
+        (new Merchant\Service)->validateLinkedAccount();
 
         $merchantId = $this->merchant->getId();
 
@@ -125,7 +126,7 @@ class Service extends Base\Service
 
     public function fetchLaTransfers(array $input)
     {
-        $this->validateLinkedAccount();
+        (new Merchant\Service)->validateLinkedAccount();
 
         $merchantId = $this->merchant->getId();
 
@@ -164,17 +165,5 @@ class Service extends Base\Service
         $transferData[Transfer\Entity::NOTES] = $result[Payment\Entity::NOTES];
 
         return $transferData;
-    }
-
-    protected function validateLinkedAccount()
-    {
-        $merchant = $this->merchant;
-
-        if ((empty($merchant) === true) or
-            ($merchant->isLinkedAccount() === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT);
-        }
     }
 }
