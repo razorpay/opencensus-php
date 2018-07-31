@@ -2,9 +2,6 @@
 
 namespace RZP\Models\Payment\Refund;
 
-use App;
-use Metrics;
-
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -371,12 +368,12 @@ class Entity extends Base\PublicEntity
 
     public function pushStatusChangeMetrics($statusToChange)
     {
-        $dimensions = RefundMetric::getDimensions($this);
-
         if (Status::isStatusTrackedForMetrics($statusToChange) === false)
         {
             return;
         }
+
+        $dimensions = RefundMetric::getDimensions($this);
 
         switch ($statusToChange)
         {
@@ -599,9 +596,9 @@ class Entity extends Base\PublicEntity
     {
         if ($this->isProcessed() === false)
         {
-            Metrics::count(RefundMetric::REFUND_TOTAL_PROCESSED, 1, $dimensions);
+            app('trace')->count(RefundMetric::REFUND_TOTAL_PROCESSED, $dimensions);
 
-            Metrics::histogram(
+            app('trace')->histogram(
                 RefundMetric::REFUND_PROCESS_TIME_FROM_CREATE,
                 $this->getRefundProcessedTimeFromCreateInMinutes(),
                 $dimensions
@@ -609,7 +606,7 @@ class Entity extends Base\PublicEntity
         }
         else if ($this->isStatusFailed() === true)
         {
-            Metrics::histogram(
+            app('trace')->histogram(
                 RefundMetric::REFUND_PROCESS_TIME_FROM_LAST_FAILED_ATTEMPT,
                 $this->getRefundProcessedTimeFromLastAttemptInMinutes(),
                 $dimensions
@@ -621,7 +618,7 @@ class Entity extends Base\PublicEntity
     {
         if ($this->isStatusFailed() === false)
         {
-            Metrics::count(RefundMetric::REFUND_TOTAL_FAILED, 1, $dimensions);
+            app('trace')->count(RefundMetric::REFUND_TOTAL_FAILED, $dimensions);
         }
     }
 

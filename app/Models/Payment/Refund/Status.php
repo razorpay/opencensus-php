@@ -23,7 +23,7 @@ class Status
         Status::FAILED
     ];
 
-    public static function isStatusTrackedForMetrics($status)
+    public static function isStatusTrackedForMetrics(string $status): bool
     {
         return (in_array($status, Status::TRACKABLE_STATUSES, true) === true);
     }
