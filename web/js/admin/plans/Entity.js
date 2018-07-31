@@ -114,14 +114,34 @@ const fields = [
   [
     'Action',
     item =>
-      ((item.id || item.readonly) && (
-        <AsyncButton
-          class="link danger"
-          pendingClass="spinner"
-          text="Delete"
-          onClick={item.delete}
-        />
-      )) || (
+      ((item.id || item.readonly) &&
+        (item.isEditing ? (
+          <div>
+            <AsyncButton
+              class="link"
+              pendingClass="spinner"
+              onClick={item.update}
+              text="Save"
+            />
+            <span class="link danger" onClick={item.cancelEditHandler}>
+              Cancel
+            </span>
+          </div>
+        ) : (
+          <div>
+            {item.id && (
+              <span class="link" onClick={item.editRuleHandler}>
+                Edit
+              </span>
+            )}
+            <AsyncButton
+              class="link danger"
+              pendingClass="spinner"
+              text="Delete"
+              onClick={item.delete}
+            />
+          </div>
+        ))) || (
         <AsyncButton
           class="btn"
           text="Add"
