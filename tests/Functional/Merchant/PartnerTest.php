@@ -691,6 +691,21 @@ class PartnerTest extends OAuthTestCase
         $this->assertCount(2, $merchantAccessEntities);
     }
 
+    public function testPartnerSubmerchantsBatchInvalidId()
+    {
+        $rows = $this->testData[__FUNCTION__ . 'FileRows'];
+
+        $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $entity = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(1, $entity['failure_count']);
+    }
+
     protected function getDummyPartnerAttributes(array $attributes = []): array
     {
         $defaults = [
