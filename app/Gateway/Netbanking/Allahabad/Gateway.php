@@ -27,7 +27,7 @@ class Gateway extends Base\Gateway
          RequestFields::AMOUNT                => NetbankingEntity::AMOUNT,
          RequestFields::ACCOUNT_NUMBER        => NetbankingEntity::ACCOUNT_NUMBER,
          NetbankingEntity::RECEIVED           => NetbankingEntity::RECEIVED,
-         ResponseFields::PRODUCT_REF_NUMBER   => NetbankingEntity::PAYMENT_ID,
+         RequestFields::PRODUCT_REF_NUMBER    => NetbankingEntity::PAYMENT_ID,
          ResponseFields::BANK_TRANSACTION_ID  => NetbankingEntity::BANK_PAYMENT_ID,
          ResponseFields::PAID                 => NetbankingEntity::STATUS,
     ];
@@ -203,11 +203,11 @@ class Gateway extends Base\Gateway
         $data = [
             RequestFields::ACTION                 => Status::YES,
             RequestFields::BANK_ID                => Constants::BANK_ID,
-            RequestFields::MODE_OF_PAYMENT        => Constants::MODE_OF_PAYMENT_VERIFY,
             RequestFields::PAYEE_ID               => Constants::PAYEE_ID,
+            RequestFields::MODE_OF_PAYMENT        => Constants::MODE_OF_PAYMENT_VERIFY,
             RequestFields::ITEM_CODE              => $input['payment']['id'],
             RequestFields::PRODUCT_REF_NUMBER     => $input['payment']['id'],
-            RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount'])/ 100,
+            RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount']/ 100),
             RequestFields::CURRENCY               => Currency::INR,
             RequestFields::LANGUAGE_ID            => Constants::USER_LANG_ID,
             RequestFields::USER_TYPE              => Constants::USER_TYPE,
