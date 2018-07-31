@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
-
 import Amount from 'rzp/ui/Amount';
 import Definition from 'rzp/ui/Definition';
 import Spinner from 'rzp/ui/Spinner';
