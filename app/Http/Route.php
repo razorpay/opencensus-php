@@ -784,6 +784,12 @@ final class Route
         'reporting_schedule_list'                  => ['get',      'reporting/schedules',                            'ReportingController@listSchedule'                                  ],
         'reporting_schedule_create'                => ['post',     'reporting/schedules',                            'ReportingController@createSchedule'                                ],
         'reporting_schedule_delete'                => ['delete',   'reporting/schedules/{id}',                       'ReportingController@deleteSchedule'                                ],
+        'reporting_config_get_admin'               => ['get',      'admin-reporting/configs/{id}',                   'ReportingController@getConfig'                                     ],
+        'reporting_config_list_admin'              => ['get',      'admin-reporting/configs',                        'ReportingController@listConfig'                                    ],
+        'reporting_log_get_admin'                  => ['get',      'admin-reporting/logs/{id}',                      'ReportingController@getLog'                                        ],
+        'reporting_log_list_admin'                 => ['get',      'admin-reporting/logs',                           'ReportingController@listLog'                                       ],
+        'reporting_schedule_get_admin'             => ['get',      'admin-reporting/schedules/{id}',                 'ReportingController@getSchedule'                                   ],
+        'reporting_schedule_list_admin'            => ['get',      'admin-reporting/schedules',                      'ReportingController@listSchedule'                                  ],
 
         // UFH Service
         // TODO: Should change to just /signed_url (No 'get' and underscore)
@@ -824,6 +830,8 @@ final class Route
         // Partner routes
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
+        'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
+        'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
     ];
 
     public static $public = [
@@ -1293,6 +1301,8 @@ final class Route
         'payment_link_notify',
         'payment_link_deactivate',
         'payment_link_activate',
+        'submerchants_fetch',
+        'submerchants_fetch_multiple',
     ];
 
     // These will run on internal auth with the assurance
@@ -1575,6 +1585,14 @@ final class Route
         // Partners
         'merchants_access_map_create',
         'merchants_access_map_delete',
+
+        // Reporting
+        'reporting_config_get_admin',
+        'reporting_config_list_admin',
+        'reporting_log_get_admin',
+        'reporting_log_list_admin',
+        'reporting_schedule_get_admin',
+        'reporting_schedule_list_admin',
     ];
 
     public static $routePermission = [
@@ -1880,6 +1898,12 @@ final class Route
         'reporting_schedule_list'                  => '*',
         'reporting_schedule_create'                => '*',
         'reporting_schedule_delete'                => '*',
+        'reporting_config_get_admin'               => '*',
+        'reporting_config_list_admin'              => '*',
+        'reporting_log_get_admin'                  => '*',
+        'reporting_log_list_admin'                 => '*',
+        'reporting_schedule_get_admin'             => '*',
+        'reporting_schedule_list_admin'            => '*',
         'ufh_get_file_signed_url'                  => '*',
         'merchant_requests_create'                 => '*',
         'merchant_requests_list'                   => Permission::VIEW_MERCHANT_REQUESTS,
@@ -1897,6 +1921,8 @@ final class Route
         'invoice_notify_by_batch'                  => '*',
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
+        'submerchants_fetch'                       => Permission::VIEW_PARTNERS,
+        'submerchants_fetch_multiple'              => Permission::VIEW_PARTNERS,
     ];
 
     public static $direct = [
