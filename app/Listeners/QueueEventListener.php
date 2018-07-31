@@ -2,7 +2,6 @@
 
 namespace RZP\Listeners;
 
-use Metrics;
 use Illuminate\Queue\Events as QueueEvents;
 
 use RZP\Constants\Metric;
@@ -24,7 +23,7 @@ class QueueEventListener
     {
         $this->event = $event;
 
-        Metrics::count($this->getMetricName(), 1, $this->getMetricDimensions());
+        app('trace')->count($this->getMetricName(), $this->getMetricDimensions());
     }
 
     protected function getMetricName(): string

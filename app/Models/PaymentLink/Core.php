@@ -673,7 +673,7 @@ class Core extends Base\Core
         {
             $dimensions = ['payment_status' => $payment->getStatus()];
 
-            $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_REFUNDS_TOTAL, 1, $dimensions);
+            $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_REFUNDS_TOTAL, $dimensions);
         }
 
         $tracePayload = array_merge($tracePayload, [E::REFUND => optional($refund)->toArrayPublic()]);
