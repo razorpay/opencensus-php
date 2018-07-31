@@ -59,6 +59,8 @@ class Reconciliator extends Mock\Reconciliator
             'S',
         ];
 
+        $this->content($data, 'recon_corp');
+
         return $this->generateText($data, '|');
     }
 

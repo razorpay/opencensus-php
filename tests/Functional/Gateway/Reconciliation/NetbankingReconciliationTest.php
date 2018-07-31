@@ -394,6 +394,93 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testCorporationSuccessRecon()
+    {
+        $this->gateway = 'netbanking_corporation';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'corporation', 'S');
+
+        $fileContents = $this->generateFile('corporation', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $data = $this->reconcile('NetbankingCorporation', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNotNull($gatewayEntity['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testCorporationBankAmountMismatch()
+    {
+        $this->gateway = 'netbanking_corporation';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'corporation', 'S');
+
+        $fileContents = $this->generateFile('corporation', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'corp')
+                {
+                    // Setting amount to 1 will cause payment amount validation to fail
+                    $content[4] = '1.00';
+                }
+            });
+
+        $data = $this->reconcile('NetbankingCorporation', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
+    public function testCorporationReconcileFailedPayment()
+    {
+        $this->gateway = 'netbanking_corporation';
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'corporation', 'F');
+
+        $fileContents = $this->generateFile('corporation', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingCorporation', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNotNull($gatewayEntity['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     protected function reconcile($gateway, $uploadedFile)
     {
         $this->ba->appAuth();
