@@ -156,4 +156,15 @@ export default class Collection extends BaseModel {
 
     return this.items.remove(item);
   }
+
+  update(item) {
+    if (item) {
+      this.items.forEach((element, index) => {
+        if (element.id === item.id) {
+          this.items[index] = item;
+        }
+      });
+    }
+    return item;
+  }
 }
