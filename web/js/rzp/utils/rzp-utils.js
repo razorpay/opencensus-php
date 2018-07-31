@@ -747,7 +747,7 @@ export const isValidGSTIN = gstin => {
    * 14th character is “Z”
    * 15th character could be anything (alphabet or number)
    */
-  let regex = /^[0123][0-9][a-z]{5}[0-9]{4}[a-z][0-9][z][a-z0-9]$/gi;
+  let regex = /^[0123][0-9][a-z]{5}[0-9]{4}[a-z][0-9][a-z0-9][a-z0-9]$/gi;
   return regex.test(gstin);
 };
 

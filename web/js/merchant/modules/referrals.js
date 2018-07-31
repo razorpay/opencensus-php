@@ -24,12 +24,12 @@ export const switchMerchant = merchantId => {
   };
 };
 
-export const createLogin = params => {
+export const createLogin = merchantId => {
   var referral = new Referral();
 
   return {
     type: LOGIN_CREATE,
-    payload: referral.createLogin(params),
+    payload: referral.createLogin(merchantId),
   };
 };
 

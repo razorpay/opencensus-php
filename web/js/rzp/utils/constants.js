@@ -38,6 +38,9 @@ export const states = {
 };
 
 export const roles = {
+  owner: {
+    label: 'Owner',
+  },
   manager: {
     label: 'Manager',
     desc:
@@ -65,8 +68,5 @@ export const roles = {
     label: 'Support',
     desc:
       'Can access payments, refunds, invoices, and orders. Cannot do any write operations like refunds or captures.',
-  },
-  owner: {
-    label: 'Owner',
   },
 };
