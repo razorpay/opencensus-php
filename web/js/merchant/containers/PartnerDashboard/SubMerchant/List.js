@@ -114,7 +114,7 @@ export default class SubMerchantsList extends ListContainer {
     const { userPartnerType } = this.props;
     return (
       <div class="sub-merchants-list">
-        <div class="content-wrapper sub-merchants-list--stats">
+        <div>
           <ShowWhen myRole="owner manager admin">
             <HeaderAction>
               <button
@@ -126,7 +126,7 @@ export default class SubMerchantsList extends ListContainer {
               </button>
             </HeaderAction>
           </ShowWhen>
-          <StatsCard
+          {/* <StatsCard
             title="Total transaction volume"
             value={humanReadableIndianCurrency(603000000)}
           />
@@ -137,7 +137,7 @@ export default class SubMerchantsList extends ListContainer {
           <StatsCard
             title="My Earnings"
             value={humanReadableIndianCurrency(560000)}
-          />
+          /> */}
         </div>
         <div class="content-wrapper">
           <ListFilter
