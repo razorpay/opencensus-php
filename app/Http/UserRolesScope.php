@@ -73,8 +73,8 @@ class UserRolesScope
             'webhook_edit'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
             // settlemnets route
-            'setl_fetch_multiple' => Role::READER_ROLES,
-            'setl_fetch_by_id'    => Role::READER_ROLES,
+            'setl_fetch_multiple' => array_merge(Role::READER_ROLES, Role::LINKED_ACCOUNT_ROLES),
+            'setl_fetch_by_id'    => array_merge(Role::READER_ROLES, Role::LINKED_ACCOUNT_ROLES),
 
             // invoice routes
             'invoice_create'         => array_merge(Role::WRITER_ROLES, [Role::SELLERAPP]),

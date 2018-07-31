@@ -39,6 +39,11 @@ class Role
         self::ADMIN,
     ];
 
+    const LINKED_ACCOUNT_ROLES = [
+        self::LINKED_ACCOUNT_ADMIN,
+        self::LINKED_ACCOUNT_OWNER
+    ];
+
     public static function exists(string $action): bool
     {
         return defined(get_class() . '::' . strtoupper($action));
