@@ -102,6 +102,16 @@ configure_db(){
   fi
 }
 
+configure_dark(){
+    ## Configure queue workers for dark
+    ## Ref: https://github.com/razorpay/api/blob/master/scripts/install.sh#L49
+    cd /app
+    echo "== Queue on Sync driver =="
+    echo QUEUE_DRIVER=sync >> ./environment/.env.production
+    echo SLACK_QUEUE_DRIVER=sync >> ./environment/.env.production
+}
+    
+
 update_commit(){
   if [[ -n "${GIT_COMMIT_HASH-}" ]]; then
     echo "GIT_COMMIT_HASH=${GIT_COMMIT_HASH}" >> /app/.env.vault
@@ -141,6 +151,10 @@ function main {
 
   ## Now, based on the app type, call the specific functions
   if [[ "${app_type}" == "web" ]]; then
+    echo "Starting web app"
+    start_apache
+  elif [[ "${app_type}" == "web-dark" ]]; then
+    configure_dark
     echo "Starting web app"
     start_apache
   elif [[ "${app_type}" == "sqs" ]]; then
