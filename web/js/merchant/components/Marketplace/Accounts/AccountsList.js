@@ -60,7 +60,7 @@ export default ({ accounts, isLoading, showEditAccountModal, onEdit }) => {
         <thead>
           <tr>
             <th>Account Id</th>
-            <th>LA Access Email</th>
+            <th>Email Id</th>
             <th>Name</th>
             <th>Created At</th>
             <th>Activated</th>

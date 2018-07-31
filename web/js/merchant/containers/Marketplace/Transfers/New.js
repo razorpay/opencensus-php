@@ -119,18 +119,14 @@ export default class TransferNew extends Component {
     let transformedNotes = notes;
     const linked_account_notes = [];
 
-    if (notes && notes.length > 0) {
-      transformedNotes = notes.reduce((result, current) => {
+    if (transformedNotes && transformedNotes.length > 0) {
+      transformedNotes = transformedNotes.reduce((result, current) => {
         result[current.key] = current.value;
         if (this.isLADashboardEnabled && current.also_linked_account) {
           linked_account_notes.push(current.key);
         }
         return result;
       }, {});
-    }
-
-    if (this.isLADashboardEnabled) {
-      transformedNotes.linked_account_notes = linked_account_notes;
     }
 
     let holdData = {};
@@ -156,6 +152,7 @@ export default class TransferNew extends Component {
           account: prefixEntityValue('account', accountId),
           amount: rupeesToPaise(amount),
           notes: transformedNotes,
+          linked_account_notes: linked_account_notes,
           currency: 'INR',
           ...holdData,
         },

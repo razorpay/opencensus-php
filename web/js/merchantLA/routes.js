@@ -2,7 +2,8 @@ import { matchPath } from 'react-router-dom';
 import { showWhenUtil } from 'merchantLA/components/ShowWhen';
 
 import TransferDetails from 'merchantLA/containers/Marketplace/Transfers/Details';
-import SettlementDetails from 'merchantLA/containers/Marketplace/Transfers/Details';
+import SettlementDetails from 'merchantLA/containers/Settlements/Details';
+import ReversalDetails from 'merchantLA/containers/Marketplace/Reversals/Details';
 
 /*
 * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
@@ -11,6 +12,7 @@ import SettlementDetails from 'merchantLA/containers/Marketplace/Transfers/Detai
 const entityDetailsMap = {
   '/transfers/:id(trf_.+)': { component: TransferDetails },
   '/settlements/:id': { component: SettlementDetails },
+  '/reversals/:id': { component: ReversalDetails },
 };
 
 /*

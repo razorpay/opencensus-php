@@ -12,7 +12,6 @@ import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
 import LocalStorageService from 'rzp/utils/localStorage';
 
 import KeyMetrics from 'merchantLA/containers/Home/KeyMetrics';
-import PaymentMethods from 'merchantLA/containers/Home/PaymentMethods';
 import Traffic from 'merchantLA/containers/Home/Traffic';
 import RecentActivity from 'merchantLA/containers/Home/RecentActivity';
 import GenericPanel, {
@@ -100,7 +99,6 @@ class AnalyticsDesktop extends Component {
 
       defaultPreset,
       keymetricsSectionTitle,
-      paymentInsightsTitle,
       recentActivityTitle,
       trafficSectionTitle,
     } = this.props;
@@ -196,43 +194,6 @@ class AnalyticsDesktop extends Component {
                 isAdmin={isAdmin}
                 analyticsFetch={analyticsFetch}
                 onFilterChange={onFilterChange}
-              />
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="section-title payment-insights-title">
-                {paymentInsightsTitle}&nbsp;
-                <small>
-                  <i class="i i-help" />
-                  <Popover align="top">
-                    <PopoverBody>
-                      <p>
-                        This graph helps you gain insights into your overall
-                        payments by seeing how different payment methods stack
-                        up against each other in your revenue pool.
-                      </p>
-                      <div>
-                        <span className="popover-highlight">Click tiles</span>{' '}
-                        to drill-down into the hierarchy.
-                      </div>
-                      <div>
-                        <span className="popover-highlight">Hover</span> to view
-                        information for smaller tiles.
-                      </div>
-                    </PopoverBody>
-                  </Popover>
-                </small>
-              </div>
-            </div>
-            <div className="col-md-12">
-              <PaymentMethods
-                startDate={startDate}
-                endDate={endDate}
-                mode={mode}
-                analyticsFetch={analyticsFetch}
-                sectionTitle={paymentInsightsTitle}
               />
             </div>
           </div>

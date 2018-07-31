@@ -43,7 +43,7 @@ const commonMeta = {
           entity.entity === 'settlement'
             ? SettlementStatusLabel
             : PaymentStatusLabel;
-        value = value || 'refunded';
+        value = value || 'reversed';
 
         return <Label status={value} />;
       },
