@@ -25,14 +25,12 @@ export default class AddMerchant extends Component {
   addNewMerchant = params => {
     return this.props
       .create(params)
-      .then(data => {
-        if (data) {
-          this.props.showNotification({
-            type: 'success',
-            message: 'Submerchant created successfull',
-          });
-          this.props.closeModal();
-        }
+      .then(() => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Submerchant created successfully',
+        });
+        this.props.closeModal();
       })
       .catch(({ errors }) => {
         this.props.showNotification({
