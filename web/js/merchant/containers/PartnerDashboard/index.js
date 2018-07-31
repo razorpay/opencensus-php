@@ -10,7 +10,7 @@ export default () => (
   <tabbed-container>
     <header id="partner-header">
       <NavLink exact to="/submerchants">
-        Referrals
+        Affiliated Accounts
       </NavLink>
       <NavLink to="/submerchants/settings">Settings</NavLink>
     </header>

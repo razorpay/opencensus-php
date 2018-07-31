@@ -5,13 +5,19 @@ import AsyncButton from 'react-async-button';
 
 import { create } from 'merchant/modules/submerchant';
 import { showNotification } from 'rzp/modules/notifications';
+import { closeModal } from 'rzp/modules/modals';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 import InputField from 'rzp/ui/Forms/InputField';
 
 import { required } from 'rzp/utils/validators';
+import { showWhenUtil } from 'merchant/components/ShowWhen';
 
-@connect(state => ({ ...state.session }), { create, showNotification })
+@connect(state => ({ ...state.session }), {
+  create,
+  showNotification,
+  closeModal,
+})
 @reduxForm({
   form: 'addMerchant',
 })
@@ -97,7 +103,9 @@ export default class AddMerchant extends Component {
 }
 
 function isEmailMandatory(user) {
-  // a feature check will also be added for partner_type as aggregator
+  if (user.partner_type === 'aggregator') {
+    return !showWhenUtil({ featureEnabled: 'allow_sub_without_email' });
+  }
   return emailMandatoryMap[user.partner_type];
 }
 
@@ -106,5 +114,4 @@ const emailMandatoryMap = {
   reseller: true,
   pure_platform: true,
   fully_managed: false,
-  aggregator: false,
 };
