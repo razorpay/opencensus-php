@@ -159,7 +159,7 @@ class Gateway extends Base\Gateway
 
         if ($input['token']->getAadhaarVid() !== null)
         {
-            $content['signers']['vid'] = $input['token']->getAadhaarVid();
+            $content['signers'][0]['vid'] = $input['token']->getAadhaarVid();
         }
 
         return $this->getStandardRequestArray($content, 'POST', 'create');
