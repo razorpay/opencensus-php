@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
+
 import Amount from 'rzp/ui/Amount';
 import Definition from 'rzp/ui/Definition';
 import Spinner from 'rzp/ui/Spinner';
@@ -10,7 +11,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 export default class ReversalDetails extends Component {
   render() {
-    const { reversal, transfer, isLoading, onClose } = this.props;
+    const { reversal, isLoading, onClose, parentAccountName } = this.props;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -36,13 +37,9 @@ export default class ReversalDetails extends Component {
 
             <div class="SliderPanel__Body">
               <div class="panel-body">
-                <EntityDetailRow label="Linked Account">
+                <EntityDetailRow label="Parent Account">
                   <Definition>
-                    <span>{transfer.recipient_details.name}</span>
-                    {transfer.recipient_details.email && (
-                      <span>{transfer.recipient_details.email}</span>
-                    )}
-                    <code>{transfer.recipient}</code>
+                    <b>{parentAccountName}</b>
                   </Definition>
                 </EntityDetailRow>
 
@@ -67,7 +64,7 @@ export default class ReversalDetails extends Component {
                   label="Source ID"
                   value={() => (
                     <div>
-                      <Link to={`/route/transfers/${reversal.transfer_id}`}>
+                      <Link to={`/transfers/${reversal.transfer_id}`}>
                         {reversal.transfer_id}
                       </Link>
                     </div>
@@ -84,14 +81,6 @@ export default class ReversalDetails extends Component {
                             <Definition>
                               {key}
                               {String(reversal.notes[key])}
-                              {!!reversal.linked_account_notes &&
-                                reversal.linked_account_notes.indexOf(key) >
-                                  -1 && (
-                                  <span>
-                                    <i class="i i-info-outline" /> This note is
-                                    shown to the linked account
-                                  </span>
-                                )}
                             </Definition>
                           </div>
                         )))}

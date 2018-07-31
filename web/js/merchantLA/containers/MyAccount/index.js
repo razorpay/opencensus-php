@@ -11,7 +11,7 @@ export default class MyAccount extends Component {
       <tabbed-container>
         <header id="myaccount-header">
           <NavLink to="/profile">Profile</NavLink>
-          <ShowWhen myRole="owner">
+          <ShowWhen myRole="linked_account_owner">
             <NavLink to="/team">Manage Team</NavLink>
           </ShowWhen>
         </header>

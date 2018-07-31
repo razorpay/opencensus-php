@@ -4,7 +4,8 @@ import Alert from 'rzp/ui/Forms/Alert';
 import Spinner from 'rzp/ui/Spinner';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { fetchBankAccount } from 'merchantLA/modules/profile';
+
+import ShowWhen from 'merchantLA/components/ShowWhen';
 
 import MerchantDetails from 'merchantLA/components/MyAccount/Profile/MerchantDetails';
 import BankAccountDetails from 'merchantLA/components/MyAccount/Profile/BankAccountDetails';
@@ -32,16 +33,6 @@ export default class Profile extends Component {
         });
       }
     });
-
-    fetchBankAccount()
-      .then(response => {
-        if (response.data) {
-          this.setState({
-            bankAccount: response.data,
-          });
-        }
-      })
-      .catch(err => {});
   }
 
   openChangePasswordModal = () => {
@@ -54,7 +45,6 @@ export default class Profile extends Component {
   render() {
     console.log('re-render...');
     let { user } = this.props;
-    let { bankAccount } = this.state;
 
     if (!user.isAuthenticated) {
       return (
@@ -63,6 +53,12 @@ export default class Profile extends Component {
         </div>
       );
     }
+
+    const bankAccount = {
+      ifsc: user.bank_branch_ifsc,
+      account_number: user.bank_account_number,
+      name: user.bank_account_name,
+    };
 
     return (
       <div class="content-wrapper content-sm">
@@ -81,9 +77,12 @@ export default class Profile extends Component {
             {user && user.current ? <MerchantDetails user={user} /> : null}
           </div>
 
-          {bankAccount ? (
+          <ShowWhen
+            //myRole="owner"
+            myRole="linked_account_owner"
+          >
             <BankAccountDetails bankAccount={bankAccount} />
-          ) : null}
+          </ShowWhen>
         </div>
       </div>
     );
