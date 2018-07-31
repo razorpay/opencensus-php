@@ -2116,6 +2116,8 @@ class Service extends Base\Service
     {
         $partner = $this->fetchPartner();
 
+        (new Validator)->validateInput('list_submerchants', $input);
+
         $submerchants = $this->core()->listSubmerchants($partner, $input);
 
         return $submerchants->toArrayPartner();

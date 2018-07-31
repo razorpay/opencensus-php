@@ -63,13 +63,6 @@ class Repository extends Base\Repository
         Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
     ];
 
-    protected $proxyFetchParamRules = [
-        Entity::NAME                     => 'sometimes|string',
-        Entity::ID                       => 'sometimes|alpha_num|size:14',
-        Entity::EMAIL                    => 'sometimes|email',
-        Detail\Entity::ACTIVATION_STATUS => 'sometimes|string|max:30',
-    ];
-
     protected function validateAccountStatus($attribute, $value)
     {
         AccountStatus::validate($value);
@@ -525,6 +518,14 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    /**
+     * Used to filter the list of submerchants fetched for partners
+     *
+     * @param $query
+     * @param $params
+     *
+     * @return mixed
+     */
     protected function addQueryParamActivationStatus($query, $params)
     {
         $query->where(Detail\Entity::ACTIVATION_STATUS, $params[Detail\Entity::ACTIVATION_STATUS]);
