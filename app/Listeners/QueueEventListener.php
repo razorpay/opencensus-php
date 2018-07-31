@@ -2,7 +2,6 @@
 
 namespace RZP\Listeners;
 
-use Metrics;
 use Illuminate\Queue\Events as QueueEvents;
 
 use RZP\Constants\Metric;

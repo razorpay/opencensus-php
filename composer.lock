@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "a456876bda55ba06937fd99b96986e3e",
+    "content-hash": "820896ed85d04376a946d881e813645f",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5749,16 +5749,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "dev-metrics-handler",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "c14d229601bbc76794f17827ff3e27d5bb45dbd4"
+                "reference": "74b4d24e43cffddb642d1f0b37683ef12e00f6eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/c14d229601bbc76794f17827ff3e27d5bb45dbd4",
-                "reference": "c14d229601bbc76794f17827ff3e27d5bb45dbd4",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/74b4d24e43cffddb642d1f0b37683ef12e00f6eb",
+                "reference": "74b4d24e43cffddb642d1f0b37683ef12e00f6eb",
                 "shasum": ""
             },
             "require": {
@@ -5767,7 +5767,7 @@
                 "illuminate/support": "5.*",
                 "monolog/monolog": "1.*",
                 "razorpay/ec2-metadata": "2.*",
-                "razorpay/metrics-php": "1.*",
+                "razorpay/metrics-php": "1.0.*",
                 "symfony/psr-http-message-bridge": "0.2.*"
             },
             "require-dev": {
@@ -5819,10 +5819,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/metrics-handler",
+                "source": "https://github.com/razorpay/trace/tree/2.1.0",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2018-07-30T18:50:48+00:00"
+            "time": "2018-07-31T09:02:48+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -9907,7 +9907,6 @@
         "razorpay/upi-clients": 20,
         "razorpay/ufh-sdk-php": 20,
         "razorpay/hodor": 20,
-        "razorpay/trace": 20,
         "razorpay/oauth": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20

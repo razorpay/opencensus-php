@@ -2,9 +2,7 @@
 
 namespace RZP\Listeners;
 
-use App;
 use Cache;
-use Metrics;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Cache\Events;
 
@@ -33,7 +31,7 @@ class CacheEventListener
     {
         $this->event = $event;
 
-        $this->trace = App::getFacadeRoot()['trace'];
+        $this->trace = app('trace');
 
         $cacheEventType = $this->getCacheEventType();
 
