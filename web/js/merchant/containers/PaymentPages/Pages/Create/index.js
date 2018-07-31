@@ -214,6 +214,10 @@ export default class CreateNewContainer extends React.Component {
       document.getElementsByName('email_notify')[0].checked = isChecked;
     }
 
+    if (stateName === 'hasDesc' && fieldValue === '0') {
+      sideEffectFieldsToUpdate['description'] = undefined;
+    }
+
     /* Step Last */
     if (stateName) {
       const _newName = { ...this.state._name };

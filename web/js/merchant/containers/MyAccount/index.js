@@ -31,7 +31,7 @@ export default class MyAccount extends Component {
           </ShowWhen>
 
           {!isPartner && (
-            <ShowWhen notMyRole="sellerapp support" featureEnabled="Referral">
+            <ShowWhen notMyRole="sellerapp" featureEnabled="Referral">
               <NavLink to="/referrals">Referrals</NavLink>
             </ShowWhen>
           )}
