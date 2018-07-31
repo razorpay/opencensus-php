@@ -41,10 +41,10 @@ class UserRolesScope
             'order_payments'    => Role::allExceptSellerRole(),
 
             // invitation routes
-            'invitation_create' => [Role::OWNER],
-            'invitation_delete' => [Role::OWNER],
-            'invitation_edit'   => [Role::OWNER],
-            'invitation_resend' => [Role::OWNER],
+            'invitation_create' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+            'invitation_delete' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+            'invitation_edit'   => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+            'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
 
             // merchant routes
             'balance_fetch'                       => Role::allExceptSellerRole(),
