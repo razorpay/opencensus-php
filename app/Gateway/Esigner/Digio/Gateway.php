@@ -16,6 +16,7 @@ use RZP\Constants\Mode as BaseMode;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Gateway\Enach\Base\Entity;
 use RZP\Models\Bank\Name as BankName;
+use RZP\Gateway\Enach\Base\CategoryCode;
 
 class Gateway extends Base\Gateway
 {
@@ -181,6 +182,8 @@ class Gateway extends Base\Gateway
         $destinationBankIfsc = $input['token']->getIfsc();
         $bankCode = $this->getTerminalAccessCode($input);
 
+        $mcc = $this->input['terminal']['category'];
+
         $traceContent = $content = [
             'mandate_request_id'            => $input['payment']['id'],
             'mandate_creation_date_time'    => $nextWorkingDt->toIso8601String(),
@@ -191,7 +194,7 @@ class Gateway extends Base\Gateway
             // TODO: Remove sending aadhaar number later
             'aadhaar'                       => $input['token']->getAadhaarNumber(),
             'bank_identifier'               => substr($bankCode, 0, 4),
-            'management_category'           => CategoryCode::A001,
+            'management_category'           => CategoryCode::getCategoryCodeFromMcc($mcc),
             'service_provider_name'         => $this->getGatewayMerchantId2(),
             'service_provider_utility_code' => $this->getGatewayMerchantId(),
             'login_id'                      => $this->getGatewayTerminalId(),

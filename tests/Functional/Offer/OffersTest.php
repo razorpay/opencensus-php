@@ -171,6 +171,24 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testEmiSubventionWithIssuerAndNetwork()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->startTest();
+    }
+
+    public function testOfferWithInvalidIssuer()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->startTest();
+    }
+
     public function testInvalidEmiDuration()
     {
         $this->startTest();

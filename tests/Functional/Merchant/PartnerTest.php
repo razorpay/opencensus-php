@@ -32,6 +32,8 @@ class PartnerTest extends OAuthTestCase
 
         $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
 
+        $this->fixtures->merchant_detail->create(['merchant_id' => self::DEFAULT_SUBMERCHANT_ID]);
+
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 
         $this->ba->privateAuth();
@@ -639,12 +641,168 @@ class PartnerTest extends OAuthTestCase
 
         // Create an oauth application using factory
         $this->createOAuthApplication($partnerData);
-        
+
         $merchantUsers = $submerchant->users()->get()->toArrayPublic();
 
         $this->assertEquals(0, $merchantUsers['count']);
 
         $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerSubmerchant()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $submerchant = $this->allowAdminToAccessSubMerchant();
+
+        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $submerchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
+
+        $submerchantOwners = $submerchant->owners()->get()->toArrayPublic();
+
+        $this->assertEquals(2, $submerchantOwners['count']);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'under_review']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $app = $this->createOAuthApplication($partnerData);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]);
+
+        $this->ba->adminProxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['response']['content']['user'] = $submerchantUser->toArrayPublic();
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchPartnerSubmerchants()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessSubMerchant();
+
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
+
+        $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'under_review']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $app = $this->createOAuthApplication($partnerData);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]);
+
+        $this->ba->adminProxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Tests the list submerchants api when there are no submerchants for the partner
+     */
+    public function testFetchPartnerSubmerchantsEmptyList()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $app = $this->createOAuthApplication($partnerData);
+
+        $this->ba->adminProxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchPartnerSubmerchantProxyAuth()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $submerchant = $this->allowAdminToAccessSubMerchant();
+
+        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $submerchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
+
+        $submerchantOwners = $submerchant->owners()->get()->toArrayPublic();
+
+        $this->assertEquals(2, $submerchantOwners['count']);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $app = $this->createOAuthApplication($partnerData);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $partnerUser->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['response']['content']['user'] = $submerchantUser->toArrayPublic();
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchPartnerSubmerchantProxyAuthSellerApp()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessSubMerchant();
+
+        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $partnerUser->getId(), 'sellerapp');
 
         $this->startTest();
     }

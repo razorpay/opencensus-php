@@ -3,12 +3,14 @@
 namespace RZP\Services;
 
 use App;
+use Request;
 use Requests;
 use Requests_Response;
 use Requests_Exception;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Base\Common;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
@@ -37,6 +39,14 @@ class Reporting implements ExternalService
     const CONFIGS       = 'configs';
     const SCHEDULES     = 'schedules';
 
+    // REPORT_TYPE constants
+    const MERCHANT      = 'merchant';
+
+    // Headers
+    const CONSUMER_HEADER       = 'X-Consumer';
+    const REPORT_TYPE_HEADER    = 'X-Report-Type';
+    const ADMIN_TOKEN_HEADER    = 'X-Admin-Token';
+
     /**
      * @var array
      */
@@ -45,6 +55,8 @@ class Reporting implements ExternalService
     protected $trace;
 
     protected $mode;
+
+    protected $headers;
 
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
@@ -63,24 +75,64 @@ class Reporting implements ExternalService
         // TODO: This service should(to discuss) not depend on BA, better to pass
         // or set merchant context on the instance before using.
         $this->ba     = $app['basicauth'];
+
+        $this->setHeaders();
+    }
+
+    protected function setHeaders()
+    {
+        $headers = [];
+
+        // Proxy Auth
+        $merchantId = $this->ba->getMerchantId();
+
+        // Auth w/ Admin Token
+        $adminToken = $this->ba->getAdminToken();
+
+        // Report type header coming from client
+        $reportType = Request::header(self::REPORT_TYPE_HEADER);
+
+        if (empty($merchantId) === false)
+        {
+            // MERCHANT Reports
+            $headers[self::REPORT_TYPE_HEADER] = self::MERCHANT;
+            $headers[self::CONSUMER_HEADER] = $merchantId;
+        }
+        else if (empty($reportType) === false)
+        {
+            // For non-merchant reports X_REPORT_TYPE should not be MERCHANT
+            // otherwise admins/banks will be able to download merchant reports.
+            // Admin auth will be used here
+            if ($reportType === self::MERCHANT)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION);
+            }
+
+            // Will get validated in Reporting service
+            $headers[self::REPORT_TYPE_HEADER] = $reportType;
+            $headers[self::CONSUMER_HEADER] = Request::header(self::CONSUMER_HEADER, null);
+        }
+        else if (empty($adminToken) === false)
+        {
+            // Entity view in dashboard
+            $headers[self::ADMIN_TOKEN_HEADER] = $adminToken;
+        }
+
+        $this->headers = $headers;
     }
 
     public function fetchMultiple(string $entity, array $input)
     {
-        $merchantId = $input['merchant_id'] ?? Merchant\Account::SHARED_ACCOUNT;
-
-        unset($input['merchant_id']);
-
         switch ($entity)
         {
             case self::LOGS:
-                return $this->fetchLogMultipleAdmin($input, $merchantId);
+                return $this->fetchLogMultipleAdmin($input);
 
             case self::CONFIGS:
-                return $this->fetchConfigMultipleAdmin($input, $merchantId);
+                return $this->fetchConfigMultipleAdmin($input);
 
             case self::SCHEDULES:
-                return $this->fetchScheduleMultipleAdmin($input, $merchantId);
+                return $this->fetchScheduleMultipleAdmin($input);
         }
 
         return [];
@@ -88,22 +140,24 @@ class Reporting implements ExternalService
 
     public function fetch(string $entity, string $id, array $input)
     {
-        $merchantId = $input['merchant_id'] ?? Merchant\Account::SHARED_ACCOUNT;
-
         switch ($entity)
         {
             case self::LOGS:
-                return $this->fetchLogByIdAdmin($id, $merchantId);
+                return $this->fetchLogByIdAdmin($id);
 
             case self::CONFIGS:
-                return $this->fetchConfigByIdAdmin($id, $merchantId);
+                return $this->fetchConfigByIdAdmin($id);
 
             case self::SCHEDULES:
-                return $this->fetchScheduleByIdAdmin($id, $merchantId);
+                return $this->fetchScheduleByIdAdmin($id);
         }
 
         return [];
     }
+
+    /*
+        Proxy Auth
+    */
 
     public function createConfig(array $input): array
     {
@@ -185,7 +239,7 @@ class Reporting implements ExternalService
             // Need to store entity_id without sign.
             $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = $this->generateEntityId($response['id']);
 
-            $this->createScheduleOnAPI($scheduleRequest);
+            $this->createScheduleOnApi($scheduleRequest);
         }
 
         return $response;
@@ -193,9 +247,7 @@ class Reporting implements ExternalService
 
     public function fetchScheduleMultiple(array $input): array
     {
-        $configs = $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
-
-        return $this->filterConfigsByFeatureAndTags($configs);
+        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
     }
 
     public function fetchScheduleById(string $id): array
@@ -242,8 +294,8 @@ class Reporting implements ExternalService
             $response = array_map(function($entityIds) {
                             return array_map(function($entityId){
                                         return $this->generateEntityId($entityId);
-                                    }, $entityIds);
-                            }, $response);
+                            }, $entityIds);
+            }, $response);
 
             $successIds = $response['success_ids'];
 
@@ -261,47 +313,48 @@ class Reporting implements ExternalService
         return $response;
     }
 
-    public function fetchLogByIdAdmin(string $id, string $merchantId = Merchant\Account::SHARED_ACCOUNT): array
+    public function fetchLogByIdAdmin(string $id): array
     {
         $path = self::LOG_PATH . '/' . $id;
 
-        return $this->createAndSendRequest(Requests::GET, $path, [], $merchantId);
+        return $this->createAndSendRequest(Requests::GET, $path);
     }
 
-    public function fetchConfigByIdAdmin(string $id, string $merchantId = Merchant\Account::SHARED_ACCOUNT): array
+    public function fetchConfigByIdAdmin(string $id): array
     {
         $path = self::CONFIG_PATH . '/' . $id;
 
-        return $this->createAndSendRequest(Requests::GET, $path, [], $merchantId);
+        return $this->createAndSendRequest(Requests::GET, $path);
     }
 
-    public function fetchScheduleByIdAdmin(string $id, string $merchantId = Merchant\Account::SHARED_ACCOUNT): array
+    public function fetchScheduleByIdAdmin(string $id): array
     {
         $path = self::SCHEDULE_PATH . '/' . $id;
 
-        return $this->createAndSendRequest(Requests::GET, $path, [], $merchantId);
+        return $this->createAndSendRequest(Requests::GET, $path);
     }
 
-    public function fetchLogMultipleAdmin(array $input, string $merchantId): array
+    public function fetchLogMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input, $merchantId);
+        return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input);
     }
 
     // TODO: Add filter based upon feature/tags for admin calls
-    public function fetchConfigMultipleAdmin(array $input, string $merchantId): array
+    public function fetchConfigMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input, $merchantId);
+        return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
     }
 
-    public function fetchScheduleMultipleAdmin(array $input, string $merchantId): array
+    public function fetchScheduleMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input, $merchantId);
+        return $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
     }
 
-    protected function createScheduleOnAPI(array $input)
+    protected function createScheduleOnApi(array $input)
     {
         $entityId = $input[ScheduleTask\Entity::ENTITY_ID];
 
+        // TODO: check how to handle this in bank reports from Front End
         $merchant = $this->ba->getMerchant();
 
         // As discussed, we will not be creating new schedule
@@ -330,8 +383,7 @@ class Reporting implements ExternalService
         foreach ($scheduleTasks as $scheduleTask)
         {
             $payload[] = [
-                'id'          => self::SCHEDULE_PREFIX . $scheduleTask->getEntityId(),
-                'merchant_id' => $scheduleTask->getMerchantId(),
+                'id'          => self::SCHEDULE_PREFIX . $scheduleTask->getEntityId()
             ];
         }
 
@@ -344,7 +396,7 @@ class Reporting implements ExternalService
 
         $path = self::SCHEDULE_PATH . '/trigger';
 
-        return $this->createAndSendRequest(Requests::POST, $path, $request, Merchant\Account::SHARED_ACCOUNT);
+        return $this->createAndSendRequest(Requests::POST, $path, $request);
     }
 
     protected function generateEntityId(string $entityId)
@@ -355,8 +407,7 @@ class Reporting implements ExternalService
     protected function createAndSendRequest(
         string $method,
         string $path,
-        array $input = [],
-        string $merchantId = null): array
+        array $input = []): array
     {
         // In case reporting is to be mocked, don't make any external call
         // and just return empty array.
@@ -370,16 +421,12 @@ class Reporting implements ExternalService
             'auth'    => $this->getAuthHeaders(),
         ];
 
-        $headers = [
-            'X-Merchant-Id' => $merchantId ?? $this->ba->getMerchantId()
-        ];
-
         $request = [
             'url'     => $this->config['url'] . $path,
             'method'  => $method,
             'content' => $input,
             'options' => $options,
-            'headers' => $headers
+            'headers' => $this->headers
         ];
 
         $this->traceReportingServiceRequest($request);
@@ -452,6 +499,13 @@ class Reporting implements ExternalService
         $items = collect($configs['items'] ?? []);
 
         $merchant = $this->ba->getMerchant();
+
+        // Don't filter anything for non merchants
+        if (empty($merchant) === true)
+        {
+            return $configs;
+        }
+
         $tags     = array_map('strtolower', $merchant->tagNames());
         $features = $merchant->getEnabledFeatures();
 

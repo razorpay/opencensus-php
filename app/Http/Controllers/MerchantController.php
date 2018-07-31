@@ -1012,4 +1012,18 @@ class MerchantController extends Controller
 
         return ApiResponse::json([], 204);
     }
+
+    public function getSubmerchant(string $submerchantId)
+    {
+        $response = $this->service()->getSubmerchant($submerchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listSubmerchants()
+    {
+        $response = $this->service()->listSubmerchants();
+
+        return ApiResponse::json($response);
+    }
 }
