@@ -12,7 +12,7 @@ export default () => (
       <NavLink exact to="/submerchants">
         Affiliated Accounts
       </NavLink>
-      <NavLink to="/submerchants/settings">Settings</NavLink>
+      {/* <NavLink to="/submerchants/settings">Settings</NavLink> */}
     </header>
     <TestModeBanner />
     <content>
