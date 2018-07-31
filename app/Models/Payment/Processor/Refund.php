@@ -69,7 +69,7 @@ trait Refund
             RefundMetric::getDimensions($this->refund)
         );
 
-        if ($this->payment->isCaptured() === true)
+        if ($this->payment->hasBeenCaptured() === true)
         {
             $this->trace->count(
                 RefundMetric::REFUND_TOTAL_CREATED_FOR_CAPTURED,

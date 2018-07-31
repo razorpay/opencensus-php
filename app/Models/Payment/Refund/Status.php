@@ -25,11 +25,6 @@ class Status
 
     public static function isStatusTrackedForMetrics($status)
     {
-        if (in_array($status, Status::TRACKABLE_STATUSES, true))
-        {
-            return true;
-        }
-
-        return false;
+        return (in_array($status, Status::TRACKABLE_STATUSES, true) === true);
     }
 }
