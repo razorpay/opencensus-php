@@ -10,6 +10,7 @@ import { transferId, amount, createdAt } from 'merchantLA/utils/item/pair';
 import { classList } from 'common/util';
 import Amount from 'rzp/ui/Amount';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { pluralize } from 'rzp/utils/rzp-utils';
 
 const helperCues = {
   title: '',
@@ -20,11 +21,7 @@ const helperCues = {
     const notesLength = item.notes && Object.keys(item.notes).length;
 
     if (notesLength) {
-      if (notesLength === 1) {
-        notesMsg = notesLength + ' Note attached';
-      } else {
-        notesMsg = notesLength + ' Notes attached';
-      }
+      notesMsg = `${notesLength} ${pluralize('Note', notesLength)} attached`;
     }
 
     return (
