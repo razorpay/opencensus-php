@@ -513,9 +513,7 @@ class Repository extends Base\Repository
      *
      * @return Base\PublicCollection
      */
-    public function fetchSubmerchantsByPartnerAppId(
-        string $applicationId,
-        array $params = array()): Base\PublicCollection
+    public function fetchSubmerchantsByPartnerAppId(string $applicationId, array $params = []): Base\PublicCollection
     {
         $query = $this->buildQueryToFetchSubmerchants($applicationId);
 
@@ -529,7 +527,7 @@ class Repository extends Base\Repository
 
     protected function addQueryParamActivationStatus($query, $params)
     {
-        $query->where(Detail\Entity::ACTIVATION_STATUS, '=', $params[Detail\Entity::ACTIVATION_STATUS]);
+        $query->where(Detail\Entity::ACTIVATION_STATUS, $params[Detail\Entity::ACTIVATION_STATUS]);
 
         return $query;
     }
