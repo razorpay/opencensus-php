@@ -22,6 +22,7 @@ export default ({
   onAdd,
   nonEditableUptilIndex = -1,
   showLinkedAccountOpt,
+  customAddMsg = null,
 }) => {
   return (
     <ul class="list-unstyled notes">
@@ -81,7 +82,7 @@ export default ({
             type="button"
             onClick={() => fields.push({})}
           >
-            Add Internal Note
+            {customAddMsg || 'Add Internal Note'}
           </button>
         </li>
       ) : null}

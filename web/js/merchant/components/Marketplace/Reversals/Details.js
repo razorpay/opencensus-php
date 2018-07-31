@@ -84,6 +84,14 @@ export default class ReversalDetails extends Component {
                             <Definition>
                               {key}
                               {String(reversal.notes[key])}
+                              {!!reversal.linked_account_notes &&
+                                reversal.linked_account_notes.indexOf(key) >
+                                  -1 && (
+                                  <span>
+                                    <i class="i i-info-outline" /> This note is
+                                    shown to the linked account
+                                  </span>
+                                )}
                             </Definition>
                           </div>
                         )))}

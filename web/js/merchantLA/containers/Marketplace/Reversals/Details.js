@@ -4,7 +4,7 @@ import { fetchReversal } from 'merchantLA/modules/marketplace/reversal';
 
 import ReversalDetails from 'merchantLA/components/Marketplace/Reversals/Details';
 
-@connect(state => state.reversal, {
+@connect(state => ({ ...state.reversal, ...state.session }), {
   fetchReversal,
 })
 export default class ReversalDetailsContainer extends Component {
@@ -27,7 +27,7 @@ export default class ReversalDetailsContainer extends Component {
   }
 
   render() {
-    const { entity, loading, errors, onClose } = this.props;
+    const { entity, loading, errors, onClose, user } = this.props;
     let statusMsg = {};
 
     if (errors) {
@@ -43,6 +43,7 @@ export default class ReversalDetailsContainer extends Component {
         isLoading={loading}
         statusMsg={statusMsg}
         onClose={onClose}
+        parentAccountName={user.marketplace_merchant_name}
       />
     );
   }

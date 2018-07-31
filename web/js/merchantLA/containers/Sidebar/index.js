@@ -85,7 +85,7 @@ export default class Sidebar extends Component {
                   />
                   <MainNavLink
                     label="Reversals"
-                    icon="i i-repeat text-primary"
+                    icon="i i-reversal text-primary"
                     to={routes.reversals}
                     notMyRole="sellerapp"
                   />

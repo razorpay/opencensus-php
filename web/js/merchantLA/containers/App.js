@@ -244,6 +244,20 @@ export default class App extends Component {
     }
   };
 
+  switchMerchant = merchant => {
+    this.props
+      .switchMerchant(merchant.id)
+      .then(() => {
+        location.reload();
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
+  };
+
   lock = () => {
     let email = this.props.user.user.email;
 
@@ -288,6 +302,7 @@ export default class App extends Component {
           mode={mode}
           modeFormatted={modeFormatted}
           onSwitchMode={this.switchMode}
+          onSwitchMerchant={this.switchMerchant}
           showMobileNav={this.props.windowWidth < 950}
         />
         <Sidebar user={user} logoURL={org.main_logo_url} />
