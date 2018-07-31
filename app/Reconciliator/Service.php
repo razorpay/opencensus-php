@@ -40,7 +40,8 @@ class Service extends Base\Service
         RequestProcessor\Base::NETBANKING_FEDERAL,
         RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
+        RequestProcessor\Base::NETBANKING_CORPORATION,
     ];
 
     /**

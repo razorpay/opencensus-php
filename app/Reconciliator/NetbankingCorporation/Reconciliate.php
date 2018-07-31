@@ -3,7 +3,7 @@
 namespace RZP\Reconciliator\NetbankingCorporation;
 
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\FileProcessor;
+use RZP\Gateway\Netbanking\Corporation\ReconcilationFields;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -14,24 +14,11 @@ class Reconciliate extends Base\Reconciliate
 
     public function getColumnHeadersForType($type)
     {
-        return Constants::PAYMENT_COLUMN_HEADERS;
+        return ReconcilationFields::getPaymentColumnHeaders();
     }
 
     public function getDelimiter()
     {
-        return chr(29);
-    }
-
-    public function getNumLinesToSkip(array $fileDetails)
-    {
-        return [
-            FileProcessor::LINES_FROM_TOP    => 1,
-            FileProcessor::LINES_FROM_BOTTOM => 1
-        ];
-    }
-
-    public function getFileType(string $mimeType): string
-    {
-        return FileProcessor::CSV;
+        return '|';
     }
 }

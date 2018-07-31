@@ -8,20 +8,10 @@ use RZP\Models\FileStore;
 use RZP\Gateway\Base\Mock;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
+use RZP\Gateway\Netbanking\Corporation\ReconcilationFields;
 
 class Reconciliator extends Mock\Reconciliator
 {
-    const MERCHANT_CODE      = 'merchant_code';
-
-    const TXN_EXECUTED_DATE  = 'txn_executed_date';
-
-    const BANK_TXN_ID        = 'bank_txn_id';
-
-    const MERCHANT_TXN_ID    = 'merchant_txn_id';
-
-    const TXN_ORG_AMOUNT     = 'txn_org_amount';
-
-    const STATUS             = 'status';
 
     public function __construct()
     {
@@ -29,7 +19,7 @@ class Reconciliator extends Mock\Reconciliator
 
         $this->fileExtension = 'txt';
 
-        $this->fileToWriteName = '12345' . Carbon::now(Timezone::IST) . 'CORPBANK';
+        $this->fileToWriteName = '12345_' . Carbon::now(Timezone::IST)->format('dmY') . '_CORPBANK';
 
         parent::__construct();
     }
@@ -44,10 +34,6 @@ class Reconciliator extends Mock\Reconciliator
 
     protected function getReconciliationData(array $input)
     {
-        $data = [];
-
-        $data[] = $this->getHeaders();
-
         $payment = $input[0]['payment'];
 
         $data[] = [
@@ -80,18 +66,5 @@ class Reconciliator extends Mock\Reconciliator
             ->save();
 
         return $creator;
-    }
-
-
-    protected function getHeaders()
-    {
-       return  [
-           self::MERCHANT_CODE,
-           self::TXN_EXECUTED_DATE,
-           self::BANK_TXN_ID,
-           self::MERCHANT_TXN_ID,
-           self::TXN_ORG_AMOUNT,
-           self::STATUS,
-       ];
     }
 }
