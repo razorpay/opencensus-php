@@ -13,12 +13,6 @@ class Repository extends Base\Repository
 
     protected $entity = 'merchant_access_map';
 
-    protected $entityFetchParamRules = [
-        Entity::MERCHANT_ID => 'sometimes|string|size:14',
-        Entity::ENTITY_TYPE => 'sometimes|string|max:255',
-        Entity::ENTITY_ID   => 'sometimes|string|size:14'
-    ];
-
     // These are admin allowed params to search on.
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|string|size:14',
