@@ -56,6 +56,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function putLaMerchantEmail()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editLaEmail($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putMerchantConfig()
     {
         $input = Request::all();
