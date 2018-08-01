@@ -514,6 +514,19 @@ class TransferTest extends TestCase
         });
     }
 
+    public function testRetrieveLaTransfers()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $data = &$this->testData[__FUNCTION__];
+
+        $data['response']['items'] = [$transfer];
+
+        $this->ba->proxyAuth('rzp_test_10000000000001');
+
+        $this->startTest();
+    }
+
     // ---- Helpers -----
 
     protected function createTransfer($type, $data = [], $mode = 'test')

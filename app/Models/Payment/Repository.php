@@ -113,7 +113,7 @@ class Repository extends Base\Repository
 
     protected function validateExpand($attribute, $value)
     {
-        $merchant = $this->merchant;
+        $merchant = $this->auth->getMerchant();
 
         if (((empty($merchant) === true) or
             ($merchant->isLinkedAccount() === false)) and (($value === 'transfer') or ($value === 'transfer.settlement')))

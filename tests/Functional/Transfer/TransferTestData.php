@@ -331,4 +331,18 @@ return [
             ],
         ],
     ],
+
+    'testRetrieveLaTransfers' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/la-transfers',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [],
+            ],
+        ]
+    ]
 ];
