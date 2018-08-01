@@ -71,7 +71,7 @@ export default ({ entity, mode, updateEntity }) => {
         )}
       </ShowWhen>
 
-      <ShowWhen permission="edit_payment_refund">
+      <ShowWhen permission="edit_refund">
         {entity.status !== 'processed' && (
           <button class="btn" onClick={openEditRefund}>
             Edit
@@ -102,8 +102,7 @@ const EditRefundForm = ({ entity, handleSubmit }) => {
           defaultValue={entity.reference1}
         />
         <button type="submit" class="btn">
-          {' '}
-          Save{' '}
+          Save
         </button>
       </Form>
     </ModalContent>
