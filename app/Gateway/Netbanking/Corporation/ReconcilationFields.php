@@ -16,7 +16,6 @@ class ReconcilationFields
 
     const STATUS             = 'status';
 
-
     const PAYMENT_COLUMN_HEADERS = [
         self::MERCHANT_CODE,
         self::TXN_EXECUTED_DATE,
@@ -26,10 +25,8 @@ class ReconcilationFields
         self::STATUS,
     ];
 
-
     public static function getPaymentColumnHeaders()
     {
         return self::PAYMENT_COLUMN_HEADERS;
     }
-
 }

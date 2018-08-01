@@ -49,7 +49,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
             return false;
         }
-
         return true;
     }
 
