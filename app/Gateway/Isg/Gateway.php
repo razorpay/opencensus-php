@@ -18,6 +18,7 @@ use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Constants\Entity as BaseEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
+use ApiResponse;
 
 class Gateway extends Base\Gateway
 {
@@ -449,17 +450,6 @@ class Gateway extends Base\Gateway
         return number_format($amount / 100, 2, '.', ',');
     }
 
-    protected function makeJsonResponse(array $content)
-    {
-        $json = json_encode($content);
-
-        $response = \Response::make($json);
-
-        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-
-        return $response;
-    }
-
     protected function traceGatewayPaymentRequest(
         array $request,
         $input = null,
@@ -521,6 +511,8 @@ class Gateway extends Base\Gateway
 
     public function getBharatQrResponse(bool $valid, $input = null, $ex = null)
     {
+        $status = '400';
+
         $attributes = [
             Field::TRANSACTION_ID      => $input[Field::TRANSACTION_ID],
             Field::NOTIFICATION_REF_NO => $input[Field::TRANSACTION_ID],
@@ -531,6 +523,8 @@ class Gateway extends Base\Gateway
             $attributes[Field::STATUS_CODE] = Status::APPROVED;
 
             $attributes[Field::STATUS_DESC] = Status::SUCCESS;
+
+            $status = '200';
         }
         else if (isset($ex) === true)
         {
@@ -547,7 +541,7 @@ class Gateway extends Base\Gateway
             $attributes[Field::STATUS_DESC] = Status::FAILED;
         }
 
-        $response = $this->makeJsonResponse($attributes);
+        $response = ApiResponse::json($attributes, $status);
 
         return $response;
     }
