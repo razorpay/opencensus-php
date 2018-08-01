@@ -230,7 +230,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         $reconPaymentStatus = $this->getReconPaymentStatus($row);
 
-
         //
         // In some cases the recon file contains failed payments,
         // too, In this case we do not want to reconcile them
