@@ -47,8 +47,8 @@ class Reconciliator extends Mock\Reconciliator
 
         $data[] = [ '12345',
                     Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('dmY'),
-                    $payment['reference1'],
                     $netbanking['bank_payment_id'],
+                    $payment['id'],
                     number_format($payment['amount']/100, 2, '.', ''),
                     'S',
         ];

@@ -427,23 +427,17 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->createNetbanking($payment['id'], 'corporation', 'S');
 
+        $this->mockReconContentFunction(
+            function(& $content, $action = '')
+            {
+                $content[0][4] = '1.00';
+            });
+
         $fileContents = $this->generateFile('corporation', []);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $this->mockReconContentFunction(
-            function(& $content, $action = null)
-            {
-                if ($action === 'corp')
-                {
-                    // Setting amount to 1 will cause payment amount validation to fail
-                    $content[4] = '1.00';
-                }
-            });
-
-        $data = $this->reconcile('NetbankingCorporation', $uploadedFile);
-
-        $gatewayEntity = $this->getDbLastEntity('netbanking');
+        $this->reconcile('NetbankingCorporation', $uploadedFile);
 
         $transactionEntity = $this->getDbLastEntity('transaction');
 

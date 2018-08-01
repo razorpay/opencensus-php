@@ -28,12 +28,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReferenceNumber($row)
     {
-        return $row[ReconcilationFields::BANK_TXN_ID];
-    }
-
-    protected function getCustomerDetails($row)
-    {
-        return [];
+        return $row[ReconcilationFields::BANK_TXN_ID] ?? null;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
@@ -59,9 +54,21 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReconPaymentAmount(array $row)
     {
-        if (empty($row[ReconciliationFields::TRANSACTION_AMOUNT]) === false)
+        if (empty($row[ReconcilationFields::TXN_ORG_AMOUNT]) === false)
         {
             return Base\Helper::getIntegerFormattedAmount($row[ReconcilationFields::TXN_ORG_AMOUNT]);
         }
+    }
+
+    protected function setAllowForceAuthorization()
+    {
+        return true;
+    }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'gateway_payment_id' => $row[ReconcilationFields::BANK_TXN_ID],
+        ];
     }
 }
