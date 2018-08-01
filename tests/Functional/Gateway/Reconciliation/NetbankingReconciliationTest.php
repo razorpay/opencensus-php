@@ -454,6 +454,10 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->createNetbanking($payment['id'], 'corporation', 'F');
 
+        $netbankingEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNull($netbankingEntity['date']);
+
         $fileContents = $this->generateFile('corporation', []);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
@@ -471,6 +475,10 @@ class NetbankingReconciliationTest extends TestCase
         $payment = $this->getDbLastEntity('payment');
 
         $this->assertEquals('authorized', $payment['status']);
+
+        $netbankingEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNotNull($netbankingEntity['date']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }

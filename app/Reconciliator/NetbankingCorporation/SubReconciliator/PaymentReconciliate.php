@@ -61,6 +61,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
     }
 
+    protected function getGatewayPaymentDate($row)
+    {
+        return $row[ReconcilationFields::TXN_EXECUTED_DATE] ?? null;
+    }
+
     protected function setAllowForceAuthorization()
     {
         return true;
