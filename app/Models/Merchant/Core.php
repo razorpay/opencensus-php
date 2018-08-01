@@ -264,22 +264,6 @@ class Core extends Base\Core
                 'new_email' => $input['email']
             ]);
 
-        $parentId = $merchant->getReferrer();
-
-        if (empty($parentId) === false)
-        {
-            $parent = $this->repo->merchant->find($parentId);
-
-            if ((empty($parent) === false) and (strtolower($merchant->getEmail()) === strtolower($parent->getEmail())))
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
-                    Merchant\Entity::EMAIL,
-                    $input[Merchant\Entity::EMAIL]
-                );
-            }
-        }
-
         $merchant->edit($input, 'editEmail');
 
         $this->saveAndNotify($merchant);
@@ -1130,6 +1114,29 @@ class Core extends Base\Core
                     'submerchant_id' => $submerchant->getId(),
                 ]);
         }
+
+    }
+
+    /**
+     * handles cases for la merchant users.
+     * 3 possible cases like the normal merchant edit email.
+     * 1. There exists a team member with the new email , we swap the roles of the team member(linked_account_admin)
+     * with new email and the original linked_account_owner.
+     * 2. There exists a user(not team member) with the new email Here, we change the original linked_account_pwner to
+     * linked_account_admin and then add the user with new email as linked_account_pwner
+     * 3. The new email is completly new to the razorpay and doesn't have a user account associated with it, for
+     * normal merchants we used to get edit email change requests via support and admin used to directly change
+     * the email. but in LA dashboard case marketpalce merchants will be able to change the linked account's email at
+     * any time so for any new email we will have to assign the new email as linked_account_owner and send a
+     * password reset link so that the user will generate a password and login to the LA dashboard.(this ensures that
+     * email is also verified.) and promote the existing linked_account_owner role user to team member.
+     *
+     * @param $merchant
+     * @param $orignalEmail
+     * @param $newEmail
+     */
+    public function handleLaMerchantsUsers($merchant, $orignalEmail, $newEmail)
+    {
 
     }
 }

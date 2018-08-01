@@ -2207,4 +2207,21 @@ class Service extends Base\Service
 
         return [$partner, $submerchant];
     }
+
+    protected function editLaEmail($input)
+    {
+        $merchant = $this->merchant;
+
+        $originalEmail = $merchant->getEmail();
+
+        // TODO validate linked account merchant context.
+
+        $merchant = (new Merchant\Core)->editEmail($merchant, $input);
+
+        $newEmail = $merchant->getEmail();
+
+        (new Merchant\Core)->handleLaMerchantsUsers($merchant, $orignalEmail, $newEmail);
+
+        return $merchant->toArrayPublic();
+    }
 }
