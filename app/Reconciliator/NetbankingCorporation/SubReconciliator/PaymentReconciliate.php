@@ -5,7 +5,7 @@ namespace RZP\Reconciliator\NetbankingCorporation;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
-use RZP\Gateway\Netbanking\Corporation\Status;
+use RZP\Models\Payment\Status;
 use RZP\Gateway\Netbanking\Corporation\ReconcilationFields;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
@@ -71,5 +71,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return [
             'gateway_payment_id' => $row[ReconcilationFields::BANK_TXN_ID],
         ];
+    }
+
+    protected function getReconPaymentStatus(array $row)
+    {
+        return (strtolower($row[ReconcilationFields::STATUS]) === 's') ? Status::AUTHORIZED : Status::FAILED;
     }
 }

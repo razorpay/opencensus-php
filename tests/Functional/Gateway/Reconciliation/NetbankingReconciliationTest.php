@@ -475,6 +475,33 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testCorpaymentReconStatusFailedSucessApi()
+    {
+        $this->gateway = 'netbanking_corporation';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'corporation', 'S');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = '')
+            {
+                $content[0][5] = 'F';
+            });
+
+        $fileContents = $this->generateFile('corporation', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingCorporation', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
     protected function reconcile($gateway, $uploadedFile)
     {
         $this->ba->appAuth();
