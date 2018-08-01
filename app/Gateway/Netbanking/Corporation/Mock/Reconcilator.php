@@ -8,11 +8,9 @@ use RZP\Models\FileStore;
 use RZP\Gateway\Base\Mock;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
-use RZP\Gateway\Netbanking\Corporation\ReconcilationFields;
 
 class Reconciliator extends Mock\Reconciliator
 {
-
     public function __construct()
     {
         $this->gateway = Gateway::NETBANKING_CORPORATION;
@@ -26,26 +24,36 @@ class Reconciliator extends Mock\Reconciliator
 
     protected function getEntitiesToReconcile()
     {
-        return ($this->repo
+        return $this->repo
                     ->payment
-                    ->fetch(
-                        ['gateway' => $this->gateway]));
+                    ->fetch(['gateway' => $this->gateway]);
+    }
+
+    protected function addGatewayEntityIfNeeded(array & $data)
+    {
+        $payment = $data['payment'];
+
+        $data['netbanking'] = $this->repo
+            ->netbanking
+            ->findByPaymentIdAndAction($payment['id'], 'authorize')
+            ->toArray();
     }
 
     protected function getReconciliationData(array $input)
     {
         $payment = $input[0]['payment'];
 
-        $data[] = [
-            '12345',
-            Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('dmY'),
-            $payment['reference1'],
-            $payment['id'],
-            number_format($payment['amount']/100, 2, '.', ''),
-            'S',
+        $netbanking = $input[0]['netbanking'];
+
+        $data[] = [ '12345',
+                    Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('dmY'),
+                    $payment['reference1'],
+                    $netbanking['bank_payment_id'],
+                    number_format($payment['amount']/100, 2, '.', ''),
+                    'S',
         ];
 
-        $this->content($data, 'recon_corp');
+        $this->content($data);
 
         return $this->generateText($data, '|');
     }
