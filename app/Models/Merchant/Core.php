@@ -1187,7 +1187,7 @@ class Core extends Base\Core
     protected function getPartnerSubmerchantData(Entity $submerchant, User\Entity $partnerUser): Entity
     {
         $submerchant[Entity::DETAILS] = [
-            Detail\Entity::ACTIVATION_STATUS => $submerchant->merchantDetail->getActivationStatus()
+            Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS),
         ];
 
         $submerchantOwner = $this->getNonPartnerPrimaryOwner($submerchant, $partnerUser);
