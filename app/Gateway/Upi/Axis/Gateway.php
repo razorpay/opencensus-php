@@ -100,7 +100,38 @@ class Gateway extends Base\Gateway
 
         $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
 
+//        $str = '2nOrIStsX1i4G/iNdqCNpI3XPTtn3EIospF/ONroO4dM7FTMZ8uDDnkX2mMCmL1n3z9beQN0TYGM\nmuZHLVt6zVHuGQ5tWunadIxvqU2dzdS5pVfUapt2Y8u8z/hjF8rmcQ61UE9nzkMTfWiPjVmrh0lo\nL53Kg9vtyz5incS3YK7hOYAquCgBx5YQ9Ceud1JVZHdhkiks0xzNC8hyFX42xCwyvrwMIrzrM+GH\nGDl8Nn8aCMrh6frRaMBvhZxmPO87SOSlb28DB4oh695zdntyMeiLva4+9rfMGuZR90sWcsNe5g33\nZLxE0LFZoTHooktjYmYHf/4h9yucMOym+mxEkfmx6nY0+tLexlaU6SnR8AjCAZYy+OG4oIt+gfhj\nM+Zfb/fKA83pC1I21tfTFRWcx7ftdEkKWIIj7TqcO2HhCYRvv5JiTVuU9RrEjJeeI3Gk4N4FhDh/\nNzZ56pAlHA0Kg/VvzaU5jA/Wvhl7T0wq4Xnx/C+m/sV2/I2JlADdkX6SZM6DRRp10PQq/C8GRkIP\nmevNvu9oh7topaalxUAFWmgfS6RYCLhb9swAZlJbhb1KYWQ9tixZvPMtqB/HhXHJ9oqtaPxbUq09\nqYVxr/GqKGGRqSbTVmJFlY+dSPXvjSAhCotODHKLewLZOa2Q347A0AJO6mctXjpq4SM56W0biQf9\nfL5PSGjjdDw9MaK8GavrLHoSDoioLr3gGbwFXvpSN77LwqJ6xeByYhIjXdcA0Lap7Xl69mAjDbzM\nUjmBxuSEC8YTyGg+PKrYwdmgOEhZU2f9ZUnI8NlX0LNh2hcguiFkqArN2Ll58JCULotCkbSgdJx/\nO028N/GQG/ssTnQDi2hjqphqay5HGbk2Veo68hgOJ6IMupAX6g5qaEruUbw2DgN4nuZdj221M3q0\nOlm9a3D+HKGGx57XsJ1xTAuBnGubqhKdzl6UNOF8pvZIqgkfbJb0BuyKENvQnOlrgipW0cquIuLD\nrz5c3TUL1NQOfCM9VaJhal08WBZPffhCSna/BPPeTWD+Kqb+z4WdYWVuL5kAJo9+lXiYe9rxwv4a\nXrChRa/ZTML8H7zerHz/v5qO5jvHhvTHilxNK+UzHzezxVoR1jBgCt13D0ZT/D6wDChc7NfR+IrZ\nauUhQklJwQIVV8uUZmx0E4k2vASdlFTJClWk4gz7rApadmS+JZTakFk=';
+        $str = 's0//6WG1iLfIhqthvk8JRtpilV+bYHuamiSVshlZ8OK4mFyhf1SZTac6AZ3jXlh1PL0il+sLMsTWMt/jPH29/Xq3qrkDjeIiVm7GsgDczJ191GAw/eJODXQ+mZ0YcGw+2eV7W/5pRufA/ggHLoEX2aZ59yig7DNw/pzXhBIE75KOplbeO13dp8IqlztL4B1nFhItLEejG+Tvg8uqGx8kloiqULh2ieA+kK2GdePLhBBqt/rDhRv+c0+WT4aVF59kHNP2/JK9eRjl4UH9SiCe8OgvHptDmVgda6t6OK2ZMYTcmq82c3Dhy+3i0jTtnJ8NPvUCWv3dSrJKB/wfvhXU+2lVo0Yu7nP29HepfA/f+iG1cDQVfbz5lVdThIiET98IHah+hX1OfFYvb5/747qN97IIDfTwbLRJhUelnLtPQEoY0DB0+L3jGm7Xo5S68xfFriDi47p72HTuHAYiMsqH3BFWhXKrT2culcVzmVmTzTWrAgEt0nDhjUiO1ngwxTDo6BNQSkg54W5ImhPq/VuX03ixJP3tYdFmU815wHP2Qp729C7L+ieNZiDeZZByx9DK1SlWIn/Sazf0GYp2texT6nivapitLMIWCFh6AN9SL7zwRiiHtGzztSzJnpMbgTUuJnpkv6I0nRPnu6p4eCdAsWa80JsVrH9ccd1bmJ8MuUbnT20WY6JM8Gvj4j0APtFgj+Xqu5izTFytuYx8emXc7VyrExgQQadclvsBwlS3dI+dVlVlXp1lSxCFWTNACDxpXSv1rhyFfth5SqCGzJl5NoGV7Q5BLeGoEIK6ILJ65bxTdWOd8d6h2i9MljS7g/HAYxUm+d0UNnfE6YyKmc04Q74o9rWf00dqt2r0+V3NY+Kpoy5kE5NjF7pCYKOrYG4qWfPEPoHTnT8IJAxKQb86y7UQQXwBbKTDOb6MyEIAMEFQHSbDAsds5lZbL65jFPsKkN/FnPJaLjqMHI1FW73RCUkdoMnkvMjGRV02UK4q17XQqGQOOvovkHsbBABpENTwdATKTwLKJrKg+oi2ATLNA/eNlQ8AtAgpJriO8U6aOK0lGWmZkcjwk1yGbxMzJWIFodhvxYAJJWYfazmP7pCfJX+GSXMhvekaOMrjChq8bZAfRj3I5/9moaEYc6uUHX37djN7rqjxaQ6N1TZRtgWaa2KZfAVAz6joip4Aevb3cNQ=';
+//        $str = '{"data":"2nOrIStsX1i4G/iNdqCNpI3XPTtn3EIospF/ONroO4dM7FTMZ8uDDnkX2mMCmL1n3z9beQN0TYGM\nmuZHLVt6zVHuGQ5tWunadIxvqU2dzdS5pVfUapt2Y8u8z/hjF8rmcQ61UE9nzkMTfWiPjVmrh0lo\nL53Kg9vtyz5incS3YK7hOYAquCgBx5YQ9Ceud1JVZHdhkiks0xzNC8hyFX42xCwyvrwMIrzrM+GH\nGDl8Nn8aCMrh6frRaMBvhZxmPO87SOSlb28DB4oh695zdntyMeiLva4+9rfMGuZR90sWcsNe5g33\nZLxE0LFZoTHooktjYmYHf/4h9yucMOym+mxEkfmx6nY0+tLexlaU6SnR8AjCAZYy+OG4oIt+gfhj\nM+Zfb/fKA83pC1I21tfTFRWcx7ftdEkKWIIj7TqcO2HhCYRvv5JiTVuU9RrEjJeeI3Gk4N4FhDh/\nNzZ56pAlHA0Kg/VvzaU5jA/Wvhl7T0wq4Xnx/C+m/sV2/I2JlADdkX6SZM6DRRp10PQq/C8GRkIP\nmevNvu9oh7topaalxUAFWmgfS6RYCLhb9swAZlJbhb1KYWQ9tixZvPMtqB/HhXHJ9oqtaPxbUq09\nqYVxr/GqKGGRqSbTVmJFlY+dSPXvjSAhCotODHKLewLZOa2Q347A0AJO6mctXjpq4SM56W0biQf9\nfL5PSGjjdDw9MaK8GavrLHoSDoioLr3gGbwFXvpSN77LwqJ6xeByYhIjXdcA0Lap7Xl69mAjDbzM\nUjmBxuSEC8YTyGg+PKrYwdmgOEhZU2f9ZUnI8NlX0LNh2hcguiFkqArN2Ll58JCULotCkbSgdJx/\nO028N/GQG/ssTnQDi2hjqphqay5HGbk2Veo68hgOJ6IMupAX6g5qaEruUbw2DgN4nuZdj221M3q0\nOlm9a3D+HKGGx57XsJ1xTAuBnGubqhKdzl6UNOF8pvZIqgkfbJb0BuyKENvQnOlrgipW0cquIuLD\nrz5c3TUL1NQOfCM9VaJhal08WBZPffhCSna/BPPeTWD+Kqb+z4WdYWVuL5kAJo9+lXiYe9rxwv4a\nXrChRa/ZTML8H7zerHz/v5qO5jvHhvTHilxNK+UzHzezxVoR1jBgCt13D0ZT/D6wDChc7NfR+IrZ\nauUhQklJwQIVV8uUZmx0E4k2vASdlFTJClWk4gz7rApadmS+JZTakFk\u003d"}';
+        s($this->decryptAes($str));
 
+        $str2 = '{
+"customerVpa":"padma@axis",
+"merchantId":"OLA",
+"merchantChannelId":"OLAAPP",
+"merchantTransactionId":"e1b80bce4ea8404185781ebc075745e4", "transactionTimestamp":"24-MAR-17",
+"transactionAmount":"72",
+"gatewayTransactionId":"AXI91123456789032025071490711853337",
+"gatewayResponseCode":"00",
+"gatewayResponseMessage":"Success",
+"rrn":"703118109867", "checksum":"1E23D89E669F6E922A69E26573CD9A85379EDB3A984879DF53E6E3499FB31365AF4 5E343A6CB3B35D14C45E900E6A639D50D47274349EF0D69BFB110CD7FD20B53B449D36127550 006644B2C28036C60949190E867A2CCD548086AD67DB5FC83AAC0A7262083C88BAE95E60E589 A2708DB2C76378E07028417223B968D73B4143166AAF4EB3F2F261FC11FD4B8D30EFD095B4F42 A9AA78218E7D612A3B101BC517184E77D8335F29C78E68FDE73A5F712B9E094E1D44521D503E2 19BB5D9BDF3F52559F80DF58B83F02814FF7F989AE8ED1048DA7A2FBF4816D48DE7F513E149E CCC164B1B439FA3B00B282915DE3B585B61EA03E0F86DC53088C3771A859615"
+}';
+//        $str2 = '{
+//"customerVpa":"neerajrzp@axis",
+//"merchantId":"RAZAORPAY",
+//"merchantChannelId":"RAZAORPAYAPP",
+//"merchantTransactionId":"Ag8qKOyXjqCuIa",
+//"transactionTimestamp":"2018-08-01T12:30:53+05:30",
+//"transactionAmount":"3.5",
+//"gatewayTransactionId":"AXI91860545641481786401534004101878",
+//"gatewayResponseCode":"000",
+//"gatewayResponseMessage":"Success",
+//"rrn":"821312037726",
+//"checksum":"5228DC2368DDD09ABE42D8D8BD15FB74B427F22585F1F4917511F602387353D63A92FFE10A46345F01451CABB6BF7F8F0E554D618A616E0E15EB729911D6EDB78291025EDB5FE1DF361CD33028753A26E6EAF71116DDB768B09F292A25E326F08DED6F720E3D83A3E4102C6103A7B8DEA04CBE88E2001F0B66969C2C0921C29505937B38C557A9BA83BA8E6C416E4B6ED7FB2EB1A672E20AA8E24E3C474ADBD07F91216AB9C154B4878813233D9391BCFC9979E28EE5BA219029EC8B085114A6223400B2D6658658F21CEC39DA4984CAD8264FB96E0C3F07A006D7E782C8159369CF606C53F0CB63B97B9A727BF68075DE9E313BE9B79AB3743F06EAC93DA4D5"
+//}';
+
+        s($this->encryptAes($str2));
+        s($str);
 
         return [
             'data'   => [
@@ -682,18 +713,18 @@ UQIDAQAB
         }
     }
 
-//    public function encrypt(string $stringToEncrypt)
-//    {
-//        $this->createCryptoIfNotCreated();
-//
-//        return $this->aesCrypto->encryptString($stringToEncrypt);
-//    }
-//
-//    public function decrypt(string $stringToDecrypt)
-//    {
-//        $this->createCryptoIfNotCreated();
-//
-//        return $this->aesCrypto->decryptString($stringToDecrypt);
-//    }
+    public function encryptAes(string $stringToEncrypt)
+    {
+        $this->createCryptoIfNotCreated();
+
+        return $this->aesCrypto->encryptString($stringToEncrypt);
+    }
+
+    public function decryptAes(string $stringToDecrypt)
+    {
+        $this->createCryptoIfNotCreated();
+
+        return $this->aesCrypto->decryptString($stringToDecrypt);
+    }
 
 }
