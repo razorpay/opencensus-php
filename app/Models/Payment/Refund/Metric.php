@@ -17,10 +17,10 @@ final class Metric
     const REFUND_TOTAL_FAILED                           = 'refund_total_failed';
 
     // Histograms
-    const REFUND_PROCESS_TIME_FROM_CREATE               = 'refund_process_time_from_create';
-    const REFUND_PROCESS_TIME_FROM_LAST_FAILED_ATTEMPT  = 'refund_process_time_from_last_failed_attempt';
-    const REFUND_CREATION_TIME_FROM_CAPTURE             = 'refund_creation_time_from_capture';
-    const REFUND_CREATION_TIME_FROM_AUTHORIZATION       = 'refund_creation_time_from_authorization';
+    const REFUND_PROCESS_TIME_FROM_CREATE               = 'refund_process_time_from_create.histogram';
+    const REFUND_PROCESS_TIME_FROM_LAST_FAILED_ATTEMPT  = 'refund_process_time_from_last_failed_attempt.histogram';
+    const REFUND_CREATION_TIME_FROM_CAPTURE             = 'refund_creation_time_from_capture.histogram';
+    const REFUND_CREATION_TIME_FROM_AUTHORIZATION       = 'refund_creation_time_from_authorization.histogram';
 
 
     /**
