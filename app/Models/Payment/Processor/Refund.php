@@ -61,7 +61,7 @@ trait Refund
         return $refund;
     }
 
-    protected function pushMetrics(): void
+    protected function pushMetrics()
     {
         $dimensions = RefundMetric::getDimensions($this->refund);
 
