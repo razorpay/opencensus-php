@@ -46,7 +46,7 @@ glob(
         Bucket: params.Bucket,
         ACL: params.ACL,
         CacheControl: params.CacheControl,
-        Key: file.replace(/^public/, 'dashboard'),
+        Key: file.replace(/^public/, ENV.CDN_PATH || 'dashboard'),
         Body: readFileSync(file),
       };
       var ext = path.extname(file).slice(1);

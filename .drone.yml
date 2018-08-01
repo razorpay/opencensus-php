@@ -139,6 +139,24 @@ pipeline:
     when:
       event: deployment
       environment: beta
+  deploy-s3-delta:
+    image: node:9-alpine
+    environment:
+        - AWS_CDN_BUCKET=betacdn
+        - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
+        - CDN_DASHBOARD_URL=https://betacdn.razorpay.com/dashboard/delta
+    secrets: [AWS_KEY, AWS_SECRET]
+    commands:
+        # Requirements for running s3sync.js
+        - npm install multi-glob aws-sdk
+        # Show what all will get synced
+        - ls -laR public/dist/
+        - ls -laR public/js/generated/
+        - ls -laR public/css/generated/
+        - ./s3sync.js
+    when:
+      event: deployment
+      environment: delta
   deploy-s3-prod:
     image: node:9-alpine
     environment:
@@ -177,6 +195,27 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: beta
+      event: deployment
+  deploy-delta:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment: dashboard
+    repo: razorpay/dashboard
+    namespace: delta
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: delta
       event: deployment
   deploy-prod:
     image: razorpay/drone-kubernetes
@@ -220,6 +259,24 @@ pipeline:
     when:
       environment: qa-func
       event: deployment
+  deploy-s3-func:
+    image: node:9-alpine
+    environment:
+        - AWS_CDN_BUCKET=betacdn
+        - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
+        - CDN_DASHBOARD_URL=https://betacdn.razorpay.com/dashboard/func
+    secrets: [AWS_KEY, AWS_SECRET]
+    commands:
+        # Requirements for running s3sync.js
+        - npm install multi-glob aws-sdk
+        # Show what all will get synced
+        - ls -laR public/dist/
+        - ls -laR public/js/generated/
+        - ls -laR public/css/generated/
+        - ./s3sync.js
+    when:
+      event: deployment
+      environment: qa-func
   build-notify:
     image: plugins/slack
     secrets: [slack_webhook]
