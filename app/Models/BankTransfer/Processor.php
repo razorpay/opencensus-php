@@ -21,6 +21,18 @@ class Processor extends VirtualAccount\Processor
 {
     const PAYER_BANK_ACCOUNT_MAX_LENGTH = 20;
 
+    protected $paymentProcessor;
+
+    protected function getPaymentProcessor()
+    {
+        if(isset($this->paymentProcessor) ===  false)
+        {
+            $this->paymentProcessor = new PaymentProcessor($this->merchant);
+        }
+
+        return $this->paymentProcessor;
+    }
+
     /**
      * Check if the UTR received has ever been encountered before for the same
      * account. If it has, this is a duplicate payment, being processed again.
@@ -61,6 +73,38 @@ class Processor extends VirtualAccount\Processor
         return true;
     }
 
+    protected function processWithoutOrder(array $input)
+    {
+        if (isset($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            $paymentInput = array_except($input, [Payment\Entity::ORDER_ID]);
+        }
+
+        $this->getPaymentProcessor()->process($paymentInput);
+    }
+
+    protected function processBankTransfer(array $input)
+    {
+        try
+        {
+            $this->getPaymentProcessor()->process($input);
+        }
+        catch (\Exception $e)
+        {
+            /*
+             * Exception might have been because of Validation Failure on Order.
+             * In this case we will make the payment without Order and refund
+             * it in later flow.
+             */
+            if (isset($input[Payment\Entity::ORDER_ID]) === false)
+            {
+                throw $e;
+            }
+
+            $this->processWithoutOrder($input);
+        }
+    }
+
     /**
      * Processing the bank transfer
      *  - Create bank transfer, associate with the merchant, and the identified VA
@@ -84,14 +128,14 @@ class Processor extends VirtualAccount\Processor
             }
         }
 
-        $paymentProcessor = new PaymentProcessor($this->merchant);
+        $paymentProcessor = $this->getPaymentProcessor();
 
         $payment = $this->repo->transaction(
                         function() use ($bankTransfer, $paymentProcessor)
                         {
                             $paymentInput = $this->getPaymentArray($bankTransfer);
 
-                            $paymentProcessor->process($paymentInput);
+                            $this->processBankTransfer($paymentInput);
 
                             $payment = $paymentProcessor->getPayment();
 
@@ -114,7 +158,6 @@ class Processor extends VirtualAccount\Processor
 
         if ($bankTransfer->isExpected() === true)
         {
-            // Amount mismatched payments made to order VAs are immediately refunded
             if ($this->shouldRefundOrderPayment($bankTransfer) === true)
             {
                 $paymentProcessor->refundAuthorizedPayment($payment);
@@ -263,8 +306,13 @@ class Processor extends VirtualAccount\Processor
             return false;
         }
 
-        if (($bankTransfer->virtualAccount->getAmountExpected() != $bankTransfer->getAmount()) or
-            ($bankTransfer->virtualAccount->entity->isPaid() === true))
+        /**
+         * If Virtual Account has an Order but Bank Transfer Payment
+         * doesn't have an order then this is probably because
+         * Validations on Order are failing and Payment is created
+         * without Order to refund that while further processing.
+         */
+        if ($bankTransfer->payment->hasOrder() === false)
         {
             return true;
         }
