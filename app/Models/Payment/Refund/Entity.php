@@ -366,7 +366,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
-    public function pushStatusChangeMetrics($statusToChange)
+    public function pushStatusChangeMetrics($statusToChange): void
     {
         if (Status::isStatusTrackedForMetrics($statusToChange) === false)
         {
@@ -547,6 +547,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BATCH_ID);
     }
 
+    public function getCreateToProcessedTimeInMinutes(): int
+    {
+        return intval(($this->freshTimestamp() - $this->getCreatedAt()) / 60);
+    }
+
+    public function getLastAttemptToProcessedTimeInMinutes(): int
+    {
+        return intval(($this->freshTimestamp() - $this->getLastAttemptedAt()) / 60);
+    }
+
+    public function getCapturedToCreateTimeInMinutes(): int
+    {
+        return intval(($this->getCreatedAt() - $this->payment->getCapturedAt()) / 60);
+    }
+
+    public function getAuthorizedToCreateTimeInMinutes(): int
+    {
+        return intval(($this->getCreatedAt() - $this->payment->getAuthorizeTimestamp()) / 60);
+    }
+
     // ----------------------- Mutator ---------------------------------------------
 
     protected function setReference1Attribute($reference1)
@@ -592,43 +612,31 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
-    protected function pushMetricsForProcessedStatusChange(array $dimensions)
+    protected function pushMetricsForProcessedStatusChange(array $dimensions): void
     {
         if ($this->isProcessed() === false)
         {
-            app('trace')->count(RefundMetric::REFUND_TOTAL_PROCESSED, $dimensions);
-
             app('trace')->histogram(
-                RefundMetric::REFUND_PROCESS_TIME_FROM_CREATE,
-                $this->getRefundProcessedTimeFromCreateInMinutes(),
+                RefundMetric::REFUND_PROCESSED_FROM_CREATED_MINUTES,
+                $this->getCreateToProcessedTimeInMinutes(),
                 $dimensions
             );
         }
         else if ($this->isStatusFailed() === true)
         {
             app('trace')->histogram(
-                RefundMetric::REFUND_PROCESS_TIME_FROM_LAST_FAILED_ATTEMPT,
-                $this->getRefundProcessedTimeFromLastAttemptInMinutes(),
+                RefundMetric::REFUND_PROCESSED_FROM_LAST_FAILED_ATTEMPT_MINUTES,
+                $this->getLastAttemptToProcessedTimeInMinutes(),
                 $dimensions
             );
         }
     }
 
-    protected function pushMetricsForFailedStatusChange(array $dimensions)
+    protected function pushMetricsForFailedStatusChange(array $dimensions): void
     {
         if ($this->isStatusFailed() === false)
         {
-            app('trace')->count(RefundMetric::REFUND_TOTAL_FAILED, $dimensions);
+            app('trace')->count(RefundMetric::REFUND_FAILED_TOTAL, $dimensions);
         }
-    }
-
-    protected function getRefundProcessedTimeFromCreateInMinutes()
-    {
-        return (($this->freshTimestamp() - $this->getCreatedAt()) / 60);
-    }
-
-    protected function getRefundProcessedTimeFromLastAttemptInMinutes()
-    {
-        return (($this->freshTimestamp() - $this->getLastAttemptedAt()) / 60);
     }
 }

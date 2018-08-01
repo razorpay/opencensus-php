@@ -10,17 +10,14 @@ use RZP\Models\Payment\Refund\Entity as RefundEntity;
 final class Metric
 {
     // Counters
-    const REFUND_TOTAL_CREATED                          = 'refund_total_created';
-    const REFUND_TOTAL_CREATED_FOR_CAPTURED             = 'refund_total_created_for_captured';
-    const REFUND_TOTAL_AUTO_INITIATED                   = 'refund_total_auto_initiated';
-    const REFUND_TOTAL_PROCESSED                        = 'refund_total_processed';
-    const REFUND_TOTAL_FAILED                           = 'refund_total_failed';
+    const REFUND_CREATED_TOTAL                              = 'refund_created_total';
+    const REFUND_FAILED_TOTAL                               = 'refund_failed_total';
 
     // Histograms
-    const REFUND_PROCESS_TIME_FROM_CREATE               = 'refund_process_time_from_create.histogram';
-    const REFUND_PROCESS_TIME_FROM_LAST_FAILED_ATTEMPT  = 'refund_process_time_from_last_failed_attempt.histogram';
-    const REFUND_CREATION_TIME_FROM_CAPTURE             = 'refund_creation_time_from_capture.histogram';
-    const REFUND_CREATION_TIME_FROM_AUTHORIZATION       = 'refund_creation_time_from_authorization.histogram';
+    const REFUND_PROCESSED_FROM_CREATED_MINUTES             = 'refund_processed_from_created_minutes.histogram';
+    const REFUND_PROCESSED_FROM_LAST_FAILED_ATTEMPT_MINUTES = 'refund_processed_from_last_failed_attempt_minutes.histogram';
+    const REFUND_CREATED_FROM_CAPTURED_MINUTES              = 'refund_created_from_captured_minutes.histogram';
+    const REFUND_CREATED_FROM_AUTHORIZED_MINUTES            = 'refund_created_from_authorized_minutes.histogram';
 
 
     /**

@@ -61,38 +61,25 @@ trait Refund
         return $refund;
     }
 
-    protected function pushMetrics()
+    protected function pushMetrics(): void
     {
         $dimensions = RefundMetric::getDimensions($this->refund);
 
-        $this->trace->count(
-            RefundMetric::REFUND_TOTAL_CREATED,
-            $dimensions
-        );
+        $this->trace->count(RefundMetric::REFUND_CREATED_TOTAL, $dimensions);
 
         if ($this->payment->hasBeenCaptured() === true)
         {
-            $this->trace->count(
-                RefundMetric::REFUND_TOTAL_CREATED_FOR_CAPTURED,
-                $dimensions
-            );
-
             $this->trace->histogram(
-                RefundMetric::REFUND_CREATION_TIME_FROM_CAPTURE,
-                ($this->refund->getCreatedAt() - $this->payment->getCapturedAt()),
+                RefundMetric::REFUND_CREATED_FROM_CAPTURED_MINUTES,
+                $this->refund->getCapturedToCreateTimeInMinutes(),
                 $dimensions
             );
         }
         else
         {
-            $this->trace->count(
-                RefundMetric::REFUND_TOTAL_AUTO_INITIATED,
-                $dimensions
-            );
-
             $this->trace->histogram(
-                RefundMetric::REFUND_CREATION_TIME_FROM_AUTHORIZATION,
-                ($this->refund->getCreatedAt() - $this->payment->getAuthorizeTimestamp()),
+                RefundMetric::REFUND_CREATED_FROM_AUTHORIZED_MINUTES,
+                $this->refund->getAuthorizedToCreateTimeInMinutes(),
                 $dimensions
             );
         }
