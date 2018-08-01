@@ -144,7 +144,7 @@ pipeline:
     environment:
         - AWS_CDN_BUCKET=betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
-        - CDN_DASHBOARD_URL=https://betacdn.razorpay.com/dashboard/delta
+        - CDN_PATH='dashboard/delta'
     secrets: [AWS_KEY, AWS_SECRET]
     commands:
         # Requirements for running s3sync.js
@@ -264,7 +264,7 @@ pipeline:
     environment:
         - AWS_CDN_BUCKET=betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
-        - CDN_DASHBOARD_URL=https://betacdn.razorpay.com/dashboard/func
+        - CDN_PATH='dashboard/func'
     secrets: [AWS_KEY, AWS_SECRET]
     commands:
         # Requirements for running s3sync.js
