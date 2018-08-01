@@ -58,6 +58,7 @@ class UserRolesScope
                                                         Role::LINKED_ACCOUNT_OWNER,
                                                         Role::LINKED_ACCOUNT_ADMIN
                                                     ],
+            'merchant_edit_email_la'              => [Role::OWNER, Role::ADMIN],
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],
             'merchant_edit_config_logo'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_fetch_config'               => Role::allExceptSellerRole(),

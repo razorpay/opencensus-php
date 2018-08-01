@@ -1270,6 +1270,7 @@ final class Route
         'pincode_get',
         'dispute_edit',
         'merchant_get_tags',
+        'merchant_edit_email_la',
         'account_fetch',
         'merchant_add_bank_account',
         'merchant_requests_create',
