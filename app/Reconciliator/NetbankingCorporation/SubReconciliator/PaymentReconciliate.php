@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\NetbankingCorporation;
 
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Corporation\Status;

@@ -466,7 +466,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $transactionEntity = $this->getDbLastEntity('transaction');
 
-        $this->assertNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['reconciled_at']);
 
         $payment = $this->getDbLastEntity('payment');
 
