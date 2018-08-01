@@ -14,3 +14,27 @@ mappings:
   timer_type: histogram
   buckets: [5, 30, 50, 80, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
   name: "api_http_request_duration_milliseconds"
+
+- match: api_refund_process_time_from_create.*
+  timer_type: histogram
+  buckets: [60, 360, 720, 1440, 2880, 4320, 7200, 10080, 14400, 21600, 43200, 86400, 259200]
+  # [1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days, 10days, 15days, 30days, 60days, 180days]
+  name: "api_refund_process_time_from_create"
+
+- match: api_refund_process_time_from_last_failed_attempt.*
+  timer_type: histogram
+  buckets: [5, 10, 15, 30, 60, 360, 720, 1440, 2880, 4320, 7200, 10080]
+  # [5min, 10min, 15min, 30min, 1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days]
+  name: "api_refund_process_time_from_create"
+
+- match: api_refund_creation_time_from_capture.*
+  timer_type: histogram
+  buckets: [60, 360, 720, 1440, 2880, 4320, 7200, 10080, 14400, 21600, 43200, 86400, 259200]
+  # [1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days, 10days, 15days, 30days, 60days, 180days]
+  name: "api_refund_process_time_from_create"
+
+- match: api_refund_creation_time_from_authorization.*
+  timer_type: histogram
+  buckets: [60, 360, 720, 1440, 2880, 4320, 7200, 10080, 14400, 21600, 43200, 86400, 259200]
+  # [1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days, 10days, 15days, 30days, 60days, 180days]
+  name: "api_refund_process_time_from_create"
