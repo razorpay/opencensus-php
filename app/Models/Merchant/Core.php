@@ -823,6 +823,12 @@ class Core extends Base\Core
         return $app;
     }
 
+    /**
+     * @param Entity $merchant
+     * @param string $partnerType
+     *
+     * @return Entity
+     */
     public function markAsPartner(Entity $merchant, string $partnerType): Entity
     {
         $validator = new Validator;
