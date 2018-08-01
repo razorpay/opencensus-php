@@ -276,3 +276,28 @@ pipeline:
       event:
         exclude: [push]
         include: [deployment]
+  deploy-prod-dark-api:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_klusterapi
+      - client_key_klusterapi
+      - server_cert_klusterapi
+      - client_cert_klusterapi
+    user: drone
+    cluster: kluster-api
+    auth_mode: client-cert
+    kind: deployment
+    daemonset:
+      - api-dark
+    repo: razorpay/api
+    namespace: api-dark
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: prod-api-dark
+      event:
+        exclude: [push]
+        include: [deployment]
