@@ -1,5 +1,6 @@
 <?php
 
+use Rzp\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -29,6 +30,22 @@ return [
         'signed'            => false,
         'verified'          => null,
         'entity'            => 'payment',
+    ],
+
+     'testInvalidCallbackResponse' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          =>  PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => 'Payment processing failed due to error at bank or wallet gateway',
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT,
+        ],
     ],
 
     'testTransactionAfterAuthorize' => [

@@ -767,17 +767,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
-    //
-    // As setGateway is protected method
-    // we didn't want to make it public just
-    // to set gateway for bharat qr payment
-    // so a new method
-    //
-    public function setGatewayForBharatQr(string $gateway)
-    {
-        $this->setGateway($gateway);
-    }
-
     /**
      * This should be kept as protected so the gateway is only
      * set via associateTerminal function
@@ -2594,7 +2583,9 @@ class Entity extends Base\PublicEntity
             self::ERROR_CODE,
             self::GATEWAY,
             self::RECEIVER_ID,
-            self::RECEIVER_TYPE);
+            self::RECEIVER_TYPE,
+            self::VERIFY_AT,
+            self::VERIFY_BUCKET);
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));
 
@@ -2787,5 +2778,22 @@ class Entity extends Base\PublicEntity
         parent::verifyIdAndStripSign($id);
 
         return 'upi.polling.' . $id . '.status';
+    }
+
+    public function getTransactionType()
+    {
+        if ($this->isRecurring() === true)
+        {
+            return $this->getRecurringType();
+        }
+
+        switch ( $this->getAuthType() )
+        {
+            case AuthType::SKIP:
+                return 'MOTO';
+
+            default:
+                return 'PG';
+        }
     }
 }

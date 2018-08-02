@@ -182,6 +182,16 @@ return array(
             'timeout'  => 30,
         ],
 
+        // This will be the default redis server.
+        // But for migration both (secure_redis & elasticache) need to be open.
+        // So, creating another temp config
+        'secure_elasticache' => [
+            'host'     => env('SECURE_ELASTICACHE_HOST'),
+            'port'     => env('SECURE_REDIS_PORT'),
+            'database' => env('SECURE_REDIS_DB'),
+            'timeout'  => 30,
+        ],
+
         'throttle' => [
             'host'               => env('REDIS_HOST'),
             'port'               => env('REDIS_PORT'),

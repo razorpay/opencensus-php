@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Offer;
 
 use Carbon\Carbon;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -122,6 +123,58 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals($payment['id'], $discount['payment_id']);
         $this->assertEquals($order['id'], $discount['order_id']);
         $this->assertEquals($offer['id'], $discount['offer_id']);
+    }
+
+    public function testPaymentWithMerchantSubWrongEMIPlan()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', ['issuer' => 'HDFC', 'payment_network' => null]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'amount'      => 500000,
+            'force_offer' => true,
+        ]);
+
+        $payment = $this->getOrderPaymentArray($order);
+
+        $payment['method'] = 'emi';
+        $payment['emi_duration'] = 6;
+        $payment['card']['number'] = '41476700000006';
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->doAuthPayment($payment);
+    }
+
+    public function testPaymentWithMerchantSubWrongIssuer()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', ['issuer' => 'UTIB', 'payment_network' => null]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'amount'      => 500000,
+            'force_offer' => true,
+        ]);
+
+        $payment = $this->getOrderPaymentArray($order);
+
+        $payment['method'] = 'emi';
+        $payment['emi_duration'] = 9;
+        $payment['card']['number'] = '41476700000006';
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->doAuthPayment($payment);
     }
 
     public function testOfferPaymentMultipleOffers()

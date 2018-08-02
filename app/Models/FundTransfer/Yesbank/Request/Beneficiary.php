@@ -47,6 +47,10 @@ class Beneficiary extends Base
      */
     protected function getContent(): string
     {
+        $beneName = $this->entity->getBeneficiaryName();
+
+        $normalizedName =  $this->normalizeBeneficiaryName($beneName);
+
         return '<CustId>'
              . $this->customerId
              . '</CustId>'
@@ -60,7 +64,7 @@ class Beneficiary extends Base
              . Constants::BENE_PAYMENT_TYPE
              . '</PaymentType>'
              . '<BeneName>'
-             . ($this->entity->getBeneficiaryName() ?? 'NA')
+             . $normalizedName
              . '</BeneName>'
              . '<BeneType>'
              . Constants::BENE_TYPE
@@ -120,6 +124,14 @@ class Beneficiary extends Base
     }
 
     /**
+     * {@inheritdoc}
+     */
+    protected function getContentType(): string
+    {
+        return 'application/xml';
+    }
+
+    /**
      * Parses the soap response in array format
      *
      * @param string $body
@@ -162,7 +174,7 @@ class Beneficiary extends Base
 
         return [
             'channel'        => $this->channel,
-            'beneficiary_id' => $response[Constants::BENEFICIARY_CODE],
+            'beneficiary_id' => $response[Constants::BENEFICIARY_CD],
         ] + $this->getErrorDetails($error[Constants::ITEM]);
     }
 

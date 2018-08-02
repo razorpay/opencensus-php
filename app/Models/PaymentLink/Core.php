@@ -49,12 +49,14 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATE_REQUEST, $input);
 
-        $paymentLink = (new Entity)->build($input);
+        $paymentLink = (new Entity)->generateId();
 
+        // Association of merchant must happens before build() call as the same is needed in validations
         $paymentLink->merchant()->associate($merchant);
+
         $paymentLink->user()->associate($user);
 
-        $paymentLink->generateId();
+        $paymentLink->build($input);
 
         $this->createAndSetShortUrl($paymentLink, $input[Entity::SLUG] ?? null);
 
@@ -671,7 +673,7 @@ class Core extends Base\Core
         {
             $dimensions = ['payment_status' => $payment->getStatus()];
 
-            $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_REFUNDS_TOTAL, 1, $dimensions);
+            $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_REFUNDS_TOTAL, $dimensions);
         }
 
         $tracePayload = array_merge($tracePayload, [E::REFUND => optional($refund)->toArrayPublic()]);

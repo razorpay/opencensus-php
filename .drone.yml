@@ -251,6 +251,81 @@ pipeline:
       event:
         exclude: [push]
         include: [deployment]
+  deploy-stage-delta:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    kind: daemonset
+    daemonset:
+      - api-web
+    repo: razorpay/api
+    namespace: delta
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-delta
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-stage-charlie:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    kind: daemonset
+    daemonset:
+      - api-web
+    repo: razorpay/api
+    namespace: charlie
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-charlie
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-stage-beta:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    kind: daemonset
+    daemonset:
+      - api-web
+    repo: razorpay/api
+    namespace: beta
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-beta
+      event:
+        exclude: [push]
+        include: [deployment]
   deploy-prod-api:
     image: razorpay/drone-kubernetes
     pull: true
@@ -273,6 +348,31 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: prod-api
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-prod-dark-api:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_klusterapi
+      - client_key_klusterapi
+      - server_cert_klusterapi
+      - client_cert_klusterapi
+    user: drone
+    cluster: kluster-api
+    auth_mode: client-cert
+    kind: deployment
+    daemonset:
+      - api-dark
+    repo: razorpay/api
+    namespace: api-dark
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: prod-api-dark
       event:
         exclude: [push]
         include: [deployment]
