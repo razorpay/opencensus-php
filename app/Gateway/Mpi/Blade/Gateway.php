@@ -277,6 +277,8 @@ class Gateway extends Base\Gateway
 
         $this->validateXml($paresXml);
 
+        $this->validateParesSignature($paresXml);
+
         $paresMessage = $paresArray[PARes::MESSAGE][PARes::PARES];
 
         return $paresMessage;
