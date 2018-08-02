@@ -145,19 +145,30 @@ class BladeGatewayTest extends TestCase
             });
     }
 
-    public function testSignatureMissingFromPARes()
+    public function testSignatureMissingFromValidPARes()
     {
         $this->mockSignatureNotFound();
 
-        $payment = $this->defaultAuthPayment([
-            'card' => [
-                'number'       => CardNumber::VALID_ENROLL_NUMBER,
-                'expiry_month' => '02',
-                'expiry_year'  => '21',
-                'cvv'          => 123,
-                'name'         => 'Test Card'
-            ]
-        ]);
+        $this->runRequestResponseFlow(
+            $data = $this->testData['testInvalidMessage'],
+            function()
+            {
+                $payment = $this->defaultAuthPayment([
+                    'card' => [
+                        'number'       => CardNumber::VALID_ENROLL_NUMBER,
+                        'expiry_month' => '02',
+                        'expiry_year'  => '21',
+                        'cvv'          => 123,
+                        'name'         => 'Test Card'
+                    ]
+                ]);
+            });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['verify_at']);
+
+        $this->assertNull($payment['verify_bucket']);
     }
 
     public function testBlankMessage()
