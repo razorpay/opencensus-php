@@ -2215,7 +2215,7 @@ class Service extends Base\Service
         return [$partner, $submerchant];
     }
 
-    protected function editLaEmail($input)
+    public function editLaEmail($input)
     {
         $merchant = $this->merchant;
 

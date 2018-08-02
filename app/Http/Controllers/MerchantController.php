@@ -60,7 +60,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->editLaEmail($id, $input);
+        $data = $this->service()->editLaEmail($input);
 
         return ApiResponse::json($data);
     }
