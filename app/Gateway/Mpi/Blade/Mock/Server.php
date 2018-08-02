@@ -90,15 +90,17 @@ class Server extends Base\Mock\Server
             case CardNumber::INVALID_ECI:
                 $content['Message']['PARes'] = $responseClass->invalidEci($content);
                 break;
+            case CardNumber::INVALID_PARES:
+                $content['Message']['Pares'] = $responseClass->paresWithErrorCode();
         }
         unset($content['Message']['PAReq']);
 
-        $content['Message']['Signature'] = $this->getParseSignature();
+        $content['Message']['Signature'] = $this->getSignature();
 
         return $content;
     }
 
-    protected function getParseSignature()
+    protected function getSignature()
     {
         $signatureXml = file_get_contents(__DIR__. '/' . 'signature.xml');
 
@@ -124,6 +126,7 @@ class Server extends Base\Mock\Server
             case CardNumber::INTERNATIONAL_MASTER:
             case CardNumber::INTERNATIONAL_MAESTRO:
             case CardNumber::INVALID_ECI:
+            case CardNumber::INVALID_PARES:
                 $content['Message']['VERes'] = $responseClass->enrolledValidResponse($paymentId, $cardNo);
 
                 break;

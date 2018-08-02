@@ -125,6 +125,23 @@ class BladeGatewayTest extends TestCase
         $this->assertNull($payment['verify_bucket']);
     }
 
+    public function testParesWithErrorCode()
+    {
+        $this->runRequestResponseFlow(
+            $data = $this->testData['testInvalidMessage'],
+            function()
+            {
+                $payment = $this->defaultAuthPayment([
+                    'card' => [
+                        'number'       => CardNumber::INVALID_PARES,
+                        'expiry_month' => '02',
+                        'expiry_year'  => '21',
+                        'cvv'          => 123,
+                        'name'         => 'Test Card'
+                    ]
+                ]);
+            });
+    }
     public function testBlankMessage()
     {
         $this->runRequestResponseFlow(

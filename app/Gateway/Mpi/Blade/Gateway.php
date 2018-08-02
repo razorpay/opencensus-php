@@ -82,7 +82,6 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($attributes, $input);
 
-
         return $this->decideAuthStepAfterEnroll($input, $response);
     }
 
@@ -117,6 +116,7 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
