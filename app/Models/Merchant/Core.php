@@ -1124,7 +1124,7 @@ class Core extends Base\Core
      * with new email and the original linked_account_owner.
      * 2. There exists a user(not team member) with the new email Here, we change the original linked_account_pwner to
      * linked_account_admin and then add the user with new email as linked_account_pwner
-     * 3. The new email is completly new to the razorpay and doesn't have a user account associated with it, for
+     * 3. The new email is completely new to the razorpay and doesn't have a user account associated with it, for
      * normal merchants we used to get edit email change requests via support and admin used to directly change
      * the email. but in LA dashboard case marketpalce merchants will be able to change the linked account's email at
      * any time so for any new email we will have to assign the new email as linked_account_owner and send a
@@ -1132,11 +1132,67 @@ class Core extends Base\Core
      * email is also verified.) and promote the existing linked_account_owner role user to team member.
      *
      * @param $merchant
-     * @param $orignalEmail
+     * @param $originalEmail
      * @param $newEmail
      */
-    public function handleLaMerchantsUsers($merchant, $orignalEmail, $newEmail)
+    public function handleLaMerchantsUsers($merchant, $originalEmail, $newEmail)
     {
+        $merchantUsersCount = $merchant->users()->count();
 
+        if ($merchantUsersCount === 0)
+        {
+            list($subMerchantUser, $createdNew) =
+                (new Merchant\Service)->createOrFetchUserAndAttachMerchant($merchant, $newEmail);
+
+            // Sends Account linked communication emails to users.
+            (new User\Service)->sendAccountLinkedCommunicationEmail($subMerchantUser, $merchant, $createdNew);
+
+            return $subMerchantUser;
+        }
+
+        $teamUser = $merchant->users()->where('email', $newEmail)->first();
+
+        $existingUser = $this->repo->user->getUserFromEmail($newEmail);
+
+        $oldOwner = $merchant->primaryOwner();
+
+        if ((empty($oldOwner) === false) and ((empty($teamUser) === false) or (empty($existingUser) === false)))
+        {
+            // Assign Linked Account Admin role to the old owner.
+            (new User\Core)->detachAndAttachMerchantUser(
+                                                        $oldOwner,
+                                                        $merchant->getId(),
+                                                        Role::LINKED_ACCOUNT_ADMIN);
+
+            if ($oldOwner->getEmail() !== $originalEmail)
+            {
+                $existingOldUser = $this->repo->user->getUserFromEmail($originalEmail);
+
+                (new User\Core)->detachAndAttachMerchantUser(
+                                                            $existingOldUser,
+                                                            $merchant->getId(),
+                                                            Role::LINKED_ACCOUNT_ADMIN);
+            }
+        }
+
+        if (empty($teamUser) === false)
+        {
+            // Assign Linked Account owner role to the team user.
+            (new User\Core)->detachAndAttachMerchantUser(
+                                                        $teamUser,
+                                                        $merchant->getId(),
+                                                        Role::LINKED_ACCOUNT_OWNER);
+        }
+        elseif (empty($existingUser) === false)
+        {
+            // Assign Linked Account owner to existing user.
+            $userMerchantMappingInputData = [
+                'action'      => 'attach',
+                'role'        => Role::LINKED_ACCOUNT_OWNER,
+                'merchant_id' => $merchant->getId(),
+            ];
+
+            (new User\Core)->updateUserMerchantMapping($existingUser, $userMerchantMappingInputData);
+        }
     }
 }

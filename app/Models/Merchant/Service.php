@@ -1866,7 +1866,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    protected function createOrFetchUserAndAttachMerchant(Entity $subMerchant, string $email): array
+    public function createOrFetchUserAndAttachMerchant(Entity $subMerchant, string $email): array
     {
         $created = false;
 
@@ -1881,7 +1881,14 @@ class Service extends Base\Service
         }
         else
         {
-            $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
+            $role = Role::OWNER;
+
+            if ($subMerchant->isLinkedAccount() === true)
+            {
+                $role = Role::LINKED_ACCOUNT_OWNER;
+            }
+
+            $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant, $role);
         }
 
         return [$subMerchantUser, $created];
@@ -2220,7 +2227,7 @@ class Service extends Base\Service
 
         $newEmail = $merchant->getEmail();
 
-        (new Merchant\Core)->handleLaMerchantsUsers($merchant, $orignalEmail, $newEmail);
+        (new Merchant\Core)->handleLaMerchantsUsers($merchant, $originalEmail, $newEmail);
 
         return $merchant->toArrayPublic();
     }
