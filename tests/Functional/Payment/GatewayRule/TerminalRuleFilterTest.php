@@ -8,6 +8,7 @@ use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Models\Customer\Token;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -20,7 +21,8 @@ class TerminalRuleFilterTest extends TestCase
         'network',
         'currency',
         'international',
-        'bank'
+        'bank',
+        'recurring'
     ];
 
     public function setUp()
@@ -192,12 +194,24 @@ class TerminalRuleFilterTest extends TestCase
         $this->runTestCase($test, $merchant);
     }
 
-    public function testRecurringRule()
+    public function testRecurringRuleInitial()
     {
         $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
         $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
 
         $merchant = Merchant\Entity::find('10000000000000');
+
+        $test = $this->testData[__FUNCTION__];
+
+        $this->runTestCase($test, $merchant);
+    }
+
+    public function testRecurringRuleAuto()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
+
+        $merchant = Merchant\Entity::find(Merchant\Account::SHARED_ACCOUNT);
 
         $test = $this->testData[__FUNCTION__];
 

@@ -34,6 +34,7 @@ class Checker extends Base\Core
         Entity::INTERNATIONAL,
         Entity::PAYMENT_NETWORK,
         Entity::PAYMENT_METHOD_TYPE,
+        Entity::EMI_DURATIONS,
         self::CARD_USAGE,
     ];
 
@@ -180,6 +181,20 @@ class Checker extends Base\Core
             default:
                 return false;
         }
+    }
+
+    protected function checkEmiDurations()
+    {
+        $emiDurations = $this->offer->getEmiDurations();
+
+        if (empty($emiDurations) === true)
+        {
+            return true;
+        }
+
+        $emiDuration = $this->payment->emiPlan->getDuration();
+
+        return  (in_array($emiDuration, $emiDurations, true));
     }
 
     protected function checkInternational(): bool

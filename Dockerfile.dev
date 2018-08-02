@@ -1,4 +1,4 @@
-FROM razorpay/pithos:rzp-php7.0
+FROM razorpay/pithos:rzp-php7.1-nginx
 
 # Hack to load php gnu-libiconv.so
 # https://github.com/docker-library/php/issues/240#issuecomment-327992638

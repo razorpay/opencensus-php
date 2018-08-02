@@ -2,9 +2,7 @@
 
 namespace RZP\Listeners;
 
-use App;
 use Cache;
-use Metrics;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Cache\Events;
 
@@ -19,13 +17,21 @@ class CacheEventListener
         'entity'  => 'none',
     ];
 
+    /**
+     * @var string
+     */
     protected $event;
+
+    /**
+     * @var Trace
+     */
+    protected $trace;
 
     public function handle($event)
     {
         $this->event = $event;
 
-        $trace = App::getFacadeRoot()['trace'];
+        $this->trace = app('trace');
 
         $cacheEventType = $this->getCacheEventType();
 
@@ -40,7 +46,7 @@ class CacheEventListener
         }
         catch (\Throwable $e)
         {
-            $trace->traceException(
+            $this->trace->traceException(
                 $e,
                 Trace::CRITICAL,
                 TraceCode::METRIC_CACHE_EVENT_ERROR
@@ -54,7 +60,7 @@ class CacheEventListener
 
         $dimensions[Metric::LABEL_TYPE] = $cacheEventType;
 
-        Metrics::count($this->getMetricName(), 1, $dimensions);
+        $this->trace->count($this->getMetricName(), $dimensions);
     }
 
     protected function getCacheEventType()

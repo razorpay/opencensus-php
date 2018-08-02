@@ -72,10 +72,8 @@
             <div id="mobile-container">
                 <div class="content">
                     @include('hostedpage.partials.header')
-                    <div>
-                        @include('hostedpage.partials.description')
-                        <a href="#form" class="btn btn--full" id="mobile-proceed-btn">PROCEED TO PAY</a>
-                    </div>
+                    @include('hostedpage.partials.description')
+                    <a href="#form" class="btn btn--full" id="mobile-proceed-btn">PROCEED TO PAY</a>
                 </div>
                 @include('hostedpage.partials.form')
             </div>

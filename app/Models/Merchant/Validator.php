@@ -158,11 +158,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createSubMerchantUserRules = [
-        'merchant_id'           => 'required|alpha_num|size:14',
-        // TODO: Remove the following 2 lines after dashboard changes. These don't get used.
-        'password'              => 'sometimes|between:7,50|confirmed|numbers|letters',
-        'password_confirmation' => 'sometimes|between:7,50',
-        Entity::EMAIL           => 'required|email',
+        'merchant_id' => 'required|alpha_num|size:14',
+        Entity::EMAIL => 'required|email',
     ];
 
     protected static $editConfigValidators = [
@@ -188,6 +185,17 @@ class Validator extends Base\Validator
 
     protected static $keyAccessValidators = [
         'key_access',
+    ];
+
+    protected static $listSubmerchantsRules = [
+        Entity::NAME                     => 'sometimes|string',
+        Entity::ID                       => 'sometimes|alpha_num|size:14',
+        Entity::EMAIL                    => 'sometimes|email',
+        Detail\Entity::ACTIVATION_STATUS => 'sometimes|string|max:30',
+        Constants::FROM                  => 'integer',
+        Constants::TO                    => 'integer',
+        Constants::COUNT                 => 'integer|min:1|max:50',
+        Constants::SKIP                  => 'integer',
     ];
 
     protected function validateIsTestAccount(array $input)

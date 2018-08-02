@@ -11,12 +11,14 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
     const CASHBACK_CRITERIA = 'cashback_criteria';
     const OFFER_PERIOD      = 'offer_period';
+    const EMI_ISSUER        = 'emi_issuer';
 
     const CASHBACK_CRITERIA_PARAMS = [
         Entity::PERCENT_RATE,
@@ -51,8 +53,8 @@ class Validator extends Base\Validator
     protected static $emiSubventionRules = [
         Entity::NAME                => 'sometimes|filled|string|max:50',
         Entity::PAYMENT_METHOD      => 'required|in:emi',
-        Entity::ISSUER              => 'required_without:payment_network',
-        Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX',
+        Entity::ISSUER              => 'required_without:payment_network|filled',
+        Entity::PAYMENT_NETWORK     => 'required_without:issuer|in:AMEX|filled',
         Entity::EMI_SUBVENTION      => 'required|boolean|in:1',
         Entity::EMI_DURATIONS       => 'sometimes|array|custom',
         Entity::MIN_AMOUNT          => 'filled|integer|min:0',
@@ -90,6 +92,8 @@ class Validator extends Base\Validator
 
     protected static $emiSubventionValidators = [
         Entity::MIN_AMOUNT,
+        self::OFFER_PERIOD,
+        self::EMI_ISSUER,
     ];
 
     protected static $editValidators = [
@@ -364,6 +368,26 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 "Invalid emi durations given " . implode(", ", $diff));
+        }
+    }
+
+    protected function validateEmiIssuer(array $input)
+    {
+        if (isset($input[Entity::ISSUER]) === false)
+        {
+            return;
+        }
+
+        if (isset($input[Entity::PAYMENT_NETWORK]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Either issuer or payment network should be sent');
+        }
+
+        if (in_array($input[Entity::ISSUER], Gateway::$emiBanks, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid issuer name: '. $input[Entity::ISSUER]);
         }
     }
 }

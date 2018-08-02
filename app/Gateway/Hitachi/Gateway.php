@@ -35,11 +35,11 @@ class Gateway extends Base\Gateway
     const TIME_FORMAT = 'His';
     const DATE_FORMAT = 'md';
 
-    public function __construct()
+    public function setGatewayParams($input, $mode, $terminal)
     {
-        parent::__construct();
+        parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->secureCacheDriver = $this->app['config']->get('cache.secure_default');
+        $this->secureCacheDriver = $this->getDriver($input);
     }
 
     public function otpGenerate(array $input)
@@ -746,10 +746,21 @@ class Gateway extends Base\Gateway
 
     protected function getAttributesFromRefundReverseResponse(array $response) : array
     {
-        $attributes = [
-            Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM],
-            Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE],
-        ];
+        if ((isset($response['response_code']) === true) and
+           ( $response['response_code'] === '30'))
+        {
+            $attributes = [
+                Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
+                Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE] ?? $response['response_code'],
+            ];
+        }
+        else
+        {
+            $attributes = [
+                Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM],
+                Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE],
+            ];
+        }
 
         return $attributes;
     }

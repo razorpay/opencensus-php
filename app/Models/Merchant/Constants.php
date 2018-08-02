@@ -14,6 +14,12 @@ final class Constants
     const DATE                                    = 'date';
     const SIGNUP_DATE                             = 'signup_date';
 
+    // Used for pagination in submerchant listing for partners
+    const TO                                      = 'to';
+    const FROM                                    = 'from';
+    const SKIP                                    = 'skip';
+    const COUNT                                   = 'count';
+
     // Partner constants
     const BANK                                    = 'bank';
     const PARTNER                                 = 'partner';
