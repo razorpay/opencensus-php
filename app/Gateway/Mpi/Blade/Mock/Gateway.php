@@ -18,10 +18,10 @@ class Gateway extends Blade\Gateway
         '31c7b33b3585fa84887c3df36b11ac2593bd79b9',
     ];
 
-    protected function validateSignatureAndInflatePares($pares)
-    {
-        //TODO : hack till this is fixed
-
-        return $pares;
-    }
+//    protected function validateSignatureAndInflatePares($pares)
+//    {
+//        //TODO : hack till this is fixed
+//
+//        return $pares;
+//    }
 }

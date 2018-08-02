@@ -50,7 +50,9 @@ class Server extends Base\Mock\Server
 
         $paResXml = Xml::create('ThreeDSecure', $paRes);
 
-        return $paResXml;
+        $pares = gzcompress(base64_encode($paResXml));
+
+        return $pares;
     }
 
     public function authorize($input)
