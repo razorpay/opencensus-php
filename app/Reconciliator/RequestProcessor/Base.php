@@ -4,13 +4,12 @@ namespace RZP\Reconciliator\RequestProcessor;
 
 use DirectoryIterator;
 use Razorpay\Trace\Logger as Trace;
-
 use RZP\Exception;
-use RZP\Trace\TraceCode;
 use RZP\Models\Base\Core;
+use RZP\Reconciliator\FileProcessor;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Validator;
-use RZP\Reconciliator\FileProcessor;
+use RZP\Trace\TraceCode;
 
 class Base extends Core
 {
@@ -72,37 +71,37 @@ class Base extends Core
      * List email addresses in lower case. Addresses are case insensitive, our checks are not.
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC                => ['payoutreport@hdfcbank.com'],
-        self::AXIS                => ['pg.estatements@axisbank.com'],
-        self::BILLDESK            => [],
-        self::PAYZAPP             => [],
-        self::MOBIKWIK            => [],
-        self::PAYTM               => [],
-        self::KOTAK               => ['bankalerts@kotak.com'],
-        self::OLAMONEY            => ['olamoney-noreply@olacabs.com'],
-        self::FREECHARGE          => ['noreply@fcemail.in'],
-        self::NETBANKING_AXIS     => ['ibanking@axisbank.com'],
-        self::NETBANKING_ICICI    => ['ubpshelp@icicibank.com'],
-        self::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
-        self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
-        self::NETBANKING_INDUSIND => [],
-        self::NETBANKING_OBC      => [],
-        self::NETBANKING_PNB      => [],
-        self::NETBANKING_CSB      => ['noreply@csb.co.in'],
-        self::NETBANKING_BOB      => ['billpay@bankofbaroda.com'],
-        self::NETBANKING_CORPORATION =>['webcenter@corpbank.co.in'],
-        self::NETBANKING_HDFC     => [],
-        self::JIOMONEY            => [],
-        self::EBS                 => [],
-        self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
-        self::UPI_ICICI           => ['eazypay@icicibank.com'],
-        self::VIRTUAL_ACC_KOTAK   => ['kmb.reports@kotak.com'],
-        self::VIRTUAL_ACC_YESBANK => [],
-        self::UPI_SBI             => [],
-        self::PAYUMONEY           => [],
-        self::HITACHI             => ['reportsmailer@hitachi-payments.com'],
-        self::CARD_FSS            => [],
-        self::ATOM                => [],
+        self::HDFC                   => ['payoutreport@hdfcbank.com'],
+        self::AXIS                   => ['pg.estatements@axisbank.com'],
+        self::BILLDESK               => [],
+        self::PAYZAPP                => [],
+        self::MOBIKWIK               => [],
+        self::PAYTM                  => [],
+        self::KOTAK                  => ['bankalerts@kotak.com'],
+        self::OLAMONEY               => ['olamoney-noreply@olacabs.com'],
+        self::FREECHARGE             => ['noreply@fcemail.in'],
+        self::NETBANKING_AXIS        => ['ibanking@axisbank.com'],
+        self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
+        self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
+        self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
+        self::NETBANKING_INDUSIND    => [],
+        self::NETBANKING_OBC         => [],
+        self::NETBANKING_PNB         => [],
+        self::NETBANKING_CSB         => ['noreply@csb.co.in'],
+        self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
+        self::NETBANKING_CORPORATION => ['webcenter@corpbank.co.in'],
+        self::NETBANKING_HDFC        => [],
+        self::JIOMONEY               => [],
+        self::EBS                    => [],
+        self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
+        self::UPI_ICICI              => ['eazypay@icicibank.com'],
+        self::VIRTUAL_ACC_KOTAK      => ['kmb.reports@kotak.com'],
+        self::VIRTUAL_ACC_YESBANK    => [],
+        self::UPI_SBI                => [],
+        self::PAYUMONEY              => [],
+        self::HITACHI                => ['reportsmailer@hitachi-payments.com'],
+        self::CARD_FSS               => [],
+        self::ATOM                   => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN               => ['saurav.chowdhury@razorpay.com'],
