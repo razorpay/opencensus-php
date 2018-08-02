@@ -601,10 +601,7 @@ class PartnerTest extends OAuthTestCase
                 'billing_label' => 'Test Merchant'
             ]);
 
-        $partnerData = $this->getDummyPartnerAttributes();
-
-        // Create an oauth application using factory
-        $this->createOAuthApplication($partnerData);
+        $this->createDummyPartnerApp();
 
         $this->ba->proxyAuth();
 
