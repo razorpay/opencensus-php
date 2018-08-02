@@ -63,8 +63,8 @@ class Validator
         RequestProcessor\Base::UPI_ICICI          => [
                                                          "/Eazypay app\s*sales summary-[0-9]{2}-"
                                                          . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-                                                         "/Refund MIS for 116798_RAZORPAY_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"
-                                                     ], ];
+                                                         "/Refund MIS for 116798_RAZORPAY_[0-9]{2}-[0-9]{2}-20[0-9]{2}/" ],
+        ];
 
     const GATEWAY_BODY_REGEX = [
         RequestProcessor\Base::OLAMONEY           => ["/^Please find settlement report for /"],
