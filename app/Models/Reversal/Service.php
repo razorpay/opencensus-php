@@ -27,7 +27,7 @@ class Service extends Base\Service
         return $reversals->toArrayPublic();
     }
 
-    public function fetchLaReversal($id): array
+    public function fetchLaReversal(string $id): array
     {
         (new Merchant\Service)->validateLinkedAccount();
 
@@ -44,7 +44,7 @@ class Service extends Base\Service
         return $reversal;
     }
 
-    public function fetchLaReversals($input): array
+    public function fetchLaReversals(array $input): array
     {
         (new Merchant\Service)->validateLinkedAccount();
 
@@ -63,7 +63,13 @@ class Service extends Base\Service
         return $reversals;
     }
 
-    private function createReversalsResponse($refunds)
+    /**
+     * Returns a list of transformed entities for la reversals.
+     * @param $refunds
+     *
+     * @return array
+     */
+    private function createReversalsResponse($refunds): array
     {
         $reversals = [];
         foreach ($refunds as $refund)
@@ -74,7 +80,13 @@ class Service extends Base\Service
         return $reversals;
     }
 
-    private function createReversalResponseFromRefund($refund)
+    /**
+     * Replaces notes from refund entity to reversal entity.
+     * @param $refund
+     *
+     * @return array
+     */
+    private function createReversalResponseFromRefund($refund): array
     {
         $result = $refund->toArrayPublic();
 

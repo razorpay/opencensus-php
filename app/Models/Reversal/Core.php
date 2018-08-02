@@ -3,14 +3,14 @@
 namespace RZP\Models\Reversal;
 
 use RZP\Exception;
-use RZP\Constants\Entity as E;
 use RZP\Models\Base;
-use RZP\Models\Transfer;
-use RZP\Models\Transaction;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Refund;
+use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
+use RZP\Constants\Entity as E;
+use RZP\Models\Payment\Refund;
 
 class Core extends Base\Core
 {
