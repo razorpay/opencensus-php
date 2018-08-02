@@ -24,6 +24,7 @@ use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
@@ -40,6 +41,7 @@ use RZP\Models\Payment\Processor\Netbanking;
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
  * @property PaymentLink\Entity     $paymentLink
+ * @property Transaction\Entity     $transaction
  */
 class Entity extends Base\PublicEntity
 {
