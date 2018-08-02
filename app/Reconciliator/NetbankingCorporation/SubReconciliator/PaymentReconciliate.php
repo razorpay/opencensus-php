@@ -54,10 +54,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReconPaymentAmount(array $row)
     {
-        if (empty($row[ReconcilationFields::TXN_ORG_AMOUNT]) === false)
-        {
-            return Base\Helper::getIntegerFormattedAmount($row[ReconcilationFields::TXN_ORG_AMOUNT]);
-        }
+        return Base\Helper::getIntegerFormattedAmount($row[ReconcilationFields::TXN_ORG_AMOUNT]);
     }
 
     protected function getGatewayPaymentDate($row)
