@@ -2168,11 +2168,18 @@ class Service extends Base\Service
         return $submerchant->toArrayPartner();
     }
 
-    public function listSubmerchants(): array
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function listSubmerchants(array $input): array
     {
         $partner = $this->fetchPartner();
 
-        $submerchants = $this->core()->listSubmerchants($partner);
+        (new Validator)->validateInput('list_submerchants', $input);
+
+        $submerchants = $this->core()->listSubmerchants($partner, $input);
 
         return $submerchants->toArrayPartner();
     }

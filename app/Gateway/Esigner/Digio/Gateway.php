@@ -157,6 +157,11 @@ class Gateway extends Base\Gateway
             'content'        => $this->getEmandateData($input)
         ];
 
+        if ($input['token']->getAadhaarVid() !== null)
+        {
+            $content['signers'][0]['vid'] = $input['token']->getAadhaarVid();
+        }
+
         return $this->getStandardRequestArray($content, 'POST', 'create');
     }
 
@@ -186,6 +191,7 @@ class Gateway extends Base\Gateway
             'sponsor_bank_name'             => BankName::getName($bankCode),
             'destination_bank_id'           => $destinationBankIfsc,
             'destination_bank_name'         => BankName::getName($destinationBankIfsc),
+            // TODO: Remove sending aadhaar number later
             'aadhaar'                       => $input['token']->getAadhaarNumber(),
             'bank_identifier'               => substr($bankCode, 0, 4),
             'management_category'           => CategoryCode::getCategoryCodeFromMcc($mcc),

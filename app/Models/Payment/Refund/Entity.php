@@ -9,6 +9,7 @@ use RZP\Models\Currency;
 use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
+use RZP\Models\Payment\Refund\Metric as RefundMetric;
 
 /**
  * @property Payment\Entity     $payment
@@ -307,6 +308,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACQUIRER_DATA);
     }
 
+    public function getLastAttemptedAt()
+    {
+        return $this->getAttribute(self::LAST_ATTEMPTED_AT);
+    }
+
     public function getChannel()
     {
         return $this->merchant->getChannel();
@@ -355,7 +361,34 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
+        $this->pushStatusChangeMetrics($status);
+
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function pushStatusChangeMetrics($statusToChange)
+    {
+        if (Status::isStatusTrackedForMetrics($statusToChange) === false)
+        {
+            return;
+        }
+
+        $dimensions = RefundMetric::getDimensions($this);
+
+        switch ($statusToChange)
+        {
+            case Status::PROCESSED:
+
+                $this->pushMetricsForProcessedStatusChange($dimensions);
+
+                break;
+
+            case Status::FAILED:
+
+                $this->pushMetricsForFailedStatusChange($dimensions);
+
+                break;
+        }
     }
 
     public function setError($errorCode, $errorDesc, $internalErrorCode)
@@ -374,7 +407,7 @@ class Entity extends Base\PublicEntity
 
     public function setStatusProcessed()
     {
-        $this->setAttribute(self::STATUS, Status::PROCESSED);
+        $this->setStatus(Status::PROCESSED);
 
         $this->setErrorNull();
     }
@@ -557,5 +590,53 @@ class Entity extends Base\PublicEntity
         }
 
         return $data;
+    }
+
+    protected function pushMetricsForProcessedStatusChange(array $dimensions)
+    {
+        if ($this->isProcessed() === false)
+        {
+            app('trace')->histogram(
+                RefundMetric::REFUND_PROCESSED_FROM_CREATED_MINUTES,
+                $this->getCreateToProcessedTimeInMinutes(),
+                $dimensions
+            );
+        }
+        else if ($this->isStatusFailed() === true)
+        {
+            app('trace')->histogram(
+                RefundMetric::REFUND_PROCESSED_FROM_LAST_FAILED_ATTEMPT_MINUTES,
+                $this->getLastAttemptToProcessedTimeInMinutes(),
+                $dimensions
+            );
+        }
+    }
+
+    protected function pushMetricsForFailedStatusChange(array $dimensions)
+    {
+        if ($this->isStatusFailed() === false)
+        {
+            app('trace')->count(RefundMetric::REFUND_FAILED_TOTAL, $dimensions);
+        }
+    }
+
+    public function getCreateToProcessedTimeInMinutes(): int
+    {
+        return intval(($this->freshTimestamp() - $this->getCreatedAt()) / 60);
+    }
+
+    public function getLastAttemptToProcessedTimeInMinutes(): int
+    {
+        return intval(($this->freshTimestamp() - $this->getLastAttemptedAt()) / 60);
+    }
+
+    public function getCapturedToCreateTimeInMinutes(): int
+    {
+        return intval(($this->getCreatedAt() - $this->payment->getCapturedAt()) / 60);
+    }
+
+    public function getAuthorizedToCreateTimeInMinutes(): int
+    {
+        return intval(($this->getCreatedAt() - $this->payment->getAuthorizeTimestamp()) / 60);
     }
 }

@@ -18,7 +18,7 @@ services:
       - api_db
       - cache
       - es
-      - statsd-exporter
+      - statsd_exporter
     environment:
       DB_LIVE_HOST: api_db
       DB_LIVE_USERNAME: api_user

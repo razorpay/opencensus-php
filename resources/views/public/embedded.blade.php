@@ -15,6 +15,7 @@
     <?php endif; ?>
     <script>
       var options = {!! $options !!};
+      var urls = {!! $urls !!};
       options.key = "{!! $key !!}";
     </script>
   </head>

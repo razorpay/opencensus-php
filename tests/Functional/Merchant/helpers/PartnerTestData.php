@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant\Partner;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Batch\Header;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
@@ -574,6 +575,75 @@ return [
         ],
     ],
 
+    'testPartnerSubmerchantsBatch' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'partner_submerchants',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'partner_submerchants',
+                'status'           => 'created',
+                'total_count'      => 2,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => null,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testPartnerSubmerchantsBatchInvalidId' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'partner_submerchants',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'partner_submerchants',
+                'status'           => 'created',
+                'total_count'      => 1,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => null,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testPartnerSubmerchantsBatchFileRows' => [
+        [
+            Header::PARTNER_MERCHANT_ID  => '10000000000000',
+            Header::PARTNER_TYPE         => 'reseller',
+            Header::SUBMERCHANT_ID       => '100DemoAccount',
+        ],
+        [
+            Header::PARTNER_MERCHANT_ID  => '10000000000000',
+            Header::PARTNER_TYPE         => '',
+            Header::SUBMERCHANT_ID       => '10000000000001',
+        ],
+    ],
+
+    'testPartnerSubmerchantsBatchInvalidIdFileRows' => [
+        [
+            Header::PARTNER_MERCHANT_ID  => '1NonExistentId',
+            Header::PARTNER_TYPE         => 'reseller',
+            Header::SUBMERCHANT_ID       => '100DemoAccount',
+        ],
+    ],
+
     'testNoSubmerchantAccountAccessForReseller' => [
         'request'   => [
             'url'     => '/merchants/10000000000009/access_maps',
@@ -650,14 +720,82 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                    [
+                        'id'               => 'acc_10000000000011',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsFilters' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'name'              => 'random_name_1',
+                'email'             => 'user@example.com',
+                'id'                => '10000000000009',
+                'activation_status' => 'under_review',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
                     [
                         'id'               => 'acc_10000000000009',
                         'entity'           => 'merchant',
-                        'user'             => null,
+                        'user'             => [],
+                        'name'             => 'random_name_1',
                         'details'          => [
                             'activation_status' => 'under_review',
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsPaginationFilters' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'skip'  => 1,
+                'count' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000011',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => null,
                         ],
                         'dashboard_access' => false,
                     ],
