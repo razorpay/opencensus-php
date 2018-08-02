@@ -520,6 +520,9 @@ class TransferTest extends TestCase
 
         $data = &$this->testData[__FUNCTION__];
 
+        // Notes will be fetched from payments entity
+        unset($transfer['notes']);
+
         $data['response']['content']['items'] = [$transfer];
 
         $this->ba->proxyAuth('rzp_test_10000000000001');
