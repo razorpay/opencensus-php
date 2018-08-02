@@ -117,7 +117,6 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
@@ -276,7 +275,7 @@ class Gateway extends Base\Gateway
         // Validate Payer Authentication Response
         $this->validatePARes($input, $paresArray);
 
-        $this->validateParesSignature($paresXml);
+        $this->validateXml($paresXml);
 
         $paresMessage = $paresArray[PARes::MESSAGE][PARes::PARES];
 
@@ -420,23 +419,7 @@ class Gateway extends Base\Gateway
 
         $body = $response->body;
 
-        $valid = $this->validateXml($body);
-
-        if ($valid === false)
-        {
-            $this->trace->warning(
-                TraceCode::BLADE_VERES_PARSE_FAILURE,
-                ['message' => 'Malformed xml: ' . $body]);
-
-            throw new Exception\LogicException(
-                'Unexpected response',
-                null,
-                [
-                    'payment_id'  => $input['payment']['id'],
-                    'body'        => $body
-                ]
-            );
-        }
+        $this->validateXml($body);
 
         return $this->xmlToArray($body);
     }
@@ -712,18 +695,7 @@ class Gateway extends Base\Gateway
         return $merchantId;
     }
 
-    /**
-     * Validates the xml against the mpi schema.
-     * @return  bool true/false whether the xml is valid or not
-     */
     protected function validateXml($xml)
-    {
-        $dom = $this->loadXmlViaDom($xml);
-
-        return ($dom !== false);
-    }
-
-    protected function loadXmlViaDom($xml)
     {
         // XML DTD Schema file
         $file = __DIR__ . '/Schema/mpiXmlSchema.dtd';
@@ -750,48 +722,23 @@ class Gateway extends Base\Gateway
         }
 
         $dom = new DOMDocument;
+
         $dom->validateOnParse = true;
 
         try
         {
             $ret = $dom->loadXML($xml);
 
-            if ($ret === false)
-            {
-                return $ret;
-            }
-
-            return $dom;
         }
         catch (\Exception $e)
         {
             $error = $e->getMessage();
 
-            switch (true)
-            {
-                case strpos($error, 'CanonicalizationMethod') !== false:
-                case strpos($error, 'SignedInfo') !== false:
-                case strpos($error, 'Signature') !== false:
-                case strpos($error, 'DigestMethod') !== false:
-                case strpos($error, 'DigestValue') !== false:
-                case strpos($error, 'SignatureMethod') !== false:
-                case strpos($error, 'SignatureValue') !== false:
-                case strpos($error, 'KeyInfo') !== false:
-                    $this->trace->traceException($e);
-
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
-                        null,
-                        [
-                            'error_message' => $error
-                        ]);
-            }
-
             // Throw Critical for now
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 'Invalid XML',
-                null,
+                $error,
                 [],
                 $e,
                 BaseGateway\Action::AUTHENTICATE);

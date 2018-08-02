@@ -16,15 +16,11 @@ class Server extends Base\Mock\Server
         // TODO: vaidate PaReq
         $paResContent = $this->getPaResContent($input);
 
-        $this->content($paResContent, 'pares');
-
         $response = [
             'MD'      => $input['MD'],
             'PaRes'   => base64_encode($this->getPaResXml($paResContent, $input)),
             'TermUrl' => $input['TermUrl']
         ];
-
-        $this->content($response, 'acs');
 
         return $response;
     }
@@ -96,6 +92,8 @@ class Server extends Base\Mock\Server
         unset($content['Message']['PAReq']);
 
         $content['Message']['Signature'] = $this->getSignature();
+
+        $this->content($content, 'acs');
 
         return $content;
     }
