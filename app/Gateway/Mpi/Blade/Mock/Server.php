@@ -50,7 +50,7 @@ class Server extends Base\Mock\Server
 
         $paResXml = Xml::create('ThreeDSecure', $paRes);
 
-        $pares = gzcompress(base64_encode($paResXml));
+        $pares = gzcompress($paResXml);
 
         return $pares;
     }
@@ -93,7 +93,16 @@ class Server extends Base\Mock\Server
         }
         unset($content['Message']['PAReq']);
 
+        $content['Message']['Signature'] = $this->getParseSignature();
+
         return $content;
+    }
+
+    protected function getParseSignature()
+    {
+        $signatureXml = file_get_contents(__DIR__. '/' . 'signature.xml');
+
+        return $this->xmlToArray($signatureXml);
     }
 
     protected function getVERes(array $input)
