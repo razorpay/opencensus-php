@@ -32,15 +32,14 @@ class Gateway extends Base\Gateway
     const CACHE_KEY = 'hitachi_%s_card_details';
     const CACHE_TTL = 20;
 
-
     const TIME_FORMAT = 'His';
     const DATE_FORMAT = 'md';
 
-    public function __construct()
+    public function setGatewayParams($input, $mode, $terminal)
     {
-        parent::__construct();
+        parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->secureCacheDriver = $this->app['config']->get('cache.secure_default');
+        $this->secureCacheDriver = $this->getDriver($input);
     }
 
     public function otpGenerate(array $input)
@@ -92,7 +91,6 @@ class Gateway extends Base\Gateway
         $mpiEntity = $this->app['repo']
                           ->mpi
                           ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
-
 
         $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
 
@@ -223,11 +221,11 @@ class Gateway extends Base\Gateway
         $qrData = [
             BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]),
             BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($input[ResponseFields::MASKED_CARD_NUMBER], 0, 6),
-            BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::MASKED_CARD_NUMBER], 12, 4),
+            BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::MASKED_CARD_NUMBER], -4),
             BharatQr\GatewayResponseParams::SENDER_NAME           => $input[ResponseFields::SENDER_NAME],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::MID],
-            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[ResponseFields::PURCHASE_ID], 0, 14),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::RRN],
         ];
 
@@ -257,8 +255,6 @@ class Gateway extends Base\Gateway
      */
     protected function callAuthenticationGateway(array $input, $authenticationGateway)
     {
-        $this->authenticationGateway = $this->decideAuthenticationGateway($input);
-
         return $this->app['gateway']->call(
             $authenticationGateway,
             $this->action,
@@ -718,7 +714,7 @@ class Gateway extends Base\Gateway
             Entity::RRN                => $response[ResponseFields::RRN],
             Entity::AUTH_ID            => $response[ResponseFields::AUTHORIZATION_ID],
             Entity::STATUS             => $response[ResponseFields::STATUS_CODE],
-            Entity::MERCHANT_REFERENCE => $response[ResponseFields::PURCHASE_ID],
+            Entity::MERCHANT_REFERENCE => substr($response[ResponseFields::PURCHASE_ID], 0 , 14),
         ];
 
         return $attributes;
@@ -750,10 +746,21 @@ class Gateway extends Base\Gateway
 
     protected function getAttributesFromRefundReverseResponse(array $response) : array
     {
-        $attributes = [
-            Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM],
-            Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE],
-        ];
+        if ((isset($response['response_code']) === true) and
+           ( $response['response_code'] === '30'))
+        {
+            $attributes = [
+                Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
+                Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE] ?? $response['response_code'],
+            ];
+        }
+        else
+        {
+            $attributes = [
+                Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM],
+                Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE],
+            ];
+        }
 
         return $attributes;
     }

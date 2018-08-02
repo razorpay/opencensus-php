@@ -3471,7 +3471,7 @@ ALTER TABLE enach
 ALTER TABLE invoices
     ADD COLUMN customer_shipping_addr_id CHAR(14) DEFAULT NULL AFTER customer_billing_addr_id,
     ADD CONSTRAINT invoices_customer_shipping_addr_id_foreign FOREIGN KEY (customer_shipping_addr_id) REFERENCES addresses (id);
-    
+
 ALTER TABLE enach
     ADD COLUMN registration_date INTEGER UNSIGNED AFTER registration_status,
     ADD INDEX enach_registration_date_index (registration_date);
@@ -4123,7 +4123,10 @@ ALTER TABLE merchants
 ALTER table offers
     ADD COLUMN emi_subvention tinyint DEFAULT NULL AFTER flat_cashback,
     ADD COLUMN emi_durations varchar(255) DEFAULT NULL AFTER emi_subvention;
-    
+
+ALTER table gateway_rules
+    ADD COLUMN recurring_type varchar(255) DEFAULT NULL AFTER recurring;
+
 ALTER TABLE refunds
     ADD COLUMN error_code VARCHAR(128) DEFAULT NULL AFTER status,
     ADD COLUMN internal_error_code VARCHAR(255) DEFAULT NULL AFTER error_code,
@@ -4139,3 +4142,10 @@ ALTER TABLE refunds
 
 ALTER TABLE refunds
     ADD COLUMN reversal_id CHAR(14) DEFAULT NULL AFTER reference9;
+
+Alter table refunds
+    CHANGE reference8 bank_account_id VARCHAR(255) DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE tokens
+    ADD COLUMN aadhaar_vid VARCHAR(255) DEFAULT NULL AFTER aadhaar_number;

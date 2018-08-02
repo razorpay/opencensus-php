@@ -143,6 +143,11 @@ class Entity extends Base\PublicEntity
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';
 
+    // Partner array keys
+    const USER                      = 'user';
+    const DETAILS                   = 'details';
+    const DASHBOARD_ACCESS          = 'dashboard_access';
+
     protected $entity = 'merchant';
 
     protected static $sign = '';
@@ -331,6 +336,19 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::ACTIVATED_AT,
+    ];
+
+    /**
+     * These attributes will be exposed when toArrayPartner() is called,
+     * along with the attributes defined in the $public array.
+     *
+     * @var array
+     */
+    protected $partner = [
+        self::ID,
+        self::DETAILS,
+        self::USER,
+        self::DASHBOARD_ACCESS,
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
@@ -1423,7 +1441,7 @@ class Entity extends Base\PublicEntity
      */
     public function owners()
     {
-        return $this->users()->where('role','owner')->get();
+        return $this->users()->where('role','owner');
     }
 
     /**
@@ -1590,5 +1608,30 @@ class Entity extends Base\PublicEntity
     public function isNonPurePlatformPartner(): bool
     {
         return (($this->isPartner() === true) and ($this->getPartnerType() !== Constants::PURE_PLATFORM));
+    }
+
+    /**
+     * Appends the merchant id with the Account entity's sign
+     *
+     * @param array $array
+     */
+    protected function setSignedId(array & $array)
+    {
+        $array[self::ID] = Account\Entity::getSignedId($array[self::ID]);
+    }
+
+    /**
+     * toArrayPartner() comprises of all Public attributes and a few additional attributes exposed only to the partners.
+     *
+     * @return array
+     */
+    public function toArrayPartner(): array
+    {
+        $array = parent::toArrayPartner();
+
+        // Prepend the Account id sign
+        $this->setSignedId($array);
+
+        return $array;
     }
 }

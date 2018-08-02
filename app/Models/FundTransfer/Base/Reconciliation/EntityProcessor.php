@@ -4,11 +4,13 @@ namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
 use Mail;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Constants\Entity;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
@@ -259,31 +261,43 @@ abstract class EntityProcessor extends Base\Core
 
     protected function sendReconciliationFailureEmail()
     {
-        if ($this->isMailEnabled() === false)
+        try
         {
-            return;
+            if ($this->isMailEnabled() === false)
+            {
+                return;
+            }
+
+            $merchantId = $this->source->getMerchantId();
+
+            $data['merchant_id'] = $merchantId;
+
+            $data['remarks'] = $this->source->getRemarks();
+
+            $data['profile_link'] = $this->dashboardUrl . '#/app/profile';
+
+            // bankAccount for Settlelemt entity, and destination for Payout entity
+            $ba = $this->source->destination ?? $this->source->bankAccountForFundTransferRecon;
+
+            $data['last4'] = $ba->getRedactedAccountNumber();
+
+            $data['merchant_email'] = $this->source->merchant->getEmail();
+
+            $data['subject'] = 'Razorpay | Notification for failed settlement on your account ' . $merchantId;
+
+            $settlementFailureMail = new SettlementFailureMail($data);
+
+            Mail::queue($settlementFailureMail);
         }
-
-        $merchantId = $this->source->getMerchantId();
-
-        $data['merchant_id'] = $merchantId;
-
-        $data['remarks'] = $this->source->getRemarks();
-
-        $data['profile_link'] = $this->dashboardUrl . '#/app/profile';
-
-        // bankAccount for Settlelemt entity, and destination for Payout entity
-        $ba = $this->source->destination ?? $this->source->bankAccount;
-
-        $data['last4'] = $ba->getRedactedAccountNumber();
-
-        $data['merchant_email'] = $this->source->merchant->getEmail();
-
-        $data['subject'] = 'Razorpay | Notification for failed settlement on your account ' . $merchantId;
-
-        $settlementFailureMail = new SettlementFailureMail($data);
-
-        Mail::queue($settlementFailureMail);
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FUND_TRANSFER_RECON_EMAIL_FAILED,
+                ['fta'=> $this->fta->getId()]
+            );
+        }
     }
 
     protected function isMailEnabled(): bool

@@ -78,4 +78,18 @@ trait CardCacheTrait
 
         return $key;
     }
+
+    protected function getDriver($input)
+    {
+        // Time:- 25 July 2018, 11:00PM
+        if ((isset($input['payment']['created_at'])) and
+            ($input['payment']['created_at'] < 1532539800))
+        {
+            return $this->app['config']->get('cache.secure_default');
+        }
+        else
+        {
+            return $this->app['config']->get('cache.secure_elasticache_default');
+        }
+    }
 }

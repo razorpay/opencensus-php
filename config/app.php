@@ -181,7 +181,6 @@ return array(
         // Makes blade sharper
         RZP\Providers\KnifeServiceProvider::class,
         \Conner\Tagging\Providers\TaggingServiceProvider::class,
-        RZP\Services\Metrics\ServiceProvider::class,
     ],
 
     /*
@@ -250,7 +249,6 @@ return array(
         'Mail'            => RZP\Mail\Facade::class,
         'Workflow'        => RZP\Services\Workflow\Facade::class,
         'LaravelSettings' => anlutro\LaravelSettings\Facade::class,
-        'Metrics'         => RZP\Services\Metrics\Facade::class,
     ],
 
     'context'                      => env('CONTEXT'),

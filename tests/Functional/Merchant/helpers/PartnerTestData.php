@@ -588,5 +588,165 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testFetchPartnerSubmerchant' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_10000000000009',
+                'entity'           => 'merchant',
+                'user'             => [],
+                'details'          => [
+                    'activation_status' => 'under_review',
+                ],
+                'dashboard_access' => false,
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantProxyAuth' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_10000000000009',
+                'entity'           => 'merchant',
+                'user'             => [],
+                'dashboard_access' => true,
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantProxyAuthSellerApp' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response'   => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AUTHENTICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testFetchPartnerSubmerchants' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                    [
+                        'id'               => 'acc_10000000000011',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsFilters' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'name'              => 'random_name_1',
+                'email'             => 'user@example.com',
+                'id'                => '10000000000009',
+                'activation_status' => 'under_review',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'name'             => 'random_name_1',
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsPaginationFilters' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'skip'  => 1,
+                'count' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000011',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsEmptyList' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
 ];
 

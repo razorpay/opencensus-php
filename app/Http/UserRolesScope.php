@@ -53,7 +53,8 @@ class UserRolesScope
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],
             'merchant_edit_config_logo'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_fetch_config'               => Role::allExceptSellerRole(),
-            'merchant_fetch_referrals'            => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'merchant_fetch_referrals'            => Role::allExceptSellerRole(),
+            'merchant_sub_create'                 => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_replace_key'                => [Role::OWNER, Role::ADMIN],
             'merchant_add_bank_account'           => [Role::OWNER, Role::ADMIN],
             'merchant_bank_account_change_status' => [Role::OWNER, Role::ADMIN],
@@ -134,6 +135,10 @@ class UserRolesScope
             'subscription_manual_retry'   => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'subscription_test_charge'    => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'subscription_update'         => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+
+            // Partner routes
+            'submerchants_fetch'          => Role::allExceptSellerRole(),
+            'submerchants_fetch_multiple' => Role::allExceptSellerRole(),
         ];
     }
 
