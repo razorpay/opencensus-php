@@ -1098,16 +1098,17 @@ class Core extends Base\Core
 
     /**
      * @param Entity $partner
+     * @param array  $params
      *
      * @return PublicCollection
      */
-    public function listSubmerchants(Entity $partner): Base\PublicCollection
+    public function listSubmerchants(Entity $partner, array $params): Base\PublicCollection
     {
         $partnerApp = $this->getPartnerApp($partner);
 
         $merchants = $this->repo
                           ->merchant
-                          ->fetchSubmerchantsByPartnerAppId($partnerApp->getId());
+                          ->fetchSubmerchantsByPartnerAppId($partnerApp->getId(), $params);
 
         $partnerUser = $partner->primaryOwner();
 
@@ -1170,7 +1171,7 @@ class Core extends Base\Core
     protected function getPartnerSubmerchantData(Entity $submerchant, User\Entity $partnerUser): Entity
     {
         $submerchant[Entity::DETAILS] = [
-            Detail\Entity::ACTIVATION_STATUS => $submerchant->merchantDetail->getActivationStatus()
+            Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS),
         ];
 
         $submerchantOwner = $this->getNonPartnerPrimaryOwner($submerchant, $partnerUser);

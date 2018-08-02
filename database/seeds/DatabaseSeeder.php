@@ -1141,6 +1141,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingRblTerminal();
         $this->createNetbankingCsbTerminal();
         $this->createEbsTerminal();
+        $this->createEnachRblTerminal();
         $this->createAepsTerminal();
         $this->createEnstageTerminal();
     }
@@ -2042,6 +2043,30 @@ class DatabaseSeeder extends Seeder
                 'aeps'                  => '1',
                 'gateway_merchant_id'   => 'abcd',
                 'gateway_secure_secret' => 'secret',
+                'created_at'            => time(),
+                'updated_at'            => time()
+            ]
+        );
+    }
+
+    protected function createEnachRblTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::ENACH_RBL_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::ENACH_RBL,
+                'gateway_acquirer'      => 'ratn',
+                'card'                  => '0',
+                'netbanking'            => '0',
+                'recurring'             => '1',
+                'emandate'              => '1',
+                'gateway_access_code'   => 'RATN0TESTER',
+                'gateway_merchant_id'   => 'NACH00000000001981',
+                'gateway_merchant_id2'  => 'Test Merchant',
+                'gateway_terminal_id'   => 'RATNTestr',
+                'category'              => '6012',
+                'type'                  => 6,
                 'created_at'            => time(),
                 'updated_at'            => time()
             ]

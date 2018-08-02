@@ -11,10 +11,12 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Base\Common;
+
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -396,7 +398,11 @@ class Reporting implements ExternalService
 
         $path = self::SCHEDULE_PATH . '/trigger';
 
-        return $this->createAndSendRequest(Requests::POST, $path, $request);
+        $headers = [];
+        $headers[self::REPORT_TYPE_HEADER] = self::MERCHANT;
+        $headers[self::CONSUMER_HEADER] = Account::SHARED_ACCOUNT;
+
+        return $this->createAndSendRequest(Requests::POST, $path, $request, $headers);
     }
 
     protected function generateEntityId(string $entityId)
@@ -407,7 +413,8 @@ class Reporting implements ExternalService
     protected function createAndSendRequest(
         string $method,
         string $path,
-        array $input = []): array
+        array $input = [],
+        array $headers = []): array
     {
         // In case reporting is to be mocked, don't make any external call
         // and just return empty array.
@@ -426,7 +433,7 @@ class Reporting implements ExternalService
             'method'  => $method,
             'content' => $input,
             'options' => $options,
-            'headers' => $this->headers
+            'headers' => array_merge($this->headers, $headers)
         ];
 
         $this->traceReportingServiceRequest($request);

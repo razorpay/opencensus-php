@@ -183,6 +183,7 @@ class Name
     const ADMIN_BATCH_CREATE                  = 'admin_batch_create';
     const EDIT_PARTNERS                       = 'edit_partners';
     const VIEW_PARTNERS                       = 'view_partners';
+    const EDIT_REFUND                         = 'edit_refund';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

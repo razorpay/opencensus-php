@@ -480,6 +480,10 @@ return [
                 'description' => 'edit_permission',
                 'workflow'    => true
             ],
+            Permission::EDIT_REFUND    => [
+                'description' => 'edit_refund_permission',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::AUDIT_LOG => [
