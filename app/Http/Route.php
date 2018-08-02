@@ -640,10 +640,10 @@ final class Route
         'transfer_create'                          => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                 => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
         'transfer_fetch_reversals'                 => ['get',      'transfers/{id}/reversals',                       'TransferController@getTransferReversals'                           ],
-        'transfer_fetch_reversals_la'              => ['get',     'la-transfers/{id}/reversals',                      'TransferController@getLaTransferReversals'                          ],
+        'transfer_fetch_reversals_la'              => ['get',      'la-transfers/{id}/reversals',                    'TransferController@getLaTransferReversals'                         ],
         'reversal_fetch'                           => ['get',      'reversals/{id}',                                 'ReversalController@getReversal'                                    ],
         'reversal_fetch_multiple'                  => ['get',      'reversals',                                      'ReversalController@getReversals'                                   ],
-        'reversal_fetch_multiple_la'               => ['get',      'la-reversals',                                   'ReversalController@getLaReversals'                                  ],
+        'reversal_fetch_multiple_la'               => ['get',      'la-reversals',                                   'ReversalController@getLaReversals'                                 ],
         'reversal_fetch_la'                        => ['get',      'la-reversals/{id}',                              'ReversalController@getLaReversal'                                  ],
         'payment_update_on_hold'                   => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
 

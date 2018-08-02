@@ -520,7 +520,57 @@ class TransferTest extends TestCase
 
         $data = &$this->testData[__FUNCTION__];
 
-        $data['response']['items'] = [$transfer];
+        $data['response']['content']['items'] = [$transfer];
+
+        $this->ba->proxyAuth('rzp_test_10000000000001');
+
+        $this->startTest();
+    }
+
+    public function testFetchLaTransfer()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $data = &$this->testData[__FUNCTION__];
+
+        $data['request']['url'] = sprintf($data['request']['url'], $transfer['id']);
+
+        // Notes will be fetched from payments entity
+        unset($transfer['notes']);
+
+        $data['response']['content'] = $transfer;
+
+        $this->ba->proxyAuth('rzp_test_10000000000001');
+
+        $this->startTest();
+    }
+
+    public function testLaFetchTransferReversals()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $reversal = $this->createReversal($transfer['id']);
+
+        $data['request']['url'] = '/la-transfers/' . $transfer['id'] . '/reversals';
+
+        $data['response']['content']['items'][] = $reversal;
+
+        $this->ba->proxyAuth('rzp_test_10000000000001');
+
+        $this->startTest();
+    }
+
+    public function testLaFetchReversals()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $reversal = $this->createReversal($transfer['id']);
+
+        $data['response']['content']['items'][] = $reversal;
 
         $this->ba->proxyAuth('rzp_test_10000000000001');
 

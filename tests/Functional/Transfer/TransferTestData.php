@@ -1,10 +1,10 @@
 <?php
 
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
+    use RZP\Error\ErrorCode;
+    use RZP\Error\PublicErrorCode;
+    use RZP\Error\PublicErrorDescription;
 
-return [
+    return [
     'createTransfer' => [
         'method'  => 'POST',
         'url'     => '/transfers',
@@ -334,15 +334,46 @@ return [
 
     'testRetrieveLaTransfers' => [
         'request' => [
-            'method' => 'GET',
-            'url'    => '/la-transfers',
-            'content' => []
+            'method'  => 'GET',
+            'url'     => '/la-transfers',
+            'content' => [],
         ],
         'response' => [
             'content' => [
                 'count' => 1,
                 'items' => [],
             ],
+        ]
+    ],
+
+    'testFetchLaTransfer' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/la-transfers/%s',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ]
+    ],
+
+    'testLaFetchTransferReversals' => [
+        'request' => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ]
+    ],
+
+    'testLaFetchReversals' => [
+        'request' => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
         ]
     ]
 ];
