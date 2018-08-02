@@ -4,6 +4,7 @@ namespace RZP\Gateway\Mpi\Blade\Mock;
 
 use RZP\Gateway\Base;
 use RZP\Gateway\Mpi\Blade;
+use RZP\Tests\Functional\TestCase;
 
 class Gateway extends Blade\Gateway
 {
@@ -18,10 +19,8 @@ class Gateway extends Blade\Gateway
         '31c7b33b3585fa84887c3df36b11ac2593bd79b9',
     ];
 
-//    protected function validateSignatureAndInflatePares($pares)
-//    {
-//        //TODO : hack till this is fixed
-//
-//        return $pares;
-//    }
+    protected function validateParesSignature($paresXml)
+    {
+        return $paresXml;
+    }
 }

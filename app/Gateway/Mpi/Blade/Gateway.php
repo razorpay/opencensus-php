@@ -214,10 +214,18 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function validateSignatureAndInflatePares($pares)
-    {
-        $paresXml = gzinflate(substr($pares, 2));
 
+    protected function inflatePares($pares)
+    {
+        $decodePares = base64_decode($pares);
+
+        $paresXml = gzinflate(substr($decodePares, 2));
+
+        return $paresXml;
+    }
+
+    protected function validateParesSignature($paresXml)
+    {
         $dom = $this->loadXmlViaDom($paresXml);
 
         $adapter = new XmlseclibsAdapter;
@@ -261,14 +269,14 @@ class Gateway extends Base\Gateway
     {
         $pares = $input['gateway'][PARes::GATEWAY_PARES];
 
-        $pares = base64_decode($pares);
-
-        $paresXml = $this->validateSignatureAndInflatePares($pares);
+        $paresXml = $this->inflatePares($pares);
 
         $paresArray = $this->xmlToArray($paresXml);
 
         // Validate Payer Authentication Response
         $this->validatePARes($input, $paresArray);
+
+        $this->validateParesSignature($paresXml);
 
         $paresMessage = $paresArray[PARes::MESSAGE][PARes::PARES];
 
@@ -309,7 +317,7 @@ class Gateway extends Base\Gateway
         Validator::validateXid($paresMessage, $expectedXid);
 
         $this->validateCredentials($input, $paresMessage);
-    }
+        }
 
     protected function validateCredentials(array $input, array $paresMessage)
     {
