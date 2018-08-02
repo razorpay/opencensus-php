@@ -90,7 +90,7 @@ class Base extends Core
         self::NETBANKING_PNB      => [],
         self::NETBANKING_CSB      => ['noreply@csb.co.in'],
         self::NETBANKING_BOB      => ['billpay@bankofbaroda.com'],
-        self::NETBANKING_CORPORATION =>['ibank@corpbank.co.in'],
+        self::NETBANKING_CORPORATION =>['webcenter@corpbank.co.in'],
         self::NETBANKING_HDFC     => [],
         self::JIOMONEY            => [],
         self::EBS                 => [],

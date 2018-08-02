@@ -30,5 +30,15 @@ class Reconciliate extends Base\Reconciliate
     {
         return '|';
     }
+
+    public function inExcludeList(array $fileDetails)
+    {
+        if (preg_match('/[0-9]{5}_[0-9]{8}_corpbank/', $fileDetails['file_name']) === 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
 

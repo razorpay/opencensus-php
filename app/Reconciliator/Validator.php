@@ -64,9 +64,7 @@ class Validator
                                                          "/Eazypay app\s*sales summary-[0-9]{2}-"
                                                          . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
                                                          "/Refund MIS for 116798_RAZORPAY_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"
-                                                     ],
-        RequestProcessor\Base::NETBANKING_CORPORATION  => ['*'],
-    ];
+                                                     ], ];
 
     const GATEWAY_BODY_REGEX = [
         RequestProcessor\Base::OLAMONEY           => ["/^Please find settlement report for /"],
@@ -94,7 +92,7 @@ class Validator
                                                         ."\s*[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
                                                          "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
                                                      ],
-        RequestProcessor\Base::NETBANKING_CORPORATION  => ['*'],
+        RequestProcessor\Base::NETBANKING_CORPORATION  => ['/FROM: Corporation Bank, Internet Banking./'],
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -352,6 +350,15 @@ class Validator
                        RequestProcessor\Base::UPI_ICICI);
 
         return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateNetbankingCorporationEmail(array $emailDetails)
+    {
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
+            RequestProcessor\Base::NETBANKING_CORPORATION);
+
+        return ($validBody);
     }
 
     /**
