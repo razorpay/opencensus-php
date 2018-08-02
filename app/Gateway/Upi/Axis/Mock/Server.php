@@ -217,20 +217,20 @@ class Server extends Base\Mock\Server
     protected function getDefaultVerifyResponse(array $input, $payment): array
     {
         return [
-            Fields::CODE => '00',
-            Fields::RESULT => 'Successful',
             Fields::DATA => [
-            Fields::MERCHANT_TRANSACTION_ID => 'CPAGA471420261',
-            Fields::W_COLLECT_TXN_ID => "AXI91977318751526881521496367600647",
-            Fields::MERCH_ID =>  "RAZAORPAY",
-            Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
-            Fields::CUSTOMER_VPA =>  $payment['vpa'],
-            Fields::TXN_TIME => "25-MAY-17 01.59.59.741000 PM",
-            Fields::TXN_AMOUNT => $this->formatAmount($payment['amount']),
-            Fields::RRN => "714513318376",
-            Fields::DEBIT_ACCOUNT_NUM => "076010100236133",
-            Fields::DEBIT_IFSC_CODE => "AXIS0000076",
-            Fields::CHECKSUM => "dc251c30924ec8d2aed7ab0e15dc209e66b3f3efec934484b1b6be822214296d",
+                Fields::CODE => '00',
+                Fields::RESULT => 'S',
+                Fields::MERCHANT_TRANSACTION_ID => 'CPAGA471420261',
+                Fields::W_COLLECT_TXN_ID => "AXI91977318751526881521496367600647",
+                Fields::MERCH_ID =>  "RAZAORPAY",
+                Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
+                Fields::CUSTOMER_VPA =>  $payment['vpa'],
+                Fields::TXN_TIME => "25-MAY-17 01.59.59.741000 PM",
+                Fields::TXN_AMOUNT => $this->formatAmount($payment['amount']),
+                Fields::RRN => "714513318376",
+                Fields::DEBIT_ACCOUNT_NUM => "076010100236133",
+                Fields::DEBIT_IFSC_CODE => "AXIS0000076",
+                Fields::CHECKSUM => "dc251c30924ec8d2aed7ab0e15dc209e66b3f3efec934484b1b6be822214296d",
             ]
         ];
     }

@@ -2,9 +2,6 @@
 
 namespace RZP\Gateway\Upi\Axis;
 
-use RZP\Error;
-use RZP\Error\ErrorCode;
-
 class ResponseCode
 {
     /**

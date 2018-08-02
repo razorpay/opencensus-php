@@ -26,5 +26,5 @@ class Status
 
     const FAILED = 'F';
 
-    const SUCCESSFUL = 'Successful';
+    const SUCCESSFUL = 'S';
 }

@@ -2,50 +2,47 @@
 
 namespace RZP\Gateway\Upi\Axis;
 
-use RZP\Gateway\Upi\Base\Entity;
-
 class Fields
 {
-    const MERCH_ID = 'merchId';
-    const MERCH_CHAN_ID = 'merchChanId';
-    const UNQ_TXN_ID = 'unqTxnId';
-    const UNQ_CUST_ID = 'unqCustId';
-    const AMOUNT = 'amount';
-    const TXN_DTL = 'txnDtl';
-    const CURRENCY = 'currency';
-    const ORDER_ID = 'orderId';
-    const CUSTOMER_VPA = 'customerVpa';
-    const EXPIRY = 'expiry';
-    const S_ID = 'sId';
-    const TXN_REFUND_ID = 'txnRefundId';
-    const MOB_NO = 'mobNo';
-    const TXN_REFUND_AMOUNT = 'txnRefundAmount';
-    const REFUND_REASON = 'refundReason';
-    const CHECKSUM = 'checkSum';
-    const CODE = 'code';
-    const RESULT = 'result';
-    const DATA = 'data';
-    const VPA_STATUS = 'vpa_status';
-    const MERCHANT_TRANSACTION_ID = 'merchantTransactionId';
-    const TRANSACTION_TIMESTAMP = 'transactionTimestamp';
-    const TRANSACTION_AMOUNT = 'transactionAmount';
-    const GATEWAY_TRANSACTION_ID = 'gatewayTransactionId';
-    const GATEWAY_RESPONSE_CODE = 'gatewayResponseCode';
-    const GATEWAY_RESPONSE_MESSAGE = 'gatewayResponseMessage';
-    const RRN = 'rrn';
-    const W_COLLECT_TXN_ID = 'wCollectTxnId';
-    const TXN_TIME = 'txnTime';
-    const TXN_AMOUNT = 'txnAmount';
-    const DEBIT_ACCOUNT_NUM = 'debitAccountNum';
-    const DEBIT_IFSC_CODE = 'debitIfscCode';
-    const TOKEN = 'Token';
+    const MERCH_ID                     = 'merchId';
+    const MERCH_CHAN_ID                = 'merchChanId';
+    const UNQ_TXN_ID                   = 'unqTxnId';
+    const UNQ_CUST_ID                  = 'unqCustId';
+    const AMOUNT                       = 'amount';
+    const TXN_DTL                      = 'txnDtl';
+    const CURRENCY                     = 'currency';
+    const ORDER_ID                     = 'orderId';
+    const CUSTOMER_VPA                 = 'customerVpa';
+    const EXPIRY                       = 'expiry';
+    const S_ID                         = 'sId';
+    const TXN_REFUND_ID                = 'txnRefundId';
+    const MOB_NO                       = 'mobNo';
+    const TXN_REFUND_AMOUNT            = 'txnRefundAmount';
+    const REFUND_REASON                = 'refundReason';
+    const CHECKSUM                     = 'checkSum';
+    const CODE                         = 'code';
+    const RESULT                       = 'result';
+    const DATA                         = 'data';
+    const VPA_STATUS                   = 'vpa_status';
+    const MERCHANT_TRANSACTION_ID      = 'merchantTransactionId';
+    const TRANSACTION_TIMESTAMP        = 'transactionTimestamp';
+    const TRANSACTION_AMOUNT           = 'transactionAmount';
+    const GATEWAY_TRANSACTION_ID       = 'gatewayTransactionId';
+    const GATEWAY_RESPONSE_CODE        = 'gatewayResponseCode';
+    const GATEWAY_RESPONSE_MESSAGE     = 'gatewayResponseMessage';
+    const RRN                          = 'rrn';
+    const W_COLLECT_TXN_ID             = 'wCollectTxnId';
+    const TXN_TIME                     = 'txnTime';
+    const TXN_AMOUNT                   = 'txnAmount';
+    const DEBIT_ACCOUNT_NUM            = 'debitAccountNum';
+    const DEBIT_IFSC_CODE              = 'debitIfscCode';
+    const TOKEN                        = 'Token';
 
-
-    const CHECK_STATUS_MERCH_ID = 'merchid';
-    const CHECK_STATUS_MERCH_CHAN_ID = 'merchchanid';
-    const CHECK_STATUS_UNQ_TXN_ID = 'tranid';
-    const CHECK_STATUS_CHECKSUM = 'checksum';
-    const CHECK_STATUS_MOBILE_NO = 'mobilenumber';
+    const CHECK_STATUS_MERCH_ID        = 'merchid';
+    const CHECK_STATUS_MERCH_CHAN_ID   = 'merchchanid';
+    const CHECK_STATUS_UNQ_TXN_ID      = 'tranid';
+    const CHECK_STATUS_CHECKSUM        = 'checksum';
+    const CHECK_STATUS_MOBILE_NO       = 'mobilenumber';
 
     /**
      * These are the expected field orders

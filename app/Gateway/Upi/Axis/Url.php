@@ -10,10 +10,4 @@ class Url
     const AUTHORIZE         = '/WebPaymentS2S/Merchant/requestCollect/';
 
     const FETCH_TOKEN       = '/WebPaymentS2S/Merchant/MerchantToken';
-
-
-    //    const VERIFY            = '/upi/transactionStatusQuery';
-//    const REFUND            = '/upi/refundReqSvc';
-//
-//    const VALIDATE_VPA      = '/upi/checkMeVirtualAddress';
 }

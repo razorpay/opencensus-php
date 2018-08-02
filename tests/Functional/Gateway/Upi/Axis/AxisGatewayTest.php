@@ -2,14 +2,6 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Axis;
 
-use Cache;
-use Closure;
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use Mail;
-
-use RZP\Exception\RuntimeException;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -45,38 +37,38 @@ class AxisGatewayTest extends TestCase
         unset($this->payment['description']);
 
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
         $paymentId = $response['payment_id'];
 
         // Co Proto must be working
         $this->assertEquals('async', $response['type']);
 
-        $this->checkPaymentStatus($paymentId, $status);
+//        $this->checkPaymentStatus($paymentId, $status);
 //
 //        $upiEntity = $this->getLastEntity('upi', true);
-//        s($upiEntity);
-////
+//
 //        $payment = $this->getEntityById('payment', $paymentId, true);
+//
 //        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
-//        s($content);
+//
 //        $response = $this->makeS2SCallbackAndGetContent($content);
-//        s($response);
+//
 //        // We should have gotten a successful response
 //        $this->assertEquals(['success' => true], $response);
 //
-//        // The payment should now be authorized
-//        s($paymentId);
-//
 //        $payment = $this->getEntityById('payment', $paymentId, true);
+//
 //        $this->assertEquals('authorized', $payment['status']);
 //
 //        $upiEntity = $this->getLastEntity('upi', true);
-//        s($upiEntity);
-////        $this->assertNotNull($upiEntity['npci_reference_id']);
-////        $this->assertNotNull($upiEntity['gateway_payment_id']);
-////
-////        // Add a capture as well, just for completeness sake
+//
+//        $this->assertNotNull($upiEntity['npci_reference_id']);
+//
+//        $this->assertNotNull($upiEntity['gateway_payment_id']);
+//
+//        // Add a capture as well, just for completeness sake
 //        $this->capturePayment($paymentId, $payment['amount']);
-
+//
 //        return $payment;
 
         return $paymentId;
@@ -87,6 +79,7 @@ class AxisGatewayTest extends TestCase
         $response = $this->getPaymentStatus($id);
 
         $status = $response['status'];
+
         $this->assertEquals($expectedStatus, $status);
     }
 
@@ -112,6 +105,7 @@ class AxisGatewayTest extends TestCase
         $payment = $this->getDefaultPaymentArrayNeutral();
 
         $payment['method'] = 'upi';
+
         $payment['vpa'] = 'vijay@axis';
 
         return $payment;
@@ -166,6 +160,7 @@ class AxisGatewayTest extends TestCase
 
         // We should have gotten a successful response
         $this->assertEquals(['success' => true], $response);
+
         $this->assertEquals('vijay@axis', $upiEntity[Entity::VPA]);
 
     }
