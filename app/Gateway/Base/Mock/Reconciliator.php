@@ -163,6 +163,6 @@ class Reconciliator
      */
     public function content(& $content, $action = null)
     {
-        return;
+        return null;
     }
 }
