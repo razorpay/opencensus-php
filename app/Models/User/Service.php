@@ -456,7 +456,7 @@ class Service extends Base\Service
      * If we find an existing user with the sub-merchant email then we send a mail informing
      * that he has access to sub-merchant account also now.
      *
-     * @param array           $subMerchantUser
+     * @param User\Entity     $subMerchantUser
      * @param Merchant\Entity $subMerchant
      * @param boolean         $createdNew
      *

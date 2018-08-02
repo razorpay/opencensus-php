@@ -1134,6 +1134,8 @@ class Core extends Base\Core
      * @param $merchant
      * @param $originalEmail
      * @param $newEmail
+     *
+     * @return User\Entity
      */
     public function handleLaMerchantsUsers($merchant, $originalEmail, $newEmail)
     {
@@ -1141,6 +1143,7 @@ class Core extends Base\Core
 
         if ($merchantUsersCount === 0)
         {
+            // When no users exist for a merchant.
             list($subMerchantUser, $createdNew) =
                 (new Merchant\Service)->createOrFetchUserAndAttachMerchant($merchant, $newEmail);
 
@@ -1193,6 +1196,14 @@ class Core extends Base\Core
             ];
 
             (new User\Core)->updateUserMerchantMapping($existingUser, $userMerchantMappingInputData);
+        }
+        else
+        {
+            list($subMerchantUser, $createdNew) =
+                (new Merchant\Service)->createOrFetchUserAndAttachMerchant($merchant, $newEmail);
+
+            // Sends Account linked communication emails to users.
+            (new User\Service)->sendAccountLinkedCommunicationEmail($subMerchantUser, $merchant, $createdNew);
         }
     }
 }
