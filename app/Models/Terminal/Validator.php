@@ -64,6 +64,7 @@ class Validator extends Base\Validator
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::UPI_MINDGATE,
+        Payment\Gateway::UPI_AXIS,
         Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::NETBANKING_BOB,
         Payment\Gateway::NETBANKING_ICICI,
@@ -284,6 +285,14 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
+    protected static $upiAxisEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:upi_axis',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+    ];
+
     protected static $netbankingIciciEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
@@ -369,6 +378,12 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
+    ];
+
+    protected static $upiAxisTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_axis',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
     ];
 
     protected static $upiHulkTerminalRules = [

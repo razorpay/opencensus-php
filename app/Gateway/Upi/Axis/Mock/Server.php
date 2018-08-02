@@ -152,7 +152,7 @@ class Server extends Base\Mock\Server
         $response = $this->makeResponse($content);
 
         return [
-            'meRes' => $response->content()
+            'data' => json_encode($content)
         ];
     }
 
@@ -238,8 +238,6 @@ class Server extends Base\Mock\Server
     public function refund($input)
     {
         parent::refund($input);
-
-        s($input);
 
         $input = $this->parseInput($input, Action::REFUND);
 

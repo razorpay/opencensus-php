@@ -16,7 +16,7 @@ return [
         'refund_status' => null,
         'currency' => 'INR',
         'description' => 'random description',
-        'bank' => null,
+        'bank' => 'axis',
         'error_code' => null,
         'error_description' => null,
         'email' => 'a@b.com',

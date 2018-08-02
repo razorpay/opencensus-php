@@ -108,6 +108,7 @@ class GatewayController extends Controller
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
             case Gateway::UPI_SBI:
+            case Gateway::UPI_AXIS:
             case 'axis_corporate':
                 // TODO : Remove before prod merge. temporary hack for testing.
                 if ($gateway === 'axis_corporate')

@@ -10,6 +10,7 @@ class Upi
     const ICIC      = 'ICIC';
     const HDFC      = 'HDFC';   
     const SBIN      = 'SBIN';
+    const UTIB      = 'UTIB';
 
     public static function exists($bank)
     {

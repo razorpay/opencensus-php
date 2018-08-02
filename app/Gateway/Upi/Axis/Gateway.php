@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Upi\Axis;
 
+use Elasticsearch\Endpoints\FieldStats;
+use Illuminate\Container\EntryNotFoundException;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -20,6 +22,12 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    const ACQUIRER      = 'axis';
+
+    const BANK          = 'axis';
+
+    const TIMEOUT       = 20;
+
     /**
      * @var Crypto
      */
@@ -27,13 +35,7 @@ class Gateway extends Base\Gateway
 
     protected $response;
 
-    const ACQUIRER      = 'axis';
-
     protected $gateway  = Payment\Gateway::UPI_AXIS;
-
-    const BANK          = 'axis';
-
-    const TIMEOUT       = 20;
 
     /**
      * This is what shows up as the payee
@@ -48,18 +50,19 @@ class Gateway extends Base\Gateway
     ];
 
     protected $map = [
-        Entity::VPA             => Entity::VPA,
-        Entity::RECEIVED        => Entity::RECEIVED,
-        Entity::EXPIRY_TIME     => Entity::EXPIRY_TIME,
-        Entity::TYPE            => Entity::TYPE,
-        Fields::UNQ_TXN_ID      => Entity::PAYMENT_ID,
-        Fields::UNQ_CUST_ID     => Entity::PAYMENT_ID,
-        Fields::AMOUNT          => Entity::AMOUNT,
-        Fields::MERCH_ID        => Entity::GATEWAY_MERCHANT_ID,
-        Fields::EXPIRY          => Entity::EXPIRY_TIME,
-        Fields::CUSTOMER_VPA    => Entity::VPA,
-        Fields::MOB_NO          => Entity::CONTACT,
-        Fields::TXN_REFUND_ID   => Entity::REFUND_ID,
+        Entity::VPA                     => Entity::VPA,
+        Entity::RECEIVED                => Entity::RECEIVED,
+        Entity::EXPIRY_TIME             => Entity::EXPIRY_TIME,
+        Entity::TYPE                    => Entity::TYPE,
+        Fields::UNQ_TXN_ID              => Entity::PAYMENT_ID,
+        Fields::AMOUNT                  => Entity::AMOUNT,
+        Fields::MERCH_ID                => Entity::GATEWAY_MERCHANT_ID,
+        Fields::EXPIRY                  => Entity::EXPIRY_TIME,
+        Fields::CUSTOMER_VPA            => Entity::VPA,
+        Fields::MOB_NO                  => Entity::CONTACT,
+        Fields::TXN_REFUND_ID           => Entity::REFUND_ID,
+        Fields::RRN                     => Entity::NPCI_REFERENCE_ID,
+        Fields::GATEWAY_TRANSACTION_ID  => Entity::GATEWAY_PAYMENT_ID,
     ];
 
     /**
@@ -182,7 +185,6 @@ class Gateway extends Base\Gateway
     {
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
             'body'              => $responseBody,
-            'encrypted'         => true,
             'gateway'           => $this->gateway,
             'type'              => $type
         ]);
@@ -234,8 +236,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'decrypted_content' => $data,
-                'encrypted'         => $content,
+                'content array' => $data,
+                'json content'         => $content,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $payment['id'],
             ]);
@@ -285,6 +287,16 @@ class Gateway extends Base\Gateway
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
 
+    public function preProcessServerCallback($input): array
+    {
+        return json_decode($input[Fields::DATA],true);
+    }
+
+    public function getPaymentIdFromServerCallback($input)
+    {
+        return $input[Fields::MERCHANT_TRANSACTION_ID];
+    }
+
     /**
      * Handles the S2S callback
      * @param  array $input
@@ -298,21 +310,15 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        if ($gatewayPayment->getType() !== Base\Type::PAY)
-        {
-            assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
-            s('hello');
-        }
-
-        assertTrue($input['payment']['id'] === $content[ResponseFields::PAYMENT_ID]);
+        assertTrue($input['payment']['id'] === $content[Fields::MERCHANT_TRANSACTION_ID]);
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
-        $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+        $actualAmount = number_format($content[Fields::TRANSACTION_AMOUNT], 2, '.', '');
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
-        $this->checkResponseStatus($content[ResponseFields::STATUS]);
+        $this->checkResponseStatus($content[Fields::GATEWAY_RESPONSE_CODE]);
 
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
@@ -423,7 +429,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
                 'request' => $request,
-                'decrypted_content' => $data
+                'content' => $data
             ]);
 
         return $request;
@@ -569,8 +575,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_REQUEST,
             [
-                'decrypted_content' => $data,
-                'encrypted'         => $content,
+                'array content' => $data,
+                'json content'         => $content,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $input['payment']['id'],
                 'refund_id'         => $input['refund']['id'],

@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use App;
+use Illuminate\Auth\Access\Gate;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
@@ -492,6 +493,7 @@ class Gateway
         Upi::HDFC  => Gateway::UPI_MINDGATE,
         Upi::ICIC  => Gateway::UPI_ICICI,
         Upi::SBIN  => Gateway::UPI_SBI,
+        Upi::UTIB  => Gateway::UPI_AXIS,
     ];
 
     public static $acquirerToCodeMap = [
