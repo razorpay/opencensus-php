@@ -70,11 +70,11 @@ class Reconciliator extends Mock\Reconciliator
         $creator = new FileStore\Creator;
 
         $creator->extension($this->fileExtension)
-            ->content($content)
-            ->name($this->fileToWriteName)
-            ->store($store)
-            ->type($type)
-            ->save();
+                ->content($content)
+                ->name($this->fileToWriteName)
+                ->store($store)
+                ->type($type)
+                ->save();
 
         return $creator;
     }
