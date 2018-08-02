@@ -24,7 +24,10 @@ return [
         'notes'         => [
             'order_info'    => 'random_string',
             'version'       => 2,
+            'roll_no'       => 'iec2011025',
+            'student_name'  => 'student',
         ],
+        'linked_account_notes' => ['roll_no', 'student_name'],
         'on_hold'       => '1',
         'on_hold_until' => 1586055431,
     ],

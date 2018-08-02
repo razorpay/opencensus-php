@@ -4,13 +4,16 @@ namespace RZP\Tests\Functional\Transfer;
 
 use RZP\Constants\Entity;
 use RZP\Models\Transfer;
+use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Tests\Functional\Fixtures\Entity\Reversal;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TransferTest extends TestCase
 {
     use PaymentTrait;
-
+    use DbEntityFetchTrait;
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
     /**
@@ -499,6 +502,25 @@ class TransferTest extends TestCase
         $this->assertEquals(800, $payment['amount_transferred']);
     }
 
+    public function testLaNotesTransfer()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $payment = $this->getTransferPayment($transfer['id']);
+
+        $this->assertEquals(['roll_no'       => "iec2011025",
+                             'student_name'  => 'student',], $payment['notes']);
+    }
+
+    public function testLaNotesReversal()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $reversal = $this->createReversal($transfer['id']);
+
+        sd($this->getReversalRefund($reversal['id']));
+    }
+
     public function testLiveTransferFundsOnHold()
     {
         $this->fixtures->merchant->holdFunds();
@@ -644,6 +666,17 @@ class TransferTest extends TestCase
         $this->assertEquals(1, count($payments['items']));
 
         return $payments['items'][0];
+    }
+
+    protected function getReversalRefund(string $reversalId): array
+    {
+        ReversalEntity::verifyIdAndSilentlyStripSign($reversalId);
+
+        $refunds = $this->getEntities('refund', ['reversal_id' => $reversalId], 'test');
+
+        $this->assertEquals(1, count($refunds['items']));
+
+        return $refunds['items'][0];
     }
 
     protected function getSingleTxn(string $entity = 'payment', string $entityId)
