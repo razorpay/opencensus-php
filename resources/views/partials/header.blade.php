@@ -64,6 +64,22 @@
                 this.send = function (s) {
                     try {
                         var x = JSON.parse(s);
+
+                        // Add MID, email, and contact to the message.
+                        if (x['response'] && typeof x['response']['message'] !== 'undefined') {
+                            if (!x['response']['message']) {
+                                x['response']['message'] = '';
+                            }
+
+                            x['response']['message'] += '\n\nMID: ' + rzp_user.id;
+                            x['response']['message'] += '\nEmail: ' + rzp_user.email;
+                            x['response']['message'] += '\nContact: ' + rzp_user.contact_mobile;
+                        }
+
+                        try {
+                            s = JSON.stringify(x);
+                        } catch (stringifyErr) {}
+
                         if (x['action'] && (x['action'] === 'create_poll_response' || x['action'] === 'update_poll_response')) {
                             if (x['response_content']) {
                                 if (typeof x['response_content'] === 'string') {
