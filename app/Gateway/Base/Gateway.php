@@ -315,6 +315,31 @@ class Gateway
         $this->mock = $mock;
     }
 
+    /**
+     * if bharatQr payment is not successful $valid will be set to false in BharatQr Service,in
+     * that case the reason of the failure is shared with gateway using exception thrown
+     * else the value of $valid will be true and we will send the respective response to gateway.
+     */
+    public function getBharatQrResponse(bool $valid, $gatewayInput = null, $exception = null)
+    {
+        if ($valid === true)
+        {
+            $xml = '<RESPONSE>OK</RESPONSE>';
+        }
+        else
+        {
+            $xml = '<RESPONSE>NOK</RESPONSE>';
+        }
+
+        $response = \Response::make($xml);
+
+        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
+
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
+    }
+
     protected function checkApiSuccess(Verify $verify)
     {
         $verify->apiSuccess = true;
@@ -645,6 +670,11 @@ class Gateway
     }
 
     public function preProcessServerCallback($input): array
+    {
+        return $input;
+    }
+
+    public function verifyBharatQrNotification($input)
     {
         return $input;
     }

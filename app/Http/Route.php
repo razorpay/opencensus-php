@@ -55,6 +55,7 @@ final class Route
         'payment_otp_submit'                       => ['post',     'payments/{x_entity_id}/otp_submit/{hash}',       'PaymentCreateController@postOtpSubmit'                             ],
         'payment_otp_submit_private'               => ['post',     'payments/{x_entity_id}/otp/submit',              'PaymentCreateController@postOtpSubmitPrivate'                      ],
         'payment_otp_resend'                       => ['post',     'payments/{x_entity_id}/otp_resend',              'PaymentCreateController@postOtpResend'                             ],
+        'payment_otp_resend_private'               => ['post',     'payments/{x_entity_id}/otp/resend',              'PaymentCreateController@postOtpResendPrivate'                      ],
         'payment_topup_ajax'                       => ['post',     'payments/{x_entity_id}/topup/ajax',              'PaymentCreateController@postTopupAjax'                             ],
         'payment_topup_post'                       => ['post',     'payments/{x_entity_id}/topup',                   'PaymentCreateController@postTopup'                                 ],
         'payment_redirect_callback'                => ['post',     'payments/{x_entity_id}/redirect_callback',       'PaymentCreateController@postRedirectCallback'                      ],
@@ -783,6 +784,12 @@ final class Route
         'reporting_schedule_list'                  => ['get',      'reporting/schedules',                            'ReportingController@listSchedule'                                  ],
         'reporting_schedule_create'                => ['post',     'reporting/schedules',                            'ReportingController@createSchedule'                                ],
         'reporting_schedule_delete'                => ['delete',   'reporting/schedules/{id}',                       'ReportingController@deleteSchedule'                                ],
+        'reporting_config_get_admin'               => ['get',      'admin-reporting/configs/{id}',                   'ReportingController@getConfig'                                     ],
+        'reporting_config_list_admin'              => ['get',      'admin-reporting/configs',                        'ReportingController@listConfig'                                    ],
+        'reporting_log_get_admin'                  => ['get',      'admin-reporting/logs/{id}',                      'ReportingController@getLog'                                        ],
+        'reporting_log_list_admin'                 => ['get',      'admin-reporting/logs',                           'ReportingController@listLog'                                       ],
+        'reporting_schedule_get_admin'             => ['get',      'admin-reporting/schedules/{id}',                 'ReportingController@getSchedule'                                   ],
+        'reporting_schedule_list_admin'            => ['get',      'admin-reporting/schedules',                      'ReportingController@listSchedule'                                  ],
 
         // UFH Service
         // TODO: Should change to just /signed_url (No 'get' and underscore)
@@ -938,6 +945,7 @@ final class Route
         'payment_create_openwallet',
         'payment_create_aeps',
         'payment_otp_submit_private',
+        'payment_otp_resend_private',
         'payment_refund',
         'payment_capture',
         'payment_fetch_transfers',
@@ -1577,6 +1585,14 @@ final class Route
         // Partners
         'merchants_access_map_create',
         'merchants_access_map_delete',
+
+        // Reporting
+        'reporting_config_get_admin',
+        'reporting_config_list_admin',
+        'reporting_log_get_admin',
+        'reporting_log_list_admin',
+        'reporting_schedule_get_admin',
+        'reporting_schedule_list_admin',
     ];
 
     public static $routePermission = [
@@ -1866,7 +1882,7 @@ final class Route
         'shield_rules_delete'                      => Permission::DELETE_SHIELD_RULES,
         'shield_rules_evaluate'                    => Permission::EVALUATE_SHIELD_RULES,
         'user_fetch_admin'                         => '*',
-        'refund_edit_status'                       => '*',
+        'refund_edit_status'                       => Permission::EDIT_REFUND,
         'batch_create'                             => '*',
         'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
         'reporting_config_get'                     => '*',
@@ -1882,6 +1898,12 @@ final class Route
         'reporting_schedule_list'                  => '*',
         'reporting_schedule_create'                => '*',
         'reporting_schedule_delete'                => '*',
+        'reporting_config_get_admin'               => '*',
+        'reporting_config_list_admin'              => '*',
+        'reporting_log_get_admin'                  => '*',
+        'reporting_log_list_admin'                 => '*',
+        'reporting_schedule_get_admin'             => '*',
+        'reporting_schedule_list_admin'            => '*',
         'ufh_get_file_signed_url'                  => '*',
         'merchant_requests_create'                 => '*',
         'merchant_requests_list'                   => Permission::VIEW_MERCHANT_REQUESTS,

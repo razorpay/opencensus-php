@@ -642,7 +642,7 @@ return [
         ]
     ],
 
-    'testRecurringRule'  => [
+    'testRecurringRuleInitial'  => [
         'payment_options' => [
             'method'         => Method::CARD,
             'recurring'      => 1,
@@ -650,14 +650,39 @@ return [
         ],
         'fixtures' => [
             [
-                'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-                'gateway'     => 'hdfc',
-                'type'        => 'filter',
-                'filter_type' => 'select',
-                'issuer'      => 'HDFC',
-                'recurring'   => 1,
-                'group'       => 'A',
+                'method'         => Method::CARD,
+                'merchant_id'    => Merchant\Account::SHARED_ACCOUNT,
+                'gateway'        => 'hdfc',
+                'type'           => 'filter',
+                'filter_type'    => 'select',
+                'issuer'         => 'HDFC',
+                'recurring'      => 1,
+                'recurring_type' => 'initial',
+                'group'          => 'A',
+            ],
+        ],
+        'expected_terminal_ids' => [
+            'FssRecurringTl',
+        ]
+    ],
+
+    'testRecurringRuleAuto'  => [
+        'payment_options' => [
+            'method'         => Method::CARD,
+            'recurring'      => 1,
+            'recurring_type' => 'auto',
+        ],
+        'fixtures' => [
+            [
+                'method'         => Method::CARD,
+                'merchant_id'    => Merchant\Account::SHARED_ACCOUNT,
+                'gateway'        => 'hdfc',
+                'type'           => 'filter',
+                'filter_type'    => 'select',
+                'issuer'         => 'HDFC',
+                'recurring'      => 1,
+                'recurring_type' => 'auto',
+                'group'          => 'A',
             ],
         ],
         'expected_terminal_ids' => [

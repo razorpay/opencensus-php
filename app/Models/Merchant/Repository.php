@@ -466,12 +466,19 @@ class Repository extends Base\Repository
         $model->__unset(Entity::MERCHANT_DETAIL);
     }
 
-    public function getMerchantUserMapping(string $merchantId, string $userId)
+    public function getMerchantUserMapping(string $merchantId, string $userId, string $role = null)
     {
-        return $this->find($merchantId)
-                    ->users()
-                    ->where('id', $userId)
-                    ->first();
+        $query = $this->newQuery()
+                      ->find($merchantId)
+                      ->users()
+                      ->where(Entity::ID, $userId);
+
+        if (empty($role) === false)
+        {
+            $query->where(Entity::ROLE, $role);
+        }
+
+        return $query->first();
     }
 
     public function findByIdAndOrgId(string $id, string $orgId)

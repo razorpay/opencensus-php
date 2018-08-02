@@ -18,6 +18,7 @@ services:
       - api_db
       - cache
       - es
+      - statsd_exporter
     environment:
       DB_LIVE_HOST: api_db
       DB_LIVE_USERNAME: api_user
@@ -80,3 +81,12 @@ services:
       - IPC_LOCK
     ports:
       - 29200:9200
+  statsd_exporter:
+    image: prom/statsd-exporter
+    container_name: statsd-exporter
+    volumes:
+      - ./statsd_mapping.yml:/tmp/statsd_mapping.yml
+    ports:
+      - 29102:9102
+      - 29125:9125/udp
+    command: ["-statsd.mapping-config=/tmp/statsd_mapping.yml"]

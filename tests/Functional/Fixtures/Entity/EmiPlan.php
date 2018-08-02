@@ -15,6 +15,15 @@ class EmiPlan extends Base
             'merchant_payback'  => '518',
         ],
         [
+            'id'                => '20101010101010',
+            'duration'          => '6',
+            'rate'              => '1200',
+            'methods'           => 'debitcard',
+            'bank'              => 'HDFC',
+            'min_amount'        => '300000',
+            'merchant_payback'  => '518',
+        ],
+        [
             'id'                => '10101010101011',
             'duration'          => '3',
             'rate'              => '1400',

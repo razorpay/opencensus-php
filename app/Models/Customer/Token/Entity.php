@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_NAME          = 'beneficiary_name';
     const IFSC                      = 'ifsc';
     const AADHAAR_NUMBER            = 'aadhaar_number';
+    const AADHAAR_VID               = 'aadhaar_vid';
     const CONFIRMED_AT              = 'confirmed_at';
     const REJECTED_AT               = 'rejected_at';
     const INITIATED_AT              = 'initiated_at';
@@ -97,6 +98,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING,
         self::AUTH_TYPE,
         self::AADHAAR_NUMBER,
+        self::AADHAAR_VID,
         self::MAX_AMOUNT,
         self::EXPIRED_AT,
     ];
@@ -124,6 +126,7 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT,
         self::AUTH_TYPE,
         self::AADHAAR_NUMBER,
+        self::AADHAAR_VID,
         self::USED_COUNT,
         self::CONFIRMED_AT,
         self::REJECTED_AT,
@@ -166,6 +169,7 @@ class Entity extends Base\PublicEntity
         self::MAX_AMOUNT                => null,
         self::AUTH_TYPE                 => null,
         self::AADHAAR_NUMBER            => null,
+        self::AADHAAR_VID               => null,
         self::USED_AT                   => null,
         self::USED_COUNT                => 0,
         self::EXPIRED_AT                => null,
@@ -250,6 +254,11 @@ class Entity extends Base\PublicEntity
     public function getAadhaarNumber()
     {
         return $this->getAttribute(self::AADHAAR_NUMBER);
+    }
+
+    public function getAadhaarVid()
+    {
+        return $this->getAttribute(self::AADHAAR_VID);
     }
 
     public function getToken()
@@ -482,6 +491,16 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::AADHAAR_NUMBER] = $aadhaarNumber;
     }
 
+    protected function setAadhaarVidAttribute($aadhaarVid)
+    {
+        if ($aadhaarVid !== null)
+        {
+            $aadhaarVid = Crypt::encrypt($aadhaarVid);
+        }
+
+        $this->attributes[self::AADHAAR_VID] = $aadhaarVid;
+    }
+
     protected function setPublicCardAttribute(array & $array)
     {
         if ($this->hasCard())
@@ -510,6 +529,16 @@ class Entity extends Base\PublicEntity
         }
 
         return Crypt::decrypt($aadhaarNumber);
+    }
+
+    protected function getAadhaarVidAttribute($aadhaarVid)
+    {
+        if ($aadhaarVid === null)
+        {
+            return $aadhaarVid;
+        }
+
+        return Crypt::decrypt($aadhaarVid);
     }
 
     public function setPublicRecurringDetailsAttribute(array & $array)

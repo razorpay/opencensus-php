@@ -24,6 +24,7 @@ class MailTags
     const HDFC_BENEFICIARY_MAIL            = 'hdfc_beneficiary_mail';
 
     const YESBANK_BENEFICIARY_MAIL         = 'yesbank_beneficiary_mail';
+    const YESBANK_SETTLEMENT               = 'yesbank_settlement';
 
     const RBL_SETTLEMENT                   = 'rbl_settlement';
 
