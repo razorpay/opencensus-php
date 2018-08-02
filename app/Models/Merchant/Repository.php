@@ -550,11 +550,18 @@ class Repository extends Base\Repository
 
         $accessMapsMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
 
-        $merchantDetailsMerchantId = $this->repo->merchant_detail->dbColumn(Detail\Entity::MERCHANT_ID);
+        $merchantDetailsRepo = $this->repo->merchant_detail;
 
+        $merchantDetailsMerchantId = $merchantDetailsRepo->dbColumn(Detail\Entity::MERCHANT_ID);
+
+        $merchantDetailsColumns = $merchantDetailsRepo->dbColumn('*');
+
+        $attributes = [$merchantDetailsColumns, $this->dbColumn('*')];
+
+        // merchantDetail is not fetched as a relation because a filter has to be added for that in the query
         $query = $this->newQuery()
                       ->with(['users', 'owners'])
-                      ->select($this->dbColumn('*'))
+                      ->select($attributes)
                       ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
                       ->leftJoin(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
                       ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
