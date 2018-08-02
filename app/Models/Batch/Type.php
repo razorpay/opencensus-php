@@ -45,6 +45,8 @@ class Type
      */
     const ELFIN                 = 'elfin';
 
+    const PARTNER_SUBMERCHANTS  = 'partner_submerchants';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -88,6 +90,7 @@ class Type
         self::RECURRING_CHARGE,
         self::ELFIN,
         self::OAUTH_MIGRATION_TOKEN,
+        self::PARTNER_SUBMERCHANTS,
     ];
 
     public static function exists(string $type)

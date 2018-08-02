@@ -2,19 +2,18 @@
 
 namespace RZP\Tests\Functional\Merchant\Partner;
 
+use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 
 class PartnerTest extends OAuthTestCase
 {
     use OAuthTrait;
-    use DbEntityFetchTrait;
-    use RequestResponseFlowTrait;
+    use BatchTestTrait;
 
     const PARTNER                = 'partner';
     const ACTIVATION             = 'activation';
@@ -144,18 +143,7 @@ class PartnerTest extends OAuthTestCase
 
         $merchant = $merchantRequest->merchant;
 
-        // Mock create application call to auth service
-        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
-
-        $createParams = [
-            'name'     => $merchant->getName(),
-            'website'  => $merchant->getWebsite(),
-            'type'     => self::PARTNER,
-        ];
-
-        $requestParams = array_merge($requestParams, $createParams);
-
-        $this->setAuthServiceMockDetail('applications', 'POST', $requestParams);
+        $this->mockAuthServiceCreateApplication($merchant);
 
         // Set the admin auth
         $liveMode = $this->app['basicauth']->getLiveConnection();
@@ -587,6 +575,72 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testPartnerSubmerchantsBatch()
+    {
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->mockAuthServiceCreateApplication($merchant);
+
+        $rows = $this->testData[__FUNCTION__ . 'FileRows'];
+
+        $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
+
+        // Default merchant to be used for tests
+        $this->fixtures->create('merchant',
+            [
+                'id'            => '100DemoAccount',
+                'email'         => 'test@razorpay.com',
+                'billing_label' => 'Test Merchant'
+            ]);
+
+        // Default merchant to be used for tests
+        $this->fixtures->create('merchant',
+            [
+                'id'            => '10000000000001',
+                'email'         => 'test@razorpay.com',
+                'billing_label' => 'Test Merchant'
+            ]);
+
+        $this->createDummyPartnerApp();
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $entity = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(2, $entity['success_count']);
+
+        $this->assertEquals(0, $entity['failure_count']);
+
+        $this->assertInputFileExistsForBatch($response[Batch\Entity::ID]);
+
+        $this->assertOutputFileExistsForBatch($response[Batch\Entity::ID]);
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->assertTrue($merchant->isPartner());
+
+        $merchantAccessEntities = $this->getDbEntities('merchant_access_map' ,[], 'test');
+
+        $this->assertCount(2, $merchantAccessEntities);
+    }
+
+    public function testPartnerSubmerchantsBatchInvalidId()
+    {
+        $rows = $this->testData[__FUNCTION__ . 'FileRows'];
+
+        $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $entity = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(1, $entity['failure_count']);
+    }
+
     public function testFetchPartnerSubmerchant()
     {
         $this->allowAdminToAccessPartnerMerchant();
@@ -769,6 +823,31 @@ class PartnerTest extends OAuthTestCase
     protected function markMerchantAsPartner(string $merchantId, string $partnerType)
     {
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => $partnerType]);
+    }
+
+    protected function mockAuthServiceCreateApplication(Merchant\Entity $merchant)
+    {
+        // Mock create application call to auth service
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $createParams = [
+            'name'     => $merchant->getName(),
+            'website'  => $merchant->getWebsite(),
+            'type'     => self::PARTNER,
+        ];
+
+        $requestParams = array_merge($requestParams, $createParams);
+
+        $this->setAuthServiceMockDetail('applications', 'POST', $requestParams);
+    }
+
+    protected function createMerchantUser($merchantId)
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->addUserToMerchant($user, $merchantId, 'owner');
+
+        return $user;
     }
 
     protected function addUserToMerchant($user, $merchantId, $role)
