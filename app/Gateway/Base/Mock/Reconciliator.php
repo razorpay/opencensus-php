@@ -161,7 +161,7 @@ class Reconciliator
      * @param null $action
      * @return void
      */
-    public function content(& $content, $action = '')
+    public function content(& $content, $action = null)
     {
         return null;
     }
