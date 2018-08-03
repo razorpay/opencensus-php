@@ -1526,7 +1526,7 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Getters ---------------------------------------------
 
-    public function getBankCodeFromVpa()
+    public function getPspFromVpa()
     {
         $vpa = $this->getAttribute(self::VPA);
 
@@ -1535,6 +1535,11 @@ class Entity extends Base\PublicEntity
         $psp = end($vpaParts);
 
         return ProviderCode::getBankCode($psp);
+    }
+
+    public function getBankCodeFromVpa()
+    {
+        return ProviderCode::getBankCode($this->getPspFromVpa());
     }
 
     public function getTransferId()
