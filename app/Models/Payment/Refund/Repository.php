@@ -59,7 +59,7 @@ class Repository extends Base\Repository
     protected function validateExpand($attribute, $value)
     {
         $merchant = $this->merchant;
-
+        
         if (((empty($merchant) === true) or ($merchant->isLinkedAccount() === false)) and
             $value === 'reversal')
         {

@@ -1,9 +1,9 @@
 <?php
 
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorCode;
+    use RZP\Error\ErrorCode;
+    use RZP\Error\PublicErrorCode;
 
-return [
+    return [
     'testFetchRuleCascadingForAdminAuth' => [
         'request' => [
             'url'     => '/admin/payment',
@@ -229,6 +229,28 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchWithExpandsTransfer' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payments',
+            'content' => [
+                'expand' => ['transfer'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
 

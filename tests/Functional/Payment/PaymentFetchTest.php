@@ -131,6 +131,13 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchWithExpandsTransfer()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testFindWithExpandsForPrivateAuthWithInvalidExpand()
     {
         $this->ba->privateAuth();

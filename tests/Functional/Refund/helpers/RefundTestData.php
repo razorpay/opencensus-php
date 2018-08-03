@@ -1,10 +1,10 @@
 <?php
 
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
+    use RZP\Error\ErrorCode;
+    use RZP\Error\PublicErrorCode;
+    use RZP\Error\PublicErrorDescription;
 
-return [
+    return [
     'testRefund' => [
         'request' => [
         ],
@@ -447,6 +447,28 @@ return [
         'received'        => true,
         'bank_name'       => 'SBIN',
         'status'          => 'Ok',
+    ],
+
+    'testFetchRefundReversal' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/refunds',
+            'content' => [
+                'expand' => ['reversal'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
     ],
 
     'tpvPayment' => [
