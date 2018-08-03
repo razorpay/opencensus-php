@@ -571,6 +571,12 @@ class Gateway
         IFSC::CNRB
     ];
 
+    public static $directDebitCardNetworks = [
+        Network::VISA,
+        Network::MC,
+        Network::MAES,
+    ];
+
     /**
      * List of ALL auth types and the corresponding
      * banks supported by that auth type.
@@ -1401,6 +1407,11 @@ class Gateway
     public static function getNetworksSupportedForCardRecurring(): array
     {
         return self::$recurringCardNetworks;
+    }
+
+    public static function isDirectDebitSupported(string $networkCode): bool
+    {
+        return (in_array($networkCode, self::$directDebitCardNetworks, true) === true);
     }
 
     public static function getIssuersSupportedForDebitCardRecurring(): array
