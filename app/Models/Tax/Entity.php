@@ -77,7 +77,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::RATE => 'int',
+        self::RATE => 'float',
     ];
 
     // Getters
@@ -92,7 +92,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RATE_TYPE);
     }
 
-    public function getRate(): int
+    public function getRate(): float
     {
         return $this->getAttribute(self::RATE);
     }

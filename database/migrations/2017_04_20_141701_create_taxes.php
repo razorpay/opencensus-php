@@ -30,7 +30,7 @@ class CreateTaxes extends Migration
 
             $table->string(Entity::RATE_TYPE, 15);
 
-            $table->integer(Entity::RATE)
+            $table->decimal(Entity::RATE)
                   ->unsigned();
 
             $table->integer(Entity::CREATED_AT);

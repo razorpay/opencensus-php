@@ -18,6 +18,7 @@ class GstTaxIdMap
     // CGST
     const CGST_0     = '9nDpYglSpU58lc';
     const CGST_12    = '9ndzIuY66e4Z7w';
+    const CGST_25    = '9nDongIFqOHM7p';
     const CGST_150   = '9ndzUuWKXMvGIo';
     const CGST_250   = '9nDpYhZ0d60X7V';
     const CGST_300   = '9nDzjuY7cmkaSC';
@@ -32,6 +33,7 @@ class GstTaxIdMap
     // SGST
     const SGST_0     = '9nDpYnvgiGXrZh';
     const SGST_12    = '9nD00MK9Km0l2u';
+    const SGST_25    = '9nDpcJrq9e3pHO';
     const SGST_150   = '9nD0DxxkA0UwrU';
     const SGST_250   = '9nDpYoeYBsXRvC';
     const SGST_300   = '9nD0SGKzqwxJJK';
@@ -46,6 +48,7 @@ class GstTaxIdMap
     // UTGST
     const UTGST_0    = '9nDpYuFVNQcVaU';
     const UTGST_12   = '9nD0ea41MeQhwQ';
+    const UTGST_25   = '9nDq6h2an6eK6G';
     const UTGST_150  = '9nD0tKICPabvSI';
     const UTGST_250  = '9nDpYv53mqSsip';
     const UTGST_300  = '9nD1422wiGxC81';
