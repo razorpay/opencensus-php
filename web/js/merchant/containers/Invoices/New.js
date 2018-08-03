@@ -1953,6 +1953,7 @@ export default class InvoicesNewContainer extends Component {
 
                       <div class="row" style={{ marginTop: '40px' }}>
                         <div class="col-md-12">
+                          <label class="text-uppercase">Customer Notes</label>
                           <InlineField
                             formName="newInvoice"
                             name="comment"
@@ -1970,6 +1971,9 @@ export default class InvoicesNewContainer extends Component {
 
                       <div class="row">
                         <div class="col-md-12">
+                          <label class="text-uppercase">
+                            Terms and Conditions
+                          </label>
                           <InlineField
                             formName="newInvoice"
                             name="terms"
