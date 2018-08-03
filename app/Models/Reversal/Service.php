@@ -72,6 +72,7 @@ class Service extends Base\Service
     private function createReversalsResponse($refunds): array
     {
         $reversals = [];
+
         foreach ($refunds as $refund)
         {
             $reversals[] = $this->createReversalResponseFromRefund($refund);

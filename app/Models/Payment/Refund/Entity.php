@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Currency;
+use RZP\Models\Reversal;
 use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
@@ -207,7 +208,7 @@ class Entity extends Base\PublicEntity
 
     public function reversal()
     {
-        return $this->belongsTo('RZP\Models\Reversal\Entity', self::REVERSAL_ID);
+        return $this->belongsTo(Reversal\Entity::class, self::REVERSAL_ID);
     }
 
     public function build(array $input = [])

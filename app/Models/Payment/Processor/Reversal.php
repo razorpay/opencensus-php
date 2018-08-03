@@ -7,8 +7,9 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Transfer;
 use RZP\Error\ErrorCode;
-use RZP\Constants\Entity as E;
 use RZP\Models\Transaction;
+use RZP\Models\Payment\Refund;
+use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Reversal\Entity as ReversalEntity;
@@ -68,9 +69,9 @@ trait Reversal
      * @param  int            $amount
      *
      * @throws Exception\BadRequestException
-     * @return Base\Entity
+     * @return Refund\Entity
      */
-    protected function refundTransferPayment(Payment\Entity $payment, int $amount)
+    protected function refundTransferPayment(Payment\Entity $payment, int $amount): Refund\Entity
     {
         if ($payment->isTransfer() === false)
         {

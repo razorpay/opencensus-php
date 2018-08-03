@@ -49,12 +49,19 @@ class Repository extends Base\Repository
         Entity::REVERSAL_ID,
     ];
 
+    /**
+     * This validates the expand route to allow reversal expand only for linked account merchants
+     * @param $attribute
+     * @param $value
+     *
+     * @throws \RZP\Exception\ExtraFieldsException
+     */
     protected function validateExpand($attribute, $value)
     {
         $merchant = $this->merchant;
 
-        if (((empty($merchant) === true) or
-                ($merchant->isLinkedAccount() === false)) and $value === 'reversal')
+        if (((empty($merchant) === true) or ($merchant->isLinkedAccount() === false)) and
+            $value === 'reversal')
         {
             throw new Exception\ExtraFieldsException("expand=reversal");
         }

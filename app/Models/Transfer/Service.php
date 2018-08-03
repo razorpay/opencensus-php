@@ -124,7 +124,7 @@ class Service extends Base\Service
         return $this->createTransferResponseFromPayment($payment);
     }
 
-    public function fetchLaTransfers(array $input)
+    public function fetchLaTransfers(array $input): array
     {
         (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
@@ -144,7 +144,7 @@ class Service extends Base\Service
         return $transfersResponse;
     }
 
-    private function createResponse($payments)
+    private function createResponse($payments): array
     {
         $transfers = [];
         foreach ($payments as $payment)
@@ -157,7 +157,7 @@ class Service extends Base\Service
         return $transfers;
     }
 
-    private function createTransferResponseFromPayment($payment)
+    private function createTransferResponseFromPayment($payment): array
     {
         $result = $payment->toArrayPublic();
 
