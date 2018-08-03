@@ -918,6 +918,15 @@ trait Authorize
                         'The otp authentication type is not applicable on the given card');
                 }
                 break;
+
+            case Payment\AuthType::SKIP:
+                // Skip auth flow is supported only for Master Card, Visa and Rupay.
+                if (Payment\Gateway::isDirectDebitSupported($payment->card->getNetworkCode()) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The skip authentication type is not applicable on the given card');
+                }
+                break;
         }
     }
 
@@ -1648,6 +1657,16 @@ trait Authorize
             {
                 $followGlobal = true;
             }
+        }
+
+        //
+        // Appends dummy cvv if auth type of payment is skip. Validate merchant later
+        // for moto feature else decline the payment.
+        // TODO: Need to change if AMEX card is enabled for skip
+        //
+        if ($payment->getAuthType() === Payment\AuthType::SKIP)
+        {
+            $input['card']['cvv'] = Card\Entity::DUMMY_CVV;
         }
 
         // First fetch the relevant customer (global or local)

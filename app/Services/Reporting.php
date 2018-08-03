@@ -83,6 +83,10 @@ class Reporting implements ExternalService
 
     protected function setHeaders()
     {
+        /**
+         * Read about how to API interacts with reporting service:
+         * https://github.com/razorpay/api/wiki/Reporting-Service
+         */
         $headers = [];
 
         // Proxy Auth
@@ -96,9 +100,20 @@ class Reporting implements ExternalService
 
         if (empty($merchantId) === false)
         {
-            // MERCHANT Reports
-            $headers[self::REPORT_TYPE_HEADER] = self::MERCHANT;
-            $headers[self::CONSUMER_HEADER] = $merchantId;
+            if ($merchantId === Account::SHARED_ACCOUNT)
+            {
+                // If SHARED_ACCOUNT, use headers sent
+                // Useful for creating schedules for non-merchants
+                $headers[self::REPORT_TYPE_HEADER] = Request::header(self::REPORT_TYPE_HEADER, self::MERCHANT);
+                $headers[self::CONSUMER_HEADER] = Request::header(self::CONSUMER_HEADER, Account::SHARED_ACCOUNT);
+            }
+            else
+            {
+                // MERCHANT Reports
+                // Proxy Auth used here
+                $headers[self::REPORT_TYPE_HEADER] = self::MERCHANT;
+                $headers[self::CONSUMER_HEADER] = $merchantId;
+            }
         }
         else if (empty($reportType) === false)
         {
@@ -356,7 +371,8 @@ class Reporting implements ExternalService
     {
         $entityId = $input[ScheduleTask\Entity::ENTITY_ID];
 
-        // TODO: check how to handle this in bank reports from Front End
+        // Since schedule tasks can be created only for a merhcant
+        // We'll always use basic auth to fetch merhcant object
         $merchant = $this->ba->getMerchant();
 
         // As discussed, we will not be creating new schedule
