@@ -52,11 +52,11 @@ function _makePayload(payload, type) {
 }
 
 // url are must be absolute url, Eg: /admin/api/{mode}/your_url
-export function adminFormUpload(form, url) {
+export function adminFormUpload(form, url, headers) {
   //Let axios decide which "Content-Type" to send
   let fData = createFormData(form);
 
-  return axios.post(url, fData);
+  return axios.post(url, fData, { headers });
 }
 
 // url are must be absolute url, Eg: /admin/api/{mode}/your_url

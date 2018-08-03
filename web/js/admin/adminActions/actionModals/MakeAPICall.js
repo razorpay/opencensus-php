@@ -94,6 +94,7 @@ export default class MakeAPICall extends Component {
             file.length > 0 ? (
               <Field label="File Name" name="file_name" key="file_name" />
             ) : null,
+            <TextAreaField label="Request Headers" name="headers" />,
           ]}
 
           <AsyncButton
@@ -104,13 +105,16 @@ export default class MakeAPICall extends Component {
               let url = body.url;
               delete body.url;
 
+              let headers = JSON.parse(body.headers);
+              delete body.headers;
+
               if (!body.file) {
                 body.file = null;
               } else {
                 body.file = body.file[0];
               }
 
-              return adminFormUpload(body, '/makeapicall/' + url).then(
+              return adminFormUpload(body, '/makeapicall/' + url, headers).then(
                 response => {
                   if (response.data.success) {
                     notifySuccess('API Request successful');
