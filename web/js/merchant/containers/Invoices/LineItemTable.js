@@ -54,7 +54,7 @@ export default class InvoiceLineItemTable extends Component {
                   <thead>
                     <tr>
                       <th class="lineItem__item">DESCRIPTION</th>
-                      <th class="text-right lineItem__amount">RATE</th>
+                      <th class="text-right lineItem__amount">RATE/ITEM</th>
                       <th class="text-right lineItem__qty">QTY</th>
                       <th class="text-right lineItem__total">TOTAL</th>
                     </tr>

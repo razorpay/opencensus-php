@@ -1453,7 +1453,7 @@ export default class InvoicesNewContainer extends Component {
                       <div class="row">
                         <div class="col-md-12">
                           <div class="inv__titlesection">
-                            <h3>Invoice</h3>
+                            <h3>Invoice #</h3>
                             {locked && !invoice.receipt ? (
                               <InlineField
                                 formName="newInvoice"

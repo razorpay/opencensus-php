@@ -13,7 +13,7 @@ export default ({ invoice, onBackNavClick }) => {
       <li>
         <span class="breadcrumb__backNav--heading">
           <i class="i i-chevron-right" />
-          {invoice.receipt || invoice.id || 'New Invoice'}
+          {`#${invoice.receipt}` || `#${invoice.id}` || 'New Invoice'}
         </span>
         {isNew ? (
           <span class="label label-muted">Draft</span>
