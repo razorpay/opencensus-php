@@ -634,6 +634,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                      = 'The merchant request submissions are missing';
 
     const BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT                             = 'The Account provided is not a Linked Account';
+    const BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                          = 'some keys which are sent in linked account notes doesnot exist in notes';
 
     // Partners
     const BAD_REQUEST_PARTNER_TYPE_INVALID                                      = 'Partner type is invalid';

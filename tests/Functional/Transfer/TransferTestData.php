@@ -378,5 +378,21 @@ return [
         'response' => [
             'content' => []
         ]
+    ],
+
+    'testLaNotesKeyMissing' => [
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
+        ],
     ]
 ];

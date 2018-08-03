@@ -516,9 +516,33 @@ class TransferTest extends TestCase
     {
         $transfer = $this->createTransfer('account');
 
-        $reversal = $this->createReversal($transfer['id']);
+        $notes = [
+            "roll_no" => "iec2011025",
+            "awesome" => true,
+            "great"   => "cool"
+        ];
 
-        sd($this->getReversalRefund($reversal['id']));
+        $reversal = $this->createReversal($transfer['id'], null,$notes, ["roll_no", "great"]);
+
+        $refund = $this->getReversalRefund($reversal['id']);
+
+        $this->assertEquals(['roll_no' => 'iec2011025','great' => 'cool'], $refund['notes']);
+    }
+
+    public function testLaNotesKeyMissing()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $notes = [
+            "roll_no" => "iec2011025",
+            "awesome" => true,
+            "great"   => "cool"
+        ];
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfer, $notes)
+        {
+            $reversal = $this->createReversal($transfer['id'], null, $notes, ["roll_no", "no_great"]);
+        });
     }
 
     public function testLiveTransferFundsOnHold()
@@ -620,7 +644,7 @@ class TransferTest extends TestCase
         return $this->getResponse($request, $data);
     }
 
-    protected function createReversal(string $id, $amount = null, array $notes = [])
+    protected function createReversal(string $id, $amount = null, array $notes = [], array $laNotes = [])
     {
         $request = $this->getReversalRequestBody($id);
 
@@ -632,6 +656,11 @@ class TransferTest extends TestCase
         if (empty($notes) === false)
         {
             $request['content']['notes'] = $notes;
+        }
+
+        if (empty($laNotes) === false)
+        {
+            $request['content']['linked_account_notes'] = $laNotes;
         }
 
         return $this->getResponse($request);
@@ -738,7 +767,9 @@ class TransferTest extends TestCase
     {
         ReversalEntity::verifyIdAndSilentlyStripSign($reversalId);
 
-        $refunds = $this->getEntities('refund', ['reversal_id' => $reversalId], 'test');
+        $refunds = $this->getDbEntities('refund', ['reversal_id' => $reversalId], 'test');
+
+        $refunds = $refunds->toArrayPublic();
 
         $this->assertEquals(1, count($refunds['items']));
 
