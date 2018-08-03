@@ -45,9 +45,7 @@ export default ({ entity, mode, updateEntity }) => {
         }
       })
       .catch(err => {
-        notifyError(
-          'There was an error while updating to refund. ' + JSON.stringify(err)
-        );
+        notifyError(JSON.stringify(err));
       });
   }
 
