@@ -67,13 +67,15 @@
 
                         // Add MID, email, and contact to the message.
                         if (x['response'] && typeof x['response']['message'] !== 'undefined') {
-                            if (!x['response']['message']) {
+                            if (x['response']['message'] === null) {
                                 x['response']['message'] = '';
                             }
 
-                            x['response']['message'] += '\n\nMID: ' + rzp_user.id;
-                            x['response']['message'] += '\nEmail: ' + rzp_user.email;
-                            x['response']['message'] += '\nContact: ' + rzp_user.contact_mobile;
+                            if (typeof x['response']['message'] === 'string') {
+                                x['response']['message'] += '\n\nMID: ' + rzp_user.id;
+                                x['response']['message'] += '\nEmail: ' + rzp_user.email;
+                                x['response']['message'] += '\nContact: ' + rzp_user.contact_mobile;
+                            }
                         }
 
                         try {
