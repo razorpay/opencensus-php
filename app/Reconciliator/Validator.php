@@ -93,7 +93,7 @@ class Validator
                                                         ."\s*[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
                                                          "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
                                                      ],
-        RequestProcessor\Base::NETBANKING_CORPORATION  => ['/FROM: Corporation Bank, Internet Banking./'],
+        RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached Recon Data File of Online Transaction/"],
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
