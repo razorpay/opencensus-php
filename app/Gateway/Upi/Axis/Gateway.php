@@ -105,6 +105,28 @@ class Gateway extends Base\Gateway
 
         $vpa = self::DEFAULT_PAYEE_VPA;
 
+////        $tobeencrypted = '{
+////            "customerVpa":"neerajrzp@axis",
+////"merchantId":"RAZAORPAY",
+////"merchantChannelId":"RAZAORPAYAPP",
+////"merchantTransactionId":"Ag8qKOyXjqCuIa",
+////"transactionTimestamp":"2018-08-01T12:30:53+05:30",
+////"transactionAmount":"3.5",
+////"gatewayTransactionId":"AXI91860545641481786401534004101878",
+////"gatewayResponseCode":"000",
+////"gatewayResponseMessage":"Success",
+////"rrn":"821312037726",
+////"checksum":"5228DC2368DDD09ABE42D8D8BD15FB74B427F22585F1F4917511F602387353D63A92FFE10A46345F01451CABB6BF7F8F0E554D618A616E0E15EB729911D6EDB78291025EDB5FE1DF361CD33028753A26E6EAF71116DDB768B09F292A25E326F08DED6F720E3D83A3E4102C6103A7B8DEA04CBE88E2001F0B66969C2C0921C29505937B38C557A9BA83BA8E6C416E4B6ED7FB2EB1A672E20AA8E24E3C474ADBD07F91216AB9C154B4878813233D9391BCFC9979E28EE5BA219029EC8B085114A6223400B2D6658658F21CEC39DA4984CAD8264FB96E0C3F07A006D7E782C8159369CF606C53F0CB63B97B9A727BF68075DE9E313BE9B79AB3743F06EAC93DA4D5"
+////}';
+////        $aesencrypted = $this->encryptAes($tobeencrypted);
+//        $aesencrypted = '2nOrIStsX1i4G/iNdqCNpELodfaWWZvZXD35MxHC5ELoAVzZ78RNOjybo+whg1e2TnKrOcIm+Hu3\ngO7Q8UT56vkkTy/6Igz3AdHXeO/N9xDIlqvWMpXQPEdI4s1xpyrv9wQa/x41XgzmqO9rvfXmnlkL\nQBWaW8SMAWeVRr+5Z/lf7tDYe1Ja/fut+s0FUQxapepXE+HwjLfIE45j3r13JnqsLtgw/OTEHdUI\nQyk28x2ygJj+kdg92YR34xLY21dOHQyvt6gLs3ZBqUVgvInLw+vAMhieZaXGBJ0pHrUD9EtDKcvM\nj8EXBTV6LqmSGNTqB3XXZJfoid/jI52Bl/uHP8kChiCp8JoOch2n4/MyDryLH4MpTPlK0Vjx7977\nyn6gYgt6dblnuUlCuDPOpo5ZjI7U5sQ9UuzKe9TEidj7PFWwCjaJQKV3KC6Mlj1+8jmeqab1mmyU\naZUZbrbt95o+GvgsZlTm+fbMe9HMQUOIfx6NVgSGML1AM7x/s6Z/zN9Kr6AzjRa4kZ8rhadL5f8p\nIQCkKKaFkEEjUPC5oM0NyG1pZgRMgmtoXH5SOa5mz4zT/Bp82zfkdHXODCgTl+RifiCFVZXaEU6Z\nr0hS+OolsXw0hA1uzSKS8FHQ0qF4Q/kpEe/dnM6Ji6eZ656aMtluP6lWMbCQYsRN/In3U0n52swS\nON9YdyKuAs2EfTnR1jMLVVL6YnH5ozY+KbQtEuceKHsoy1igd2d2L0Jxc3Mu5qJCq8W2YCtErED6\n39//7BaGJ0Ze2aFfHz0F35RKpiGgN5wqS2Qcp32qSjJfrJNOhzm47nvt+3SZVbFAPWmSgprWmJS4\nhmMAWqpgRoP9xb5z8+gR89WISDuSoRe3gowGdtjxLmge2791Nz/CavJgY7pF4AwaJo+PLrqf1h6Y\npMxv1qz0IwulFLPhG9GEhcv3te7G7cfbwlRWWPYt7wCxhiVjLDS2twMkxC6skhBcOBt0DQqC6H9F\nLYt1oj55QPZa8AXazoGq3MydhIdMadNibTCfUTbg5iXFD376bGO4xTExAUnwz/3xhO1ei8zwwGyV\ng1SIa3G427f5DVwopWiVEqCDMS6kP5H0akSbnG08eSbpheulHSBrXXOZFN+ochnS4uP57uocgPpw\nVsf1E68qDqUzYcjo/ETg4UGnYC52YvYhpQ==';
+//
+//        $aesdecrypted = $this->decryptAes($aesencrypted);
+//
+////        s($tobeencrypted);
+//        s($aesencrypted);
+//        s($aesdecrypted);
+
         return [
             'data'   => [
                 'vpa'   => $vpa
@@ -252,7 +274,6 @@ class Gateway extends Base\Gateway
             'method'    => $method,
             'content'   => $content,
         );
-
         return $request;
     }
 
@@ -322,6 +343,8 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
+        $response = $this->getCallbackResponseArray($content);
+
         return [
             'acquirer' => [
                 Payment\Entity::VPA => $gatewayPayment->getVpa()
@@ -329,10 +352,24 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function getCallbackResponseArray($content)
+    {
+        $data = [
+            Fields::CALLBACK_STATUS_CODE          => $content[Fields::GATEWAY_RESPONSE_CODE],
+            Fields::CALLBACK_STATUS_DESCRIPTION   => $content[Fields::GATEWAY_RESPONSE_MESSAGE],
+            Fields::CALLBACK_TXN_ID               => $content[Fields::GATEWAY_TRANSACTION_ID],
+        ];
+
+        $content = json_encode($data);
+
+        $response = $this->getStandardRequestArray($content);
+
+        return $response;
+    }
+
     protected function updateGatewayPaymentResponse($payment, array $response)
     {
         $attributes = $this->getMappedAttributes($response);
-
         // To mark that we have received a response for this request
         $attributes[Entity::RECEIVED] = 1;
 
@@ -617,7 +654,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->aesCrypto === null)
         {
-            $this->aesCrypto = new AESCrypto(AES::MODE_ECB,'ezSbSIqWRthPAbzN');
+            $this->aesCrypto = new AESCrypto(AES::MODE_ECB,'b0wgtwlM8iEsq63z');
         }
     }
 
@@ -633,6 +670,21 @@ class Gateway extends Base\Gateway
         $this->createCryptoIfNotCreated();
 
         return $this->aesCrypto->decryptString($stringToDecrypt);
+    }
+
+    protected function makeResponse($data)
+    {
+        $action = $this->action;
+
+        $content = json_encode($data);
+
+        $response = parent::makeResponse($content);
+
+        $response->headers->set('Content-Type', 'text/plain;charset=ISO-8859-1');
+        $response->headers->set('Expires', 'Thu, 01 Jan 1970 00:00:00 GMT');
+        $response->headers->set('x-frame-options', 'SAMEORIGIN');
+
+        return $response;
     }
 
 }

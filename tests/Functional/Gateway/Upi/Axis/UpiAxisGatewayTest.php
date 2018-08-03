@@ -97,7 +97,7 @@ class AxisGatewayTest extends TestCase
 
         $upi = $this->getLastEntity('upi', true);
 
-        $this->assertEquals($upi['vpa'], 'vijay@axis');
+        $this->assertEquals($upi['vpa'], 'vishnu@icici');
 
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
@@ -108,7 +108,7 @@ class AxisGatewayTest extends TestCase
 
         $payment['method'] = 'upi';
 
-        $payment['vpa'] = 'vijay@axis';
+        $payment['vpa'] = 'vishnu@icici';
 
         return $payment;
     }
@@ -124,7 +124,7 @@ class AxisGatewayTest extends TestCase
 
     public function testUpiAmountCap()
     {
-        $this->payment['vpa'] = 'vijay@axis';
+        $this->payment['vpa'] = 'vishnu@upi';
 
         $payment = $this->payment;
 
@@ -142,7 +142,7 @@ class AxisGatewayTest extends TestCase
 
     public function testVpaWithCapitalPspValidation($status = 'created')
     {
-        $this->payment['vpa'] = 'vijay@AXiS';
+        $this->payment['vpa'] = 'vishnu@ICICI';
 
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
@@ -164,7 +164,7 @@ class AxisGatewayTest extends TestCase
         // We should have gotten a successful response
         $this->assertEquals(['success' => true], $response);
 
-        $this->assertEquals('vijay@axis', $upiEntity[Entity::VPA]);
+        $this->assertEquals('vishnu@icici', $upiEntity[Entity::VPA]);
 
     }
 

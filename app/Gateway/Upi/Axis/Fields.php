@@ -44,47 +44,7 @@ class Fields
     const CHECK_STATUS_CHECKSUM        = 'checksum';
     const CHECK_STATUS_MOBILE_NO       = 'mobilenumber';
 
-    /**
-     * These are the expected field orders
-     * for the response we get from the API
-     *
-     * @see https://drive.google.com/drive/u/0/folders/0B1MTSXtR53PfYldqNUIyLXlnSjA
-     */
-
-    const TOKEN_GENERATION = [
-        self::CODE,
-        self::RESULT,
-        self::DATA,
-    ];
-
-    const COLLECT = [
-        self::CODE,
-        self::RESULT,
-        self::DATA,
-    ];
-
-    const CALLBACK_ENCRYPTED = [
-        self::DATA,
-    ];
-
-    const CALLBACK = [
-        self::CUSTOMER_VPA,
-        self::MERCH_ID,
-        self::MERCH_CHAN_ID,
-        self::MERCHANT_TRANSACTION_ID,
-        self::TRANSACTION_TIMESTAMP,
-        self::TRANSACTION_AMOUNT,
-        self::GATEWAY_TRANSACTION_ID,
-        self::GATEWAY_RESPONSE_CODE,
-        self::GATEWAY_RESPONSE_MESSAGE,
-        self::RRN,
-        self::CHECKSUM,
-    ];
-
-    const CHECK_TRANSACTION_STATUS = [
-        self::MERCH_ID,
-        self::MERCH_CHAN_ID,
-        self::UNQ_TXN_ID,
-        self::CHECKSUM,
-    ];
+    const CALLBACK_STATUS_CODE         = 'callBackstatusCode';
+    const CALLBACK_STATUS_DESCRIPTION  = 'callBackstatusDescription';
+    const CALLBACK_TXN_ID              = 'callBacktxnId';
 }
