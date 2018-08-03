@@ -225,7 +225,9 @@ class Gateway extends Base\Gateway
 
     protected function validateParesSignature($paresXml)
     {
-        $dom = $this->loadXmlViaDom($paresXml);
+        $dom = new \DOMDocument;
+
+        $dom->loadXML($paresXml);
 
         $adapter = new XmlseclibsAdapter;
 
@@ -729,7 +731,7 @@ class Gateway extends Base\Gateway
 
         try
         {
-            $ret = $dom->loadXML($xml);
+            $dom->loadXML($xml);
 
         }
         catch (\Exception $e)
