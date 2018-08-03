@@ -165,6 +165,7 @@ return [
             'content' => [
                 'gst_tax_slabs'  => [
                     0,
+                    10,
                     25,
                     300,
                     500,
@@ -174,6 +175,7 @@ return [
                 ],
                 'gst_tax_id_map' => [
                     "IGST_0"     => "tax_9nDpYboKAK9j7t",
+                    "IGST_10"    => "tax_9nDEUuY6bMVa65",
                     "IGST_25"    => "tax_9nDyMRwQQmzKmn",
                     "IGST_300"   => "tax_9nDz0oSwuCqct2",
                     "IGST_500"   => "tax_9nDpYciCWeNBzE",
@@ -181,6 +183,8 @@ return [
                     "IGST_1800"  => "tax_9nDpYf1tTUs2Vh",
                     "IGST_2800"  => "tax_9nDpYfqgnYW5Dx",
                     "CGST_0"     => "tax_9nDpYglSpU58lc",
+                    "CGST_05"    => "tax_9nDS50aqhA7TdV",
+                    "CGST_10"    => "tax_9nDSOMffy02J6l",
                     "CGST_12"    => "tax_9ndzIuY66e4Z7w",
                     "CGST_25"    => "tax_9nDongIFqOHM7p",
                     "CGST_150"   => "tax_9ndzUuWKXMvGIo",
@@ -194,6 +198,8 @@ return [
                     "CGST_1800"  => "tax_9nDpYmPK2K2mVi",
                     "CGST_2800"  => "tax_9nDpYnFEoqJQ5v",
                     "SGST_0"     => "tax_9nDpYnvgiGXrZh",
+                    "SGST_05"    => "tax_9nDT1zZV64hp0L",
+                    "SGST_10"    => "tax_9nDTKJ3gMSfjhe",
                     "SGST_12"    => "tax_9nD00MK9Km0l2u",
                     "SGST_25"    => "tax_9nDpcJrq9e3pHO",
                     "SGST_150"   => "tax_9nD0DxxkA0UwrU",
@@ -207,6 +213,8 @@ return [
                     "SGST_1800"  => "tax_9nDpYsoU7subph",
                     "SGST_2800"  => "tax_9nDpYtb0S0JhMP",
                     "UTGST_0"    => "tax_9nDpYuFVNQcVaU",
+                    "UTGST_05"   => "tax_9nDTh4wpU0YDCU",
+                    "UTGST_10"   => "tax_9nDUYqZko0Jrxj",
                     "UTGST_12"   => "tax_9nD0ea41MeQhwQ",
                     "UTGST_25"   => "tax_9nDq6h2an6eK6G",
                     "UTGST_150"  => "tax_9nD0tKICPabvSI",

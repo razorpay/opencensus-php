@@ -6,6 +6,7 @@ class Gst
 {
     const TAX_SLABS = [
         0,
+        10,
         25,
         300,
         500,
