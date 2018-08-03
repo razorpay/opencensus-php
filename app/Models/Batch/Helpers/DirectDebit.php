@@ -26,7 +26,6 @@ class DirectDebit
                 Card\Entity::NUMBER        =>  $row[Header::DIRECT_DEBIT_CARD_NUMBER],
                 Card\Entity::EXPIRY_MONTH  =>  $row[Header::DIRECT_DEBIT_EXPIRY_MONTH],
                 Card\Entity::EXPIRY_YEAR   =>  $row[Header::DIRECT_DEBIT_EXPIRY_YEAR],
-                Card\Entity::CVV           =>  Card\Entity::DUMMY_CVV,
                 Card\Entity::NAME          =>  $row[Header::DIRECT_DEBIT_CARDHOLDER_NAME],
             ],
             Payment\Entity::AUTH_TYPE      => Payment\AuthType::SKIP,

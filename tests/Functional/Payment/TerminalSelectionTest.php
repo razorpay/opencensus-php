@@ -1411,4 +1411,51 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals($hitachiTerminal->getId(), $payment['terminal_id']);
     }
+
+    public function testHitachiFilterWithMotoFilter()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['auth_type'] = 'skip';
+
+        $payment['card']['number'] = '5257834104683413';
+
+        unset($payment['card']['cvv']);
+
+        $hitachiTerminal = $this->fixtures->create('terminal:shared_hitachi_terminal');
+
+        $motoTerminal = $this->fixtures->create('terminal:shared_hitachi_moto_terminal');
+
+        $this->fixtures->merchant->addFeatures(['direct_debit']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $lastPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($lastPayment['terminal_id'], $motoTerminal['id']);
+    }
+
+    public function testHdfcFilterWithMotoFilter()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['auth_type'] = 'skip';
+
+        $payment['card']['number'] = '5257834104683413';
+
+        unset($payment['card']['cvv']);
+
+        $hitachiTerminal = $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $motoTerminal = $this->fixtures->create('terminal:shared_hdfc_moto_terminal');
+
+        $this->fixtures->merchant->addFeatures(['direct_debit']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $lastPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($lastPayment['terminal_id'], $motoTerminal['id']);
+    }
+
 }
