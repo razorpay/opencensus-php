@@ -2253,4 +2253,16 @@ class Service extends Base\Service
 
         return $submerchant;
     }
+
+    public function validateLinkedAccount()
+    {
+        $merchant = $this->merchant;
+
+        if ((empty($merchant) === true) or
+            ($merchant->isLinkedAccount() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT);
+        }
+    }
 }

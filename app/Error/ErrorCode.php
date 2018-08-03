@@ -811,9 +811,13 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME                                 = 'BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME';
     const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                          = 'BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING';
 
+    // Linked Account
+    const BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT                                 = 'BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT';
+
     // Partners error codes
     const SERVER_ERROR_PARTNER_APP_NOT_FOUND                                        = 'SERVER_ERROR_PARTNER_APP_NOT_FOUND';
     const BAD_REQUEST_INVALID_PARTNER_ACTION                                        = 'BAD_REQUEST_INVALID_PARTNER_ACTION';
+
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                       = 'BAD_REQUEST_MERCHANT_IS_NOT_PARTNER';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                                   = 'BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                              = 'BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER';

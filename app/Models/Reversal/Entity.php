@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY              = 'currency';
     const NOTES                 = 'notes';
     const TRANSACTION_ID        = 'transaction_id';
+    const TRANSFER              = 'transfer';
     const LINKED_ACCOUNT_NOTES  = 'linked_account_notes';
 
     // response attribute const

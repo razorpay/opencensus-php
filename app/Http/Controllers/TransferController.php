@@ -25,9 +25,32 @@ class TransferController extends Controller
         return ApiResponse::json($transfers);
     }
 
+    public function getLaTransfers()
+    {
+        $input = Request::all();
+
+        $transfers = $this->service()->fetchLaTransfers($input);
+
+        return ApiResponse::json($transfers);
+    }
+
+    public function getLaTransfer($id)
+    {
+        $transfer = $this->service()->fetchLaTransfer($id);
+
+        return ApiResponse::json($transfer);
+    }
+
     public function getTransferReversals(string $id)
     {
         $reversals = $this->service()->fetchReversalsOfTransfer($id);
+
+        return ApiResponse::json($reversals);
+    }
+
+    public function getLaTransferReversals(string $id)
+    {
+        $reversals = $this->service()->fetchLaReversalsOfTransfer($id);
 
         return ApiResponse::json($reversals);
     }

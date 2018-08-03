@@ -4140,6 +4140,9 @@ ALTER TABLE refunds
     ADD COLUMN reference8 VARCHAR(255) DEFAULT NULL AFTER reference7,
     ADD COLUMN reference9 BIGINT UNSIGNED DEFAULT NULL AFTER reference8;
 
+ALTER TABLE refunds
+    ADD COLUMN reversal_id CHAR(14) DEFAULT NULL AFTER reference9;
+
 Alter table refunds
     CHANGE reference8 bank_account_id VARCHAR(255) DEFAULT NULL,
     ALGORITHM=INPLACE, LOCK=NONE;

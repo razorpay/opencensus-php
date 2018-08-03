@@ -98,6 +98,13 @@ class UserRolesScope
             // marketplace
             'transfer_fetch_multiple' => Role::READER_ROLES,
 
+            // TODO change the role to LA dashboard admin and owner after launch.
+            'transfer_fetch_multiple_la'  => [Role::OWNER],
+            'transfer_fetch_la'           => [Role::OWNER],
+            'transfer_fetch_reversals_la' => [Role::OWNER],
+            'reversal_fetch_multiple_la'  => [Role::OWNER],
+            'reversal_fetch_la'           => [Role::OWNER],
+
             // oauth
             'oauth_application_create'         => [Role::OWNER],
             'oauth_application_delete'         => [Role::OWNER],

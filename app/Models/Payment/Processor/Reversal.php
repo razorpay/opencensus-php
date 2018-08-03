@@ -51,20 +51,20 @@ trait Reversal
         }
 
         // Refund the transfer payment - this debits the account balance
-        $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($input, $transferPayment)
+        $refund = $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($input, $transferPayment)
         {
             $refundInput = [
                 Refund\Entity::AMOUNT => $input[ReversalEntity::AMOUNT],
                 Refund\Entity::NOTES  => (new Transfer\Core)->getLaNotes($input),
             ];
 
-            (new Processor($transferPayment->merchant))
+            return (new Processor($transferPayment->merchant))
                 ->refundTransferPayment($transferPayment, $refundInput);
         });
 
         // Reverse the associated transfer - this credits the marketplace balance
         return (new ReversalCore)
-                    ->createForMarketplaceRefund($transfer, $this->merchant, $input);
+                    ->createForMarketplaceRefund($transfer, $this->merchant, $refund, $input);
     }
 
     /**
@@ -74,6 +74,7 @@ trait Reversal
      * @param  array          $input
      *
      * @throws Exception\BadRequestException
+     * @return Base\Entity
      */
     protected function refundTransferPayment(Payment\Entity $payment, array $input)
     {
@@ -108,6 +109,8 @@ trait Reversal
         $this->repo->saveOrFail($payment);
 
         $this->repo->saveOrFail($refund);
+
+        return $refund;
     }
 
     /**

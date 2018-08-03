@@ -334,4 +334,49 @@ return [
             ],
         ],
     ],
+
+    'testRetrieveLaTransfers' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/la-transfers',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [],
+            ],
+        ]
+    ],
+
+    'testFetchLaTransfer' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/la-transfers/%s',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ]
+    ],
+
+    'testLaFetchTransferReversals' => [
+        'request' => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ]
+    ],
+
+    'testLaFetchReversals' => [
+        'request' => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ]
 ];
