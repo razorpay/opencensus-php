@@ -348,6 +348,7 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: prod-api
+      branch: master
       event:
         exclude: [push]
         include: [deployment]
@@ -365,7 +366,7 @@ pipeline:
     cluster: kluster-api
     auth_mode: client-cert
     kind: deployment
-    daemonset:
+    deployment:
       - api-dark
     repo: razorpay/api
     namespace: api-dark
@@ -373,6 +374,7 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: prod-api-dark
+      branch: [master, dark]
       event:
         exclude: [push]
         include: [deployment]
