@@ -557,6 +557,8 @@ class Repository extends Base\Repository
 
         $accessMapsMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
 
+        $accessMapsDeletedAt = $accessMapRepo->dbColumn(AccessMap\Entity::DELETED_AT);
+
         $merchantDetailsRepo = $this->repo->merchant_detail;
 
         $merchantDetailsMerchantId = $merchantDetailsRepo->dbColumn(Detail\Entity::MERCHANT_ID);
@@ -572,7 +574,8 @@ class Repository extends Base\Repository
                       ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
                       ->leftJoin(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
                       ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
-                      ->where($accessMapsEntityId, $applicationId);
+                      ->where($accessMapsEntityId, $applicationId)
+                      ->where($accessMapsDeletedAt, null);
 
         return $query;
     }
