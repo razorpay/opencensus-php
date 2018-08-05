@@ -144,7 +144,7 @@ pipeline:
     environment:
         - AWS_CDN_BUCKET=betacdn
         - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
-        - CDN_PATH='dashboard/delta'
+        - CDN_PATH=dashboard/delta
     secrets: [AWS_KEY, AWS_SECRET]
     commands:
         # Requirements for running s3sync.js
@@ -157,6 +157,60 @@ pipeline:
     when:
       event: deployment
       environment: delta
+  deploy-s3-charlie:
+    image: node:9-alpine
+    environment:
+        - AWS_CDN_BUCKET=betacdn
+        - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
+        - CDN_PATH=dashboard/charlie
+    secrets: [AWS_KEY, AWS_SECRET]
+    commands:
+        # Requirements for running s3sync.js
+        - npm install multi-glob aws-sdk
+        # Show what all will get synced
+        - ls -laR public/dist/
+        - ls -laR public/js/generated/
+        - ls -laR public/css/generated/
+        - ./s3sync.js
+    when:
+      event: deployment
+      environment: charlie
+  deploy-s3-echo:
+    image: node:9-alpine
+    environment:
+        - AWS_CDN_BUCKET=betacdn
+        - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
+        - CDN_PATH=dashboard/echo
+    secrets: [AWS_KEY, AWS_SECRET]
+    commands:
+        # Requirements for running s3sync.js
+        - npm install multi-glob aws-sdk
+        # Show what all will get synced
+        - ls -laR public/dist/
+        - ls -laR public/js/generated/
+        - ls -laR public/css/generated/
+        - ./s3sync.js
+    when:
+      event: deployment
+      environment: echo
+  deploy-s3-qa-func:
+    image: node:9-alpine
+    environment:
+        - AWS_CDN_BUCKET=betacdn
+        - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
+        - CDN_PATH=dashboard/func
+    secrets: [AWS_KEY, AWS_SECRET]
+    commands:
+        # Requirements for running s3sync.js
+        - npm install multi-glob aws-sdk
+        # Show what all will get synced
+        - ls -laR public/dist/
+        - ls -laR public/js/generated/
+        - ls -laR public/css/generated/
+        - ./s3sync.js
+    when:
+      event: deployment
+      environment: qa-func
   deploy-s3-prod:
     image: node:9-alpine
     environment:
@@ -217,6 +271,48 @@ pipeline:
     when:
       environment: delta
       event: deployment
+  deploy-charlie:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment: dashboard
+    repo: razorpay/dashboard
+    namespace: charlie
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: charlie
+      event: deployment
+  deploy-echo:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment: dashboard
+    repo: razorpay/dashboard
+    namespace: echo
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: echo
+      event: deployment
   deploy-prod:
     image: razorpay/drone-kubernetes
     pull: true
@@ -238,45 +334,7 @@ pipeline:
     when:
       environment: prod
       event: deployment
-  deploy-qa-func:
-    image: razorpay/drone-kubernetes
-    pull: true
-    secrets:
-      - docker_username
-      - docker_password
-      - server_url_qa
-      - server_cert_qa
-      - client_cert_qa
-      - client_key_qa
-    user: drone
-    cluster: qa
-    auth_mode: client-cert
-    deployment: dashboard
-    repo: razorpay/dashboard
-    namespace: func
-    tag:
-      - ${DRONE_COMMIT_SHA}
-    when:
-      environment: qa-func
-      event: deployment
-  deploy-s3-func:
-    image: node:9-alpine
-    environment:
-        - AWS_CDN_BUCKET=betacdn
-        - AWS_CLOUDFRONT_DISTRIBUTION_ID=E3RC1ED30HJGHJ
-        - CDN_PATH='dashboard/func'
-    secrets: [AWS_KEY, AWS_SECRET]
-    commands:
-        # Requirements for running s3sync.js
-        - npm install multi-glob aws-sdk
-        # Show what all will get synced
-        - ls -laR public/dist/
-        - ls -laR public/js/generated/
-        - ls -laR public/css/generated/
-        - ./s3sync.js
-    when:
-      event: deployment
-      environment: qa-func
+#for deploy-qa-func image is being set manually
   build-notify:
     image: plugins/slack
     secrets: [slack_webhook]
