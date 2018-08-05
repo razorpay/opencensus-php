@@ -86,13 +86,6 @@ $gutter = 8px;
     }
   }
 
-  .material-input__datepicker .SingleDatePicker, .material-input  {
-    border-bottom-color: #e2e2e2
-    &:hover {
-      border-color: #c1c1c1
-    }
-  }
-
   .light-placeholder {
     .btn-link {
       padding: 0px;
@@ -737,7 +730,7 @@ $gutter = 8px;
         }
 
         &:not(.total):not(.addline) {
-          &:nth-child(odd) {
+          &:nth-child(even) {
             background-color: #fafafa
             .ps-item__editbtn {
               background-color: #fafafa
@@ -778,6 +771,13 @@ $gutter = 8px;
 
     .lineItem__total {
       width: 20%;
+    }
+  }
+
+  .material-input, .material-input > input, .material-input__datepicker .SingleDatePicker,  {
+    border-color: #e2e2e2
+    &:hover, &:focus {
+      border-color: #c1c1c1
     }
   }
 }
