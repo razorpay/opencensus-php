@@ -79,7 +79,7 @@ export default class Sidebar extends Component {
                   />
                   <MainNavLink
                     label="Transfers"
-                    icon="i i-repeat text-primary"
+                    icon="i i-transfers text-primary"
                     to={routes.transfers}
                     notMyRole="sellerapp"
                   />
