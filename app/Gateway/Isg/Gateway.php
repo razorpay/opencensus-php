@@ -68,7 +68,6 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-
     }
 
     protected function getVerifyCallbackRequestArray($input)
@@ -101,7 +100,7 @@ class Gateway extends Base\Gateway
     {
         if ($response[Field::STATUS_CODE] === Status::APPROVED)
         {
-            return ;
+            return;
         }
 
         switch ($response[Field::STATUS_CODE])
@@ -118,7 +117,7 @@ class Gateway extends Base\Gateway
                 throw new Exception\RuntimeException('Not a valid response code');
         }
 
-            $this->handleGatewayError($gatewayErrorCode, $input, $response);
+        $this->handleGatewayError($gatewayErrorCode, $input, $response);
     }
 
     protected function handleGatewayError($gatewayErrorCode, $input, $response)
