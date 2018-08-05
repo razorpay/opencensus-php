@@ -9,7 +9,7 @@ import { required } from 'rzp/utils/validators';
 import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
-
+import store from 'merchant/store';
 @connect(null, {
   ...AccountActions,
   ...ModalActions,
@@ -26,25 +26,49 @@ export default class AddAccount extends Component {
     errors: null,
   };
 
+  isEmailEditable = false;
+
   componentWillMount() {
     const accountData = this.props.accountData;
+    const user = store.getState().session.user;
+    let email = null;
+    //check whether the LA has its own email or not
+    if (
+      accountData &&
+      user.merchants[user.current].email !== accountData.email
+    ) {
+      this.isEmailEditable = true;
+      email = accountData.email;
+    }
 
     if (accountData) {
       this.props.initialize({
         name: accountData.name,
+        ...(email && { email: accountData.email }),
       });
     }
   }
 
   save = props => {
-    return this.props
-      .saveAccount(props)
+    let requestData = { ...props };
+    let reqFunc = this.isEmailEditable
+      ? this.props.updateEmail
+      : this.props.saveAccount;
+
+    if (this.isEmailEditable) {
+      delete requestData.name;
+    }
+
+    return reqFunc(requestData)
       .then(account => {
         this.props.onSave(account);
         this.props.showNotification({
           type: 'success',
-          message: 'Account created successfully',
+          message: this.isEmailEditable
+            ? 'Email edited successfully'
+            : 'Account created successfully',
         });
+        this.props.closeModal();
       })
       .catch(({ errors }) => {
         this.setState({

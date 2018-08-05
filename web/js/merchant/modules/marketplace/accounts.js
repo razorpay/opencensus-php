@@ -1,8 +1,9 @@
-import ajax from 'merchant/utils/ajax';
+import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge, unshift } from 'rzp/utils/immutable';
 
 const ACCOUNTS_FETCH = 'ACCOUNTS_FETCH';
 const ACCOUNT_CREATE = 'ACCOUNT_CREATE';
+const UPDATE_EMAIL = 'UPDATE_EMAIL';
 
 export const fetchAccountsApi = params => {
   return ajax(
@@ -42,6 +43,18 @@ export const exportAccountsCSV = () => {
       url: '/reports/account',
       data,
     });
+  };
+};
+
+export const updateEmail = data => {
+  return {
+    type: UPDATE_EMAIL,
+    payload: merchantFetch({
+      url: 'la-merchants/email',
+      method: 'put',
+      appendModeInURL: true,
+      data,
+    }).then(response => response.data),
   };
 };
 
