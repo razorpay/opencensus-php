@@ -52,12 +52,12 @@ class Gateway extends Base\Gateway
         else
         {
             throw new Exception\LogicException(
-            'Not a Bharat Qr Payment',
-            null,
-            [
-                'input'     => $input,
-                'gateway'   => $this->gateway,
-            ]);
+                'Not a Bharat Qr Payment',
+                null,
+                [
+                    'input'     => $input,
+                    'gateway'   => $this->gateway,
+                ]);
         }
     }
 
@@ -140,17 +140,17 @@ class Gateway extends Base\Gateway
     protected function checkVerifyCallbackResponse($response, $input)
     {
         $this->checkMismatch($response[Field::TRANSACTION_AMOUNT],
-                             $input[Field::TRANSACTION_AMOUNT],
-                             $input,
-                             $response,
-                             'E001'
+            $input[Field::TRANSACTION_AMOUNT],
+            $input,
+            $response,
+            'E001'
         );
 
         $this->checkMismatch($response[Field::MERCHANT_PAN],
-                             $input[Field::MERCHANT_PAN],
-                             $input,
-                             $response,
-                            'E003'
+            $input[Field::MERCHANT_PAN],
+            $input,
+            $response,
+            'E003'
         );
 
         $expectedConsumerPan = $this->getDecryptedString($response[Field::CONSUMER_PAN]);
@@ -160,17 +160,17 @@ class Gateway extends Base\Gateway
         $actualConsumerPan = $this->getDecryptedString($input[Field::CONSUMER_PAN]);
 
         $this->checkMismatch($expectedConsumerPan,
-                             $actualConsumerPan,
-                             $input,
-                             $response,
-                            'E002'
+            $actualConsumerPan,
+            $input,
+            $response,
+            'E002'
         );
 
         $this->checkMismatch($response[Field::STATUS_CODE],
-                             $input[Field::STATUS_CODE],
-                             $input,
-                             $response,
-                            'E004'
+            $input[Field::STATUS_CODE],
+            $input,
+            $response,
+            'E004'
         );
     }
 
@@ -281,14 +281,14 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray($attributes);
 
         $this->traceGatewayPaymentRequest($request,
-                                          $input,
-                                         TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
+            $input,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response->body,
-                                           $input,
-                                          TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
+            $input,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
 
         $responseArray = $this->jsonToArray($response->body);
 
@@ -454,25 +454,15 @@ class Gateway extends Base\Gateway
         $input = null,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
-        if (isset($input['payment']) === true)
-        {
-            $this->trace->info(
-                $traceCode,
-                [
-                    'request'    => $request,
-                    'gateway'    => $this->gateway,
-                    'payment_id' => $input['payment']['id'],
-                ]);
-        }
-        else
-        {
-            $this->trace->info(
-                $traceCode,
-                [
-                    'request'    => $request,
-                    'gateway'    => $this->gateway,
-                ]);
-        }
+        $paymentId = $input['payment']['id'] ?? null;
+
+        $this->trace->info(
+            $traceCode,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $paymentId,
+            ]);
     }
 
     protected function traceGatewayPaymentResponse(
@@ -480,25 +470,15 @@ class Gateway extends Base\Gateway
         $input = null,
         $traceCode = TraceCode::GATEWAY_PAYMENT_RESPONSE)
     {
-        if (isset($input['payment']) === true)
-        {
-            $this->trace->info(
-                $traceCode,
-                [
-                    'response'      => $response,
-                    'gateway'       => $this->gateway,
-                    'payment_id'    => $input['payment']['id'],
-                ]);
-        }
-        else
-        {
-            $this->trace->info(
-                $traceCode,
-                [
-                    'request' => $response,
-                    'gateway' => $this->gateway,
-                ]);
-        }
+        $paymentId = $input['payment']['id'] ?? null;
+
+        $this->trace->info(
+            $traceCode,
+            [
+                'request'    => $response,
+                'gateway'    => $this->gateway,
+                'payment_id' => $paymentId,
+            ]);
     }
 
     /*
@@ -510,8 +490,6 @@ class Gateway extends Base\Gateway
 
     public function getBharatQrResponse(bool $valid, $input = null, $ex = null)
     {
-        $status = '400';
-
         $attributes = [
             Field::TRANSACTION_ID      => $input[Field::TRANSACTION_ID],
             Field::NOTIFICATION_REF_NO => $input[Field::TRANSACTION_ID],
@@ -522,8 +500,6 @@ class Gateway extends Base\Gateway
             $attributes[Field::STATUS_CODE] = Status::APPROVED;
 
             $attributes[Field::STATUS_DESC] = Status::SUCCESS;
-
-            $status = '200';
         }
         else if (isset($ex) === true)
         {
@@ -540,8 +516,6 @@ class Gateway extends Base\Gateway
             $attributes[Field::STATUS_DESC] = Status::FAILED;
         }
 
-        $response = ApiResponse::json($attributes, $status);
-
-        return $response;
+        return $attributes;
     }
 }

@@ -35,7 +35,7 @@ class BharatQrController extends Controller
 
         $response = $this->service()->processPayment($input, $gateway);
 
-        return $response;
+        return ApiResponse::json($response);
     }
 
     public function processBharatQrTestPayment()

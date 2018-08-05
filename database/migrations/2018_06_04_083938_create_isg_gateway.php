@@ -26,43 +26,43 @@ class CreateIsgGateway extends Migration
             $table->char(ISG::PAYMENT_ID, Payment::ID_LENGTH);
 
             $table->char(ISG::REFUND_ID, Refund::ID_LENGTH)
-                ->nullable();
+                    ->nullable();
 
             $table->char(ISG::ACTION, 10)
-                ->nullable();
+                  ->nullable();
 
             $table->integer(ISG::RECEIVED)
-                ->default(0);
+                  ->default(0);
 
             $table->string(ISG::MERCHANT_REFERENCE)
-                ->nullable();
+                  ->nullable();
 
             $table->string(ISG::SECONDARY_ID)
-                ->nullable();
+                  ->nullable();
 
             $table->char(ISG::BANK_REFERENCE_NUMBER, 16)
-                ->nullable();
+                  ->nullable();
 
             $table->dateTime(ISG::TRANSACTION_DATE_TIME)
-                ->nullable();
+                  ->nullable();
 
             $table->integer(ISG::AMOUNT)
-                 ->nullable();
+                  ->nullable();
 
             $table->char(ISG::AUTH_CODE, 6)
-                ->nullable();
+                  ->nullable();
 
             $table->char(ISG::RRN, 12)
-                ->nullable();
+                  ->nullable();
 
             $table->integer(ISG::TIP_AMOUNT)
-                ->nullable();
+                  ->nullable();
 
             $table->char(ISG::STATUS_CODE, 2)
-                ->nullable();
+                  ->nullable();
 
             $table->char(ISG::STATUS_DESC, 30)
-                ->nullable();
+                  ->nullable();
 
             $table->string(ISG::CREATED_AT);
 
@@ -80,6 +80,6 @@ class CreateIsgGateway extends Migration
      */
     public function down()
     {
-        Schema::drop('isg');
+        Schema::drop(Table::ISG);
     }
 }
