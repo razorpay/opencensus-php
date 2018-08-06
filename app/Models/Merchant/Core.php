@@ -262,6 +262,21 @@ class Core extends Base\Core
                 'new_email' => $input['email']
             ]);
 
+        $parentId = $merchant->getReferrer();
+
+        if (empty($parentId) === false)
+        {
+            $parent = $this->repo->merchant->find($parentId);
+            if ((empty($parent) === false) and (strtolower($merchant->getEmail()) === strtolower($parent->getEmail())))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+                    Merchant\Entity::EMAIL,
+                    $input[Merchant\Entity::EMAIL]
+                );
+            }
+        }
+
         $merchant->edit($input, 'editEmail');
 
         $this->saveAndNotify($merchant);
