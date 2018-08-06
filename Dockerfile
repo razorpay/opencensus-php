@@ -24,6 +24,7 @@ COPY composer.json composer.lock /app/
 # A single character change in this command will trigger a new
 # composer install
 RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
+    composer global require hirak/prestissimo && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \
     composer clear-cache && \
@@ -33,6 +34,8 @@ RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
     mkdir /opt && chown -R apache:www-data /opt
 
 COPY --chown=apache:www-data . /app/
+
+RUN cp dockerconf/mpm.conf /etc/apache2/conf.d/mpm.conf
 
 # This step can't run without some classes from above step
 RUN composer dump-autoload && php artisan optimize

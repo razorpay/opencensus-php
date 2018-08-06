@@ -745,6 +745,21 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantsDeleted' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
+
     'testFetchPartnerSubmerchantsFilters' => [
         'request'  => [
             'url'     => '/submerchants',
