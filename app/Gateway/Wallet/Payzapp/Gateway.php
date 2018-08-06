@@ -169,6 +169,15 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRefundRequestContent($input);
 
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, [
+            'gateway'    => $this->gateway,
+            'payment_id' => $input['payment']['id'],
+            'refund_id'  => $input['refund']['id'],
+            'request'    => $request
+        ]);
+
+        throw new Exception\RuntimeException(' Refunds blocked on gateway');
+
         $response = $this->postRequest($request)['content'];
 
         $content =  [];
