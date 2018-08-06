@@ -459,7 +459,12 @@ class Entity extends Base\PublicEntity
             $emiDurations = array_unique(array_merge($existingEmiDurations, $emiDurations));
         }
 
-        $this->attributes[self::EMI_DURATIONS] = json_encode(array_values($emiDurations));
+        $emiDurations = array_map(function ($emiDuration)
+                            {
+                                return (int) $emiDuration;
+                            }, $emiDurations);
+
+        $this->attributes[self::EMI_DURATIONS] = json_encode(array_unique(array_values($emiDurations)));
     }
 
     protected function setLinkedOfferIdsAttribute(array $linkedOfferIds)
