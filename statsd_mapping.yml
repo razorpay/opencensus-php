@@ -22,9 +22,9 @@ mappings:
 
 - match: api_attempts_time_for_utr_minutes.*
   time_type: histogram
-    buckets: [5, 15, 30, 60, 120, 180, 240, 300, 360, 480, 600, 720, 1440, 2880, 4320, 7200]
-    # [5mins, 15mins, 30mins, 1hr, 2hrs, 3hrs, 4hrs, 5hrs, 6hrs, 8hrs, 12hrs, 1day, 2days, 3days, 5days]
-    name: "api_attempts_time_for_utr_minutes"
+  buckets: [5, 15, 30, 60, 120, 180, 240, 300, 360, 480, 600, 720, 1440, 2880, 4320, 7200]
+  # [5mins, 15mins, 30mins, 1hr, 2hrs, 3hrs, 4hrs, 5hrs, 6hrs, 8hrs, 12hrs, 1day, 2days, 3days, 5days]
+  name: "api_attempts_time_for_utr_minutes"
 
 - match: api_recon_payment_create_to_reconciled_time_minutes.*
   timer_type: histogram
