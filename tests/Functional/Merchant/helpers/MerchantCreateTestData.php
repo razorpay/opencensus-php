@@ -486,6 +486,24 @@ return [
         ],
     ],
 
+    'testCreateMarketplaceLinkedAccountWithAlreadyExistingUser' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account Name',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'    => '7gcKngYfqyDMjN',
+                'name'  => 'Linked Account Name',
+            ],
+        ],
+    ],
+
     'testCreateMarketplaceLinkedAccountWithoutEmail' => [
         'request'  => [
             'url'     => '/submerchants',

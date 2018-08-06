@@ -10,9 +10,10 @@ use Razorpay\OAuth\Application\Entity as OAuthApp;
 
 use RZP\Constants;
 use RZP\Constants\Mode;
-use RZP\Mail\User\PasswordReset;
 use RZP\Models\Merchant;
 use RZP\Models\Batch\Header;
+use RZP\Mail\User\PasswordReset;
+use RZP\Mail\User\MappedToAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -518,11 +519,39 @@ class MerchantCreateTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
+        $this->testData[__FUNCTION__]['response']['content']['email'] = $user['email'];
+
         $this->startTest();
 
         Mail::assertQueued(PasswordReset::class, function ($mail)
         {
             return $mail->hasTo('linkedaccount@razorpay.com');
+        });
+    }
+
+    public function testCreateMarketplaceLinkedAccountWithAlreadyExistingUser()
+    {
+        Mail::fake();
+
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $merchant = Merchant\Entity::find("10000000000000");
+        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
+        $merchant->saveOrFail();
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $user['email'];
+
+        $this->startTest();
+
+        Mail::assertQueued(MappedToAccount::class, function ($mail) use ($user)
+        {
+            return $mail->hasTo($user['email']);
         });
     }
 
