@@ -1,9 +1,9 @@
 <?php
 
-    use RZP\Error\ErrorCode;
-    use RZP\Error\PublicErrorCode;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 
-    return [
+return [
     'testFetchRuleCascadingForAdminAuth' => [
         'request' => [
             'url'     => '/admin/payment',
