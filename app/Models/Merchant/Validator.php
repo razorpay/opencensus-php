@@ -789,4 +789,14 @@ class Validator extends Base\Validator
 
         }
     }
+
+    public function validateLinkedAccount(Entity $merchant)
+    {
+        if ((empty($merchant) === true) or
+            ($merchant->isLinkedAccount() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT);
+        }
+    }
 }

@@ -594,6 +594,15 @@ class TransferTest extends TestCase
         $this->startTest();
     }
 
+    public function testLinkedAccountValidation()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
     public function testLaFetchTransferReversals()
     {
         $transfer = $this->createTransfer('account');

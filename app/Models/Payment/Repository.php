@@ -111,12 +111,19 @@ class Repository extends Base\Repository
         }
     }
 
+    /**
+     * This validates the expand route to allow transfer and settlement expand only for linked account merchants
+     * @param $attribute
+     * @param $value
+     *
+     * @throws \RZP\Exception\ExtraFieldsException
+     */
     protected function validateExpand($attribute, $value)
     {
         $merchant = $this->auth->getMerchant();
 
-        if (((empty($merchant) === true) or
-            ($merchant->isLinkedAccount() === false)) and (($value === 'transfer') or ($value === 'transfer.settlement')))
+        if (((empty($merchant) === true) or ($merchant->isLinkedAccount() === false)) and
+            (($value === 'transfer') or ($value === 'transfer.settlement')))
         {
             throw new Exception\ExtraFieldsException("expand=transfer");
         }

@@ -368,7 +368,7 @@ class Core extends Base\Core
      * @throws \RZP\Exception\BadRequestException
      * @return array
      */
-    public function getLaNotes(array $input)
+    public function getLaNotes(array $input): array
     {
         $transferNotes = $input[Entity::NOTES] ?? [];
 
@@ -384,7 +384,7 @@ class Core extends Base\Core
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
-                    null,
+                    Entity::NOTES,
                     array_intersect(array_keys($laNotes), $laNotesKeys));
             }
         }

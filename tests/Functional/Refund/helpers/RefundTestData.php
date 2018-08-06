@@ -449,6 +449,28 @@ return [
         'status'          => 'Ok',
     ],
 
+    'testFetchRefundReversal' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/refunds',
+            'content' => [
+                'expand' => ['reversal'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
     'tpvPayment' => [
         'request' => [
             'content' => [

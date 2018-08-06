@@ -34,7 +34,7 @@ class TransferController extends Controller
         return ApiResponse::json($transfers);
     }
 
-    public function getLaTransfer($id)
+    public function getLaTransfer(string $id)
     {
         $transfer = $this->service()->fetchLaTransfer($id);
 

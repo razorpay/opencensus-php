@@ -32,9 +32,11 @@ trait LinkedAccountNotesTrait
     {
         $notes = $this->getNotes();
 
-        if ((empty($notes) === false) and (empty($notes[self::LINKED_ACCOUNT_NOTES]) === false))
+        $laNotesList = $notes[self::LINKED_ACCOUNT_NOTES] ?? [];
+
+        if ((empty($notes) === false) and (empty($laNotesList) === false))
         {
-            $attributes[self::LINKED_ACCOUNT_NOTES] = explode(",", $notes[self::LINKED_ACCOUNT_NOTES]);
+            $attributes[self::LINKED_ACCOUNT_NOTES] = explode(",", $laNotesList);
             unset($attributes[self::NOTES][self::LINKED_ACCOUNT_NOTES]);
         }
         else

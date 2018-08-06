@@ -55,7 +55,7 @@ class Service extends Base\Service
 
     public function fetchLaReversalsOfTransfer(string $transferId): array
     {
-        (new Merchant\Service)->validateLinkedAccount();
+        (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
         $transferId = Entity::verifyIdAndStripSign($transferId);
 
@@ -111,7 +111,7 @@ class Service extends Base\Service
 
     public function fetchLaTransfer(string $id): array
     {
-        (new Merchant\Service)->validateLinkedAccount();
+        (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
         $merchantId = $this->merchant->getId();
 
@@ -124,9 +124,9 @@ class Service extends Base\Service
         return $this->createTransferResponseFromPayment($payment);
     }
 
-    public function fetchLaTransfers(array $input)
+    public function fetchLaTransfers(array $input): array
     {
-        (new Merchant\Service)->validateLinkedAccount();
+        (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
         $merchantId = $this->merchant->getId();
 
@@ -136,15 +136,15 @@ class Service extends Base\Service
         $payments = $this->repo->payment->fetch($input, $merchantId);
 
         $transfersResponse = [
-            "count"  => count($payments),
-            "entity" => "collection",
-            "items"  => $this->createResponse($payments),
+            'count'  => count($payments),
+            'entity' => 'collection',
+            'items'  => $this->createResponse($payments),
         ];
 
         return $transfersResponse;
     }
 
-    private function createResponse($payments)
+    private function createResponse($payments): array
     {
         $transfers = [];
         foreach ($payments as $payment)
@@ -157,7 +157,7 @@ class Service extends Base\Service
         return $transfers;
     }
 
-    private function createTransferResponseFromPayment($payment)
+    private function createTransferResponseFromPayment($payment): array
     {
         $result = $payment->toArrayPublic();
 

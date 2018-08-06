@@ -74,9 +74,9 @@ trait Reversal
      * @param  array          $input
      *
      * @throws Exception\BadRequestException
-     * @return Base\Entity
+     * @return Refund\Entity
      */
-    protected function refundTransferPayment(Payment\Entity $payment, array $input)
+    protected function refundTransferPayment(Payment\Entity $payment, array $input): Refund\Entity
     {
         if ($payment->isTransfer() === false)
         {
