@@ -24,6 +24,7 @@ class Gateway extends Base\Gateway
 {
     use Base\CardCacheTrait;
     use Base\AuthorizeFailed;
+    use Base\GatewayTerminalTrait;
 
     protected $gateway = 'hitachi';
 

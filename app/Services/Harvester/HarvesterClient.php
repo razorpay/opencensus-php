@@ -4,11 +4,12 @@ namespace RZP\Services\Harvester;
 
 use Requests;
 use Carbon\Carbon;
-use Requests_Response as Response;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Services\AbstractEventClient;
+use RZP\Exception\IntegrationException;
 
 class HarvesterClient extends AbstractEventClient
 {
@@ -178,7 +179,8 @@ class HarvesterClient extends AbstractEventClient
             {
                 $response = $this->getResponse($request);
 
-            }catch(\Requests_Exception $e)
+            }
+            catch(\Requests_Exception $e)
             {
                 $this->trace->info(
                     TraceCode::HARVESTER_RETRY,
@@ -204,6 +206,23 @@ class HarvesterClient extends AbstractEventClient
 
     protected function checkErrors($urlPath, $data, $response)
     {
+        if ($response === null)
+        {
+            $this->trace->error(
+                TraceCode::HARVESTER_FAILURE,
+                [
+                    'url'       => $urlPath,
+                    'data'      => $data,
+                ]);
+
+            throw new IntegrationException(
+                ErrorCode::SERVER_ERROR_HARVESTER_INVALID_RESPONSE,
+                [
+                    'url'       => $urlPath,
+                    'data'      => $data,
+                ]);
+        }
+
         if (($response !== null) and ($response->status_code !== 200))
         {
             $this->trace->error(

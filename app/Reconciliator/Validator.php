@@ -68,32 +68,32 @@ class Validator
         ];
 
     const GATEWAY_BODY_REGEX = [
-        RequestProcessor\Base::OLAMONEY           => ["/^Please find settlement report for /"],
-        RequestProcessor\Base::FREECHARGE         => ["/Please view your (transaction|settlement) report/"],
-        RequestProcessor\Base::NETBANKING_AXIS    => [
-                                                        "/Kindly find attached below the MIS for "
-                                                        . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
-                                                     ],
-        RequestProcessor\Base::NETBANKING_ICICI   => ["/Please find below the payment report for the day./"],
-        RequestProcessor\Base::NETBANKING_FEDERAL => [
-                                                        "/^MIS Report File Dated "
-                                                        . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
-                                                     ],
-        RequestProcessor\Base::AXIS               => [
-                                                        "/Please find attached the settlement file for today."
-                                                        . " You net amount settled is/"
-                                                     ],
-        RequestProcessor\Base::NETBANKING_CSB     => ["/Please find attached, the recon file for the date/"],
-        RequestProcessor\Base::FIRST_DATA         => ["/the statement of transactions for MID (.)*razorpay/"],
-        RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => ["/Please find the hourly report of Virtual Accounts./"],
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["/Please find attached subject scheduled reports./"],
-        RequestProcessor\Base::HITACHI            => ["/Please find the attached RAZORPAY RBL Settled Transaction report./"],
-        RequestProcessor\Base::UPI_ICICI          => [
-                                                        "/Please find attached the UPI Transaction Report MIS as on"
-                                                        ."\s*[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-                                                         "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
-                                                     ],
-        RequestProcessor\Base::NETBANKING_CORPORATION  => ['/FROM: Corporation Bank, Internet Banking./'],
+        RequestProcessor\Base::OLAMONEY               => ["/^Please find settlement report for /"],
+        RequestProcessor\Base::FREECHARGE             => ["/Please view your (transaction|settlement) report/"],
+        RequestProcessor\Base::NETBANKING_AXIS        => [
+                                                            "/Kindly find attached below the MIS for "
+                                                            . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
+                                                         ],
+        RequestProcessor\Base::NETBANKING_ICICI       => ["/Please find below the payment report for the day./"],
+        RequestProcessor\Base::NETBANKING_FEDERAL     => [
+                                                            "/^MIS Report File Dated "
+                                                            . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
+                                                         ],
+        RequestProcessor\Base::AXIS                   => [
+                                                            "/Please find attached the settlement file for today."
+                                                            . " You net amount settled is/"
+                                                         ],
+        RequestProcessor\Base::NETBANKING_CSB         => ["/Please find attached, the recon file for the date/"],
+        RequestProcessor\Base::FIRST_DATA             => ["/the statement of transactions for MID (.)*razorpay/"],
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK      => ["/Please find the hourly report of Virtual Accounts./"],
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK    => ["/Please find attached subject scheduled reports./"],
+        RequestProcessor\Base::HITACHI                => ["/Please find the attached RAZORPAY RBL Settled Transaction report./"],
+        RequestProcessor\Base::UPI_ICICI              => [
+                                                            "/Please find attached the UPI Transaction Report MIS as on"
+                                                            ."\s*[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
+                                                             "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
+                                                         ],
+        RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached Recon Data File of Online Transaction/"],
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
