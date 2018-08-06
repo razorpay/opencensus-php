@@ -2166,7 +2166,6 @@ final class Route
         'customer_delete'                      => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_delete_token'                => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_fetch_tokens'                => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
-        'merchant_edit_email_la'               => [Feature::MARKETPLACE],
         'payment_create_wallet'                => [Feature::S2SWALLET],
         'payment_create_upi'                   => [Feature::S2SUPI],
         'payment_create_openwallet'            => [Feature::OPENWALLET],
