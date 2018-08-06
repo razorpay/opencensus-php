@@ -575,7 +575,7 @@ class Repository extends Base\Repository
                       ->leftJoin(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
                       ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
                       ->where($accessMapsEntityId, $applicationId)
-                      ->where($accessMapsDeletedAt, null);
+                      ->whereNull($accessMapsDeletedAt);
 
         return $query;
     }
