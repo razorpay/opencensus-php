@@ -982,12 +982,14 @@ class Entity extends Base\PublicEntity
     {
         $displayName = $this->getAttribute(self::DISPLAY_NAME);
 
+        $merchantName = $this->getAttribute(self::NAME);
+
         if (empty($displayName) === false)
         {
-            return $displayName . " - ". $this->getAttribute(self::NAME);
+            return $displayName . " - ". $merchantName;
         }
 
-        return $this->getAttribute(self::NAME);
+        return $merchantName;
     }
 
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)

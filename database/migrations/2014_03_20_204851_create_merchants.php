@@ -70,7 +70,7 @@ class CreateMerchants extends Migration
                   ->nullable();
 
             $table->string(Merchant::DISPLAY_NAME, 255)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Merchant::CHANNEL, 32);
 
