@@ -11,12 +11,13 @@ const UPDATE_APPLICATION = 'UPDATE_APPLICATION';
 const DELETE_APPLICATION = 'DELETE_APPLICATION';
 const REVOKE_ACCESS_TOKEN = 'REVOKE_ACCESS_TOKEN';
 
-export const fetchAppWebhooks = appId => {
+export const fetchAppWebhooks = (appId, mode) => {
   return merchantFetch({
     url: 'webhooks',
     params: {
       application_id: appId,
     },
+    mode,
   });
 };
 
