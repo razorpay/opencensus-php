@@ -31,11 +31,11 @@ RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
     echo ${GIT_COMMIT_HASH} > public/commit.txt && \
     apk add --no-cache apache2 apache2-ctl php7-mysqlnd php7-apache2 musl && sed -i 's#PidFile "/run/.*#Pidfile /tmp/run/httpd.pid"#g' /etc/apache2/conf.d/mpm.conf && \
     sed -i 's/#LoadModule rewrite_module*/LoadModule rewrite_module/' /etc/apache2/httpd.conf && \
-    # for apache2 mpm_prefork_module workers
-    sed -i -- '32s/    MaxRequestWorkers      250/    MaxRequestWorkers      150/' /etc/apache2/conf.d/mpm.conf && \
     mkdir /opt && chown -R apache:www-data /opt
 
 COPY --chown=apache:www-data . /app/
+
+RUN cp dockerconf/mpm.conf /etc/apache2/conf.d/mpm.conf
 
 # This step can't run without some classes from above step
 RUN composer dump-autoload && php artisan optimize
