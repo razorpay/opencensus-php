@@ -11,18 +11,12 @@ import AsyncButton from 'ui/AsyncButton';
 // refund Actions
 export default ({ entity, mode, updateEntity }) => {
   function retryRefund(body) {
-    return adminPost(`${mode}/refunds/${entity.id}/retry`)
-      .then(data => {
-        if (data) {
-          notifySuccess('Refund is successful');
-          setTimeout(() => window.location.reload(), 1500);
-        }
-      })
-      .catch(err => {
-        notifyError(
-          'There was an error while retrying to refund. ' + JSON.stringify(err)
-        );
-      });
+    return adminPost(`${mode}/refunds/${entity.id}/retry`).then(data => {
+      if (data) {
+        notifySuccess('Refund is successful');
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    });
   }
 
   function updateRefund(body) {
@@ -34,19 +28,15 @@ export default ({ entity, mode, updateEntity }) => {
       url: `${mode}/refunds/${entity.id}/status`,
     };
 
-    return adminPut(payload)
-      .then(data => {
-        if (data) {
-          notifySuccess('Refund is successfully updated.');
-          entity.status = data.status;
-          entity.reference1 = body.reference1;
-          updateEntity(entity);
-          closeModal();
-        }
-      })
-      .catch(err => {
-        notifyError(JSON.stringify(err));
-      });
+    return adminPut(payload).then(data => {
+      if (data) {
+        notifySuccess('Refund is successfully updated.');
+        entity.status = data.status;
+        entity.reference1 = body.reference1;
+        updateEntity(entity);
+        closeModal();
+      }
+    });
   }
 
   function openEditRefund() {
@@ -81,10 +71,20 @@ export default ({ entity, mode, updateEntity }) => {
 };
 
 const EditRefundForm = ({ entity, handleSubmit }) => {
-  let statusOptions = [<option value="processed"> Processed </option>];
+  let statusOptions = [
+    <option key="processed" value="processed">
+      {' '}
+      Processed{' '}
+    </option>,
+  ];
 
   if (entity.status === 'created') {
-    statusOptions.push(<option value="failed"> Failed </option>);
+    statusOptions.push(
+      <option key="failed" value="failed">
+        {' '}
+        Failed{' '}
+      </option>
+    );
   }
 
   return (
