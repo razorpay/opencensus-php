@@ -14,3 +14,51 @@ mappings:
   timer_type: histogram
   buckets: [5, 30, 50, 80, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
   name: "api_http_request_duration_milliseconds"
+
+- match: api_transaction_settlement_initiation_delay_minutes.*
+  timer_type: histogram
+  buckets: [60, 120, 180, 240, 300, 360, 480, 600, 720, 1440, 2880, 4320, 7200, 8640, 10080, 11520, 12960, 14400, 21600]
+  name: "api_transaction_settlement_initiation_delay_minutes"
+
+- match: api_attempts_time_for_utr_minutes.*
+  time_type: histogram
+    buckets: [5, 15, 30, 60, 120, 180, 240, 300, 360, 480, 600, 720, 1440, 2880, 4320, 7200]
+    # [5mins, 15mins, 30mins, 1hr, 2hrs, 3hrs, 4hrs, 5hrs, 6hrs, 8hrs, 12hrs, 1day, 2days, 3days, 5days]
+    name: "api_attempts_time_for_utr_minutes"
+
+- match: api_recon_payment_create_to_reconciled_time_minutes.*
+  timer_type: histogram
+  buckets: [60, 360, 720, 1440, 2880, 4320, 7200, 10080, 14400, 21600, 43200, 86400, 172800, 259200]
+  # [1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days, 10days, 15days, 1month, 2months, 4months, 6months]
+  name: "api_recon_payment_create_to_reconciled_time_minutes"
+
+- match: api_recon_refund_create_to_reconciled_time_minutes.*
+  timer_type: histogram
+  buckets: [60, 360, 720, 1440, 2880, 4320, 7200, 10080, 14400, 21600, 43200, 86400, 172800, 259200]
+  # [1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days, 10days, 15days, 1month, 2months, 4months, 6months]
+  name: "api_recon_refund_create_to_reconciled_time_minutes"
+
+- match: api_refund_processed_from_created_minutes.*
+  timer_type: histogram
+  buckets: [60, 360, 720, 1440, 2880, 4320, 7200, 10080, 14400, 21600, 43200, 86400, 172800, 259200, 525600]
+  # [1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days, 10days, 15days, 1month, 2months, 4months, 6months, 1year(365days)]
+  name: "api_refund_processed_from_created_minutes"
+
+- match: api_refund_processed_from_last_failed_attempt_minutes.*
+  timer_type: histogram
+  buckets: [30, 60, 360, 720, 1440, 2880, 4320, 7200, 10080, 14400, 21600, 43200, 86400, 172800, 259200, 525600]
+  # [30min, 1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days, 10days, 15days, 1month, 2months, 4months, 6months, 1year(365days)]
+  name: "api_refund_processed_from_last_failed_attempt_minutes"
+
+- match: api_refund_created_from_captured_minutes.*
+  timer_type: histogram
+  buckets: [60, 360, 720, 1440, 2880, 4320, 7200, 10080, 14400, 21600, 43200, 86400, 172800, 259200, 525600]
+  # [1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days, 10days, 15days, 1month, 2months, 4months, 6months, 1year(365days)]
+  name: "api_refund_created_from_captured_minutes"
+
+- match: api_refund_created_from_authorized_minutes.*
+  timer_type: histogram
+  buckets: [60, 120, 360, 720, 1440, 2160, 2880, 4320, 7200, 10080, 14400]
+  # [1hr, 2hrs, 6hrs, 12hrs, 24hrs, 36hrs, 2days, 3days, 5days, 7days, 10days]
+  name: "api_refund_created_from_authorized_minutes"
+

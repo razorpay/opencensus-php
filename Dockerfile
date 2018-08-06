@@ -24,6 +24,7 @@ COPY composer.json composer.lock /app/
 # A single character change in this command will trigger a new
 # composer install
 RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
+    composer global require hirak/prestissimo && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \
     composer clear-cache && \

@@ -62,7 +62,7 @@ class Observer extends BaseObserver
             Metric::LABEL_PAYMENT_CURRENCY              =>  $payment->getCurrency(),
             Metric::LABEL_PAYMENT_INTERNATIONAL         =>  $payment->isInternational(),
             Metric::LABEL_PAYMENT_TRANSACTION_TYPE      =>  $payment->getTransactionType(),
-            Metric::LABEL_PAYMENT_STATUS                =>  $payment->getStatus().'_'.$payment->getErrorCode(),
+            Metric::LABEL_PAYMENT_STATUS                =>  $payment->getStatus().'_'.$payment->getInternalErrorCode(),
         ];
 
         if ($payment->hasCard() === true)
@@ -88,7 +88,7 @@ class Observer extends BaseObserver
         }
         else if ($payment->isUpi() === true)
         {
-            $issuer = $payment->getBankCodeFromVpa();
+            $issuer = $payment->getPspFromVpa();
         }
 
         $metricData += [

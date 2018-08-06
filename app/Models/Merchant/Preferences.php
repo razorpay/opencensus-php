@@ -26,6 +26,8 @@ class Preferences
     const MID_SRI_CHAITANYA    = '8f9o3YjPGZEcdU';
     const MID_UBER             = '82LK42BGTN2bOe';
     const MID_AMIT_MAHBUBANI   = '7SVOQZGZuwHr4I';
+    const MID_ICICI_LOMBARD    = 'AXRuIp5uiz5Jsp';
+
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [
         '9YAQd3b47mdIQY', '9ZO8jNaR0OORNH', '9Y9m9XscC6Kh4W',

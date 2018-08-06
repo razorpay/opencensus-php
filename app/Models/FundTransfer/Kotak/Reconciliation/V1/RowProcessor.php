@@ -42,7 +42,7 @@ class RowProcessor extends Base\RowProcessor
 
     protected function updateEntities()
     {
-        $this->reconEntity->setUtr($this->parsedData['utr']);
+        $this->updateUtrOnReconEntity();
         $this->reconEntity->setStatus($this->parsedData['status']);
         $this->reconEntity->setFailureReason($this->parsedData['failure_reason']);
         $this->reconEntity->setRemarks($this->parsedData['remarks']);
