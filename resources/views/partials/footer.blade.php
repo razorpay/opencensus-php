@@ -8,6 +8,7 @@
         analytics.init(['ga', 'fb', 'linkedin'], {
           ga: 'UA-53341507-2'
         });
+        ga('set', 'page', location.pathname + location.hash + location.search);
         analytics.track('ga', 'pageview');
         try {
           var pendingAction = JSON.parse(analytics.utils.getCookie('pendingAction'));
