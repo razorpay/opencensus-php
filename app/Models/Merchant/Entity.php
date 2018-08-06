@@ -78,7 +78,7 @@ class Entity extends Base\PublicEntity
     const NOTES                    = 'notes';
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
 
-    const ENABLE_LA_DASHBOARD      = 'enable_la_dashboard';
+    const ENABLE_LA_DASHBOARD      = 'Enable_la_dashboard';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -1478,9 +1478,11 @@ class Entity extends Base\PublicEntity
      */
     public function liveTagNames(): array
     {
-        return $this->getConnectionName() === Mode::LIVE ?
+        $liveConnection = app('basicauth')->getLiveConnection();
+
+        return $this->getConnectionName() === $liveConnection ?
                 $this->tagNames() :
-                (clone $this)->setConnection(Mode::LIVE)->tagNames();
+                (clone $this)->setConnection($liveConnection)->tagNames();
     }
 
     public function isEmailOptional()

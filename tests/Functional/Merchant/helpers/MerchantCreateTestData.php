@@ -466,6 +466,26 @@ return [
         ],
     ],
 
+    'testCreateMarketplaceLinkedAccountWithDashbaordUser' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account 2',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'    => '7gcKngYfqyDMjN',
+                'name'  => 'Linked Account 2',
+                'email' => 'linkedaccount@razorpay.com',
+            ],
+        ],
+    ],
+
     'testCreateMarketplaceLinkedAccountWithoutEmail' => [
         'request'  => [
             'url'     => '/submerchants',
