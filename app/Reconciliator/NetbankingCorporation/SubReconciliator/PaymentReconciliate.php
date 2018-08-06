@@ -2,10 +2,11 @@
 
 namespace RZP\Reconciliator\NetbankingCorporation;
 
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Gateway\Base\Action;
-use RZP\Gateway\Netbanking\Corporation\Status;
+use RZP\Models\Payment\Status;
+use RZP\Gateway\Netbanking\Corporation\ReconcilationFields;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -18,7 +19,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
-        return $row[Constants::PAYMENT_ID];
+        return $row[ReconcilationFields::MERCHANT_TXN_ID];
     }
 
     protected function getGatewayPayment($paymentId)
@@ -28,21 +29,53 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReferenceNumber($row)
     {
-        return $row[Constants::BANK_REF_ID];
+        return $row[ReconcilationFields::BANK_TXN_ID] ?? null;
     }
 
-    protected function getCustomerDetails($row)
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
-        return [];
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
+                    'message'         => 'Payment amount mismatch',
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
+                    'row'             => $row,
+                    'gateway'         => $this->gateway
+                ]);
+
+            return false;
+        }
+        return true;
     }
 
-    protected function getAccountDetails($row)
+    protected function getReconPaymentAmount(array $row)
+    {
+        return Base\Helper::getIntegerFormattedAmount($row[ReconcilationFields::TXN_ORG_AMOUNT]);
+    }
+
+    protected function getGatewayPaymentDate($row)
+    {
+        return $row[ReconcilationFields::TXN_EXECUTED_DATE] ?? null;
+    }
+
+    protected function setAllowForceAuthorization()
+    {
+        return true;
+    }
+
+    protected function getInputForForceAuthorize($row)
     {
         return [
-            BaseReconciliate::ACCOUNT_NUMBER     => $row[Constants::ACCOUNT_NUMBER],
-            BaseReconciliate::ACCOUNT_TYPE       => $row[Constants::ACCOUNT_TYPE],
-            BaseReconciliate::ACCOUNT_SUBTYPE    => $row[Constants::ACCOUNT_SUB_TYPE],
-            BaseReconciliate::ACCOUNT_BRANCHCODE => $row[Constants::BRANCH_CODE],
+            'gateway_payment_id' => $row[ReconcilationFields::BANK_TXN_ID],
         ];
+    }
+
+    protected function getReconPaymentStatus(array $row)
+    {
+        return (strtolower($row[ReconcilationFields::STATUS]) === 's') ? Status::AUTHORIZED : Status::FAILED;
     }
 }

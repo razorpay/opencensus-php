@@ -98,7 +98,7 @@ class Observer extends BaseObserver
             Metric::LABEL_CARD_TYPE             => $cardType ?? null,
         ];
 
-        $this->trace->count(Metric::PAYMENT_CREATED, 1, $metricData);
+        $this->trace->count(Metric::PAYMENT_CREATED, $metricData);
 
     }
 }

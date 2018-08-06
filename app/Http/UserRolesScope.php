@@ -137,6 +137,10 @@ class UserRolesScope
             'subscription_manual_retry'   => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'subscription_test_charge'    => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'subscription_update'         => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+
+            // Partner routes
+            'submerchants_fetch'          => Role::allExceptSellerRole(),
+            'submerchants_fetch_multiple' => Role::allExceptSellerRole(),
         ];
     }
 

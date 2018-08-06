@@ -4143,3 +4143,6 @@ ALTER TABLE refunds
 Alter table refunds
     CHANGE reference8 bank_account_id VARCHAR(255) DEFAULT NULL,
     ALGORITHM=INPLACE, LOCK=NONE;
+
+ALTER TABLE tokens
+    ADD COLUMN aadhaar_vid VARCHAR(255) DEFAULT NULL AFTER aadhaar_number;

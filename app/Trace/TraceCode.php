@@ -1138,6 +1138,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Excel reader debug trace codes
     const EXCEL_READER_IMPORT_CONFIG                    = 'EXCEL_READER_IMPORT_CONFIG';
 
+    const FUND_TRANSFER_RECON_EMAIL_FAILED              = 'FUND_TRANSFER_RECON_EMAIL_FAILED';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

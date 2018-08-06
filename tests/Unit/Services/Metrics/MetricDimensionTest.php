@@ -3,9 +3,9 @@
 namespace RZP\Tests\Unit\Services\Metrics;
 
 use Config;
-use Metrics;
 use RZP\Tests\TestCase;
 use RZP\Constants\Metric;
+use RZP\Trace\Metrics\DimensionsProcessor;
 
 class MetricDimensionTest extends TestCase
 {
@@ -38,7 +38,7 @@ class MetricDimensionTest extends TestCase
      */
     public function testGetModifiedDimensions(array $dimensions, array $expected)
     {
-        $actual = Metrics::getModifiedDimensions($dimensions);
+        $actual = (new DimensionsProcessor)->process($dimensions);
 
         $this->assertEquals($expected, $actual);
     }

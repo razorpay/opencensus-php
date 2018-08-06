@@ -187,6 +187,17 @@ class Validator extends Base\Validator
         'key_access',
     ];
 
+    protected static $listSubmerchantsRules = [
+        Entity::NAME                     => 'sometimes|string',
+        Entity::ID                       => 'sometimes|alpha_num|size:14',
+        Entity::EMAIL                    => 'sometimes|email',
+        Detail\Entity::ACTIVATION_STATUS => 'sometimes|string|max:30',
+        Constants::FROM                  => 'integer',
+        Constants::TO                    => 'integer',
+        Constants::COUNT                 => 'integer|min:1|max:50',
+        Constants::SKIP                  => 'integer',
+    ];
+
     protected function validateIsTestAccount(array $input)
     {
         $merchant = $this->entity;
