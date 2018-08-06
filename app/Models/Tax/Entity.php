@@ -11,9 +11,9 @@ class Entity extends Base\PublicEntity
     /**
      * We keep tax rate as multiple of 100 in case it's of type
      * percentage. So to return the actual percent value we
-     * multiply the value by 0.0001.
+     * multiply the value by 0.000001.
      */
-    const PERCENT_MULTIPLIER = 0.0001;
+    const PERCENT_MULTIPLIER = 0.000001;
 
     use SoftDeletes;
 
@@ -92,9 +92,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RATE_TYPE);
     }
 
-    public function getRate(): float
+    public function getRate(): int
     {
-        return $this->getAttribute(self::RATE)/100;
+        return $this->getAttribute(self::RATE);
     }
 
     public function getRatePercentValue(): float
