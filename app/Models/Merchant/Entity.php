@@ -78,6 +78,8 @@ class Entity extends Base\PublicEntity
     const NOTES                    = 'notes';
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
 
+    const ENABLE_LA_DASHBOARD      = 'enable_la_dashboard';
+
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
 
@@ -1539,6 +1541,18 @@ class Entity extends Base\PublicEntity
         }
 
         return $data;
+    }
+
+    public function isTagAdded($tagName)
+    {
+        $tagNames = $this->liveTagNames();
+
+        if (in_array($tagName, $tagNames) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function toArrayUser()

@@ -2027,7 +2027,8 @@ class Service extends Base\Service
         });
 
         // Sends email to marketplace LA dashbaord enabled users.
-        if (($merchant->isMarketplace() and $isLinkedAccount) === true)
+        if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true) and
+            ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true))
         {
             (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
         }
@@ -2044,7 +2045,8 @@ class Service extends Base\Service
         $subMerchantUser = null;
         $createdNew      = false;
 
-        if ((($merchant->isPartner() === true) or ($merchant->isMarketplace() === true)) and
+        if ((($merchant->isPartner() === true) or (($merchant->isMarketplace() === true) and
+            ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD)))) and
             ($subMerchant->getEmail() !== $merchant->getEmail()))
         {
             list($subMerchantUser, $createdNew) =
