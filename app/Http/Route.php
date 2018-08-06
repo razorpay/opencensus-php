@@ -635,22 +635,26 @@ final class Route
         'payout_retry'                             => ['post',     'payouts/retry',                                  'PayoutController@postPayoutRetry'                                  ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
-        'transfer_fetch_multiple_la'               => ['get',      'la-transfers',                                   'TransferController@getLaTransfers'                                 ],
-        'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLaTransfer'                                  ],
+
         'transfer_edit'                            => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                          => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                 => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
         'transfer_fetch_reversals'                 => ['get',      'transfers/{id}/reversals',                       'TransferController@getTransferReversals'                           ],
-        'transfer_fetch_reversals_la'              => ['get',      'la-transfers/{id}/reversals',                    'TransferController@getLaTransferReversals'                         ],
         'reversal_fetch'                           => ['get',      'reversals/{id}',                                 'ReversalController@getReversal'                                    ],
         'reversal_fetch_multiple'                  => ['get',      'reversals',                                      'ReversalController@getReversals'                                   ],
-        'reversal_fetch_multiple_la'               => ['get',      'la-reversals',                                   'ReversalController@getLaReversals'                                 ],
-        'reversal_fetch_la'                        => ['get',      'la-reversals/{id}',                              'ReversalController@getLaReversal'                                  ],
+
         'payment_update_on_hold'                   => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
 
         // Dummy routes to test Account Auth
         'internal_dummy_account_test'              => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
         'admin_dummy_account_test'                 => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
+
+        // Linked Account Routes
+        'transfer_fetch_reversals_la'              => ['get',      'la-transfers/{id}/reversals',                    'TransferController@getLaTransferReversals'                         ],
+        'reversal_fetch_multiple_la'               => ['get',      'la-reversals',                                   'ReversalController@getLaReversals'                                 ],
+        'reversal_fetch_la'                        => ['get',      'la-reversals/{id}',                              'ReversalController@getLaReversal'                                  ],
+        'transfer_fetch_multiple_la'               => ['get',      'la-transfers',                                   'TransferController@getLaTransfers'                                 ],
+        'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLaTransfer'                                  ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
@@ -1177,7 +1181,6 @@ final class Route
         'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
-        'transfer_fetch_reversals_la',
         'setl_fetch_transactions',
         'setl_get_details',
         'adj_fetch_by_id',
@@ -1192,6 +1195,9 @@ final class Route
         'reports_public_entity_file',
         'reversal_fetch_multiple_la',
         'reversal_fetch_la',
+        'transfer_fetch_la',
+        'transfer_fetch_multiple_la',
+        'transfer_fetch_reversals_la',
         'bank_account_fetch',
         'merchant_edit_config',
         'merchant_edit_config_logo',
@@ -1302,8 +1308,6 @@ final class Route
         'tax_group_delete',
         'tax_get_meta_states',
         'tax_get_meta_gst_taxes',
-        'transfer_fetch_multiple_la',
-        'transfer_fetch_la',
         'payment_link_get',
         'payment_link_list',
         'payment_link_create',
