@@ -6,6 +6,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Helpers;
+use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
 
 class PaymentLink extends Base
 {
@@ -53,6 +54,36 @@ class PaymentLink extends Base
         $totalCount  = count($entries);
 
         $this->batch->setTotalCount($totalCount);
+    }
+
+    /**
+     * {@inheritDoc}
+     * Parses excel sheets at given path and returns array content
+     * @param  string $filePath
+     * @return array
+     */
+    protected function parseExcelSheets($filePath)
+    {
+        $fileType = SpreadsheetIOFactory::identify($filePath);
+        $reader = SpreadsheetIOFactory::createReader($fileType);
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($filePath);
+        assertTrue($spreadsheet->getSheetCount() === 1);
+        $rows = $spreadsheet->getActiveSheet()->toArray();
+        // First row is always expected to be header
+        $headers = array_values(array_shift($rows) ?? []);
+        // No rows exists
+        if (empty($headers) === true)
+        {
+            return [];
+        }
+        // Format rows as "heading key => value" kind of associative array
+        foreach ($rows as & $row)
+        {
+            $row = array_combine($headers, array_values($row));
+        }
+
+        return $rows;
     }
 
     //
