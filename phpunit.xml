@@ -17,6 +17,7 @@
             Following ES related tests are failing on wercker.
             To be removed asap after debug.
           -->
+          <exclude>./tests/Unit/</exclude>
           <exclude>./tests/Functional/Payment/</exclude>
           <exclude>./tests/Functional/Gateway/</exclude>
           <exclude>./tests/Functional/Merchant/MerchantEsCreateTest.php</exclude>
@@ -27,6 +28,7 @@
       <testsuite name="Payment Test Suite">
           <directory>./tests/Functional/Payment/</directory>
           <directory>./tests/Functional/Gateway/</directory>
+          <directory>./tests/Unit/</directory>
       </testsuite>
   </testsuites>
   <listeners>

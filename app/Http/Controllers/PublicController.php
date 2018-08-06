@@ -144,20 +144,37 @@ class PublicController extends Controller
 
         $this->validateHostedParams($params);
 
+        // place flashcheckout check here
+        $savedCardsDisabled = $params['checkout']['key'] === 'rzp_live_iCSx3q87a2XrU0';
         $options     = json_encode($params['checkout'], JSON_FORCE_OBJECT);
-        $checkout    = $this->getCheckoutCommon();
-        $checkoutUrl = $checkout['checkout'] . '/v1/checkout.js';
         $urls        = json_encode($params['url'], JSON_FORCE_OBJECT);
 
-        $data = [
-            'options'      => $options,
-            'checkout'     => $checkoutUrl,
-            'urls'         => $urls,                      // used directly in JS side
-            'url_callback' => $params['url']['callback'], // Used in PHP
-            'retry'        => true,
-        ];
+        if ($savedCardsDisabled) {
+            $key         = $params['checkout']['key'];
+            $embeddedJsUrl = $this->config->get('url.cdn.production') . '/static/hosted/embedded.js';
+            $data = [
+                'key'          => $key,
+                'options'      => $options,
+                'script'       => $embeddedJsUrl,
+                'urls'         => $urls,
+            ];
 
-        return View::make('public.hosted', $data);
+            return View::make('public.embedded', $data);
+        } else {
+            $checkout    = $this->getCheckoutCommon();
+            $checkoutUrl = $checkout['checkout'] . '/v1/checkout.js';
+            $data = [
+                'options'      => $options,
+                'checkout'     => $checkoutUrl,
+                'urls'         => $urls,                      // used directly in JS side
+                'url_callback' => $params['url']['callback'], // Used in PHP
+                'retry'        => true,
+            ];
+
+            return View::make('public.hosted', $data);
+        }
+
+
     }
 
     protected function validateHostedParams($params)

@@ -78,7 +78,7 @@ class MerchantDetail extends Base
             "business_registered_city"      => "city",
             "business_registered_pin"       => "123455",
             "business_operation_address"    => "Adress",
-            "business_operation_state"      => "state",
+            "business_operation_state"      => "Punjab",
             "business_operation_city"       => "city",
             "business_operation_pin"        => "123455",
             "promoter_pan"                  => "test133",

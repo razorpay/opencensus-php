@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\NetbankingCorporation;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Gateway\Netbanking\Corporation\ReconcilationFields;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -14,24 +15,30 @@ class Reconciliate extends Base\Reconciliate
 
     public function getColumnHeadersForType($type)
     {
-        return Constants::PAYMENT_COLUMN_HEADERS;
-    }
-
-    public function getDelimiter()
-    {
-        return chr(29);
+        return ReconcilationFields::getPaymentColumnHeaders();
     }
 
     public function getNumLinesToSkip(array $fileDetails)
     {
         return [
             FileProcessor::LINES_FROM_TOP    => 1,
-            FileProcessor::LINES_FROM_BOTTOM => 1
+            FileProcessor::LINES_FROM_BOTTOM => 0
         ];
     }
 
-    public function getFileType(string $mimeType): string
+    public function getDelimiter()
     {
-        return FileProcessor::CSV;
+        return '|';
+    }
+
+    public function inExcludeList(array $fileDetails)
+    {
+        if (preg_match('/[0-9]{5}_[0-9]{8}_corpbank/', $fileDetails['file_name']) === 0)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
+

@@ -9,6 +9,7 @@ use RZP\Base\Common;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
+use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
@@ -487,5 +488,95 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->orgId($orgId)
                     ->findOrFailPublic($id);
+    }
+
+    /**
+     * @param string $submerchantId
+     * @param string $applicationId
+     *
+     * @return Entity
+     */
+    public function findSubmerchantByIdAndPartnerAppId(string $submerchantId, string $applicationId): Entity
+    {
+        $accessMapsMerchantId = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::MERCHANT_ID);
+
+        $query = $this->buildQueryToFetchSubmerchants($applicationId)
+                      ->where($accessMapsMerchantId, $submerchantId)
+                      ->firstOrFail();
+
+        return $query;
+    }
+
+    /**
+     * @param string $applicationId
+     * @param array  $params
+     *
+     * @return Base\PublicCollection
+     */
+    public function fetchSubmerchantsByPartnerAppId(string $applicationId, array $params = []): Base\PublicCollection
+    {
+        $query = $this->buildQueryToFetchSubmerchants($applicationId);
+
+        $this->buildQueryWithParams($query, $params);
+
+        $query->orderBy(Table::MERCHANT . '.' . Entity::CREATED_AT, 'desc')
+              ->orderBy(Table::MERCHANT . '.' . Entity::ID, 'desc');
+
+        return $query->get();
+    }
+
+    /**
+     * Used to filter the list of submerchants fetched for partners
+     *
+     * @param $query
+     * @param $params
+     *
+     * @return mixed
+     */
+    protected function addQueryParamActivationStatus($query, $params)
+    {
+        $query->where(Detail\Entity::ACTIVATION_STATUS, $params[Detail\Entity::ACTIVATION_STATUS]);
+
+        return $query;
+    }
+
+    /**
+     * @param string $applicationId
+     *
+     * @return Base\BuilderEx
+     */
+    protected function buildQueryToFetchSubmerchants(string $applicationId)
+    {
+        $accessMapRepo = $this->repo->merchant_access_map;
+
+        $merchantsMerchantId = $this->dbColumn(Entity::ID);
+
+        $accessMapsEntityType = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_TYPE);
+
+        $accessMapsEntityId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_ID);
+
+        $accessMapsMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+
+        $accessMapsDeletedAt = $accessMapRepo->dbColumn(AccessMap\Entity::DELETED_AT);
+
+        $merchantDetailsRepo = $this->repo->merchant_detail;
+
+        $merchantDetailsMerchantId = $merchantDetailsRepo->dbColumn(Detail\Entity::MERCHANT_ID);
+
+        $merchantDetailsColumns = $merchantDetailsRepo->dbColumn('*');
+
+        $attributes = [$merchantDetailsColumns, $this->dbColumn('*')];
+
+        // merchantDetail is not fetched as a relation because a filter has to be added for that in the query
+        $query = $this->newQuery()
+                      ->with(['users', 'owners'])
+                      ->select($attributes)
+                      ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
+                      ->leftJoin(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
+                      ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
+                      ->where($accessMapsEntityId, $applicationId)
+                      ->whereNull($accessMapsDeletedAt);
+
+        return $query;
     }
 }
