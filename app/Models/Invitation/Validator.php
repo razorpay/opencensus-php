@@ -52,7 +52,18 @@ class Validator extends Base\Validator
 
     protected function validateRole(string $attribute, string $role)
     {
-        if (User\Role::exists($role) === false)
+        $merchant = $this->entity->merchant;
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $dashboardRoles = User\Role::LINKED_ACCOUNT_ROLES;
+        }
+        else
+        {
+            $dashboardRoles = User\Role::ALL_ROLES;
+        }
+
+        if (in_array($role, $dashboardRoles) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
         }

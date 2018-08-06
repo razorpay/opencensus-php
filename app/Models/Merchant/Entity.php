@@ -1543,7 +1543,12 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
-    public function isTagAdded($tagName)
+    /**
+     * @param string $tagName
+     *
+     * @return bool
+     */
+    public function isTagAdded(string $tagName): bool
     {
         $tagNames = $this->liveTagNames();
 
