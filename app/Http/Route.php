@@ -650,11 +650,11 @@ final class Route
         'admin_dummy_account_test'                 => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
 
         // Linked Account Routes
-        'transfer_fetch_reversals_la'              => ['get',      'la-transfers/{id}/reversals',                    'TransferController@getLaTransferReversals'                         ],
-        'reversal_fetch_multiple_la'               => ['get',      'la-reversals',                                   'ReversalController@getLaReversals'                                 ],
-        'reversal_fetch_la'                        => ['get',      'la-reversals/{id}',                              'ReversalController@getLaReversal'                                  ],
-        'transfer_fetch_multiple_la'               => ['get',      'la-transfers',                                   'TransferController@getLinkedAccountTransfers'                                 ],
-        'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLinkedAccountTransfer'                                  ],
+        'transfer_fetch_reversals_la'              => ['get',      'la-transfers/{id}/reversals',                    'TransferController@getLinkedAccountTransferReversals'              ],
+        'reversal_fetch_multiple_la'               => ['get',      'la-reversals',                                   'ReversalController@getLinkedAccountReversals'                      ],
+        'reversal_fetch_la'                        => ['get',      'la-reversals/{id}',                              'ReversalController@getLinkedAccountReversal'                       ],
+        'transfer_fetch_multiple_la'               => ['get',      'la-transfers',                                   'TransferController@getLinkedAccountTransfers'                      ],
+        'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLinkedAccountTransfer'                       ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],

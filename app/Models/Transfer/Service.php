@@ -53,7 +53,7 @@ class Service extends Base\Service
         return $reversals->toArrayPublic();
     }
 
-    public function fetchLaReversalsOfTransfer(string $transferId): array
+    public function fetchLinkedAccountReversalsOfTransfer(string $transferId): array
     {
         (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 

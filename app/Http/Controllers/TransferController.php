@@ -48,9 +48,9 @@ class TransferController extends Controller
         return ApiResponse::json($reversals);
     }
 
-    public function getLaTransferReversals(string $id)
+    public function getLinkedAccountTransferReversals(string $id)
     {
-        $reversals = $this->service()->fetchLaReversalsOfTransfer($id);
+        $reversals = $this->service()->fetchLinkedAccountReversalsOfTransfer($id);
 
         return ApiResponse::json($reversals);
     }
