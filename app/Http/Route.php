@@ -653,8 +653,8 @@ final class Route
         'transfer_fetch_reversals_la'              => ['get',      'la-transfers/{id}/reversals',                    'TransferController@getLaTransferReversals'                         ],
         'reversal_fetch_multiple_la'               => ['get',      'la-reversals',                                   'ReversalController@getLaReversals'                                 ],
         'reversal_fetch_la'                        => ['get',      'la-reversals/{id}',                              'ReversalController@getLaReversal'                                  ],
-        'transfer_fetch_multiple_la'               => ['get',      'la-transfers',                                   'TransferController@getLaTransfers'                                 ],
-        'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLaTransfer'                                  ],
+        'transfer_fetch_multiple_la'               => ['get',      'la-transfers',                                   'TransferController@getLinkedAccountTransfers'                                 ],
+        'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLinkedAccountTransfer'                                  ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],

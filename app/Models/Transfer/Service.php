@@ -109,7 +109,7 @@ class Service extends Base\Service
         return $reversal->toArrayPublic();
     }
 
-    public function fetchLaTransfer(string $id): array
+    public function fetchLinkedAccountTransfer(string $id): array
     {
         (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
@@ -124,7 +124,7 @@ class Service extends Base\Service
         return $this->createTransferResponseFromPayment($payment);
     }
 
-    public function fetchLaTransfers(array $input): array
+    public function fetchLinkedAccountTransfers(array $input): array
     {
         (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
