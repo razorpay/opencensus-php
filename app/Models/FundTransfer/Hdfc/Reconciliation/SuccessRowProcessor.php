@@ -52,7 +52,7 @@ class SuccessRowProcessor extends BaseRowProcessor
      */
     protected function updateReconEntity()
     {
-        $this->reconEntity->setUtr($this->parsedData[self::UTR]);
+        $this->updateUtrOnReconEntity();
 
         $this->reconEntity->setCmsRefNo($this->parsedData[self::CMS_REF_NO]);
 
@@ -61,5 +61,10 @@ class SuccessRowProcessor extends BaseRowProcessor
         $this->reconEntity->setRemarks($this->parsedData[self::REMARK]);
 
         $this->reconEntity->saveOrFail();
+    }
+
+    protected function getUtrToUpdate()
+    {
+        return $this->parsedData[self::UTR];
     }
 }
