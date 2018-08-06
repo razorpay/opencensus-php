@@ -35,12 +35,16 @@ const AccountsListItem = ({ account, showEditAccountModal, onEdit }) => {
           </button>
         ) : (
           <span>
-            {account.email}
             {showEditAccountModal && (
-              <a class="p-all" onClick={() => showEditAccountModal(account)}>
+              <a
+                class="p-r"
+                onClick={() => showEditAccountModal(account)}
+                title="Edit Email"
+              >
                 <i class="i i-edit" />
               </a>
             )}
+            {account.email}
           </span>
         )}
       </td>

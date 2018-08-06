@@ -53,7 +53,8 @@ export const updateEmail = data => {
       url: 'la-merchants/email',
       method: 'put',
       appendModeInURL: true,
-      data,
+      data: { email: data.email },
+      accountId: data.accountId,
     }).then(response => response.data),
   };
 };

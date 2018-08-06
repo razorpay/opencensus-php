@@ -56,6 +56,7 @@ export default class AddAccount extends Component {
       : this.props.saveAccount;
 
     if (this.isEmailEditable) {
+      requestData['accountId'] = this.props.accountData.id;
       delete requestData.name;
     }
 
