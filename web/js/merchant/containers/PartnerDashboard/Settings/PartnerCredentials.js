@@ -6,15 +6,24 @@ import { openModal, closeModal } from 'rzp/modules/modals';
 import DetailRow from 'merchant/components/DetailRow';
 import ViewCredentials from './ViewCredentials';
 
-@connect(null, {
-  openModal,
-  closeModal,
-})
+@connect(
+  state => ({
+    clientCredentials: state.applications.partnerApplication.clientCredentials,
+  }),
+  {
+    openModal,
+    closeModal,
+  }
+)
 export default class PartnerCredentials extends Component {
   handleViewClick = mode => () => {
+    const type = mode === 'test' ? 'dev' : 'prod';
+    const { clientCredentials } = this.props;
     this.props.openModal({
       size: 'small',
-      component: <ViewCredentials mode={mode} />,
+      component: (
+        <ViewCredentials mode={mode} credentials={clientCredentials[type]} />
+      ),
     });
   };
 

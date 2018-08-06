@@ -3,6 +3,7 @@ import Application from 'merchant/models/Application';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 const FETCH_APPLICATIONS = 'FETCH_APPLICATIONS';
+const FETCH_PARTNER_APPLICATION = 'FETCH_PARTNER_APPLICATION';
 const FETCH_CONNECTED_APPLICATIONS = 'FETCH_CONNECTED_APPLICATIONS';
 const FETCH_APPLICATION_DETAILS = 'FETCH_APPLICATION_DETAILS';
 const CREATE_APPLICATION = 'CREATE_APPLICATION';
@@ -67,6 +68,14 @@ export const fetchApplications = params => {
   };
 };
 
+export const fetchPartnerApplication = () => {
+  let application = new Application();
+  return {
+    type: FETCH_PARTNER_APPLICATION,
+    payload: application.fetchPartnerApplication(),
+  };
+};
+
 export const fetchConnectedApplications = params => {
   let application = new Application();
 
@@ -127,6 +136,7 @@ let initialState = {
   items: [],
   details: {},
   tokens: [],
+  partnerApplication: {},
 };
 
 export default function(state = initialState, action) {
@@ -136,6 +146,7 @@ export default function(state = initialState, action) {
     case `${DELETE_APPLICATION}::PENDING`:
     case `${REVOKE_ACCESS_TOKEN}::PENDING`:
     case `${FETCH_APPLICATION_DETAILS}::PENDING`:
+    case `${FETCH_PARTNER_APPLICATION}::PENDING`:
       return merge(state, {
         loading: true,
       });
@@ -159,6 +170,14 @@ export default function(state = initialState, action) {
       return merge(state, {
         connectedAppsloading: false,
         tokens: action.payload.data.items,
+      });
+
+    case `${FETCH_PARTNER_APPLICATION}::SUCCESS`:
+      return merge(state, {
+        loading: false,
+        partnerApplication: {
+          clientCredentials: action.payload.client_details,
+        },
       });
 
     case `${CREATE_APPLICATION}::SUCCESS`:
