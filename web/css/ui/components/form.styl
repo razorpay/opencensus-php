@@ -156,7 +156,7 @@ form
       width: 100%
       margin: 8px auto
 
-      >label, >select, >input, >textarea, >button, .info-block, .DayPickerInput
+      >label, >select, >input, >textarea, >button, .info-block, .DayPickerInput, .searchable-select
         display: inline-block
         vertical-align: middle
 
@@ -168,7 +168,7 @@ form
         vertical-align: top
         white-space: pre-wrap
 
-      >select, >input, >textarea, >button, >i, .DayPickerInput
+      >select, >input, >textarea, >button, >i, .DayPickerInput, .searchable-select
         margin-left: 10px
 
       >i:not(.post-field-icon)
@@ -184,6 +184,9 @@ form
         width: 55%
         float: right
         margin-right: 8%
+      
+      .searchable-select
+        width: 50%
 
     // full-elements class on <Form> makes the <Field> elements to take 100% on right side otherwise default width
     &.full-elements .field:not(.multi)
