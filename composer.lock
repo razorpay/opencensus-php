@@ -5450,21 +5450,21 @@
         },
         {
             "name": "razorpay/metrics-php",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/metrics-php.git",
-                "reference": "db1a29978d6a86253c18f441c2a2ae2ae7a9fdb7"
+                "reference": "278cbd6adbb42c2258859c47e8b252a9cf37b6d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/metrics-php/zipball/db1a29978d6a86253c18f441c2a2ae2ae7a9fdb7",
-                "reference": "db1a29978d6a86253c18f441c2a2ae2ae7a9fdb7",
+                "url": "https://api.github.com/repos/razorpay/metrics-php/zipball/278cbd6adbb42c2258859c47e8b252a9cf37b6d3",
+                "reference": "278cbd6adbb42c2258859c47e8b252a9cf37b6d3",
                 "shasum": ""
             },
             "require": {
                 "datadog/php-datadogstatsd": "^1.0",
-                "illuminate/support": ">=5.5",
+                "illuminate/support": ">=5.4",
                 "php": "^7.0"
             },
             "require-dev": {
@@ -5481,10 +5481,10 @@
             },
             "description": "Agent or backend agnostic php interface for collecting application metrics",
             "support": {
-                "source": "https://github.com/razorpay/metrics-php/tree/1.0.0",
+                "source": "https://github.com/razorpay/metrics-php/tree/1.0.1",
                 "issues": "https://github.com/razorpay/metrics-php/issues"
             },
-            "time": "2018-07-30T14:49:50+00:00"
+            "time": "2018-08-06T11:02:00+00:00"
         },
         {
             "name": "razorpay/oauth",
