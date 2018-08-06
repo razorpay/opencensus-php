@@ -120,8 +120,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::RECEIPT,
         self::ACQUIRER_DATA,
-        self::CREATED_AT,
         self::REVERSAL,
+        self::CREATED_AT,
     ];
 
     protected $hiddenInReport = [self::ACQUIRER_DATA];

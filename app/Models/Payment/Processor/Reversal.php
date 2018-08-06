@@ -105,8 +105,6 @@ trait Reversal
 
         $this->repo->saveOrFail($payment);
 
-        $this->repo->saveOrFail($refund);
-
         return $refund;
     }
 

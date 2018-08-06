@@ -54,11 +54,11 @@ class Service extends Base\Service
 
         $refunds = $this->repo->refund->fetch($input, $merchantId);
 
-        $reversals = [
-            'count'  => count($refunds),
-            'entity' => 'collection',
-            'items'  => $this->createReversalsResponse($refunds),
-        ];
+        $refunds = $this->createReversalsResponse($refunds);
+
+        $reversals = new Base\PublicCollection($refunds);
+
+        $reversals = $refunds->toArrayWithItems();
 
         return $reversals;
     }
