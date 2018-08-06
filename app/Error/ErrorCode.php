@@ -624,6 +624,7 @@ class ErrorCode
     const SERVER_ERROR_SIGNED_XML_EMPTY                                             = 'SERVER_ERROR_SIGNED_XML_EMPTY';
 
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
+    const SERVER_ERROR_HARVESTER_INVALID_RESPONSE                                   = 'SERVER_ERROR_HARVESTER_INVALID_RESPONSE';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
@@ -818,6 +819,4 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                       = 'BAD_REQUEST_MERCHANT_IS_NOT_PARTNER';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                                   = 'BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                              = 'BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER';
-
-    const BAD_REQUEST_HARVESTER_INVALID_RESPONSE                                    = 'BAD_REQUEST_HARVESTER_INVALID_RESPONSE';
 }

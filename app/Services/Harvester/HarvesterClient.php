@@ -179,7 +179,8 @@ class HarvesterClient extends AbstractEventClient
             {
                 $response = $this->getResponse($request);
 
-            }catch(\Requests_Exception $e)
+            }
+            catch(\Requests_Exception $e)
             {
                 $this->trace->info(
                     TraceCode::HARVESTER_RETRY,
@@ -215,7 +216,7 @@ class HarvesterClient extends AbstractEventClient
                 ]);
 
             throw new IntegrationException(
-                ErrorCode::BAD_REQUEST_HARVESTER_INVALID_RESPONSE,
+                ErrorCode::SERVER_ERROR_HARVESTER_INVALID_RESPONSE,
                 [
                     'url'       => $urlPath,
                     'data'      => $data,
