@@ -11,6 +11,8 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
+    const PRECISION_MULTIPLIER = 100;
+
     const LINE_ITEM_ID            = 'line_item_id';
     const TAX_ID                  = 'tax_id';
     const NAME                    = 'name';
@@ -84,9 +86,9 @@ class Entity extends Base\PublicEntity
 
     // Getters
 
-    public function getTaxAmount(): int
+    public function getTaxAmount(): float
     {
-        return $this->getAttribute(self::TAX_AMOUNT);
+        return $this->getAttribute(self::TAX_AMOUNT)/self::PRECISION_MULTIPLIER;
     }
 
     public function getRateType(): string
