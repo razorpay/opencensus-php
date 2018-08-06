@@ -7,7 +7,7 @@ import { openModal, closeModal } from 'rzp/modules/modals';
 import Spinner from 'rzp/ui/Spinner';
 import DetailRow from 'merchant/components/DetailRow';
 
-import WebhookDetails from './WebhookDetails';
+import ManageWebhook from './ManageWebhook';
 import ViewCredentials from './ViewCredentials';
 
 @connect(
@@ -25,6 +25,18 @@ export default class SettingsContainer extends Component {
   componentWillMount() {
     this.props.fetchPartnerApplication();
   }
+
+  handleManageWebhookClick = mode => () => {
+    this.props.openModal({
+      component: (
+        <ManageWebhook
+          onSave={this.props.closeModal}
+          applicationId={this.props.application.id}
+          mode={mode}
+        />
+      ),
+    });
+  };
 
   handleViewCredentialsClick = mode => () => {
     const type = mode === 'test' ? 'dev' : 'prod';
@@ -49,7 +61,33 @@ export default class SettingsContainer extends Component {
           <Fragment>
             <div class="panel panel-default">
               <div class="panel-heading">Webhook</div>
-              <WebhookDetails />
+              <div class="list-group details-row-container partner-settings--webhook-details">
+                {/* live webhook */}
+                <DetailRow
+                  label="Live Webhook"
+                  value={() => (
+                    <button
+                      onClick={this.handleManageWebhookClick('live')}
+                      class="btn btn-link"
+                    >
+                      Manage
+                    </button>
+                  )}
+                />
+
+                {/* test webhook */}
+                <DetailRow
+                  label="Test Webhook"
+                  value={() => (
+                    <button
+                      onClick={this.handleManageWebhookClick('test')}
+                      class="btn btn-link"
+                    >
+                      Manage
+                    </button>
+                  )}
+                />
+              </div>
             </div>
 
             <div class="panel panel-default">
