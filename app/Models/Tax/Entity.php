@@ -77,7 +77,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::RATE => 'float',
+        self::RATE => 'int',
     ];
 
     // Getters
@@ -94,7 +94,7 @@ class Entity extends Base\PublicEntity
 
     public function getRate(): float
     {
-        return $this->getAttribute(self::RATE);
+        return $this->getAttribute(self::RATE)/100;
     }
 
     public function getRatePercentValue(): float
