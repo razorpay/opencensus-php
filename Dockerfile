@@ -35,6 +35,8 @@ RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
 
 COPY --chown=apache:www-data . /app/
 
+RUN cp dockerconf/mpm.conf /etc/apache2/conf.d/mpm.conf
+
 # This step can't run without some classes from above step
 RUN composer dump-autoload && php artisan optimize
 
