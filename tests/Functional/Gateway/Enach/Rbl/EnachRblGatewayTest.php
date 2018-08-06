@@ -358,6 +358,39 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('refunded', $payment['status']);
     }
 
+    public function testRegisterFailureReconciliation()
+    {
+        $payment = $this->createAcknowledgedEnachPayment(false);
+
+        $batchFile = $this->getBatchFileToUpload($payment, 'Rejected', 'M025', 'Desc from bank');
+
+        $url = '/admin/batches';
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'registration_status' => 'Rejected',
+                'error_message'       => 'Desc from bank',
+                'error_code'          => 'M025',
+            ],
+            $enach
+        );
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'recurring_status'         => 'rejected',
+                'recurring_failure_reason' => 'GATEWAY_ERROR',
+            ],
+            $token
+        );
+    }
+
     public function testDebitFileGeneration()
     {
         $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
@@ -493,7 +526,7 @@ class EnachRblGatewayTest extends TestCase
         $payment = $this->getDbEntityById('payment', $payment['id'])->toArray();
 
         $this->assertEquals('failed', $payment['status']);
-        $this->assertEquals('BAD_REQUEST_PAYMENT_INVALID_ACCOUNT', $payment['internal_error_code']);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN', $payment['internal_error_code']);
 
         $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
 
