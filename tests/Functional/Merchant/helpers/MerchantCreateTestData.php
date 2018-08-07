@@ -633,6 +633,22 @@ return [
         ],
     ],
 
+    'testUpdateLinkedAccountEmailExistingUser' => [
+        'request'  => [
+            'url'     => '/la-merchants/email',
+            'method'  => 'put',
+            'content' => [
+                'email' => 'testing2@testing.com',
+            ],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response' => [
+
+        ],
+    ],
+
     'testCreateLinkedAccountBatch' => [
         'request'  => [
             'url'     => '/batches',

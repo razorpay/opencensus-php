@@ -7,11 +7,10 @@ use Conner\Tagging\Taggable;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
-use RZP\Models\Card\IIN;
 use RZP\Models\User;
 use RZP\Models\State;
-use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -1462,6 +1461,14 @@ class Entity extends Base\PublicEntity
     public function owners()
     {
         return $this->users()->where('role','owner');
+    }
+
+    /**
+     * Get the primary linked account owner.
+     */
+    public function primaryLinkedAccountOwner()
+    {
+        return $this->users()->where('role', User\Role::LINKED_ACCOUNT_OWNER)->first();
     }
 
     /**

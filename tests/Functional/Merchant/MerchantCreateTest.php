@@ -546,18 +546,73 @@ class MerchantCreateTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $this->testData[__FUNCTION__]['response']['content'] = $account->toArrayPublic();
+        $account = $account->toArrayPublic();
 
+        unset($account['updated_at']);
+
+        $this->testData[__FUNCTION__]['response']['content'] = $account;
         $this->testData[__FUNCTION__]['response']['content']['email'] = 'testing@testing.com';
 
-        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account->getId();
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
 
-        $this->startTest();
+        $account = $this->startTest();
 
         Mail::assertQueued(PasswordReset::class, function ($mail)
         {
             return $mail->hasTo('testing@testing.com');
         });
+
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $account['id'])->get();
+
+        $this->assertEquals(1, $users->count());
+
+        $this->assertEquals(Role::LINKED_ACCOUNT_OWNER, $users->first()->role);
+    }
+
+    public function testUpdateLinkedAccountEmailExistingUser()
+    {
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $user = $this->fixtures->create('user', ['email' => 'testing1@testing.com']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $account['id'],
+            'role'        => Role::LINKED_ACCOUNT_OWNER,
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $user = $this->fixtures->create('user', ['email' => 'testing2@testing.com']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $account['id'],
+            'role'        => Role::LINKED_ACCOUNT_ADMIN,
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth();
+
+        $account = $account->toArrayPublic();
+
+        unset($account['updated_at']);
+
+        $this->testData[__FUNCTION__]['response']['content'] = $account;
+        $this->testData[__FUNCTION__]['response']['content']['email'] = 'testing2@testing.com';
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $this->startTest();
+
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $account['id'])->get();
+
+        $this->assertEquals(2, $users->count());
     }
 
     public function testCreateMarketplaceLinkedAccountWithAlreadyExistingUser()

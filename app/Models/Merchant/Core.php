@@ -1259,7 +1259,7 @@ class Core extends Base\Core
 
         $existingUser = $this->repo->user->getUserFromEmail($newEmail);
 
-        $oldOwner = $merchant->primaryOwner();
+        $oldOwner = $merchant->primaryLinkedAccountOwner();
 
         if (empty($oldOwner) === false)
         {
@@ -1274,10 +1274,13 @@ class Core extends Base\Core
             {
                 $existingOldUser = $this->repo->user->getUserFromEmail($originalEmail);
 
-                (new User\Core)->detachAndAttachMerchantUser(
-                                                            $existingOldUser,
-                                                            $merchant->getId(),
+                if (empty($existingOldUser) === false)
+                {
+                    (new User\Core)->detachAndAttachMerchantUser(
+                                                                $existingOldUser,
+                                                                $merchant->getId(),
                                                             Role::LINKED_ACCOUNT_ADMIN);
+                }
             }
         }
 
