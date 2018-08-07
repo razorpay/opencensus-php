@@ -79,13 +79,13 @@ export default class Sidebar extends Component {
                   />
                   <MainNavLink
                     label="Transfers"
-                    icon="i i-repeat text-primary"
+                    icon="i i-transfers text-primary"
                     to={routes.transfers}
                     notMyRole="sellerapp"
                   />
                   <MainNavLink
                     label="Reversals"
-                    icon="i i-reversal text-primary"
+                    icon="i i-reversal text-warm"
                     to={routes.reversals}
                     notMyRole="sellerapp"
                   />
@@ -95,13 +95,14 @@ export default class Sidebar extends Component {
                     to="/settlements"
                     notMyRole="sellerapp support"
                   />
-                  <MainNavLink
+                  {/* temporarily disable reports for LA */}
+                  {/* <MainNavLink
                     label="Reports"
                     icon="i i-books text-danger"
                     to="/reports"
                     notMyRole="sellerapp support"
                     isPending={isReportsPending}
-                  />
+                  /> */}
                   <MainNavLink
                     label="Account Settings"
                     icon="i i-account text-primary"

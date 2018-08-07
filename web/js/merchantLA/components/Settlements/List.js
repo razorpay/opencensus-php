@@ -16,12 +16,6 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
       <td class="text-right">
         <Amount value={settlement.amount} />
       </td>
-      <td class="text-right">
-        <Amount value={settlement.fees} />
-      </td>
-      <td class="text-right">
-        <Amount value={settlement.tax} />
-      </td>
       <td>
         <Time value={settlement.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>

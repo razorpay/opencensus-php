@@ -9,12 +9,16 @@ import { required } from 'rzp/utils/validators';
 import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
-
-@connect(null, {
-  ...AccountActions,
-  ...ModalActions,
-  ...NotificationsActions,
-})
+@connect(
+  state => ({
+    user: state.session.user,
+  }),
+  {
+    ...AccountActions,
+    ...ModalActions,
+    ...NotificationsActions,
+  }
+)
 @reduxForm({
   form: 'newAccount',
   initialValues: {
@@ -27,24 +31,44 @@ export default class AddAccount extends Component {
   };
 
   componentWillMount() {
-    const accountData = this.props.accountData;
+    const { accountData, user } = this.props;
+    let email = null;
+    //check whether the LA has its own email or not
+    if (
+      accountData &&
+      user.merchants[user.current].email !== accountData.email
+    ) {
+      email = accountData.email;
+    }
 
     if (accountData) {
       this.props.initialize({
         name: accountData.name,
+        ...(email && { email: accountData.email }),
       });
     }
   }
 
   save = props => {
-    return this.props
-      .saveAccount(props)
+    const { accountData } = this.props;
+    let requestData = { ...props };
+    let reqFunc = accountData ? this.props.updateEmail : this.props.saveAccount;
+
+    if (accountData) {
+      requestData.accountId = accountData.id;
+      delete requestData.name;
+    }
+
+    return reqFunc(requestData)
       .then(account => {
         this.props.onSave(account);
         this.props.showNotification({
           type: 'success',
-          message: 'Account created successfully',
+          message: accountData
+            ? 'Email added successfully'
+            : 'Account created successfully',
         });
+        this.props.closeModal();
       })
       .catch(({ errors }) => {
         this.setState({
