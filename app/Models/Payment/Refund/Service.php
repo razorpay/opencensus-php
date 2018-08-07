@@ -853,8 +853,6 @@ class Service extends Base\Service
             }
         }
 
-        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::GATEWAY_UNPROCESSED_REFUNDS => []]);
-
         $summary = [
             'total' => $total,
             'refunds_statuses' => $allRefundsStatuses,
