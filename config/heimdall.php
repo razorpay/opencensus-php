@@ -454,8 +454,12 @@ return [
         ],
 
         PermissionCategory::ACTION => [
-            Permission::DB_META_QUERY => '',
-            Permission::OAUTH_SYNC_MERCHANT_MAP => '',
+            Permission::DB_META_QUERY                => '',
+            Permission::OAUTH_SYNC_MERCHANT_MAP      => '',
+            Permission::DOWNLOAD_NON_MERCHANT_REPORT => [
+                'description'   => 'download non-merchant reports',
+                'assignable'    => true,
+            ]
         ],
 
         // Permissions
