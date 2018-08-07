@@ -1184,6 +1184,13 @@ class RefundTest extends TestCase
         return [$payment, $order];
     }
 
+    public function testFetchRefundReversal()
+    {
+        $this->ba->proxyAuth();
+
+        parent::startTest();
+    }
+
     public function startTest($paymentId = null, $amount = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

@@ -7,8 +7,9 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Transfer;
 use RZP\Error\ErrorCode;
-use RZP\Constants\Entity as E;
 use RZP\Models\Transaction;
+use RZP\Models\Payment\Refund;
+use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Reversal\Entity as ReversalEntity;
@@ -50,15 +51,15 @@ trait Reversal
         }
 
         // Refund the transfer payment - this debits the account balance
-        $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($input, $transferPayment)
+        $refund = $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($input, $transferPayment)
         {
-            (new Processor($transferPayment->merchant))
+            return (new Processor($transferPayment->merchant))
                 ->refundTransferPayment($transferPayment, $input[ReversalEntity::AMOUNT]);
         });
 
         // Reverse the associated transfer - this credits the marketplace balance
         return (new ReversalCore)
-                    ->createForMarketplaceRefund($transfer, $this->merchant, $input);
+                    ->createForMarketplaceRefund($transfer, $this->merchant, $refund, $input);
     }
 
     /**
@@ -68,8 +69,9 @@ trait Reversal
      * @param  int            $amount
      *
      * @throws Exception\BadRequestException
+     * @return Refund\Entity
      */
-    protected function refundTransferPayment(Payment\Entity $payment, int $amount)
+    protected function refundTransferPayment(Payment\Entity $payment, int $amount): Refund\Entity
     {
         if ($payment->isTransfer() === false)
         {
@@ -103,7 +105,7 @@ trait Reversal
 
         $this->repo->saveOrFail($payment);
 
-        $this->repo->saveOrFail($refund);
+        return $refund;
     }
 
     /**
