@@ -630,7 +630,7 @@ export default class InvoicesNewContainer extends Component {
       track({
         eventAction: 'Click - Start Creating Invoices',
       });
-      this.props.closeModal();
+      // this.props.closeModal();
       this.getMerchantInfo();
     };
 
@@ -644,6 +644,7 @@ export default class InvoicesNewContainer extends Component {
       component: (
         <InvoicesOnboarding
           merchant={this.props.session.user}
+          invoiceLabelField={this.props.config.invoice_label_field}
           onStart={onStart}
           onCloseClick={onCloseClick}
         />
@@ -1246,11 +1247,12 @@ export default class InvoicesNewContainer extends Component {
     });
 
     /**
-     * Show onboarding modal if invoice_label_field is null.
+     * Show onboarding modal if invoice_label_field is null or GSTIN is empty.
      */
-    let { invoice_label_field } = this.props.config;
+    const { invoice_label_field } = this.props.config;
+    const { gstin } = this.props.session.user;
 
-    if (invoice_label_field === null) {
+    if (invoice_label_field === null || gstin === '') {
       this.showOnboardingModal();
     }
   }
