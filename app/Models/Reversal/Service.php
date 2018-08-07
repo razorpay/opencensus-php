@@ -58,7 +58,7 @@ class Service extends Base\Service
 
         $reversals = new Base\PublicCollection($refunds);
 
-        $reversals = $refunds->toArrayWithItems();
+        $reversals = $reversals->toArrayWithItems();
 
         return $reversals;
     }
