@@ -4,13 +4,19 @@ import { TextAreaField } from 'ui/Field';
 
 import { adminPost } from 'common/fetch';
 import { splitAndFilter } from 'common/util';
-import { closeModal, notifyError, notifySuccess } from 'common/modal';
+import {
+  closeModal,
+  notifyError,
+  notifySuccess,
+  openModal,
+} from 'common/modal';
+import { ModalContent } from 'component/Modal';
 
 export default function RetryBulkRefundsWithoutVerifying() {
   function onSubmit(body) {
     if (body.refund_ids) {
       let payload = {
-        url: `live/refunds/retry/bulk`,
+        url: `live/refunds/retry/direct/bulk`,
         data: {
           refund_ids: splitAndFilter(body.refund_ids, ','),
         },
@@ -20,6 +26,13 @@ export default function RetryBulkRefundsWithoutVerifying() {
         if (response) {
           notifySuccess('Refund retry has been successfully initiated.');
           closeModal();
+          openModal(
+            <ModalContent header="API Response" noPadding>
+              <div class="code" style={{ width: '650px' }}>
+                {JSON.stringify(response, null, 4)}}
+              </div>
+            </ModalContent>
+          );
         }
       });
     } else {
