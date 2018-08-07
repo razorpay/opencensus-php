@@ -12,14 +12,12 @@ export default class ManageWebhook extends Component {
   };
 
   componentWillMount() {
-    fetchAppWebhooks(this.props.applicationId, this.props.mode).then(
-      response => {
-        this.setState({
-          webhook: response.data.items[0],
-          loading: false,
-        });
-      }
-    );
+    fetchAppWebhooks(this.props.appId, this.props.mode).then(response => {
+      this.setState({
+        webhook: response.data.items[0],
+        loading: false,
+      });
+    });
   }
 
   render() {
@@ -30,11 +28,7 @@ export default class ManageWebhook extends Component {
             <Spinner />
           </div>
         ) : (
-          <CreateWebhook
-            webhook={this.state.webhook}
-            onSave={this.props.onSave}
-            appId={this.props.applicationId}
-          />
+          <CreateWebhook webhook={this.state.webhook} {...this.props} />
         )}
       </Fragment>
     );

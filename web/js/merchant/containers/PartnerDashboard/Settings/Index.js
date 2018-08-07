@@ -31,7 +31,7 @@ export default class SettingsContainer extends Component {
       component: (
         <ManageWebhook
           onSave={this.props.closeModal}
-          applicationId={this.props.application.id}
+          appId={this.props.application.id}
           mode={mode}
         />
       ),

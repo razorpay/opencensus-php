@@ -39,17 +39,20 @@ const _makeWebhookPayload = data => {
   return payload;
 };
 
-export const createAppWebhook = (appId, data) => {
+// mode is explicitly sent by partner->settings->webhook
+export const createAppWebhook = ({ appId, data, mode }) => {
   let payload = _makeWebhookPayload(data);
 
   return merchantFetch({
     url: `oauth/applications/${appId}/webhooks`,
     method: 'post',
     data: payload,
+    mode,
   });
 };
 
-export const editAppWebhook = data => {
+// mode is explicitly sent by partner->settings->webhook
+export const editAppWebhook = ({ data, mode }) => {
   let payload = _makeWebhookPayload(data);
   payload.active = data.active ? 1 : 0; // Send active field also in edit mode
 
@@ -57,6 +60,7 @@ export const editAppWebhook = data => {
     url: `webhooks/${data.id}`,
     method: 'put',
     data: payload,
+    mode,
   });
 };
 
