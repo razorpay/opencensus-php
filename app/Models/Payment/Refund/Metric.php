@@ -18,6 +18,7 @@ final class Metric
     const REFUND_PROCESSED_FROM_LAST_FAILED_ATTEMPT_MINUTES = 'refund_processed_from_last_failed_attempt_minutes.histogram';
     const REFUND_CREATED_FROM_CAPTURED_MINUTES              = 'refund_created_from_captured_minutes.histogram';
     const REFUND_CREATED_FROM_AUTHORIZED_MINUTES            = 'refund_created_from_authorized_minutes.histogram';
+    const REFUND_CREATION_TIME_FOR_BATCH_MINUTES            = 'refund_creation_time_for_batch_minutes.histogram';
 
 
     /**

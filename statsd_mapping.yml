@@ -62,3 +62,8 @@ mappings:
   # [1hr, 2hrs, 6hrs, 12hrs, 24hrs, 36hrs, 2days, 3days, 5days, 7days, 10days]
   name: "api_refund_created_from_authorized_minutes"
 
+- match: api_refund_creation_time_for_batch_minutes.*
+  timer_type: histogram
+  buckets: [15, 30, 60, 120, 240, 360, 720, 1440, 2880]
+  # [15mins, 30mins, 1hr, 2hrs, 4hrs, 6hrs, 12hrs, 24hrs, 48hrs]
+  name: "api_refund_creation_time_for_batch_minutes"
