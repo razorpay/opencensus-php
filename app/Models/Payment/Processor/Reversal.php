@@ -55,7 +55,7 @@ trait Reversal
         {
             $refundInput = [
                 Refund\Entity::AMOUNT => $input[ReversalEntity::AMOUNT],
-                Refund\Entity::NOTES  => (new Transfer\Core)->getLaNotes($input),
+                Refund\Entity::NOTES  => (new Transfer\Core)->getLinkedAccountNotes($input),
             ];
 
             return (new Processor($transferPayment->merchant))

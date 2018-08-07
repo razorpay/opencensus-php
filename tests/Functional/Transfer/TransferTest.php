@@ -508,8 +508,10 @@ class TransferTest extends TestCase
 
         $payment = $this->getTransferPayment($transfer['id']);
 
-        $this->assertEquals(['roll_no'       => "iec2011025",
-                             'student_name'  => 'student',], $payment['notes']);
+        $notes = ['roll_no'       => "iec2011025",
+                  'student_name'  => 'student',];
+
+        $this->assertEquals($notes, $payment['notes']);
     }
 
     public function testLaNotesReversal()

@@ -204,4 +204,15 @@ class Validator extends Base\Validator
             );
         }
     }
+
+    public function validateLinkedAccountNotes($laNotes, $laNotesKeys)
+    {
+        if (count($laNotes) !== count($laNotesKeys))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
+                Entity::NOTES,
+                array_intersect(array_keys($laNotes), $laNotesKeys));
+        }
+    }
 }

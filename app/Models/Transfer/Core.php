@@ -4,15 +4,15 @@ namespace RZP\Models\Transfer;
 
 use RZP\Constants;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Transfer;
-use RZP\Models\Transaction;
-use RZP\Models\Customer;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Transfer;
+use RZP\Models\Customer;
+use RZP\Models\Transaction;
 
 class Core extends Base\Core
 {
@@ -348,7 +348,8 @@ class Core extends Base\Core
 
         $transfer = $this->createTransfer($source, $to, $input, $merchant);
 
-        $laNotes = $this->getLaNotes($input);
+        // Extract Notes from the input and sync it to payment entity.
+        $laNotes = $this->getLinkedAccountNotes($input);
 
         $input[Transfer\Entity::NOTES] = $laNotes;
 
@@ -368,7 +369,7 @@ class Core extends Base\Core
      * @throws \RZP\Exception\BadRequestException
      * @return array
      */
-    public function getLaNotes(array $input): array
+    public function getLinkedAccountNotes(array $input): array
     {
         $transferNotes = $input[Entity::NOTES] ?? [];
 
@@ -380,13 +381,7 @@ class Core extends Base\Core
         {
             $laNotes = array_only($transferNotes, $laNotesKeys);
 
-            if (count($laNotes) !== count($laNotesKeys))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
-                    Entity::NOTES,
-                    array_intersect(array_keys($laNotes), $laNotesKeys));
-            }
+            (new Validator)->validateLinkedAccountNotes($laNotes, $laNotesKeys);
         }
 
         return $laNotes;
