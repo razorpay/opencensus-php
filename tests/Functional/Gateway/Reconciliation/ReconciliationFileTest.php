@@ -303,7 +303,7 @@ class ReconciliationFileTest extends TestCase
         $updatedTransaction = $this->getLastEntity('transaction', true);
 
         $updatedRefund = $this->getLastEntity('refund', true);
-        
+
         $this->assertEquals($entries[0]['Reference Tran Id'], $updatedRefund['arn']);
 
         $this->assertNotNull($updatedTransaction['reconciled_at']);
