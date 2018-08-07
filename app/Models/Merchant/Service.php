@@ -2257,7 +2257,14 @@ class Service extends Base\Service
         return $submerchant;
     }
 
-    public function editLaEmail($input)
+    /**
+     * Edits linked account email.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function editLinkedAccountEmail(array $input): array
     {
         $merchant = $this->merchant;
 
