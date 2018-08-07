@@ -11,12 +11,13 @@ const UPDATE_APPLICATION = 'UPDATE_APPLICATION';
 const DELETE_APPLICATION = 'DELETE_APPLICATION';
 const REVOKE_ACCESS_TOKEN = 'REVOKE_ACCESS_TOKEN';
 
-export const fetchAppWebhooks = appId => {
+export const fetchAppWebhooks = (appId, mode) => {
   return merchantFetch({
     url: 'webhooks',
     params: {
       application_id: appId,
     },
+    mode,
   });
 };
 
@@ -38,17 +39,20 @@ const _makeWebhookPayload = data => {
   return payload;
 };
 
-export const createAppWebhook = (appId, data) => {
+// mode is explicitly sent by partner->settings->webhook
+export const createAppWebhook = ({ appId, data, mode }) => {
   let payload = _makeWebhookPayload(data);
 
   return merchantFetch({
     url: `oauth/applications/${appId}/webhooks`,
     method: 'post',
     data: payload,
+    mode,
   });
 };
 
-export const editAppWebhook = data => {
+// mode is explicitly sent by partner->settings->webhook
+export const editAppWebhook = ({ data, mode }) => {
   let payload = _makeWebhookPayload(data);
   payload.active = data.active ? 1 : 0; // Send active field also in edit mode
 
@@ -56,6 +60,7 @@ export const editAppWebhook = data => {
     url: `webhooks/${data.id}`,
     method: 'put',
     data: payload,
+    mode,
   });
 };
 
@@ -176,6 +181,7 @@ export default function(state = initialState, action) {
       return merge(state, {
         loading: false,
         partnerApplication: {
+          id: action.payload.id,
           clientCredentials: action.payload.client_details,
         },
       });
