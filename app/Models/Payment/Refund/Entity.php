@@ -258,6 +258,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::GATEWAY_REFUNDED) === true);
     }
 
+    public function isBatch(): bool
+    {
+        return ($this->getBatchId() !== null);
+    }
+
     public function isProcessed()
     {
         return ($this->getAttribute(self::STATUS) === Status::PROCESSED);
@@ -598,13 +603,33 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
+    public function getTimeFromCreatedInMinutes(): int
+    {
+        return intval(($this->freshTimestamp() - $this->getCreatedAt()) / 60);
+    }
+
+    public function getLastAttemptToProcessedTimeInMinutes(): int
+    {
+        return intval(($this->freshTimestamp() - $this->getLastAttemptedAt()) / 60);
+    }
+
+    public function getCapturedToCreateTimeInMinutes(): int
+    {
+        return intval(($this->getCreatedAt() - $this->payment->getCapturedAt()) / 60);
+    }
+
+    public function getAuthorizedToCreateTimeInMinutes(): int
+    {
+        return intval(($this->getCreatedAt() - $this->payment->getAuthorizeTimestamp()) / 60);
+    }
+
     protected function pushMetricsForProcessedStatusChange(array $dimensions)
     {
         if ($this->isProcessed() === false)
         {
             app('trace')->histogram(
                 RefundMetric::REFUND_PROCESSED_FROM_CREATED_MINUTES,
-                $this->getCreateToProcessedTimeInMinutes(),
+                $this->getTimeFromCreatedInMinutes(),
                 $dimensions
             );
         }
@@ -624,25 +649,5 @@ class Entity extends Base\PublicEntity
         {
             app('trace')->count(RefundMetric::REFUND_FAILED_TOTAL, $dimensions);
         }
-    }
-
-    public function getCreateToProcessedTimeInMinutes(): int
-    {
-        return intval(($this->freshTimestamp() - $this->getCreatedAt()) / 60);
-    }
-
-    public function getLastAttemptToProcessedTimeInMinutes(): int
-    {
-        return intval(($this->freshTimestamp() - $this->getLastAttemptedAt()) / 60);
-    }
-
-    public function getCapturedToCreateTimeInMinutes(): int
-    {
-        return intval(($this->getCreatedAt() - $this->payment->getCapturedAt()) / 60);
-    }
-
-    public function getAuthorizedToCreateTimeInMinutes(): int
-    {
-        return intval(($this->getCreatedAt() - $this->payment->getAuthorizeTimestamp()) / 60);
     }
 }
