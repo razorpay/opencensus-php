@@ -13,12 +13,14 @@ use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
 
 /**
  * @property Merchant $merchant
  */
 class Entity extends Base\PublicEntity
 {
+    use LinkedAccountNotesTrait;
     use NotesTrait;
 
     const ID                        = 'id';
@@ -39,6 +41,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID            = 'transaction_id';
     const RECIPIENT_SETTLEMENT_ID   = 'recipient_settlement_id';
     const RECIPIENT_SETTLEMENT      = 'recipient_settlement';
+    const LINKED_ACCOUNT_NOTES      = 'linked_account_notes';
 
     // Report fields
     const SETTLEMENT_INITIATED_ON = 'settlement_initiated_on';
@@ -67,6 +70,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
+        self::LINKED_ACCOUNT_NOTES,
     ];
 
     protected $visible = [
@@ -91,6 +95,7 @@ class Entity extends Base\PublicEntity
         self::RECIPIENT_SETTLEMENT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::LINKED_ACCOUNT_NOTES,
     ];
 
     protected $public = [
@@ -110,6 +115,7 @@ class Entity extends Base\PublicEntity
         self::RECIPIENT_SETTLEMENT_ID,
         self::RECIPIENT_SETTLEMENT,
         self::CREATED_AT,
+        self::LINKED_ACCOUNT_NOTES,
     ];
 
     protected $publicSetters = [
@@ -120,6 +126,7 @@ class Entity extends Base\PublicEntity
         self::RECIPIENT_SETTLEMENT_ID,
         self::TRANSACTION_ID,
         self::ENTITY,
+        self::LINKED_ACCOUNT_NOTES,
     ];
 
     protected $appends = [

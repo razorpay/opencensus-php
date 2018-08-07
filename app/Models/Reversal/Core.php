@@ -9,8 +9,8 @@ use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
-use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Refund;
+use RZP\Constants\Entity as E;
 
 class Core extends Base\Core
 {

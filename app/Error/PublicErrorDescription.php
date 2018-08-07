@@ -634,6 +634,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME                             = 'The merchant request name is invalid';
     const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                      = 'The merchant request submissions are missing';
 
+    const BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                          = 'Keys sent in linked_account_notes must exist in notes';
     const BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT                             = 'The account provided is not a linked account';
 
     // Partners

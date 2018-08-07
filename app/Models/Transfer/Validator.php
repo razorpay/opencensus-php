@@ -2,24 +2,24 @@
 
 namespace RZP\Models\Transfer;
 
-use Carbon\Carbon;
-
 use RZP\Base;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        ToType::ACCOUNT       => 'required_without:customer|string|size:18',
-        ToType::CUSTOMER      => 'required_without:account|string|size:19',
-        Entity::AMOUNT        => 'required|integer|min:100',
-        Entity::CURRENCY      => 'required|size:3|in:INR',
-        Entity::NOTES         => 'sometimes|notes',
-        Entity::ON_HOLD       => 'required_with:on_hold_until|boolean',
-        Entity::ON_HOLD_UNTIL => 'sometimes|nullable|epoch',
+        ToType::ACCOUNT              => 'required_without:customer|string|size:18',
+        ToType::CUSTOMER             => 'required_without:account|string|size:19',
+        Entity::AMOUNT               => 'required|integer|min:100',
+        Entity::CURRENCY             => 'required|size:3|in:INR',
+        Entity::NOTES                => 'sometimes|notes',
+        Entity::LINKED_ACCOUNT_NOTES => 'sometimes|array',
+        Entity::ON_HOLD              => 'required_with:on_hold_until|boolean',
+        Entity::ON_HOLD_UNTIL        => 'sometimes|nullable|epoch',
     ];
 
     protected static $createValidators = [
@@ -202,6 +202,17 @@ class Validator extends Base\Validator
                     'max_payment_amount' => $maxAmount
                 ]
             );
+        }
+    }
+
+    public function validateLinkedAccountNotes($laNotes, $laNotesKeys)
+    {
+        if (count($laNotes) !== count($laNotesKeys))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
+                Entity::NOTES,
+                array_intersect(array_keys($laNotes), $laNotesKeys));
         }
     }
 }

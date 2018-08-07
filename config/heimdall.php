@@ -172,6 +172,10 @@ return [
                 'description' => 'edit_refund_permission',
                 'assignable'  => true,
             ],
+            Permission::RETRY_REFUND    => [
+                'description' => 'Retry refunds',
+                'assignable'  => true,
+            ],
             Permission::EDIT_PAYMENT_REFUND => '',
             Permission::EDIT_PAYMENT_CAPTURE => '',
             Permission::EDIT_MERCHANT_CONFIRM => [

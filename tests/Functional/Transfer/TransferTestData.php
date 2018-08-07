@@ -24,7 +24,10 @@ return [
         'notes'         => [
             'order_info'    => 'random_string',
             'version'       => 2,
+            'roll_no'       => 'iec2011025',
+            'student_name'  => 'student',
         ],
+        'linked_account_notes' => ['roll_no', 'student_name'],
         'on_hold'       => '1',
         'on_hold_until' => 1586055431,
     ],
@@ -375,6 +378,22 @@ return [
         'response' => [
             'content' => []
         ]
+    ],
+
+    'testLaNotesKeyMissing' => [
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
+        ],
     ],
 
     'testLinkedAccountValidation' => [
