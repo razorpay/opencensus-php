@@ -165,6 +165,7 @@ app
           }
 
           if (window.ga) {
+            ga('old.set', 'userId', data.id);
             ga('set', 'userId', data.id);
           }
         });
