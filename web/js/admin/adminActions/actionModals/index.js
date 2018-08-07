@@ -38,3 +38,5 @@ export FundTransferUpdate from './FundTransferUpdate';
 export MerchantInvoiceNote from './MerchantInvoiceNote';
 
 export BatchUpload from './BatchUpload';
+
+export SQLReportGenerator from './SQLReportGenerator';
