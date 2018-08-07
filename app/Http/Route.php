@@ -785,6 +785,7 @@ final class Route
         'reporting_schedule_list'                  => ['get',      'reporting/schedules',                            'ReportingController@listSchedule'                                  ],
         'reporting_schedule_create'                => ['post',     'reporting/schedules',                            'ReportingController@createSchedule'                                ],
         'reporting_schedule_delete'                => ['delete',   'reporting/schedules/{id}',                       'ReportingController@deleteSchedule'                                ],
+        'reporting_log_create_admin'               => ['post',     'admin-reporting/logs',                           'ReportingController@createLog'                                     ],
         'reporting_config_get_admin'               => ['get',      'admin-reporting/configs/{id}',                   'ReportingController@getConfig'                                     ],
         'reporting_config_list_admin'              => ['get',      'admin-reporting/configs',                        'ReportingController@listConfig'                                    ],
         'reporting_log_get_admin'                  => ['get',      'admin-reporting/logs/{id}',                      'ReportingController@getLog'                                        ],
@@ -1589,6 +1590,7 @@ final class Route
         'merchants_access_map_delete',
 
         // Reporting
+        'reporting_log_create_admin',
         'reporting_config_get_admin',
         'reporting_config_list_admin',
         'reporting_log_get_admin',
@@ -1901,6 +1903,7 @@ final class Route
         'reporting_schedule_list'                  => '*',
         'reporting_schedule_create'                => '*',
         'reporting_schedule_delete'                => '*',
+        'reporting_log_create_admin'               => Permission::DOWNLOAD_NON_MERCHANT_REPORT,
         'reporting_config_get_admin'               => '*',
         'reporting_config_list_admin'              => '*',
         'reporting_log_get_admin'                  => '*',
