@@ -46,7 +46,9 @@ class Core extends Base\Core
         $lineItem->entity()->associate($morphEntity);
 
         $lineItem->build($input);
-        $lineItem->setTaxRate($input[Entity::TAX_RATE]);
+        if(isset($input[Entity::TAX_RATE])){
+            $lineItem->setTaxRate($input[Entity::TAX_RATE]);
+        }
 
         // TODO: Check why following only works when called after build()?
         $this->setRefAssociationIfApplicable($input, $lineItem);
@@ -107,7 +109,9 @@ class Core extends Base\Core
         $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
 
         $lineItem->edit($input);
-        $lineItem->setTaxRate($input[Entity::TAX_RATE]);
+        if(isset($input[Entity::TAX_RATE])){
+            $lineItem->setTaxRate($input[Entity::TAX_RATE]);
+        }
 
         (new Tax\Core)->cleanUpAndCreateLineItemTaxes(
                             $lineItem,
