@@ -177,7 +177,7 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::UTR)
                     ->where(Entity::CHANNEL, $channel)
                     ->where(Entity::STATUS, Status::INITIATED)
-                    ->whereBetween(Entity::INITIATE_AT, [$startTime, $endTime])
+                    ->whereBetween(Entity::CREATED_AT, [$startTime, $endTime])
                     ->with(['merchant'])
                     ->take($limit)
                     ->skip($offset)
