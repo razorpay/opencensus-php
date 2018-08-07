@@ -709,9 +709,9 @@ class Core extends Base\Core
             // set key `need_kyc` for the client to determine where full KYC is needed
             // for a linked accounts activation
             //
-            $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
-            $response['linked_account'] = true;
-            $response['marketplace_merchant_name'] = $parentMerchant->getName();
+            $response['need_kyc']                   = (int) $parentMerchant->linkedAccountsRequireKyc();
+            $response['linked_account']             = true;
+            $response['marketplace_merchant_name']  = $parentMerchant->getName();
         }
 
         $currentActivationState = $merchant->currentActivationState();
