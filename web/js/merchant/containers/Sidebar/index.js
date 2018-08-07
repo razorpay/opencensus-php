@@ -107,7 +107,8 @@ export default class Sidebar extends Component {
     let { user, config, logoURL, showMobileMenu } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
-    const isPartner = !!user.partner_type;
+    const isNonPurePlatformPartner =
+      !!user.partner_type && user.partner_type !== 'pure_platform';
     return (
       <React.Fragment>
         <div class={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
@@ -178,7 +179,7 @@ export default class Sidebar extends Component {
                       </Link>
                     )}
                   </ShowWhen>
-                  {isPartner && (
+                  {isNonPurePlatformPartner && (
                     <ShowWhen notMyRole="sellerapp">
                       <MainNavLink
                         label="Partner Dashboard"
