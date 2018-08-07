@@ -63,6 +63,7 @@ class Base extends Core
     const ADMIN                  = 'admin';
     const HITACHI                = 'Hitachi';
     const CARD_FSS               = 'CardFss';
+    const BOB                    = 'Bob';
     const ATOM                   = 'Atom';
 
     /**
@@ -102,6 +103,7 @@ class Base extends Core
         self::HITACHI                => ['reportsmailer@hitachi-payments.com'],
         self::CARD_FSS               => [],
         self::ATOM                   => [],
+        self::BOB                    => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN               => ['saurav.chowdhury@razorpay.com'],

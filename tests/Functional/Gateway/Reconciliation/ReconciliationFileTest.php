@@ -247,7 +247,7 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'payment');
 
-        $this->runForFiles([$file], 'CardFss');
+        $this->runForFiles([$file], 'Bob');
 
         $updatedPayment = $this->getDbEntityById('payment', $response['id']);
 
@@ -1112,5 +1112,67 @@ class ReconciliationFileTest extends TestCase
         $this->assertNotNull($updatedTransaction['reconciled_at']);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testFssBobReconFile()
+    {
+        $this->fixtures->create('terminal:shared_fss_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getNewPaymentEntity(false, true);
+
+        $this->assertNull($payment['reference1']);
+
+        $this->fixtures->edit('payment', $payment['id'], ['reference2' => null]);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('card_fss');
+
+        $this->fixtures->edit('card_fss', $gatewayPayment1['id'], ['ref' => null, 'tranid' => null]);
+
+        $entries[] = $this->overideFssBobRecon($payment, $gatewayPayment1);
+
+        $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing');
+
+        $this->runForFiles([$file], 'Bob');
+
+        $this->assertEquals($payment['reference1'], '175309');
+
+        $this->assertEquals($payment['reference1'], $gatewayPayment1['auth']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertNoNull($transactionEntity['settled_at']);
+
+        $this->assertNull($transactionEntity['gateway_fee']);
+
+        $updatedGatewayEnity = $this->getDbLastEntityToArray('card_fss');
+
+        $this->assertEquals('30-07-2018', $updatedGatewayEnity['postdate']);
+
+        $this->assertEquals('175309', $updatedGatewayEnity['ref1']);
+
+        $this->assertNull('310720180000006655', $updatedGatewayEnity['tranid']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    private function overideFssBobRecon(array $payment, array  $gatewayPayment1)
+    {
+        $facade = $this->testData['facades']['testFssBobRecon'];
+
+        $facade['Transaction ID'] = $gatewayPayment1['tranid'];
+
+        $facade['Transaction Amount'] = $payment['amount']/100;
+
+        $facade['Settlement Amount'] = $facade['Transaction Amount']/100;
+
+        $facade['Auth/Approval Code'] = $gatewayPayment1['auth'];
+
+        $facade['Merchant Track ID'] = $payment['id'];
+
+        return $facade;
     }
 }

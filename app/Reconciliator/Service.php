@@ -24,6 +24,7 @@ class Service extends Base\Service
         RequestProcessor\Base::KOTAK,
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::CARD_FSS,
+        RequestProcessor\Base::BOB,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::BILLDESK,
         RequestProcessor\Base::UPI_ICICI,
