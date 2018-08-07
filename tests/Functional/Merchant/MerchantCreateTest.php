@@ -534,6 +534,32 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(Role::LINKED_ACCOUNT_OWNER, $users->first()->role);
     }
 
+    public function testUpdateLinkedAccountEmail()
+    {
+        Mail::fake();
+
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['response']['content'] = $account->toArrayPublic();
+
+        $this->testData[__FUNCTION__]['response']['content']['email'] = 'testing@testing.com';
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account->getId();
+
+        $this->startTest();
+
+        Mail::assertQueued(PasswordReset::class, function ($mail)
+        {
+            return $mail->hasTo('testing@testing.com');
+        });
+    }
+
     public function testCreateMarketplaceLinkedAccountWithAlreadyExistingUser()
     {
         Mail::fake();

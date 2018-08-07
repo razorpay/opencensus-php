@@ -1546,11 +1546,6 @@ class Entity extends Base\PublicEntity
         return ProviderCode::getBankCode($psp);
     }
 
-    public function getBankCodeFromVpa()
-    {
-        return ProviderCode::getBankCode($this->getPspFromVpa());
-    }
-
     public function getTransferId()
     {
         return $this->getAttribute(self::TRANSFER_ID);
