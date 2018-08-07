@@ -25,9 +25,7 @@ use RZP\Models\Admin\Action;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
-use RZP\Exception\LogicException;
 use RZP\Models\Settings\Accessor;
-use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
@@ -826,32 +824,18 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Request\Entity $merchantRequest
+     * @param Entity $merchant
+     * @param string $partnerType
      *
      * @return Entity
-     * @throws LogicException
      */
-    public function markAsPartner(MerchantRequest\Entity $merchantRequest): Entity
+    public function markAsPartner(Entity $merchant, string $partnerType): Entity
     {
-        $submissions = $this->getPartnerSubmissions($merchantRequest);
-
-        if (empty($submissions[Entity::PARTNER_TYPE]) === true)
-        {
-            throw new LogicException(
-                PublicErrorDescription::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
-                ErrorCode::BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING,
-                $submissions);
-        }
-
-        $partnerType = $submissions[Entity::PARTNER_TYPE];
-
-        $merchant = $merchantRequest->merchant;
-
         $validator = new Validator;
 
-        $validator->validateIsNotLinkedAccount($merchant);
-
         $validator->validateIfAlreadyPartner($merchant);
+
+        $validator->validateIsNotLinkedAccount($merchant);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType)
         {

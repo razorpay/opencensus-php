@@ -60,7 +60,7 @@ class Repository extends Base\Repository
     {
         $merchant = $this->merchant;
         
-        if (((empty($merchant) === true) or ($merchant->isLinkedAccount() === false)) and
+        if ((optional($this->merchant)->isLinkedAccount() === false) and
             $value === 'reversal')
         {
             throw new Exception\ExtraFieldsException("expand=reversal");
@@ -190,7 +190,17 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
-    public function findByReversalIdAndMerchant(string $reversalId, string $accountId, array $relations = [])
+    /**
+     * @param string $reversalId
+     * @param string $accountId
+     * @param array  $relations
+     *
+     * @return \RZP\Models\Payment\Refund\Entity
+     */
+    public function findByReversalIdAndMerchant(
+                                            string $reversalId,
+                                            string $accountId,
+                                            array $relations = []): Refund\Entity
     {
         return $this->newQuery()
                     ->where(Entity::REVERSAL_ID, $reversalId)

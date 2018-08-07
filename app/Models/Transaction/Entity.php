@@ -777,4 +777,9 @@ class Entity extends Base\PublicEntity
 
         $this->getValidator()->validateInput('unique_entity_id', $entityId);
     }
+
+        public function getReconTimeFromTransactionCreationInMinutes(): int
+    {
+        return intval(($this->getReconciledAt() - $this->getCreatedAt()) / 60);
+    }
 }

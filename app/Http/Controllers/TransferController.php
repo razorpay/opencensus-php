@@ -25,18 +25,18 @@ class TransferController extends Controller
         return ApiResponse::json($transfers);
     }
 
-    public function getLaTransfers()
+    public function getLinkedAccountTransfers()
     {
         $input = Request::all();
 
-        $transfers = $this->service()->fetchLaTransfers($input);
+        $transfers = $this->service()->fetchLinkedAccountTransfers($input);
 
         return ApiResponse::json($transfers);
     }
 
-    public function getLaTransfer(string $id)
+    public function getLinkedAccountTransfer(string $id)
     {
-        $transfer = $this->service()->fetchLaTransfer($id);
+        $transfer = $this->service()->fetchLinkedAccountTransfer($id);
 
         return ApiResponse::json($transfer);
     }
@@ -48,9 +48,9 @@ class TransferController extends Controller
         return ApiResponse::json($reversals);
     }
 
-    public function getLaTransferReversals(string $id)
+    public function getLinkedAccountTransferReversals(string $id)
     {
-        $reversals = $this->service()->fetchLaReversalsOfTransfer($id);
+        $reversals = $this->service()->fetchLinkedAccountReversalsOfTransfer($id);
 
         return ApiResponse::json($reversals);
     }

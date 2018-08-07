@@ -23,18 +23,18 @@ class ReversalController extends Controller
         return ApiResponse::json($reversals);
     }
 
-    public function getLaReversals()
+    public function getLinkedAccountReversals()
     {
         $input = Request::all();
 
-        $reversals = $this->service()->fetchLaReversals($input);
+        $reversals = $this->service()->fetchLinkedAccountReversals($input);
 
         return ApiResponse::json($reversals);
     }
 
-    public function getLaReversal(string $id)
+    public function getLinkedAccountReversal(string $id)
     {
-        $reversal = $this->service()->fetchLaReversal($id);
+        $reversal = $this->service()->fetchLinkedAccountReversal($id);
 
         return ApiResponse::json($reversal);
     }

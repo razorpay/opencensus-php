@@ -13,10 +13,13 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'netbanking_corporation';
 
     protected $bank = 'corporation';

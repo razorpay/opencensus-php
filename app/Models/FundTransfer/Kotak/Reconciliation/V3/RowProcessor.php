@@ -45,7 +45,7 @@ class RowProcessor extends Base\RowProcessor
 
     protected function updateReconEntity()
     {
-        $this->reconEntity->setUtr($this->parsedData['utr']);
+        $this->updateUtrOnReconEntity();
         $this->reconEntity->setRemarks($this->parsedData['remarks']);
         $this->reconEntity->setBankStatusCode($this->parsedData['bank_status_code']);
         $this->reconEntity->setDateTime($this->parsedData['date_time']);

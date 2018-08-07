@@ -27,7 +27,7 @@ class Service extends Base\Service
         return $reversals->toArrayPublic();
     }
 
-    public function fetchLaReversal(string $id): array
+    public function fetchLinkedAccountReversal(string $id): array
     {
         (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
@@ -44,7 +44,7 @@ class Service extends Base\Service
         return $reversal;
     }
 
-    public function fetchLaReversals(array $input): array
+    public function fetchLinkedAccountReversals(array $input): array
     {
         (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
@@ -54,11 +54,11 @@ class Service extends Base\Service
 
         $refunds = $this->repo->refund->fetch($input, $merchantId);
 
-        $reversals = [
-            'count'  => count($refunds),
-            'entity' => 'collection',
-            'items'  => $this->createReversalsResponse($refunds),
-        ];
+        $refunds = $this->createReversalsResponse($refunds);
+
+        $reversals = new Base\PublicCollection($refunds);
+
+        $reversals = $reversals->toArrayWithItems();
 
         return $reversals;
     }

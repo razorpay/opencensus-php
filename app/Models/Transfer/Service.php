@@ -53,7 +53,7 @@ class Service extends Base\Service
         return $reversals->toArrayPublic();
     }
 
-    public function fetchLaReversalsOfTransfer(string $transferId): array
+    public function fetchLinkedAccountReversalsOfTransfer(string $transferId): array
     {
         (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
@@ -109,7 +109,7 @@ class Service extends Base\Service
         return $reversal->toArrayPublic();
     }
 
-    public function fetchLaTransfer(string $id): array
+    public function fetchLinkedAccountTransfer(string $id): array
     {
         (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
@@ -124,7 +124,7 @@ class Service extends Base\Service
         return $this->createTransferResponseFromPayment($payment);
     }
 
-    public function fetchLaTransfers(array $input): array
+    public function fetchLinkedAccountTransfers(array $input): array
     {
         (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
@@ -135,13 +135,11 @@ class Service extends Base\Service
         // fetching by payments fetch to handle notes search.
         $payments = $this->repo->payment->fetch($input, $merchantId);
 
-        $transfersResponse = [
-            'count'  => count($payments),
-            'entity' => 'collection',
-            'items'  => $this->createResponse($payments),
-        ];
+        $transfers = $this->createResponse($payments);
 
-        return $transfersResponse;
+        $transfers = new Base\PublicCollection($transfers);
+
+        return $transfers->toArrayWithItems();
     }
 
     private function createResponse($payments): array

@@ -630,6 +630,15 @@ class TransactionFilter extends Terminal\Filter
                         }
 
                         break;
+
+                    case Payment\AuthType::SKIP:
+                        // Moto terminal is selected only on skip auth
+                        if ($terminal->isMoto() === true)
+                        {
+                            return true;
+                        }
+
+                        break;
                 }
             }
 
