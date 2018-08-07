@@ -26,8 +26,6 @@ export default class AddAccount extends Component {
     errors: null,
   };
 
-  isEmailEditable = false;
-
   componentWillMount() {
     const accountData = this.props.accountData;
     const user = store.getState().session.user;
@@ -37,7 +35,6 @@ export default class AddAccount extends Component {
       accountData &&
       user.merchants[user.current].email !== accountData.email
     ) {
-      this.isEmailEditable = true;
       email = accountData.email;
     }
 
@@ -50,13 +47,12 @@ export default class AddAccount extends Component {
   }
 
   save = props => {
+    const { accountData } = this.props;
     let requestData = { ...props };
-    let reqFunc = this.isEmailEditable
-      ? this.props.updateEmail
-      : this.props.saveAccount;
+    let reqFunc = accountData ? this.props.updateEmail : this.props.saveAccount;
 
-    if (this.isEmailEditable) {
-      requestData['accountId'] = this.props.accountData.id;
+    if (accountData) {
+      requestData['accountId'] = accountData.id;
       delete requestData.name;
     }
 
@@ -65,8 +61,8 @@ export default class AddAccount extends Component {
         this.props.onSave(account);
         this.props.showNotification({
           type: 'success',
-          message: this.isEmailEditable
-            ? 'Email edited successfully'
+          message: accountData
+            ? 'Email added successfully'
             : 'Account created successfully',
         });
         this.props.closeModal();
