@@ -16,7 +16,10 @@ import { trackLinkClick } from './ga';
 }))
 export default class MyAccount extends Component {
   render() {
-    const isPartner = !!this.props.user.partner_type;
+    const { partner_type } = this.props.user;
+    const isPartner = !!partner_type;
+    const isNonPurePlatformPartner =
+      isPartner && partner_type !== 'pure_platform';
     return (
       <tabbed-container>
         <header id="myaccount-header">
@@ -29,8 +32,7 @@ export default class MyAccount extends Component {
           <ShowWhen notMyRole="sellerapp">
             <NavLink to="/addfunds">Add Funds</NavLink>
           </ShowWhen>
-
-          {!isPartner && (
+          {!(isPartner && isNonPurePlatformPartner) && (
             <ShowWhen notMyRole="sellerapp" featureEnabled="Referral">
               <NavLink to="/referrals">Referrals</NavLink>
             </ShowWhen>
