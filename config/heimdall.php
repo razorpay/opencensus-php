@@ -168,6 +168,10 @@ return [
             Permission::VIEW_REFUND_PAYMENTS => '',
             Permission::EDIT_AUTHORIZED_REFUND_PAYMENT => '',
             Permission::RETRY_REFUND_FAILED => '',
+            Permission::EDIT_REFUND    => [
+                'description' => 'edit_refund_permission',
+                'assignable'  => true,
+            ],
             Permission::EDIT_PAYMENT_REFUND => '',
             Permission::EDIT_PAYMENT_CAPTURE => '',
             Permission::EDIT_MERCHANT_CONFIRM => [
@@ -483,10 +487,6 @@ return [
             Permission::EDIT_PERMISSION     => [
                 'description' => 'edit_permission',
                 'workflow'    => true
-            ],
-            Permission::EDIT_REFUND    => [
-                'description' => 'edit_refund_permission',
-                'assignable'  => true,
             ],
         ],
 

@@ -48,6 +48,11 @@ class Validator extends Base\Validator
         'refund_ids.*'  => 'required|public_id'
     ];
 
+    protected static $markProcessedBulkRules = [
+        'refund_ids'    => 'required|sequential_array|max:1000',
+        'refund_ids.*'  => 'required|public_id',
+    ];
+
     protected static $verifyInternalRefundGateways = [
         Payment\Gateway::HDFC,
         Payment\Gateway::AXIS_MIGS

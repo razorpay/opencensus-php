@@ -103,14 +103,24 @@ abstract class Base extends ApiProcessor
 
         $hooks->register('curl.before_send', [$this, 'setCurlSslOpts']);
 
+        //
+        // Intentionally setting verify to null, so Requests does not use its default
+        // cacert (which is outdated), and curl ends up using the OS cacert by default.
+        //
+        // Ref:
+        // [1] Requests::get_default_options
+        // [2] Requests_Transport_cURL -> requesst
+        //
+
         $options = [
-            'hooks'   => $hooks,
-            'timeout' => self::TIMEOUT,
-            'auth'    => [
+            'hooks'     => $hooks,
+            'timeout'   => self::TIMEOUT,
+            'auth'      => [
                 $this->config['username'],
                 $this->config['password'],
             ],
-            'idn'     => false,
+            'idn'       => false,
+            'verify'    => null,
         ];
 
         return $options;
