@@ -95,6 +95,7 @@ export default class Sidebar extends Component {
                     to="/settlements"
                     notMyRole="sellerapp support"
                   />
+                  {/* temporarily disable reports for LA */}
                   {/* <MainNavLink
                     label="Reports"
                     icon="i i-books text-danger"

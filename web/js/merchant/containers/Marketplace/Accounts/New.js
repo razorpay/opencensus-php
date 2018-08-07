@@ -9,12 +9,16 @@ import { required } from 'rzp/utils/validators';
 import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import store from 'merchant/store';
-@connect(null, {
-  ...AccountActions,
-  ...ModalActions,
-  ...NotificationsActions,
-})
+@connect(
+  state => ({
+    user: state.session.user,
+  }),
+  {
+    ...AccountActions,
+    ...ModalActions,
+    ...NotificationsActions,
+  }
+)
 @reduxForm({
   form: 'newAccount',
   initialValues: {
@@ -27,8 +31,7 @@ export default class AddAccount extends Component {
   };
 
   componentWillMount() {
-    const accountData = this.props.accountData;
-    const user = store.getState().session.user;
+    const { accountData, user } = this.props;
     let email = null;
     //check whether the LA has its own email or not
     if (
@@ -52,7 +55,7 @@ export default class AddAccount extends Component {
     let reqFunc = accountData ? this.props.updateEmail : this.props.saveAccount;
 
     if (accountData) {
-      requestData['accountId'] = accountData.id;
+      requestData.accountId = accountData.id;
       delete requestData.name;
     }
 
