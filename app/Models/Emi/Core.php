@@ -27,6 +27,6 @@ class Core extends Base\Core
 
         // Here we are doing max because we want maximum
         // of the minimum amounts needed for applicabe emi plans
-        return $minAmounts->max();
+        return $minAmounts->max() ?? 0;
     }
 }

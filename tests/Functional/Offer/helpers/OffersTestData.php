@@ -784,7 +784,7 @@ return [
                 'payment_method'      => 'emi',
                 'payment_network'     => 'AMEX',
                 'emi_subvention'      => true,
-                'emi_durations'       => [9],
+                'emi_durations'       => ["9","9"],
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
@@ -802,9 +802,75 @@ return [
                 'payment_network'     => 'AMEX',
                 'max_payment_count'   => 2,
                 'min_amount'          => 316389,
+                'emi_durations'       => [9],
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details'
             ]
+        ]
+    ],
+
+    'testEmiSubventionWithIssuerAndNetwork' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'payment_network'     => 'AMEX',
+                'issuer'              => 'HDFC',
+                'emi_subvention'      => true,
+                'emi_durations'       => [9],
+                'max_payment_count'   => 2,
+                'processing_time'     => '1',
+                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Either issuer or payment network should be sent'
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testOfferWithInvalidIssuer' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'issuer'              => 'random',
+                'emi_subvention'      => true,
+                'emi_durations'       => [9],
+                'max_payment_count'   => 2,
+                'processing_time'     => '1',
+                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid issuer name: random'
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ]
     ],
 

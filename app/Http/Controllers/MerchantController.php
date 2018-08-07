@@ -7,6 +7,7 @@ use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Key;
 use RZP\Models\Report;
+use RZP\Models\Gateway;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
@@ -94,6 +95,15 @@ class MerchantController extends Controller
     public function getMerchant($id)
     {
         $data = $this->service()->fetch($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function onboardMerchantOnGateway($id)
+    {
+        $input = Request::all();
+
+        $data = (new Gateway\Terminal\Service)->onboardMerchant($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -1011,5 +1021,21 @@ class MerchantController extends Controller
         $this->service()->deletePartnerAccessMap($merchantId);
 
         return ApiResponse::json([], 204);
+    }
+
+    public function getSubmerchant(string $submerchantId)
+    {
+        $response = $this->service()->getSubmerchant($submerchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function listSubmerchants()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->listSubmerchants($input);
+
+        return ApiResponse::json($response);
     }
 }

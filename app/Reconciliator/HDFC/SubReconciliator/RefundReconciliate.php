@@ -2,7 +2,9 @@
 
 namespace RZP\Reconciliator\HDFC;
 
+use RZP\Constants\Entity;
 use RZP\Reconciliator\Base;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
 
 class RefundReconciliate extends Base\RefundReconciliate
@@ -78,6 +80,14 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $this->getRefundIdForFss($row);
     }
 
+    /**
+     * This function returns paymentId of refund using gateway refund entity.
+     * Flow comes here when we try to create missing refund in db. Hence,
+     * gateway refund is used here to get the payment id.
+     *
+     * @param array $row
+     * @return null
+     */
     protected function getPaymentId(array $row)
     {
         $refundId = $this->getRefundId($row);
@@ -138,7 +148,17 @@ class RefundReconciliate extends Base\RefundReconciliate
             return $this->gatewayRefund;
         }
 
-        $gatewayEntities = $this->repo->hdfc->findSuccessfulRefundByRefundId($refundId);
+        $gatewayEntities = [];
+
+        if ($this->refund->getGateway() === Gateway::HDFC)
+        {
+            $gatewayEntities = $this->repo->hdfc->findSuccessfulRefundByRefundId($refundId);
+        }
+
+        if ($this->refund->getGateway() === Gateway::CYBERSOURCE)
+        {
+            $gatewayEntities = $this->repo->cybersource->findSuccessfulRefundByRefundId($refundId);
+        }
 
         if ($gatewayEntities->count() === 0)
         {
@@ -171,7 +191,10 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {
-        $gatewayRefund->setArnNo($arn);
+        if ($gatewayRefund->getEntityName() === Entity::HDFC)
+        {
+            $gatewayRefund->setArnNo($arn);
+        }
     }
 
     protected function isCybersource(array $row)
@@ -241,10 +264,17 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function getRefundRrn(array $row)
     {
+        $rrn = null;
+
         $refundId = $this->getRefundId($row);
 
         $gatewayRefund = $this->getGatewayRefund($refundId);
 
-        return $gatewayRefund->getRef();
+        if ($gatewayRefund !== null)
+        {
+            $rrn = $gatewayRefund->getRef();
+        }
+
+        return $rrn;
     }
 }

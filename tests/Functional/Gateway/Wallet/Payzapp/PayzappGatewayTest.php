@@ -2,7 +2,10 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Payzapp;
 
+use Carbon\Carbon;
+
 use RZP\Exception;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -77,13 +80,19 @@ class PayzappGatewayTest extends TestCase
 
     public function testRefundPayment()
     {
-        // $this->markTestSkipped();
+        $this->markTestSkipped();
 
         $payment = $this->getDefaultWalletPaymentArray('payzapp');
 
         $postAuthPaymentInfo = $this->doAuthPayment($payment);
 
         $payment = $this->capturePayment($postAuthPaymentInfo['razorpay_payment_id'], $payment['amount']);
+
+        $this->fixtures->edit('payment',
+            $payment['id'],
+            [
+                'updated_at' => Carbon::yesterday(Timezone::IST)->timestamp,
+            ]);
 
         $this->refundPayment($payment['id'], $payment['amount']);
 
@@ -104,6 +113,8 @@ class PayzappGatewayTest extends TestCase
 
     public function testPartialRefund()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payzapp');
 
         $response = $this->doAuthPayment($payment);
@@ -111,6 +122,12 @@ class PayzappGatewayTest extends TestCase
         $refundAmount = (int) ($payment['amount'] / 5);
 
         $payment = $this->capturePayment($response['razorpay_payment_id'], $payment['amount']);
+
+        $this->fixtures->edit('payment',
+            $payment['id'],
+            [
+                'updated_at' => Carbon::yesterday(Timezone::IST)->timestamp,
+            ]);
 
         $this->mockServerContentFunction(function (&$content, $action) use ($refundAmount)
         {
@@ -150,6 +167,23 @@ class PayzappGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['verified'], 1);
+    }
+
+    public function testFailedRefund()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('payzapp');
+
+        $response = $this->doAuthPayment($payment);
+
+        $refundAmount = (int) ($payment['amount'] / 5);
+
+        $payment = $this->capturePayment($response['razorpay_payment_id'], $payment['amount']);
+
+        $this->refundPayment($payment['id'], $refundAmount);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
     }
 
     protected function runPaymentCallbackFlowWalletPayzapp($response, &$callback = null)

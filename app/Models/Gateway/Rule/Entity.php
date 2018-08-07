@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\Rule;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Payment\Method;
@@ -35,6 +36,7 @@ class Entity extends Base\PublicEntity
     const MAX_AMOUNT       = 'max_amount';
     const IINS             = 'iins';
     const RECURRING        = 'recurring';
+    const RECURRING_TYPE   = 'recurring_type';
 
     // Terminal and payment properties both
     const EMI_DURATION     = 'emi_duration';
@@ -78,6 +80,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
         self::CURRENCY,
+        self::RECURRING_TYPE,
     ];
 
     /**
@@ -101,6 +104,7 @@ class Entity extends Base\PublicEntity
         self::IINS,
         self::CURRENCY,
         self::RECURRING,
+        self::RECURRING_TYPE,
     ];
 
     /**
@@ -189,6 +193,7 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION,
         self::CURRENCY,
         self::RECURRING,
+        self::RECURRING_TYPE,
         self::COMMENTS,
     ];
 
@@ -216,6 +221,7 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION,
         self::CURRENCY,
         self::RECURRING,
+        self::RECURRING_TYPE,
         self::COMMENTS,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -286,6 +292,11 @@ class Entity extends Base\PublicEntity
     public function getMethod()
     {
         return $this->getAttribute(self::METHOD);
+    }
+
+    public function getRecurringType()
+    {
+        return $this->getAttribute(self::RECURRING_TYPE);
     }
 
     public function getMethodType()
@@ -527,8 +538,14 @@ class Entity extends Base\PublicEntity
      * @param  Merchant\Entity $merchant
      *
      * @return bool whether rule matches terminal
+     *
+     * TODO :- To pass all other optional additional params like merchant, payment etc in an array
      */
-    public function matches(Terminal\Entity $terminal, Merchant\Entity $merchant): bool
+    public function matches(
+        Terminal\Entity $terminal,
+        Merchant\Entity $merchant,
+        Payment\Entity $payment = null,
+        Base\PublicCollection $gatewayTokens = null): bool
     {
         foreach (self::COMPARISON_ATTRIBUTES as $key)
         {
@@ -540,7 +557,7 @@ class Entity extends Base\PublicEntity
                 continue;
             }
 
-            if ($this->compare($key, $terminal, $merchant) === false)
+            if ($this->compare($key, $terminal, $merchant, $payment, $gatewayTokens) === false)
             {
                 return false;
             }
@@ -549,13 +566,18 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
-    protected function compare(string $key, Terminal\Entity $terminal, Merchant\Entity $merchant): bool
+    protected function compare(
+        string $key,
+        Terminal\Entity $terminal,
+        Merchant\Entity $merchant,
+        Payment\Entity $payment = null,
+        Base\PublicCollection $gatewayTokens = null): bool
     {
         $compareFunc = 'compare' . studly_case($key);
 
         if (method_exists($this, $compareFunc) === true)
         {
-            return $this->$compareFunc($terminal, $merchant);
+            return $this->$compareFunc($terminal, $merchant, $payment, $gatewayTokens);
         }
 
         return ($this->getAttribute($key) === $terminal->getAttribute($key));
@@ -590,6 +612,59 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    protected function compareRecurringType(
+        Terminal\Entity $terminal,
+        Merchant\Entity $merchant,
+        Payment\Entity $payment,
+        Base\PublicCollection $gatewayTokens): bool
+    {
+        $recurringType = $this->getRecurringType();
+
+        if ($recurringType === null)
+        {
+            return true;
+        }
+
+        if ($recurringType === Payment\RecurringType::INITIAL)
+        {
+            return $terminal->is3DSRecurring();
+        }
+
+        if ($recurringType === Payment\RecurringType::AUTO)
+        {
+            if ($terminal->isNon3DSRecurring() === false)
+            {
+                return false;
+            }
+
+            $applicableTypes = [
+                Terminal\Type::RECURRING_3DS,
+                Terminal\Type::RECURRING_NON_3DS,
+            ];
+
+            //
+            // If the terminal supports both [recurring 3ds and recurring non-3ds] or [no-2fa],
+            // we don't care about gateway tokens. We care about gateway tokens
+            // only because of 2fa. But if the terminal supports both [3ds and
+            // non-3ds] or [no-2fa], it means that the terminal does not care about 2fa and
+            // hence, we don't need to too. We can just use this terminal without
+            // worrying about whether we have a gateway token for this or not.
+            //
+            // Also, we would be doing this only for direct terminals and for card
+            // payments. Though, it would be applicable for shared terminals also,
+            // we don't want to fallback on that just yet.
+            //
+            if ((empty(array_diff($applicableTypes, $terminal->getType())) === true) or
+                ($terminal->isNo2Fa() === true))
+            {
+                return (($terminal->isFallbackApplicable($merchant) === true) and
+                        ($payment->isCard() === true));
+            }
+
+            return (new Terminal\Core)->hasApplicableGatewayTokens($terminal, $payment, $gatewayTokens);
+        }
     }
 
     /**

@@ -88,6 +88,13 @@ class PublicEntity extends UniqueIdEntity
      */
     protected $adminOnlyPublic   = [];
 
+    /**
+     * Fields exposed through the toArrayPartner() function.
+     *
+     * @var array
+     */
+    protected $partner           = [];
+
     public function toArrayPublic()
     {
         $attributes = $this->attributesToArray();
@@ -146,6 +153,24 @@ class PublicEntity extends UniqueIdEntity
         $this->formatAmountFieldsForReport($array);
 
         $this->formatDateFieldsForReport($array);
+
+        return $array;
+    }
+
+    /**
+     * toArrayPartner() comprises of all Public attributes and a few additional attributes exposed only to the partners.
+     *
+     * @return array
+     */
+    public function toArrayPartner(): array
+    {
+        $arrayAttributes = $this->attributesToArray();
+
+        $partnerAttributes = array_only($arrayAttributes, $this->partner);
+
+        $publicAttributes = $this->toArrayPublic();
+
+        $array = array_merge($publicAttributes, $partnerAttributes);
 
         return $array;
     }

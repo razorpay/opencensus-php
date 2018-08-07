@@ -42,7 +42,7 @@ class GenerateEmandateDocs extends Command
          * ---
          */
 
-        echo implode(" | ", $row) . PHP_EOL . "---" . PHP_EOL;
+        echo implode(" | ", $row) . PHP_EOL . '---' . PHP_EOL;
     }
 
     private function printHeader()
@@ -50,10 +50,30 @@ class GenerateEmandateDocs extends Command
         $this->displayRow([
             "S.No",
             "Bank",
-            "IFSC",
-            "E-Mandate (Netbanking Authentication)",
-            "E-Mandate (Aadhaar OTP Authentication)",
         ]);
+    }
+
+    /**
+     *
+     */
+    private function displayBanks(string $header, array $bankCodes)
+    {
+        echo "### $header\n";
+        echo "<table>\n";
+        $counter = 1;
+
+        $this->printHeader();
+
+        foreach ($bankCodes as $bankCode)
+        {
+            $this->displayRow([
+                "$counter",
+                IFSC::getBankName(substr($bankCode, 0, 4))
+            ]);
+
+            $counter++;
+        }
+        echo "</table>\n";
     }
 
     /**
@@ -66,47 +86,7 @@ class GenerateEmandateDocs extends Command
         $aadhaarList = Gateway::getAvailableEmandateBanksForAuthType(AuthType::AADHAAR);
         $netbankingList = Gateway::getAvailableEmandateBanksForAuthType(AuthType::NETBANKING);
 
-        $rows = [];
-
-        foreach ($aadhaarList as $bankCode)
-        {
-            $rows[$bankCode] = [
-                AuthType::AADHAAR => true
-            ];
-        }
-
-        foreach ($netbankingList as $bankCode)
-        {
-            if (isset($rows[$bankCode]))
-            {
-                $rows[$bankCode][AuthType::NETBANKING] = true;
-            }
-            else
-            {
-                $rows[$bankCode] = [
-                    AuthType::NETBANKING => true
-                ];
-            }
-        }
-
-        $this->printHeader();
-
-        $counter = 1;
-
-        foreach ($rows as $bank=>$data)
-        {
-            $aadhaar = isset($data[AuthType::AADHAAR]) ? ":white_check_mark:" : "";
-            $netbanking = isset($data[AuthType::NETBANKING]) ? ":white_check_mark:" : "";
-
-            $this->displayRow([
-                "$counter.",
-                substr($bank, 0,4),
-                IFSC::getbankName($bank),
-                $aadhaar,
-                $netbanking
-            ]);
-
-            $counter++;
-        }
+        $this->displayBanks("Netbanking Authentication", $netbankingList);
+        $this->displayBanks("Aadhaar OTP Authentication", $aadhaarList);
     }
 }

@@ -13,6 +13,11 @@ abstract class Base extends ApiProcessor
 {
     const TIMEOUT = 30;
 
+    //Beneficiary default name,min and max length
+    const BENE_MIN_LEN      = 5;
+    const BENE_MAX_LEN      = 35;
+    const BENE_DEFAULT_NAME = 'Not Available';
+
     // Identifiers used store the response data
     const PAYMENT_REF_NO        = 'payment_ref_no';
     const UTR                   = 'utr';
@@ -254,4 +259,34 @@ abstract class Base extends ApiProcessor
      * ]
      */
     protected abstract function extractFailedData(array $response): array;
+
+    /**
+     * Normalizes beneficiary name should have length between 5 - 35
+     *
+     * @param $string
+     *
+     * @return string
+     */
+    protected function normalizeBeneficiaryName($string): string
+    {
+        if (empty($string) === true)
+        {
+            return self::BENE_DEFAULT_NAME;
+        }
+
+        $normalizedString =  preg_replace("/[^a-zA-Z]/", '', $string);
+
+        $length = strlen($normalizedString);
+
+        if ($length < self::BENE_MIN_LEN)
+        {
+            return self::BENE_DEFAULT_NAME;
+        }
+        else
+        {
+            $normalizedString = substr($normalizedString, 0, self::BENE_MAX_LEN);
+        }
+
+        return $normalizedString;
+    }
 }

@@ -18,6 +18,10 @@ class Metric
     const ASYNC_JOBS_PROCESSED_TOTAL            = 'async_jobs_processed_total';
     const ASYNC_JOBS_ERRORS_TOTAL               = 'async_jobs_errors_total';
 
+    // Counters for Payment Process
+    const PAYMENT_CREATED                       = 'payment_created';
+    const PAYMENT_CAPTURED                      = 'payment_captured';
+
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
     const HTTP_REQUEST_DURATION_MILLISECONDS    = 'http_request_duration_milliseconds.histogram';
@@ -46,6 +50,22 @@ class Metric
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';
     const LABEL_NONE_VALUE                      = 'none';
+
+
+    // Labels for Payment Process
+    const LABEL_PAYMENT_METHOD                  = 'method';
+    const LABEL_PAYMENT_CURRENCY                = 'currency';
+    const LABEL_PAYMENT_INTERNATIONAL           = 'international';
+    const LABEL_PAYMENT_ISSUER                  = 'issuer';
+    const LABEL_PAYMENT_TRANSACTION_TYPE        = 'transaction_type';
+    const LABEL_PAYMENT_STATUS                  = 'status';
+
+    const LABEL_CARD_TYPE                       = 'card_type';
+    const LABEL_CARD_IIN                        = 'card_iin';
+    const LABEL_CARD_NETWORK                    = 'card_network';
+
+    // Labels for Payment Captured
+    const LABEL_PAYMENT_AUTO_CAPTURED           = 'auto_captured';
 
     //metric types
     const TYPE_QUERY_CACHE                      = 'query_cache';

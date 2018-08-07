@@ -15,6 +15,7 @@ use RZP\Models\Customer;
 use RZP\Models\BankAccount;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Payment\Refund\Metric as RefundMetric;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
@@ -55,7 +56,33 @@ trait Refund
 
         $this->processRefund();
 
+        $this->pushMetrics();
+
         return $refund;
+    }
+
+    protected function pushMetrics()
+    {
+        $dimensions = RefundMetric::getDimensions($this->refund);
+
+        $this->trace->count(RefundMetric::REFUND_CREATED_TOTAL, $dimensions);
+
+        if ($this->payment->hasBeenCaptured() === true)
+        {
+            $this->trace->histogram(
+                RefundMetric::REFUND_CREATED_FROM_CAPTURED_MINUTES,
+                $this->refund->getCapturedToCreateTimeInMinutes(),
+                $dimensions
+            );
+        }
+        else
+        {
+            $this->trace->histogram(
+                RefundMetric::REFUND_CREATED_FROM_AUTHORIZED_MINUTES,
+                $this->refund->getAuthorizedToCreateTimeInMinutes(),
+                $dimensions
+            );
+        }
     }
 
     public function createRefundOnApiFromRecon(

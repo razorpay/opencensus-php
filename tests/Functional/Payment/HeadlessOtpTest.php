@@ -172,6 +172,68 @@ class HeadlessOtpTest extends TestCase
         self::assertEquals('authorized', $payment['status']);
     }
 
+    public function testHeadlessOtpResendPaymentS2S()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['otpelf', 's2s']);
+        $this->mockTokenEx();
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+        $content = $this->getJsonContentFromResponse($response);
+
+        self::assertArrayHasKey('next', $content);
+        self::assertArrayHasKey('razorpay_payment_id', $content);
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+
+        self::assertEquals('created', $payment['status']);
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+
+        $response = $this->doS2SOtpResend($content);
+
+        $expectedNext = [
+            'otp_submit',
+            'otp_resend',
+        ];
+
+        self::assertEquals($expectedNext, $response['next']);
+        self::assertEquals($content['razorpay_payment_id'], $response['razorpay_payment_id']);
+    }
+
     public function testOtpPreferredAuthPaymentWoFeatureFallback()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
@@ -597,6 +659,20 @@ class HeadlessOtpTest extends TestCase
             'content' => [
                 'otp' => $otp
             ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function doS2SOtpResend(array $content)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/' . $content['razorpay_payment_id'] . '/otp/resend',
         ];
 
         $this->ba->privateAuth();

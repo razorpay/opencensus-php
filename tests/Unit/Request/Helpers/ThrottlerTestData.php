@@ -123,49 +123,49 @@ return [
 
     'publicRouteWithKeyInHeaders' => [
         'id_settings_key' => '10000000000000',
-        'throttle_key'    => 'invoice_get_status:test:public:0::10000000000000:1.1.1.1',
+        'throttle_key'    => 'invoice_get_status:test:public:0::10000000000000::1.1.1.1',
         'settings'        => [
         ],
     ],
 
     'publicRouteWithKeyInQuery' => [
         'id_settings_key' => '10000000000000',
-        'throttle_key'    => 'invoice_get_status:test:public:0::10000000000000:1.1.1.1',
+        'throttle_key'    => 'invoice_get_status:test:public:0::10000000000000::1.1.1.1',
         'settings'        => [
         ],
     ],
 
     'publicRouteWithKeyInInput' => [
         'id_settings_key' => '10000000000000',
-        'throttle_key'    => 'payment_create:test:public:0::10000000000000:1.1.1.1',
+        'throttle_key'    => 'payment_create:test:public:0::10000000000000::1.1.1.1',
         'settings'        => [
         ],
     ],
 
     'publicCallbackRoute' => [
         'id_settings_key' => '10000000000000',
-        'throttle_key'    => 'payment_callback_with_key_get:test:public:0::10000000000000:1.1.1.1',
+        'throttle_key'    => 'payment_callback_with_key_get:test:public:0::10000000000000::1.1.1.1',
         'settings'        => [
         ],
     ],
 
     'publicRouteWithOAuthPublicToken' => [
         'id_settings_key' => '',
-        'throttle_key'    => 'invoice_get_status:test:public:0::100OAuthPublic:1.1.1.1',
+        'throttle_key'    => 'invoice_get_status:test:public:0::100OAuthPublic::1.1.1.1',
         'settings'        => [
         ],
     ],
 
     'publicCallbackRouteWithOAuthPublicToken' => [
         'id_settings_key' => '',
-        'throttle_key'    => 'payment_callback_with_key_get:test:public:0::100OAuthPublic:1.1.1.1',
+        'throttle_key'    => 'payment_callback_with_key_get:test:public:0::100OAuthPublic::1.1.1.1',
         'settings'        => [
         ],
     ],
 
     'privateRoute' => [
         'id_settings_key' => '10000000000000',
-        'throttle_key'    => 'invoice_fetch_multiple:test:private:0::10000000000000:',
+        'throttle_key'    => 'invoice_fetch_multiple:test:private:0::10000000000000::',
         'settings'        => [
             'global_3'    => [
                 K::MAX_BUCKET_SIZE    => 100,
@@ -193,7 +193,7 @@ return [
 
     'privateRouteWithLiveMode' => [
         'id_settings_key' => '10000000000000',
-        'throttle_key'    => 'invoice_fetch_multiple:live:private:0::10000000000000:',
+        'throttle_key'    => 'invoice_fetch_multiple:live:private:0::10000000000000::',
         'settings'        => [
             'global_1'    => [
                 K::MAX_BUCKET_SIZE    => 50,
@@ -218,7 +218,7 @@ return [
 
     'privateRouteWithOAuthBearerToken' => [
         'id_settings_key' => '100OAuthClient',
-        'throttle_key'    => 'invoice_fetch_multiple::private:0:100OAuthClient:10000000000000:',
+        'throttle_key'    => 'invoice_fetch_multiple::private:0:100OAuthClient:10000000000000::',
         'settings'        => [
             'global_1'    => [
                 K::MAX_BUCKET_SIZE    => 50,
@@ -243,7 +243,7 @@ return [
 
     'privateRouteWithProxyAuth' => [
         'id_settings_key' => '10000000000000',
-        'throttle_key'    => 'invoice_create:test:private:1::10000000000000:',
+        'throttle_key'    => 'invoice_create:test:private:1::10000000000000:MerchantUser01:',
         'settings'        => [
             'global_2'    => [
                 K::MAX_BUCKET_SIZE    => 50,
@@ -265,7 +265,7 @@ return [
 
     'proxyRoute' => [
         'id_settings_key' => '10000000000000',
-        'throttle_key'    => 'batch_create:test:private:1::10000000000000:',
+        'throttle_key'    => 'batch_create:test:private:1::10000000000000:MerchantUser01:',
         'settings'        => [
             'global_2'    => [
                 K::MAX_BUCKET_SIZE    => 50,
@@ -287,7 +287,7 @@ return [
 
     'privilegeRouteWithInternalAppAuth' => [
         'id_settings_key' => 'dashboard',
-        'throttle_key'    => 'invoice_expire_bulk:test:privilege:0::dashboard:',
+        'throttle_key'    => 'invoice_expire_bulk:test:privilege:0::dashboard::',
         'settings'        => [
             'global_id_1' => [
                 K::MAX_BUCKET_SIZE    => 200,
@@ -299,7 +299,7 @@ return [
 
     'privilegeRouteWithAdminAuth' => [
         'id_settings_key' => 'test@test.com',
-        'throttle_key'    => 'dummy_route:test:privilege:0::test@test.com:',
+        'throttle_key'    => 'dummy_route:test:privilege:0::test@test.com::',
         'settings'        => [
             'global_id_1' => [
                 K::MAX_BUCKET_SIZE    => 80,
@@ -311,14 +311,14 @@ return [
 
     'directRoute' => [
         'id_settings_key' => '',
-        'throttle_key'    => 'checkout_public::direct:0:::1.1.1.1',
+        'throttle_key'    => 'checkout_public::direct:0::::1.1.1.1',
         'settings'        => [
         ],
     ],
 
     'deviceRoute' => [
         'id_settings_key' => '10000000000000',
-        'throttle_key'    => 'vpa_create:test:device:0::10000000000000:',
+        'throttle_key'    => 'vpa_create:test:device:0::10000000000000::',
         'settings'        => [
         ],
     ],

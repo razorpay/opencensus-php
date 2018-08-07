@@ -1180,4 +1180,51 @@ class AuthorizeTest extends TestCase
 
         $this->assertEquals($randomAuthCode, $payment['reference2']);
     }
+
+    public function testPaymentWithSkipAuthWithMotoFeatureDisabled()
+    {
+        $payment = $this->payment;
+
+        $payment['auth_type'] = 'skip';
+
+        $payment['card']['number'] = '5257834104683413';
+
+        unset($payment['card']['cvv']);
+
+        $this->fixtures->create('terminal:shared_hitachi_moto_terminal');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+    }
+
+    public function testPaymentWithSkipAuthWithNotSupportedCard()
+    {
+        $payment = $this->payment;
+
+        $payment['auth_type'] = 'skip';
+
+        $payment['card']['number'] = '5893163050216758';
+
+        unset($payment['card']['cvv']);
+
+        $this->fixtures->create('terminal:shared_hitachi_moto_terminal');
+
+        $this->fixtures->merchant->addFeatures(['direct_debit']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+    }
+
 }

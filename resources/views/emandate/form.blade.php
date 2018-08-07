@@ -101,15 +101,17 @@
       }
 
       .content {
-        height: 0;
+        max-height: 0;
         opacity: 0;
         transform: scale(0.8);
-        overflow: hidden;
         transition: all 0.2s cubic-bezier(.4,1,1,1);
+        pointer-events: none;
+        font-size: 14px;
+        line-height: 18px;
       }
 
       .content > div {
-        padding: 20px 12px;
+        padding: 0px 12px;
       }
 
       #section1 {
@@ -148,7 +150,9 @@
         display: block;
         opacity: 1;
         transform: scale(1);
-        height: 85px;
+        max-height: 300px;
+        padding-bottom: 16px;
+        pointer-events: auto;
       }
 
       .arrow {
@@ -252,7 +256,191 @@
       opacity: 0.6;
     }
 
+    .input-radio {
+        position: relative;
+    }
 
+    .input-radio input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        display: unset;
+    }
+
+    .input-radio input[type="radio"]:checked+ label {
+        background: none !important;
+    }
+
+    .input-radio input[type="radio"]:checked+ label .radio-display::after {
+        border-color: #fff;
+    }
+
+    .input-radio label {
+        display: block;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .input-radio label .radio-display {
+        content: '';
+        display: inline-block;
+        vertical-align: middle;
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid #ccc;
+        transition: 0.2s;
+        z-index: -2;
+    }
+
+    .input-radio label .radio-display::after {
+        content: "";
+        position: absolute;
+        width: 4px;
+        height: 9px;
+        top: 2px;
+        left: 6px;
+        border: 1px solid #ccc;
+        border-top: none;
+        border-left: none;
+        transition: 0.2s;
+        transform: rotate(40deg);
+    }
+
+    .input-radio label .label-content {
+        padding: 4px 0px 4px 24px;
+        line-height: 16px;
+    }
+
+    .input-radio.centered label .radio-display {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .input-radio:not(.centered) label .radio-display {
+        top: 3px;
+    }
+
+    .input-radio input[type=radio]:focus:not(:checked) + label .radio-display {
+        border-color: #3395FF;
+    }
+
+    .input-radio input[type=radio]:checked + label .radio-display {
+        background-color: #3395FF;
+        border-color: #3395FF;
+    }
+
+    .has-tooltip {
+        position: relative;
+        display: inline-block;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .has-tooltip .tooltip {
+        z-index: -1;
+        display: block;
+        position: absolute;
+        background: rgba(0,0,0,0.8);
+        border-radius: 3px;
+        color: #fff;
+        padding: 12px;
+        transition: 0.3s opacity;
+        opacity: 0;
+        pointer-events: none;
+
+        margin-left: 8px;
+        margin-top: 8px;
+        width: 200px;
+    }
+
+    .has-tooltip .tooltip::before {
+        content: '';
+        display: block;
+        position: absolute;
+        width: 0;
+        height: 0;
+
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-bottom: 5px solid #000;
+        top: -5px;
+    }
+
+    .has-tooltip a {
+        color: inherit;
+    }
+
+    .has-tooltip:hover .tooltip,
+    .has-tooltip:active .tooltip {
+        opacity: 1;
+        pointer-events: all;
+        z-index: 4;
+    }
+
+    .emandate-education-text {
+        color: rgba(81,89,120,0.7);
+        margin-bottom: 8px;
+        border-top: 1px solid #e6e7e8;
+        padding-top: 16px !important;
+    }
+
+    .emandate-education-text p {
+        margin: 0;
+        margin-bottom: 4px;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    #auth-btn {
+        z-index: 1;
+    }
+
+    .steps {
+        color: rgba(81,89,120,0.7);
+    }
+
+    .steps h6 {
+        font-size: 14px;
+        margin-top: 16px;
+        margin-bottom: 8px;
+    }
+
+    .steps div:not(:last-child) {
+        margin-bottom: 8px;
+    }
+
+    #emandate-aadhaar-radios .input-radio {
+        display: inline-block;
+    }
+
+    #emandate-aadhaar-radios .input-radio:first-child {
+        margin-right: 16px;
+    }
+
+    .steps {
+        margin-top: 16px;
+        border-top: 1px solid #e6e7e8;
+    }
+
+    .step {
+        position: relative;
+    }
+
+    .step div {
+        padding-left: 28px;
+    }
+
+    .step-icon {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: scale(0.8);
+    }
     </style>
   </head>
   <body>
@@ -304,7 +492,7 @@
             <label class="accordion-heading pickable" for="content2">
               <svg width="24px" height="16px" viewBox="0 0 24 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <title>Group 11</title> <desc>Created with Sketch.</desc> <defs> <linearGradient x1="0%" y1="54.6514554%" x2="103.027754%" y2="39.6782836%" id="linearGradient-1"> <stop stop-color="#F53742" offset="0%"></stop> <stop stop-color="#CB0D1A" offset="98.6427774%"></stop> </linearGradient> <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="linearGradient-2"> <stop stop-color="#EA3A44" offset="0%"></stop> <stop stop-color="#B70611" offset="100%"></stop> </linearGradient> </defs> <g id="Flow-1--Testing" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="Group-11"> <g id="Group-2"> <rect id="cards-base" stroke="url(#linearGradient-1)" stroke-width="0.639" x="0.902833333" y="0.930611111" width="22.361" height="14.6943333" rx="1.27777778"></rect> <polygon id="Rectangle-24" fill="url(#linearGradient-2)" points="2.66666667 3.66666667 20.9966666 3.66666667 20.9966666 5 2.66666667 5"></polygon> <polygon id="Rectangle-24" fill="url(#linearGradient-2)" points="2.66666667 8 7.33333333 8 7.33333333 12.6666667 2.66666667 12.6666667"></polygon> <polygon id="Rectangle-24" fill="url(#linearGradient-2)" points="8.66666667 8.33333333 18 8.33333333 18 9.66666667 8.66666667 9.66666667"></polygon> <polygon id="Rectangle-24" fill="url(#linearGradient-2)" points="8.66666667 11 20.9966666 11 20.9966666 12.3333333 8.66666667 12.3333333"></polygon> </g> </g> </g> </svg>
               <span class="title">
-                Aadhaar
+                Aadhaar Virtual ID
                 <div class="sub-title">Via Aadhaar linked mobile OTP</div>
               </span>
             </label>
@@ -314,25 +502,123 @@
             @endif
 
             <div class="content">
-                <div>
-                  <input
-                    name='aadhaar[number]''
-                    type="tel"
-                    pattern='^\d{12}$'
-                    required
-                    placeholder='Enter your Aadhaar number'
-                    value="{{ $data['request']['content']['input']['aadhaar']['number'] ?? '' }}" >
-              </div>
+                @if (isset($data['request']['content']['input']['aadhaar[vid]']) && $data['request']['content']['input']['aadhaar[vid]'])
+                    <div id="prefilled-aadhaar">
+                        Aadhaar Virtual ID:
+                        <br />
+                        <strong>{{ $data['request']['content']['input']['aadhaar[vid]'] }}</strong>
+                        <input type="hidden" name="aadhaar[vid]" disabled value="{{ $data['request']['content']['input']['aadhaar[vid]'] }}"/>
+                    </div>
+                @else
+                    <div class="emandate-education-text">
+                        <p>You need your Aadhaar VID to make payment.</p>
+                        <div class='has-tooltip'>
+                        <div class="text">What is VID?</div>
+                        <div class="tooltip">
+                            It is a 16-digit number introduced by UIDAI so that Aadhaar holders can use it instead of their Aadhaar number to maintain privacy.
+                        </div>
+                        </div>
+                    </div>
+                    <div id="emandate-aadhaar-radios">
+                        <div class="input-radio">
+                            <input type="radio" id="emandate-aadhaar-radio-no" value="no" checked>
+                            <label for="emandate-aadhaar-radio-no">
+                                <div class="radio-display"></div>
+                                <div class="label-content">I do not have a VID</div>
+                            </label>
+                        </div>
+                        <div class="input-radio">
+                            <input type="radio" id="emandate-aadhaar-radio-yes" value="yes">
+                            <label for="emandate-aadhaar-radio-yes">
+                                <div class="radio-display"></div>
+                                <div class="label-content">I have a VID</div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="steps">
+                        <h6>Steps to complete payment:</h6>
+                        <div class="step">
+                            <svg class="step-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 5H1v16l2 2h16v-2H3V5zm11 10h2V5h-4v2h2v8zm7-14H7L5 3v14l2 2h14l2-2V3l-2-2zm0 16H7V3h14v14z" fill="#3395FF" /></svg>
+                            <div>Generate/Retrieve 16-digit VID by using your Aadhaar Number & OTP</div>
+                        </div>
+                        <div class="step">
+                            <svg class="step-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 5H1v16l2 2h16v-2H3V5zm18-4H7L5 3v14l2 2h14l2-2V3l-2-2zm0 16H7V3h14v14zm-4-4h-4v-2h2l2-2V7l-2-2h-4v2h4v2h-2l-2 2v4h6v-2z" fill="#3395FF" /></svg>
+                            <div>Come back to this page and complete the payment using <strong>VID</strong> received on your Aadhaar <strong>registered mobile number</strong></div>
+                        </div>
+                    </div>
+                @endif
             </div>
           </div>
         </div>
       </main>
       <div class="action">
-         <button type="submit" onclick="authorize()">Authenticate</button>
+         <button type="submit" id="auth-btn">Authenticate</button>
       </div>
     </form>
+    <a href="https://resident.uidai.gov.in/web/resident/vidgeneration" id="uidai-link" target="_blank" class="hidden">
   </body>
   <script type="text/javascript">
+    function changeAuthButtonText (text) {
+        document.querySelector('#auth-btn').innerHTML = text;
+    }
+
+    function methodChangeListener (e) {
+        var hasPrefill = document.querySelector('#prefilled-aadhaar');
+        if (e.target.value === 'aadhaar') {
+            if (!hasPrefill) {
+                if (document.querySelector('#emandate-aadhaar-radio-no') && document.querySelector('#emandate-aadhaar-radio-no').checked) {
+                    changeAuthButtonText('Create Aadhaar VID');
+                } else if (document.querySelector('#emandate-aadhaar-radio-yes') && document.querySelector('#emandate-aadhaar-radio-yes').checked) {
+                    changeAuthButtonText('Proceed to Authenticate');
+                }
+            }
+        } else {
+            changeAuthButtonText('Authenticate');
+        }
+    }
+
+    function vidRadioChangeListener (e) {
+        if (e.target.value === 'no') {
+            changeAuthButtonText('Create Aadhaar VID');
+            document.querySelector('#emandate-aadhaar-radio-yes').checked = false;
+        } else {
+            changeAuthButtonText('Proceed to Authenticate');
+            document.querySelector('#emandate-aadhaar-radio-no').checked = false;
+        }
+    }
+
+    function submitListener (e) {
+        var hasPrefill = document.querySelector('#prefilled-aadhaar');
+        var methodIsAadhaar = document.querySelector('#content2').checked;
+        if (methodIsAadhaar && !hasPrefill) {
+            var hasVID = document.querySelector('#emandate-aadhaar-radio-yes') && document.querySelector('#emandate-aadhaar-radio-yes').checked;
+            if (!hasVID) {
+                e.preventDefault();
+                document.querySelector('#emandate-aadhaar-radio-no').checked = false;
+                document.querySelector('#emandate-aadhaar-radio-yes').checked = true;
+                changeAuthButtonText('Proceed to Authenticate');
+                document.querySelector('#uidai-link').click();
+            }
+        }
+        authorize();
+    }
+
+    function attachListeners () {
+        var inputs = document.querySelectorAll('input[name="auth_type"]');
+        for (var i = 0; i < inputs.length; i++) {
+            inputs[i].addEventListener('change', methodChangeListener);
+        }
+
+        inputs = document.querySelectorAll('#emandate-aadhaar-radios input')
+        for (var i = 0; i < inputs.length; i++) {
+            inputs[i].addEventListener('change', vidRadioChangeListener);
+        }
+
+        document.querySelector('#auth-btn').addEventListener('click', submitListener);
+    }
+
+    attachListeners();
+
     var data = {!! json_encode($data) !!};
     console.log('Data...', data);
 
@@ -359,7 +645,7 @@
 
     function authorize() {
       if (document.getElementById('content1').checked) {
-        document.querySelector('#section2 .content [name="aadhaar[number]"]').setAttribute('disabled', true);
+        document.querySelector('#section2 .content [name="aadhaar[vid]"]').setAttribute('disabled', true);
       }
     }
 

@@ -127,8 +127,6 @@ class Entity extends Base\PublicEntity
         self::TERMS,
     ];
 
-
-    //TODO: ADD emi duration and emi subvention in public array.
     protected $public = [
         self::ID,
         self::ENTITY,
@@ -143,6 +141,8 @@ class Entity extends Base\PublicEntity
         self::PERCENT_RATE,
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
+        self::EMI_SUBVENTION,
+        self::EMI_DURATIONS,
         self::MIN_AMOUNT,
         self::MAX_PAYMENT_COUNT,
         self::LINKED_OFFER_IDS,
@@ -459,7 +459,12 @@ class Entity extends Base\PublicEntity
             $emiDurations = array_unique(array_merge($existingEmiDurations, $emiDurations));
         }
 
-        $this->attributes[self::EMI_DURATIONS] = json_encode(array_values($emiDurations));
+        $emiDurations = array_map(function ($emiDuration)
+                            {
+                                return (int) $emiDuration;
+                            }, $emiDurations);
+
+        $this->attributes[self::EMI_DURATIONS] = json_encode(array_unique(array_values($emiDurations)));
     }
 
     protected function setLinkedOfferIdsAttribute(array $linkedOfferIds)

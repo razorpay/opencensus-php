@@ -130,6 +130,12 @@ final class RequestContext
      */
     protected $proxy = false;
 
+    /**
+     * Dashboard user id (from headers) in case of proxy auth
+     * @var null|string
+     */
+    protected $userId;
+
     public function __construct(Application $app)
     {
         $this->app = $app;
@@ -223,6 +229,11 @@ final class RequestContext
         return $this->proxy;
     }
 
+    public function getUserId()
+    {
+        return $this->userId;
+    }
+
     public function isDashboard(): bool
     {
         return ($this->internalAppName === 'dashboard');
@@ -255,6 +266,10 @@ final class RequestContext
         return ((strlen($this->key) === OAuth::PUBLIC_TOKEN_LENGTH) and (substr($this->key, 8, 7) === '_oauth_'));
     }
 
+    public function isDashboardGuest(): bool
+    {
+        return ($this->internalAppName === "dashboard_guest");
+    }
 
     /**
      * Protected Methods
@@ -286,6 +301,7 @@ final class RequestContext
         $this->internalAppName    = null;
         $this->adminEmail         = null;
         $this->proxy              = false;
+        $this->userId             = null;
     }
 
     /**
@@ -421,17 +437,21 @@ final class RequestContext
             $parsed              = (new Parser)->parse($token);
             $this->oauthClientId = $parsed->getClaim('aud');
             $this->mid           = $parsed->getClaim('merchant_id');
+
             return true;
         }
         else if ((($isPrivateRoute === true) and ($this->isDashboard() === true)) or ($isProxyRoute === true))
         {
             $this->mid  = $this->keyWithoutPrefix;
             $this->proxy = true;
+            $this->userId = $this->request->headers->get(RequestHeader::X_DASHBOARD_USER_ID);
+
             return true;
         }
         else if (($isPrivateRoute === true) and ($this->isDashboard() === false))
         {
             $this->keyId = $this->keyWithoutPrefix;
+
             return true;
         }
 

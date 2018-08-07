@@ -41,6 +41,10 @@
         display: block;
     }
 
+    b {
+        font-weight: 600;
+    }
+
     #hostedpage-container {
         position: relative;
     }
@@ -112,6 +116,7 @@
     a {
         text-decoration: none;
         color: {{$rzp_prime_color}};
+        display: inline-block;
     }
 
     .footer a, #footer-section a, #contact-details a {
@@ -151,6 +156,17 @@
         overflow: auto;
     }
 
+    .btn-link {
+        color: {{$rzp_prime_color}};
+        background: #fff;
+        border: 0;
+        cursor: pointer;
+        padding: 0;
+        font-size: 14px;
+        outline: none;
+        padding-left: 4px;
+    }
+
     .text-underline {
         display: block;
         width: 24px;
@@ -170,11 +186,6 @@
 
     #secure-lock-icon {
         height: 16px;
-    }
-
-    .showmore {
-        padding-left: 10px;
-        margin-left: -9px;
     }
 
     .btn:active {

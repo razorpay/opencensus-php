@@ -9,6 +9,7 @@ use RZP\Models\Currency;
 use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
+use RZP\Models\Payment\Refund\Metric as RefundMetric;
 
 /**
  * @property Payment\Entity     $payment
@@ -307,6 +308,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACQUIRER_DATA);
     }
 
+    public function getLastAttemptedAt()
+    {
+        return $this->getAttribute(self::LAST_ATTEMPTED_AT);
+    }
+
     public function getChannel()
     {
         return $this->merchant->getChannel();
@@ -355,7 +361,34 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
+        $this->pushStatusChangeMetrics($status);
+
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function pushStatusChangeMetrics($statusToChange)
+    {
+        if (Status::isStatusTrackedForMetrics($statusToChange) === false)
+        {
+            return;
+        }
+
+        $dimensions = RefundMetric::getDimensions($this);
+
+        switch ($statusToChange)
+        {
+            case Status::PROCESSED:
+
+                $this->pushMetricsForProcessedStatusChange($dimensions);
+
+                break;
+
+            case Status::FAILED:
+
+                $this->pushMetricsForFailedStatusChange($dimensions);
+
+                break;
+        }
     }
 
     public function setError($errorCode, $errorDesc, $internalErrorCode)
@@ -374,7 +407,7 @@ class Entity extends Base\PublicEntity
 
     public function setStatusProcessed()
     {
-        $this->setAttribute(self::STATUS, Status::PROCESSED);
+        $this->setStatus(Status::PROCESSED);
 
         $this->setErrorNull();
     }
@@ -437,6 +470,9 @@ class Entity extends Base\PublicEntity
         // 'Ixigo', 'Akbar Travels', 'Akbar Travels',
         // 'Royal Bison', 'Pizza Hut', 'Pizza Hut',
         // 'Pizza Hut', 'Stark', 'Stark',
+        // 'Logicboxes', 'ResellerClub', 'BigRock',
+        // 'HostGator', 'Pay.pw', 'BlueHost',
+        // 'ConstantContact', 'Directi Web Technology', 'Kissht'
 
         $merchantIds = [
             '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
@@ -452,6 +488,9 @@ class Entity extends Base\PublicEntity
             '8RerE9oY0d7rbC', '6o1ohA0HNz3B2S', '62UtF084z3H6RT',
             'A85zyC8z78QJnt', '9Am5NzeJvtuBFy', '97hA1mKLFFI4Bi',
             '9GhIX26dnSuWKM', '9mr3eFWa79LBay', '9yEM7JR6WzZUds',
+            '9Y9m9XscC6Kh4W', '8WRMdGzG1z5Eqw', '9naAGQdroegWIX',
+            '9okVtwZr5vLm4K', '9oklLp2FhXTolM', 'A0ERwPs8muf9YS',
+            'A0HuEfx39zhjr9', 'A5ONBRrNJ7dS1K', 'ATUwkTaTTae5B3',
         ];
 
         $currentMerchantId = $this->getMerchantId();
@@ -557,5 +596,53 @@ class Entity extends Base\PublicEntity
         }
 
         return $data;
+    }
+
+    protected function pushMetricsForProcessedStatusChange(array $dimensions)
+    {
+        if ($this->isProcessed() === false)
+        {
+            app('trace')->histogram(
+                RefundMetric::REFUND_PROCESSED_FROM_CREATED_MINUTES,
+                $this->getCreateToProcessedTimeInMinutes(),
+                $dimensions
+            );
+        }
+        else if ($this->isStatusFailed() === true)
+        {
+            app('trace')->histogram(
+                RefundMetric::REFUND_PROCESSED_FROM_LAST_FAILED_ATTEMPT_MINUTES,
+                $this->getLastAttemptToProcessedTimeInMinutes(),
+                $dimensions
+            );
+        }
+    }
+
+    protected function pushMetricsForFailedStatusChange(array $dimensions)
+    {
+        if ($this->isStatusFailed() === false)
+        {
+            app('trace')->count(RefundMetric::REFUND_FAILED_TOTAL, $dimensions);
+        }
+    }
+
+    public function getCreateToProcessedTimeInMinutes(): int
+    {
+        return intval(($this->freshTimestamp() - $this->getCreatedAt()) / 60);
+    }
+
+    public function getLastAttemptToProcessedTimeInMinutes(): int
+    {
+        return intval(($this->freshTimestamp() - $this->getLastAttemptedAt()) / 60);
+    }
+
+    public function getCapturedToCreateTimeInMinutes(): int
+    {
+        return intval(($this->getCreatedAt() - $this->payment->getCapturedAt()) / 60);
+    }
+
+    public function getAuthorizedToCreateTimeInMinutes(): int
+    {
+        return intval(($this->getCreatedAt() - $this->payment->getAuthorizeTimestamp()) / 60);
     }
 }

@@ -23,7 +23,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_RRN                      = 'rrn';
     const COLUMN_AUTH_CODE                = 'authapproval_code';
     const COLUMN_GATEWAY_FEE              = 'msf_amount';
-    const COLUMN_GATEWAY_SERVICE_TAX      = 'msf_tax_amount';
+    const COLUMN_GATEWAY_SERVICE_TAX      = ['msf_tax_amount', 'gst_on_msf'];
     const COLUMN_GATEWAY_SETTLED_AT       = 'settlement_date';
 
     const SETTLEMENT_DATE_FORMAT     = 'd/m/Y';
@@ -83,18 +83,26 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
+        $serviceTax = null;
+
         //
-        // Can't put empty check, because msf_tax_amount can be zero
+        // In new MIS files, we are getting GST with
+        // column name GST/Service Tax
         //
-        if (isset($row[self::COLUMN_GATEWAY_SERVICE_TAX]) === false)
+        $serviceTaxColumn = array_first(self::COLUMN_GATEWAY_SERVICE_TAX, function ($cst) use ($row)
         {
-            $this->reportMissingColumn($row, self::COLUMN_GATEWAY_SERVICE_TAX);
+            return (isset($row[$cst]) === true);
+        });
+
+        if ($serviceTaxColumn === null)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_GATEWAY_SERVICE_TAX[0]);
 
             return null;
         }
 
         // Convert service tax into paise
-        $serviceTax = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_GATEWAY_SERVICE_TAX]);
+        $serviceTax = Base\Helper::getIntegerFormattedAmount($row[$serviceTaxColumn]);
 
         return abs($serviceTax);
     }

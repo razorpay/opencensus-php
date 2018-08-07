@@ -45,4 +45,6 @@ return [
     'logpath' => storage_path() . '/logs/' . env('HOSTNAME', 'localhost') . '-trace.log',
 
     'trace_code_class' => RZP\Trace\TraceCode::class,
+
+    'metrics' => require __DIR__ . '/metrics.php',
 ];

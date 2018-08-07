@@ -655,6 +655,7 @@ class VirtualAccountTest extends TestCase
 
         $virtualAccount = $this->createVirtualAccountForOrder($order);
 
+        // Make a payment with wrong order amount
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
@@ -665,8 +666,9 @@ class VirtualAccountTest extends TestCase
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
 
+        // Order status will not change
         $order = $this->getLastEntity('order', true);
-        $this->assertEquals('attempted', $order['status']);
+        $this->assertEquals('created', $order['status']);
 
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
@@ -676,6 +678,25 @@ class VirtualAccountTest extends TestCase
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals('created', $refund['status']);
         $this->assertEquals($payment['id'], $refund['payment_id']);
+
+        // Make a payment with right order amount
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(1005000, $virtualAccount['amount_paid']);
+
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
     }
 
     public function testVirtualAccountExcess()

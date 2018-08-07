@@ -676,7 +676,7 @@ class SettlementTest extends TestCase
 
             $this->fixtures->create(
                 'bank_account',
-                ['entity_id' => $merchantId, 'beneficiary_name' => random_alpha_string(10)]);
+                ['entity_id' => $merchantId, 'beneficiary_name' => random_string_special_chars(10)]);
 
             $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
             $capturedAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 10;

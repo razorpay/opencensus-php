@@ -82,6 +82,7 @@ class GenerateEmailTemplates extends Command
 
             'emails/merchant/add_sub_merchant_mail_partner',
             'emails/merchant/add_sub_merchant_affiliate',
+            'emails/user/mapped_to_account',
         ];
 
         $view_directory = app_path().'/../resources/views/';
