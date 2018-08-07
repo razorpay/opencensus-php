@@ -29,11 +29,26 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchMerchantAccessMapsOnEntity(string $merchantId, string $entityType): Base\PublicCollection
+    public function fetchMerchantAccessMapsOnEntityType(string $merchantId, string $entityType): Base\PublicCollection
     {
         return $this->newQuery()
                     ->merchantId($merchantId)
                     ->where(Entity::ENTITY_TYPE, $entityType)
                     ->get();
+    }
+
+    public function fetchMerchantAccessMapOnEntity(string $entityId, string $entityType): Base\PublicCollection
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::ENTITY_TYPE, $entityType)
+                    ->get();
+    }
+
+    public function deleteMerchantAccessMapsByEntity(array $ids)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $ids)
+                    ->delete();
     }
 }

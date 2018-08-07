@@ -878,6 +878,8 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant)
         {
+            $this->deleteAllPartnerSubmerchantAccessMaps($merchant);
+
             $this->deletePartnerApp($merchant);
 
             $merchant->setPartnerType();
@@ -953,6 +955,28 @@ class Core extends Base\Core
 
             $this->removeSubMerchantReferralTag($submerchant, $partner->getId());
         });
+    }
+
+    public function deleteAllPartnerSubmerchantAccessMaps(Entity $partner)
+    {
+        $partnerApp = $this->getPartnerApp($partner);
+
+        $accessMaps = $this->repo
+                           ->merchant_access_map
+                           ->fetchMerchantAccessMapOnEntity(AccessMap\Entity::APPLICATION, $partnerApp->getId());
+
+        $accessMapIds = $accessMaps->pluck(AccessMap\Entity::ID)->toArray();
+
+        $this->trace->info(
+            TraceCode::PARTNER_ACCESS_MAPS_DELETED,
+            [
+                'ids'            => $accessMapIds,
+                'application_id' => $partnerApp->getId(),
+            ]);
+
+        $this->repo->merchant_access_map->deleteMerchantAccessMapsByEntity($accessMapIds);
+
+        return $accessMaps;
     }
 
     /**
