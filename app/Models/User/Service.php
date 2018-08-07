@@ -461,7 +461,10 @@ class Service extends Base\Service
      * @param boolean         $createdNew
      *
      */
-    public function sendAccountLinkedCommunicationEmail($subMerchantUser, $subMerchant, $createdNew)
+    public function sendAccountLinkedCommunicationEmail(
+                                                        User\Entity $subMerchantUser,
+                                                        Merchant\Entity $subMerchant,
+                                                        bool $createdNew)
     {
         if ($createdNew === true)
         {

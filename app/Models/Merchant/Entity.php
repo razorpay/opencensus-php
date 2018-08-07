@@ -1554,7 +1554,7 @@ class Entity extends Base\PublicEntity
     {
         $tagNames = $this->liveTagNames();
 
-        if (in_array($tagName, $tagNames) === true)
+        if (in_array($tagName, $tagNames, true) === true)
         {
             return true;
         }

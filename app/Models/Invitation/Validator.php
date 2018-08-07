@@ -63,7 +63,7 @@ class Validator extends Base\Validator
             $dashboardRoles = User\Role::ALL_ROLES;
         }
 
-        if (in_array($role, $dashboardRoles) === false)
+        if (in_array($role, $dashboardRoles, true) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
         }

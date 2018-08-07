@@ -1237,11 +1237,11 @@ class Core extends Base\Core
      * 3 possible cases like the normal merchant edit email.
      * 1. There exists a team member with the new email , we swap the roles of the team member(linked_account_admin)
      * with new email and the original linked_account_owner.
-     * 2. There exists a user(not team member) with the new email Here, we change the original linked_account_pwner to
+     * 2. There exists a user(not team member) with the new email Here, we change the original linked_account_owner to
      * linked_account_admin and then add the user with new email as linked_account_pwner
      * 3. The new email is completely new to the razorpay and doesn't have a user account associated with it, for
      * normal merchants we used to get edit email change requests via support and admin used to directly change
-     * the email. but in LA dashboard case marketpalce merchants will be able to change the linked account's email at
+     * the email. but in LA dashboard case marketplace merchants will be able to change the linked account's email at
      * any time so for any new email we will have to assign the new email as linked_account_owner and send a
      * password reset link so that the user will generate a password and login to the LA dashboard.(this ensures that
      * email is also verified.) and promote the existing linked_account_owner role user to team member.
@@ -1252,29 +1252,15 @@ class Core extends Base\Core
      *
      * @return User\Entity
      */
-    public function handleLaMerchantsUsers($merchant, $originalEmail, $newEmail)
+    public function handleLinkedAccountMerchantsUsers($merchant, $originalEmail, $newEmail)
     {
-        $merchantUsersCount = $merchant->users()->count();
-
-        if ($merchantUsersCount === 0)
-        {
-            // When no users exist for a merchant.
-            list($subMerchantUser, $createdNew) =
-                (new Merchant\Service)->createOrFetchUserAndAttachMerchant($merchant, $newEmail);
-
-            // Sends Account linked communication emails to users.
-            (new User\Service)->sendAccountLinkedCommunicationEmail($subMerchantUser, $merchant, $createdNew);
-
-            return $subMerchantUser;
-        }
-
         $teamUser = $merchant->users()->where('email', $newEmail)->first();
 
         $existingUser = $this->repo->user->getUserFromEmail($newEmail);
 
         $oldOwner = $merchant->primaryOwner();
 
-        if ((empty($oldOwner) === false) and ((empty($teamUser) === false) or (empty($existingUser) === false)))
+        if (empty($oldOwner) === false)
         {
             // Assign Linked Account Admin role to the old owner.
             (new User\Core)->detachAndAttachMerchantUser(
@@ -1282,6 +1268,7 @@ class Core extends Base\Core
                                                         $merchant->getId(),
                                                         Role::LINKED_ACCOUNT_ADMIN);
 
+            // When primary owner email is not same as original email then we have another owner need to change role.
             if ($oldOwner->getEmail() !== $originalEmail)
             {
                 $existingOldUser = $this->repo->user->getUserFromEmail($originalEmail);

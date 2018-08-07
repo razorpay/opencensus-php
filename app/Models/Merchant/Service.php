@@ -2270,13 +2270,13 @@ class Service extends Base\Service
 
         $originalEmail = $merchant->getEmail();
 
-        // TODO validate linked account merchant context.
+        (new Validator)->validateLinkedAccount($merchant);
 
         $merchant = (new Merchant\Core)->editEmail($merchant, $input);
 
         $newEmail = $merchant->getEmail();
 
-        (new Merchant\Core)->handleLaMerchantsUsers($merchant, $originalEmail, $newEmail);
+        (new Merchant\Core)->handleLinkedAccountMerchantsUsers($merchant, $originalEmail, $newEmail);
 
         return $merchant->toArrayPublic();
     }
