@@ -64,11 +64,9 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $responseArray = json_decode($response['original'], true);
+        $this->assertEquals(Status::APPROVED, $response[Field::STATUS_CODE]);
 
-        $this->assertEquals(Status::APPROVED, $responseArray[Field::STATUS_CODE]);
-
-        $this->assertEquals($request['content'][Field::TRANSACTION_ID], $responseArray[Field::TRANSACTION_ID]);
+        $this->assertEquals($request['content'][Field::TRANSACTION_ID], $response[Field::TRANSACTION_ID]);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -112,12 +110,9 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $responseArray = json_decode($response['original'], true);
+        $this->assertEquals(Status::NO_RECORDS, $response[Field::STATUS_CODE]);
 
-        $this->assertEquals(Status::NO_RECORDS, $responseArray[Field::STATUS_CODE]);
-
-        $this->assertEquals('Amount mismatch in Verify response and callback response',
-                            $responseArray[Field::STATUS_DESC]);
+        $this->assertEquals('Amount mismatch in Verify response and callback response', $response[Field::STATUS_DESC]);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -148,11 +143,9 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $responseArray = json_decode($response['original'], true);
+        $this->assertEquals(Status::APPROVED, $response[Field::STATUS_CODE]);
 
-        $this->assertEquals(Status::APPROVED, $responseArray[Field::STATUS_CODE]);
-
-        $this->assertEquals($request['content'][Field::TRANSACTION_ID], $responseArray[Field::TRANSACTION_ID]);
+        $this->assertEquals($request['content'][Field::TRANSACTION_ID], $response[Field::TRANSACTION_ID]);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -201,11 +194,9 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $responseArray = json_decode($response['original'], true);
+        $this->assertEquals($response[Field::STATUS_CODE], Status::NO_RECORDS);
 
-        $this->assertEquals($responseArray[Field::STATUS_CODE], Status::NO_RECORDS);
-
-        $this->assertEquals($responseArray[Field::STATUS_DESC], 'No records present for given transaction in Isg Gateway');
+        $this->assertEquals($response[Field::STATUS_DESC], 'No records present for given transaction in Isg Gateway');
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -239,9 +230,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $duplicateResponse = $this->makeRequestAndGetContent($request);
 
-        $responseArray = json_decode($duplicateResponse['original'], true);
-
-        $this->assertEquals($responseArray[Field::STATUS_DESC], Status::SUCCESS);
+        $this->assertEquals($duplicateResponse[Field::STATUS_DESC], Status::SUCCESS);
 
         $bharatQr = $this->getDbEntities('bharat_qr', []);
 
@@ -262,11 +251,9 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $responseArray = json_decode($response['original'], true);
+        $this->assertEquals(Status::NO_RECORDS, $response[Field::STATUS_CODE]);
 
-        $this->assertEquals(Status::NO_RECORDS, $responseArray[Field::STATUS_CODE]);
-
-        $this->assertEquals("Input string cannot be decrypted", $responseArray[Field::STATUS_DESC]);
+        $this->assertEquals("Input string cannot be decrypted", $response[Field::STATUS_DESC]);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
