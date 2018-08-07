@@ -41,8 +41,6 @@ export default props => {
           <tr>
             <th>Settlement Id</th>
             <th class="text-right">Amount</th>
-            <th class="text-right">Fees</th>
-            <th class="text-right">Tax</th>
             <th>Created At</th>
             <th>Status</th>
             <th />

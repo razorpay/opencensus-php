@@ -6,7 +6,12 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchTransfers as fetchAll } from 'merchantLA/modules/collection';
-import { transferId, amount, createdAt } from 'merchantLA/utils/item/pair';
+import {
+  transferId,
+  amount,
+  createdAt,
+  settlementStatus,
+} from 'merchantLA/utils/item/pair';
 import { classList } from 'common/util';
 import Amount from 'rzp/ui/Amount';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
@@ -86,7 +91,13 @@ export default class TransfersListContainer extends ListContainer {
 
               <DataTable
                 title="Transfers"
-                columns={[transferId, amount, createdAt, helperCues]}
+                columns={[
+                  transferId,
+                  amount,
+                  createdAt,
+                  settlementStatus,
+                  helperCues,
+                ]}
                 count={this.state.count}
                 skip={this.state.skip}
                 paginate={this.paginate}
