@@ -14,15 +14,17 @@ class Limit
      * Above is subject to those value not being empty
      */
     const HEADER_MAP = [
-        Type::REFUND                => 1000,
-        Type::PAYMENT_LINK          => 5000,
-        Type::IRCTC_REFUND          => 100000,
-        Type::IRCTC_SETTLEMENT      => 100000,
-        Type::VIRTUAL_BANK_ACCOUNT  => 50000,
-        Type::PAYOUT                => 50000,
-        'emandate_register_hdfc'    => 50000,
-        Type::ELFIN                 => 5000,
-        Type::PARTNER_SUBMERCHANTS  => 5000,
+        Type::REFUND                  => 1000,
+        Type::PAYMENT_LINK            => 5000,
+        Type::IRCTC_REFUND            => 100000,
+        Type::IRCTC_SETTLEMENT        => 100000,
+        Type::VIRTUAL_BANK_ACCOUNT    => 50000,
+        Type::PAYOUT                  => 50000,
+        'emandate_register_hdfc'      => 50000,
+        'emandate_debit_enach_rbl'    => 5000,
+        'emandate_register_enach_rbl' => 5000,
+        Type::ELFIN                   => 5000,
+        Type::PARTNER_SUBMERCHANTS    => 5000,
     ];
 
     /**

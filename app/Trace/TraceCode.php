@@ -187,6 +187,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_RETRY_INITIATED                        = 'REFUND_RETRY_INITIATED';
     const REFUND_RETRY_RESULT                           = 'REFUND_RETRY_RESULT';
     const REFUND_RETRY_SKIPPED                          = 'REFUND_RETRY_SKIPPED';
+    const REFUND_RETRY_BULK_INITIATED                   = 'REFUND_RETRY_BULK_INITIATED';
+    const REFUND_RETRY_BULK_SUMMARY                     = 'REFUND_RETRY_BULK_SUMMARY';
+    const REFUND_MARK_PROCESSED_BULK_INITIATED          = 'REFUND_MARK_PROCESSED_BULK_INITIATED';
+    const REFUND_MARK_PROCESSED_BULK_SUMMARY            = 'REFUND_MARK_PROCESSED_BULK_SUMMARY';
+    const REFUND_MARK_PROCESSED_OLD_STATUS              = 'REFUND_MARK_PROCESSED_OLD_STATUS';
 
     const REQUESTS_JOB_REQUEST                          = 'REQUESTS_JOB_REQUEST';
     const REQUESTS_JOB_RESPONSE                         = 'REQUESTS_JOB_RESPONSE';
@@ -1134,7 +1139,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT     = 'PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT';
     const PARTNER_CREATE_ACCESS_MAP_REQUEST             = 'PARTNER_CREATE_ACCESS_MAP_REQUEST';
     const PARTNER_DELETE_ACCESS_MAP_REQUEST             = 'PARTNER_DELETE_ACCESS_MAP_REQUEST';
-  
+
     const FEE_CREDITS_THRESHOLD_ALERT                   = 'FEE_CREDITS_THRESHOLD_ALERT';
 
     // Excel reader debug trace codes

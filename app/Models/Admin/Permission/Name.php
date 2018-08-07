@@ -184,6 +184,7 @@ class Name
     const EDIT_PARTNERS                       = 'edit_partners';
     const VIEW_PARTNERS                       = 'view_partners';
     const EDIT_REFUND                         = 'edit_refund';
+    const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

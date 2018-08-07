@@ -59,13 +59,13 @@ class Report extends Base\Core
     {
         $this->count = 0;
 
-        $this->fileName = $this->getFileNameForReport();
+        $this->fileName    = $this->getFileNameForReport();
 
         $this->fileHandler = $this->initiateFileHandler();
 
-        $this->startTime = Carbon::today(Timezone::IST)->startOfDay()->getTimestamp();
+        $this->startTime   = Carbon::today(Timezone::IST)->startOfDay()->getTimestamp();
 
-        $this->endTime = Carbon::now(Timezone::IST)->subHour(3)->getTimestamp();
+        $this->endTime     = Carbon::now(Timezone::IST)->subHour(1)->subMinute(30)->getTimestamp();
     }
 
     public function sendFTAReconReport()

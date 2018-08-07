@@ -743,6 +743,7 @@ return [
                 'brand_color'         => '00bcd4',
                 'handle'              => 'LOLO',
                 'invoice_label_field' => 'business_name',
+                'display_name'        => 'Display',
             ],
             'url'     => '/account/config',
             'method'  => 'put',
@@ -757,6 +758,7 @@ return [
                 'brand_color'         => '#00BCD4',
                 'handle'              => 'LOLO',
                 'invoice_label_field' => 'business_name',
+                'display_name'        => 'Display',
             ]
         ]
     ],
