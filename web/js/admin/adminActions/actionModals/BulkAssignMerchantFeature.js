@@ -5,6 +5,7 @@ import {
   TextAreaField,
   SwitchField,
   SearchableSelectField,
+  SelectMode,
 } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
@@ -15,7 +16,6 @@ import { closeModal, notifyError, notifySuccess } from 'common/modal';
 export default class BulkAssignMerchantFeature extends Component {
   static title = 'Assign/Remove Feature for Mulitple Merchants';
   state = {
-    mode: 'test',
     action: 'assign',
     isFetching: true,
     availableFeatures: [],
@@ -44,23 +44,23 @@ export default class BulkAssignMerchantFeature extends Component {
       return;
     }
 
-    const requestData = {
+    const data = {
       mode: body.mode,
       name: body.selectedFeature,
       entity_type: 'merchant',
       entity_ids: splitAndFilter(body.merchantIds, ','),
     };
 
-    if (body.shouldSync == 1) {
-      requestData.mode = 'live';
-      requestData.should_sync = 1;
+    if (body.shouldSync === '1') {
+      data.mode = 'live';
+      data.should_sync = 1;
     } else {
-      requestData.should_sync = 0;
+      data.should_sync = 0;
     }
 
     return adminPost({
-      url: `${requestData.mode}/features/${this.state.action}`,
-      data: requestData,
+      url: `${data.mode}/features/${this.state.action}`,
+      data: data,
     }).then(response => {
       if (response) {
         notifySuccess(
@@ -90,18 +90,8 @@ export default class BulkAssignMerchantFeature extends Component {
           <div class="spinner center" />
         ) : (
           <Form class="full-span">
-            <SelectField
-              name="mode"
-              label="Mode"
-              defaultValue="test"
-              onChange={this.handleChange}
-            >
-              <option value="test">Test</option>
-              <option value="live">Live</option>
-            </SelectField>
-
+            <SelectMode />
             <SwitchField name="shouldSync" label="Add to both Test and Live" />
-
             <SelectField
               name="action"
               label="Action"
@@ -111,14 +101,12 @@ export default class BulkAssignMerchantFeature extends Component {
               <option value="assign">Assign</option>
               <option value="remove">Remove</option>
             </SelectField>
-
             <SearchableSelectField
               required
               label="Feature"
               name="selectedFeature"
               options={featuresOptions}
             />
-
             <TextAreaField
               label="Merchant Ids"
               type="text"
@@ -127,7 +115,6 @@ export default class BulkAssignMerchantFeature extends Component {
               placeholder="Enter comma separated merchant ids"
               class="merchant-ids"
             />
-
             <div class="form-actions text-right">
               <AsyncButton
                 text={
