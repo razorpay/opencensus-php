@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Currency;
+use RZP\Models\Reversal;
 use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
@@ -38,6 +39,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID         = 'transaction_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const BATCH_ID               = 'batch_id';
+    const REVERSAL_ID            = 'reversal_id';
 
     const GATEWAY                = 'gateway';
     const GATEWAY_REFUNDED       = 'gateway_refunded';
@@ -55,6 +57,7 @@ class Entity extends Base\PublicEntity
 
     const ACQUIRER_DATA          = 'acquirer_data';
     const ARN                    = 'arn';
+    const REVERSAL               = 'reversal';
 
     const BANK_ACCOUNT_ID        = 'bank_account_id';
 
@@ -117,7 +120,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::RECEIPT,
         self::ACQUIRER_DATA,
-        self::CREATED_AT
+        self::REVERSAL,
+        self::CREATED_AT,
     ];
 
     protected $hiddenInReport = [self::ACQUIRER_DATA];
@@ -200,6 +204,11 @@ class Entity extends Base\PublicEntity
     public function billdesk()
     {
         return $this->hasOne('RZP\Gateway\Billdesk\Entity');
+    }
+
+    public function reversal()
+    {
+        return $this->belongsTo(Reversal\Entity::class, self::REVERSAL_ID);
     }
 
     public function build(array $input = [])

@@ -157,6 +157,7 @@ class Entity extends Base\PublicEntity
     const CARD                  = 'card';
     const EMI_PLAN              = 'emi_plan';
     const DISPUTES              = 'disputes';
+    const TRANSFER              = 'transfer';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -335,6 +336,7 @@ class Entity extends Base\PublicEntity
         self::EMI_PLAN,
         self::DISPUTES,
         self::CREATED_AT,
+        self::TRANSFER,
     ];
 
     /**
