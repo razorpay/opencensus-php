@@ -27,20 +27,6 @@ class NodalAccount extends NodalBase\NodalAccount
     }
 
     /**
-     * Will update the status of attempts to initiated
-     * Will add the attempts ids in the queue
-     *
-     * @param PublicCollection $attempts
-     * @return array
-     */
-    public function initiateTransfer(PublicCollection $attempts): array
-    {
-        $this->updateAttemptStatus($attempts);
-
-        return $this->process($attempts);
-    }
-
-    /**
      * Makes request to the bank for fund transfer for given attempts
      *
      * @param PublicCollection $attempts
@@ -68,6 +54,8 @@ class NodalAccount extends NodalBase\NodalAccount
                 $this->repo->saveOrFail($entity);
 
                 $this->repo->saveOrFail($entity->source);
+
+                $this->trackAttemptsInitiatedSuccess($this->channel, $this->purpose, $entity->getSourceType());
             }
             catch (\Throwable $e)
             {
@@ -82,6 +70,8 @@ class NodalAccount extends NodalBase\NodalAccount
                     ]);
 
                 $lock->releaseAttempt($entity);
+
+                $this->trackAttemptsInitiatedFailure($this->channel, $this->purpose, $entity->getSourceType());
 
                 continue;
             }

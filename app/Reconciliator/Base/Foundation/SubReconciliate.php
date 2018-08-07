@@ -3,12 +3,18 @@
 namespace RZP\Reconciliator\Base\Foundation;
 
 use App;
+use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Reconciliator\Metrics\Metric;
+use RZP\Reconciliator\Metrics\Dimensions;
+use RZP\Tests\Functional\Assertion\Validator\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class SubReconciliate extends Base\Core
@@ -154,6 +160,57 @@ class SubReconciliate extends Base\Core
 
         // Increment the success count for the summary.
         $this->setSummaryCount(self::SUCCESSES_SUMMARY, $entity->getKey());
+
+        $this->pushSuccessReconMetrics($entity);
+    }
+
+    /**
+     * This function pushes metrics for a payment/refund,
+     * when it get marked reconciled
+     *
+     * @param $entity
+     */
+    protected function pushSuccessReconMetrics($entity)
+    {
+        $entityName = $entity->getEntityName();
+
+        switch($entityName)
+        {
+            case Entity::PAYMENT:
+                $this->pushSuccessPaymentReconMetrics($entity);
+
+                break;
+            case Entity::REFUND:
+                $this->pushSuccessRefundReconMetrics($entity);
+
+                break;
+            default:
+                $this->trace->error(
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'message'            => 'To push this metric, entity must be refund or payment only',
+                        'entity_id'          => $entity->getId(),
+                        'entity_name'        => $entity->getEntityName(),
+                    ]);
+        }
+    }
+
+    protected function pushSuccessPaymentReconMetrics(PaymentEntity $payment)
+    {
+        $this->trace->histogram(
+            Metric::RECON_PAYMENT_CREATE_TO_RECONCILED_TIME_MINUTES,
+            $payment->transaction->getReconTimeFromTransactionCreationInMinutes(),
+            Metric::getPaymentMetricDimensions($payment)
+        );
+    }
+
+    protected function pushSuccessRefundReconMetrics(RefundEntity $refund)
+    {
+        $this->trace->histogram(
+            Metric::RECON_REFUND_CREATE_TO_RECONCILED_TIME_MINUTES,
+            $refund->transaction->getReconTimeFromTransactionCreationInMinutes(),
+            Metric::getRefundMetricDimensions($refund)
+        );
     }
 
     protected function persistGatewaySettledAt(Base\Entity $entity, array $rowDetails)

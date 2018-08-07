@@ -784,7 +784,7 @@ return [
                 'payment_method'      => 'emi',
                 'payment_network'     => 'AMEX',
                 'emi_subvention'      => true,
-                'emi_durations'       => [9],
+                'emi_durations'       => ["9","9"],
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
@@ -802,6 +802,7 @@ return [
                 'payment_network'     => 'AMEX',
                 'max_payment_count'   => 2,
                 'min_amount'          => 316389,
+                'emi_durations'       => [9],
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details'
             ]
