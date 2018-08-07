@@ -20,6 +20,7 @@ class Metric
 
     // Counters for Payment Process
     const PAYMENT_CREATED                       = 'payment_created';
+    const PAYMENT_CAPTURED                      = 'payment_captured';
 
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
@@ -60,8 +61,11 @@ class Metric
     const LABEL_PAYMENT_STATUS                  = 'status';
 
     const LABEL_CARD_TYPE                       = 'card_type';
-    const LABEL_CARD_IIN                        = 'card_inn';
+    const LABEL_CARD_IIN                        = 'card_iin';
     const LABEL_CARD_NETWORK                    = 'card_network';
+
+    // Labels for Payment Captured
+    const LABEL_PAYMENT_AUTO_CAPTURED           = 'auto_captured';
 
     //metric types
     const TYPE_QUERY_CACHE                      = 'query_cache';

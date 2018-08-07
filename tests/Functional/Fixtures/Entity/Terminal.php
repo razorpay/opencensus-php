@@ -1063,27 +1063,46 @@ class Terminal extends Base
     public function createSharedHitachiMotoTerminal()
     {
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
-        $defaultValues = [
-            'id'                        => "ShrdHitaMotTrm",
+        $attributes = [
+            'id'                        => 'ShrdHitaMotTrm',
             'merchant_id'               => $sharedMerchantAccount,
-            'gateway'                   => 'sharp',
-            'gateway_merchant_id'       => 'test_merchant_sharp',
-            'gateway_terminal_id'       => 'abcde',
-            'gateway_terminal_password' => 'abcdef',
+            'gateway'                   => 'hitachi',
             'card'                      => 1,
-            'emi'                       => 0,
-            'mc_mpan'                   => '1234560000000000',
-            'visa_mpan'                 => '1234560000000001',
-            'rupay_mpan'                => '1234560000000002',
-            'vpa'                       => 'random@razorpay',
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'rbl',
+            'gateway_merchant_id'       => 'hitachi',
+            'gateway_terminal_password' => 'hitachi',
+            'gateway_secure_secret'     => 'secret',
+            'type'                      => [
+                Type::MOTO              => '1',
+                Type::NON_RECURRING     => '1',
+            ],
         ];
-        $attributes['type'] = [
-            Type::NON_RECURRING => '1',
-            Type::RECURRING_3DS => '1',
-            Type::RECURRING_NON_3DS => '1',
-            Type::MOTO => '1'
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedHdfcMotoTerminal()
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+        $attributes = [
+            'id'                        => 'ShrdHdfcMotTrm',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'hitachi',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'rbl',
+            'gateway_merchant_id'       => 'hdfc',
+            'gateway_terminal_password' => 'hdfc',
+            'gateway_secure_secret'     => 'secret',
+            'type'                      => [
+                Type::MOTO              => '1',
+                Type::NON_RECURRING     => '1',
+            ],
         ];
-        $attributes = array_merge($defaultValues, $attributes);
+
         return parent::create($attributes);
     }
 

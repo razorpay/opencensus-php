@@ -43,4 +43,15 @@ class FailedRowProcessor extends BaseRowProcessor
 
         $this->reconEntity->saveOrFail();
     }
+
+
+    /**
+     * In this case UTR doesn't need to be updated.
+     * This method will never be called.
+     * @return null
+     */
+    protected function getUtrToUpdate()
+    {
+        return null;
+    }
 }

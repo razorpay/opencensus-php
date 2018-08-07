@@ -130,6 +130,8 @@ class ErrorCode
 
     const GATEWAY_ERROR_MANDATE_CREATION_FAILED                                     = 'GATEWAY_ERROR_MANDATE_CREATION_FAILED';
 
+    const GATEWAY_ERROR_ONBOARDING_FAILED                                           = 'GATEWAY_ERROR_ONBOARDING_FAILED';
+
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
     const BAD_REQUEST_INVALID_IDS                                                   = 'BAD_REQUEST_INVALID_IDS';
@@ -622,6 +624,7 @@ class ErrorCode
     const SERVER_ERROR_SIGNED_XML_EMPTY                                             = 'SERVER_ERROR_SIGNED_XML_EMPTY';
 
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
+    const SERVER_ERROR_HARVESTER_INVALID_RESPONSE                                   = 'SERVER_ERROR_HARVESTER_INVALID_RESPONSE';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant\Partner;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Batch\Header;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
@@ -574,6 +575,75 @@ return [
         ],
     ],
 
+    'testPartnerSubmerchantsBatch' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'partner_submerchants',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'partner_submerchants',
+                'status'           => 'created',
+                'total_count'      => 2,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => null,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testPartnerSubmerchantsBatchInvalidId' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'partner_submerchants',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'partner_submerchants',
+                'status'           => 'created',
+                'total_count'      => 1,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => null,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testPartnerSubmerchantsBatchFileRows' => [
+        [
+            Header::PARTNER_MERCHANT_ID  => '10000000000000',
+            Header::PARTNER_TYPE         => 'reseller',
+            Header::SUBMERCHANT_ID       => '100DemoAccount',
+        ],
+        [
+            Header::PARTNER_MERCHANT_ID  => '10000000000000',
+            Header::PARTNER_TYPE         => '',
+            Header::SUBMERCHANT_ID       => '10000000000001',
+        ],
+    ],
+
+    'testPartnerSubmerchantsBatchInvalidIdFileRows' => [
+        [
+            Header::PARTNER_MERCHANT_ID  => '1NonExistentId',
+            Header::PARTNER_TYPE         => 'reseller',
+            Header::SUBMERCHANT_ID       => '100DemoAccount',
+        ],
+    ],
+
     'testNoSubmerchantAccountAccessForReseller' => [
         'request'   => [
             'url'     => '/merchants/10000000000009/access_maps',
@@ -671,6 +741,21 @@ return [
                         'dashboard_access' => false,
                     ],
                 ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsDeleted' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
             ],
         ],
     ],

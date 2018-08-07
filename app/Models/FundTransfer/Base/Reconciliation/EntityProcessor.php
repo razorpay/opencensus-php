@@ -124,16 +124,33 @@ abstract class EntityProcessor extends Base\Core
         //
         $this->fireWebhook = true;
 
-        if ($this->isMerchantLevelError() === true)
+        if ($this->fta->isStatusFailed() === true)
         {
-            $this->sendFailureEmailToMerchant = true;
+            $failureBucket = Attempt\Metric::RZP_ERROR;
 
-            // Merchant is put on hold if a settlement failed
-            // This is to avoid further failures on same merchant
-            if ($this->source->getEntity() === Entity::SETTLEMENT)
+            if ($this->isMerchantLevelError() === true)
             {
-                $this->holdFunds = true;
+                $this->sendFailureEmailToMerchant = true;
+
+                $failureBucket = Attempt\Metric::MERCHANT_ERROR;
+
+                // Merchant is put on hold if a settlement failed
+                // This is to avoid further failures on same merchant
+                if ($this->source->getEntity() === Entity::SETTLEMENT)
+                {
+                    $this->holdFunds = true;
+                }
             }
+
+            $this->trace->count(
+                Attempt\Metric::ATTEMPTS_FAILED_TOTAL,
+                [
+                    Attempt\Metric::CHANNEL             => $this->fta->getChannel(),
+                    Attempt\Metric::SOURCE_TYPE         => $this->fta->getSourceType(),
+                    Attempt\Metric::BANK_STATUS_CODE    => $this->fta->getBankStatusCode(),
+                    Attempt\Metric::FAILURE_BUCKET      => $failureBucket
+                ],
+                1);
         }
 
         $this->repo->saveOrFail($this->fta);
