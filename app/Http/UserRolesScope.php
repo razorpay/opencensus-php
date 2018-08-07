@@ -108,11 +108,11 @@ class UserRolesScope
             'transfer_fetch_multiple' => Role::READER_ROLES,
 
             // TODO change the role to LA dashboard admin and owner after launch.
-            'transfer_fetch_multiple_la'  => [Role::OWNER],
-            'transfer_fetch_la'           => [Role::OWNER],
-            'transfer_fetch_reversals_la' => [Role::OWNER],
-            'reversal_fetch_multiple_la'  => [Role::OWNER],
-            'reversal_fetch_la'           => [Role::OWNER],
+            'transfer_fetch_multiple_la'  => Role::LINKED_ACCOUNT_ROLES,
+            'transfer_fetch_la'           => Role::LINKED_ACCOUNT_ROLES,
+            'transfer_fetch_reversals_la' => Role::LINKED_ACCOUNT_ROLES,
+            'reversal_fetch_multiple_la'  => Role::LINKED_ACCOUNT_ROLES,
+            'reversal_fetch_la'           => Role::LINKED_ACCOUNT_ROLES,
 
             // oauth
             'oauth_application_create'         => [Role::OWNER],
