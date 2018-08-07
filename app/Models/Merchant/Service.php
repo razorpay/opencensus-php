@@ -2272,11 +2272,11 @@ class Service extends Base\Service
 
         (new Validator)->validateLinkedAccount($merchant);
 
-        $merchant = (new Merchant\Core)->editEmail($merchant, $input);
+        $merchant = $this->core()->editEmail($merchant, $input);
 
         $newEmail = $merchant->getEmail();
 
-        (new Merchant\Core)->handleLinkedAccountMerchantsUsers($merchant, $originalEmail, $newEmail);
+        $this->core()->handleLinkedAccountMerchantsUsers($merchant, $originalEmail, $newEmail);
 
         return $merchant->toArrayPublic();
     }

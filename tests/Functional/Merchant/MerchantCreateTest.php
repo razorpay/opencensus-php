@@ -11,10 +11,10 @@ use Razorpay\OAuth\Application\Entity as OAuthApp;
 use RZP\Constants;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Models\User\Role;
 use RZP\Models\Batch\Header;
 use RZP\Mail\User\PasswordReset;
 use RZP\Mail\User\MappedToAccount;
-use RZP\Models\User\Role;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -504,7 +504,7 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateMarketplaceLinkedAccountWithDashbaordUser()
+    public function testCreateMarketplaceLinkedAccountWithDashboardUser()
     {
         Mail::fake();
 
@@ -527,9 +527,7 @@ class MerchantCreateTest extends TestCase
             return $mail->hasTo('linkedaccount@razorpay.com');
         });
 
-        $users = DB::table('merchant_users')
-            ->where('merchant_id', '=', $account['id'])
-            ->get();
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $account['id'])->get();
 
         $this->assertEquals(1, $users->count());
 
@@ -554,12 +552,18 @@ class MerchantCreateTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['email'] = $user['email'];
 
-        $this->startTest();
+        $account = $this->startTest();
 
         Mail::assertQueued(MappedToAccount::class, function ($mail) use ($user)
         {
             return $mail->hasTo($user['email']);
         });
+
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $account['id'])->get();
+
+        $this->assertEquals(1, $users->count());
+
+        $this->assertEquals(Role::LINKED_ACCOUNT_OWNER, $users->first()->role);
     }
 
     public function testCreateMarketplaceLinkedAccountWithoutEmail()

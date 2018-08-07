@@ -1006,8 +1006,9 @@ class Core extends Base\Core
     /**
      * @param string $ownerId
      * @param Entity $subMerchant
+     * @param string $role
      */
-    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant, $role = Role::OWNER)
+    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant, string $role = Role::OWNER)
     {
         $userMerchantMappingInputData = [
             'action'      => 'attach',
@@ -1238,7 +1239,7 @@ class Core extends Base\Core
      * 1. There exists a team member with the new email , we swap the roles of the team member(linked_account_admin)
      * with new email and the original linked_account_owner.
      * 2. There exists a user(not team member) with the new email Here, we change the original linked_account_owner to
-     * linked_account_admin and then add the user with new email as linked_account_pwner
+     * linked_account_admin and then add the user with new email as linked_account_owner
      * 3. The new email is completely new to the razorpay and doesn't have a user account associated with it, for
      * normal merchants we used to get edit email change requests via support and admin used to directly change
      * the email. but in LA dashboard case marketplace merchants will be able to change the linked account's email at

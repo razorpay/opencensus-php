@@ -466,7 +466,7 @@ return [
         ],
     ],
 
-    'testCreateMarketplaceLinkedAccountWithDashbaordUser' => [
+    'testCreateMarketplaceLinkedAccountWithDashboardUser' => [
         'request'  => [
             'url'     => '/submerchants',
             'method'  => 'POST',
