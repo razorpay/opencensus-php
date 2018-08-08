@@ -98,7 +98,7 @@ class ReconcilationFields
 
     const PG_TRANSACTION_ID          = 'PG Transaction ID';
 
-    const TRACK_ID                   = 'Merchant Track ID';
+    const MERCHANT_TRACK_ID          = 'Merchant Track ID';
 
     const HOST_TRANSACTION_ID        = 'Host Transaction ID';
 
@@ -138,12 +138,4 @@ class ReconcilationFields
     const PAYMENT_DATE               = 'Payment Date';
 
     const TRANSACTION_STATUS         = 'Transaction Status';
-
-
-
-
-
-
-
-
 }
