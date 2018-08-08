@@ -285,34 +285,25 @@ class AttemptReconcileTest extends TestCase
         //Validate settlement entities
         $settlement = $this->getLastEntity('settlement', true);
 
-//        foreach ($settlements['items'] as $settlement)
-//        {
-            $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
-            $this->assertEquals(
-                $batch['id'], $settlement[Settlement\Entity::BATCH_FUND_TRANSFER_ID]);
+        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
+        $this->assertEquals(
+            $batch['id'], $settlement[Settlement\Entity::BATCH_FUND_TRANSFER_ID]);
 
-            $this->assertNotNull($settlement[Settlement\Entity::UTR]);
-//        }
+        $this->assertNotNull($settlement[Settlement\Entity::UTR]);
 
         // Validate settlement attempt entities
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $testKey = 'matchSettlementAttemptForReconFailure' . ucfirst($channel);
 
-//        foreach ($ftas['items'] as $settlementAttempt)
-//        {
-            $this->assertTestResponse($settlementAttempt, $testKey);
-            $this->assertNotNull($settlementAttempt['utr']);
-//        }
+        $this->assertTestResponse($settlementAttempt, $testKey);
+        $this->assertNotNull($settlementAttempt['utr']);
 
         // Validate settlement-transaction entity
         $setlTxn = $this->getLastEntity('transaction', true);
-//s($setlTxns['count']);
-//        foreach ($setlTxns['items'] as $txn)
-//        {
-            $this->assertEquals('settlement', $setlTxn['type']);
-            $this->assertNotNull($setlTxn['reconciled_at']);
-//        }
+
+        $this->assertEquals('settlement', $setlTxn['type']);
+        $this->assertNotNull($setlTxn['reconciled_at']);
     }
 
     protected function assertOnlineReconcileEntitiesFailure(array $content, string $channel)

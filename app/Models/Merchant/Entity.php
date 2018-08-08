@@ -46,6 +46,7 @@ class Entity extends Base\PublicEntity
     const PRICING_PLAN_ID          = 'pricing_plan_id';
     const INTERNATIONAL            = 'international';
     const BILLING_LABEL            = 'billing_label';
+    const DISPLAY_NAME             = 'display_name';
     const TRANSACTION_REPORT_EMAIL = 'transaction_report_email';
     const RECEIPT_EMAIL_ENABLED    = 'receipt_email_enabled';
     const CHANNEL                  = 'channel';
@@ -204,6 +205,7 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
         self::FEE_CREDITS_THRESHOLD,
+        self::DISPLAY_NAME,
     ];
 
     const CONFIG_LIST = [
@@ -215,6 +217,7 @@ class Entity extends Base\PublicEntity
         self::INVOICE_LABEL_FIELD,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::FEE_CREDITS_THRESHOLD,
+        self::DISPLAY_NAME,
     ];
 
     protected $public = [
@@ -265,6 +268,7 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST,
         self::MERCHANT_DETAIL,
         self::FEE_CREDITS_THRESHOLD,
+        self::DISPLAY_NAME,
      ];
 
     protected $defaults = [
@@ -992,6 +996,20 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFUND_SOURCE);
     }
 
+    public function getDisplayName()
+    {
+        $displayName = $this->getAttribute(self::DISPLAY_NAME);
+
+        $merchantName = $this->getAttribute(self::NAME);
+
+        if (empty($displayName) === false)
+        {
+            return $displayName . " - ". $merchantName;
+        }
+
+        return $merchantName;
+    }
+
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
     {
         $relativeLogoUrl = $this->getLogoUrl();
@@ -1553,6 +1571,7 @@ class Entity extends Base\PublicEntity
             self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
             self::LOGO_URL       => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
+            self::DISPLAY_NAME   => $this->getDisplayName(),
             self::PARTNER_TYPE   => $this->getAttribute(self::PARTNER_TYPE),
             self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),

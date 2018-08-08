@@ -44,23 +44,23 @@ class Bob extends Base
             $refundsFile = $this->getFileData(FileStore\Type::BOB_NETBANKING_REFUND);
         }
 
-        if (isset($data['claims']) === true)
-        {
-            $amount['claims'] = array_reduce($data['claims'], function ($sum, $item)
-            {
-                $sum += $item['payment']->getAmount();
-
-                return $sum;
-            });
-
-            $amount['claims'] = $amount['claims'] / 100;
-
-            $amount['claims'] = number_format($amount['claims'], 2, '.', '');
-
-            $count['claims'] = count($data['claims']);
-
-            $claimsFile = $this->getFileData(FileStore\Type::BOB_NETBANKING_CLAIMS);
-        }
+        // if (isset($data['claims']) === true)
+        // {
+        //     $amount['claims'] = array_reduce($data['claims'], function ($sum, $item)
+        //     {
+        //         $sum += $item['payment']->getAmount();
+        //
+        //         return $sum;
+        //     });
+        //
+        //     $amount['claims'] = $amount['claims'] / 100;
+        //
+        //     $amount['claims'] = number_format($amount['claims'], 2, '.', '');
+        //
+        //     $count['claims'] = count($data['claims']);
+        //
+        //     $claimsFile = $this->getFileData(FileStore\Type::BOB_NETBANKING_CLAIMS);
+        // }
 
         $amount['total'] = $amount['claims'] - $amount['refunds'];
 

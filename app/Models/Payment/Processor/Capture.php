@@ -787,7 +787,7 @@ trait Capture
 
         $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
         $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
-        $this->trace->count(Invoice\Metric::INVOICE_PAID_TOTAL, 1, $dimensions);
+        $this->trace->count(Invoice\Metric::INVOICE_PAID_TOTAL, $dimensions);
 
         $this->repo->saveOrFail($invoice);
     }

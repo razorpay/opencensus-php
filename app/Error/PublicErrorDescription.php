@@ -32,6 +32,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                            = 'Payment failed because card holder couldn\'t be authenticated';
     const GATEWAY_ERROR_FALSE_AUTHORIZE                                         = 'The payment was wrongly authorized';
     const GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST                                = 'Duplicate Refund Request';
+    const GATEWAY_ERROR_ONBOARDING_FAILED                                       = 'Merchant boarding on gateway failed.';
 
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';
@@ -632,6 +633,9 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME                             = 'The merchant request name is invalid';
     const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                      = 'The merchant request submissions are missing';
+
+    const BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                          = 'Keys sent in linked_account_notes must exist in notes';
+    const BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT                             = 'The account provided is not a linked account';
 
     // Partners
     const BAD_REQUEST_PARTNER_TYPE_INVALID                                      = 'Partner type is invalid';

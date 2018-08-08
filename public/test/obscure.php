@@ -236,6 +236,11 @@ function disableEmptyInputs(form) {
             </select>
         </td>
     </tr>
+<!--    <tr>-->
+<!--        <td colspan='40'>Aadhaar Number / Aadhaar VID:</td>-->
+<!--        <td><input type="text" name="aadhaar[number]" size="12" value="123456789012"></td>-->
+<!--        <td><input type="text" name="aadhaar[vid]" size="16" value="1234567890123456"></td>-->
+<!--    </tr>-->
     <tr>
         <td colspan="40">Select Preferred Auth </td>
         <td>

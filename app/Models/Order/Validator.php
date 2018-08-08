@@ -126,15 +126,7 @@ class Validator extends Base\Validator
     {
         $this->validateOrderNotPaid();
 
-        //
-        // Bank transfer is a push payment, it cannot be rejected.
-        // So even if the amount mismatches here, we go ahead and
-        // authorize it anyway, and will later refund it.
-        //
-        if ($payment->isBankTransfer() === false)
-        {
-            $this->validateOrderAmount($payment->getAdjustedAmountWrtCustFeeBearer());
-        }
+        $this->validateOrderAmount($payment->getAdjustedAmountWrtCustFeeBearer());
 
         $this->validateOrderCurrency($payment->getCurrency());
 

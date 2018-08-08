@@ -89,8 +89,7 @@ class Validator extends Base\Validator
         Entity::INVOICE_LABEL_FIELD      => 'sometimes|filled|string|max:50|in:business_name,business_dba',
         Entity::AUTO_CAPTURE_LATE_AUTH   => 'sometimes|boolean',
         Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
-        MerchantDetail::GSTIN            => 'sometimes|nullable|string|size:15',
-        MerchantDetail::P_GSTIN          => 'sometimes|nullable|string',
+        Entity::DISPLAY_NAME             => 'sometimes|nullable|string|min:3|max:255',
         Entity::FEE_CREDITS_THRESHOLD    => 'sometimes|integer|nullable',
     ];
 
@@ -186,6 +185,17 @@ class Validator extends Base\Validator
 
     protected static $keyAccessValidators = [
         'key_access',
+    ];
+
+    protected static $listSubmerchantsRules = [
+        Entity::NAME                     => 'sometimes|string',
+        Entity::ID                       => 'sometimes|alpha_num|size:14',
+        Entity::EMAIL                    => 'sometimes|email',
+        Detail\Entity::ACTIVATION_STATUS => 'sometimes|string|max:30',
+        Constants::FROM                  => 'integer',
+        Constants::TO                    => 'integer',
+        Constants::COUNT                 => 'integer|min:1|max:50',
+        Constants::SKIP                  => 'integer',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -790,6 +800,15 @@ class Validator extends Base\Validator
                 [
                     Entity::PARTNER_TYPE => $partnerType,
                 ]);
+        }
+    }
+
+    public function validateLinkedAccount(Entity $merchant)
+    {
+        if ($merchant->isLinkedAccount() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT);
         }
     }
 }

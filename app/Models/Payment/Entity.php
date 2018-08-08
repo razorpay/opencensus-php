@@ -24,6 +24,7 @@ use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
@@ -40,6 +41,7 @@ use RZP\Models\Payment\Processor\Netbanking;
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
  * @property PaymentLink\Entity     $paymentLink
+ * @property Transaction\Entity     $transaction
  */
 class Entity extends Base\PublicEntity
 {
@@ -155,6 +157,7 @@ class Entity extends Base\PublicEntity
     const CARD                  = 'card';
     const EMI_PLAN              = 'emi_plan';
     const DISPUTES              = 'disputes';
+    const TRANSFER              = 'transfer';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -333,6 +336,7 @@ class Entity extends Base\PublicEntity
         self::EMI_PLAN,
         self::DISPUTES,
         self::CREATED_AT,
+        self::TRANSFER,
     ];
 
     /**
@@ -1524,13 +1528,20 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Getters ---------------------------------------------
 
-    public function getBankCodeFromVpa()
+    public function getPspFromVpa()
     {
         $vpa = $this->getAttribute(self::VPA);
 
         $vpaParts = explode('@', $vpa);
 
         $psp = end($vpaParts);
+
+        return $psp;
+    }
+
+    public function getBankCodeFromVpa()
+    {
+        $psp = $this->getPspFromVpa();
 
         return ProviderCode::getBankCode($psp);
     }
