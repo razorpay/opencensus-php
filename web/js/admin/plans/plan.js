@@ -1,7 +1,12 @@
 import { toJS, extendObservable, computed } from 'mobx';
 import Collection from 'model/collection';
 import CollectionItem from 'model/collectionItem';
-import fetch, { adminDelete, adminFetch, adminPost } from 'common/fetch';
+import fetch, {
+  adminDelete,
+  adminFetch,
+  adminPost,
+  adminPatch,
+} from 'common/fetch';
 import { methods } from 'common/data';
 import { notifySuccess, notifyError } from 'common/modal';
 import { deepClone } from 'common/util';
@@ -37,7 +42,12 @@ export default class Plan extends Collection {
       })
     ).then(data => {
       this.items.replace(
-        (data.rules || []).map(p => new Rule(this, p)).concat(new Rule(this))
+        (data.rules || [])
+          .map(p => {
+            p.isEditing = false;
+            return new Rule(this, p);
+          })
+          .concat(new Rule(this))
       );
       return data;
     });
@@ -148,6 +158,8 @@ const ruleProps = Object.keys(options).reduce(function(o, key) {
   return o;
 }, {});
 
+const editableFields = ['fixed_rate', 'percent_rate', 'min_fee', 'max_fee'];
+
 class Rule extends CollectionItem {
   @computed
   get isCard() {
@@ -156,8 +168,18 @@ class Rule extends CollectionItem {
 
   constructor(collection, props = ruleProps) {
     super(collection, props);
-    this.bind(['save', 'delete']);
+    this.bind([
+      'update',
+      'save',
+      'delete',
+      'editRuleHandler',
+      'cancelEditHandler',
+      'updateRule',
+    ]);
     extendObservable(this, props);
+    this['originalRule'] = {};
+    this['originalRule'] = deepClone(this);
+    editableFields.forEach(elem => (this[elem] /= 100));
   }
 
   serialize() {
@@ -171,8 +193,10 @@ class Rule extends CollectionItem {
       data.amount_range_max = range[1] || 1000000000;
     }
     delete data.amount_range;
+    delete data.isEditing;
+    delete data.originalRule;
 
-    data.emi_duration = data.emi_duration.trim();
+    data.emi_duration = data.emi_duration && data.emi_duration.trim();
 
     data.percent_rate = Math.round(data.percent_rate * 100);
     data.fixed_rate = Math.round(data.fixed_rate * 100);
@@ -202,6 +226,7 @@ class Rule extends CollectionItem {
       ).then(data => {
         if (data && !isWorkflow(data)) {
           notifySuccess(`Rule added for ${data.plan_name}`);
+          data.isEditing = false;
           this.collection.items.splice(-1, 0, new Rule(this.collection, data));
           return data;
         }
@@ -235,8 +260,55 @@ class Rule extends CollectionItem {
     return false;
   }
 
+  editRuleHandler(e) {
+    this.isEditing = true;
+  }
+
+  cancelEditHandler(e) {
+    this.updateRule(this['originalRule']);
+    this.isEditing = false;
+  }
+
+  updateRule(data) {
+    for (const key in data) {
+      if (key !== 'originalRule') {
+        this[key] = data[key];
+      }
+      if (editableFields.indexOf(key) !== -1) {
+        this[key] /= 100;
+      }
+    }
+  }
+
+  update() {
+    if (this.id) {
+      let payload = {
+        url: `live/pricing/${this.collection.props.id}/rule/${this.id}`,
+        data: {
+          percent_rate: Math.round(this.percent_rate * 100),
+          fixed_rate: Math.round(this.fixed_rate * 100),
+          min_fee: Math.round(this.min_fee * 100),
+          max_fee: Math.round(this.max_fee * 100),
+        },
+      };
+
+      return this.request(
+        'patch',
+        adminPatch(payload).then(data => {
+          if (data && !isWorkflow(data)) {
+            this.updateRule(data);
+            this.isEditing = false;
+            notifySuccess(`Rule updated for ${data.plan_name}`);
+            return data;
+          }
+        })
+      );
+    }
+  }
+
   field(Component, name, props = {}) {
-    let value;
+    let value,
+      isDisabled = false;
 
     if (name === 'amount_range') {
       value =
@@ -251,11 +323,12 @@ class Rule extends CollectionItem {
       return value;
     }
 
-    if (this.id) {
-      if (props.type === 'number') {
-        value /= 100;
-      }
+    if (!this.isEditing && this.id) {
       return value;
+    }
+
+    if (this.isEditing && editableFields.indexOf(name) === -1) {
+      isDisabled = true;
     }
 
     return (
@@ -263,6 +336,7 @@ class Rule extends CollectionItem {
         name={name}
         value={value}
         onChange={this.onPropChange}
+        disabled={isDisabled}
         {...props}
       />
     );
