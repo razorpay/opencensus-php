@@ -255,12 +255,7 @@ class Core extends Base\Core
      */
     public function editEmail($merchant, $input)
     {
-        $this->trace->info(
-            TraceCode::MERCHANT_EDIT,
-            [
-                'old_email' => $merchant->getEmail(),
-                'new_email' => $input['email']
-            ]);
+        $oldEmail = $merchant->getEmail();
 
         $parentId = $merchant->getReferrer();
 
@@ -279,6 +274,13 @@ class Core extends Base\Core
         }
 
         $merchant->edit($input, 'editEmail');
+
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            [
+                'old_email' => $oldEmail,
+                'new_email' => $input['email']
+            ]);
 
         $this->saveAndNotify($merchant);
 
@@ -1268,20 +1270,6 @@ class Core extends Base\Core
                                                         $oldOwner,
                                                         $merchant->getId(),
                                                         Role::LINKED_ACCOUNT_ADMIN);
-
-            // When primary owner email is not same as original email then we have another owner need to change role.
-            if ($oldOwner->getEmail() !== $originalEmail)
-            {
-                $existingOldUser = $this->repo->user->getUserFromEmail($originalEmail);
-
-                if (empty($existingOldUser) === false)
-                {
-                    (new User\Core)->detachAndAttachMerchantUser(
-                                                                $existingOldUser,
-                                                                $merchant->getId(),
-                                                            Role::LINKED_ACCOUNT_ADMIN);
-                }
-            }
         }
 
         if (empty($teamUser) === false)
