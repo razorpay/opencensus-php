@@ -896,6 +896,8 @@ class Core extends Base\Core
 
             $this->deleteAllSubmerchantRefTags($submerchants, $tagName);
 
+            $this->deletePartnerAccessOverSubmerchants($merchant, $submerchants);
+
             $this->deletePartnerApp($merchant);
 
             $merchant->setPartnerType();
@@ -991,6 +993,33 @@ class Core extends Base\Core
             $merchant->untag($tagName);
 
             $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+        }
+    }
+
+    public function deletePartnerAccessOverSubmerchants(Entity $partner, Base\PublicCollection $submerchants)
+    {
+        $partnerUsers = $partner->users()->get();
+        
+        $partnerUserIds = $partnerUsers->pluck(User\Entity::ID)->toArray();
+
+        foreach ($submerchants as $submerchant)
+        {
+            // Get all submerchant user ids
+            $submerchantUsers = $submerchant->users()->get();
+            $submerchantUserIds = $submerchantUsers->pluck(User\Entity::ID)->toArray();
+
+            // Get all partner user ids that have access over the submerchant
+            $attachedUserIds = array_intersect($submerchantUserIds, $partnerUserIds);
+
+            $this->detachMultipleUsers($submerchant, $attachedUserIds);
+        }
+    }
+
+    protected function detachMultipleUsers(Entity $merchant, array $attachedUserIds)
+    {
+        foreach ($attachedUserIds as $attachedUserId)
+        {
+            $merchant->users()->detach($attachedUserId);
         }
     }
 

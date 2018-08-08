@@ -37,7 +37,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchMerchantAccessMapOnEntity(string $entityId, string $entityType): Base\PublicCollection
+    public function fetchMerchantAccessMapOnEntity(string $entityType, string $entityId): Base\PublicCollection
     {
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, $entityId)

@@ -807,6 +807,70 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testDeleteRelatedEntitiesOnUnmarkingPartner()
+    {
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
+        $partnerData = $this->getDummyPartnerAttributes();
+
+        // Create an oauth application using factory
+        $app = $this->createOAuthApplication($partnerData);
+
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $this->setAuthServiceMockDetail('applications/8ckeirnw84ifke', 'PUT', $requestParams);
+
+        // Set the admin auth
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->markMerchantAsPartner($merchantId, Merchant\Constants::RESELLER);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId, $liveMode);
+
+        $this->assertTrue($merchant->isPartner());
+
+        // Add a partner user
+        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        // Add a submerchant user
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        // Add partner user to submerchant account
+        $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
+
+        $this->fixtures->on('live')->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]);
+        $this->fixtures->on('test')->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]);
+
+        $this->ba->adminAuth($liveMode);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        // Create a merchant request
+        $merchantRequest = $this->createMerchantRequest(self::DEACTIVATION);
+
+        $merchantRequestId = $merchantRequest->getPublicId();
+
+        $testData['request']['url'] = '/merchant/requests/' . $merchantRequestId;
+
+        $this->startTest($testData);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId, $liveMode);
+
+        $this->assertFalse($merchant->isPartner());
+    }
+
     protected function getDummyPartnerAttributes(array $attributes = []): array
     {
         $defaults = [
