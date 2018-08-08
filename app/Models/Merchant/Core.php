@@ -1006,6 +1006,10 @@ class Core extends Base\Core
     }
 
     /**
+     * The function was earlier used to just attach `owner` hence the name.
+     * It now takes role as an optional input and hence user of any role can
+     * be attached.
+     *
      * @param string $ownerId
      * @param Entity $subMerchant
      * @param string $role
@@ -1250,13 +1254,13 @@ class Core extends Base\Core
      * email is also verified.) and promote the existing linked_account_owner role user to team member.
      *
      * @param $merchant
-     * @param $originalEmail
-     * @param $newEmail
      *
      * @return User\Entity
      */
-    public function handleLinkedAccountMerchantsUsers($merchant, $originalEmail, $newEmail)
+    public function handleLinkedAccountMerchantsUsers($merchant)
     {
+        $newEmail = $merchant->getEmail();
+
         $teamUser = $merchant->users()->where('email', $newEmail)->first();
 
         $existingUser = $this->repo->user->getUserFromEmail($newEmail);

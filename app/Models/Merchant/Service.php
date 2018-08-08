@@ -2026,7 +2026,7 @@ class Service extends Base\Service
             return [$subMerchant, $newUser, $createdNew];
         });
 
-        // Sends email to marketplace LA dashbaord enabled users.
+        // Sends email to marketplace LA dashboard enabled users.
         if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true) and
             ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true))
         {
@@ -2045,8 +2045,10 @@ class Service extends Base\Service
         $subMerchantUser = null;
         $createdNew      = false;
 
-        if ((($merchant->isPartner() === true) or (($merchant->isMarketplace() === true) and
-            ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true))) and
+        $isMarketplaceWithLADashTag = (($merchant->isMarketplace() === true) and
+                                       ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true));
+
+        if ((($merchant->isPartner() === true) or ($isMarketplaceWithLADashTag === true)) and
             ($subMerchant->getEmail() !== $merchant->getEmail()))
         {
             list($subMerchantUser, $createdNew) =
@@ -2268,15 +2270,11 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        $originalEmail = $merchant->getEmail();
-
         (new Validator)->validateLinkedAccount($merchant);
 
         $merchant = $this->core()->editEmail($merchant, $input);
 
-        $newEmail = $merchant->getEmail();
-
-        $this->core()->handleLinkedAccountMerchantsUsers($merchant, $originalEmail, $newEmail);
+        $this->core()->handleLinkedAccountMerchantsUsers($merchant);
 
         return $merchant->toArrayPublic();
     }
