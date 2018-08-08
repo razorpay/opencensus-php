@@ -232,7 +232,7 @@ export default class App extends Component {
       this.props.showNotification({
         type: 'error',
         message:
-          'Your account is not activated yet, as the owner merchant needs to enter your banking details.',
+          'Your account has not been activated yet. Your parent merchant needs to add your bank details to enable this.',
       });
     } else {
       LocalStorageService.setItem(this.modeToken, mode);
