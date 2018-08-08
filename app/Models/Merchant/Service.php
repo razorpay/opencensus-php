@@ -2046,7 +2046,7 @@ class Service extends Base\Service
         $createdNew      = false;
 
         if ((($merchant->isPartner() === true) or (($merchant->isMarketplace() === true) and
-            ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD)))) and
+            ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true))) and
             ($subMerchant->getEmail() !== $merchant->getEmail()))
         {
             list($subMerchantUser, $createdNew) =

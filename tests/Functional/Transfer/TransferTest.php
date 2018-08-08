@@ -2,13 +2,12 @@
 
 namespace RZP\Tests\Functional\Transfer;
 
-use RZP\Constants\Entity;
 use RZP\Models\Transfer;
-use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Constants\Entity;
 use RZP\Models\User\Role;
-use RZP\Tests\Functional\Fixtures\Entity\Reversal;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TransferTest extends TestCase

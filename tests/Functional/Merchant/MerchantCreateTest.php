@@ -569,7 +569,7 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(Role::LINKED_ACCOUNT_OWNER, $users->first()->role);
     }
 
-    public function testUpdateLinkedAccountEmailExistingUser()
+    public function testUpdateLinkedAccountEmailTeamUser()
     {
         $this->createUserMerchantMapping('10000000000000', 'owner');
 

@@ -633,7 +633,7 @@ return [
         ],
     ],
 
-    'testUpdateLinkedAccountEmailExistingUser' => [
+    'testUpdateLinkedAccountEmailTeamUser' => [
         'request'  => [
             'url'     => '/la-merchants/email',
             'method'  => 'put',
