@@ -44,24 +44,19 @@ export default class BulkAssignMerchantFeature extends Component {
       return;
     }
 
-    const data = {
-      mode: body.mode,
-      name: body.selectedFeature,
-      entity_type: 'merchant',
-      entity_ids: splitAndFilter(body.merchantIds, ','),
+    let mode = body.shouldSync === '1' ? 'live' : body.mode;
+    const payload = {
+      url: `${mode}/features/${this.state.action}`,
+      data: {
+        mode: mode,
+        name: body.selectedFeature,
+        entity_type: 'merchant',
+        entity_ids: splitAndFilter(body.merchantIds, ','),
+        should_sync: body.shouldSync,
+      },
     };
 
-    if (body.shouldSync === '1') {
-      data.mode = 'live';
-      data.should_sync = 1;
-    } else {
-      data.should_sync = 0;
-    }
-
-    return adminPost({
-      url: `${data.mode}/features/${this.state.action}`,
-      data: data,
-    }).then(response => {
+    return adminPost(payload).then(response => {
       if (response) {
         notifySuccess(
           `Feature successfully updated for ${response.length} merchant(s).`
