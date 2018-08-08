@@ -12,6 +12,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYMENT_NEW_REQUEST                           = 'PAYMENT_NEW_REQUEST';
     const PAYMENT_CREATED                               = 'PAYMENT_CREATED';
+    const PAYMENT_CREATED_RESPONSE                      = 'PAYMENT_CREATED_RESPONSE';
     const PAYMENT_CREATE_FAILED                         = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                          = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_PENDING                          = 'PAYMENT_AUTH_PENDING';
