@@ -837,6 +837,8 @@ class Core extends Base\Core
 
         $validator->validateIsNotLinkedAccount($merchant);
 
+        $validator->validatePartnerType($partnerType);
+
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType)
         {
             $merchant->setPartnerType($partnerType);
