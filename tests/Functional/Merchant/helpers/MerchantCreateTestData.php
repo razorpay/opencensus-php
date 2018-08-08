@@ -466,6 +466,44 @@ return [
         ],
     ],
 
+    'testCreateMarketplaceLinkedAccountWithDashboardUser' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account 2',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'    => '7gcKngYfqyDMjN',
+                'name'  => 'Linked Account 2',
+                'email' => 'linkedaccount@razorpay.com',
+            ],
+        ],
+    ],
+
+    'testCreateMarketplaceLinkedAccountWithAlreadyExistingUser' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account Name',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'    => '7gcKngYfqyDMjN',
+                'name'  => 'Linked Account Name',
+            ],
+        ],
+    ],
+
     'testCreateMarketplaceLinkedAccountWithoutEmail' => [
         'request'  => [
             'url'     => '/submerchants',
@@ -576,6 +614,38 @@ return [
                 'name'  => 'Linked Account 3',
                 'email' => 'linkedaccount@razorpay.com',
             ],
+        ],
+    ],
+
+    'testUpdateLinkedAccountEmail' => [
+        'request'  => [
+            'url'     => '/la-merchants/email',
+            'method'  => 'put',
+            'content' => [
+                'email' => 'testing@testing.com',
+            ],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response' => [
+
+        ],
+    ],
+
+    'testUpdateLinkedAccountEmailTeamUser' => [
+        'request'  => [
+            'url'     => '/la-merchants/email',
+            'method'  => 'put',
+            'content' => [
+                'email' => 'testing2@testing.com',
+            ],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response' => [
+
         ],
     ],
 

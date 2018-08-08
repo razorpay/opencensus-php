@@ -7,11 +7,10 @@ use Conner\Tagging\Taggable;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
-use RZP\Models\Card\IIN;
 use RZP\Models\User;
 use RZP\Models\State;
-use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -78,6 +77,8 @@ class Entity extends Base\PublicEntity
     const SUSPENDED_AT             = 'suspended_at';
     const NOTES                    = 'notes';
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
+
+    const ENABLE_LA_DASHBOARD      = 'Enable_la_dashboard';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -1463,11 +1464,35 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Get the primary linked account owner.
+     */
+    public function primaryLinkedAccountOwner()
+    {
+        return $this->users()->where('role', User\Role::LINKED_ACCOUNT_OWNER)->first();
+    }
+
+    /**
      * Get the primary owner of the merchant.
      */
     public function primaryOwner()
     {
         return $this->owners()->first();
+    }
+
+    /**
+     * For linked accounts owner role is linked account owner.
+     * @return string
+     */
+    public function getUserOwnerRole()
+    {
+        $role = User\Role::OWNER;
+
+        if ($this->isLinkedAccount() === true)
+        {
+            $role = User\Role::LINKED_ACCOUNT_OWNER;
+        }
+
+        return $role;
     }
 
     public function users()
@@ -1494,9 +1519,11 @@ class Entity extends Base\PublicEntity
      */
     public function liveTagNames(): array
     {
-        return $this->getConnectionName() === Mode::LIVE ?
+        $liveConnection = app('basicauth')->getLiveConnection();
+
+        return $this->getConnectionName() === $liveConnection ?
                 $this->tagNames() :
-                (clone $this)->setConnection(Mode::LIVE)->tagNames();
+                (clone $this)->setConnection($liveConnection)->tagNames();
     }
 
     public function isEmailOptional()
@@ -1557,6 +1584,18 @@ class Entity extends Base\PublicEntity
         }
 
         return $data;
+    }
+
+    /**
+     * @param string $tagName
+     *
+     * @return bool
+     */
+    public function isTagAdded(string $tagName): bool
+    {
+        $tagNames = $this->liveTagNames();
+
+        return in_array($tagName, $tagNames, true) === true;
     }
 
     public function toArrayUser()

@@ -41,15 +41,24 @@ class UserRolesScope
             'order_payments'    => Role::allExceptSellerRole(),
 
             // invitation routes
-            'invitation_create' => [Role::OWNER],
-            'invitation_delete' => [Role::OWNER],
-            'invitation_edit'   => [Role::OWNER],
-            'invitation_resend' => [Role::OWNER],
+            'invitation_create' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+            'invitation_delete' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+            'invitation_edit'   => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+            'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
 
             // merchant routes
             'balance_fetch'                       => Role::allExceptSellerRole(),
             'bank_account_fetch'                  => Role::allExceptSellerRole(),
-            'merchant_activation_details'         => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE],
+            'merchant_activation_details'         => [
+                                                        Role::OWNER,
+                                                        Role::MANAGER,
+                                                        Role::ADMIN,
+                                                        Role::OPERATIONS,
+                                                        Role::FINANCE,
+                                                        Role::LINKED_ACCOUNT_OWNER,
+                                                        Role::LINKED_ACCOUNT_ADMIN
+                                                    ],
+            'merchant_edit_email_la'              => [Role::OWNER, Role::ADMIN],
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],
             'merchant_edit_config_logo'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_fetch_config'               => Role::allExceptSellerRole(),
@@ -65,8 +74,8 @@ class UserRolesScope
             'webhook_edit'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
             // settlemnets route
-            'setl_fetch_multiple' => Role::READER_ROLES,
-            'setl_fetch_by_id'    => Role::READER_ROLES,
+            'setl_fetch_multiple' => array_merge(Role::READER_ROLES, Role::LINKED_ACCOUNT_ROLES),
+            'setl_fetch_by_id'    => array_merge(Role::READER_ROLES, Role::LINKED_ACCOUNT_ROLES),
 
             // invoice routes
             'invoice_create'         => array_merge(Role::WRITER_ROLES, [Role::SELLERAPP]),
@@ -99,11 +108,11 @@ class UserRolesScope
             'transfer_fetch_multiple' => Role::READER_ROLES,
 
             // TODO change the role to LA dashboard admin and owner after launch.
-            'transfer_fetch_multiple_la'  => [Role::OWNER],
-            'transfer_fetch_la'           => [Role::OWNER],
-            'transfer_fetch_reversals_la' => [Role::OWNER],
-            'reversal_fetch_multiple_la'  => [Role::OWNER],
-            'reversal_fetch_la'           => [Role::OWNER],
+            'transfer_fetch_multiple_la'  => Role::LINKED_ACCOUNT_ROLES,
+            'transfer_fetch_la'           => Role::LINKED_ACCOUNT_ROLES,
+            'transfer_fetch_reversals_la' => Role::LINKED_ACCOUNT_ROLES,
+            'reversal_fetch_multiple_la'  => Role::LINKED_ACCOUNT_ROLES,
+            'reversal_fetch_la'           => Role::LINKED_ACCOUNT_ROLES,
 
             // oauth
             'oauth_application_create'         => [Role::OWNER],

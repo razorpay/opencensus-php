@@ -41,7 +41,7 @@ class Validator extends Base\Validator
     protected static $actionRules = [
         Entity::ACTION                => 'required|custom',
         Entity::MERCHANT_ID           => 'required|max:14',
-        Entity::ROLE                  => 'sometimes|string|in:owner,manager,operations,finance,support,admin,sellerapp',
+        Entity::ROLE                  => 'sometimes|string|custom',
     ];
 
     protected static $loginRules = [
@@ -133,6 +133,12 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateRole(string $attribute, string $role)
+    {
+        if (Role::exists($role) === false) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
+        }
+    }
     /**
      * Google captcha validation.
      *

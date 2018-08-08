@@ -449,4 +449,30 @@ class Service extends Base\Service
             }
         }
     }
+
+    /**
+     * If we create a new user we send him a password reset link to start using dasboard
+     * The reset flow will also confirm the user in the process.
+     * If we find an existing user with the sub-merchant email then we send a mail informing
+     * that he has access to sub-merchant account also now.
+     *
+     * @param User\Entity     $subMerchantUser
+     * @param Merchant\Entity $subMerchant
+     * @param boolean         $createdNew
+     *
+     */
+    public function sendAccountLinkedCommunicationEmail(
+                                                        User\Entity $subMerchantUser,
+                                                        Merchant\Entity $subMerchant,
+                                                        bool $createdNew)
+    {
+        if ($createdNew === true)
+        {
+            $this->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+        }
+        else
+        {
+            $this->postAccountMappedEmail($subMerchantUser, $subMerchant);
+        }
+    }
 }
