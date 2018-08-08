@@ -87,11 +87,10 @@ export default class AmountInWords extends Component {
       amountInWords[5] != 0
         ? (str != '' ? 'and ' : '') +
           (nums[Number(amountInWords[5])] ||
-            tens[amountInWords[5][0]] + ' ' + nums[amountInWords[5][1]]) +
-          'Rupees Only '
+            tens[amountInWords[5][0]] + ' ' + nums[amountInWords[5][1]])
         : '';
 
-    return str;
+    return str + `${currency} Only`;
   };
 
   render() {
