@@ -55,6 +55,21 @@ class PaymentCreateTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
+    public function testCreatePaymentWithValidOrderIdWithTrace()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory', 'log_response']);
+
+        $this->doAuthPayment($payment);
+    }
+
     public function testCreatePaymentWithInvalidMethod()
     {
         $payment = $this->getDefaultPaymentArray();
