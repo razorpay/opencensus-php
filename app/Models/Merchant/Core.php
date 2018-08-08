@@ -999,27 +999,19 @@ class Core extends Base\Core
     public function deletePartnerAccessOverSubmerchants(Entity $partner, Base\PublicCollection $submerchants)
     {
         $partnerUsers = $partner->users()->get();
-        
-        $partnerUserIds = $partnerUsers->pluck(User\Entity::ID)->toArray();
 
-        foreach ($submerchants as $submerchant)
+        $submerchantIds = $submerchants->pluck(Entity::ID)->toArray();
+
+        foreach ($partnerUsers as $partnerUser)
         {
-            // Get all submerchant user ids
-            $submerchantUsers = $submerchant->users()->get();
-            $submerchantUserIds = $submerchantUsers->pluck(User\Entity::ID)->toArray();
+            $merchantIdsAccessible = $partnerUser->merchants()->get()->pluck(Entity::ID)->toArray();
 
-            // Get all partner user ids that have access over the submerchant
-            $attachedUserIds = array_intersect($submerchantUserIds, $partnerUserIds);
+            $submerchantIdsAccessible = array_intersect($merchantIdsAccessible, $submerchantIds);
 
-            $this->detachMultipleUsers($submerchant, $attachedUserIds);
-        }
-    }
-
-    protected function detachMultipleUsers(Entity $merchant, array $attachedUserIds)
-    {
-        foreach ($attachedUserIds as $attachedUserId)
-        {
-            $merchant->users()->detach($attachedUserId);
+            foreach ($submerchantIdsAccessible as $submerchantId)
+            {
+                $partnerUser->merchants()->detach($submerchantId);
+            }
         }
     }
 
