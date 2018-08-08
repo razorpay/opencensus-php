@@ -169,7 +169,7 @@ class OffersPaymentTest extends TestCase
         $payment = $this->getOrderPaymentArray($order);
 
         $payment['method'] = 'emi';
-        $payment['emi_duration'] = 9;
+        $payment['emi_duration'] = '9';
         $payment['card']['number'] = '41476700000006';
 
         $this->expectException(BadRequestValidationFailureException::class);

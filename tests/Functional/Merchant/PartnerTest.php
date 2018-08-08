@@ -707,6 +707,29 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchPartnerSubmerchantsDeleted()
+    {
+        $this->createPartnerAndUser();
+
+        $this->createSubmerchantAndUser();
+
+        $app = $this->createDummyPartnerApp();
+
+        // Link new submerchants to the partner account
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+                'deleted_at'  => 1504620540,
+            ]);
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
     /**
      * Tests the list submerchants api when there are no submerchants for the partner
      */

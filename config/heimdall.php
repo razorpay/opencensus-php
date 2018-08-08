@@ -168,6 +168,14 @@ return [
             Permission::VIEW_REFUND_PAYMENTS => '',
             Permission::EDIT_AUTHORIZED_REFUND_PAYMENT => '',
             Permission::RETRY_REFUND_FAILED => '',
+            Permission::EDIT_REFUND    => [
+                'description' => 'edit_refund_permission',
+                'assignable'  => true,
+            ],
+            Permission::RETRY_REFUND    => [
+                'description' => 'Retry refunds',
+                'assignable'  => true,
+            ],
             Permission::EDIT_PAYMENT_REFUND => '',
             Permission::EDIT_PAYMENT_CAPTURE => '',
             Permission::EDIT_MERCHANT_CONFIRM => [
@@ -454,8 +462,12 @@ return [
         ],
 
         PermissionCategory::ACTION => [
-            Permission::DB_META_QUERY => '',
-            Permission::OAUTH_SYNC_MERCHANT_MAP => '',
+            Permission::DB_META_QUERY                => '',
+            Permission::OAUTH_SYNC_MERCHANT_MAP      => '',
+            Permission::DOWNLOAD_NON_MERCHANT_REPORT => [
+                'description'   => 'download non-merchant reports',
+                'assignable'    => true,
+            ]
         ],
 
         // Permissions
@@ -479,10 +491,6 @@ return [
             Permission::EDIT_PERMISSION     => [
                 'description' => 'edit_permission',
                 'workflow'    => true
-            ],
-            Permission::EDIT_REFUND    => [
-                'description' => 'edit_refund_permission',
-                'assignable'  => true,
             ],
         ],
 

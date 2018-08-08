@@ -83,6 +83,15 @@ trait Refund
                 $dimensions
             );
         }
+
+        if ($this->refund->isBatch() === true)
+        {
+            $this->trace->histogram(
+                RefundMetric::REFUND_CREATION_TIME_FOR_BATCH_MINUTES,
+                $this->refund->getTimeFromCreatedInMinutes(),
+                $dimensions
+            );
+        }
     }
 
     public function createRefundOnApiFromRecon(
