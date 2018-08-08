@@ -57,7 +57,7 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function putLinkedAccountMerchantEmail()
+    public function updateLinkedAccountMerchantEmail()
     {
         $input = Request::all();
 
