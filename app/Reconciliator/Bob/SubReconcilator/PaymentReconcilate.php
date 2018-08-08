@@ -4,9 +4,11 @@ namespace RZP\Reconciliator\Bob;
 
 use Carbon\Carbon;
 
+use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -43,6 +45,129 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                         Action::AUTHORIZE);
     }
 
+    protected function getGatewayPaymentDate($row)
+    {
+        return $row[ReconcilationFields::TRANSACTION_TYPE];
+    }
+
+    protected function getCardDetails($row)
+    {
+        return [
+            Base\Reconciliate::CARD_TYPE  => $this->getCardType($row),
+            BaseReconciliate::CARD_LOCALE => $this->getCardLocale($row),
+            BaseReconciliate::ISSUER      => $this->getIssuer($row),
+            BaseReconciliate::CARD_TRIVIA => $this->getCardTrivia($row),
+        ];
+    }
+
+    /**
+     * Returns if the card is debit or credit from Payment Method
+     * @param $row
+     * @return strings|null if any card type is present
+     */
+    protected function getCardType($row)
+    {
+        $cardType = explode(' ', strtolower($row[ReconcilationFields::PAYMENT_METHOD]))[0];
+
+        if (in_array($cardType, [BaseReconciliate::DEBIT, BaseReconciliate::CREDIT]) === false)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
+                    'message'         => 'Unable to figure out the card type.',
+                    'recon_card_type' => $cardType,
+                    'row'             => $row,
+                    'gateway'         => $this->gateway
+                ]);
+
+            return null;
+        }
+
+        return $cardType;
+    }
+
+    /**
+     * Returns if the card is international or domestic
+     * @param $row
+     * @return string
+     */
+    protected function getCardLocale($row)
+    {
+      $cardLocale = strtolower($row[ReconcilationFields::DESTINATION]);
+
+        if (in_array($cardLocale, [BaseReconciliate::DOMESTIC, BaseReconciliate::INTERNATIONAL]) === false)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
+                    'message'         => 'Unable to figure out the card locale.',
+                    'recon_card_type' => $cardLocale,
+                    'row'             => $row,
+                    'gateway'         => $this->gateway
+                ]);
+
+            return null;
+        }
+
+        return $cardLocale;
+    }
+
+    /**
+     * Returns the issuer bank from Onus
+     * if Onus is true is BoB
+     * @param $row
+     * @return string|null if not a ONUS Transaction.
+     */
+    protected function getIssuer($row)
+    {
+        $onusIndicator = $row[ReconcilationFields::ONUS_INDICATOR];
+
+        if ($onusIndicator === 'YES')
+        {
+            return IFSC::BARB;
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the interchange type eg Visa International;
+     * @param $row
+     * @return string|null
+     */
+    protected function getCardTrivia($row)
+    {
+        return $row[ReconcilationFields::INTERCHANGE_CATEGORY] ?? null;
+    }
+
+    /**
+     * Returns the service tax gst +csf tax. csf tax is usually zero
+     * @param $row
+     * @return integer
+     */
+    protected function getGatewayServiceTax($row)
+    {
+        $tax = abs($row[ReconcilationFields::GST]) + abs($row[ReconcilationFields::CSF_TAX]);
+
+        return Base\Helper::getIntegerFormattedAmount($tax);
+    }
+
+
+    protected function getGatewayFee($row)
+    {
+        $lateSettelementFee = $row[ReconcilationFields::LATE_SETTLEMENT_FEE_AMOUNT];
+
+        $rrfAmount  = $row[ReconcilationFields::RRF_AMOUNT];
+
+        $msfAmount = abs($row[ReconcilationFields::MSF_AMOUNT]);
+
+        $tax = $this->getGatewayServiceTax($row);
+
+        $fee = $lateSettelementFee + $rrfAmount + $msfAmount +$tax;
+
+        return Base\Helper::getIntegerFormattedAmount($fee);
+    }
+
     /**
      * The card_fss entity ref column should be updated with rrn
      * It should be set as ref setReferenceNumberInGateway
@@ -53,5 +178,16 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
         $gatewayPayment->setRef($referenceNumber);
+    }
+
+    /**
+     * Sets the given gateway payment date as postdate in card_fss.
+     *
+     * @param string       $gatewayPaymentDate
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function setGatewayPaymentDateInGateway(string $gatewayPaymentDate, PublicEntity $gatewayPayment)
+    {
+        $gatewayPayment->setPosDate($gatewayPaymentDate);
     }
 }

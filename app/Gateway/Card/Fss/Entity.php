@@ -135,4 +135,9 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::REF, $ref);
     }
+
+    public function setPosDate(string $date)
+    {
+        $this->setAttribute(self::POST_DATE, $date);
+    }
 }
