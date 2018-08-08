@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import Time from 'rzp/ui/Time';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import DetailRow from '../DetailRow';
-import CheckIcon from 'rzp/ui/CheckIcon';
 import ProgressBar from 'rzp/ui/ProgressBar';
 import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
 import { openModal, closeModal } from 'rzp/modules/modals';
