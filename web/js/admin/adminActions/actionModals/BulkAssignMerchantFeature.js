@@ -48,7 +48,6 @@ export default class BulkAssignMerchantFeature extends Component {
     const payload = {
       url: `${mode}/features/${this.state.action}`,
       data: {
-        mode: mode,
         name: body.selectedFeature,
         entity_type: 'merchant',
         entity_ids: splitAndFilter(body.merchantIds, ','),
