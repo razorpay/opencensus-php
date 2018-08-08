@@ -267,9 +267,9 @@ export default class Model extends BaseModel {
   };
 
   @action
-  deleteSubmerchant = submerchantId => {
+  unlinkSubmerchant = submerchantId => {
     return this.request(
-      'deleteSubmerchant',
+      'unlinkSubmerchant',
       adminDelete({
         url: `live_${this.merchantId}/merchants/${submerchantId.replace(
           'acc_',

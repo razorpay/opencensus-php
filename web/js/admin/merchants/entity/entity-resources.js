@@ -8,6 +8,7 @@ import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Table from 'ui/Table';
+import AsyncButton from 'ui/AsyncButton';
 import ShowWhen from 'admin/components/ShowWhen';
 import CreditsDetails from './entityDetails/CreditsDetails';
 import FeaturesDetails from './entityDetails/FeaturesDetails';
@@ -57,19 +58,22 @@ function _getAdminsFields(adminsMap) {
   ];
 }
 
-function _getSubmerchantFields(deleteSubmerchant) {
+function _getSubmerchantFields(unlinkSubmerchant) {
   return [
+    ['Merchant Id', item => item.id],
+    ['Merchant Name', item => item.name],
     [
       'Actions',
       item => (
-        <div class="link danger" onClick={() => deleteSubmerchant(item.id)}>
-          Delete
-        </div>
+        <AsyncButton
+          class="link danger"
+          onClick={() => unlinkSubmerchant(item.id)}
+          confirm="Are you sure you want to delete unlink this submerchant"
+        >
+          Unlink
+        </AsyncButton>
       ),
     ],
-    ['Merchant Id', item => item.id],
-    ['Merchant Email', item => item.email],
-    ['Merchant Name', item => item.name],
   ];
 }
 
@@ -384,7 +388,7 @@ export function getDetailsViewMap(model) {
         <div>
           <Table
             items={submerchants}
-            fields={_getSubmerchantFields(model.deleteSubmerchant)}
+            fields={_getSubmerchantFields(model.unlinkSubmerchant)}
           />
         </div>
       ),
