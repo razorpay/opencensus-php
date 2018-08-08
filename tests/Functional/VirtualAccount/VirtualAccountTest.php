@@ -115,7 +115,7 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
-        $this->assertEquals(1005900, $virtualAccount['amount_expected']);
+        $this->assertEquals(1000000, $virtualAccount['amount_expected']);
         $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
     }
 
@@ -636,7 +636,7 @@ class VirtualAccountTest extends TestCase
 
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10059]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
-        $this->assertEquals(1005900, $virtualAccount['amount_paid']);
+        $this->assertEquals(1000000, $virtualAccount['amount_paid']);
         $this->assertEquals('paid', $virtualAccount['status']);
 
         $order = $this->getLastEntity('order', true);
