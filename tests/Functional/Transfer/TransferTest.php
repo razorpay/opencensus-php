@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Transfer;
 use RZP\Constants\Entity;
 use RZP\Models\Transfer;
 use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Models\User\Role;
 use RZP\Tests\Functional\Fixtures\Entity\Reversal;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
@@ -573,7 +574,7 @@ class TransferTest extends TestCase
 
         $data['response']['content']['items'] = [$transfer];
 
-        $this->ba->proxyAuth('rzp_test_10000000000001');
+        $this->ba->proxyAuth('rzp_test_10000000000001' ,null,Role::LINKED_ACCOUNT_OWNER);
 
         $this->startTest();
     }
@@ -591,7 +592,7 @@ class TransferTest extends TestCase
 
         $data['response']['content'] = $transfer;
 
-        $this->ba->proxyAuth('rzp_test_10000000000001');
+        $this->ba->proxyAuth('rzp_test_10000000000001' ,null,Role::LINKED_ACCOUNT_OWNER);
 
         $this->startTest();
     }
@@ -600,7 +601,7 @@ class TransferTest extends TestCase
     {
         $transfer = $this->createTransfer('account');
 
-        $this->ba->proxyAuth('rzp_test_10000000000000');
+        $this->ba->proxyAuth('rzp_test_10000000000000' ,null,Role::LINKED_ACCOUNT_OWNER);
 
         $this->startTest();
     }
