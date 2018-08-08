@@ -91,7 +91,13 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+            $pendingDispatch = InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+
+            // Internal flow (e.g. via subscription) requires delay to accommodate for time in wrapping txn commit
+            if ($invoice->hasSubscription())
+            {
+                $pendingDispatch->delay(self::QUEUE_JOB_DELAY);
+            }
         }
 
         return $invoice;

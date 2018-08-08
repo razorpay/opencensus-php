@@ -38,7 +38,7 @@ COPY --chown=apache:www-data . /app/
 RUN cp dockerconf/mpm.conf /etc/apache2/conf.d/mpm.conf
 
 # This step can't run without some classes from above step
-RUN composer dump-autoload && php artisan optimize
+RUN composer dump-autoload -o && php artisan optimize
 
 EXPOSE 80
 ENTRYPOINT ["/app/dockerconf/entrypoint.sh"]
