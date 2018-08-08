@@ -3,7 +3,6 @@
 namespace RZP\Reconciliator\Bob;
 
 use RZP\Reconciliator\Base;
-
 class CombinedReconciliate extends Base\CombinedReconciliate
 {
     /**
