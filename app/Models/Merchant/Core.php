@@ -1012,13 +1012,12 @@ class Core extends Base\Core
      *
      * @param string $ownerId
      * @param Entity $subMerchant
-     * @param string $role
      */
-    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant, string $role = Role::OWNER)
+    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant)
     {
         $userMerchantMappingInputData = [
             'action'      => 'attach',
-            'role'        => $role,
+            'role'        => $subMerchant->getUserOwnerRole(),
             'merchant_id' => $subMerchant->getId(),
         ];
 

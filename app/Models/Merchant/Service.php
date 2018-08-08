@@ -106,7 +106,7 @@ class Service extends Base\Service
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
             }
-            elseif ($merchant->isPurePlatformPartner() === true) {
+            else if ($merchant->isPurePlatformPartner() === true) {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
             }
@@ -1881,14 +1881,7 @@ class Service extends Base\Service
         }
         else
         {
-            $role = Role::OWNER;
-
-            if ($subMerchant->isLinkedAccount() === true)
-            {
-                $role = Role::LINKED_ACCOUNT_OWNER;
-            }
-
-            $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant, $role);
+            $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
         }
 
         return [$subMerchantUser, $created];
@@ -1900,14 +1893,7 @@ class Service extends Base\Service
 
         $subMerchantUser = (new User\Core)->create($userData);
 
-        $role = Role::OWNER;
-
-        // For marketpalce linked account owner needs to be assinged.
-        if ($subMerchant->isLinkedAccount() === true) {
-            $role = Role::LINKED_ACCOUNT_OWNER;
-        }
-
-        $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant, $role);
+        $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant);
 
         return $subMerchantUser;
     }

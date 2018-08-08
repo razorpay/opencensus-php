@@ -1479,6 +1479,22 @@ class Entity extends Base\PublicEntity
         return $this->owners()->first();
     }
 
+    /**
+     * For linked accounts owner role is linked account owner.
+     * @return string
+     */
+    public function getUserOwnerRole()
+    {
+        $role = User\Role::OWNER;
+
+        if ($this->isLinkedAccount() === true)
+        {
+            $role = User\Role::LINKED_ACCOUNT_OWNER;
+        }
+
+        return $role;
+    }
+
     public function users()
     {
         //
@@ -1579,12 +1595,7 @@ class Entity extends Base\PublicEntity
     {
         $tagNames = $this->liveTagNames();
 
-        if (in_array($tagName, $tagNames, true) === true)
-        {
-            return true;
-        }
-
-        return false;
+        return in_array($tagName, $tagNames, true) === true;
     }
 
     public function toArrayUser()
