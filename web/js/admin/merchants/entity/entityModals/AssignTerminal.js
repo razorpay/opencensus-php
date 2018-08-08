@@ -282,6 +282,8 @@ export default class TerminalForm extends Component {
             <option value="" />
             <option value="INR">INR</option>
             <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="SGD">SGD</option>
           </SelectField>
 
           <SelectField name="emi" label="Emi" defaultValue="">

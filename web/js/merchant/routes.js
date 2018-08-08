@@ -15,6 +15,7 @@ import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
 import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 import DisputeDetails from 'merchant/containers/Disputes/Details';
 import PaymentLinkBatchDetails from 'merchant/containers/PaymentLinks/BatchDetails';
+import SubmerchantDetails from 'merchant/containers/PartnerDashboard/SubMerchant/Entity';
 
 import PlanNew from 'merchant/containers/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation/new';
@@ -52,6 +53,7 @@ const entityDetailsMap = {
 
   '/route/transfers/:id': { component: TransferDetails },
 
+  '/submerchants/:id(acc_.+)': { component: SubmerchantDetails },
   '/disputes/:id(disp_.+)': { component: DisputeDetails },
 };
 

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -88,12 +88,17 @@ const RefundsTabbedContainer = () => {
 };
 
 @withRouter
-@connect(null, {
-  setBaseLocation,
-  setActiveEntity,
-  setSecActiveEntity,
-  openSlider,
-})
+@connect(
+  state => ({
+    user: state.session.user,
+  }),
+  {
+    setBaseLocation,
+    setActiveEntity,
+    setSecActiveEntity,
+    openSlider,
+  }
+)
 export default class Content extends Component {
   setBaseLocation = location => {
     let { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
@@ -137,13 +142,19 @@ export default class Content extends Component {
   };
 
   getBaseView = () => {
+    const { user } = this.props;
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
           <Redirect from="/" exact to="/dashboard" />
 
-          <Route path="/submerchants" component={PartnerDashboard} />
+          {!!user.partner_type ? (
+            <Route path="/submerchants" component={PartnerDashboard} />
+          ) : (
+            <Redirect exact from="/submerchants" to="/dashboard" />
+          )}
+
           <Route path="/payments" component={Transactions} />
           <Route path="/refunds" component={Transactions} />
           <Route path="/orders" component={Transactions} />

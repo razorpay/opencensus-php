@@ -15,9 +15,9 @@ import { closeModal } from 'rzp/modules/modals';
 )
 export default class CreateLogin extends Component {
   save = () => {
-    const { email, id, name } = this.props.referral;
+    const { id } = this.props.referral;
     return this.props
-      .onSave({ email, id })
+      .onSave(id)
       .then(() => {
         this.props.showNotification({
           type: 'success',

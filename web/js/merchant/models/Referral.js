@@ -28,21 +28,12 @@ export default class Referral extends Entity {
     }).then(response => window.location.reload());
   }
 
-  createLogin(params = {}) {
-    let data = {
-      email: params.email,
-      password: params.password,
-      password_confirmation: params.password_confirmation,
-    };
-
+  createLogin(merchantId) {
     return ajax(
       {
-        url: `/submerchant/user/${params.id}`,
+        url: `/submerchant/user/${merchantId}`,
         method: 'POST',
-        data: {
-          ...data,
-          mode: 'live',
-        },
+        data: { mode: 'live' },
       },
       {},
       '/merchant/api'
