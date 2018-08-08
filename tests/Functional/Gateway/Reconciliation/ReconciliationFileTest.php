@@ -1130,7 +1130,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->fixtures->edit('card_fss', $gatewayPayment1['id'], ['ref' => null, 'tranid' => null]);
 
-        $entries[] = $this->overideFssBobRecon($payment, $gatewayPayment1);
+        $entries[] = $this->overideFssBobRecon($gatewayPayment1);
 
         $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing');
 
@@ -1159,19 +1159,19 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
-    private function overideFssBobRecon(array $payment, array  $gatewayPayment1)
+    private function overideFssBobRecon(array  $gatewayPayment)
     {
         $facade = $this->testData['facades']['testFssBobRecon'];
 
-        $facade['Transaction ID'] = $gatewayPayment1['tranid'];
+        $facade['Transaction ID'] = $gatewayPayment['tranid'];
 
-        $facade['Transaction Amount'] = $payment['amount']/100;
+        $facade['Transaction Amount'] = $gatewayPayment['amount']/100;
 
         $facade['Settlement Amount'] = $facade['Transaction Amount']/100;
 
-        $facade['Auth/Approval Code'] = $gatewayPayment1['auth'];
+        $facade['Auth/Approval Code'] = $gatewayPayment['auth'];
 
-        $facade['Merchant Track ID'] = $payment['id'];
+        $facade['Merchant Track ID'] = $gatewayPayment['payment_id'];
 
         return $facade;
     }
