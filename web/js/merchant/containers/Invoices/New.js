@@ -19,6 +19,7 @@ import {
   capitalize,
   isAddressValid,
   calculateTax,
+  isBlank,
 } from 'rzp/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -50,6 +51,7 @@ import * as constants from 'rzp/utils/constants';
 import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
 import { luminateRow } from 'merchant/modules/app';
 import { track, trackLinkClick } from './ga';
+import LocalStorageService from 'rzp/utils/localStorage';
 
 function validate(values) {
   let errors = {
@@ -104,6 +106,7 @@ const selector = formValueSelector('newInvoice');
       state_of_supply: selector(state, 'state_of_supply'),
       config: state.config.config,
       supply_state_code: selector(state, 'supply_state_code'),
+      merchant_gstin: state.profile.merchant_gst.gstin,
     };
   },
   {
@@ -320,12 +323,12 @@ export default class InvoicesNewContainer extends Component {
     let user = this.props.session.user;
     let merchant = user.merchants[user.current];
     let logoUrl = this.props.config.logo_url;
-    let gstin = user.gstin || user.p_gstin;
+    let gstin = user.gstin || this.props.merchant_gstin;
     let cin = user.company_cin;
 
     let { config: { invoice_label_field } } = this.props;
-
     let merchantAltBillingLabel = user.business_name || user.business_dba;
+
     if (invoice_label_field && user[invoice_label_field]) {
       merchantAltBillingLabel = user[invoice_label_field];
     }
@@ -640,7 +643,7 @@ export default class InvoicesNewContainer extends Component {
     };
 
     this.props.openModal({
-      size: 'large',
+      size: 'regular',
       component: (
         <InvoicesOnboarding
           merchant={this.props.session.user}
@@ -1252,7 +1255,15 @@ export default class InvoicesNewContainer extends Component {
     const { invoice_label_field } = this.props.config;
     const { gstin } = this.props.session.user;
 
-    if (invoice_label_field === null || gstin === '') {
+    if (invoice_label_field === null) {
+      this.showOnboardingModal();
+    }
+
+    //show onboarding only when gstin is null & `gst_invoice_enabled` flag is not set(first time use)
+    if (
+      isBlank(gstin) &&
+      LocalStorageService.getItem('gst_invoice_enabled') === null
+    ) {
       this.showOnboardingModal();
     }
   }
