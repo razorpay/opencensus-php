@@ -13,8 +13,18 @@ class GenericController extends Controller
 {
     public function handleAny($mode, $path)
     {
+        $allRequestHeaders = Request::header();
+        $headers = [];
+
+        foreach($allRequestHeaders as $key => $value) {
+            if (stripos($key, 'X-') === 0) {
+                $headers[$key] = $value[0];
+            }
+        }
+
         $request = new App\Admin\ApiRequestAny([
-            'mode' => $mode
+            'mode' => $mode,
+            'headers' => $headers,
         ]);
 
         $method = Request::method();
