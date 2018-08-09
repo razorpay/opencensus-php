@@ -13,6 +13,7 @@ const selector = formValueSelector('invoiceLabelStepOnboarding');
   state => {
     return {
       invoicesIssuedUnder: selector(state, 'invoice_label_field'),
+      config: state.config.config,
     };
   },
   {
@@ -24,13 +25,13 @@ const selector = formValueSelector('invoiceLabelStepOnboarding');
 })
 export default class InvoiceLabelStep extends Component {
   componentDidMount() {
-    const { invoiceLabelField, merchantName } = this.props;
+    const { config, merchantName } = this.props;
 
     if (merchantName) {
       // Set value to appropriate radio button is automatically selected.
       this.props.change(
         'invoice_label_field',
-        invoiceLabelField || 'business_name'
+        config.invoice_label_field || 'business_name'
       );
     }
   }
