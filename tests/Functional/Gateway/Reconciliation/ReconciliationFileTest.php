@@ -298,6 +298,8 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'refund', 'xls');
 
+        s($file);
+
         $this->runForFiles([$file], 'CardFss');
 
         $updatedTransaction = $this->getLastEntity('transaction', true);
@@ -1114,7 +1116,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
-    public function testFssBobReconFile()
+    public function testFssBobPaymentReconFile()
     {
         $this->fixtures->create('terminal:shared_fss_terminal');
 
@@ -1129,7 +1131,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->fixtures->edit('card_fss', $gatewayPayment1['id'], ['ref' => null, 'tranid' => null]);
 
-        $entries[] = $this->overideFssBobRecon($gatewayPayment1);
+        $entries[] = $this->overideFssBobRecon($gatewayPayment1, $gatewayPayment1['payment_id']);
 
         $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing');
 
@@ -1157,7 +1159,39 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
-    private function overideFssBobRecon(array  $gatewayPayment)
+    public function testFssBobRefundRecon()
+    {
+        $this->fixtures->create('terminal:shared_fss_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+
+         $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->refundPayment('pay_' . $payment['id']);
+
+        $refund = $this->getDbLastEntity('refund');
+
+        $gatewayRefund = $this->getLastEntity('card_fss', true);
+
+        $entries[] = $this->overideFssBobRecon($gatewayRefund, $refund['id'], 'Refund');
+
+        $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing');
+
+        $this->runForFiles([$file], 'Bob');
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+        $this->assertNotNull($transactionEntity['settled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    private function overideFssBobRecon(array $gatewayPayment, string $entityId, $transactionType ='Purchase')
     {
         $facade = $this->testData['facades']['testFssBobRecon'];
 
@@ -1167,7 +1201,9 @@ class ReconciliationFileTest extends TestCase
 
         $facade['Auth/Approval Code'] = $gatewayPayment['auth'];
 
-        $facade['Merchant Track ID'] = $gatewayPayment['payment_id'];
+        $facade['Merchant Track ID'] = $entityId;
+
+        $facade['Transaction Type'] =  $transactionType;
 
         return $facade;
     }

@@ -3,8 +3,8 @@
 namespace RZP\Reconciliator\Bob;
 
 use Carbon\Carbon;
-
 use RZP\Constants\Timezone;
+
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
@@ -18,7 +18,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         return $row[ReconcilationFields::MERCHANT_TRACK_ID];
     }
-
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
@@ -88,7 +87,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     public function getReferenceNumber($row)
     {
-        return $row[ReconcilationFields::RRN];
+        return $row[ReconcilationFields::RRN] ? null;
     }
 
     /**
