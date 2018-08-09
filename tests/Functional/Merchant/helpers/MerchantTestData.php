@@ -1572,6 +1572,33 @@ return [
             ],
             [
                 'offer' => [
+                    'name'                => 'Amex offer',
+                    'payment_method'      => 'card',
+                    'payment_network'     => 'AMEX',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity' => 'methods',
+                            'card'   => true,
+                            'amex'   => true,
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Amex offer',
+                                'payment_method'  => 'card',
+                                'payment_network' => 'AMEX',
+                                'display_text'    => 'Some display text',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
                     'payment_method'      => 'netbanking',
                     'payment_network'     => 'HDFC',
                     'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
@@ -1734,7 +1761,7 @@ return [
                     'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
                     'display_text'        => 'Some display text',
                     'percent_rate'        => 5000,
-                    'min_amount'          => 200000,
+                    'min_amount'          => 2000,
                     'terms'               => 'Some terms',
                 ],
                 'response' => [
@@ -1748,7 +1775,7 @@ return [
                                 'name'            => 'Test Offer',
                                 'payment_method'  => 'card',
                                 'original_amount' => 100000,
-                                'amount'          => 100000,
+                                'amount'          => 50000,
                             ]
                         ],
                     ]
@@ -1779,8 +1806,8 @@ return [
                         'name'            => 'Test Offer',
                         'payment_method'  => 'emi',
                         'display_text'    => 'Some display text',
-                        'original_amount' => 100000,
-                        'amount'          => 100000,
+                        'original_amount' => 300000,
+                        'amount'          => 150000,
                     ],
                 ],
             ],
