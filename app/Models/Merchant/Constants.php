@@ -37,6 +37,17 @@ final class Constants
     ];
 
     /**
+     * Partner types that are allowed to view and manage
+     * partner settings like client creds and webhooks.
+     *
+     * @var array
+     */
+    public static $settingsAccessPartnerTypes = [
+        self::FULLY_MANAGED,
+        self::AGGREGATOR,
+    ];
+
+    /**
      * Step Map gives information on attributes filled by merchant Step wise.
      * this is used to let merchant know what all the steps are finished and
      * can continue from where merchant left the activation form.

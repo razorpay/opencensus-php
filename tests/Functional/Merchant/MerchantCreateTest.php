@@ -281,6 +281,7 @@ class MerchantCreateTest extends TestCase
         return $user;
 
     }
+
     public function testCreateSubMerchantWithDuplicateEmail()
     {
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
