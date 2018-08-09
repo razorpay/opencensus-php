@@ -39,7 +39,6 @@ export default function BulkEditMerchants() {
             notifyError(`Failed to update the merchants.`);
           }
           closeModal();
-
           openModal(
             <ModalContent header="API Response">
               <div class="code" style={{ width: '650px' }}>
@@ -68,10 +67,7 @@ export default function BulkEditMerchants() {
         <option value="1">Enable</option>
         <option value="0">Disable</option>
       </SelectField>
-      <SelectField
-        name="attributes[international]"
-        label="Enable International"
-      >
+      <SelectField name="attributes[international]" label="International">
         <option value="" />
         <option value="1">Enable</option>
         <option value="0">Disable</option>
@@ -86,4 +82,4 @@ export default function BulkEditMerchants() {
 }
 
 BulkEditMerchants.title = 'Edit Merchants in Bulk';
-BulkEditMerchants.permission = 'edit_merchant';
+BulkEditMerchants.permission = 'edit_bulk_merchant';
