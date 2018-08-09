@@ -1753,6 +1753,8 @@ trait Authorize
         $payment->setInternational();
 
         $this->setRecurringType($payment, $input);
+
+        $this->setAutoRefundTimestamp($payment);
     }
 
     protected function validateRecurringAndPreferredRecurring(Payment\Entity $payment, array $input)
@@ -1825,6 +1827,26 @@ trait Authorize
         }
 
         $payment->setRecurringType($type);
+    }
+
+    protected function setAutoRefundTimestamp(Payment\Entity $payment)
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $minAutoRefundTime = $currentTime + Merchant\Entity::MIN_AUTO_REFUND_DELAY;
+
+        $merchantAutoRefundTime = $currentTime + $payment->merchant->getAutoRefundDelay();
+
+        $merchantAutoRefundTime = max($minAutoRefundTime, $merchantAutoRefundTime);
+
+        if ($payment->isEmandate() === true)
+        {
+            $emandateAutoRefundTime = $currentTime + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
+
+            $merchantAutoRefundTime = $emandateAutoRefundTime;
+        }
+
+        $payment->setRefundAt($merchantAutoRefundTime);
     }
 
     protected function addTestSuccessFlagToGatewayInput(array $input, array & $gatewayInput)
