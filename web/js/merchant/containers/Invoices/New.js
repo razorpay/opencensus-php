@@ -51,7 +51,6 @@ import * as constants from 'rzp/utils/constants';
 import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
 import { luminateRow } from 'merchant/modules/app';
 import { track, trackLinkClick } from './ga';
-import LocalStorageService from 'rzp/utils/localStorage';
 
 function validate(values) {
   let errors = {
@@ -1253,17 +1252,8 @@ export default class InvoicesNewContainer extends Component {
      * Show onboarding modal if invoice_label_field is null or GSTIN is empty.
      */
     const { invoice_label_field } = this.props.config;
-    const { gstin } = this.props.session.user;
 
     if (invoice_label_field === null) {
-      this.showOnboardingModal();
-    }
-
-    //show onboarding only when gstin is null & `gst_invoice_enabled` flag is not set(first time use)
-    if (
-      isBlank(gstin) &&
-      LocalStorageService.getItem('gst_invoice_enabled') === null
-    ) {
       this.showOnboardingModal();
     }
   }

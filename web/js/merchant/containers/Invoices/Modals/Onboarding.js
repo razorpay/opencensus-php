@@ -38,13 +38,6 @@ export default class InvoicesOnboarding extends Component {
 
   componentWillMount() {
     const { invoiceLabelField } = this.props;
-
-    // if invoice label is selected, show gst details step
-    if (invoiceLabelField) {
-      this.setState({
-        currentFormStep: 1,
-      });
-    }
   }
 
   switchStep = (e, step) => {
@@ -89,7 +82,6 @@ export default class InvoicesOnboarding extends Component {
                 <GSTStep
                   merchantGstin={merchant.gstin}
                   onSwitchStep={this.switchStep}
-                  onCloseClick={this.props.onCloseClick}
                   onStart={this.props.onStart}
                 />
               )}
