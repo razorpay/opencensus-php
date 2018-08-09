@@ -182,10 +182,11 @@ export default class EditOrg extends Component {
 }
 
 export function removeEntity() {
-  return adminDelete(`orgs/${this.id}`).then(response => {
-    notifySuccess('Organisation is removed successfully');
-    this.collection.items.remove(this);
-
+  return adminDelete(`live/orgs/${this.id}`).then(response => {
+    if (response) {
+      notifySuccess('Organisation is removed successfully');
+      this.collection.items.remove(this);
+    }
     return response;
   });
 }

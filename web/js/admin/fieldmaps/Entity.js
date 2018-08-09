@@ -46,8 +46,10 @@ export default class EditFieldMaps extends Component {
 export function removeEntity(e) {
   prevent(e);
   adminDelete(`live/field-map/${this.id}`).then(response => {
-    notifySuccess('Field Map deleted.' + JSON.stringify(response));
-    this.collection.items.remove(this);
+    if (response) {
+      notifySuccess('Field Map deleted.' + JSON.stringify(response));
+      this.collection.remove(this);
+    }
   });
 }
 
