@@ -398,6 +398,7 @@ class Gateway extends Base\Gateway
             Entity::AUTH_CODE                   => $input[Field::AUTH_CODE],
             Entity::RRN                         => $input[Field::RRN],
             Entity::STATUS_CODE                 => $input[Field::STATUS_CODE],
+            Entity::MERCHANT_PAN                => $input[Field::MERCHANT_PAN],
         ];
 
         if (isset($input[Field::SECONDARY_ID]) === true)

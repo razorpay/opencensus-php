@@ -43,6 +43,8 @@ class CreateIsgGateway extends Migration
             $table->char(ISG::BANK_REFERENCE_NUMBER, 16)
                   ->nullable();
 
+            $table->char(ISG::MERCHANT_PAN, 16);
+
             $table->dateTime(ISG::TRANSACTION_DATE_TIME)
                   ->nullable();
 

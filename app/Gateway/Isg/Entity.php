@@ -16,6 +16,7 @@ class Entity extends Base\Entity
     const TIP_AMOUNT                            = 'tip_amount';
     const STATUS_CODE                           = 'status_code';
     const STATUS_DESC                           = 'status_desc';
+    const MERCHANT_PAN                          = 'merchant_pan';
 
     protected $entity = 'isg';
 
@@ -30,6 +31,7 @@ class Entity extends Base\Entity
         self::STATUS_DESC,
         self::STATUS_CODE,
         self::AMOUNT,
+        self::MERCHANT_PAN,
     ];
 
     public function setAmount($amount)
