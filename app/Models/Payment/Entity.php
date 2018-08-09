@@ -173,6 +173,8 @@ class Entity extends Base\PublicEntity
 
     const OFFER_ID              = 'offer_id';
 
+    const PREFERRED_RECURRING   = 'preferred_recurring';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;

@@ -1748,9 +1748,36 @@ trait Authorize
             $this->setGatewayInputForAeps($input, $gatewayInput);
         }
 
+        $this->validateRecurringAndPreferredRecurring($payment, $input);
+
         $payment->setInternational();
 
         $this->setRecurringType($payment, $input);
+    }
+
+    protected function validateRecurringAndPreferredRecurring(Payment\Entity $payment, array $input)
+    {
+        if (isset($input[Payment\Entity::RECURRING]) === true)
+        {
+            if (in_array($payment->getMethod(), Payment\Method::$recurringMethods, true) === false)
+            {
+              throw new Exception\BadRequestValidationFailureException(
+                    'Recurring field may be sent only when method is card, eMandate');
+            }
+        }
+        else if ($this->isPreferredRecurring($input) === true)
+        {
+            $recurring = false;
+
+            if (($payment->isCard() === true) and
+                ($payment->hasCard() === true) and
+                ($payment->card->isRecurringSupported() === true))
+            {
+                $recurring = true;
+            }
+
+            $payment->setRecurring($recurring);
+        }
     }
 
     protected function setRecurringType(Payment\Entity $payment, array $input)
@@ -1763,7 +1790,8 @@ trait Authorize
 
             $type = Payment\RecurringType::INITIAL;
 
-            if (($token->isLocal() === true) and
+            if (($token !== null) and
+                ($token->isLocal() === true) and
                 ($token->isRecurring() === true) and
                 ($this->app['basicauth']->isPrivateAuth() === true) and
                 (isset($input['token']) === true))
@@ -2137,7 +2165,8 @@ trait Authorize
         // If save is set to true or recurring is set to true,
         // we save the card details while processing the payment
         $saveMethod = (($payment->getSave() === true) or
-                       ($payment->isRecurring() === true));
+                       ($payment->isRecurring() === true) or
+                       ($this->isPreferredRecurring($input) === true));
 
         if ($saveMethod === false)
         {
@@ -2157,7 +2186,8 @@ trait Authorize
         // If save is set to true or recurring is set to true,
         // we save the card details while processing the payment
         $saveMethod = (($payment->getSave() === true) or
-                       ($payment->isRecurring() === true));
+                       ($payment->isRecurring() === true) or
+                       ($this->isPreferredRecurring($input) === true));
 
         if ($saveMethod === false)
         {
@@ -4360,5 +4390,10 @@ trait Authorize
         }
 
         return false;
+    }
+
+    protected function isPreferredRecurring(array $input)
+    {
+        return (empty($input[Payment\Entity::PREFERRED_RECURRING]) === false);
     }
 }
