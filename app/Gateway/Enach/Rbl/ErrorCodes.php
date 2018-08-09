@@ -101,9 +101,6 @@ class ErrorCodes
     const DE08_RBL = '08';
     const DE09_RBL = '09';
 
-    //default error code
-    const DEFAULTERRORCODE = ErrorCode::GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED;
-
     protected static $registerErrorCodeDescMappings = [
         self::M003 => 'Drawers signature differs',
         self::M004 => 'Drawers signature required',
@@ -290,9 +287,11 @@ class ErrorCodes
 
     public static function getRegistrationPublicErrorCode(array $row)
     {
-        $errorCode = $row[Batch\Header::ENACH_REGISTER_RETURN_CODE] ?? ''; // should we add '' as an alternative? or throw an error?
+        $errorCode = $row[Batch\Header::ENACH_REGISTER_RETURN_CODE] ?? '';
 
-        $errorCode = self::$registerPublicErrorCodeMappings[$errorCode] ?? self::DEFAULTERRORCODE;
+        $deafultErrorCode = ErrorCode::GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED;
+
+        $errorCode = self::$registerPublicErrorCodeMappings[$errorCode] ?? $deafultErrorCode;
 
         return self::getDescriptionFromErrorCode($errorCode);
     }
@@ -301,7 +300,9 @@ class ErrorCodes
     {
         $errorCode = $row[EnachRbl::GATEWAY_ERROR_CODE];
 
-        return self::$debitPublicErrorCodeMappings[$errorCode] ?? self::DEFAULTERRORCODE;
+        $deafultErrorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+        return self::$debitPublicErrorCodeMappings[$errorCode] ?? $deafultErrorCode;
     }
 
     protected static function throwInvalidResponseErrorIfCodeNotMapped($errorCode, array $mapping, array $content)
