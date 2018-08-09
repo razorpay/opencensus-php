@@ -28,7 +28,7 @@ const fields = [
 export default class FieldMaps extends Component {
   collection = new Collection({
     data: {
-      url: `live/orgs/${this.props.match.params.orgId}/field-map`,
+      url: `live/field-map`,
     },
     fetchFn: adminFetch,
     model: CollectionItem,

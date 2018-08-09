@@ -21,15 +21,14 @@ export default class EditFieldMaps extends Component {
     if (id) delete data.id;
 
     return requestFn({
-      url: id
-        ? `live/orgs/${org_id}/field-map/{id}`
-        : `live/orgs/${org_id}/field-map`,
+      url: id ? `live/field-map/${id}` : `live/field-map`,
       data,
     }).then(response => {
       if (response) {
         notifySuccess(
           'Field Map added successfully. Response: ' + JSON.stringify(response)
         );
+
         if (!id) {
           this.props.model.push(response);
         }
@@ -45,7 +44,7 @@ export default class EditFieldMaps extends Component {
 
 export function removeEntity(e) {
   prevent(e);
-  adminDelete(`orgs/${this.org_id}/field-map/${this.id}`).then(response => {
+  adminDelete(`live/field-map/${this.id}`).then(response => {
     notifySuccess('Field Map deleted.' + JSON.stringify(response));
     this.collection.items.remove(this);
   });
