@@ -1165,7 +1165,7 @@ class ReconciliationFileTest extends TestCase
 
 //        $facade['PG Transaction ID'] = $gatewayPayment['tranid'];
 
-        $facade['Transaction Amount'] = $gatewayPayment['amount']/100;
+        $facade['Transaction Amount'] = number_format($gatewayPayment['amount']/100, 2);
 
         $facade['Settlement Amount'] = $facade['Transaction Amount']/100;
 

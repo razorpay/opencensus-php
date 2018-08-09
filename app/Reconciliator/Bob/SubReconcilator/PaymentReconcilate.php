@@ -19,6 +19,65 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $row[ReconcilationFields::MERCHANT_TRACK_ID];
     }
 
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $paymentAmount = ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getAmount();
+
+        if ($paymentAmount !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'          => Base\InfoCode::AMOUNT_MISMATCH,
+                    'message'           => 'Payment amount mismatch',
+                    'expected_amount'   => $paymentAmount,
+                    'currency'          => $this->payment->getCurrency(),
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+        return true;
+    }
+
+    protected function getReconPaymentAmount($row)
+    {
+        return Base\Helper::getIntegerFormattedAmount($row[ReconcilationFields::TRANSACTION_AMOUNT]);
+    }
+
+    protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
+    {
+        $expectedCurrency = $this->payment->getCurrency();
+
+        $reconCurrency = $this->getReconCurrencyCode($row);
+
+        if ($expectedCurrency !== $reconCurrency)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'message'           => 'Payment currency mismatch',
+                    'expected_currency' => $expectedCurrency,
+                    'recon_currency'    => $reconCurrency,
+                    'row'               => $row,
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getReconCurrencyCode($row)
+    {
+        return $row[ReconcilationFields::TRANSACTION_CURRENCY_CODE];
+    }
+
     /**
      * Its is present as Retrieval Reference Number in recon file
      * It should be set as ref setReferenceNumberInGateway
