@@ -22,14 +22,14 @@ class GenericController extends Controller
         $headers = [];
 
         foreach($allRequestHeaders as $key => $value) {
-            if (in_array($key, self::WHITELISTED_HEADERS)) {
+            if (in_array($key, self::WHITELISTED_HEADERS, true) === true) {
                 $headers[$key] = $value[0];
             }
         }
 
         $request = new App\Admin\ApiRequestAny([
-            'mode' => $mode,
-            'headers' => $headers,
+            'mode'      => $mode,
+            'headers'   => $headers,
         ]);
 
         $method = Request::method();
