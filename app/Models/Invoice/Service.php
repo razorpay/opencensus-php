@@ -7,6 +7,7 @@ use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\LineItem;
 use RZP\Models\FileStore;
+use RZP\Models\User\Role;
 
 class Service extends Base\Service
 {
@@ -52,7 +53,7 @@ class Service extends Base\Service
         // dashboard given userRole is sellerapp so only invoices created by
         // that user is visible in fetched list.
         if (($this->userId !== null) and
-            ($this->userRole === Constants::SELLERAPP_ROLE))
+            ($this->userRole === Role::SELLERAPP))
         {
             $input[Entity::USER_ID] = $this->userId;
         }
