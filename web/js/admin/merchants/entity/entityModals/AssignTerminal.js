@@ -395,6 +395,13 @@ export default class TerminalForm extends Component {
             }
           />
           <CheckField
+            label="UPI Collect"
+            name="type[collect]"
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('collect') >= 0
+            }
+          />
+          <CheckField
             label="Pin Auth"
             name="type[pin]"
             defaultChecked={
