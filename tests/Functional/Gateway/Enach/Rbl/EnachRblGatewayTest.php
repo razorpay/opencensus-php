@@ -317,7 +317,7 @@ class EnachRblGatewayTest extends TestCase
 
         $enach = $this->getDbLastEntityToArray('enach');
 
-        $this->assertEquals('Rejected',$enach['registration_status']);
+        $this->assertEquals('Rejected', $enach['registration_status']);
 
         $token = $this->getDbLastEntityToArray('token');
 
@@ -325,7 +325,7 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertEquals('rejected', $token['recurring_status']);
 
-        $this->assertEquals('GATEWAY_ERROR',$token['recurring_failure_reason']);
+        $this->assertEquals('GATEWAY_ERROR', $token['recurring_failure_reason']);
 
         $payment = $this->getDbLastEntityToArray('payment');
 
@@ -614,9 +614,9 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertEquals('failed', $payment['status']);
 
-        $this->assertEquals('GATEWAY_ERROR', $payment['error_code']);
+        $this->assertEquals('BAD_REQUEST_ERROR', $payment['error_code']);
 
-        $this->assertEquals('GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED', $payment['internal_error_code']);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_FAILED', $payment['internal_error_code']);
     }
 
     public function testDebitFileReconciliationTerminalsCheck()
