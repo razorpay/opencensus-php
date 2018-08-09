@@ -4,10 +4,12 @@ namespace RZP\Reconciliator\Bob;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Timezone;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
+use RZP\Gateway\Card\Fss\Status;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
@@ -38,11 +40,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getGatewayPayment($paymentId)
     {
+        $status = Status::$successStates;
+
         return $this->repo
-                    ->card_fss
-                    ->findByPaymentIdAndAction(
-                        $paymentId,
-                        Action::AUTHORIZE);
+            ->card_fss
+            ->findByPaymentIdActionAndStatus(
+                $paymentId,
+                Action::AUTHORIZE,
+                $status
+            );
     }
 
     protected function getGatewayPaymentDate($row)
@@ -166,6 +172,38 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $fee = $lateSettelementFee + $rrfAmount + $msfAmount +$tax;
 
         return Base\Helper::getIntegerFormattedAmount($fee);
+    }
+
+    /**
+     * Returns the card_fss trans id
+     * @param $row
+     * @return string|null
+     */
+    protected function getGatewayTransactionId($row)
+    {
+        return $row[ReconcilationFields::PG_TRANSACTION_ID] ?? null;
+    }
+
+
+    protected function getGatewaySettledAt($row)
+    {
+        if(empty($row[ReconcilationFields::PAYMENT_DATE]) === false)
+        {
+            $date = Carbon::createFromFormat('d-m-Y', $row[ReconcilationFields::PAYMENT_DATE], Timezone::IST)->timestamp;
+
+        }
+    }
+
+    protected function getAuthCode($row)
+    {
+        if (empty($row[ReconcilationFields::AUTH_CODE]) === true)
+        {
+            $this->reportMissingColumn($row, ReconcilationFields::AUTH_CODE);
+
+            return null;
+        }
+
+        return $row[ReconcilationFields::AUTH_CODE];
     }
 
     /**

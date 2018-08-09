@@ -1163,7 +1163,7 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->testData['facades']['testFssBobRecon'];
 
-        $facade['Transaction ID'] = $gatewayPayment['tranid'];
+//        $facade['PG Transaction ID'] = $gatewayPayment['tranid'];
 
         $facade['Transaction Amount'] = $gatewayPayment['amount']/100;
 
