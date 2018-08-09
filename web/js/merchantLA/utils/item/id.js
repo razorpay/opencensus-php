@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 
 const baseUrl = {
   trf: '/transfers/',
+  rvrsl: '/reversals/',
 };
 
 const sources = {

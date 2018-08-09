@@ -9,10 +9,3 @@ export const updatePassword = data => {
     appendModeInQueryParam: true,
   });
 };
-
-export const fetchBankAccount = () => {
-  return merchantFetch({
-    url: 'account/bank_account',
-    mode: 'live',
-  });
-};
