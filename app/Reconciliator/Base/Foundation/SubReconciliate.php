@@ -390,13 +390,18 @@ class SubReconciliate extends Base\Core
                 'row'     => $row,
             ]);
 
-        $this->setSummaryCount(self::TOTAL_SUMMARY, head($row));
+        //
+        // Making identifier as empty string if it is null as setSummaryCount expects string identifier.
+        //
+        $identifier = head($row) ?? '';
+
+        $this->setSummaryCount(self::TOTAL_SUMMARY, $identifier);
 
         if ($this->failUnprocessedRow === true)
         {
-            return $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
+            return $this->setSummaryCount(self::FAILURES_SUMMARY, $identifier);
         }
 
-        return $this->setSummaryCount(self::SUCCESSES_SUMMARY, head($row));
+        return $this->setSummaryCount(self::SUCCESSES_SUMMARY, $identifier);
     }
 }
