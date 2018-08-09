@@ -14,7 +14,7 @@ export AutoFillActivationForm from './AutoFillActivationForm';
 export EditComment from './EditComment';
 export MarkReferred from './MarkReferred';
 export TogglePartnerType from './TogglePartnerType';
-export AddSubmerchant from './AddSubmerchant';
+export LinkSubmerchant from './LinkSubmerchant';
 export EditTags from './EditTags';
 export EditFeatures from './EditFeatures';
 export MerchantBatchUpload from './MerchantBatchUpload';

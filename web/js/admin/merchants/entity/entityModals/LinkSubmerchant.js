@@ -22,7 +22,7 @@ export default ({ merchantId }) => {
   };
 
   return (
-    <ModalContent header="Add Sub-Merchant">
+    <ModalContent header="Link Sub-Merchant">
       <Form class="full-span full-elements" style={{ width: '350px' }}>
         <Field label="Merchant Id" name="submerchantId" />
 
