@@ -719,8 +719,6 @@ class MerchantCreateTest extends TestCase
     {
         Mail::fake();
 
-        $this->createUserMerchantMapping('10000000000000', 'owner');
-
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         list($app, $user) = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
