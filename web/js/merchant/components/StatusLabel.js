@@ -38,6 +38,7 @@ export const paymentStatusMap = {
 
 export const settlementStatusMap = {
   created: 'bg-light',
+  scheduled: 'bg-light',
   processed: 'label-success',
   failed: 'label-danger',
 };

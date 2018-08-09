@@ -16,7 +16,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
             {option.id === user.current ? (
               <i class="i i-check text-success pull-right" />
             ) : null}
-            <span>{option.name}</span>
+            <span>{option.display_name}</span>
           </a>
         );
       }}
@@ -79,7 +79,8 @@ export class SwitchMerchantTypeahead extends Component {
             return (
               <li key={item} className={`${isActive ? 'active' : ''}`}>
                 <a onClick={() => onSwitchMerchant(user.merchants[item])}>
-                  <i className="i i-check" /> {user.merchants[item].name}
+                  <i className="i i-check" />{' '}
+                  {user.merchants[item].display_name}
                 </a>
               </li>
             );
