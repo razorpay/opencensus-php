@@ -229,14 +229,10 @@ export default class App extends Component {
     });
     let user = this.props.user;
     if (mode === 'live' && !user.isActivated) {
-      this.props.openModal({
-        size: 'small',
-        component: (
-          <ActivationRequired
-            user={this.props.user}
-            onCloseClick={this.props.closeModal}
-          />
-        ),
+      this.props.showNotification({
+        type: 'error',
+        message:
+          'Your account has not been activated yet. Your parent merchant needs to add your bank details to enable this.',
       });
     } else {
       LocalStorageService.setItem(this.modeToken, mode);
