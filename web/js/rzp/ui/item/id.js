@@ -59,6 +59,7 @@ export const transfer = makeIdLink('transfer');
 export const source = item => idLink(item[sources[item.entity]]);
 export const recipient = makePropLink('recipient');
 export const reversal = makeIdLink('reversal');
+export const credit = makeIdLink('credits');
 
 export const batchLink = item => {
   const url = batchBaseUrls[item.type];
