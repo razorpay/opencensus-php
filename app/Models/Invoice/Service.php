@@ -73,6 +73,11 @@ class Service extends Base\Service
                                             $this->userId,
                                             $this->userRole);
 
+        //
+        // `findByPublicIdAndMerchantAndUser` handles ACL for the `sellerapp` role.
+        // Additionally, on the `agent` user role, ACL should only allow the
+        // creator to perform the update operation.
+        //
         if (($this->userRole === Role::AGENT) and
             ($invoice->getUserId() !== $this->userId))
         {
