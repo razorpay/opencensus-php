@@ -1143,6 +1143,7 @@ class DatabaseSeeder extends Seeder
         $this->createEbsTerminal();
         $this->createEnachRblTerminal();
         $this->createAepsTerminal();
+        $this->createHitachiGatewayMotoTerminal();
         $this->createEnstageTerminal();
     }
 
@@ -2049,6 +2050,23 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+   protected function createHitachiGatewayMotoTerminal()
+   {
+       DB::table(Table::TERMINAL)->insert([
+           'id'                        => Terminal\Shared::HITACHI_MOTO_TERMINAL,
+           'merchant_id'               => Account::TEST_ACCOUNT,
+           'gateway'                   => Gateway::HITACHI,
+           'gateway_acquirer'          => 'rbl',
+           'card'                      => 1,
+           'type'                      => 512,
+           'gateway_merchant_id'       => 'test_merchant_hitachi',
+           'gateway_secure_secret'     => Crypt::encrypt('test_hitachi_secure_secret'),
+           'gateway_terminal_password' => Crypt::encrypt('test_hitachi_secure_secret2'),
+           'recurring'                 => 1,
+           'created_at'                => time(),
+           'updated_at'                => time()
+       ]);
+   }
     protected function createEnachRblTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
