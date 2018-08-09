@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import { roles } from 'rzp/utils/constants';
+import { roles, agentRole } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
 import {
   updateUser,
@@ -15,6 +15,7 @@ import {
   state => {
     return {
       merchantId: state.session.user.current,
+      userObj: state.session.user
     };
   },
   {
@@ -75,7 +76,13 @@ export default class EditUser extends Component {
   render() {
     const { handleSubmit, user } = this.props;
 
-    const ROLES = user.role === 'owner' ? roles : without(roles, 'owner');
+    let allRoles = roles;
+
+    if (this.props.userObj.tags.indexOf('Enable_agent_role') !== -1) {
+      allRoles = {...allRoles, ...agentRole};
+    }
+
+    let ROLES = user.role === 'owner' ? allRoles : without(allRoles, 'owner');
     return (
       <tr>
         <td>{user.email}</td>
