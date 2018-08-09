@@ -5,7 +5,7 @@ namespace RZP\Mail\Merchant;
 use RZP\Mail\Base\Common;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
-use RZP\Mail\User\PasswordReset;
+use RZP\Models\User\Service as UserService;
 use RZP\Models\User\Entity as User;
 
 class CreateSubMerchantAffiliate extends Mailable
@@ -47,7 +47,7 @@ class CreateSubMerchantAffiliate extends Mailable
 
         if (empty($user) === false)
         {
-            list($this->token, $this->expiryTime) = (new PasswordReset($user, $org))->getTokenAndExpiry();
+            list($this->token, $this->expiryTime) = (new UserService)->getTokenAndExpiry($user->getId());
         }
     }
 
