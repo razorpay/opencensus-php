@@ -470,6 +470,9 @@
 
             if (desc && toTrim) {
                 var visLength = 0;
+                desc =  desc.trim();
+
+                var descLength = desc.length;
 
                 var i = 0;
                 for (; i < desc.length ; i++) {
@@ -487,8 +490,11 @@
 
                 desc= desc.substr(0, i + 1);
                 desc =  desc.trim();
-                desc += '...';
-                button = '<button class="btn-link showmore" onclick="window.RZP.toggleTrimDescription(false)"> Show More </button>';
+
+                if (desc.length < descLength) {
+                    desc += '...';
+                    button = '<button class="btn-link showmore" onclick="window.RZP.toggleTrimDescription(false)"> Show More </button>';
+                }
             }
 
             var ele = window.RZP.getEl('payment-for');

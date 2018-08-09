@@ -22,15 +22,8 @@
         min-height: 540px;
     }
 
-    #desktop-container::before {
-        content: '';
-        position: absolute;
-        width: 100%;
-        height: 168px;
-        top: 0;
-        left: 0;
-        background: {{$data['merchant']['brand_color']}};
-        z-index: -1;
+    #desktop-container .merchant-display-image {
+        background-size: cover;
     }
 
     #desktop-container #header-details {
@@ -107,12 +100,13 @@
     }
 
     #desktop-container #footer-section {
-        margin: 40px auto 100px;
+        padding: 40px 0 100px;
+        color: {{$light_color}};
     }
 
-    #footer-section #secure-lock-icon {
+    #desktop-container  #footer-section #secure-lock-icon {
         display: inline-block;
-        fill: {{$tertiary_color}};
+        fill: {{$light_color}};
     }
 
     #desktop-container #footer-section img {

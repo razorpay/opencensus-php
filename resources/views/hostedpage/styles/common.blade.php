@@ -6,6 +6,7 @@
     $tertiary_color     = '#8894BA';
     $light_color        = '#fff';
     $bg_color_3         = '#FCFCFC;';
+    $merchant_display_image = 'https://cdn.razorpay.com/static/assets/schindler-display-image.png';
 ?>
 
 <style>
@@ -49,10 +50,21 @@
         position: relative;
     }
 
+    .merchant-display-image {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: url({{$merchant_display_image}}) no-repeat;
+        z-index: -1;
+        background-size: cover;
+    }
+
     #header-section {
         padding: 24px 0;
         overflow: auto;
-        background: {{$data['merchant']['brand_color']}};
         color: {{$light_color}};
     }
 
