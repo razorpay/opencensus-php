@@ -259,10 +259,12 @@ export default class Model extends BaseModel {
       'fetchPartnerSubmerchants',
       this.fetchFn(`live_${this.merchantId}/submerchants`)
     ).then(data => {
-      this.merchant = {
-        ...this.merchant, //to force re-render
-        submerchants: [...data.items],
-      };
+      if (data) {
+        this.merchant = {
+          ...this.merchant, //to force re-render
+          submerchants: [...data.items],
+        };
+      }
     });
   };
 

@@ -68,7 +68,7 @@ function _getSubmerchantFields(unlinkSubmerchant) {
         <AsyncButton
           class="link danger"
           onClick={() => unlinkSubmerchant(item.id)}
-          confirm="Are you sure you want to delete unlink this submerchant"
+          confirm="Are you sure you want to unlink this submerchant"
         >
           Unlink
         </AsyncButton>
