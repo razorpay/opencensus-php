@@ -14,6 +14,9 @@ class Role
     const LINKED_ACCOUNT_OWNER  = 'linked_account_owner';
     const LINKED_ACCOUNT_ADMIN  = 'linked_account_admin';
 
+    // Payment Link Agent - not publicly available
+    const AGENT                 = 'agent';
+
     const ALL_ROLES = [
         self::MANAGER,
         self::OPERATIONS,
@@ -22,6 +25,7 @@ class Role
         self::ADMIN,
         self::SELLERAPP,
         self::OWNER,
+        self::AGENT,
     ];
 
     const WRITER_ROLES = [
@@ -39,6 +43,12 @@ class Role
         self::ADMIN,
     ];
 
+    // Custom roles defined for payment link access control
+    const PL_ROLES = [
+        self::SELLERAPP,
+        self::AGENT,
+    ];
+
     const LINKED_ACCOUNT_ROLES = [
         self::LINKED_ACCOUNT_ADMIN,
         self::LINKED_ACCOUNT_OWNER
@@ -49,8 +59,8 @@ class Role
         return defined(get_class() . '::' . strtoupper($action));
     }
 
-    public static function allExceptSellerRole()
+    public static function allExceptPaymentLinkRoles()
     {
-        return array_diff(self::ALL_ROLES, [self::SELLERAPP]);
+        return array_diff(self::ALL_ROLES, self::PL_ROLES);
     }
 }
