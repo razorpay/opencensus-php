@@ -10,7 +10,6 @@ import { prevent } from 'common/util';
 export default class EditFieldMaps extends Component {
   save = data => {
     let id = data.id || null;
-    let { org_id } = this.props.model;
     let requestFn = id ? adminPut : adminPost;
 
     if (data.fields) {
@@ -30,7 +29,9 @@ export default class EditFieldMaps extends Component {
         );
 
         if (!id) {
-          this.props.model.push(response);
+          this.props.collection.push(response);
+        } else {
+          this.props.collection.update(response);
         }
         closeModal();
       }
@@ -50,6 +51,6 @@ export function removeEntity(e) {
   });
 }
 
-export function showEntity(collection, item) {
+export function showEntity(collection) {
   openModal(<EditFieldMaps collection={collection} model={this} />);
 }

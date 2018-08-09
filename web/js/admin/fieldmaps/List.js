@@ -9,6 +9,12 @@ import Field from 'ui/Field';
 
 import { showEntity, removeEntity } from './Entity';
 
+function openEntity(collection) {
+  return function(e) {
+    showEntity.call(this, collection);
+  };
+}
+
 const fields = [
   ['ID', item => item.id],
   ['Org ID', item => item.org_id],
@@ -31,7 +37,6 @@ export default class FieldMaps extends Component {
       url: `live/field-map`,
     },
     fetchFn: adminFetch,
-    model: CollectionItem,
   });
 
   onSubmit = filters => this.collection.applyFilters(filters);
@@ -39,21 +44,12 @@ export default class FieldMaps extends Component {
   showEntity = showEntity.bind(null, this.collection);
 
   render() {
-    //Bind org_id for adding new items
-    let newCollection = {
-      ...this.collection,
-      org_id: this.props.match.params.orgId,
-    };
-
     return (
       <div class="list-container">
         <div class="box">
           <header>
             Field Maps
-            <div
-              class="btn pull-right"
-              onClick={showEntity.bind(newCollection)}
-            >
+            <div class="btn pull-right" onClick={openEntity(this.collection)}>
               Add a Field Map
             </div>
           </header>
@@ -64,7 +60,7 @@ export default class FieldMaps extends Component {
         <PageTable
           model={this.collection}
           fields={fields}
-          onClick={showEntity}
+          onClick={openEntity(this.collection)}
         />
       </div>
     );
