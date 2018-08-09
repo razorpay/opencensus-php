@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
 
 class Service extends Base\Service
 {
@@ -33,6 +34,11 @@ class Service extends Base\Service
         $this->validateGateway($gateway);
 
         $gatewayClass = $this->app['gateway']->gateway($gateway);
+
+        if (($this->app['env'] === 'testing') && ($gateway === Entity::ISG))
+        {
+            $gatewayClass->setMode(Mode::TEST);
+        }
 
         try
         {
