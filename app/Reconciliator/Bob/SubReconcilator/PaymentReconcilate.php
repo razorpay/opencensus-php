@@ -112,7 +112,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayPaymentDate($row)
     {
-        return $row[ReconcilationFields::TRANSACTION_TYPE];
+        return $row[ReconcilationFields::TRANSACTION_DATE];
     }
 
     protected function getCardDetails($row)

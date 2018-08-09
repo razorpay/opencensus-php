@@ -1136,25 +1136,25 @@ class ReconciliationFileTest extends TestCase
 
         $this->runForFiles([$file], 'Bob');
 
-        $this->assertEquals($payment['reference1'], '175309');
-
-        $this->assertEquals($payment['reference1'], $gatewayPayment1['auth']);
-
+        //tests transaction entity is updated properly
         $transactionEntity = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
 
-        $this->assertNoNull($transactionEntity['settled_at']);
+        $this->assertNotNull($transactionEntity['settled_at']);
 
-        $this->assertNull($transactionEntity['gateway_fee']);
+        $this->assertNotNull($transactionEntity['gateway_fee']);
 
+        $this->assertNotNull($transactionEntity['gateway_service_tax']);
+
+        //Test that gateway entity value is updated from response
         $updatedGatewayEnity = $this->getDbLastEntityToArray('card_fss');
 
         $this->assertEquals('30-07-2018', $updatedGatewayEnity['postdate']);
 
-        $this->assertEquals('175309', $updatedGatewayEnity['ref1']);
+        $this->assertEquals('175309', $updatedGatewayEnity['ref']);
 
-        $this->assertNull('310720180000006655', $updatedGatewayEnity['tranid']);
+        $this->assertEquals('201821114235038', $updatedGatewayEnity['tranid']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
@@ -1162,8 +1162,6 @@ class ReconciliationFileTest extends TestCase
     private function overideFssBobRecon(array  $gatewayPayment)
     {
         $facade = $this->testData['facades']['testFssBobRecon'];
-
-//        $facade['PG Transaction ID'] = $gatewayPayment['tranid'];
 
         $facade['Transaction Amount'] = number_format($gatewayPayment['amount']/100, 2);
 
