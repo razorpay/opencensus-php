@@ -1459,7 +1459,7 @@ export default class InvoicesNewContainer extends Component {
                                 formName="newInvoice"
                                 name="id"
                                 component="input"
-                                class="form-control input-xs"
+                                class="material-input input-xs"
                                 disabled={true}
                                 size={30}
                               />
