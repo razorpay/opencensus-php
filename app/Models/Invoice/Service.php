@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Invoice;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
@@ -71,6 +72,13 @@ class Service extends Base\Service
                                             $this->merchant,
                                             $this->userId,
                                             $this->userRole);
+
+        if (($this->userRole === Role::AGENT) and
+            ($invoice->getUserId() !== $this->userId))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'This operation can only be performed by the creator');
+        }
 
         $invoice = $this->core->update($invoice, $input, $this->merchant);
 
@@ -268,6 +276,7 @@ class Service extends Base\Service
      * @param bool|boolean $download
      *
      * @return string|null
+     * @throws \RZP\Exception\BadRequestException
      */
     public function getInvoicePdfSignedUrl(string $id, bool $download = false)
     {
