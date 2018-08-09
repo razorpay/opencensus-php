@@ -7,11 +7,10 @@ use Conner\Tagging\Taggable;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
-use RZP\Models\Card\IIN;
 use RZP\Models\User;
 use RZP\Models\State;
-use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -46,6 +45,7 @@ class Entity extends Base\PublicEntity
     const PRICING_PLAN_ID          = 'pricing_plan_id';
     const INTERNATIONAL            = 'international';
     const BILLING_LABEL            = 'billing_label';
+    const DISPLAY_NAME             = 'display_name';
     const TRANSACTION_REPORT_EMAIL = 'transaction_report_email';
     const RECEIPT_EMAIL_ENABLED    = 'receipt_email_enabled';
     const CHANNEL                  = 'channel';
@@ -77,6 +77,8 @@ class Entity extends Base\PublicEntity
     const SUSPENDED_AT             = 'suspended_at';
     const NOTES                    = 'notes';
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
+
+    const ENABLE_LA_DASHBOARD      = 'Enable_la_dashboard';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -204,6 +206,7 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
         self::FEE_CREDITS_THRESHOLD,
+        self::DISPLAY_NAME,
     ];
 
     const CONFIG_LIST = [
@@ -215,6 +218,7 @@ class Entity extends Base\PublicEntity
         self::INVOICE_LABEL_FIELD,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::FEE_CREDITS_THRESHOLD,
+        self::DISPLAY_NAME,
     ];
 
     protected $public = [
@@ -265,6 +269,7 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST,
         self::MERCHANT_DETAIL,
         self::FEE_CREDITS_THRESHOLD,
+        self::DISPLAY_NAME,
      ];
 
     protected $defaults = [
@@ -992,6 +997,20 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFUND_SOURCE);
     }
 
+    public function getDisplayName()
+    {
+        $displayName = $this->getAttribute(self::DISPLAY_NAME);
+
+        $merchantName = $this->getAttribute(self::NAME);
+
+        if (empty($displayName) === false)
+        {
+            return $displayName . " - ". $merchantName;
+        }
+
+        return $merchantName;
+    }
+
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
     {
         $relativeLogoUrl = $this->getLogoUrl();
@@ -1445,11 +1464,35 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Get the primary linked account owner.
+     */
+    public function primaryLinkedAccountOwner()
+    {
+        return $this->users()->where('role', User\Role::LINKED_ACCOUNT_OWNER)->first();
+    }
+
+    /**
      * Get the primary owner of the merchant.
      */
     public function primaryOwner()
     {
         return $this->owners()->first();
+    }
+
+    /**
+     * For linked accounts owner role is linked account owner.
+     * @return string
+     */
+    public function getUserOwnerRole()
+    {
+        $role = User\Role::OWNER;
+
+        if ($this->isLinkedAccount() === true)
+        {
+            $role = User\Role::LINKED_ACCOUNT_OWNER;
+        }
+
+        return $role;
     }
 
     public function users()
@@ -1476,9 +1519,11 @@ class Entity extends Base\PublicEntity
      */
     public function liveTagNames(): array
     {
-        return $this->getConnectionName() === Mode::LIVE ?
+        $liveConnection = app('basicauth')->getLiveConnection();
+
+        return $this->getConnectionName() === $liveConnection ?
                 $this->tagNames() :
-                (clone $this)->setConnection(Mode::LIVE)->tagNames();
+                (clone $this)->setConnection($liveConnection)->tagNames();
     }
 
     public function isEmailOptional()
@@ -1541,6 +1586,18 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
+    /**
+     * @param string $tagName
+     *
+     * @return bool
+     */
+    public function isTagAdded(string $tagName): bool
+    {
+        $tagNames = $this->liveTagNames();
+
+        return in_array($tagName, $tagNames, true) === true;
+    }
+
     public function toArrayUser()
     {
         $attributes = [
@@ -1553,6 +1610,7 @@ class Entity extends Base\PublicEntity
             self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
             self::LOGO_URL       => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
+            self::DISPLAY_NAME   => $this->getDisplayName(),
             self::PARTNER_TYPE   => $this->getAttribute(self::PARTNER_TYPE),
             self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
@@ -1608,6 +1666,15 @@ class Entity extends Base\PublicEntity
     public function isNonPurePlatformPartner(): bool
     {
         return (($this->isPartner() === true) and ($this->getPartnerType() !== Constants::PURE_PLATFORM));
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPartnerWithSettingsAccess(): bool
+    {
+        return (($this->isPartner() === true) and
+                (in_array($this->getPartnerType(), Constants::$settingsAccessPartnerTypes, true) === true));
     }
 
     /**

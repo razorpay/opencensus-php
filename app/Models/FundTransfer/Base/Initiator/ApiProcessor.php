@@ -280,6 +280,11 @@ abstract class ApiProcessor extends NodalAccount
      */
     protected function getGatewayCertDirPath(): string
     {
+        if (file_exists($this->config['certificate_path']) === false)
+        {
+            mkdir($this->config['certificate_path'], 0755, true);
+        }
+
         return $this->config['certificate_path'];
     }
 

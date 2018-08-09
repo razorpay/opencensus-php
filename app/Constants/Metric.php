@@ -20,6 +20,8 @@ class Metric
 
     // Counters for Payment Process
     const PAYMENT_CREATED                       = 'payment_created';
+    const PAYMENT_PROCESS_FAILED                = 'payment_process_failed';
+    const PAYMENT_CAPTURED                      = 'payment_captured';
 
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
@@ -40,6 +42,8 @@ class Metric
     const LABEL_ASYNC_JOB_NAME                  = 'async_job_name';
     const LABEL_TRACE_CHANNEL                   = 'channel';
     const LABEL_TRACE_CODE                      = 'code';
+    const LABEL_TRACE_FIELD                     = 'field';
+    const LABEL_TRACE_SOURCE                    = 'source';
     const LABEL_TRACE_CONTEXT_CODE              = 'context_code';
     const LABEL_TRACE_LEVEL                     = 'level';
     const LABEL_TRACE_LEVEL_NAME                = 'level_name';
@@ -58,10 +62,13 @@ class Metric
     const LABEL_PAYMENT_ISSUER                  = 'issuer';
     const LABEL_PAYMENT_TRANSACTION_TYPE        = 'transaction_type';
     const LABEL_PAYMENT_STATUS                  = 'status';
-
+    const LABEL_PAYMENT_IS_CREATED              = 'is_created';
     const LABEL_CARD_TYPE                       = 'card_type';
-    const LABEL_CARD_IIN                        = 'card_inn';
+    const LABEL_CARD_IIN                        = 'card_iin';
     const LABEL_CARD_NETWORK                    = 'card_network';
+
+    // Labels for Payment Captured
+    const LABEL_PAYMENT_AUTO_CAPTURED           = 'auto_captured';
 
     //metric types
     const TYPE_QUERY_CACHE                      = 'query_cache';

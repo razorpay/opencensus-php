@@ -22,6 +22,7 @@ use RZP\Models\Schedule;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\User\Role;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
@@ -101,21 +102,13 @@ class Service extends Base\Service
         //
         if ($isLinkedAccount === false)
         {
-            if ($isPartner === false)
-            {
-                if ($hasAggregatorFeature === false)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
-                }
+            if (($isPartner === false) and ($hasAggregatorFeature === false)) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
             }
-            else
-            {
-                if ($merchant->isPurePlatformPartner() === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
-                }
+            else if ($merchant->isPurePlatformPartner() === true) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
             }
         }
 
@@ -1852,18 +1845,8 @@ class Service extends Base\Service
         list($subMerchantUser, $createdNew) =
             $this->createOrFetchUserAndAttachMerchant($subMerchant, $input[User\Entity::EMAIL]);
 
-        // If we create a new user we send him a password reset link to start using dasboard
-        // The reset flow will also confirm the user in the process.
-        // If we find an existing user with the sub-merchant email then we send a mail informing
-        // that he has access to sub-merchant account also now.
-        if ($createdNew === true)
-        {
-            (new User\Service)->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
-        }
-        else
-        {
-            (new User\Service)->postAccountMappedEmail($subMerchantUser, $subMerchant);
-        }
+        // Sends Account linked communication emails to users.
+        (new User\Service)->sendAccountLinkedCommunicationEmail($subMerchantUser, $subMerchant, $createdNew);
 
         $subMerchantUser = $subMerchantUser->toArrayPublic();
 
@@ -1883,7 +1866,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    protected function createOrFetchUserAndAttachMerchant(Entity $subMerchant, string $email): array
+    public function createOrFetchUserAndAttachMerchant(Entity $subMerchant, string $email): array
     {
         $created = false;
 
@@ -2020,23 +2003,53 @@ class Service extends Base\Service
                 // Partner and sub-merchant are connected via partner's app,
                 // this connect is used for multiple validity checks, web-hooks, etc
                 $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
-
-                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
             }
+
+            list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
 
             $this->repo->saveOrFail($subMerchant);
 
             return [$subMerchant, $newUser, $createdNew];
         });
 
-        // This goes out to the aggregator + sub-merchant(if separate email)
-        // (skips if marketplace merchant)
-        if (($merchant->isMarketplace() and $isLinkedAccount) === false)
+        // Sends email to marketplace LA dashboard enabled users.
+        if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true) and
+            ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true))
+        {
+            (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
+        }
+        else
         {
             $this->sendSubMerchantCreationMail($subMerchant, $merchant, $newUser, $createdNew);
         }
 
-        return $subMerchant->toArrayPublic();
+        return $this->getSubMerchantResponseArray($merchant, $subMerchant);
+    }
+
+    /**
+     * This returns subMerchant entity as it is in case of old-aggregator/marketplace
+     * flow and subMerchant with additional partner dashboard details in case of
+     * partner flow.
+     *
+     * @param  Entity $merchant
+     * @param  Entity $subMerchant
+     * @return array
+     */
+    protected function getSubMerchantResponseArray(Entity $merchant, Entity $subMerchant): array
+    {
+        if (($merchant->isPartner() === true) and ($subMerchant->isLinkedAccount() === false))
+        {
+            // This gets submerchant for a partner, with extra details required by partner dashboard.
+            $subMerchant = $this->core()->getSubmerchant($merchant, $subMerchant->getId());
+
+            $subMerchant = $subMerchant->toArrayPartner();
+        }
+        else
+        {
+            $subMerchant = $subMerchant->toArrayPublic();
+        }
+
+        return $subMerchant;
     }
 
     protected function createAdditionalUserOrFetchIfApplicable(Entity $subMerchant, Entity $merchant)
@@ -2044,7 +2057,11 @@ class Service extends Base\Service
         $subMerchantUser = null;
         $createdNew      = false;
 
-        if (($merchant->isPartner() === true) and ($subMerchant->getEmail() !== $merchant->getEmail()))
+        $isMarketplaceWithLADashTag = (($merchant->isMarketplace() === true) and
+                                       ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true));
+
+        if ((($merchant->isPartner() === true) or ($isMarketplaceWithLADashTag === true)) and
+            ($subMerchant->getEmail() !== $merchant->getEmail()))
         {
             list($subMerchantUser, $createdNew) =
                 $this->createOrFetchUserAndAttachMerchant($subMerchant, $subMerchant->getEmail());
@@ -2168,11 +2185,18 @@ class Service extends Base\Service
         return $submerchant->toArrayPartner();
     }
 
-    public function listSubmerchants(): array
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function listSubmerchants(array $input): array
     {
         $partner = $this->fetchPartner();
 
-        $submerchants = $this->core()->listSubmerchants($partner);
+        (new Validator)->validateInput('list_submerchants', $input);
+
+        $submerchants = $this->core()->listSubmerchants($partner, $input);
 
         return $submerchants->toArrayPartner();
     }
@@ -2245,5 +2269,25 @@ class Service extends Base\Service
         }
 
         return $submerchant;
+    }
+
+    /**
+     * Edits linked account email.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function editLinkedAccountEmail(array $input): array
+    {
+        $merchant = $this->merchant;
+
+        (new Validator)->validateLinkedAccount($merchant);
+
+        $merchant = $this->core()->editEmail($merchant, $input);
+
+        $this->core()->handleLinkedAccountMerchantsUsers($merchant);
+
+        return $merchant->toArrayPublic();
     }
 }

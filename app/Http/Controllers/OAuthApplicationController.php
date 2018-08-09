@@ -3,12 +3,15 @@
 namespace RZP\Http\Controllers;
 
 use Request;
-
 use ApiResponse;
+use Razorpay\OAuth\Application;
+use Razorpay\OAuth\Application\Entity as App;
+use Razorpay\OAuth\Client\Environment as ClientEnv;
+
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Base\JitValidator;
-
-use Razorpay\OAuth\Application;
+use RZP\Models\Merchant\Validator as MerchantValidator;
 
 class OAuthApplicationController extends Controller
 {
@@ -22,6 +25,11 @@ class OAuthApplicationController extends Controller
      */
     protected $authservice;
 
+    /**
+     * @var MerchantValidator
+     */
+    protected $merchantValidator;
+
     public function __construct()
     {
         parent::__construct();
@@ -29,17 +37,22 @@ class OAuthApplicationController extends Controller
         $this->auth = $this->app['basicauth'];
 
         $this->authservice = $this->app['authservice'];
+
+        $this->merchantValidator = (new MerchantValidator);
     }
 
     public function create()
     {
         $input = Request::all();
 
+        $merchant = $this->auth->getMerchant();
+
+        // TODO: Enable below check once all oauth tags are migrated to pure-platform partners
+        //$this->merchantValidator->validateIsPurePlatformPartner($merchant);
+
         $this->addOrUploadImageIfApplicable($input);
 
-        $merchantId = $this->auth->getMerchantId();
-
-        $data = $this->authservice->createApplication($input, $merchantId);
+        $data = $this->authservice->createApplication($input, $merchant->getId());
 
         return ApiResponse::json($data);
     }
@@ -48,18 +61,23 @@ class OAuthApplicationController extends Controller
     {
         $input = Request::all();
 
-        $merchantId = $this->auth->getMerchantId();
+        $merchant = $this->auth->getMerchant();
 
-        $data = $this->authservice->createApplication($input, $merchantId, Application\Type::PARTNER);
+        $this->merchantValidator->validateIsNonPurePlatformPartner($merchant);
+
+        $data = $this->authservice->createApplication($input, $merchant->getId(), Application\Type::PARTNER);
 
         return ApiResponse::json($data);
     }
 
     public function get(string $id)
     {
-        $merchantId = $this->auth->getMerchantId();
+        $merchant = $this->auth->getMerchant();
 
-        $data = $this->authservice->getApplication($id, $merchantId);
+        // TODO: Enable below check post all partners migration
+        //$this->merchantValidator->validateIsPartner($merchant);
+
+        $data = $this->authservice->getApplication($id, $merchant->getId());
 
         return ApiResponse::json($data);
     }
@@ -68,18 +86,44 @@ class OAuthApplicationController extends Controller
     {
         $input = Request::all();
 
-        $merchantId = $this->auth->getMerchantId();
+        $merchant = $this->auth->getMerchant();
 
-        $data = $this->authservice->getMultipleApplications($input, $merchantId);
+        // TODO: Enable below check once all oauth tags are migrated to pure-platform partners
+        //$this->merchantValidator->validateIsPurePlatformPartner($merchant);
+
+        $data = $this->authservice->getMultipleApplications($input, $merchant->getId());
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * This uses the getMultiple API on auth-service side but doesn't take
+     * any other params as only one partner app is expected.
+     *
+     * @return mixed
+     */
+    public function getPartner()
+    {
+        $merchant = $this->auth->getMerchant();
+
+        $this->merchantValidator->validatePartnerWithSettingsAccess($merchant);
+
+        $data = $this->authservice->getPartnerApplication($merchant->getId());
+
+        $this->processPartnerClientCreds($data);
 
         return ApiResponse::json($data);
     }
 
     public function delete(string $id)
     {
-        $merchantId = $this->auth->getMerchantId();
+        $merchant = $this->auth->getMerchant();
 
-        $data = $this->authservice->deleteApplication($id, $merchantId);
+        // TODO: Enable below check post all partners migration. Confirm the order in which
+        // it is called for non-pure_platform and if the check will hold true
+        //$this->merchantValidator->validateIsPartner($merchant);
+
+        $data = $this->authservice->deleteApplication($id, $merchant->getId());
 
         return ApiResponse::json($data);
     }
@@ -90,9 +134,12 @@ class OAuthApplicationController extends Controller
 
         $this->addOrUploadImageIfApplicable($input);
 
-        $merchantId = $this->auth->getMerchantId();
+        $merchant = $this->auth->getMerchant();
 
-        $data = $this->authservice->updateApplication($id, $input, $merchantId);
+        // TODO: Enable below check once all oauth tags are migrated to pure-platform partners
+        //$this->merchantValidator->validateIsPurePlatformPartner($merchant);
+
+        $data = $this->authservice->updateApplication($id, $input, $merchant->getId());
 
         return ApiResponse::json($data);
     }
@@ -122,5 +169,23 @@ class OAuthApplicationController extends Controller
 
             unset($input[Application\Entity::LOGO]);
         }
+    }
+
+    /**
+     * We need to display partner client creds in the form of key-secret with
+     * `rzp_{mode}_partner` suffix appended. Auth-service has no knowledge of
+     * this hence we need to process here only for non-pure_platform partners.
+     *
+     * @param array $appData
+     */
+    protected function processPartnerClientCreds(array & $appData)
+    {
+        $testClientId = & $appData[App::CLIENT_DETAILS][ClientEnv::DEV][App::ID];
+
+        $testClientId = 'rzp_' . Mode::TEST . '_partner_' . $testClientId;
+
+        $liveClientId = & $appData[App::CLIENT_DETAILS][ClientEnv::PROD][App::ID];
+
+        $liveClientId = 'rzp_' . Mode::LIVE . '_partner_' . $liveClientId;
     }
 }

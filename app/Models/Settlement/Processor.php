@@ -386,11 +386,29 @@ class Processor extends Base\Core
             }
         }
 
-        return [
+        $response = [
             'settlement_count'  => $settlements->count(),
             'attempt_count'     => $setlAttempts->count(),
             'txn_count'         => $txnsSettledCount,
         ];
+
+        $this->trace->count(
+            Metric::SETTLEMENTS_CREATED_TOTAL,
+            [
+                Metric::CHANNEL => $channel
+            ],
+            $response['settlement_count']
+        );
+
+        $this->trace->count(
+            Metric::TRANSACTIONS_PICKED_FOR_SETTLEMENT_TOTAL,
+            [
+                Metric::CHANNEL => $channel
+            ],
+            $response['txn_count']
+        );
+
+        return $response;
     }
 
     protected function groupTransactionsByDay($txns): array

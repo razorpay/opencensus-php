@@ -81,14 +81,14 @@ class NetbankingBobCombinedFileTest extends TestCase
             $testData = [
                 'subject' => 'Bob Netbanking claims and refund files for '.$date,
                 'amount' => [
-                    'claims'  => '500.00',
+                    'claims'  => 0,
                     'refunds' => '500.00',
-                    'total'   => '0.00'
+                    'total'   => '-500.00'
                 ],
                 'count' => [
-                    'claims'  => 1,
+                    'claims'  => 0,
                     'refunds' => 1,
-                    'total'   => 2
+                    'total'   => 1
                 ],
             ];
 
@@ -96,9 +96,9 @@ class NetbankingBobCombinedFileTest extends TestCase
 
             $this->checkRefundsFile($mail->viewData['refundsFile']);
 
-            $this->checkClaimsFile($mail->viewData['claimsFile']);
+            // $this->checkClaimsFile($mail->viewData['claimsFile']);
 
-            $this->assertCount(2, $mail->attachments);
+            $this->assertCount(1, $mail->attachments);
 
             return true;
         });

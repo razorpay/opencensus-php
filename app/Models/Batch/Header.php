@@ -298,6 +298,11 @@ class Header
     const PUBLIC_TOKEN                 = 'public_token';
     const REFRESH_TOKEN                = 'refresh_token';
 
+    // Partner submerchant headers
+    const PARTNER_TYPE         = 'partner_type';
+    const SUBMERCHANT_ID       = 'submerchant_id';
+    const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -762,6 +767,25 @@ class Header
                 self::ACCESS_TOKEN,
                 self::PUBLIC_TOKEN,
                 self::REFRESH_TOKEN,
+
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::PARTNER_SUBMERCHANTS => [
+
+            self::INPUT => [
+                self::PARTNER_MERCHANT_ID,
+                self::PARTNER_TYPE,
+                self::SUBMERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::PARTNER_MERCHANT_ID,
+                self::PARTNER_TYPE,
+                self::SUBMERCHANT_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

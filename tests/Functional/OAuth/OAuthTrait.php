@@ -145,10 +145,11 @@ trait OAuthTrait
     protected function setAuthServiceMockDetail(
         string $route,
         string $method,
-        array $requestParams = null)
+        array  $requestParams = null,
+        int    $times = 1)
     {
         $this->authServiceMock
-             ->expects($this->once())
+             ->expects($this->exactly($times))
              ->method('sendRequest')
              ->with($route, $method, $requestParams)
              ->willReturn([]);

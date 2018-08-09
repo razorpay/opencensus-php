@@ -42,6 +42,14 @@ class DimensionsProcessor implements Processor
             $dimensions['rzp_mode'] = app()['rzp.mode'] ?? 'none';
         }
 
+        foreach ($dimensions as $label => $value)
+        {
+            if (empty($value) === true)
+            {
+                $dimensions[$label] = $defaultLabelValue;
+            }
+        }
+
         return $dimensions;
     }
 }
