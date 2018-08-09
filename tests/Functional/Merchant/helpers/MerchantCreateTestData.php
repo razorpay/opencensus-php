@@ -315,9 +315,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant',
-                'email' => 'test@razorpay.com',
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'test@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => null,
+                'dashboard_access' => true,
             ],
         ],
     ],
@@ -334,9 +339,18 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant',
-                'email' => 'testsub@razorpay.com',
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'name'      => 'Submerchant',
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => false,
+                ],
+                'dashboard_access' => true,
             ],
         ],
     ],
@@ -353,9 +367,17 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant',
-                'email' => 'testsub@razorpay.com',
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => true,
+                ],
+                'dashboard_access' => true,
             ],
         ],
     ],
@@ -372,9 +394,17 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant',
-                'email' => 'testsub@razorpay.com',
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => false,
+                ],
+                'dashboard_access' => true,
             ],
         ],
     ],
@@ -439,9 +469,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant',
-                'email' => 'test@razorpay.com',
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'test@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => null,
+                'dashboard_access' => true,
             ],
         ],
     ],
@@ -573,8 +608,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'   => '7gcKngYfqyDMjN',
-                'name' => 'Linked Account 2',
+                'id'               => 'acc_7gcKngYfqyDMjN',
+                'name'             => 'Linked Account 2',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => null,
+                'dashboard_access' => true,
             ],
         ],
     ],

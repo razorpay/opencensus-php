@@ -2023,7 +2023,33 @@ class Service extends Base\Service
             $this->sendSubMerchantCreationMail($subMerchant, $merchant, $newUser, $createdNew);
         }
 
-        return $subMerchant->toArrayPublic();
+        return $this->getSubMerchantResponseArray($merchant, $subMerchant);
+    }
+
+    /**
+     * This returns subMerchant entity as it is in case of old-aggregator/marketplace
+     * flow and subMerchant with additional partner dashboard details in case of
+     * partner flow.
+     *
+     * @param  Entity $merchant
+     * @param  Entity $subMerchant
+     * @return array
+     */
+    protected function getSubMerchantResponseArray(Entity $merchant, Entity $subMerchant): array
+    {
+        if (($merchant->isPartner() === true) and ($subMerchant->isLinkedAccount() === false))
+        {
+            // This gets submerchant for a partner, with extra details required by partner dashboard.
+            $subMerchant = $this->core()->getSubmerchant($merchant, $subMerchant->getId());
+
+            $subMerchant = $subMerchant->toArrayPartner();
+        }
+        else
+        {
+            $subMerchant = $subMerchant->toArrayPublic();
+        }
+
+        return $subMerchant;
     }
 
     protected function createAdditionalUserOrFetchIfApplicable(Entity $subMerchant, Entity $merchant)
