@@ -11,13 +11,18 @@ use App\Http\AppResponse;
 
 class GenericController extends Controller
 {
+    const WHITELISTED_HEADERS = [
+        'x-consumer',
+        'x-report-type',
+    ];
+
     public function handleAny($mode, $path)
     {
         $allRequestHeaders = Request::header();
         $headers = [];
 
         foreach($allRequestHeaders as $key => $value) {
-            if (stripos($key, 'X-') === 0) {
+            if (in_array($key, self::WHITELISTED_HEADERS)) {
                 $headers[$key] = $value[0];
             }
         }
