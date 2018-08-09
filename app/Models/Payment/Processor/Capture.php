@@ -640,6 +640,8 @@ trait Capture
 
         $payment->setCaptureTimestamp();
 
+        $payment->setRefundAt(null);
+
         $payment->setAutoCaptured($autoCaptured);
 
         $this->trace->info(

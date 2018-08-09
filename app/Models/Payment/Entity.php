@@ -110,7 +110,6 @@ class Entity extends Base\PublicEntity
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
     // From 11 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
-    const REFERENCE11           = 'reference11';
     const REFERENCE12           = 'reference12';
     const REFERENCE13           = 'reference13';
     const REFERENCE14           = 'reference14';
@@ -134,6 +133,7 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY      = 'convert_currency';
     const AUTH_TYPE             = 'auth_type';
     const ACKNOWLEDGED_AT       = 'acknowledged_at';
+    const REFUND_AT             = 'refund_at';
 
     const MAX_AMOUNT            = 'max_amount';
     const EXPIRE_BY             = 'expire_by';
@@ -297,11 +297,12 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_ID,
         self::CONVERT_CURRENCY,
         self::AUTH_TYPE,
-        self::CREATED_AT,
-        self::UPDATED_AT,
         self::DISPUTED,
         self::RECURRING_TYPE,
         self::ACKNOWLEDGED_AT,
+        self::REFUND_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -432,6 +433,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
+        self::REFUND_AT            => null
     ];
 
     protected $amounts = [
@@ -1032,6 +1034,11 @@ class Entity extends Base\PublicEntity
     public function setAcknowledgedAt(int $timestamp)
     {
         $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
+    }
+
+    public function setRefundAt(int $timestamp = null)
+    {
+        $this->setAttribute(self::REFUND_AT, $timestamp);
     }
 
     public function setReceiverId(string $receiverId)

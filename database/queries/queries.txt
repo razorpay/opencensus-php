@@ -4155,3 +4155,7 @@ ALTER TABLE merchants
 
 ALTER TABLE tokens
     ADD COLUMN aadhaar_vid VARCHAR(255) DEFAULT NULL AFTER aadhaar_number;
+
+ALTER TABLE payments
+    CHANGE reference11 refund_at INTEGER UNSIGNED DEFAULT NULL,
+    ALGORITHM=INPLACE, LOCK=NONE;
