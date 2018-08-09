@@ -4,67 +4,67 @@ namespace RZP\Reconciliator\Bob;
 
 class ReconcilationFields
 {
-    const TRANSACTION_DATE         = 'Transaction Date';
+    const TRANSACTION_DATE           = 'Transaction Date';
 
-    const TRANSACTION_TIME         = 'Transaction Time';
+    const TRANSACTION_TIME           = 'Transaction Time';
 
-    const SETTLEMENT_DATE          = 'Settlement Date';
+    const SETTLEMENT_DATE            = 'Settlement Date';
 
-    const MERCHANT_TYPE            = 'Merchant Type';
+    const MERCHANT_TYPE              = 'Merchant Type';
 
-    const TRANSACTION_SOURCE       =  'Transaction Source';
+    const TRANSACTION_SOURCE         = 'Transaction Source';
 
-    const MERCHANT_AGGREGATOR_ID = 'Merchant Aggregator ID';
+    const MERCHANT_AGGREGATOR_ID     = 'Merchant Aggregator ID';
 
-    const MID                      = 'MID';
+    const MID                        = 'MID';
 
-    const MERCHANT_LEGAL_NAME      = 'Merchant Legal Name';
+    const MERCHANT_LEGAL_NAME        = 'Merchant Legal Name';
 
-    const SID                      =  'SID';
+    const SID                        = 'SID';
 
-    const STORE_TRADING            = 'Store Trading';
+    const STORE_TRADING              = 'Store Trading';
 
-    const TID                      = 'TID';
+    const TID                        = 'TID';
 
-    const BATCH_NUMBER             = 'Batch Number';
+    const BATCH_NUMBER               = 'Batch Number';
 
-    const CARD_NUMBER              = 'Card Number';
+    const CARD_NUMBER                = 'Card Number';
 
-    const DELIVERY_CHANNEL         = 'Delivery Channel';
+    const DELIVERY_CHANNEL           = 'Delivery Channel';
 
-    const PAYMENT_METHOD           = 'Payment Method';
+    const PAYMENT_METHOD             = 'Payment Method';
 
-    const ONUS_INDICATOR           = 'Onus Indicator';
+    const ONUS_INDICATOR             = 'Onus Indicator';
 
-    const INTERCHANGE              = 'Interchange';
+    const INTERCHANGE                = 'Interchange';
 
-    const INTERCHANGE_CATEGORY     = 'Interchange Category';
+    const INTERCHANGE_CATEGORY       = 'Interchange Category';
 
     //Determines if its domestic/international
-    const DESTINATION              = 'Destination';
+    const DESTINATION                = 'Destination';
 
     //Card Type
-    const CARD_TYPE                = 'Card Type';
+    const CARD_TYPE                  = 'Card Type';
 
-    const PAYMENT_AGGREGATOR_ID    = 'Merchant Aggregator ID';
+    const PAYMENT_AGGREGATOR_ID      = 'Merchant Aggregator ID';
 
-    const ISSUER_BANK              = 'Issuer Bank';
+    const ISSUER_BANK                = 'Issuer Bank';
 
-    const MERCHANT_CATEGORY_CODE   = 'Merchant Category Code';
+    const MERCHANT_CATEGORY_CODE     = 'Merchant Category Code';
 
-    const MCC_CATEGORY             = 'MCC Category';
+    const MCC_CATEGORY               = 'MCC Category';
 
-    const TRANSACTION_CATEGORY     = 'Transaction Category';
+    const TRANSACTION_CATEGORY       = 'Transaction Category';
 
-    const TRANSACTION_TYPE         = 'Transaction Type';
+    const TRANSACTION_TYPE           = 'Transaction Type';
 
-    const TRANSACTION_CURRENCY_CODE = 'Transaction Currency Code';
+    const TRANSACTION_CURRENCY_CODE  = 'Transaction Currency Code';
 
-    const TRANSACTION_AMOUNT        = 'Transaction Amount';
+    const TRANSACTION_AMOUNT         = 'Transaction Amount';
 
-    const ADDITIONAL_AMOUNT         = 'Additional Amount';
+    const ADDITIONAL_AMOUNT          = 'Additional Amount';
 
-    const SETTLEMENT_AMOUNT = 'Settlement Currency';
+    const SETTLEMENT_AMOUNT          = 'Settlement Currency';
 
     const LATE_SETTLEMENT_FEE_AMOUNT = 'Late Settlement Fee Amount';
 

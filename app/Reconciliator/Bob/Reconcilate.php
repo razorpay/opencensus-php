@@ -6,7 +6,6 @@ use RZP\Reconciliator\Base;
 
 class Reconciliate extends Base\Reconciliate
 {
-
     public function getDelimiter()
     {
         return ',';

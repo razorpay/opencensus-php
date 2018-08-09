@@ -26,8 +26,9 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         if(empty($row[ReconcilationFields::PAYMENT_DATE]) === false)
         {
-            $date = Carbon::createFromFormat('d-m-Y', $row[ReconcilationFields::PAYMENT_DATE], Timezone::IST)->timestamp;
-
+            $date = Carbon::createFromFormat('d-m-Y',
+                                             $row[ReconcilationFields::PAYMENT_DATE],
+                                             Timezone::IST)->timestamp;
         }
     }
 

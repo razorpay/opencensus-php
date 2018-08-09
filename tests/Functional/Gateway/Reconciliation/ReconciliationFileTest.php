@@ -247,7 +247,7 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'payment');
 
-        $this->runForFiles([$file], 'Bob');
+        $this->runForFiles([$file], 'CardFss');
 
         $updatedPayment = $this->getDbEntityById('payment', $response['id']);
 
@@ -298,8 +298,6 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'refund', 'xls');
 
-        s($file);
-
         $this->runForFiles([$file], 'CardFss');
 
         $updatedTransaction = $this->getLastEntity('transaction', true);
@@ -307,7 +305,6 @@ class ReconciliationFileTest extends TestCase
         $updatedRefund = $this->getLastEntity('refund', true);
 
         $this->assertEquals($entries[0]['Reference Tran Id'], $updatedRefund['arn']);
-
         $this->assertNotNull($updatedTransaction['reconciled_at']);
 
         $this->assertBatchStatus(Status::PROCESSED);

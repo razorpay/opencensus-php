@@ -216,7 +216,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return Base\Helper::getIntegerFormattedAmount($tax);
     }
 
-
     protected function getGatewayFee($row)
     {
         $lateSettelementFee = $row[ReconcilationFields::LATE_SETTLEMENT_FEE_AMOUNT];
@@ -242,13 +241,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $row[ReconcilationFields::PG_TRANSACTION_ID] ?? null;
     }
 
-
     protected function getGatewaySettledAt($row)
     {
         if(empty($row[ReconcilationFields::PAYMENT_DATE]) === false)
         {
             $date = Carbon::createFromFormat('d-m-Y', $row[ReconcilationFields::PAYMENT_DATE], Timezone::IST)->timestamp;
-
         }
     }
 
