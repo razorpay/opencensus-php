@@ -4,6 +4,10 @@ import Amount from 'rzp/ui/Amount';
 import Alert from 'rzp/ui/Forms/Alert';
 import HeaderAction from 'rzp/ui/HeaderAction';
 
+import { groupBy } from 'rzp/utils/rzp-utils';
+
+import CreditDetails from './CreditDetails';
+
 export default props => {
   let { creditsData, balanceData, loading, error, currentUser } = props;
 
@@ -11,9 +15,10 @@ export default props => {
     error =
       'Your user account is not associated at present with any active merchant account.';
   }
+  const creditItems = groupBy(creditsData.items, 'type');
 
   return (
-    <div class="content-wrapper content-sm">
+    <div class="credits content-wrapper content-sm">
       <HeaderAction>
         <div class="btn-toolbar pull-right">
           <a
@@ -32,11 +37,50 @@ export default props => {
           <Spinner />
         </div>
       ) : (
-        <div>
+        <div class="list-group details-row-container">
+          {(!!balanceData.credits || !!creditItems.amount) && (
+            <CreditDetails
+              totalCredits={balanceData.credits}
+              title="Amount Credits"
+              creditItems={creditsData.items.filter(
+                ({ type }) => type === 'amount'
+              )}
+            />
+          )}
+
+          {(!!balanceData.credits || !!creditItems.fee) && (
+            <CreditDetails
+              totalCredits={balanceData.fee_credits}
+              title="Fee Credits"
+              description="Get your amounts settled in full. Fees charged from credits."
+              creditItems={creditsData.items.filter(
+                ({ type }) => type === 'fee'
+              )}
+            />
+          )}
+
+          {(!!balanceData.credits || !!creditItems.refund) && (
+            <CreditDetails
+              totalCredits={balanceData.refund_credits}
+              title="Refund Credits"
+              description="Do not want to refund from your settled amounts? Use refund credits."
+              creditItems={creditsData.items.filter(
+                ({ type }) => type === 'refund'
+              )}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+{
+  /* <div>
           <Alert type="error" message={error} />
 
           <div class="list-group details-row-container">
-            {balanceData.credits ? (
+            {balanceData.amount_credits ? (
               <div class="list-group-item">
                 <span>Amount Credits</span>
                 <Amount value={balanceData.credits} />
@@ -95,8 +139,5 @@ export default props => {
               )}
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-};
+        </div> */
+}
