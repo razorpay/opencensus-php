@@ -1123,7 +1123,6 @@ class ReconciliationFileTest extends TestCase
         $payment = $this->getNewPaymentEntity(false, true);
 
         $this->assertNull($payment['reference1']);
-
         $this->fixtures->edit('payment', $payment['id'], ['reference2' => null]);
 
         $gatewayPayment1 = $this->getDbLastEntityToArray('card_fss');
@@ -1140,21 +1139,20 @@ class ReconciliationFileTest extends TestCase
         $transactionEntity = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
-
         $this->assertNotNull($transactionEntity['settled_at']);
-
         $this->assertNotNull($transactionEntity['gateway_fee']);
-
         $this->assertNotNull($transactionEntity['gateway_service_tax']);
 
         //Test that gateway entity value is updated from response
         $updatedGatewayEnity = $this->getDbLastEntityToArray('card_fss');
 
         $this->assertEquals('30-07-2018', $updatedGatewayEnity['postdate']);
-
         $this->assertEquals('175309', $updatedGatewayEnity['ref']);
-
         $this->assertEquals('201821114235038', $updatedGatewayEnity['tranid']);
+
+        //Test We update payment reference2 from recon
+        $paymentEnity = $this->getDbLastEntity('payment');
+        $this->assertNotNull($payment['reference2']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }
