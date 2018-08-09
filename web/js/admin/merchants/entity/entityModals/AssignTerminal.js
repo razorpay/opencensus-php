@@ -50,6 +50,7 @@ const gatewayMapping = {
   hitachi: 'Hitachi',
   wallet_openwallet: 'RZP Open Wallet',
   card_fss: 'Card FSS',
+  enach_rbl: 'eNach RBL',
 };
 
 const gatewayAcquirerMapping = {
@@ -392,6 +393,13 @@ export default class TerminalForm extends Component {
             name="type[pay]"
             defaultChecked={
               entity && entity.type && entity.type.indexOf('pay') >= 0
+            }
+          />
+          <CheckField
+            label="UPI Collect"
+            name="type[collect]"
+            defaultChecked={
+              entity && entity.type && entity.type.indexOf('collect') >= 0
             }
           />
           <CheckField

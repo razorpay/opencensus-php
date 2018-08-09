@@ -509,9 +509,13 @@ app
             scr.setAttribute('async', 'true');
             scr.type = 'text/javascript';
             scr.src = host + '/j/roundtrip.js';
-            (
+            scr.onload = (function() {
+              __adroll.record_user({
+                adroll_segments: 'ef374af4',
+              });
+            })(
               (document.getElementsByTagName('head') || [null])[0] ||
-              document.getElementsByTagName('script')[0].parentNode
+                document.getElementsByTagName('script')[0].parentNode
             ).appendChild(scr);
           };
           _onload();

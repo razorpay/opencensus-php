@@ -49,6 +49,7 @@ const ReversalsList = ({ reversals }) => {
       <span>Reversal Details</span>
       <div className="reversals-list full-width-item sub-entity-list">
         <DataTable
+          title="Reversals"
           customClass="reversals-table"
           progressLoader={true}
           columns={[reversalId, amount, createdAtWithStyle]}

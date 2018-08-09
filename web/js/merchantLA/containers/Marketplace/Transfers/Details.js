@@ -9,7 +9,7 @@ import * as ModalActions from 'rzp/modules/modals';
 
 import { showNotification } from 'rzp/modules/notifications';
 
-@connect(state => state.transfer, {
+@connect(state => ({ ...state.transfer, ...state.session }), {
   fetchTransfer,
   fetchReversals,
   showNotification,
@@ -47,6 +47,7 @@ export default class TransferDetailsContainer extends Component {
       onClose,
       onReverse,
       showNotification,
+      user,
     } = this.props;
     let statusMsg = {};
 
@@ -66,6 +67,7 @@ export default class TransferDetailsContainer extends Component {
         onClose={onClose}
         onReverse={onReverse}
         showNotification={showNotification}
+        parentAccountName={user.marketplace_merchant_name}
       />
     );
   }
