@@ -876,34 +876,15 @@ class Core extends Base\Core
     {
         (new Validator)->validateIsPartner($merchant);
 
-        $partnerApp = $this->getPartnerApp($merchant);
-
-        $accessMaps = $this->repo
-                           ->merchant_access_map
-                           ->fetchMerchantAccessMapOnEntity(AccessMap\Entity::APPLICATION, $partnerApp->getId());
-
-        $accessMapIds = $accessMaps->pluck(AccessMap\Entity::ID)->toArray();
-
-        $submerchantIds = $accessMaps->pluck(AccessMap\Entity::MERCHANT_ID)->toArray();
-
-        $submerchants = $this->repo->merchant->findMany($submerchantIds);
-
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $accessMapIds, $submerchants)
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
         {
-            $tagName = 'ref-' . $merchant->getId();
-
-            $this->deleteAllPartnerSubmerchantAccessMaps($accessMapIds);
-
-            $this->deleteAllSubmerchantRefTags($submerchants, $tagName);
-
-            $this->deletePartnerAccessOverSubmerchants($merchant, $submerchants);
+            $this->deleteSupportingEntities($merchant);
 
             $this->deletePartnerApp($merchant);
 
             $merchant->setPartnerType();
 
             $this->repo->saveOrFail($merchant);
-
         });
 
         return $merchant;
@@ -973,46 +954,6 @@ class Core extends Base\Core
 
             $this->removeSubMerchantReferralTag($submerchant, $partner->getId());
         });
-    }
-
-    public function deleteAllPartnerSubmerchantAccessMaps(array $accessMapIds)
-    {
-        $this->trace->info(
-            TraceCode::PARTNER_ACCESS_MAPS_DELETED,
-            [
-                'ids'            => $accessMapIds,
-            ]);
-
-        $this->repo->merchant_access_map->deleteMerchantAccessMapsByEntity($accessMapIds);
-    }
-
-    public function deleteAllSubmerchantRefTags(Base\PublicCollection $submerchants, string $tagName)
-    {
-        foreach ($submerchants as $merchant)
-        {
-            $merchant->untag($tagName);
-
-            $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
-        }
-    }
-
-    public function deletePartnerAccessOverSubmerchants(Entity $partner, Base\PublicCollection $submerchants)
-    {
-        $partnerUsers = $partner->users()->get();
-
-        $submerchantIds = $submerchants->pluck(Entity::ID)->toArray();
-
-        foreach ($partnerUsers as $partnerUser)
-        {
-            $merchantIdsAccessible = $partnerUser->merchants()->get()->pluck(Entity::ID)->toArray();
-
-            $submerchantIdsAccessible = array_intersect($merchantIdsAccessible, $submerchantIds);
-
-            foreach ($submerchantIdsAccessible as $submerchantId)
-            {
-                $partnerUser->merchants()->detach($submerchantId);
-            }
-        }
     }
 
     /**
@@ -1304,5 +1245,87 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    /**
+     * Cleans up all the supporting entities that were created when the merchant was a partner. This includes -
+     * 1. All the mappings (merchant_access_maps) that link the submerchants to the partner.
+     * 2. All the ref tags that indicate that the merchant is a referral to a partner.
+     * 3. All the mappings (merchant_users) that is currently allowing the partner user to access a submerchant.
+     *
+     * @param Entity $partner
+     */
+    protected function deleteSupportingEntities(Entity $partner)
+    {
+        // Fetch partner app and then access maps
+        $partnerApp = $this->getPartnerApp($partner);
+        $accessMaps = $this->repo
+                           ->merchant_access_map
+                           ->fetchMerchantAccessMapOnEntity(AccessMap\Entity::APPLICATION, $partnerApp->getId());
+        $accessMapIds = $accessMaps->pluck(AccessMap\Entity::ID)->toArray();
+
+        // List of submerchant ids
+        $submerchantIds = $accessMaps->pluck(AccessMap\Entity::MERCHANT_ID)->toArray();
+
+        $submerchants = $this->repo->merchant->findMany($submerchantIds);
+
+        $tagName = 'ref-' . $partner->getId();
+
+        $this->deleteAllPartnerSubmerchantAccessMaps($accessMapIds);
+
+        $this->deleteAllSubmerchantRefTags($submerchants, $tagName);
+
+        $this->deletePartnerAccessOverSubmerchants($partner, $submerchants);
+    }
+
+    /**
+     * @param array $accessMapIds
+     */
+    protected function deleteAllPartnerSubmerchantAccessMaps(array $accessMapIds)
+    {
+        $this->trace->info(
+            TraceCode::PARTNER_ACCESS_MAPS_DELETED,
+            [
+                'ids' => $accessMapIds,
+            ]);
+
+        $this->repo->merchant_access_map->deleteMerchantAccessMapsByEntity($accessMapIds);
+    }
+
+    /**
+     * @param PublicCollection $submerchants
+     * @param string           $tagName
+     */
+    protected function deleteAllSubmerchantRefTags(Base\PublicCollection $submerchants, string $tagName)
+    {
+        foreach ($submerchants as $merchant)
+        {
+            $merchant->untag($tagName);
+
+            $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+        }
+    }
+
+    /**
+     * @param Entity           $partner
+     * @param PublicCollection $submerchants
+     */
+    protected function deletePartnerAccessOverSubmerchants(Entity $partner, Base\PublicCollection $submerchants)
+    {
+        $partnerUsers = $partner->users()->get();
+
+        $submerchantIds = $submerchants->pluck(Entity::ID)->toArray();
+
+        foreach ($partnerUsers as $partnerUser)
+        {
+            $merchantIdsAccessible = $partnerUser->merchants()->get()->pluck(Entity::ID)->toArray();
+
+            $submerchantIdsAccessible = array_intersect($merchantIdsAccessible, $submerchantIds);
+
+            foreach ($submerchantIdsAccessible as $submerchantId)
+            {
+                $partnerUser->merchants()->detach($submerchantId);
+            }
+        }
     }
 }
