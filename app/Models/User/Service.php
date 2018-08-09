@@ -6,6 +6,7 @@ use Mail;
 use Hash;
 use Config;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -388,6 +389,38 @@ class Service extends Base\Service
     }
 
     /**
+     * Sends Linked Account access email with user password reset link.
+     *
+     * @param Entity            $user
+     * @param Merchant\Entity   $subMerchant
+     *
+     * @return array
+     */
+    public function postLinkedAccountAccessEmail(Entity $user, Merchant\Entity $subMerchant)
+    {
+        $orgId = $this->auth->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+        $org['hostname'] = $this->auth->getOrgHostName();
+
+        $linkedAccountAccessMail = new UserMail\LinkedAccountUserAccess($user, $org, $subMerchant);
+
+        Mail::queue($linkedAccountAccessMail);
+
+        return ['success' => true];
+    }
+
+    public function getTokenAndExpiry(string $userId): array
+    {
+        $expiryTime = Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME;
+
+        $token = (new User\Core)->generateToken($userId, $expiryTime);
+
+        return [$token, $expiryTime];
+    }
+
+    /**
      * @param  array $input
      *
      * @return array
@@ -466,7 +499,11 @@ class Service extends Base\Service
                                                         Merchant\Entity $subMerchant,
                                                         bool $createdNew)
     {
-        if ($createdNew === true)
+        if (($createdNew === true) and ($subMerchant->isLinkedAccount() === true))
+        {
+            $this->postLinkedAccountAccessEmail($subMerchantUser, $subMerchant);
+        }
+        else if ($createdNew === true)
         {
             $this->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
         }
