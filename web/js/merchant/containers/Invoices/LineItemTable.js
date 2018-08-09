@@ -122,8 +122,11 @@ export default class InvoiceLineItemTable extends Component {
                     </tr>
                     <tr class="total amount-words">
                       <td colSpan="3" class="text-right">
-                        (In Words) <AmountInWords amount={invoiceTotal.total} />
-                        /-
+                        <AmountInWords
+                          amount={invoiceTotal.total}
+                          prefix="(In Words)"
+                          suffix="/-"
+                        />
                       </td>
                     </tr>
                     {invoice.amount_paid ? (
