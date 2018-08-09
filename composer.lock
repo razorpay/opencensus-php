@@ -554,7 +554,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "Datadog",
+                    "name": "DataDog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
@@ -5674,12 +5674,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "a287c9d18c9ffb44ee6e4f5352aacf916003eb5e"
+                "reference": "8089d6ea28fbc23ee282ac354e0702006212b18b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/a287c9d18c9ffb44ee6e4f5352aacf916003eb5e",
-                "reference": "a287c9d18c9ffb44ee6e4f5352aacf916003eb5e",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/8089d6ea28fbc23ee282ac354e0702006212b18b",
+                "reference": "8089d6ea28fbc23ee282ac354e0702006212b18b",
                 "shasum": ""
             },
             "require": {
@@ -5718,7 +5718,7 @@
                 "source": "https://github.com/razorpay/oauth/tree/master",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2018-07-16T07:23:18+00:00"
+            "time": "2018-08-01T11:06:03+00:00"
         },
         {
             "name": "razorpay/razorpay",

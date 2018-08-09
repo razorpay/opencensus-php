@@ -146,14 +146,14 @@
         color: rgba(0,0,0,0.4);
       }
 
-      input[name="auth_type"][id="content2"]:checked + .arrow + .content {
+      /* input[name="auth_type"][id="content2"]:checked + .arrow + .content {
         display: block;
         opacity: 1;
         transform: scale(1);
         max-height: 300px;
         padding-bottom: 16px;
         pointer-events: auto;
-      }
+      } */
 
       .arrow {
         width: 20px;
@@ -617,7 +617,7 @@
         document.querySelector('#auth-btn').addEventListener('click', submitListener);
     }
 
-    attachListeners();
+    // attachListeners();
 
     var data = {!! json_encode($data) !!};
     console.log('Data...', data);

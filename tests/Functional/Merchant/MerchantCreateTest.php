@@ -281,6 +281,7 @@ class MerchantCreateTest extends TestCase
         return $user;
 
     }
+
     public function testCreateSubMerchantWithDuplicateEmail()
     {
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
@@ -717,8 +718,6 @@ class MerchantCreateTest extends TestCase
     public function testCreateSubMerchantWithoutEmailWithPartnerFMAndMarketplace()
     {
         Mail::fake();
-
-        $this->createUserMerchantMapping('10000000000000', 'owner');
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
