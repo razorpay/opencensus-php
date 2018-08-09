@@ -87,7 +87,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     public function getReferenceNumber($row)
     {
-        return $row[ReconcilationFields::RRN] ? null;
+        return $row[ReconcilationFields::RRN] ?? null;
     }
 
     /**
