@@ -303,6 +303,35 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('authorized', $payment['status']);
     }
 
+    public function testRegistrationReconUnknownResponseCode()
+    {
+        $payment = $this->createAcknowledgedEnachPayment(false);
+
+        $batchFile = $this->getBatchFileToUpload($payment, 'Rejected', '123', 'Some error message');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertEquals('Rejected',$enach['registration_status']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNull($token['gateway_token']);
+
+        $this->assertEquals('rejected', $token['recurring_status']);
+
+        $this->assertEquals('GATEWAY_ERROR',$token['recurring_failure_reason']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
     public function testRegistrationReconWithSharedMerchantProxyAuth()
     {
         $payment = $this->createAcknowledgedEnachPayment(false);
@@ -567,6 +596,27 @@ class EnachRblGatewayTest extends TestCase
             ],
             $enach
         );
+    }
+
+    public function testDebitFileReconciliationUnknownResponseCode()
+    {
+        $payment = $this->makeDebitPayment();
+
+        $fileStatuses = [
+            'status'     => 'bounce',
+            'error_code' => '123',
+            'error_desc' => 'Account closed or transferred',
+        ];
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $payment = $this->getDbEntityById('payment', $payment['id'])->toArray();
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->assertEquals('GATEWAY_ERROR', $payment['error_code']);
+
+        $this->assertEquals('GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED', $payment['internal_error_code']);
     }
 
     public function testDebitFileReconciliationTerminalsCheck()
