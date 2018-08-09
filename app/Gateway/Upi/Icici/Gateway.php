@@ -50,6 +50,7 @@ class Gateway extends Base\Gateway
         Entity::TYPE                      => Entity::TYPE,
         Entity::RECEIVED                  => Entity::RECEIVED,
         Fields::PAYER_VA                  => Entity::VPA,
+        Fields::VERIFY_PAYER_VA           => Entity::VPA,
         Fields::PAYER_NAME                => Entity::NAME,
         Fields::PAYER_MOBILE              => Entity::CONTACT,
         Fields::RESPONSE                  => Entity::STATUS_CODE,
@@ -729,6 +730,8 @@ class Gateway extends Base\Gateway
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
         $verify->verifyResponseContent = $this->getMappedAttributes($content);
+
+        $this->updateGatewayPaymentResponse($verify->payment, $content);
 
         return $status;
     }
