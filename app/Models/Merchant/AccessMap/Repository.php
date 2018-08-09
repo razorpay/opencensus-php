@@ -20,6 +20,13 @@ class Repository extends Base\Repository
         Entity::ENTITY_ID   => 'sometimes|string|size:14'
     ];
 
+    /**
+     * @param string $merchantId
+     * @param string $entityId
+     * @param string $entityType
+     *
+     * @return mixed
+     */
     public function findMerchantAccessMapOnEntityId(string $merchantId, string $entityId, string $entityType)
     {
         return $this->newQuery()
@@ -29,6 +36,12 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    /**
+     * @param string $merchantId
+     * @param string $entityType
+     *
+     * @return Base\PublicCollection
+     */
     public function fetchMerchantAccessMapsOnEntityType(string $merchantId, string $entityType): Base\PublicCollection
     {
         return $this->newQuery()
@@ -37,6 +50,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * @param string $entityType
+     * @param string $entityId
+     *
+     * @return Base\PublicCollection
+     */
     public function fetchMerchantAccessMapOnEntity(string $entityType, string $entityId): Base\PublicCollection
     {
         return $this->newQuery()
@@ -45,6 +64,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * @param array $ids
+     *
+     * @return mixed
+     */
     public function deleteMerchantAccessMapsByEntity(array $ids)
     {
         return $this->newQuery()

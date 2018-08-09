@@ -1262,27 +1262,25 @@ class Core extends Base\Core
         $accessMaps = $this->repo
                            ->merchant_access_map
                            ->fetchMerchantAccessMapOnEntity(AccessMap\Entity::APPLICATION, $partnerApp->getId());
-        $accessMapIds = $accessMaps->pluck(AccessMap\Entity::ID)->toArray();
 
-        // List of submerchant ids
+        // Fetch submerchants
         $submerchantIds = $accessMaps->pluck(AccessMap\Entity::MERCHANT_ID)->toArray();
-
         $submerchants = $this->repo->merchant->findMany($submerchantIds);
 
-        $tagName = 'ref-' . $partner->getId();
+        $this->deleteAllPartnerSubmerchantAccessMaps($accessMaps);
 
-        $this->deleteAllPartnerSubmerchantAccessMaps($accessMapIds);
-
-        $this->deleteAllSubmerchantRefTags($submerchants, $tagName);
+        $this->deleteAllSubmerchantRefTags($submerchants, $partner);
 
         $this->deletePartnerAccessOverSubmerchants($partner, $submerchants);
     }
 
     /**
-     * @param array $accessMapIds
+     * @param PublicCollection $accessMaps
      */
-    protected function deleteAllPartnerSubmerchantAccessMaps(array $accessMapIds)
+    protected function deleteAllPartnerSubmerchantAccessMaps(Base\PublicCollection $accessMaps)
     {
+        $accessMapIds = $accessMaps->pluck(AccessMap\Entity::ID)->toArray();
+
         $this->trace->info(
             TraceCode::PARTNER_ACCESS_MAPS_DELETED,
             [
@@ -1294,10 +1292,12 @@ class Core extends Base\Core
 
     /**
      * @param PublicCollection $submerchants
-     * @param string           $tagName
+     * @param Entity           $partner
      */
-    protected function deleteAllSubmerchantRefTags(Base\PublicCollection $submerchants, string $tagName)
+    protected function deleteAllSubmerchantRefTags(Base\PublicCollection $submerchants, Entity $partner)
     {
+        $tagName = 'ref-' . $partner->getId();
+
         foreach ($submerchants as $merchant)
         {
             $merchant->untag($tagName);
