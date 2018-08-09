@@ -13,9 +13,24 @@ class RefundReconciliate extends Base\RefundReconciliate
     const COLUMN_REFUND_AMOUNT            = 'transaction_amount';
     const COLUMN_REFERENCE_TRANSACTION_ID = 'reference_tran_id';
 
+    /**
+     * If we are not able to find refund id to reconcile,
+     * this ratio defines the minimum proportion of columns to be filled in a valid row.
+     * In CardFSS MIS, last row can have some string like "END OF REPORT" or some random value`
+     * So if less than 20% data is present in a row, we don't mark row unprocessing status as failure.
+     */
+    const MIN_ROW_FILLED_DATA_RATIO = 0.20;
+
     protected function getRefundId(array $row)
     {
-        return $row[self::COLUMN_REFUND_ID];
+        $refundId = $row[self::COLUMN_REFUND_ID];
+
+        if (empty($refundId) === true)
+        {
+            $this->evaluateRowProcessedStatus($row);
+        }
+
+        return $refundId;
     }
 
     protected function getPaymentId(array $row)
@@ -91,5 +106,25 @@ class RefundReconciliate extends Base\RefundReconciliate
         // This is done because for reporting purposes, we need reference number in refund entity.
         //
         return $row[self::COLUMN_REFERENCE_TRANSACTION_ID] ?? null;
+    }
+
+    /**
+     * This function evaluate and marks the row processing as success or failure based on
+     * percentage of data available in a row.
+     *
+     * @param $row
+     */
+    protected function evaluateRowProcessedStatus(array $row)
+    {
+        $nonEmptyData = array_filter($row, function($value) {
+            return filled($value);
+        });
+
+        $rowFilledRatio = count($nonEmptyData) / count($row);
+
+        if ($rowFilledRatio < self::MIN_ROW_FILLED_DATA_RATIO)
+        {
+            $this->setFailUnprocessedRow(false);
+        }
     }
 }

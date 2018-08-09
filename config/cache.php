@@ -17,8 +17,6 @@ return [
 
     'secure_default' => env('SECURE_CACHE_DRIVER', 'file'),
 
-    'secure_elasticache_default'    => env('SECURE_ELASTICACHE_DRIVER', 'file'),
-
     /*
     |--------------------------------------------------------------------------
     | Cache Stores
@@ -70,11 +68,6 @@ return [
         'secure_redis' => [
             'driver' => 'redis',
             'connection' => 'secure'
-        ],
-
-        'secure_elasticache' => [
-            'driver'        => 'redis',
-            'connection'    => 'secure_elasticache'
         ],
 
         'query_cache_test' => [
