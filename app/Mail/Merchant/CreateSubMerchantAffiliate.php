@@ -5,8 +5,8 @@ namespace RZP\Mail\Merchant;
 use RZP\Mail\Base\Common;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
-use RZP\Models\User\Service as UserService;
 use RZP\Models\User\Entity as User;
+use RZP\Models\User\Service as UserService;
 
 class CreateSubMerchantAffiliate extends Mailable
 {

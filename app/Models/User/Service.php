@@ -396,7 +396,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function postLinkedAccountAccessEmail(Entity $user, Merchant\Entity $subMerchant)
+    public function postLinkedAccountAccessEmail(Entity $user, Merchant\Entity $subMerchant): array
     {
         $orgId = $this->auth->getOrgId();
 
