@@ -730,7 +730,7 @@ $gutter = 8px;
         }
 
         &:not(.total):not(.addline) {
-          &:nth-child(odd) {
+          &:nth-child(even) {
             background-color: #fafafa
             .ps-item__editbtn {
               background-color: #fafafa
@@ -754,6 +754,12 @@ $gutter = 8px;
           }
         }
 
+        &.amount-words {
+          td {
+            padding: 0px !important;
+          }  
+        }
+
       }
     }
 
@@ -771,6 +777,13 @@ $gutter = 8px;
 
     .lineItem__total {
       width: 20%;
+    }
+  }
+
+  .material-input, .material-input > input, .material-input__datepicker .SingleDatePicker,  {
+    border-bottom-color: #e2e2e2 !important
+    &:hover, &:focus {
+      border-bottom-color: #c1c1c1 !important
     }
   }
 }

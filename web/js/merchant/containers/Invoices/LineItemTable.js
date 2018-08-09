@@ -2,6 +2,7 @@ import { Component, Fragment } from 'react';
 import { Field, reduxForm } from 'redux-form';
 import LineItem from './LineItem';
 import Amount from 'rzp/ui/Amount';
+import AmountInWords from 'rzp/ui/AmountInWords';
 import { track } from './ga';
 
 @reduxForm({
@@ -54,7 +55,7 @@ export default class InvoiceLineItemTable extends Component {
                   <thead>
                     <tr>
                       <th class="lineItem__item">DESCRIPTION</th>
-                      <th class="text-right lineItem__amount">RATE</th>
+                      <th class="text-right lineItem__amount">RATE/ITEM</th>
                       <th class="text-right lineItem__qty">QTY</th>
                       <th class="text-right lineItem__total">TOTAL</th>
                     </tr>
@@ -119,7 +120,12 @@ export default class InvoiceLineItemTable extends Component {
                         <b>₹{invoiceTotal.total}</b>
                       </td>
                     </tr>
-
+                    <tr class="total amount-words">
+                      <td colSpan="3" class="text-right">
+                        (In Words) <AmountInWords amount={invoiceTotal.total} />
+                        /-
+                      </td>
+                    </tr>
                     {invoice.amount_paid ? (
                       <tr class="text-success amount-paid">
                         <td />
