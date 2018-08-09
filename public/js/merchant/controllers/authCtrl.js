@@ -502,21 +502,22 @@ app
               return;
             }
             var scr = document.createElement('script');
+            (
+              (document.getElementsByTagName('head') || [null])[0] ||
+              document.getElementsByTagName('script')[0].parentNode
+            ).appendChild(scr);
             var host =
               'https:' == document.location.protocol
                 ? 'https://s.adroll.com'
                 : 'http://a.adroll.com';
             scr.setAttribute('async', 'true');
             scr.type = 'text/javascript';
-            scr.src = host + '/j/roundtrip.js';
-            scr.onload = (function() {
+            scr.onload = function() {
               __adroll.record_user({
                 adroll_segments: 'ef374af4',
               });
-            })(
-              (document.getElementsByTagName('head') || [null])[0] ||
-                document.getElementsByTagName('script')[0].parentNode
-            ).appendChild(scr);
+            };
+            scr.src = host + '/j/roundtrip.js';
           };
           _onload();
         })();
