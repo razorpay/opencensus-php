@@ -157,12 +157,12 @@ export default class ProfileDropdown extends Component {
               </React.Fragment>
             )}
 
-            <div className="media media-action">
-              <div className="media-body">
-                <a onClick={this.openTicketModal}>Raise a request</a>
-                <span> / </span>
-                <a onClick={this.submitFeedback}>Give a feedback</a>
-              </div>
+            <div className="media media-action" onClick={this.openTicketModal}>
+              <div className="media-body">Raise a request</div>
+            </div>
+
+            <div className="media media-action" onClick={this.submitFeedback}>
+              <div className="media-body">Give feedback or suggestions</div>
             </div>
 
             {mode === 'live' &&
