@@ -56,6 +56,7 @@ export default props => {
               creditItems={creditsData.items.filter(
                 ({ type }) => type === 'fee'
               )}
+              onManageAlert={props.onManageAlert}
             />
           )}
 

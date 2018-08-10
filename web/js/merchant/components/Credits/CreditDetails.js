@@ -21,18 +21,16 @@ export default class CreditDetails extends Component {
       title,
       creditItems,
       totalCredits,
-      showManageAlert,
       description,
+      onManageAlert,
     } = this.props;
     const { showCollapsible } = this.state;
+
     return (
       <div class="panel panel-default credit-details">
         <div class="panel-body">
-          {showManageAlert && (
-            <button
-              class="btn btn-default pull-right"
-              onClick={this.props.onManageAlert}
-            >
+          {onManageAlert && (
+            <button class="btn btn-default pull-right" onClick={onManageAlert}>
               Manage Alerts
             </button>
           )}

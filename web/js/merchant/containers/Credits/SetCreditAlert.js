@@ -4,18 +4,38 @@ import { reduxForm, Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
 
 import { closeModal } from 'rzp/modules/modals';
-import { required } from 'rzp/utils/validators';
+import { updateConfig } from 'merchant/modules/config';
+import { showNotification } from 'rzp/modules/notifications';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 import InputField from 'rzp/ui/Forms/InputField';
 
-@connect(null, { closeModal })
+import { amount, required } from 'rzp/utils/validators';
+import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+
+@connect(null, { closeModal, updateConfig, showNotification })
 @reduxForm({
   form: 'setCreditAlert',
 })
 export default class SetCreditAlert extends Component {
   save = body => {
-    // TODO: write method for handling save in SetAlert.js
+    return this.props
+      .updateConfig({
+        fee_credits_threshold: rupeesToPaise(Number(body.feeCreditsThreshold)),
+      })
+      .then(() => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Credits threshold updated successfully',
+        });
+        this.props.closeModal();
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
   };
 
   render() {
@@ -35,14 +55,21 @@ export default class SetCreditAlert extends Component {
 
           <form>
             <div class="form-group">
-              <label htmlFor="amount">Amount (in Rupees)</label>
+              <label htmlFor="feeCreditsThreshold">Amount (in Rupees)</label>
               <Field
-                name="amount"
-                id="amount"
+                name="feeCreditsThreshold"
+                id="feeCreditsThreshold"
                 component={InputField}
                 class="form-control"
-                value={[required()]}
+                validate={[required(), amount()]}
+                required
               />
+              <small class="help-block">
+                <i class="i i-info-circle" />&nbsp;
+                <span>
+                  Set amount to 0 if you do not want to receive alerts
+                </span>
+              </small>
             </div>
 
             <div class="Modal__Actions clearfix">
