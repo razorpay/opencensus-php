@@ -51,6 +51,7 @@ import * as constants from 'rzp/utils/constants';
 import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
 import { luminateRow } from 'merchant/modules/app';
 import { track, trackLinkClick } from './ga';
+import AddGST from 'merchant/containers/Profile/AddGST';
 
 function validate(values) {
   let errors = {
@@ -105,7 +106,6 @@ const selector = formValueSelector('newInvoice');
       state_of_supply: selector(state, 'state_of_supply'),
       config: state.config.config,
       supply_state_code: selector(state, 'supply_state_code'),
-      merchant_gstin: state.profile.merchant_gst.gstin,
     };
   },
   {
@@ -322,7 +322,7 @@ export default class InvoicesNewContainer extends Component {
     let user = this.props.session.user;
     let merchant = user.merchants[user.current];
     let logoUrl = this.props.config.logo_url;
-    let gstin = user.gstin || this.props.merchant_gstin;
+    let gstin = user.gstin;
     let cin = user.company_cin;
 
     let { config: { invoice_label_field } } = this.props;
@@ -632,7 +632,6 @@ export default class InvoicesNewContainer extends Component {
       track({
         eventAction: 'Click - Start Creating Invoices',
       });
-      // this.props.closeModal();
       this.getMerchantInfo();
     };
 
@@ -1350,6 +1349,13 @@ export default class InvoicesNewContainer extends Component {
       false,
       autoselectPlaceOfSupply
     );
+  };
+
+  showGSTModal = () => {
+    return this.props.openModal({
+      size: 'small',
+      component: <AddGST reloadAfterSave={true} />,
+    });
   };
 
   render() {
@@ -2111,6 +2117,34 @@ export default class InvoicesNewContainer extends Component {
                         </div>
                         <div class="btn-group-vertical inv__actionbutton">
                           <p>Settings</p>
+                          {!merchantGSTIN &&
+                            isDraft && (
+                              <label
+                                class="btn btn-default btn-block btn-lg"
+                                for="gst_enabled"
+                              >
+                                <div class="row">
+                                  <div class="col-xs-10">
+                                    <h3>Create GST Enabled Invoices</h3>
+                                    <p>Add your GST number</p>
+                                  </div>
+                                  <div class="col-xs-2">
+                                    <div class="custom-checkbox">
+                                      <Field
+                                        name="gst_enabled"
+                                        id="gst_enabled"
+                                        component="input"
+                                        type="checkbox"
+                                        disabled={locked}
+                                        class="Input-el"
+                                        onChange={this.showGSTModal}
+                                      />
+                                      <div class="Input-checkbox" />
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                            )}
                           <label
                             class="btn btn-default btn-block btn-lg"
                             for="partial_payment"
