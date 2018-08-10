@@ -10,7 +10,6 @@ import { prevent } from 'common/util';
 export default class EditFieldMaps extends Component {
   save = data => {
     let id = data.id || null;
-    let { org_id } = this.props.model;
     let requestFn = id ? adminPut : adminPost;
 
     if (data.fields) {
@@ -21,17 +20,18 @@ export default class EditFieldMaps extends Component {
     if (id) delete data.id;
 
     return requestFn({
-      url: id
-        ? `live/orgs/${org_id}/field-map/{id}`
-        : `live/orgs/${org_id}/field-map`,
+      url: id ? `live/field-map/${id}` : `live/field-map`,
       data,
     }).then(response => {
       if (response) {
         notifySuccess(
           'Field Map added successfully. Response: ' + JSON.stringify(response)
         );
+
         if (!id) {
-          this.props.model.push(response);
+          this.props.collection.push(response);
+        } else {
+          this.props.collection.update(response);
         }
         closeModal();
       }
@@ -45,12 +45,14 @@ export default class EditFieldMaps extends Component {
 
 export function removeEntity(e) {
   prevent(e);
-  adminDelete(`orgs/${this.org_id}/field-map/${this.id}`).then(response => {
-    notifySuccess('Field Map deleted.' + JSON.stringify(response));
-    this.collection.items.remove(this);
+  adminDelete(`live/field-map/${this.id}`).then(response => {
+    if (response) {
+      notifySuccess('Field Map deleted.' + JSON.stringify(response));
+      this.collection.remove(this);
+    }
   });
 }
 
-export function showEntity(collection, item) {
+export function showEntity(collection) {
   openModal(<EditFieldMaps collection={collection} model={this} />);
 }
