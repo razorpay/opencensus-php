@@ -13,4 +13,9 @@ class ResponseFields
     const QUICK_INVITE_URL    = 'quick_invite_url';
     const ERROR               = 'error';
     const ERROR_CODE          = 'error_code';
+
+    const MESSAGE             = 'message';
+
+    const CONTENT             = 'content';
+    const CONTENT_TYPE        = 'content_type';
 }

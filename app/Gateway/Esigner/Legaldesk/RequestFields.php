@@ -31,4 +31,6 @@ class RequestFields
     const OTHER_REFERENCE            = 'other_reference';
     const TIME_STAMP                 = 'time_stamp';
     const MANDATE_TYPE_CATEGORY_CODE = 'mandate_type_category_code';
+
+    const EMANDATE_ID = 'emandate_id';
 }

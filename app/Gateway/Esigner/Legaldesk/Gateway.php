@@ -7,6 +7,7 @@ use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -18,6 +19,13 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = 'esigner_legaldesk';
 
+    /**
+     * @param array $input
+     * @return array|void
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\GatewayRequestException
+     * @throws Exception\GatewayTimeoutException
+     */
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -30,26 +38,37 @@ class Gateway extends Base\Gateway
             'request' => $request]);
 
         $response = $this->sendGatewayRequest($request);
-        sd($response);
+
+        $response = json_decode($response->body, true);
 
         $this->trace->info(TraceCode::GATEWAY_MANDATE_RESPONSE, [
-            'gateway' => 'digio',
+            'gateway'    => $this->gateway,
             'payment_id' => $input['payment']['id'],
-            'response' => $response->body]);
+            'response'   => $response]
+        );
 
-        if ($response->status_code !== 200)
+        if ($response[ResponseFields::STATUS] !== Status::SUCCESS)
         {
-            $responseBody = json_decode($response->body, true);
-
             throw new Exception\GatewayErrorException(Error\ErrorCode::GATEWAY_ERROR_MANDATE_CREATION_FAILED,
-                $responseBody['code'],
-                $responseBody['message'],
-                $responseBody);
+                $response[ResponseFields::ERROR_CODE],
+                $response[ResponseFields::ERROR],
+                [
+                    'payment_id'             => $input['payment']['id'],
+                'token_id'                   => $input['token']['id'],
+                    'mandate_crete_response' => $response,
+                ]);
         }
 
         return $this->getRedirectRequestArray($input, $response);
     }
 
+    /**
+     * @param array $input
+     * @return array|null
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\GatewayRequestException
+     * @throws Exception\GatewayTimeoutException
+     */
     public function callback(array $input)
     {
         parent::callback($input);
@@ -57,26 +76,43 @@ class Gateway extends Base\Gateway
         if ((isset($input['gateway']['status']) === false) or
             ($input['gateway']['status'] !== Status::SUCCESS))
         {
-            $status = $input['gateway']['status'] ?? null;
-            $message = $input['gateway']['message'] ?? null;
+            $status = $input['gateway'][ResponseFields::STATUS] ?? null;
+            $message = $input['gateway'][ResponseFields::MESSAGE] ?? null;
 
             throw new Exception\GatewayErrorException(
                 Error\ErrorCode::GATEWAY_ERROR_MANDATE_CREATION_FAILED,
                 $status,
-                $message);
+                $message,
+                [
+                    'payment_id' => $input['payment']['id'],
+                    'token_id' => $input['token']['id'],
+                    'gateway_content' => $input['gateway'],
+                ]
+            );
         }
 
         $request = $this->getMandateFetchRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
-        if ($response->status_code !== 200)
+        $response = json_decode($response->body, true);
+
+        if ($response[ResponseFields::STATUS] != Status::SUCCESS)
         {
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::GATEWAY_ERROR_MANDATE_CREATION_FAILED);
+                Error\ErrorCode::GATEWAY_ERROR_MANDATE_CREATION_FAILED,
+                $response[ResponseFields::ERROR_CODE],
+                $response[ResponseFields::ERROR],
+                [
+                    'payment_id'       => $input['payment']['id'],
+                    'token_id'         => $input['token']['id'],
+                    'gateway'          => $this->gateway,
+                    'gateway_response' => $response,
+                ]
+            );
         }
 
-        $mandateXml = $response->body;
+        $mandateXml = base64_decode($response[ResponseFields::CONTENT]);
 
         if (empty($mandateXml) === true)
         {
@@ -93,89 +129,42 @@ class Gateway extends Base\Gateway
 
     protected function getRedirectRequestArray(array $input, $response)
     {
-        $decodedResponse = json_decode($response->body, true);
-
-        $mandateId = $decodedResponse['id'];
-
-        $content = [
-            'logo' => urlencode('https://razorpay.com/assets/razorpay-logo-95e9447029.svg'),
-            'redirect_url' => $input['callbackUrl'],
+        $request = [
+            'url'     => $response[ ResponseFields::QUICK_INVITE_URL ],
+            'method'  => 'get',
+            'content' => [
+                'reference_id' => $response[ ResponseFields::EMANDATE_ID ],
+            ],
         ];
-
-        $this->domainType = 'redirect_' . $this->getMode();
-
-        $request = $this->getStandardRequestArray([], 'get', null, false);
-
-        $request['url'] .= '?' . http_build_query($content);
-        unset($request['options']);
-        unset($request['headers']);
-
-        $replacePairs = [
-            '{id}' => $mandateId,
-            '{txnId}' => strtolower(substr($input['payment']['id'], 0, 10)),
-            '{contact}' => $this->getFormattedContact($input['payment']['contact'])
-        ];
-
-        $request['url'] = strtr($request['url'], $replacePairs);
-
-        $request['content']['reference_id'] = $mandateId;
 
         return $request;
-    }
-
-    protected function getRequestForDirectType(array $input, $response)
-    {
-        $decodedResponse = json_decode($response->body, true);
-
-        $mandateId = $decodedResponse['id'];
-
-        $request = [
-            'content' => json_encode([
-                'signer_id'     => $mandateId,
-                'identifier'    => $this->getFormattedContact($input['payment']['contact']),
-                'environment'   => Mode::map($this->getMode()),
-            ]),
-            'callback_url'  => $input['callbackUrl'],
-        ];
-
-        $content = View::make('gateway.digio')->with('request', $request)->render();
-
-        return [
-            'method' => 'direct',
-            'content' => $content
-        ];
     }
 
     protected function getMandateCreationRequestArray(array $input)
     {
         $nextWorkingDt = $this->getNextWorkingDate($input)->format('Y-m-d');
+
         $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST)->format('Y-m-d');
 
         $destinationBankIfsc = $input['token']->getIfsc();
+
         $mcc = $this->input['terminal']['category'];
 
         $content = [
-            RequestFields::REFERENCE_ID => $input['payment']['id'],
-            RequestFields::MANDATE_REQUEST_ID => $input['token']['id'],
-            RequestFields::DEBTOR_ACCOUNT_TYPE => Constants::DEBTOR_ACCOUNT_TYPE_SAVINGS,
-            RequestFields::DEBTOR_ACCOUNT_ID => $input['token']->getAccountNumber(),
-            RequestFields::INSTRUCTED_AGENT_ID_TYPE => Constants::INSTRUCTED_AGENT_ID_TYPE_IFSC,
-            RequestFields::INSTRUCTED_AGENT_ID => $destinationBankIfsc,
-            RequestFields::INSTRUCTED_AGENT_NAME => BankName::getName($destinationBankIfsc),
-            RequestFields::OCCURANCE_SEQUENCE_TYPE => Constants::OCCURANCE_SEQUENCE_TYPE_RECURRING,
-            RequestFields::OCCURANCE_FREQUENCY_TYPE => Constants::OCCURANCE_FREQUENCY_TYPE_ADHOC,
-//            RequestFields::SCHEME_REFERENCE_NUMBER => ,
-//            RequestFields::CONSUMER_REFERENCE_NUMBER => ,
-            RequestFields::DEBTOR_NAME => $input['token']->getBeneficiaryName(),
-//            RequestFields::EMAIL_ADDRESS => ,
-            RequestFields::FIRST_COLLECTION_DATE => $nextWorkingDt,
-            RequestFields::FINAL_COLLECTION_DATE => $finalCollection,
-//            RequestFields::PHONE_NUMBER => ,
-//            RequestFields::MOBILE_NUMBER => ,
-            RequestFields::COLLECTION_AMOUNT_TYPE => Constants::COLLECTION_AMOUNT_TYPE_MAXIMUM,
-            RequestFields::AMOUNT => $input['token']->getMaxAmount() / 100,
-//            RequestFields::OTHER_REFERENCE => ,
-//            RequestFields::TIME_STAMP => ,
+            RequestFields::REFERENCE_ID               => $input['payment']['id'],
+            RequestFields::MANDATE_REQUEST_ID         => $input['token']['id'],
+            RequestFields::DEBTOR_ACCOUNT_TYPE        => Constants::DEBTOR_ACCOUNT_TYPE_SAVINGS,
+            RequestFields::DEBTOR_ACCOUNT_ID          => $input['token']->getAccountNumber(),
+            RequestFields::INSTRUCTED_AGENT_ID_TYPE   => Constants::INSTRUCTED_AGENT_ID_TYPE_IFSC,
+            RequestFields::INSTRUCTED_AGENT_ID        => $destinationBankIfsc,
+            RequestFields::INSTRUCTED_AGENT_NAME      => BankName::getName($destinationBankIfsc),
+            RequestFields::OCCURANCE_SEQUENCE_TYPE    => Constants::OCCURANCE_SEQUENCE_TYPE_RECURRING,
+            RequestFields::OCCURANCE_FREQUENCY_TYPE   => Constants::OCCURANCE_FREQUENCY_TYPE_ADHOC,
+            RequestFields::DEBTOR_NAME                => $input['token']->getBeneficiaryName(),
+            RequestFields::FIRST_COLLECTION_DATE      => $nextWorkingDt,
+            RequestFields::FINAL_COLLECTION_DATE      => $finalCollection,
+            RequestFields::COLLECTION_AMOUNT_TYPE     => Constants::COLLECTION_AMOUNT_TYPE_MAXIMUM,
+            RequestFields::AMOUNT                     => $input['token']->getMaxAmount() / 100,
             RequestFields::MANDATE_TYPE_CATEGORY_CODE => CategoryCode::getCategoryCodeFromMcc($mcc),
         ];
 
@@ -185,60 +174,11 @@ class Gateway extends Base\Gateway
     protected function getMandateFetchRequestArray(array $input)
     {
         $content = [
-            'mandate_id' => $input['gateway']['digio_doc_id'],
+            RequestFields::EMANDATE_ID        => $input['gateway'][ResponseFields::EMANDATE_ID],
+            RequestFields::MANDATE_REQUEST_ID => $input['token']['id'],
         ];
 
         return $this->getStandardRequestArray($content, 'GET', 'fetch', false);
-    }
-
-    protected function getEmandateData(array $input)
-    {
-        $nextWorkingDt = $this->getNextWorkingDate($input);
-        $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST);
-
-        $destinationBankIfsc = $input['token']->getIfsc();
-        $bankCode = $this->getTerminalAccessCode($input);
-
-        $mcc = $this->input['terminal']['category'];
-
-        $traceContent = $content = [
-            'mandate_request_id'            => $input['payment']['id'],
-            'mandate_creation_date_time'    => $nextWorkingDt->toIso8601String(),
-            'sponsor_bank_id'               => $bankCode,
-            'sponsor_bank_name'             => BankName::getName($bankCode),
-            'destination_bank_id'           => $destinationBankIfsc,
-            'destination_bank_name'         => BankName::getName($destinationBankIfsc),
-            // TODO: Remove sending aadhaar number later
-            'aadhaar'                       => $input['token']->getAadhaarNumber(),
-            'bank_identifier'               => substr($bankCode, 0, 4),
-            'management_category'           => CategoryCode::getCategoryCodeFromMcc($mcc),
-            'service_provider_name'         => $this->getGatewayMerchantId2(),
-            'service_provider_utility_code' => $this->getGatewayMerchantId(),
-            'login_id'                      => $this->getGatewayTerminalId(),
-            'customer_account_number'       => $input['token']->getAccountNumber(),
-            'customer_account_type'         => 'SAVINGS',
-            'instrument_type'               => Instrument::DEBIT,
-            'customer_name'                 => $input['token']->getBeneficiaryName(),
-            'maximum_amount'                => $input['token']->getMaxAmount() / 100,
-            'is_recurring'                  => true,
-            'frequency'                     => Frequency::ADHOC,
-            'first_collection_date'         => $nextWorkingDt->format('Y-m-d'),
-            'final_collection_date'         => $finalCollection->format('Y-m-d'),
-        ];
-
-        $paymentEmail = $input['payment'][Payment\Entity::EMAIL];
-
-        if ((empty($paymentEmail) === false) and
-            ($paymentEmail !== Payment\Entity::DUMMY_EMAIL))
-        {
-            $traceContent['customer_email'] = $content['customer_email'] = $paymentEmail;
-        }
-
-        unset($traceContent['aadhaar'], $traceContent['customer_account_number']);
-
-        $this->trace->info(TraceCode::GATEWAY_MANDATE_CONTENT, $traceContent);
-
-        return json_encode($content);
     }
 
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null, $json = true)
@@ -255,8 +195,8 @@ class Gateway extends Base\Gateway
         }
 
         $headers = array_merge($headers, [
-            RequestFields::REST_API_KEY => 'f59cae4c593541fc316009279401e31',
-            RequestFields::APPLICATION_ID => 'razorpay-software-private-limited_user_1',
+            RequestFields::REST_API_KEY   => $this->getApiKey(),
+            RequestFields::APPLICATION_ID => $this->getApplicationId(),
         ]);
 
         $request = parent::getStandardRequestArray($content, $method, $type);
