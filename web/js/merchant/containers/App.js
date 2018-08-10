@@ -231,6 +231,7 @@ export default class App extends Component {
     ) {
       switch (role) {
         case 'sellerapp':
+        case 'agent':
           let url = '/paymentlinks';
           return this.props.history.replace(url);
         case 'support':
