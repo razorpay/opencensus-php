@@ -43,6 +43,10 @@ export default class ProfileDropdown extends Component {
     });
   };
 
+  openTicketModal = () => {
+    window.rzpTicketSystem && window.rzpTicketSystem.openModal('#ticket', this.props.analytics);
+  };
+
   openSwitchMerchantModal = () => {
     const { user, onSwitchMerchant } = this.props;
 
@@ -153,8 +157,12 @@ export default class ProfileDropdown extends Component {
               </React.Fragment>
             )}
 
-            <div className="media media-action" onClick={this.submitFeedback}>
-              <div className="media-body">Give feedback or suggestions</div>
+            <div className="media media-action">
+              <div className="media-body">
+                <a onClick={this.openTicketModal}>Raise a request</a>
+                <span> / </span>
+                <a onClick={this.submitFeedback}>Give a feedback</a>
+              </div>
             </div>
 
             {mode === 'live' &&
