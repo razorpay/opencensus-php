@@ -316,7 +316,6 @@ class Gateway extends Base\Gateway
 
     protected function getEncryptedString($string)
     {
-        sd($this->getGatewayInstance()->getSecret());
         $masterKey = hex2bin($this->getGatewayInstance()->getSecret());
 
         $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
