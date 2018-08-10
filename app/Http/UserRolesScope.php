@@ -47,7 +47,9 @@ class UserRolesScope
             'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
 
             // merchant routes
-            'balance_fetch'                       => Role::allExceptPaymentLinkRoles(),
+            'balance_fetch'                       => array_merge(
+                Role::allExceptPaymentLinkRoles(),
+                Role::LINKED_ACCOUNT_ROLES),
             'bank_account_fetch'                  => Role::allExceptPaymentLinkRoles(),
             'merchant_activation_details'         => [
                 Role::OWNER,
