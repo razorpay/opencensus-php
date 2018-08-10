@@ -40,14 +40,14 @@ export default function BulkEditMerchants() {
 
     adminPut(payload).then(response => {
       if (response) {
-        if (response.success) {
+        if (response.success == 0) {
+          notifyError(`Failed to update the merchants.`);
+        } else {
           notifySuccess(
             `${response.success} merchant(s) have been updated successfully.`
           );
-        } else {
-          notifyError(`Failed to update the merchants.`);
+          closeModal();
         }
-        closeModal();
         openModal(
           <ModalContent header="API Response">
             <div class="code" style={{ width: '650px' }}>
