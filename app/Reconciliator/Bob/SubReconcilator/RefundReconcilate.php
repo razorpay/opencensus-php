@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\Bob;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Base\PublicEntity;
 
@@ -18,8 +19,8 @@ class RefundReconciliate extends Base\RefundReconciliate
     protected function getGatewayRefund(string $refundId)
     {
         return $this->repo
-            ->card_fss
-            ->findOrFailRefundByRefundId($refundId);
+                    ->card_fss
+                    ->findOrFailRefundByRefundId($refundId);
     }
 
     protected function getGatewaySettledAt($row)
@@ -29,6 +30,7 @@ class RefundReconciliate extends Base\RefundReconciliate
             $date = Carbon::createFromFormat('d-m-Y',
                                              $row[ReconcilationFields::PAYMENT_DATE],
                                              Timezone::IST)->timestamp;
+            return $date;
         }
     }
 
@@ -90,7 +92,6 @@ class RefundReconciliate extends Base\RefundReconciliate
         if (empty(ReconcilationFields::TRANSACTION_CURRENCY_CODE) === true)
         {
             $this->reportMissingColumn($row, ReconcilationFields::TRANSACTION_CURRENCY_CODE);
-
             return null;
         }
 
@@ -116,7 +117,6 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
-
             return false;
         }
 

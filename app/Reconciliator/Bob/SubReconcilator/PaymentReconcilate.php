@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\Bob;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
@@ -81,7 +82,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * Its is present as Retrieval Reference Number in recon file
      * It should be set as ref setReferenceNumberInGateway
      * in the gateway entity.
-     *
      * @param $row
      * @return string
      */
@@ -101,12 +101,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $status = Status::$successStates;
 
         return $this->repo
-            ->card_fss
-            ->findByPaymentIdActionAndStatus(
-                $paymentId,
-                Action::AUTHORIZE,
-                $status
-            );
+                   ->card_fss
+                   ->findByPaymentIdActionAndStatus(
+                       $paymentId,
+                       Action::AUTHORIZE,
+                       $status);
     }
 
     protected function getGatewayPaymentDate($row)
@@ -245,7 +244,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if(empty($row[ReconcilationFields::PAYMENT_DATE]) === false)
         {
-            $date = Carbon::createFromFormat('d-m-Y', $row[ReconcilationFields::PAYMENT_DATE], Timezone::IST)->timestamp;
+            return Carbon::createFromFormat('d-m-Y', $row[ReconcilationFields::PAYMENT_DATE], Timezone::IST)->timestamp;
         }
     }
 
@@ -254,7 +253,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         if (empty($row[ReconcilationFields::AUTH_CODE]) === true)
         {
             $this->reportMissingColumn($row, ReconcilationFields::AUTH_CODE);
-
             return null;
         }
 
@@ -281,6 +279,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function setGatewayPaymentDateInGateway(string $gatewayPaymentDate, PublicEntity $gatewayPayment)
     {
-        $gatewayPayment->setPosDate($gatewayPaymentDate);
+        $gatewayPayment->setPostDate($gatewayPaymentDate);
     }
 }
