@@ -100,6 +100,18 @@ class Channel
     }
 
     /**
+     * Gives list of channels which support 24x7 settlements
+     *
+     * @return array
+     */
+    public static function get24x7Channels(): array
+    {
+        return [
+            self::YESBANK,
+        ];
+    }
+
+    /**
      * Channels for which balance API is available
      *
      * @return array

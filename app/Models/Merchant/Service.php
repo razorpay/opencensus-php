@@ -2018,7 +2018,7 @@ class Service extends Base\Service
         {
             (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
         }
-        else
+        else if ((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false)
         {
             $this->sendSubMerchantCreationMail($subMerchant, $merchant, $newUser, $createdNew);
         }
