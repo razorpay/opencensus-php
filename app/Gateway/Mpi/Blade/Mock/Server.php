@@ -87,7 +87,7 @@ class Server extends Base\Mock\Server
                 $content['Message']['PARes'] = $responseClass->invalidEci($content);
                 break;
             case CardNumber::INVALID_PARES:
-                $content['Message']['Pares'] = $responseClass->paresWithErrorCode();
+                $content['Message']['PARes'] = $responseClass->paresWithErrorCode();
         }
         unset($content['Message']['PAReq']);
 

@@ -24,5 +24,6 @@ class PARes
     const CURRENCY          = 'currency';
     const PURCHASE_AMOUNT   = 'purchAmount';
     const EXPONENT          = 'exponent';
+    const ERROR             = 'Error';
 
 }

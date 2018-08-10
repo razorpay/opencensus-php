@@ -214,6 +214,12 @@ class Gateway extends Base\Gateway
     }
 
 
+    /*
+     * Decodes the Pares
+     * @param String base64 encoded PAres
+     * @return string ParesXml
+     * $thows ErrorException if pares could not be inflated
+     */
     protected function inflatePares($pares)
     {
         $decodePares = base64_decode($pares);
@@ -266,6 +272,13 @@ class Gateway extends Base\Gateway
         return $paresXml;
     }
 
+    /* Validates the PARes.the Pares is first base64 decode and inflate
+     * and then converted to array .
+     * @param array input
+     * @throws RuntimeException if failed to convert to xml
+     * #throws GatewayErrorException if the ParesisInvalid
+     * @return array ParesMessage
+     */
     protected function validateAndGetPayerAuthenticationResponse(array $input)
     {
         $pares = $input['gateway'][PARes::GATEWAY_PARES];
@@ -288,6 +301,22 @@ class Gateway extends Base\Gateway
 
     protected function validatePARes(array $input, array $paresArray)
     {
+       if (isset($paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR]) === true)
+           {
+               throw new Exception\GatewayErrorException(
+                   ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                   'TEMPORARY SYSTEM FAILURE HAS OCCURED',
+                   null,
+                   [
+                       'PaRes'   => $paresArray,
+                       'error'   => $paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR],
+                       'payment' => $input['payment'],
+                       'network' => $input['card']['network'],
+                   ]
+
+               );
+           }
+
         if (empty($paresArray[PARes::MESSAGE]) === true)
         {
             throw new Exception\GatewayErrorException(
