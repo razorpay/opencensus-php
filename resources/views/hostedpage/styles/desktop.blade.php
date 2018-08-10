@@ -23,6 +23,7 @@
     }
 
     #desktop-container .merchant-display-image {
+        position: fixed;
         background-size: cover;
     }
 
