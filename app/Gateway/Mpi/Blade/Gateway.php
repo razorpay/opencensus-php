@@ -213,11 +213,12 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    /*
+    /**
      * Decodes the Pares
+     *
      * @param String base64 encoded PAres
      * @return string ParesXml
-     * $thows ErrorException if pares could not be inflated
+     * @throws ErrorException if pares could not be inflated
      */
     protected function inflatePares($pares)
     {
@@ -230,7 +231,7 @@ class Gateway extends Base\Gateway
 
     protected function validateParesSignature($paresXml)
     {
-        $dom = new \DOMDocument;
+        $dom = new DOMDocument;
 
         $dom->loadXML($paresXml);
 
@@ -271,12 +272,14 @@ class Gateway extends Base\Gateway
         return $paresXml;
     }
 
-    /* Validates the PARes.the Pares is first base64 decode and inflate
+    /**
+     * Validates the PARes.the Pares is first base64 decode and inflate
      * and then converted to array .
-     * @param array input
-     * @throws RuntimeException if failed to convert to xml
-     * #throws GatewayErrorException if the ParesisInvalid
-     * @return array ParesMessage
+     *
+     * @param array $input
+     * @return mixed
+     * @throws Exception\GatewayErrorException if PARes cannot be validated
+     * @throws Exception\RuntimeException if PARES cannot be converted to json
      */
     protected function validateAndGetPayerAuthenticationResponse(array $input)
     {
@@ -287,7 +290,7 @@ class Gateway extends Base\Gateway
         $paresArray = $this->xmlToArray($paresXml);
 
         // Validate Payer Authentication Response
-        $this->validatePARes($input, $paresArray);
+        $this->validatePares($input, $paresArray);
 
         $this->validateXml($paresXml);
 
@@ -298,21 +301,22 @@ class Gateway extends Base\Gateway
         return $paresMessage;
     }
 
-    protected function validatePARes(array $input, array $paresArray)
+    protected function validatePares(array $input, array $paresArray)
     {
        if (isset($paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR]) === true)
        {
-               throw new Exception\GatewayErrorException(
-                   ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                   $paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR][PARes::ERROR_CODE] ?? null,
-                   $paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR][PARes::ERROR_MESSAGE] ?? null,
-                   [
-                       'PaRes'   => $paresArray,
-                       'error'   => $paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR],
-                       'payment' => $input['payment'],
-                       'network' => $input['card']['network'],
-                   ]
-               );
+           $error = $paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR];
+
+           throw new Exception\GatewayErrorException(
+               ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+               $error[PARes::ERROR_CODE] ?? null,
+               $error[PARes::ERROR_MESSAGE] ?? null,
+               [
+                   'PaRes'   => $paresArray,
+                   'payment' => $input['payment'],
+                   'network' => $input['card']['network'],
+               ]
+           );
        }
 
         if (empty($paresArray[PARes::MESSAGE]) === true)

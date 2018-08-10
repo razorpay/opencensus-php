@@ -88,6 +88,7 @@ class Server extends Base\Mock\Server
                 break;
             case CardNumber::INVALID_PARES:
                 $content['Message']['PARes'] = $responseClass->paresWithErrorCode();
+                break;
         }
         unset($content['Message']['PAReq']);
 
