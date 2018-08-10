@@ -93,6 +93,11 @@ class Processor
     const UPI_COLLECT_EXPIRY = 5;
 
     /**
+     * Minimum payment amount for which mdr should be calculated
+     */
+    const MIN_MDR_PAYMENT_AMOUNT = 200000;
+
+    /**
      * @var Merchant\Entity
      */
     protected $merchant;

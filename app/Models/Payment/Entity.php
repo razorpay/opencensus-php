@@ -127,6 +127,7 @@ class Entity extends Base\PublicEntity
     const OTP_ATTEMPTS          = 'otp_attempts';
     const OTP_COUNT             = 'otp_count';
     const FEE                   = 'fee';
+    const MDR                   = 'mdr';
     const RECURRING             = 'recurring';
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
@@ -290,6 +291,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING,
         self::SAVE,
         self::FEE,
+        self::MDR,
         self::TAX,
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
@@ -418,6 +420,7 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL        => null,
         self::SAVE                 => false,
         self::FEE                  => null,
+        self::MDR                  => null,
         self::TAX                  => null,
         self::OTP_ATTEMPTS         => null,
         self::OTP_COUNT            => null,
@@ -920,6 +923,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE, $fee);
     }
 
+    public function setMdr(int $mdr)
+    {
+        $this->setAttribute(self::MDR, $mdr);
+    }
+
     public function setRecurring($recurring)
     {
         $this->setAttribute(self::RECURRING, $recurring);
@@ -1209,6 +1217,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $count;
+    }
+
+    protected function getMdrAttribute($mdr)
+    {
+        if ($mdr === null)
+        {
+            return $this->getFee();
+        }
+
+        return $mdr;
     }
 
     public function getMetadata($key = null, $default = null)
