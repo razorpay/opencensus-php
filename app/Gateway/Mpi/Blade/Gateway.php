@@ -213,7 +213,6 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-
     /*
      * Decodes the Pares
      * @param String base64 encoded PAres
@@ -302,20 +301,19 @@ class Gateway extends Base\Gateway
     protected function validatePARes(array $input, array $paresArray)
     {
        if (isset($paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR]) === true)
-           {
+       {
                throw new Exception\GatewayErrorException(
                    ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                   'TEMPORARY SYSTEM FAILURE HAS OCCURED',
-                   null,
+                   $paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR][PARes::ERROR_CODE] ?? null,
+                   $paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR][PARes::ERROR_MESSAGE] ?? null,
                    [
                        'PaRes'   => $paresArray,
                        'error'   => $paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR],
                        'payment' => $input['payment'],
                        'network' => $input['card']['network'],
                    ]
-
                );
-           }
+       }
 
         if (empty($paresArray[PARes::MESSAGE]) === true)
         {
@@ -349,7 +347,7 @@ class Gateway extends Base\Gateway
         Validator::validateXid($paresMessage, $expectedXid);
 
         $this->validateCredentials($input, $paresMessage);
-        }
+    }
 
     protected function validateCredentials(array $input, array $paresMessage)
     {
