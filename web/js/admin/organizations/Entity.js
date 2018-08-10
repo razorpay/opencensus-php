@@ -11,14 +11,19 @@ export default class EditOrg extends Component {
     permissions: null,
     selectedPerms: null,
     workflowPerms: null,
-    pending: true,
   };
 
-  componentWillMount() {
-    let { orgId } = this.props.match.params;
+  prepareOrgs = props => {
+    let { orgId } = props.match.params;
+
     if (orgId === 'new') {
       orgId = null;
     }
+
+    this.setState({
+      pending: true,
+    });
+
     let requests = [
       this._fetchFn('live/permissions/get/all'),
       ...(orgId
@@ -28,6 +33,7 @@ export default class EditOrg extends Component {
             this._fetchFn('live/permissions/get/assignable'),
           ]),
     ];
+
     Promise.all(requests).then(([allPerms, org, assignablePerms]) => {
       let permissions = allPerms.items,
         selectedPerms = {},
@@ -55,6 +61,16 @@ export default class EditOrg extends Component {
         pending: false,
       });
     });
+  };
+
+  componentWillMount() {
+    this.prepareOrgs(this.props);
+  }
+
+  componentDidUpdate(nextProps) {
+    if (this.props.match.params.orgId !== nextProps.match.params.orgId) {
+      this.prepareOrgs(this.props); // TODO: Strangely, nextProps is giving old value and this.props is new value
+    }
   }
 
   handleAllSelect = isChecked => {
@@ -126,6 +142,15 @@ export default class EditOrg extends Component {
     body.workflow_permissions = body.permissions.filter(
       id => !!workflowPerms[id]
     );
+
+    if (body.email_domains) {
+      body.email_domains = body.email_domains.replace(/ /g, '').split(',');
+    }
+
+    if (body.hostname) {
+      body.hostname = body.hostname.replace(/ /g, '');
+    }
+
     if (body.id) {
       delete body.id;
       return adminPut({
@@ -155,6 +180,9 @@ export default class EditOrg extends Component {
       }).then(data => {
         if (data) {
           notifySuccess('Org successfully added!');
+          setTimeout(() => {
+            this.props.history.replace(`/orgs/${data.id}`);
+          }, 1000);
         }
       });
     }
@@ -164,7 +192,7 @@ export default class EditOrg extends Component {
 
   render() {
     if (this.state.pending) {
-      return <div class="table-pending" />;
+      return <div class="spinner center" />;
     }
     return (
       <div>
