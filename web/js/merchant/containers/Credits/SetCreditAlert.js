@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { reduxForm, Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
@@ -9,15 +9,19 @@ import { showNotification } from 'rzp/modules/notifications';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 import InputField from 'rzp/ui/Forms/InputField';
+import Amount from 'rzp/ui/Amount';
 
 import { amount, required } from 'rzp/utils/validators';
 import { rupeesToPaise, paiseToRupees } from 'rzp/utils/rzp-utils';
 
 @connect(
   state => {
-    console.log({ state });
+    const formValues = state.form.setCreditAlert
+      ? state.form.setCreditAlert.values
+      : {};
     return {
       feeCreditsThreshold: state.config.config.fee_credits_threshold,
+      formValues,
     };
   },
   { closeModal, updateConfig, showNotification }
@@ -54,7 +58,7 @@ export default class SetCreditAlert extends Component {
   };
 
   render() {
-    const { handleSubmit } = this.props;
+    const { handleSubmit, formValues } = this.props;
     return (
       <div>
         <ModalHeader
@@ -87,7 +91,27 @@ export default class SetCreditAlert extends Component {
               </small>
             </div>
 
-            <div class="Modal__Actions clearfix">
+            <div class="m-t clearfix">
+              {formValues && !!Number(formValues.feeCreditsThreshold) ? (
+                <Fragment>
+                  You will also receive alerts at these amounts
+                  <div class="col-xs-6 m-t">
+                    <Amount
+                      value={rupeesToPaise(formValues.feeCreditsThreshold) / 2}
+                    />
+                  </div>
+                  <div class="col-xs-6 m-t">
+                    <Amount
+                      value={rupeesToPaise(formValues.feeCreditsThreshold) / 4}
+                    />
+                  </div>
+                </Fragment>
+              ) : (
+                'Please set a non-zero threshold to see all limits when you will receive alert'
+              )}
+            </div>
+
+            <div class="Modal__Actions clearfix m-t">
               <AsyncButton
                 text="Save"
                 pendingText="Saving..."
