@@ -38,3 +38,13 @@ export FundTransferUpdate from './FundTransferUpdate';
 export MerchantInvoiceNote from './MerchantInvoiceNote';
 
 export BatchUpload from './BatchUpload';
+
+export SQLReportGenerator from './SQLReportGenerator';
+
+export ProcessBulkRefunds from './ProcessBulkRefunds';
+
+export RetryBulkRefunds from './RetryBulkRefunds';
+
+export RetryBulkRefundsWithoutVerifying from './RetryBulkRefundsWithoutVerifying';
+
+export BulkAssignMerchantFeature from './BulkAssignMerchantFeature';

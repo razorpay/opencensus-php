@@ -43,9 +43,17 @@
 
             switch (data.name) {
                 case 'set_dimensions': // Set the dimensions
+                    ga('old.set', data.dimensions);
                     ga('set', data.dimensions);
                     break;
                 default:
+                    ga('old.send',
+                        'event',
+                        data.eventCategory || undefined,
+                        data.eventAction || undefined,
+                        data.eventLabel || undefined,
+                        data.eventValue || undefined
+                    )
                     ga('send',
                         'event',
                         data.eventCategory || undefined,
