@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import { roles } from 'rzp/utils/constants';
+import { roles, agentRole } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
 import {
   resendInvitation,
@@ -12,7 +12,7 @@ import {
   fetchTeamDetails,
 } from 'merchant/modules/team';
 
-const ROLES = without(roles, 'owner');
+let ROLES = without(roles, 'owner');
 @connect(state => state.session, {
   fetchTeamDetails,
   resendInvitation,
@@ -92,6 +92,10 @@ export default class EditInvitation extends Component {
 
   render() {
     const { handleSubmit, invite } = this.props;
+
+    if (this.props.user.isAgentRole) {
+      ROLES = { ...ROLES, ...agentRole };
+    }
 
     return (
       <tr>
