@@ -311,6 +311,17 @@ class Server extends Base\Core
         return $response;
     }
 
+    protected function makeJsonResponse(array $content, $statusCode = 200)
+    {
+        $json = json_encode($content);
+
+        $response = \Response::make($json, $statusCode);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
     protected function makePostResponse($request)
     {
         $content = '
