@@ -11,13 +11,28 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import InputField from 'rzp/ui/Forms/InputField';
 
 import { amount, required } from 'rzp/utils/validators';
-import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import { rupeesToPaise, paiseToRupees } from 'rzp/utils/rzp-utils';
 
-@connect(null, { closeModal, updateConfig, showNotification })
+@connect(
+  state => {
+    console.log({ state });
+    return {
+      feeCreditsThreshold: state.config.config.fee_credits_threshold,
+    };
+  },
+  { closeModal, updateConfig, showNotification }
+)
 @reduxForm({
   form: 'setCreditAlert',
 })
 export default class SetCreditAlert extends Component {
+  componentWillMount() {
+    const feeCreditsThreshold = this.props.feeCreditsThreshold || 0;
+    this.props.initialize({
+      feeCreditsThreshold: paiseToRupees(feeCreditsThreshold),
+    });
+  }
+
   save = body => {
     return this.props
       .updateConfig({
