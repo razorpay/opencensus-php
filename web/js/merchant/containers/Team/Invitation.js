@@ -93,8 +93,8 @@ export default class EditInvitation extends Component {
   render() {
     const { handleSubmit, invite } = this.props;
 
-    if (this.props.user.tags.indexOf('Enable_agent_role') !== -1) {
-      ROLES = {...ROLES, ...agentRole}
+    if (this.props.user.isAgentRole) {
+      ROLES = { ...ROLES, ...agentRole };
     }
 
     return (

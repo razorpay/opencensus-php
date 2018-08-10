@@ -56,8 +56,8 @@ export default class NewInvitation extends Component {
   render() {
     const { handleSubmit, selectedRole } = this.props;
 
-    if (this.props.user.tags.indexOf('Enable_agent_role') !== -1) {
-      ROLES = {...ROLES, ...agentRole}
+    if (this.props.user.isAgentRole) {
+      ROLES = { ...ROLES, ...agentRole };
     }
 
     return (

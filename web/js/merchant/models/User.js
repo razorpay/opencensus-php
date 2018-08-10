@@ -109,6 +109,10 @@ export default class User {
     return true;
   }
 
+  get isAgentRole() {
+    return this.findTag('enable_agent_role');
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 
@@ -117,7 +121,7 @@ export default class User {
     });
   }
 
-  /* Check if the tag exists */
+  /* Check case-insensitive tag check existence */
   findTag(tag) {
     return !!this.tags.find(t => t.toLowerCase() === tag.toLowerCase());
   }

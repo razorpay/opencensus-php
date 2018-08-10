@@ -15,7 +15,7 @@ import {
   state => {
     return {
       merchantId: state.session.user.current,
-      userObj: state.session.user
+      session: state.session,
     };
   },
   {
@@ -78,8 +78,8 @@ export default class EditUser extends Component {
 
     let allRoles = roles;
 
-    if (this.props.userObj.tags.indexOf('Enable_agent_role') !== -1) {
-      allRoles = {...allRoles, ...agentRole};
+    if (this.props.session.user.isAgentRole) {
+      allRoles = { ...allRoles, ...agentRole };
     }
 
     let ROLES = user.role === 'owner' ? allRoles : without(allRoles, 'owner');
