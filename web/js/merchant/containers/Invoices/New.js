@@ -2004,7 +2004,10 @@ export default class InvoicesNewContainer extends Component {
                 </div>
 
                 <ShowWhen notMyRole="support finance">
-                  <div class="col-md-4 col-sm-4" style={{ marginTop: '48px' }}>
+                  <div
+                    class="col-md-4 col-sm-4 invoices--side"
+                    style={{ marginTop: '48px' }}
+                  >
                     {!locked && (
                       <div class="inv__cta">
                         <div class="btn-group-vertical">

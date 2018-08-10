@@ -6,6 +6,12 @@ $gutter = 8px;
   max-width: 1110px;
   margin: auto;
 
+  .invoices--side {
+    margin-top: 48px;
+    position: fixed;
+    right: -40px;
+  }
+
   .two-btn-group {
     button {
       padding: 5px 0px;
@@ -780,9 +786,15 @@ $gutter = 8px;
     }
   }
 
-  .material-input, .material-input > input, .material-input__datepicker .SingleDatePicker,  {
-    border-bottom-color: #e2e2e2 !important
-    &:hover, &:focus {
+  .material-input {
+    border-bottom-color: #e2e2e2
+    &:focus,  {
+      border-bottom-color: #528ff0
+    }
+  }
+  
+  .material-input, .material-input > input, .material-input__datepicker .SingleDatePicker  {
+    &:hover{
       border-bottom-color: #c1c1c1 !important
     }
   }
