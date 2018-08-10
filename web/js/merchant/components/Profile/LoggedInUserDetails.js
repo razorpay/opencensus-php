@@ -3,7 +3,7 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import { roles, agentRole } from 'rzp/utils/constants';
 
 export default ({ loggedInUser, loggedInUserRole }) => {
-  let ROLES = {...roles, ...agentRole}
+  let ROLES = { ...roles, ...agentRole };
 
   return (
     <div class="panel panel-default">
