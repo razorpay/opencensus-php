@@ -504,11 +504,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
                 grantKeyAccessToMerchant(!merchant.details.has_key_access)
               }
               pendingClass="btn-pending"
-              confirm={
-                merchant.details.has_key_access
-                  ? `Are you sure you want to remove key access for this merchant?`
-                  : `Are you sure you want to grant key access to this merchant?`
-              }
+              confirm={`Are you sure you want to ${
+                merchant.details.has_key_access ? 'remove' : 'grant'
+              } Key Access for this merchant?`}
             >
               {merchant.details.has_key_access ? 'Remove' : 'Grant'} Key Access
               <span class="spin-btn" />
