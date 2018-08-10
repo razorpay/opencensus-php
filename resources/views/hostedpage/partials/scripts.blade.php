@@ -98,7 +98,7 @@
 
                     // Special keys like delete button, Alt, arrow keys etc must work
                     function _isValueIn(value) {
-                        var specialKeys = [16, 18, 8, 46, 37, 38, 39, 40];
+                        var specialKeys = [16, 18, 8, 46, 37, 38, 39, 40, 9]; // Shift, Alt, Ctrl, Cmd, Delete, Tab, etc.
                         var isIn = false;
 
 
@@ -579,9 +579,9 @@
                 document.querySelector('#mobile-container #form-section').style['height'] = browserHeight + 'px';
 
                 removeElemsWithClass('desktop-el');
-            }
 
-            if (!window.RZP.checkIsDesktop()) {
+                /* Handle Android back btn */
+
                 var initialLoad;
                 var hash = window.location.hash;
 
@@ -801,4 +801,32 @@
             };
         }
     }());
+
+    // Polyfill for Node.append
+
+    // Source: https://github.com/jserz/js_piece/blob/master/DOM/ParentNode/append()/append().md
+    (function (arr) {
+      arr.forEach(function (item) {
+        if (item.hasOwnProperty('append')) {
+          return;
+        }
+        Object.defineProperty(item, 'append', {
+          configurable: true,
+          enumerable: true,
+          writable: true,
+          value: function append() {
+            var argArr = Array.prototype.slice.call(arguments),
+              docFrag = document.createDocumentFragment();
+
+            argArr.forEach(function (argItem) {
+              var isNode = argItem instanceof Node;
+              docFrag.appendChild(isNode ? argItem : document.createTextNode(String(argItem)));
+            });
+
+            this.appendChild(docFrag);
+          }
+        });
+      });
+    })([Element.prototype, Document.prototype, DocumentFragment.prototype]);
+
 </script>
