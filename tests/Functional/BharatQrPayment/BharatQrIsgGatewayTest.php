@@ -54,14 +54,6 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
 
-        $this->mockServerContentFunction(function (&$content, $action = null) use ($request)
-        {
-            if ($action === Action::VERIFY)
-            {
-                $content = $request['content'];
-            }
-        }, $this->gateway);
-
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals(Status::APPROVED, $response[Field::STATUS_CODE]);
@@ -132,14 +124,6 @@ class BharatQrIsgGatewayTest extends TestCase
         $this->ba->directAuth();
 
         $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
-
-        $this->mockServerContentFunction(function (&$content, $action = null) use ($request)
-        {
-            if ($action === Action::VERIFY)
-            {
-                $content = $request['content'];
-            }
-        }, $this->gateway);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -217,14 +201,6 @@ class BharatQrIsgGatewayTest extends TestCase
         $request = $this->testData['testQrPaymentProcess'];
 
         $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
-
-        $this->mockServerContentFunction(function (&$content, $action = null) use ($request)
-        {
-            if ($action === Action::VERIFY)
-            {
-                $content = $request['content'];
-            }
-        }, $this->gateway);
 
         $response = $this->makeRequestAndGetContent($request);
 
