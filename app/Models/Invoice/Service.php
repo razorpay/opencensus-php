@@ -75,15 +75,9 @@ class Service extends Base\Service
 
         //
         // `findByPublicIdAndMerchantAndUser` handles ACL for the `sellerapp` role.
-        // Additionally, on the `agent` user role, ACL should only allow the
-        // creator to perform the update operation.
+        // Here, we also validate access for the `agent` role
         //
-        if (($this->userRole === Role::AGENT) and
-            ($invoice->getUserId() !== $this->userId))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'This operation can only be performed by the creator');
-        }
+        $this->validateAgentRoleAcl($invoice);
 
         $invoice = $this->core->update($invoice, $input, $this->merchant);
 
@@ -120,14 +114,15 @@ class Service extends Base\Service
                                             $this->userId,
                                             $this->userRole);
 
-        $invoice = $this->core->delete($invoice);
+        //
+        // `findByPublicIdAndMerchantAndUser` handles ACL for the `sellerapp` role.
+        // Here, we also validate access for the `agent` role
+        //
+        $this->validateAgentRoleAcl($invoice);
 
-        if ($invoice === null)
-        {
-            return [];
-        }
+        $this->core->delete($invoice);
 
-        return $invoice->toArrayPublic();
+        return [];
     }
 
     public function addLineItems(string $id, array $input): array
@@ -230,6 +225,12 @@ class Service extends Base\Service
                                             $this->merchant,
                                             $this->userId,
                                             $this->userRole);
+
+        //
+        // `findByPublicIdAndMerchantAndUser` handles ACL for the `sellerapp` role.
+        // Here, we also validate access for the `agent` role
+        //
+        $this->validateAgentRoleAcl($invoice);
 
         $invoice = $this->core->cancelInvoice($invoice);
 
@@ -362,5 +363,22 @@ class Service extends Base\Service
 
         $this->userId   = $dashboardHeaders['user_id'] ?? null;
         $this->userRole = $dashboardHeaders['user_role'] ?? null;
+    }
+
+    /**
+     * If the current user has role: `agent`, validate ACL for certain operations
+     *
+     * @param Entity $invoice
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateAgentRoleAcl(Entity $invoice)
+    {
+        if (($this->userRole === Role::AGENT) and
+            ($invoice->getUserId() !== $this->userId))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'This operation can only be performed by the creator');
+        }
     }
 }
