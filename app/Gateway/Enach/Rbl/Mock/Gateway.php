@@ -16,18 +16,17 @@ class Gateway extends Rbl\Gateway
 
     protected function putMockPaymentGatewayUrl(array & $request, $route)
     {
-        $gateway = $this->gateway;
-
-        $route = 'mock_esigner_payment';
-
-        $url = $this->route->getUrl($route, ['signer' => 'digio']);
+        $url = $this->route->getUrl($route, ['signer' => 'legaldesk']);
 
         if ($request['method'] === 'get')
         {
             // The key thing now is to replace the url from gateway to our mock one!
             $parts = parse_url($request['url']);
 
-            $url = $url . '?' .$parts['query'];
+            if (isset($parts['query']) === true)
+            {
+                $url = $url . '?' .$parts['query'];
+            }
 
             $request['url'] = $url;
         }
