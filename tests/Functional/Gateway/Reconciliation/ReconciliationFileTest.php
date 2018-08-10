@@ -1128,9 +1128,13 @@ class ReconciliationFileTest extends TestCase
 
         $this->fixtures->edit('card_fss', $gatewayPayment1['id'], ['ref' => null, 'tranid' => null]);
 
+        $headers[] = ['From Settlement'=>' To Settlement' , '31-08-2018' => '31-08-2018'];
+
+        $file = $this->writeToCsvFile($headers, 'MerchantSettlementTransactionListing');
+
         $entries[] = $this->overideFssBobRecon($gatewayPayment1, $gatewayPayment1['payment_id']);
 
-        $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing');
+        $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing', $file);
 
         $this->runForFiles([$file], 'Bob');
 
@@ -1174,9 +1178,13 @@ class ReconciliationFileTest extends TestCase
 
         $gatewayRefund = $this->getLastEntity('card_fss', true);
 
+        $headers[] = ['From Settlement'=>' To Settlement' , '31-08-2018' => '31-08-2018'];
+
+        $file = $this->writeToCsvFile($headers, 'MerchantSettlementTransactionListing');
+
         $entries[] = $this->overideFssBobRecon($gatewayRefund, $refund['id'], 'Refund');
 
-        $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing');
+        $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing', $file);
 
         $this->runForFiles([$file], 'Bob');
 
