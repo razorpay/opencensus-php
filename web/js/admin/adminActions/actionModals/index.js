@@ -46,3 +46,5 @@ export ProcessBulkRefunds from './ProcessBulkRefunds';
 export RetryBulkRefunds from './RetryBulkRefunds';
 
 export RetryBulkRefundsWithoutVerifying from './RetryBulkRefundsWithoutVerifying';
+
+export BulkAssignMerchantFeature from './BulkAssignMerchantFeature';
