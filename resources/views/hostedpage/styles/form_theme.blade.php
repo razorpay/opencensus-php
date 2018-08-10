@@ -82,51 +82,37 @@
         padding-left: 40px;
     }
 
-    /* Placeholder style */
-    ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-        color: rgba(0,0,0,0.3);
-    }
-    ::-moz-placeholder { /* Firefox 19+ */
-        color: rgba(0,0,0,0.3);
-    }
-    :-ms-input-placeholder { /* IE 10+ */
-        color: rgba(0,0,0,0.3);
-    }
-    :-moz-placeholder { /* Firefox 18- */
-        color: rgba(0,0,0,0.3);
-    }
-
-    /* Placeholder style */
-    ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-        color: rgba(0,0,0,0.3);
-    }
-    ::-moz-placeholder { /* Firefox 19+ */
-        color: rgba(0,0,0,0.3);
-    }
-    :-ms-input-placeholder { /* IE 10+ */
-        color: rgba(0,0,0,0.3);
-    }
-    :-moz-placeholder { /* Firefox 18- */
-        color: rgba(0,0,0,0.3);
-    }
-
     input[name="amount"] {
         font-weight: bold;
+    }
+
+    /* Placeholder style */
+    ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+        color: rgba(0,0,0,0.3);
+    }
+    ::-moz-placeholder { /* Firefox 19+ */
+        color: rgba(0,0,0,0.3);
+    }
+    :-ms-input-placeholder { /* IE 10+ */
+        color: rgba(0,0,0,0.3);
+    }
+    :-moz-placeholder { /* Firefox 18- */
+        color: rgba(0,0,0,0.3);
     }
 
     /* Placeholder style for AMOUNT */
 
     input[name="amount"]::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-        color: rgba(0,0,0,0.3);
+        font-weight: bold;
     }
     input[name="amount"]::-moz-placeholder { /* Firefox 19+ */
-        color: rgba(0,0,0,0.3);
+        font-weight: bold;
     }
     input[name="amount"]:-ms-input-placeholder { /* IE 10+ */
-        color: rgba(0,0,0,0.3);
+        font-weight: bold;
     }
     input[name="amount"]:-moz-placeholder { /* Firefox 18- */
-        color: rgba(0,0,0,0.3);
+        font-weight: bold;
     }
 
     @media (max-width: 924px) {
