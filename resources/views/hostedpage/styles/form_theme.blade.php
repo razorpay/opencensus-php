@@ -96,6 +96,39 @@
         color: rgba(0,0,0,0.3);
     }
 
+    /* Placeholder style */
+    ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+        color: rgba(0,0,0,0.3);
+    }
+    ::-moz-placeholder { /* Firefox 19+ */
+        color: rgba(0,0,0,0.3);
+    }
+    :-ms-input-placeholder { /* IE 10+ */
+        color: rgba(0,0,0,0.3);
+    }
+    :-moz-placeholder { /* Firefox 18- */
+        color: rgba(0,0,0,0.3);
+    }
+
+    input[name="amount"] {
+        font-weight: bold;
+    }
+
+    /* Placeholder style for AMOUNT */
+
+    input[name="amount"]::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+        color: rgba(0,0,0,0.3);
+    }
+    input[name="amount"]::-moz-placeholder { /* Firefox 19+ */
+        color: rgba(0,0,0,0.3);
+    }
+    input[name="amount"]:-ms-input-placeholder { /* IE 10+ */
+        color: rgba(0,0,0,0.3);
+    }
+    input[name="amount"]:-moz-placeholder { /* Firefox 18- */
+        color: rgba(0,0,0,0.3);
+    }
+
     @media (max-width: 924px) {
         .form-group label {
             width: 100%;
@@ -111,5 +144,5 @@
             margin-left: 0;
         }
     }
-    
+
 </style>
