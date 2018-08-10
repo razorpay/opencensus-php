@@ -32,7 +32,8 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_INDUSIND    => 'Indusind Netbanking refunds',
         Gateway::UPI_ICICI              => 'UPI Icici Refunds',
         Gateway::WALLET_AIRTELMONEY     => 'Wallet Airtelmoney refunds',
-        Gateway::WALLET_PAYUMONEY       => 'Wallet Payumoney refunds'
+        Gateway::WALLET_PAYUMONEY       => 'Wallet Payumoney refunds',
+        Gateway::ISG                    => 'Isg BharatQr refunds'
     ];
 
     const SUBJECT_MAP = [
@@ -46,6 +47,7 @@ class Constants extends Base\Constants
         Gateway::WALLET_AIRTELMONEY     => 'Airtelmoney refunds file for ',
         Gateway::WALLET_PAYUMONEY       => 'PayUMoney refunds file for ',
         Gateway::NETBANKING_RBL         => 'RBL Netbanking refunds file for ',
+        Gateway::ISG                    => 'Isg BharatQr refunds file for ',
     ];
 
     const MAILTAG_MAP = [
@@ -56,6 +58,7 @@ class Constants extends Base\Constants
         Gateway::UPI_ICICI              => MailTags::ICICI_UPI_REFUNDS_MAIL,
         Gateway::WALLET_AIRTELMONEY     => MailTags::AIRTEL_MONEY_REFUNDS_MAIL,
         Gateway::WALLET_PAYUMONEY       => MailTags::PAYU_MONEY_REFUNDS_MAIL,
+        Gateway::ISG                    => MailTags::ISG_BHARATQR_REFUNDS_MAIL,
     ];
 
     const BODY_MAP = [
@@ -66,6 +69,7 @@ class Constants extends Base\Constants
         Gateway::UPI_ICICI              => 'Please find attached refunds information for UPI',
         Gateway::WALLET_AIRTELMONEY     => 'Please find attached refunds information for AirtelMoney',
         Gateway::WALLET_PAYUMONEY       => 'Please find attached refunds information for PayUMoney',
+        Gateway::ISG                    => 'Please find attached refunds file for Isg BharatQr',
     ];
 
     const MAIL_TEMPLATE_MAP = [
@@ -76,5 +80,6 @@ class Constants extends Base\Constants
         Gateway::UPI_ICICI              => 'emails.message',
         Gateway::WALLET_AIRTELMONEY     => 'emails.message',
         Gateway::WALLET_PAYUMONEY       => 'emails.message',
+        Gateway::ISG                    => 'emails.message',
     ];
 }

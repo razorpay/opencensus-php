@@ -93,7 +93,7 @@ class Constants
         Type::REFUND => [
             self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
-            self::BHARAT_QR_ISG => [''],//todo: add bank email id
+            self::BHARAT_QR_ISG => ['settlements@razorpay.com'],
         ],
 
         Type::COMBINED => [

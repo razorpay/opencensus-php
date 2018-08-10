@@ -4,9 +4,9 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
-use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class BharatQrIsg extends Base
@@ -17,8 +17,6 @@ class BharatQrIsg extends Base
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::ISG_BHARATQR_REFUND;
     const GATEWAY                = Payment\Gateway::ISG;
-//    const GATEWAY_CODE           = '';//todo: test if it works
-//    const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;//todo: check with ambar
 
     const REFUND_ID                     = 'RFD_TXN_ID';
     const MERCHANT_PAN                  = 'MERCHANT_PAN';
@@ -75,6 +73,27 @@ class BharatQrIsg extends Base
         $formattedData = $this->getTextData($formattedData);
 
         return $formattedData;
+    }
+
+    protected function formatDataForMail(array $data)
+    {
+        $file = $this->gatewayFile
+            ->files()
+            ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+            ->first();
+
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+
+        $today = Carbon::now(Timezone::IST)->format('jS F Y');
+
+        $mailData = [
+            'file_name'  => $file->getLocation(),
+            'signed_url' => $signedUrl,
+            'count'      => count($data),
+            'date'       => $today
+        ];
+
+        return $mailData;
     }
 
     public function fetchEntities(): PublicCollection

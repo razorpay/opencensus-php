@@ -8,8 +8,10 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File;
+use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
-use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\RefundFile\Constants as RefundMailConstants;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class BharatQrIsgRefundFileTest extends TestCase
@@ -63,7 +65,7 @@ class BharatQrIsgRefundFileTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $content = $this->startTest();sd('d');
+        $content = $this->startTest();
 
         $content = $content['items'][0];
 
@@ -72,46 +74,31 @@ class BharatQrIsgRefundFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $files = $this->getEntities('file_store', [
-            'count' => 1
-        ], true);
-
         $time = Carbon::now(Timezone::IST)->format('dmY');
 
         $expectedFilesContent = [
-            'entity' => 'collection',
-            'count' => 1,
-            'items' => [
-                [
-                    'type' => 'isg_bharatqr_refund',
-                    'location' => 'Refund' . '_' . $time . '.txt',
-                ],
-            ],
+            'type' => 'isg_bharatqr_refund',
+            'location' => 'Refund' . '_' . $time . '.txt',
         ];
+        $file = $this->getLastEntity('file_store', true);
+        $this->assertArraySelectiveEquals($expectedFilesContent, $file);
 
-        $this->assertArraySelectiveEquals($expectedFilesContent, $files);
-
-        Mail::assertSent(DailyFileMail::class, function ($mail)
+        Mail::assertQueued(RefundFileMail::class, function ($mail)
         {
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
+            $expectedSubject = RefundMailConstants::SUBJECT_MAP[Gateway::ISG] . $date;
+
+            $this->assertEquals($expectedSubject, $mail->subject);
+
             $testData = [
-                'subject' => 'Equitas Netbanking claims and refund files for '.$date,
-                'amount' => [
-                    'claims'  => 500,
-                    'refunds' => 500,
-                    'total'   => 0
-                ],
-                'count' => [
-                    'claims'  => 1,
-                    'refunds' => 1,
-                    'total'   => 2
-                ],
+                'count' => 1,
+                'body'  => RefundMailConstants::BODY_MAP[Gateway::ISG],
             ];
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-            $this->checkRefundsFile($mail->viewData['refundsFile']);
+            $this->checkRefundsFile($mail->viewData['signed_url']);
 
             $this->assertCount(1, $mail->attachments);
 
@@ -132,14 +119,17 @@ class BharatQrIsgRefundFileTest extends TestCase
         return $bankAccount;
     }
 
-    protected function checkRefundsFile(array $refundFileData)
+    protected function checkRefundsFile($filePath)
     {
-        $refundsFileContents = file($refundFileData['url']);
+        $fileContents = \file($filePath);
 
-        $this->assertCount(2, $refundsFileContents);
+        foreach ($fileContents as &$txtString)
+        {
+            $txtString = explode('|', $txtString);
+        }
 
-        $refundsFileLine1 = explode('|', $refundsFileContents[0]);
+        $this->assertCount(2, $fileContents);
 
-        $this->assertCount(9, $refundsFileLine1);
+        $this->assertCount(8, $fileContents[0]);
     }
 }

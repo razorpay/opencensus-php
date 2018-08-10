@@ -185,6 +185,7 @@ class Type
             self::MOCK_RECONCILIATION_FILE,
             self::GATEWAY_FAILED_REFUNDS,
             self::OBC_NETBANKING_REFUND,
+            self::ISG_BHARATQR_REFUND,
         ],
 
         Constants\Entity::BATCH => [
@@ -279,6 +280,7 @@ class Type
         self::MOCK_RECONCILIATION_FILE,
         self::GATEWAY_FAILED_REFUNDS,
         self::OBC_NETBANKING_REFUND,
+        self::ISG_BHARATQR_REFUND,
     ];
 
     /**

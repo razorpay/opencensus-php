@@ -29,7 +29,7 @@ return [
                         'attempts'            => 1,
                         'sender'              => 'refunds@razorpay.com',
                         'type'                => 'refund',
-                        'target'              => 'equitas',
+                        'target'              => 'bharat_qr_isg',
                         'entity'              => 'gateway_file',
                         'admin'               => true
                     ],
