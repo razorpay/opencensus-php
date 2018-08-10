@@ -1453,13 +1453,13 @@ export default class InvoicesNewContainer extends Component {
                       <div class="row">
                         <div class="col-md-12">
                           <div class="inv__titlesection">
-                            <h3>Invoice</h3>
+                            <h3>Invoice #</h3>
                             {locked && !invoice.receipt ? (
                               <InlineField
                                 formName="newInvoice"
                                 name="id"
                                 component="input"
-                                class="form-control input-xs"
+                                class="material-input input-xs"
                                 disabled={true}
                                 size={30}
                               />
@@ -1953,6 +1953,7 @@ export default class InvoicesNewContainer extends Component {
 
                       <div class="row" style={{ marginTop: '40px' }}>
                         <div class="col-md-12">
+                          <label class="text-uppercase">Customer Notes</label>
                           <InlineField
                             formName="newInvoice"
                             name="comment"
@@ -1970,6 +1971,9 @@ export default class InvoicesNewContainer extends Component {
 
                       <div class="row">
                         <div class="col-md-12">
+                          <label class="text-uppercase">
+                            Terms and Conditions
+                          </label>
                           <InlineField
                             formName="newInvoice"
                             name="terms"
@@ -2000,7 +2004,10 @@ export default class InvoicesNewContainer extends Component {
                 </div>
 
                 <ShowWhen notMyRole="support finance">
-                  <div class="col-md-4 col-sm-4" style={{ marginTop: '48px' }}>
+                  <div
+                    class="col-md-4 col-sm-4 invoices--side"
+                    style={{ marginTop: '48px' }}
+                  >
                     {!locked && (
                       <div class="inv__cta">
                         <div class="btn-group-vertical">
