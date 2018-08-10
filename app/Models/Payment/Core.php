@@ -91,7 +91,9 @@ class Core extends Base\Core
     {
         $paymentsToUpdateQuery = $this->repo->payment->buildUpdateMdrQuery($lastUpdatedPaymentId, $lastUpdatedPaymentCapturedAt);
 
-        $paymentsToUpdateQuery->chunk(500, function ($payments)
+        $successCount = 0;
+
+        $paymentsToUpdateQuery->chunk(500, function ($payments, $successCount)
         {
             $this->repo->transaction(function () use ($payments)
             {
@@ -117,7 +119,14 @@ class Core extends Base\Core
             $lastUpdatedPaymentId         = $lastUpdatedPayment->getId();
             $lastUpdatedPaymentCapturedAt = $lastUpdatedPayment->getCapturedAt();
 
-            Cache::forever($this->mode . '_' . 'payment_mdr_update_data', $lastUpdatedPaymentId . ':', $lastUpdatedPaymentCapturedAt);
+            Cache::forever($this->mode . '_' . 'payment_mdr_update_data', $lastUpdatedPaymentId . ':' . $lastUpdatedPaymentCapturedAt);
+
+            $successCount = $successCount + 500;
+
+            if ($successCount > 15000)
+            {
+                return;
+            }
         });
     }
 }
