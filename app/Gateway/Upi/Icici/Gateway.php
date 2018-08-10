@@ -731,8 +731,6 @@ class Gateway extends Base\Gateway
 
         $verify->verifyResponseContent = $this->getMappedAttributes($content);
 
-        $this->updateGatewayPaymentResponse($verify->payment, $content);
-
         return $status;
     }
 
