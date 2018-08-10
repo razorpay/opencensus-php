@@ -144,7 +144,7 @@ class Gateway extends Base\Gateway
     protected function callAuthenticationGateway(array $input)
     {
         return $this->app['gateway']->call(
-            Payment\Gateway::ESIGNER_DIGIO,
+            Payment\Gateway::ESIGNER_LEGALDESK,
             $this->action,
             $input,
             $this->mode);

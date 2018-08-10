@@ -27,6 +27,7 @@ class Gateway
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
     const ESIGNER_DIGIO          = 'esigner_digio';
+    const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_RBL              = 'enach_rbl';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
@@ -556,6 +557,7 @@ class Gateway
         Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
         Gateway::ESIGNER_DIGIO,
+        Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
     ];
 
