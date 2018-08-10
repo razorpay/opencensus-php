@@ -1153,6 +1153,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FUND_TRANSFER_RECON_EMAIL_FAILED              = 'FUND_TRANSFER_RECON_EMAIL_FAILED';
 
+    const PAYMENT_MDR_UPDATE_ERROR                      = 'PAYMENT_MDR_UPDATE_ERROR';
+    const PAYMENT_MDR_UPDATE_JOB_RECEIVED               = 'PAYMENT_MDR_UPDATE_JOB_RECEIVED';
+    const PAYMENT_MDR_LAST_UPDATED_DATA                 = 'PAYMENT_MDR_LAST_UPDATED_DATA';
+    const PAYMENT_MDR_UPDATE_SUCCESS                    = 'PAYMENT_MDR_UPDATE_SUCCESS';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

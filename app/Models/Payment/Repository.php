@@ -1479,4 +1479,20 @@ class Repository extends Base\Repository
                     ->limit(1000)
                     ->get();
     }
+
+    public function buildUpdateMdrQuery(string $lastUpdatedPaymentId = null, int $lastUpdatedPaymentCapturedAt)
+    {
+        $query = $this->newQuery()->with('transaction')
+                      ->where(Entity::GATEWAY, Payment\Gateway::HITACHI)
+                      ->where(Entity::CAPTURED_AT, '>=', $lastUpdatedPaymentCapturedAt);
+
+        if ($lastUpdatedPaymentId !== null)
+        {
+            $query->where(Entity::ID, '>', $lastUpdatedPaymentId);
+        }
+
+        $query->limit(15000);
+
+        return $query;
+    }
 }
