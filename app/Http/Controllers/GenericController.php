@@ -22,7 +22,11 @@ class GenericController extends Controller
         $headers = [];
 
         foreach($allRequestHeaders as $key => $value) {
+            $key = strtolower($key);
+
             if (in_array($key, self::WHITELISTED_HEADERS, true) === true) {
+                $key = title_case($key);
+
                 $headers[$key] = $value[0];
             }
         }
