@@ -6,8 +6,8 @@
     $has_udf                    = (empty($udf_schema) === false);
     $max_mobile_width           = 853;
     $contact = [
-        'phone' => '1800 209 5438',
-        'email' => 'schindlerindia.in@schindler.com'
+        'phone' => '99950 99950',
+        'email' => 'support@delhivery.com'
     ];
 
     $email_subject = 'Query for Payment Page Id: '. $payment_page_data['id'];
@@ -52,8 +52,9 @@
         @include('hostedpage.styles.form_theme')
         @include('hostedpage.styles.desktop')
         @include('hostedpage.styles.mobile')
+        @include('hostedpage.partials.utils')
 
-        @include('hostedpage.partials.scripts')
+        @include('hostedpage.partials.delhivery-default.scripts')
     </head>
 
     <body>
