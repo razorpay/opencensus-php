@@ -40,8 +40,8 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-        throw new Exception\LogicException(
-            'Payment id not found in either database',
+            throw new Exception\LogicException(
+                'Payment id not found in either database',
                 null,
                 [
                     'gateway'    => $gatewayDriver,
@@ -56,6 +56,52 @@ class GatewayController extends Controller
         $paymentId = Payment\Entity::getSignedId($paymentId);
 
         return (new Payment\Service)->s2sCallback($paymentId, $input);
+    }
+
+    protected function handleServerCallback($input, $gatewayDriver)
+    {
+        $gateway = $this->app['gateway']->gateway($gatewayDriver);
+
+        $input = $gateway->preProcessServerCallback($input);
+
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        if ($mode === null)
+        {
+            throw new Exception\LogicException(
+                'Payment id not found in either database',
+                null,
+                [
+                    'gateway'    => $gatewayDriver,
+                    'payment_id' => $paymentId
+                ]);
+        }
+
+        \Database\DefaultConnection::set($mode);
+
+        $this->app['basicauth']->setMode($mode);
+
+        $paymentId = Payment\Entity::getSignedId($paymentId);
+
+        try
+        {
+            $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+
+            $response = $gateway->postProcessServerCallback([
+                'payment_id' => $paymentId,
+                'mode'       => $mode,
+                'callback'   => $data,
+                'input'      => $input,
+            ]);
+        }
+        catch (\Exception $exception)
+        {
+            $response = $gateway->postProcessServerCallback(null, $exception);
+        }
+
+        return $response;
     }
 
     protected function callbackEbs($input)
@@ -108,7 +154,6 @@ class GatewayController extends Controller
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
             case Gateway::UPI_SBI:
-            case Gateway::UPI_AXIS:
             case 'axis_corporate':
                 // TODO : Remove before prod merge. temporary hack for testing.
                 if ($gateway === 'axis_corporate')
@@ -143,6 +188,9 @@ class GatewayController extends Controller
                 $data = $this->processServerCallback($input, Gateway::UPI_HULK);
 
                 break;
+
+            case Gateway::UPI_AXIS:
+                $data = $this->handleServerCallback($input, $gateway);
 
         }
 

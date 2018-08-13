@@ -5,6 +5,7 @@ namespace RZP\Gateway\Upi\Axis\Mock;
 use App;
 use Carbon\Carbon;
 use Gateway\Upi\Axis;
+use RZP\Gateway\Upi\Axis\AESCrypto;
 use RZP\Gateway\Upi\Axis\Action;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Base;
@@ -41,15 +42,15 @@ class Server extends Base\Mock\Server
     public function authorize($input)
     {
        $arr =  explode('/',parse_url($this->mockRequest['url'])['query']);
-       $token = $arr[sizeof($arr)-1];
+       $token = $arr[count($arr) - 1];
         parent::authorize($input);
 
         $content = [
-            Fields::CODE => '00',
-            Fields::RESULT => 'Accepted Collect Request',
-            Fields::DATA => [
+            Fields::CODE    => '00',
+            Fields::RESULT  => 'Accepted Collect Request',
+            Fields::DATA    => [
                 Fields::MERCHANT_TRANSACTION_ID => 'TESTMERCHANTID:'.$token,
-                Fields::W_COLLECT_TXN_ID => $this->generateRandomString(10),
+                Fields::W_COLLECT_TXN_ID        => $this->generateRandomString(10),
             ]
         ];
 
@@ -151,27 +152,28 @@ class Server extends Base\Mock\Server
 
         $response = $this->makeResponse($content);
 
-        return [
-            'data' => json_encode($content)
-        ];
+        return ['data' => $content];
     }
 
     protected function callbackResponseContent(array $upiEntity, array $payment)
     {
-        return [
+         $data = [
             Fields::CUSTOMER_VPA => $upiEntity['vpa'],
             Fields::MERCH_ID => 'RAZAORPAY',
             Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
             Fields::MERCHANT_TRANSACTION_ID => $upiEntity['payment_id'],
             Fields::TRANSACTION_TIMESTAMP => date('j-F-Y'),
             Fields::TRANSACTION_AMOUNT => $this->formatAmount($upiEntity['amount']),
-            Fields::GATEWAY_TRANSACTION_ID => $this->generateRandomString(20),
-            Fields::GATEWAY_RESPONSE_CODE => '00',
+            Fields::GATEWAY_TRANSACTION_ID => 'AXIS00090439839',
+            Fields::GATEWAY_RESPONSE_CODE => '000',
             Fields::GATEWAY_RESPONSE_MESSAGE => 'Success',
             Fields::RRN => "714513318376",
             Fields::CHECKSUM => 'CHECKSUM NOT REQUIRED'
         ];
 
+        $json = json_encode($data);
+        $aesencrypted = $this->encryptAes($json);
+        return $aesencrypted;
     }
     /**
      * @param  int    $amount amount in paise
@@ -183,11 +185,13 @@ class Server extends Base\Mock\Server
     }
 
 
-    public function generateRandomString($length = 10) {
+    public function generateRandomString($length = 10)
+    {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);
         $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
+        for ($i = 0; $i < $length; $i++)
+        {
             $randomString .= $characters[rand(0, $charactersLength - 1)];
         }
         return $randomString;
@@ -218,19 +222,19 @@ class Server extends Base\Mock\Server
     {
         return [
             Fields::DATA => [
-                Fields::CODE => '00',
-                Fields::RESULT => 'S',
+                Fields::CODE                    => '00',
+                Fields::RESULT                  => 'S',
                 Fields::MERCHANT_TRANSACTION_ID => 'CPAGA471420261',
-                Fields::W_COLLECT_TXN_ID => "AXI91977318751526881521496367600647",
-                Fields::MERCH_ID =>  "RAZAORPAY",
-                Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
-                Fields::CUSTOMER_VPA =>  $payment['vpa'],
-                Fields::TXN_TIME => "25-MAY-17 01.59.59.741000 PM",
-                Fields::TXN_AMOUNT => $this->formatAmount($payment['amount']),
-                Fields::RRN => "714513318376",
-                Fields::DEBIT_ACCOUNT_NUM => "076010100236133",
-                Fields::DEBIT_IFSC_CODE => "AXIS0000076",
-                Fields::CHECKSUM => "dc251c30924ec8d2aed7ab0e15dc209e66b3f3efec934484b1b6be822214296d",
+                Fields::W_COLLECT_TXN_ID        => "AXI91977318751526881521496367600647",
+                Fields::MERCH_ID                => "RAZAORPAY",
+                Fields::MERCH_CHAN_ID           => 'RAZAORPAYAPP',
+                Fields::CUSTOMER_VPA            => $payment['vpa'],
+                Fields::TXN_TIME                => "25-MAY-17 01.59.59.741000 PM",
+                Fields::TXN_AMOUNT              => $this->formatAmount($payment['amount']),
+                Fields::RRN                     => "714513318376",
+                Fields::DEBIT_ACCOUNT_NUM       => "076010100236133",
+                Fields::DEBIT_IFSC_CODE         => "AXIS0000076",
+                Fields::CHECKSUM                => "dc251c30924ec8d2aed7ab0e15dc209e66b3f3efec934484b1b6be822214296d",
             ]
         ];
     }
@@ -262,25 +266,28 @@ class Server extends Base\Mock\Server
     protected function getDefaultRefundResponse(array $input, $payment)
     {
         return [
-            // UPI Txn Id
-            random_int(100000, 999999),
-            // Refund Id
-            $input[1],
-            // Amount
-            $input[6],
-            date('Y:m:d h:i:s', time()),
-            // REFUND_SUCCESS is just S
-            Status::SUCCESS,
-            'Transaction success',
-            // response code
-            '00',
-            // Approval number
-            random_integer(12),
-            $payment['vpa'],
-            // NPCI UPI ID (customer reference number)
-            $input[4],
-            // Reference Id, currently null
-            'NA'
+            'code'      => '000',
+            'result'    => 'REFUND REQUEST SUCCESSFUL',
+            'data'      => 'RELIANC34347343',
         ];
+    }
+
+    protected function createCryptoIfNotCreated()
+    {
+        $this->aesCrypto = new AESCrypto(AES::MODE_ECB,'b0wgtwlM8iEsq63z');
+    }
+
+    public function encryptAes(string $stringToEncrypt)
+    {
+        $this->createCryptoIfNotCreated();
+
+        return $this->aesCrypto->encryptString($stringToEncrypt);
+    }
+
+    public function decryptAes(string $stringToDecrypt)
+    {
+        $this->createCryptoIfNotCreated();
+
+        return $this->aesCrypto->decryptString($stringToDecrypt);
     }
 }

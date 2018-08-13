@@ -8,9 +8,7 @@ class AESCrypto extends Base\AESCrypto
 {
     public function __construct(int $mode, string $masterKey, string $initializationVector = '')
     {
-        $masterKey = str_pad($masterKey, 16, $masterKey);
-
-        parent::__construct($mode, $masterKey, $initializationVector);
+        parent::__construct($mode, $masterKey);
     }
 
     public function encryptString(string $string)
@@ -20,6 +18,7 @@ class AESCrypto extends Base\AESCrypto
 
     public function decryptString(string $string)
     {
+        $this->aes->disablePadding();
         return parent::decryptString(base64_decode($string));
     }
 }

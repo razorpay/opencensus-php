@@ -2,13 +2,14 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Axis;
 
+use RZP\Constants\Fields;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 
-class AxisGatewayTest extends TestCase
+class UpiAxisGatewayTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
@@ -59,7 +60,12 @@ class AxisGatewayTest extends TestCase
         $response = $this->makeS2SCallbackAndGetContent($content);
 
         // We should have gotten a successful response
-        $this->assertEquals(['success' => true], $response);
+        $this->assertEquals(
+            [
+            'callBackstatusCode' => '000',
+            'callBackstatusDescription' => 'Success',
+            'callBacktxnId' => 'AXIS00090439839'
+        ],$response);
 
         $payment = $this->getEntityById('payment', $paymentId, true);
 
@@ -178,8 +184,7 @@ class AxisGatewayTest extends TestCase
 
         $this->runRequestResponseFlow(
             $data,
-            function() use ($payment)
-            {
+            function() use ($payment) {
                 $this->doAuthPaymentViaAjaxRoute($payment);
             });
     }

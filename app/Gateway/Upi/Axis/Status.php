@@ -8,7 +8,7 @@ class Status
      * @see https://drive.google.com/a/razorpay.com/file/d/0B1MTSXtR53PfSFp3OHduYUhQV0U/view?usp=sharing
      */
 
-    const SUCCESS = '00';
+    const SUCCESS = '000';
 
     const PENDING = 'PENDING';
 
