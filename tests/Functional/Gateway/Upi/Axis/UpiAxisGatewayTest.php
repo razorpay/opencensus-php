@@ -106,6 +106,7 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertEquals($upi['vpa'], 'vishnu@icici');
 
         $this->assertSame($this->payment['payment']['verified'], 1);
+
     }
 
     protected function getDefaultUpiPaymentArray()
@@ -125,7 +126,7 @@ class UpiAxisGatewayTest extends TestCase
 
         $paymentId = $payment['id'];
         // Attempt a partial refund
-        $this->refundPayment($paymentId, 10000);
+        $this->refundPayment($paymentId, 100);
     }
 
     public function testUpiAmountCap()
@@ -168,7 +169,11 @@ class UpiAxisGatewayTest extends TestCase
         $response = $this->makeS2SCallbackAndGetContent($content);
 
         // We should have gotten a successful response
-        $this->assertEquals(['success' => true], $response);
+        $this->assertEquals([
+                'callBackstatusCode'        => '000',
+                'callBackstatusDescription' => 'Success',
+                'callBacktxnId'             => 'AXIS00090439839'
+            ], $response);
 
         $this->assertEquals('vishnu@icici', $upiEntity[Entity::VPA]);
 

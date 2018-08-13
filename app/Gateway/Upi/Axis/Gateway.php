@@ -82,8 +82,6 @@ class Gateway extends Base\Gateway
 
         $response = $this->fetchToken($input);
 
-        $this->updateGatewayPaymentEntity($gatewayPayment, $response);
-
         if($response[Fields::CODE] == '000')
         {
             parent::action($input, Action::AUTHORIZE);
@@ -97,6 +95,8 @@ class Gateway extends Base\Gateway
             $response1 = $this->sendGatewayRequest($request);
 
             $response1 = $this->parseGatewayResponse($response1->body);
+
+            $this->updateGatewayPaymentEntity($gatewayPayment, $response1);
         }
 
         else
@@ -142,7 +142,7 @@ class Gateway extends Base\Gateway
     protected function getGatewayEntityAttributes(array $input, string $action = Action::AUTHORIZE)
     {
         $attrs = [
-            Entity::GATEWAY_MERCHANT_ID => $this->config['merchant_id'],
+            Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Entity::VPA                 => $input['payment']['vpa'],
             Entity::ACTION              => $action,
             Entity::TYPE                => Base\Type::COLLECT,
@@ -173,14 +173,13 @@ class Gateway extends Base\Gateway
             return $this->terminal->getGatewayMerchantId();
         }
 
-        return $this->config['test_merchant_id'];
+        return $this->config['merchant_id'];
     }
 
     /**
      * @param $responseBody
      * @param string $type
      * @return array
-     * @see https://drive.google.com/drive/u/0/folders/0B1MTSXtR53PfYldqNUIyLXlnSjA
      */
     protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
     {
@@ -211,7 +210,7 @@ class Gateway extends Base\Gateway
         $payment = $input['payment'];
 
         $data = [
-            Fields::MERCH_ID        => $this->config['merchant_id'],
+            Fields::MERCH_ID        => $this->getMerchantId(),
             Fields::MERCH_CHAN_ID   => $this->config['merchant_channel_id'],
             Fields::UNQ_TXN_ID      => $payment['id'],
             Fields::UNQ_CUST_ID     => $payment['id'],
@@ -242,7 +241,6 @@ class Gateway extends Base\Gateway
                 'gateway'           => $this->gateway,
                 'payment_id'        => $payment['id'],
             ]);
-
         return $request;
     }
 
@@ -346,10 +344,6 @@ class Gateway extends Base\Gateway
             Fields::CALLBACK_TXN_ID               => $content[Fields::GATEWAY_TRANSACTION_ID],
         ];
 
-//        $content = json_encode($data);
-
-//        $response = $this->getStandardRequestArray($content);
-
         return $data;
     }
 
@@ -428,7 +422,7 @@ class Gateway extends Base\Gateway
         $payment = $input['payment'];
 
         $data = [
-            Fields::CHECK_STATUS_MERCH_ID       => $this->config['merchant_id'],
+            Fields::CHECK_STATUS_MERCH_ID       => $this->getMerchantId(),
             Fields::CHECK_STATUS_MERCH_CHAN_ID  => $this->config['merchant_channel_id'],
             Fields::CHECK_STATUS_UNQ_TXN_ID     => $payment['id'],
             Fields::CHECK_STATUS_MOBILE_NO      => $this->config['mobile_no'],
@@ -575,7 +569,7 @@ class Gateway extends Base\Gateway
         $refund = $input['refund'];
 
         $data = [
-            Fields::MERCH_ID            => $this->config['merchant_id'],
+            Fields::MERCH_ID            => $this->getMerchantId(),
             Fields::MERCH_CHAN_ID       => $this->config['merchant_channel_id'],
             Fields::TXN_REFUND_ID       => $this->getRefundId($refund),
             Fields::MOB_NO              => $this->config['mobile_no'],
@@ -604,7 +598,6 @@ class Gateway extends Base\Gateway
                 'payment_id'        => $input['payment']['id'],
                 'refund_id'         => $input['refund']['id'],
             ]);
-
         return $request;
     }
 
@@ -654,21 +647,6 @@ class Gateway extends Base\Gateway
 
         return $this->aesCrypto->decryptString($stringToDecrypt);
     }
-
-//    protected function makeResponse($data)
-//    {
-//        $action = $this->action;
-//
-//        $content = json_encode($data);
-//
-//        $response = parent::makeResponse($content);
-//
-//        $response->headers->set('Content-Type', 'text/plain;charset=ISO-8859-1');
-//        $response->headers->set('Expires', 'Thu, 01 Jan 1970 00:00:00 GMT');
-//        $response->headers->set('x-frame-options', 'SAMEORIGIN');
-//
-//        return $response;
-//    }
 
     public function postProcessServerCallback($input)
     {
