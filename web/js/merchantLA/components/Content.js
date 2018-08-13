@@ -77,8 +77,10 @@ export default class Content extends Component {
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
-          <Route path="/dashboard" component={Home} />
-          <Redirect from="/" exact to="/dashboard" />
+          {/*<Route path="/dashboard" component={Home} />*/}
+          {/*<Redirect from="/" exact to="/dashboard" />*/}
+
+          <Redirect from="/" exact to="/transfers" />
 
           <Route path="/transfers" component={Transfers} />
           <Route path="/reversals" component={Reversals} />
@@ -93,7 +95,8 @@ export default class Content extends Component {
             myRole="linked_account_owner"
             // myRole="owner"
           />
-          <Redirect to="/dashboard" />
+          <Redirect to="/transfers" />
+          {/*<Redirect to="/dashboard" />*/}
         </Switch>
       </ErrorBoundary>
     );
