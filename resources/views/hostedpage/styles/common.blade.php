@@ -230,7 +230,6 @@
         line-height: 20px;
         position: relative;
         height: 100%;
-        overflow: hidden;
 
         display: none;
     }
