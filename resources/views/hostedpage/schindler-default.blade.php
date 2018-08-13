@@ -52,7 +52,8 @@
         @include('hostedpage.styles.form_theme')
         @include('hostedpage.styles.desktop')
         @include('hostedpage.styles.mobile')
-        @include('hostedpage.partials.utils')
+        @include('hostedpage.scripts.utils')
+        @include('hostedpage.scripts.common')
 
         @include('hostedpage.partials.schindler-default.scripts')
     </head>
