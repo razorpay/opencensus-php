@@ -6,8 +6,8 @@
     $has_udf                    = (empty($udf_schema) === false);
     $max_mobile_width           = 853;
     $contact = [
-        'phone' => '99950 99950',
-        'email' => 'support@delhivery.com'
+        'phone' => '1800 103 6354',
+        'email' => 'crossborder@delhivery.com'
     ];
 
     $email_subject = 'Query for Payment Page Id: '. $payment_page_data['id'];
