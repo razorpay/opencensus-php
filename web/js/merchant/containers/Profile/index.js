@@ -7,6 +7,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import * as ProfileActions from 'merchant/modules/profile';
 import ShowWhen from 'merchant/components/ShowWhen';
 
+import User from 'merchant/models/User';
 import MerchantDetails from 'merchant/components/Profile/MerchantDetails';
 import GST from 'merchant/containers/Profile/GST';
 import BankAccountDetails from 'merchant/components/Profile/BankAccountDetails';
@@ -19,6 +20,7 @@ import DisplayNameForm from 'merchant/components/Profile/DisplayNameForm';
 import UpgradeMerchantForm from './UpgradeMerchantForm';
 
 import { updateDisplayName } from 'merchant/modules/profile';
+import { updateSession } from 'merchant/modules/session';
 
 @connect(
   state => {
@@ -33,6 +35,7 @@ import { updateDisplayName } from 'merchant/modules/profile';
     showNotification,
     fetchUser,
     updateDisplayName,
+    updateSession,
   }
 )
 export default class Profile extends Component {
@@ -155,13 +158,43 @@ export default class Profile extends Component {
     });
   };
 
+  updateDisplayName = props => {
+    return this.props
+      .updateDisplayName(props)
+      .then(resp => {
+        if (resp.success) {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Display name changed successfully.',
+          });
+
+          this.props.closeModal();
+
+          const newUser = new User({
+            ...this.props.user,
+            display_name: resp.data.display_name,
+          });
+
+          this.props.updateSession({ user: newUser });
+        }
+
+        return resp;
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
+
   openChangeDisplayName = () => {
     this.props.openModal({
       size: 'small',
       component: (
         <DisplayNameForm
-          merchantName={this.props.user.name}
-          updateDisplayName={this.props.updateDisplayName}
+          displayName={this.props.user.display_name}
+          updateDisplayName={this.updateDisplayName}
         />
       ),
     });

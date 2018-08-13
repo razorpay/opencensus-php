@@ -18,31 +18,14 @@ export default class DisplayNameForm extends PureComponent {
     super(props);
 
     this.props.initialize({
-      display_name: props.merchantName,
+      display_name: props.displayName,
     });
   }
-  updateDisplayName = props => {
-    return this.props
-      .updateDisplayName(props)
-      .then(() => {
-        this.props.showNotification({
-          type: 'success',
-          message: 'Display name changed successfully.',
-        });
-        this.props.closeModal();
-      })
-      .catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-      });
-  };
 
   render() {
-    const { handleSubmit, merchantName } = this.props;
+    const { handleSubmit } = this.props;
     return (
-      <form onSubmit={handleSubmit(this.updateDisplayName)}>
+      <form onSubmit={handleSubmit(this.props.updateDisplayName)}>
         <ModalHeader
           title="Update Display name"
           onCloseClick={this.props.closeModal}
@@ -65,7 +48,7 @@ export default class DisplayNameForm extends PureComponent {
               class="btn btn-primary btn-block"
               text="Update"
               pendingText="Updating..."
-              onClick={handleSubmit(this.updateDisplayName)}
+              onClick={handleSubmit(this.props.updateDisplayName)}
             />
           </div>
         </div>

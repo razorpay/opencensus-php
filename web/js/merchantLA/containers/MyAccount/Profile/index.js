@@ -7,12 +7,15 @@ import { showNotification } from 'rzp/modules/notifications';
 
 import ShowWhen from 'merchantLA/components/ShowWhen';
 
+import User from 'merchant/models/User';
 import MerchantDetails from 'merchantLA/components/MyAccount/Profile/MerchantDetails';
 import BankAccountDetails from 'merchantLA/components/MyAccount/Profile/BankAccountDetails';
 import { fetchUser } from 'merchantLA/modules/session';
 import PasswordForm from './PasswordForm';
 import DisplayNameForm from 'merchant/components/Profile/DisplayNameForm';
+
 import { updateDisplayName } from 'merchantLA/modules/profile';
+import { updateSession } from 'merchantLA/modules/session';
 
 @connect(
   state => {
@@ -20,7 +23,13 @@ import { updateDisplayName } from 'merchantLA/modules/profile';
       user: state.session.user,
     };
   },
-  { ...ModalActions, showNotification, fetchUser, updateDisplayName }
+  {
+    ...ModalActions,
+    showNotification,
+    fetchUser,
+    updateDisplayName,
+    updateSession,
+  }
 )
 export default class Profile extends Component {
   state = {};
@@ -48,20 +57,49 @@ export default class Profile extends Component {
     });
   };
 
+  updateDisplayName = props => {
+    return this.props
+      .updateDisplayName(props)
+      .then(resp => {
+        if (resp.success) {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Display name changed successfully.',
+          });
+
+          this.props.closeModal();
+
+          const newUser = new User({
+            ...this.props.user,
+            display_name: resp.data.display_name,
+          });
+
+          this.props.updateSession({ user: newUser });
+        }
+
+        return resp;
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
+
   openChangeDisplayName = () => {
     this.props.openModal({
       size: 'small',
       component: (
         <DisplayNameForm
-          merchantName={this.props.user.name}
-          updateDisplayName={this.props.updateDisplayName}
+          displayName={this.props.user.display_name}
+          updateDisplayName={this.updateDisplayName}
         />
       ),
     });
   };
 
   render() {
-    console.log('re-render...');
     let { user } = this.props;
 
     if (!user.isAuthenticated) {
