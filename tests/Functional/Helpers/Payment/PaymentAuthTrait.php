@@ -44,7 +44,7 @@ trait PaymentAuthTrait
                 $content['Message']['@attributes']['id'] = $payment['public_id'];
                 $content['Message']['PARes'] = (new \RZP\Gateway\Mpi\Blade\Mock\Response\Pareq('route'))->enrolledValidResponse($req);
 
-                $xml = base64_encode(\Lib\Formatters\Xml::create('ThreeDSecure', $content));
+                $xml =base64_encode(gzcompress(\Lib\Formatters\Xml::create('ThreeDSecure', $content)));
 
                 return [
                     'success' => true,
