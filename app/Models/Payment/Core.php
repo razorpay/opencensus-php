@@ -111,21 +111,22 @@ class Core extends Base\Core
                 }
             });
 
+            $successCount = $successCount + 500;
+
             $this->trace->info(TraceCode::PAYMENT_MDR_UPDATE_SUCCESS, [
-                'success_count' => $payments->count(),
+                'success_count' => $successCount,
             ]);
 
             $lastUpdatedPayment           = $payments->last();
             $lastUpdatedPaymentId         = $lastUpdatedPayment->getId();
             $lastUpdatedPaymentCapturedAt = $lastUpdatedPayment->getCapturedAt();
 
-            Cache::forever($this->mode . '_' . 'payment_mdr_update_data', $lastUpdatedPaymentId . ':' . $lastUpdatedPaymentCapturedAt);
-
-            $successCount = $successCount + 500;
+            Cache::forever($this->mode . '_' . 'payment_mdr_update_data',
+                $lastUpdatedPaymentId . ':' . $lastUpdatedPaymentCapturedAt);
 
             if ($successCount > 15000)
             {
-                return;
+                return false;
             }
         });
     }

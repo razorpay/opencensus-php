@@ -16,48 +16,46 @@ class MdrBackFill extends Job
 
     public function handle()
     {
-        $this->delete();
+        try
+        {
+            parent::handle();
 
-        // try
-        // {
-        //     parent::handle();
+            $this->trace->info(TraceCode::PAYMENT_MDR_UPDATE_JOB_RECEIVED);
 
-        //     $this->trace->info(TraceCode::PAYMENT_MDR_UPDATE_JOB_RECEIVED);
+            $mutex = app('api.mutex');
 
-        //     $mutex = app('api.mutex');
+            $mutexKey = $this->mode . '_' . 'payment_mdr_update';
 
-        //     $mutexKey = $this->mode . '_' . 'payment_mdr_update';
+            $mutex->acquireAndRelease($mutexKey, function ()
+            {
+                $lastUpdatedPaymentId = null;
+                $lastUpdatedPaymentCapturedAt = 1514745000;
 
-        //     $mutex->acquireAndRelease($mutexKey, function ()
-        //     {
-        //         $lastUpdatedPaymentId = null;
-        //         $lastUpdatedPaymentCapturedAt = 1514745000;
+                $lastUpdatedPaymentData = Cache::get($this->mode . '_' . 'payment_mdr_update_data');
 
-        //         $lastUpdatedPaymentData = Cache::get($this->mode . '_' . 'payment_mdr_update_data');
+                if ($lastUpdatedPaymentData !== null)
+                {
+                    $lastUpdatedPaymentData = explode(':', $lastUpdatedPaymentData);
 
-        //         if ($lastUpdatedPaymentData !== null)
-        //         {
-        //             $lastUpdatedPaymentData = explode(':', $lastUpdatedPaymentData);
+                    $lastUpdatedPaymentId         = $lastUpdatedPaymentData[0];
+                    $lastUpdatedPaymentCapturedAt = intval($lastUpdatedPaymentData[1]);
+                }
 
-        //             $lastUpdatedPaymentId         = $lastUpdatedPaymentData[0];
-        //             $lastUpdatedPaymentCapturedAt = intval($lastUpdatedPaymentData[1]);
-        //         }
+                $this->trace->info(TraceCode::PAYMENT_MDR_LAST_UPDATED_DATA, [
+                    'payment_id'          => $lastUpdatedPaymentId,
+                    'payment_captured_at' => $lastUpdatedPaymentCapturedAt,
+                ]);
 
-        //         $this->trace->info(TraceCode::PAYMENT_MDR_LAST_UPDATED_DATA, [
-        //             'payment_id'          => $lastUpdatedPaymentId,
-        //             'payment_captured_at' => $lastUpdatedPaymentCapturedAt,
-        //         ]);
-
-        //         (new Payment\Core)->updateMdr($lastUpdatedPaymentId, $lastUpdatedPaymentCapturedAt);
-        //     }, $ttl = 120, $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS);
-        // }
-        // catch (\Throwable $e)
-        // {
-        //     $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PAYMENT_MDR_UPDATE_ERROR);
-        // }
-        // finally
-        // {
-        //     $this->delete();
-        // }
+                (new Payment\Core)->updateMdr($lastUpdatedPaymentId, $lastUpdatedPaymentCapturedAt);
+            }, $ttl = 120, $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PAYMENT_MDR_UPDATE_ERROR);
+        }
+        finally
+        {
+            $this->delete();
+        }
     }
 }
