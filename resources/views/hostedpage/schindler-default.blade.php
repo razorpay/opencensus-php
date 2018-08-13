@@ -47,15 +47,16 @@
 
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-        @include('hostedpage.styles.common')
+        @include('hostedpage.styles.general')
         @include('hostedpage.styles.success_animation')
         @include('hostedpage.styles.form_theme')
         @include('hostedpage.styles.desktop')
         @include('hostedpage.styles.mobile')
+        @include('hostedpage.specific.schindler.styles')
         @include('hostedpage.scripts.utils')
-        @include('hostedpage.scripts.common')
+        @include('hostedpage.specific.helpers')
 
-        @include('hostedpage.partials.schindler-default.scripts')
+        @include('hostedpage.specific.schindler.scripts')
     </head>
 
     <body>

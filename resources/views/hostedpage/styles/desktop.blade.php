@@ -22,9 +22,15 @@
         min-height: 540px;
     }
 
-    #desktop-container .merchant-display-image {
-        position: fixed;
-        background-size: cover;
+    #desktop-container.no-display-image::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 168px;
+        top: 0;
+        left: 0;
+        background: {{$data['merchant']['brand_color']}};
+        z-index: -1;
     }
 
     #desktop-container #header-details {
@@ -104,14 +110,13 @@
         display: none;
     }
 
-    #desktop-container #footer-section {
-        padding: 40px 0 100px;
-        color: {{$light_color}};
+    #desktop-container.no-display-image #footer-section {
+        margin: 40px auto 100px;
     }
 
-    #desktop-container  #footer-section #secure-lock-icon {
+    #desktop-container.no-display-image #footer-section #secure-lock-icon {
         display: inline-block;
-        fill: {{$light_color}};
+        fill: {{$tertiary_color}};
     }
 
     #desktop-container #footer-section img {

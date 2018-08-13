@@ -47,22 +47,21 @@
 
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-        @include('hostedpage.styles.common')
+        @include('hostedpage.styles.general')
         @include('hostedpage.styles.success_animation')
         @include('hostedpage.styles.form_theme')
         @include('hostedpage.styles.desktop')
         @include('hostedpage.styles.mobile')
         @include('hostedpage.scripts.utils')
-        @include('hostedpage.scripts.common')
+        @include('hostedpage.specific.helpers')
 
-        @include('hostedpage.partials.delhivery-default.scripts')
+        @include('hostedpage.specific.delhivery.scripts')
     </head>
 
     <body>
         <div id="hostedpage-container">
             <!-- Desktop Container -->
-            <div id="desktop-container">
-                <div class="merchant-display-image"></div>
+            <div id="desktop-container" class="no-display-image">
                 @include('hostedpage.partials.header')
                 <div class="content">
                     @include('hostedpage.partials.description')
@@ -72,8 +71,7 @@
             </div>
 
             <!-- Mobile Container -->
-            <div id="mobile-container">
-                <div class="merchant-display-image"></div>
+            <div id="mobile-container" class="no-display-image">
                 <div class="content">
                     @include('hostedpage.partials.header')
                     @include('hostedpage.partials.description')
