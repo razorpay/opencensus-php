@@ -100,4 +100,15 @@ class Server extends Base\Mock\Server
 
         return $result;
     }
+
+    protected function makeJsonResponse(array $content)
+    {
+        $json = json_encode($content);
+
+        $response = \Response::make($json);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
 }
