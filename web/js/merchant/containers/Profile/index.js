@@ -15,7 +15,10 @@ import Invitations from 'merchant/components/Profile/Invitations';
 import BankAccountDetailsChange from './BankAccountDetailsChange';
 import { fetchUser } from 'merchant/modules/session';
 import PasswordForm from './PasswordForm';
+import DisplayNameForm from 'merchant/components/Profile/DisplayNameForm';
 import UpgradeMerchantForm from './UpgradeMerchantForm';
+
+import { updateDisplayName } from 'merchant/modules/profile';
 
 @connect(
   state => {
@@ -24,7 +27,13 @@ import UpgradeMerchantForm from './UpgradeMerchantForm';
       profile: state.profile,
     };
   },
-  { ...ProfileActions, ...ModalActions, showNotification, fetchUser }
+  {
+    ...ProfileActions,
+    ...ModalActions,
+    showNotification,
+    fetchUser,
+    updateDisplayName,
+  }
 )
 export default class Profile extends Component {
   state = {
@@ -48,7 +57,7 @@ export default class Profile extends Component {
 
     // fetch status whether the merchant can change their bank account details or not
     // Only allowed for role types `owner` & `admin`
-    if (['admin', 'owner'].indexOf(this.props.user.role) > -1) {
+    if (this.isAdminOrOwner()) {
       this.props
         .fetchBankAccountChangeStatus(this.props.user.id) //user.id is merchant_id not user_id
         .then(({ data }) => {
@@ -61,6 +70,10 @@ export default class Profile extends Component {
           console.log('ERROR: Failed to fetch bank account change status');
         });
     }
+  }
+
+  isAdminOrOwner() {
+    return ['admin', 'owner'].indexOf(this.props.user.role) > -1;
   }
 
   componentWillReceiveProps(nextProps) {
@@ -142,6 +155,18 @@ export default class Profile extends Component {
     });
   };
 
+  openChangeDisplayName = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <DisplayNameForm
+          merchantName={this.props.user.name}
+          updateDisplayName={this.props.updateDisplayName}
+        />
+      ),
+    });
+  };
+
   openChangeBankDetailsModal = () => {
     const { bankAccount } = this.props.profile;
 
@@ -219,7 +244,14 @@ export default class Profile extends Component {
               </div>
             )}
 
-            {user && user.current ? <MerchantDetails user={user} /> : null}
+            {user && user.current ? (
+              <MerchantDetails
+                user={user}
+                changeDisplayName={
+                  !!this.isAdminOrOwner() && this.openChangeDisplayName
+                }
+              />
+            ) : null}
           </div>
 
           <ShowWhen myRole="owner finance">
