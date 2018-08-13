@@ -38,7 +38,7 @@
         line-height: 18px;
     }
 
-    .form-group input:focus {
+    .form-group input:focus, .form-group select:focus {
         border: 1px solid {{$rzp_prime_color}};
     }
 
