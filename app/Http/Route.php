@@ -152,6 +152,7 @@ final class Route
         'merchant_edit_pre_signup_details'         => ['put',      'pre_signup',                                     'MerchantController@putPreSignupDetails'                            ],
         'merchant_fetch_config'                    => ['get',      'account/config',                                 'MerchantController@getAccountConfig'                               ],
         'merchant_edit_email'                      => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
+        'merchant_edit_email_la'                   => ['put',      'la-merchants/email',                             'MerchantController@updateLinkedAccountMerchantEmail'               ],
         'merchant_fetch_multiple'                  => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
         'merchant_fetch_webhooks'                  => ['get',      'merchants/{id}/webhooks',                        'MerchantController@getMerchantWebhooks'                            ],
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
@@ -750,6 +751,7 @@ final class Route
         'oauth_application_create'                 => ['post',     'oauth/applications',                             'OAuthApplicationController@create'                                 ],
         'oauth_application_create_partner'         => ['post',     'oauth/applications/partner',                     'OAuthApplicationController@createPartner'                          ],
         'oauth_application_fetch_multiple'         => ['get',      'oauth/applications',                             'OAuthApplicationController@getMultiple'                            ],
+        'oauth_application_fetch_partner'          => ['get',      'oauth/applications/partner',                     'OAuthApplicationController@getPartner'                             ],
         'oauth_application_fetch'                  => ['get',      'oauth/applications/{id}',                        'OAuthApplicationController@get'                                    ],
         'oauth_application_delete'                 => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
         'oauth_merchant_notify'                    => ['post',     'oauth/notify/{type}',                            'MerchantController@sendOAuthNotification'                          ],
@@ -849,6 +851,7 @@ final class Route
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
+        'admin_mdr_update'                         => ['put',      'mdr_update',                               'AdminController@updateMdr'                                         ],
     ];
 
     public static $public = [
@@ -1160,6 +1163,7 @@ final class Route
         'lambda_post_h2h',
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
+        'admin_mdr_update',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1268,6 +1272,7 @@ final class Route
         'oauth_application_create',
         'oauth_application_create_partner',
         'oauth_application_fetch_multiple',
+        'oauth_application_fetch_partner',
         'oauth_application_fetch',
         'oauth_application_delete',
         'oauth_application_update',
@@ -1299,6 +1304,7 @@ final class Route
         'pincode_get',
         'dispute_edit',
         'merchant_get_tags',
+        'merchant_edit_email_la',
         'account_fetch',
         'merchant_add_bank_account',
         'merchant_requests_create',
@@ -2127,6 +2133,7 @@ final class Route
             // Not actually a cron, but added in this list
             // so the cron app has access to the route.
             'setcronjob_webhook',
+            'admin_mdr_update',
         ],
 
         'subscriptions' => [
@@ -2238,7 +2245,6 @@ final class Route
         'beta_account_post_bank_account'       => [Feature::MARKETPLACE],
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
         'account_fetch'                        => [Feature::MARKETPLACE],
-        'oauth_application_create_partner'     => [Feature::PARTNER],
     ];
 
     /*

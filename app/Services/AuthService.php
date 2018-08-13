@@ -64,6 +64,34 @@ class AuthService
         return $this->sendRequest('applications', Requests::GET, $input);
     }
 
+    public function getPartnerApplication(string $merchantId): array
+    {
+        $input = [
+            Application\Entity::MERCHANT_ID => $merchantId,
+            Application\Entity::TYPE        => Application\Type::PARTNER,
+        ];
+
+        $result = $this->sendRequest('applications', Requests::GET, $input);
+
+        //
+        // The following logic handles the fact that there should never be less/greater
+        // than one partner apps for a non-purePlatform partner. We just throw validation
+        // exception for < 1 and log critical error and return the first in case of  > 1
+        // apps found.
+        //
+        if (count($result['items']) < 1)
+        {
+            throw new Exception\BadRequestValidationFailureException('No records found');
+        }
+
+        if (count($result['items']) > 1)
+        {
+            $this->trace->error(TraceCode::AUTH_SERVICE_DATA_ERROR, $result['items']);
+        }
+
+        return $result['items'][0];
+    }
+
     public function deleteApplication(string $id, string $merchantId) : array
     {
         $input = [Application\Entity::MERCHANT_ID => $merchantId];

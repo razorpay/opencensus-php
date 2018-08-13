@@ -38,7 +38,7 @@ class Initiator extends Base\Core
      */
     public function initiateFundTransfers(array $input, string $channel): array
     {
-        $isValidTime = $this->isValidTime();
+        $isValidTime = $this->isValidTime($channel);
 
         if ($isValidTime === false)
         {
@@ -172,11 +172,17 @@ class Initiator extends Base\Core
 
     /**
      *
-     * @return bool
+     * @param string $channel
+     * @return bool Returns if transfers can be initiated now
      * Returns if transfers can be initiated now
      */
-    protected function isValidTime(): bool
+    protected function isValidTime(string $channel): bool
     {
+        if (in_array($channel, Channel::get24x7Channels(), true) === true)
+        {
+            return true;
+        }
+
         if (($this->mode !== Mode::TEST) and
             ($this->env !== 'testing') and
             (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false))

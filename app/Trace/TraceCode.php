@@ -12,6 +12,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYMENT_NEW_REQUEST                           = 'PAYMENT_NEW_REQUEST';
     const PAYMENT_CREATED                               = 'PAYMENT_CREATED';
+    const PAYMENT_CREATED_RESPONSE                      = 'PAYMENT_CREATED_RESPONSE';
     const PAYMENT_CREATE_FAILED                         = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                          = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_PENDING                          = 'PAYMENT_AUTH_PENDING';
@@ -482,7 +483,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_ENROLLED_AUTH_REQUEST             = 'GATEWAY_ENROLLED_AUTH_REQUEST';
     const GATEWAY_ENROLLED_AUTH_RESPONSE            = 'GATEWAY_ENROLLED_AUTH_RESPONSE';
     const GATEWAY_ENROLLED_AUTH_ERROR               = 'GATEWAY_ENROLLED_AUTH_ERROR';
+    const GATEWAY_MOTO_AUTH_REQUEST                 = 'GATEWAY_MOTO_AUTH_REQUEST';
     const GATEWAY_RECURRING_AUTH_REQUEST            = 'GATEWAY_RECURRING_AUTH_REQUEST';
+    const GATEWAY_MOTO_AUTH_RESPONSE                = 'GATEWAY_MOTO_AUTH_RESPONSE';
     const GATEWAY_RECURRING_AUTH_RESPONSE           = 'GATEWAY_RECURRING_AUTH_RESPONSE';
     const GATEWAY_RECURRING_AUTH_ERROR              = 'GATEWAY_RECURRING_AUTH_ERROR';
     const GATEWAY_VALIDATE_AUTH_REQUEST             = 'GATEWAY_VALIDATE_AUTH_REQUEST';
@@ -1059,6 +1062,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
+    const AUTH_SERVICE_DATA_ERROR                       = 'AUTH_SERVICE_DATA_ERROR';
     const SEND_OAUTH_MAIL_REQUEST                       = 'SEND_OAUTH_MAIL_REQUEST';
     const OAUTH_TOKEN_INVALID                           = 'OAUTH_TOKEN_INVALID';
     const APP_MERCHANT_ACCESS_MAP                       = 'APP_MERCHANT_ACCESS_MAP';
@@ -1148,6 +1152,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EXCEL_READER_IMPORT_CONFIG                    = 'EXCEL_READER_IMPORT_CONFIG';
 
     const FUND_TRANSFER_RECON_EMAIL_FAILED              = 'FUND_TRANSFER_RECON_EMAIL_FAILED';
+
+    const PAYMENT_MDR_UPDATE_ERROR                      = 'PAYMENT_MDR_UPDATE_ERROR';
+    const PAYMENT_MDR_UPDATE_JOB_RECEIVED               = 'PAYMENT_MDR_UPDATE_JOB_RECEIVED';
+    const PAYMENT_MDR_LAST_UPDATED_DATA                 = 'PAYMENT_MDR_LAST_UPDATED_DATA';
+    const PAYMENT_MDR_UPDATE_SUCCESS                    = 'PAYMENT_MDR_UPDATE_SUCCESS';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

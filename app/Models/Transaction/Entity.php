@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const CREDIT              = 'credit';
     const CURRENCY            = 'currency';
     const FEE                 = 'fee';
+    const MDR                 = 'mdr';
     const TAX                 = 'tax';
     const PRICING_RULE_ID     = 'pricing_rule_id';
     const BALANCE             = 'balance';
@@ -132,6 +133,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED               => 0,
         self::PRICING_RULE_ID       => null,
         self::TAX                   => null,
+        self::MDR                   => null,
         self::FEE_MODEL             => Merchant\FeeModel::NA,
         self::FEE_BEARER            => Merchant\FeeBearer::NA,
         self::CREDIT_TYPE           => CreditType::DEFAULT,
@@ -143,6 +145,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT,
         self::FEE,
         self::TAX,
+        self::MDR,
     ];
 
     protected $casts = [
@@ -332,6 +335,16 @@ class Entity extends Base\PublicEntity
         return Merchant\FeeModel::getFeeModelStringForValue($feeModel);
     }
 
+    protected function getMdrAttribute($mdr)
+    {
+        if ($mdr === null)
+        {
+            return $this->getFee();
+        }
+
+        return $mdr;
+    }
+
 /* --------------------------- End Accessors ---------------------------------*/
 
 /* --------------------------- Mutators --------------------------------------*/
@@ -456,6 +469,11 @@ class Entity extends Base\PublicEntity
         assert ($fee >= 0);
 
         $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setMdr(int $mdr)
+    {
+        $this->setAttribute(self::MDR, $mdr);
     }
 
     public function setCredit($credit)

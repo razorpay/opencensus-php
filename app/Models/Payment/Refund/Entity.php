@@ -487,6 +487,7 @@ class Entity extends Base\PublicEntity
         // 'Logicboxes', 'ResellerClub', 'BigRock',
         // 'HostGator', 'Pay.pw', 'BlueHost',
         // 'ConstantContact', 'Directi Web Technology', 'Kissht'
+        // 'Policy Bazaar'
 
         $merchantIds = [
             '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
@@ -505,6 +506,7 @@ class Entity extends Base\PublicEntity
             '9Y9m9XscC6Kh4W', '8WRMdGzG1z5Eqw', '9naAGQdroegWIX',
             '9okVtwZr5vLm4K', '9oklLp2FhXTolM', 'A0ERwPs8muf9YS',
             'A0HuEfx39zhjr9', 'A5ONBRrNJ7dS1K', 'ATUwkTaTTae5B3',
+            '7LAuMvKMcy7s0f',
         ];
 
         $currentMerchantId = $this->getMerchantId();

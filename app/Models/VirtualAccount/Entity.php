@@ -280,9 +280,10 @@ class Entity extends Base\PublicEntity
      */
     public function updateWithBankTransfer(BankTransfer\Entity $bankTransfer)
     {
-        $this->incrementAmountPaid($bankTransfer->getAmount());
+        $paidAmount = $bankTransfer->payment->getAdjustedAmountWrtCustFeeBearer();
 
-        $this->incrementAmountReceived($bankTransfer->getAmount());
+        $this->incrementAmountPaid($paidAmount);
+        $this->incrementAmountReceived($paidAmount);
     }
 
     public function setStatus(string $status)

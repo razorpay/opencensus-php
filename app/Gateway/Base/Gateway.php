@@ -483,6 +483,17 @@ class Gateway
         return false;
     }
 
+    protected function isMotoTransactionRequest($input)
+    {
+        if (($input['terminal']->isMoto() === true) and
+            ($input['payment']['auth_type'] === Payment\AuthType::SKIP))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function generateRefunds($input)
     {
         $paymentIds = array_map(function($row)

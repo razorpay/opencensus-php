@@ -176,8 +176,6 @@ class Gateway extends Base\Gateway
             'request'    => $request
         ]);
 
-        throw new Exception\RuntimeException(' Refunds blocked on gateway');
-
         $response = $this->postRequest($request)['content'];
 
         $content =  [];
