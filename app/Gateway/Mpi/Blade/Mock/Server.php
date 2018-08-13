@@ -101,7 +101,7 @@ class Server extends Base\Mock\Server
 
     public function getSignature()
     {
-        $signatureXml = file_get_contents(__DIR__. '/' . 'signature.xml');
+        $signatureXml = file_get_contents(__DIR__. '/' . 'Signature.xml');
 
         return $this->xmlToArray($signatureXml);
     }
