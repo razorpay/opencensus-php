@@ -3,17 +3,14 @@
 namespace RZP\Gateway\Upi\Axis\Mock;
 
 use App;
-use Carbon\Carbon;
-use Gateway\Upi\Axis;
-use RZP\Gateway\Upi\Axis\AESCrypto;
-use RZP\Gateway\Upi\Axis\Action;
-use phpseclib\Crypt\AES;
+use Models\Payment;
 use RZP\Gateway\Base;
+use Gateway\Upi\Axis;
+use phpseclib\Crypt\AES;
 use RZP\Gateway\Upi\Axis\Fields;
 use RZP\Gateway\Upi\Axis\Status;
-use RZP\Gateway\Utility;
-use RZP\Gateway\Upi\Base\Entity as UPIEntity;
-use Models\Payment;
+use RZP\Gateway\Upi\Axis\Action;
+use RZP\Gateway\Upi\Axis\AESCrypto;
 
 class Server extends Base\Mock\Server
 {
@@ -61,15 +58,14 @@ class Server extends Base\Mock\Server
     public function fetchToken($input)
     {
         $content = [
-            Fields::CODE => '000',
-            Fields::RESULT => 'SUCCESS',
-            Fields::DATA => $this->generateRandomString(30),
+            Fields::CODE    => '000',
+            Fields::RESULT  => 'SUCCESS',
+            Fields::DATA    => $this->generateRandomString(30),
         ];
 
         $this->content($content);
 
         return $this->makeResponse($content);
-
     }
 
     protected function parseInput($input, $action = Action::COLLECT)
@@ -158,21 +154,23 @@ class Server extends Base\Mock\Server
     protected function callbackResponseContent(array $upiEntity, array $payment)
     {
          $data = [
-            Fields::CUSTOMER_VPA => $upiEntity['vpa'],
-            Fields::MERCH_ID => 'RAZAORPAY',
-            Fields::MERCH_CHAN_ID => 'RAZAORPAYAPP',
-            Fields::MERCHANT_TRANSACTION_ID => $upiEntity['payment_id'],
-            Fields::TRANSACTION_TIMESTAMP => date('j-F-Y'),
-            Fields::TRANSACTION_AMOUNT => $this->formatAmount($upiEntity['amount']),
-            Fields::GATEWAY_TRANSACTION_ID => 'AXIS00090439839',
-            Fields::GATEWAY_RESPONSE_CODE => '000',
-            Fields::GATEWAY_RESPONSE_MESSAGE => 'Success',
-            Fields::RRN => "714513318376",
-            Fields::CHECKSUM => 'CHECKSUM NOT REQUIRED'
+            Fields::CUSTOMER_VPA                => $upiEntity['vpa'],
+            Fields::MERCH_ID                    => 'RAZAORPAY',
+            Fields::MERCH_CHAN_ID               => 'RAZAORPAYAPP',
+            Fields::MERCHANT_TRANSACTION_ID     => $upiEntity['payment_id'],
+            Fields::TRANSACTION_TIMESTAMP       => date('j-F-Y'),
+            Fields::TRANSACTION_AMOUNT          => $this->formatAmount($upiEntity['amount']),
+            Fields::GATEWAY_TRANSACTION_ID      => 'AXIS00090439839',
+            Fields::GATEWAY_RESPONSE_CODE       => '000',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Success',
+            Fields::RRN                         => "714513318376",
+            Fields::CHECKSUM                    => 'CHECKSUM NOT REQUIRED'
         ];
 
         $json = json_encode($data);
+
         $aesencrypted = $this->encryptAes($json);
+
         return $aesencrypted;
     }
     /**
@@ -188,12 +186,16 @@ class Server extends Base\Mock\Server
     public function generateRandomString($length = 10)
     {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
         $charactersLength = strlen($characters);
+
         $randomString = '';
+
         for ($i = 0; $i < $length; $i++)
         {
             $randomString .= $characters[rand(0, $charactersLength - 1)];
         }
+
         return $randomString;
     }
 

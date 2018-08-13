@@ -19,6 +19,7 @@ class AESCrypto extends Base\AESCrypto
     public function decryptString(string $string)
     {
         $this->aes->disablePadding();
+
         return parent::decryptString(base64_decode($string));
     }
 }

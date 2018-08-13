@@ -2,9 +2,6 @@
 
 namespace RZP\Gateway\Upi\Axis;
 
-use Aws\ElastiCache\Exception\ElastiCacheException;
-use Elasticsearch\Endpoints\FieldStats;
-use Illuminate\Container\EntryNotFoundException;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -622,8 +619,6 @@ class Gateway extends Base\Gateway
     {
         $description = $input['merchant']->getFilteredDba();
 
-        // Using ?: works with empty strings as well
-        // (because '' == false) === true
         $description = $description ?: 'Razorpay';
 
         return 'Refund for ' . substr($description, 0, 36);
@@ -652,4 +647,5 @@ class Gateway extends Base\Gateway
     {
         return $this->getCallbackResponseArray($input['input']);
     }
+
 }

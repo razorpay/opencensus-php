@@ -2,9 +2,8 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Axis;
 
-use RZP\Constants\Fields;
-use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Upi\Base\Entity;
+use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -60,8 +59,7 @@ class UpiAxisGatewayTest extends TestCase
         $response = $this->makeS2SCallbackAndGetContent($content);
 
         // We should have gotten a successful response
-        $this->assertEquals(
-            [
+        $this->assertEquals([
             'callBackstatusCode' => '000',
             'callBackstatusDescription' => 'Success',
             'callBacktxnId' => 'AXIS00090439839'
@@ -106,7 +104,6 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertEquals($upi['vpa'], 'vishnu@icici');
 
         $this->assertSame($this->payment['payment']['verified'], 1);
-
     }
 
     protected function getDefaultUpiPaymentArray()
@@ -125,6 +122,7 @@ class UpiAxisGatewayTest extends TestCase
         $payment = $this->testPayment();
 
         $paymentId = $payment['id'];
+
         // Attempt a partial refund
         $this->refundPayment($paymentId, 100);
     }
@@ -176,7 +174,6 @@ class UpiAxisGatewayTest extends TestCase
             ], $response);
 
         $this->assertEquals('vishnu@icici', $upiEntity[Entity::VPA]);
-
     }
 
     public function testVpaWithoutPspValidation()
@@ -211,7 +208,6 @@ class UpiAxisGatewayTest extends TestCase
             $this->verifyPayment($paymentId);
         });
     }
-
 
 }
 
