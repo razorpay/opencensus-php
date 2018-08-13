@@ -144,12 +144,6 @@
 
                 if (!value) {
                     errorMsg = defaultMsg;
-                } else {
-                    if (schema.kind === 'integer') {
-                        if (value != parseInt(value)) {
-                            errorMsg = 'Please enter valid number';
-                        }
-                    }
                 }
 
                 if(errorMsg) {

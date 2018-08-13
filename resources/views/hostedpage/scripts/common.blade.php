@@ -78,11 +78,50 @@
             })());
         }
 
-        function addIntFieldsValidation(elemsPaths) {
-            var elements = elemsPaths;
+        function addAlphaFieldsValidation(elemPaths) {
+            for (var i = 0; i < elemPaths.length; i++) {
+                var curEle = document.querySelector('[data-schemapath="'+ elemPaths[i] +'"]');
 
-            for (var i = 0; i < elements.length; i++) {
-                var curEle = document.querySelector('[data-schemapath="'+ elements[i] +'"]');
+                // Reset the field if copy pasted the value with non-digit characters
+                curEle.getElementsByTagName('input')[0].addEventListener('input', function(e) {
+                    var value = e.target.value;
+
+                    var nameReg = /^[A-Za-z ]*$/;
+                    if (value && !nameReg.test(value)){
+                        e.target.value = '';
+                    }
+                });
+
+                // Not allowing keydown of non-digit characters
+                curEle.getElementsByTagName('input')[0].addEventListener('keydown', function(e) {
+                    var value = e.which;
+
+                    // Special keys like delete button, Alt, arrow keys etc must work
+                    function _isValueIn(value) {
+                        var specialKeys = [16, 18, 8, 46, 37, 38, 39, 40, 9]; // Shift, Alt, Ctrl, Cmd, Delete, Tab, etc.
+                        var isIn = false;
+
+                        for (var i = 0; i < specialKeys.length; i++) {
+                            if (value == specialKeys[i]) {
+                                isIn = true;
+                                break;
+                            }
+                        }
+
+                        return isIn;
+                    }
+
+                    // Allow Spaces in names. Cmd/Ctrl must be allowed since it might be used for shortcuts like Ctrl + A or Ctrl + L
+                    if (value && (value < 97 || value > 122) && (value < 65 || value > 90) && value != 32 && !_isValueIn(value) && !e.ctrlKey && !e.metaKey) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        }
+
+        function addIntFieldsValidation(elemPaths) {
+            for (var i = 0; i < elemPaths.length; i++) {
+                var curEle = document.querySelector('[data-schemapath="'+ elemPaths[i] +'"]');
 
                 // Reset the field if copy pasted the value with non-digit characters
                 curEle.getElementsByTagName('input')[0].addEventListener('input', function(e) {
@@ -117,54 +156,10 @@
                     }
                 });
             }
-
-            var ele = document.querySelector('[data-validate="amount"]');
-
-            ele.addEventListener('blur', function(e) {
-                evalAmountValidation(e);
-            });
-
-            // Amount prettifier
-            document.getElementsByName('amount')[0].addEventListener('input', (function() {
-                var prettyVal = '';
-
-                return function(e) {
-                    var value = e.target.value;
-
-                    var parentEle = e.target.parentElement;
-                    if (window.RZP.hasClass(parentEle, 'has-error')) {
-                        evalAmountValidation(e);
-                    }
-
-                    if (!value) {
-                        e.target.value = '';
-
-                        return;
-                    }
-
-                    var newValue = value
-                        .split('.')
-                        .slice(0, 2)
-                        .map(function(v, index) {
-                            v = v.replace(/\D/g, '');
-                            if (index) {
-                                v = v.slice(0, 2);
-                            }
-                            return v;
-                        })
-                        .join('.');
-
-                    if (newValue) {
-                        prettyVal = newValue > 5000000000 ? 5000000000 : newValue;
-                    }
-
-                    e.target.value = prettyVal;
-
-                };
-            })());
         }
 
         global.evalAmountValidation = evalAmountValidation;
+        global.addAlphaFieldsValidation = addAlphaFieldsValidation;
         global.addIntFieldsValidation = addIntFieldsValidation;
         global.addAmountValidation = addAmountValidation;
 

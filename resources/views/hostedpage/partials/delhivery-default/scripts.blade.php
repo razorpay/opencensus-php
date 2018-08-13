@@ -108,21 +108,14 @@
 
                 // Default errors;
                 switch(path) {
+                    case 'root.waybill_number': defaultMsg = 'Please enter Waybill number'; break;
                     case 'root.customer_name': defaultMsg = 'Please enter customer name'; break;
-                    case 'root.invoice_number': defaultMsg = 'Please enter invoice number'; break;
-                    case 'root.job_number': defaultMsg = 'Please enter job/quotation number'; break;
-                    case 'root.service_type': defaultMsg = 'Please select type of service'; break;
-                    case 'root.location': defaultMsg = 'Please select a location'; break;
+                    case 'root.customer_mobile': defaultMsg = 'Please enter your mobile number'; break;
+                    case 'root.payment_type': defaultMsg = 'Please select type of payment'; break;
                 }
 
                 if (!value) {
                     errorMsg = defaultMsg;
-                } else {
-                    if (schema.kind === 'integer') {
-                        if (value != parseInt(value)) {
-                            errorMsg = 'Please enter valid number';
-                        }
-                    }
                 }
 
                 if(errorMsg) {
@@ -217,6 +210,7 @@
             window.RZP.getEl('udf_submit_btn').addEventListener('click', submitForm);
 
             window.RZP.addAmountValidation();
+            window.RZP.addAlphaFieldsValidation(['root.customer_name']);
             window.RZP.addIntFieldsValidation(['root.customer_mobile']);
             window.RZP.addPaymentTypeValidation();
         }
