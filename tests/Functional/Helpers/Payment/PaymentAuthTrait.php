@@ -38,11 +38,13 @@ trait PaymentAuthTrait
                                 'exponent' => 2,
                             ]
                         ]
-                    ]
+                    ],
                 ];
 
                 $content['Message']['@attributes']['id'] = $payment['public_id'];
                 $content['Message']['PARes'] = (new \RZP\Gateway\Mpi\Blade\Mock\Response\Pareq('route'))->enrolledValidResponse($req);
+                $content['Message']['Signature'] = (new \RZP\Gateway\Mpi\Blade\Mock\Server('route'))->getSignature();
+
 
                 $xml =base64_encode(gzcompress(\Lib\Formatters\Xml::create('ThreeDSecure', $content)));
 

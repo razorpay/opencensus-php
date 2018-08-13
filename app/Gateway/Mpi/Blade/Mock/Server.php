@@ -99,7 +99,7 @@ class Server extends Base\Mock\Server
         return $content;
     }
 
-    protected function getSignature()
+    public function getSignature()
     {
         $signatureXml = file_get_contents(__DIR__. '/' . 'signature.xml');
 
