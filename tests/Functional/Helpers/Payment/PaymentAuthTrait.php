@@ -30,11 +30,11 @@ trait PaymentAuthTrait
                                 'acctID' => 'NTU2NzYzMDAwMDAwMjAwNA==',
                             ],
                             'Purchase' => [
-                                'amount' => '500.00',
                                 'xid'    => base64_encode(str_pad($input['payment_id'], 20, '0', STR_PAD_LEFT)),
+                                'date'    => \Carbon\Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')->format('Ymd H:m:s'),
+                                'amount' => '500.00',
                                 'purchAmount' => '50000',
                                 'currency' => '356',
-                                'date'    => \Carbon\Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')->format('Ymd H:m:s'),
                                 'exponent' => 2,
                             ]
                         ]
