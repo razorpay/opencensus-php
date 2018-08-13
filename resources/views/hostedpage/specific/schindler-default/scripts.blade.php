@@ -3,8 +3,9 @@
     'use strict';
 
     (function(global){
-        function evalPaymentType() {
-            var formEle = document.querySelector('[data-schemapath="root.payment_type"]').getElementsByClassName('form-group')[0];
+
+        function evalLocation(value) {
+            var formEle = document.querySelector('[data-schemapath="root.location"]').getElementsByClassName('form-group')[0];
             var value = formEle.getElementsByTagName('select')[0].value;
 
             if(!value) {
@@ -14,28 +15,54 @@
             }
         }
 
-        function addPaymentTypeValidation() {
+        function addLocationValidation() {
             var p = document.createElement('p');
             p.className = 'help-block errormsg';
-            p.innerHTML = 'Please select the Payment Type';
+            p.innerHTML = 'Please select a location';
 
-            var parentEle = document.querySelector('[data-schemapath="root.payment_type"]').getElementsByClassName('form-group')[0];
+            var parentEle = document.querySelector('[data-schemapath="root.location"]').getElementsByClassName('form-group')[0];
             parentEle.append(p);
 
-            editor.watch('root.service_type', function () {
-                evalPaymentType();
+            editor.watch('root.location',function(e) {
+                evalLocation();
             });
         }
 
-        global.evalPaymentType = evalPaymentType;
-        global.addPaymentTypeValidation = addPaymentTypeValidation;
+        function evalServiceType() {
+            var formEle = document.querySelector('[data-schemapath="root.service_type"]').getElementsByClassName('form-group')[0];
+            var value = formEle.getElementsByTagName('select')[0].value;
+
+            if(!value) {
+                window.RZP.addClass(formEle, 'has-error');
+            } else {
+                window.RZP.removeClass(formEle, 'has-error');
+            }
+        }
+
+        function addServiceTypeValidation() {
+            var p = document.createElement('p');
+            p.className = 'help-block errormsg';
+            p.innerHTML = 'Please select type of service';
+
+            var parentEle = document.querySelector('[data-schemapath="root.service_type"]').getElementsByClassName('form-group')[0];
+            parentEle.append(p);
+
+            editor.watch('root.service_type', function () {
+                evalServiceType();
+            });
+        }
+
+        global.evalLocation = evalLocation;
+        global.addLocationValidation = addLocationValidation;
+        global.evalServiceType = evalServiceType;
+        global.addServiceTypeValidation = addServiceTypeValidation;
 
     })(window.RZP = window.RZP || {});
 </script>
 
 <script>
     (function(global){
-        function initCheckout(globalScope, udfData) {
+        function initCheckout(globalScope, udfData, amount) {
             var data = globalScope.data;
 
             var paymentPageObj = data.payment_link;
@@ -45,10 +72,10 @@
             var options = {
                 key: data.key_id,
                 payment_link_id: paymentPageObj.id,
-                amount: udfData.amount,
+                amount: amount,
                 notes: udfData,
                 handler: function(response) {
-                    var amountPaid = udfData.amount;
+                    var amountPaid = amount;
 
                     if (globalScope.hasRedirect()) {
 
@@ -108,10 +135,11 @@
 
                 // Default errors;
                 switch(path) {
-                    case 'root.waybill_number': defaultMsg = 'Please enter Waybill number'; break;
                     case 'root.customer_name': defaultMsg = 'Please enter customer name'; break;
-                    case 'root.customer_mobile': defaultMsg = 'Please enter your mobile number'; break;
-                    case 'root.payment_type': defaultMsg = 'Please select type of payment'; break;
+                    case 'root.invoice_number': defaultMsg = 'Please enter invoice number'; break;
+                    case 'root.job_number': defaultMsg = 'Please enter job/quotation number'; break;
+                    case 'root.service_type': defaultMsg = 'Please select type of service'; break;
+                    case 'root.location': defaultMsg = 'Please select a location'; break;
                 }
 
                 if (!value) {
@@ -149,12 +177,13 @@
             return editor;
         }
 
-        function submitForm(btn) {
+        function submitForm() {
             var errors = editor.validate();
             console.log(errors);
             var hasError;
 
-            window.RZP.evalPaymentType(); // Just to show error;
+            window.RZP.evalServiceType(); // Just to show error;
+            window.RZP.evalLocation(); // Just to show error;
 
             if (errors.length) {
                 editor.options.show_errors = "always";
@@ -200,7 +229,8 @@
                     window.RZP.scrollTo(parentEle, errorEle, 300);
                 } else {
                     amount = parseInt(amount * 100);
-                    window.RZP.initCheckout(window.RZP_DATA = window.RZP_DATA || {}, Object.assign({}, udfData, {amount: amount}));
+
+                    window.RZP.initCheckout(window.RZP_DATA = window.RZP_DATA || {}, Object.assign({}, udfData), amount);
                 }
 
             }, 10); // If blur happens directly through click on submit btn, so 'has-error' class won't be put until delayed.
@@ -210,9 +240,9 @@
             window.RZP.getEl('udf_submit_btn').addEventListener('click', submitForm);
 
             window.RZP.addAmountValidation();
-            window.RZP.addAlphaFieldsValidation(['root.customer_name']);
-            window.RZP.addIntFieldsValidation(['root.customer_mobile']);
-            window.RZP.addPaymentTypeValidation();
+            window.RZP.addIntFieldsValidation(['root.customer_id', 'root.job_number']);
+            window.RZP.addServiceTypeValidation();
+            window.RZP.addLocationValidation();
         }
 
 
@@ -220,6 +250,5 @@
         global.initJSONEditor = initJSONEditor;
         global.submitForm = submitForm;
         global.addListeners_Validators = addListeners_Validators;
-
     })(window.RZP = window.RZP || {});
 </script>

@@ -52,11 +52,11 @@
         @include('hostedpage.styles.form_theme')
         @include('hostedpage.styles.desktop')
         @include('hostedpage.styles.mobile')
-        @include('hostedpage.specific.schindler.styles')
+        @include('hostedpage.specific.schindler-default.styles')
         @include('hostedpage.scripts.utils')
         @include('hostedpage.specific.helpers')
 
-        @include('hostedpage.specific.schindler.scripts')
+        @include('hostedpage.specific.schindler-default.scripts')
     </head>
 
     <body>

@@ -28,14 +28,14 @@
       "title": "Payment Type",
       "enum": [
         "",
-        "a. Primary Payment",
-        "b. Balance Payment"
+        "Primary Payment",
+        "Balance Payment"
       ],
       "options": {
         "enum_titles": [
           "--Select--",
-          "a. Primary Payment",
-          "b. Balance Payment"
+          "Primary Payment",
+          "Balance Payment"
         ]
       }
     }

@@ -55,7 +55,7 @@
         @include('hostedpage.scripts.utils')
         @include('hostedpage.specific.helpers')
 
-        @include('hostedpage.specific.delhivery.scripts')
+        @include('hostedpage.specific.delhivery-default.scripts')
     </head>
 
     <body>
