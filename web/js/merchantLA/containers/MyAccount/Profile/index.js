@@ -11,6 +11,8 @@ import MerchantDetails from 'merchantLA/components/MyAccount/Profile/MerchantDet
 import BankAccountDetails from 'merchantLA/components/MyAccount/Profile/BankAccountDetails';
 import { fetchUser } from 'merchantLA/modules/session';
 import PasswordForm from './PasswordForm';
+import DisplayNameForm from 'merchant/components/Profile/DisplayNameForm';
+import { updateDisplayName } from 'merchantLA/modules/profile';
 
 @connect(
   state => {
@@ -18,7 +20,7 @@ import PasswordForm from './PasswordForm';
       user: state.session.user,
     };
   },
-  { ...ModalActions, showNotification, fetchUser }
+  { ...ModalActions, showNotification, fetchUser, updateDisplayName }
 )
 export default class Profile extends Component {
   state = {};
@@ -35,10 +37,26 @@ export default class Profile extends Component {
     });
   }
 
+  isLinkedAccountOwner() {
+    return ['linked_account_owner'].indexOf(this.props.user.role) > -1;
+  }
+
   openChangePasswordModal = () => {
     this.props.openModal({
       size: 'small',
       component: <PasswordForm />,
+    });
+  };
+
+  openChangeDisplayName = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <DisplayNameForm
+          merchantName={this.props.user.name}
+          updateDisplayName={this.props.updateDisplayName}
+        />
+      ),
     });
   };
 
@@ -74,7 +92,14 @@ export default class Profile extends Component {
               </div>
             )}
 
-            {user && user.current ? <MerchantDetails user={user} /> : null}
+            {user && user.current ? (
+              <MerchantDetails
+                user={user}
+                changeDisplayName={
+                  !!this.isLinkedAccountOwner() && this.openChangeDisplayName
+                }
+              />
+            ) : null}
           </div>
 
           <ShowWhen

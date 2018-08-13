@@ -18,10 +18,28 @@ const businessTypeMap = {
 };
 
 export default connect(null, { openModal, closeModal })(
-  ({ user, openModal, closeModal }) => {
+  ({ user, openModal, closeModal, changeDisplayName }) => {
     return (
       <div class="list-group details-row-container">
         <DetailRow label="Contact Name" value={titleCase(user.name)} />
+
+        {changeDisplayName && (
+          <DetailRow
+            label="Display Name"
+            value={() => (
+              <span>
+                {user.display_name}
+                <a
+                  class="p-l"
+                  title="Edit Display Name"
+                  onClick={changeDisplayName}
+                >
+                  <i class="i i-edit" />
+                </a>
+              </span>
+            )}
+          />
+        )}
 
         <DetailRow
           label="Contact Email"
