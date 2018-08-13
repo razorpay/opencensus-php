@@ -338,6 +338,7 @@ return [
                 'transaction_id'     => 'HDFC148415544000000000',
                 'time'               => 148415544000,
                 'amount'             => 50000,
+                'currency'           => 'INR',
                 'description'        => 'NEFT payment of 50,000 rupees with extra fields',
                 'attempt'            => 1,
             ],
