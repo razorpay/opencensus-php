@@ -102,7 +102,7 @@ export default class FileUpload extends React.Component {
     );
 
     // Uploaded file type matches given pattern
-    const isValidFilePattern = acceptedTypes.find(aT => {
+    const isValidFilePattern = acceptedTypes.some(aT => {
       let pattern = new RegExp(aT);
       return pattern.test(type);
     });
@@ -219,9 +219,11 @@ export default class FileUpload extends React.Component {
     } = this.props;
     let { isDocPreUploaded } = this.state;
 
-    const { stagedFileStatus, uploadedBytes, files = [] } = onFileChange
+    const { stagedFileStatus, uploadedBytes } = onFileChange
       ? this.state
       : this.props;
+    const files = this.state.files;
+
     return (
       <div
         class="Dropzone"
