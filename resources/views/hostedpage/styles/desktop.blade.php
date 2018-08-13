@@ -80,6 +80,10 @@
         float: right;
     }
 
+    .description-footer a {
+        width: 100%;
+    }
+
     .description-footer img {
         height: 18px;
         vertical-align: bottom;
