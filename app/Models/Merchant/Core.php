@@ -1259,13 +1259,13 @@ class Core extends Base\Core
 
         // Fetch submerchants
         $submerchantIds = $accessMaps->pluck(AccessMap\Entity::MERCHANT_ID)->toArray();
-        $submerchants = $this->repo->merchant->findMany($submerchantIds);
+        $submerchants   = $this->repo->merchant->findMany($submerchantIds);
 
         $this->deleteAllPartnerSubmerchantAccessMaps($accessMaps);
 
         $this->deleteAllSubmerchantRefTags($submerchants, $partner);
 
-        $this->deletePartnerAccessOverSubmerchants($partner, $submerchants);
+        $this->deletePartnerDashboardAccessOnSubmerchants($partner, $submerchants);
     }
 
     /**
@@ -1281,7 +1281,7 @@ class Core extends Base\Core
                 'ids' => $accessMapIds,
             ]);
 
-        $this->repo->merchant_access_map->deleteMerchantAccessMapsByEntity($accessMapIds);
+        $this->repo->merchant_access_map->deleteMerchantAccessMapsByEntityIds($accessMapIds);
     }
 
     /**
@@ -1304,7 +1304,7 @@ class Core extends Base\Core
      * @param Entity           $partner
      * @param PublicCollection $submerchants
      */
-    protected function deletePartnerAccessOverSubmerchants(Entity $partner, Base\PublicCollection $submerchants)
+    protected function deletePartnerDashboardAccessOnSubmerchants(Entity $partner, Base\PublicCollection $submerchants)
     {
         $partnerUsers = $partner->users()->get();
 
@@ -1316,10 +1316,7 @@ class Core extends Base\Core
 
             $submerchantIdsAccessible = array_intersect($merchantIdsAccessible, $submerchantIds);
 
-            foreach ($submerchantIdsAccessible as $submerchantId)
-            {
-                $partnerUser->merchants()->detach($submerchantId);
-            }
+            $partnerUser->merchants()->detach($submerchantIdsAccessible);
         }
     }
 

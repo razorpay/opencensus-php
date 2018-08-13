@@ -69,7 +69,7 @@ class Repository extends Base\Repository
      *
      * @return mixed
      */
-    public function deleteMerchantAccessMapsByEntity(array $ids)
+    public function deleteMerchantAccessMapsByEntityIds(array $ids)
     {
         return $this->newQuery()
                     ->whereIn(Entity::ID, $ids)
