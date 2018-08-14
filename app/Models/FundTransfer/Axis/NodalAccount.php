@@ -11,6 +11,7 @@ use PHPExcel_Shared_Date;
 use RZP\Models\Base;
 use RZP\Encryption\Type;
 use RZP\Models\FileStore;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Encryption\AESEncryption;
@@ -58,11 +59,17 @@ class NodalAccount extends NodalBase\FileProcessor
     {
         $rows = $this->getRows($entities);
 
+        $this->trace->info(TraceCode::FTA_FILE_ROWS_CREATED);
+
         list($excelFile, $rzpFile) = $this->createFile($rows);
+
+        $this->trace->info(TraceCode::FTA_FILE_CREATED_IN_S3);
 
         $fileData = $this->getFileData($rzpFile);
 
         $this->sendAxisTransferMail($fileData);
+
+        $this->trace->info(TraceCode::FTA_FILE_EMAIL_SENT);
 
         return $excelFile;
     }

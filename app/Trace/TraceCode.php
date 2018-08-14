@@ -581,7 +581,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
     const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
+    const FTA_PROCESS_BEGIN                         = 'FTA_PROCESS_BEGIN';
+    const FTA_FETCHED                               = 'FTA_FETCHED';
+    const FTA_UPDATE_STATUS                         = 'FTA_UPDATE_STATUS';
+    const FTA_FILE_CREATED                          = 'FTA_FILE_CREATED';
+    const FTA_FILE_ROWS_CREATED                     = 'FTA_FILE_ROWS_CREATED';
+    const FTA_FILE_CREATED_IN_S3                    = 'FTA_FILE_CREATED_IN_S3';
     const FTA_FILE_RECON_INVALID_STATUS_CHANGE      = 'FTA_FILE_RECON_INVALID_STATUS_CHANGE';
+    const FTA_FILE_EMAIL_SENT                       = 'FTA_FILE_EMAIL_SENT';
+    const FTA_SAVED_TO_DB                           = 'FTA_SAVED_TO_DB';
+    const FTA_BATCH_UPDATED                         = 'FTA_BATCH_UPDATED';
 
     const FTA_RECON_REPORT_FILE_CREATED             = 'FTA_RECON_REPORT_FILE_CREATED';
     const FTA_RECON_REPORT_INITIATED                = 'FTA_RECON_REPORT_INITIATED';
