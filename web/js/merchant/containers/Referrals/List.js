@@ -63,17 +63,19 @@ export default class ReferralsListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen myRole="manager admin owner">
-            <div class="btn-toolbar">
-              <button
-                class="pull-right btn btn-primary"
-                onClick={() => this.showCreateMerchantModal()}
-              >
-                <i class="i i-plus" />
-                <span>New Merchant</span>
-              </button>
-            </div>
-          </ShowWhen>
+          {!user.partner_type && (
+            <ShowWhen myRole="manager admin owner">
+              <div class="btn-toolbar">
+                <button
+                  class="pull-right btn btn-primary"
+                  onClick={() => this.showCreateMerchantModal()}
+                >
+                  <i class="i i-plus" />
+                  <span>New Merchant</span>
+                </button>
+              </div>
+            </ShowWhen>
+          )}
         </HeaderAction>
 
         <Alert type={status.type} message={status.message} />

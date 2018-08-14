@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -9,6 +9,7 @@ import { ModalMask } from 'component/Modal';
 
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
+import PartnerDashboard from 'merchant/containers/PartnerDashboard';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
@@ -87,12 +88,17 @@ const RefundsTabbedContainer = () => {
 };
 
 @withRouter
-@connect(null, {
-  setBaseLocation,
-  setActiveEntity,
-  setSecActiveEntity,
-  openSlider,
-})
+@connect(
+  state => ({
+    user: state.session.user,
+  }),
+  {
+    setBaseLocation,
+    setActiveEntity,
+    setSecActiveEntity,
+    openSlider,
+  }
+)
 export default class Content extends Component {
   setBaseLocation = location => {
     let { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
@@ -136,11 +142,18 @@ export default class Content extends Component {
   };
 
   getBaseView = () => {
+    const { user } = this.props;
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
           <Redirect from="/" exact to="/dashboard" />
+
+          {!!user.partner_type ? (
+            <Route path="/submerchants" component={PartnerDashboard} />
+          ) : (
+            <Redirect exact from="/submerchants" to="/dashboard" />
+          )}
 
           <Route path="/payments" component={Transactions} />
           <Route path="/refunds" component={Transactions} />

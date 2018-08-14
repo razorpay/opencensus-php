@@ -13,16 +13,13 @@ import {
 } from 'merchant/modules/team';
 
 let ROLES = without(roles, 'owner');
-@connect(
-  state => state.session,
-  {
-    fetchTeamDetails,
-    resendInvitation,
-    cancelInvitation,
-    updateInvitation,
-    ...NotificationsActions,
-  }
-)
+@connect(state => state.session, {
+  fetchTeamDetails,
+  resendInvitation,
+  cancelInvitation,
+  updateInvitation,
+  ...NotificationsActions,
+})
 @reduxForm({})
 export default class EditInvitation extends Component {
   componentWillMount() {
