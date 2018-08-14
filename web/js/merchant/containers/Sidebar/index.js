@@ -107,7 +107,8 @@ export default class Sidebar extends Component {
     let { user, config, logoURL, showMobileMenu } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
-
+    const isNonPurePlatformPartner =
+      !!user.partner_type && user.partner_type !== 'pure_platform';
     return (
       <React.Fragment>
         <div class={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
@@ -178,6 +179,19 @@ export default class Sidebar extends Component {
                       </Link>
                     )}
                   </ShowWhen>
+                  {isNonPurePlatformPartner && (
+                    <ShowWhen notMyRole="sellerapp">
+                      <MainNavLink
+                        label="Partner Dashboard"
+                        icon="i i-partner text-success"
+                        to="/submerchants"
+                        /* temporary false feature */
+                        featureEnabled="partner_tmp"
+                        exact
+                      />
+                      <div class="divider" />
+                    </ShowWhen>
+                  )}
                   <MainNavLink
                     label="Home"
                     icon="i i-chart text-info"

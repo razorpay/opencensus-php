@@ -153,9 +153,7 @@ export default class InvoicesListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen
-            myRole="admin operations manager owner"
-          >
+          <ShowWhen myRole="admin operations manager owner">
             <div class="btn-toolbar pull-right">
               <NavLink
                 to="/invoices/new"

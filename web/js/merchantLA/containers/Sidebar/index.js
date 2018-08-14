@@ -70,6 +70,7 @@ export default class Sidebar extends Component {
                 null;
               } else {
                 <div class="nav">
+                  {/*
                   <MainNavLink
                     label="Home"
                     icon="i i-chart text-info"
@@ -77,6 +78,7 @@ export default class Sidebar extends Component {
                     exact
                     notMyRole="sellerapp agent support"
                   />
+*/}
                   <MainNavLink
                     label="Transfers"
                     icon="i i-transfers text-primary"

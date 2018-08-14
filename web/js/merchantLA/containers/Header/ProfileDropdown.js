@@ -44,7 +44,8 @@ export default class ProfileDropdown extends Component {
   };
 
   openTicketModal = () => {
-    window.rzpTicketSystem && window.rzpTicketSystem.openModal('#ticket', this.props.analytics);
+    window.rzpTicketSystem &&
+      window.rzpTicketSystem.openModal('#ticket', this.props.analytics);
   };
 
   openSwitchMerchantModal = () => {

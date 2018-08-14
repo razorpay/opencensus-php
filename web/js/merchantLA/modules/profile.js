@@ -9,3 +9,13 @@ export const updatePassword = data => {
     appendModeInQueryParam: true,
   });
 };
+
+export const updateDisplayName = data => {
+  return () => {
+    return merchantFetch({
+      url: 'account/config',
+      method: 'put',
+      data,
+    });
+  };
+};
