@@ -12,9 +12,6 @@ export default class Submerchant extends GenericEntity {
       data,
     }).then(response => ({
       ...response.data,
-      // will remove these two lines once api fixes it
-      id: 'acc_' + response.data.id,
-      dashboard_access: true,
     }));
   }
 

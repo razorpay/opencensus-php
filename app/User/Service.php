@@ -110,10 +110,12 @@ class Service extends Base\Service
 
         $user = Auth::user();
 
+        $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+
         $traceData = [
             'id'          => $user->id,
             'email'       => $user->email,
-            'merchant_id' => $user->currentMerchant()->id,
+            'merchant_id' => $currentMerchantId,
         ];
 
         $this->trace->info(TraceCode::USER_LOGIN, $traceData);

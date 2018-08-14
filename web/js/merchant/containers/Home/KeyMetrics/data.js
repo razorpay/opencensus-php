@@ -330,18 +330,12 @@ export const getQuery = options => {
   );
 };
 
-const momentDurationFuncMap = {
-    hourly: 'asHours',
-    daily: 'asDays',
-    weekly: 'asWeeks',
-    monthly: 'asMonths',
-  },
-  momentDurationMap = {
-    hourly: 'hours',
-    daily: 'days',
-    weekly: 'weeks',
-    monthly: 'months',
-  };
+const momentDurationMap = {
+  hourly: 'hours',
+  daily: 'days',
+  weekly: 'weeks',
+  monthly: 'months',
+};
 
 export const getTimelineData = ({
   data,
@@ -596,9 +590,10 @@ export const getTimelineData = ({
       return result;
     }
 
-    let numPointsGap = moment
-      .duration(timestamp - prevTimestamp)
-      [momentDurationFuncMap[breakdown]]();
+    let numPointsGap = moment(timestamp).diff(
+      prevTimestamp,
+      momentDurationMap[breakdown]
+    );
 
     while (numPointsGap > 1) {
       prevTimestamp = moment(prevTimestamp)
@@ -636,7 +631,9 @@ export const getTimelineData = ({
           groupsCsvData[tsIndex] ||
           (groupsCsvData[tsIndex] = [
             moment(timestamp).format(
-              `${dateFormat}${breakdown === 'hourly' ? ' HH:mm' : ''}`
+              breakdown === 'monthly'
+                ? 'MMM YYYY'
+                : `${dateFormat}${breakdown === 'hourly' ? ' HH:mm' : ''}`
             ),
           ]);
 

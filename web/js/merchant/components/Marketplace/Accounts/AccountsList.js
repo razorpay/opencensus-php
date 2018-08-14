@@ -34,7 +34,18 @@ const AccountsListItem = ({ account, showEditAccountModal, onEdit }) => {
             Add Email
           </button>
         ) : (
-          account.email
+          <span>
+            {showEditAccountModal && (
+              <a
+                class="p-r"
+                onClick={() => showEditAccountModal(account)}
+                title="Edit Email"
+              >
+                <i class="i i-edit" />
+              </a>
+            )}
+            {account.email}
+          </span>
         )}
       </td>
       <td>{account.name}</td>
@@ -60,7 +71,7 @@ export default ({ accounts, isLoading, showEditAccountModal, onEdit }) => {
         <thead>
           <tr>
             <th>Account Id</th>
-            <th>LA Access Email</th>
+            <th>Email Id</th>
             <th>Name</th>
             <th>Created At</th>
             <th>Activated</th>

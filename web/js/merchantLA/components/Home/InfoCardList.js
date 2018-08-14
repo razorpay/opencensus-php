@@ -5,10 +5,10 @@ import { formatFromNow } from 'rzp/utils/rzp-utils';
 export default props => {
   let {
     entity_totals,
-    payment_breakup,
+    transfer_breakup,
     current_balance,
-    payments,
-    refunds,
+    transfers,
+    revresals,
     settlements,
   } = props;
   return (
@@ -25,32 +25,32 @@ export default props => {
           title="Total Settlements"
         />
         <InfoCard
-          loading={payments.loading}
+          loading={transfers.loading}
           content={
-            payments && payments.items.length
-              ? formatFromNow(payments.items[0].created_at)
+            transfers && transfers.items.length
+              ? formatFromNow(transfers.items[0].created_at)
               : 'Never'
           }
-          error={payments.error}
+          error={transfers.error}
           title="Last Transaction"
         />
         <InfoCard
           class="bg-info"
           loading={entity_totals.loading}
           content={
-            entity_totals.data.payment
-              ? entity_totals.data.payment.successful_txn_count
+            entity_totals.data.transfer
+              ? entity_totals.data.transfer.successful_txn_count
               : 0
           }
           error={entity_totals.error}
-          title="Total Payments"
+          title="Total Transfers"
         />
         <InfoCard
           class="bg-primary"
           loading={entity_totals.loading}
           content={
-            entity_totals.data.refund
-              ? entity_totals.data.refund.successful_txn_count
+            entity_totals.data.reversal
+              ? entity_totals.data.reversal.successful_txn_count
               : 0
           }
           error={entity_totals.error}
@@ -61,13 +61,13 @@ export default props => {
           content={
             <Amount
               value={
-                entity_totals.data.payment
-                  ? entity_totals.data.payment.total_amount
+                entity_totals.data.transfer
+                  ? entity_totals.data.transfer.total_amount
                   : 0
               }
               currency={
-                entity_totals.data.payment
-                  ? entity_totals.data.payment.currency
+                entity_totals.data.transfer
+                  ? entity_totals.data.transfer.currency
                   : 'INR'
               }
             />

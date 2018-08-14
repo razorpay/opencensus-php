@@ -137,6 +137,13 @@ class GatewayRuleForm extends Component {
     }
   };
 
+  handleChangeWithState = e => {
+    let obj = {};
+    obj[e.target.name] = e.target.value;
+    this.setState(obj);
+    this.props.model.onPropChange(e);
+  };
+
   render() {
     let { model } = this.props;
     return (
@@ -159,10 +166,7 @@ class GatewayRuleForm extends Component {
           label="Type"
           name="type"
           required
-          onChange={e => {
-            this.setState({ type: e.target.value });
-            model.onPropChange(e);
-          }}
+          onChange={this.handleChangeWithState}
           value={model.type}
           disabled={!!model.id}
         >
@@ -347,11 +351,26 @@ class GatewayRuleForm extends Component {
           label="Recurring"
           defaultValue={model.recurring | 0}
           disabled={!!model.id}
+          onChange={this.handleChangeWithState}
         >
           <option value="" />
           <option value="0">No</option>
           <option value="1">Yes</option>
         </SelectField>
+
+        {!!+model.recurring && (
+          <SelectField
+            name="recurring_type"
+            label="Recurring Type"
+            defaultValue={model.recurring_type}
+            disabled={!!model.id}
+          >
+            <option value="" />
+            <option value="auto">Auto</option>
+            <option value="initial">Initial</option>
+          </SelectField>
+        )}
+
         <br />
         <TextAreaField
           label="Add Comment:"
