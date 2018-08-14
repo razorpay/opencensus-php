@@ -798,10 +798,8 @@ class PartnerTest extends OAuthTestCase
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
-        $partnerData = $this->getDummyPartnerAttributes();
-
         // Create an oauth application using factory
-        $app = $this->createOAuthApplication($partnerData);
+        $app = $this->createDummyPartnerApp();
 
         $requestParams = $this->getDefaultParamsForAuthServiceRequest();
 
@@ -824,6 +822,10 @@ class PartnerTest extends OAuthTestCase
 
         // Add partner user to submerchant account
         $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
+
+        // Add a random user to the submerchant. Verifies later that the random user is not deleted.
+        $nonPartnerUser = $this->fixtures->create('user');
+        $this->addUserToMerchant($nonPartnerUser, self::DEFAULT_SUBMERCHANT_ID, 'admin');
 
         // Map the submerchant to the partner app
         $this->fixtures->create(
@@ -858,11 +860,18 @@ class PartnerTest extends OAuthTestCase
         $this->assertEmpty($accessMaps);
 
         // cleanup assertion - verify that the merchant user mappings have been deleted
-        $merchantUserMappings = $this->fixtures
-                                     ->user
-                                     ->getMerchantUserMapping(self::DEFAULT_SUBMERCHANT_ID, $partnerUser->getId())
-                                     ->toArray();
-        $this->assertEmpty($merchantUserMappings);
+        $partnerUserMapping = $this->fixtures
+                                   ->user
+                                   ->getMerchantUserMapping(self::DEFAULT_SUBMERCHANT_ID, $partnerUser->getId())
+                                   ->toArray();
+        $this->assertEmpty($partnerUserMapping);
+
+        // cleanup assertion - verify that the merchant user mappings have been deleted
+        $partnerUserMapping = $this->fixtures
+                                   ->user
+                                   ->getMerchantUserMapping(self::DEFAULT_SUBMERCHANT_ID, $nonPartnerUser->getId())
+                                   ->toArray();
+        $this->assertNotEmpty($partnerUserMapping);
 
         // cleanup assertion - verify that the ref tags have been deleted
         $submerchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
