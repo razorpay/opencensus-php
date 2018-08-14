@@ -12,6 +12,7 @@ use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Error\ErrorCode;
+use RZP\Models\User\Role;
 use RZP\Models\Plan\Subscription;
 
 class Repository extends Base\Repository
@@ -105,7 +106,7 @@ class Repository extends Base\Repository
         // user id is not same as passed userId.
         //
         if (($userId !== null) and
-            ($userRole === Constants::SELLERAPP_ROLE) and
+            ($userRole === Role::SELLERAPP) and
             ($invoice->getUserId() !== $userId))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);

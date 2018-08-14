@@ -30,5 +30,7 @@ class Constants
         self::UTM_CONTENT,
         self::TIMESTAMP,
     ];
+
+    const PASSWORD_RESET_TOKEN_EXPIRY_TIME =  86400; //24 hours
 }
 

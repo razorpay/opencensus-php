@@ -14,6 +14,7 @@ use phpseclib\Crypt\RSA;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
@@ -42,6 +43,11 @@ class Gateway extends Base\Gateway
      */
     const DEFAULT_PAYEE_VPA = 'razorpay@icici';
 
+    /**
+     * Main parent MID of Razorpay
+     */
+    const PARENT_GATEWAY_MERCHANT_ID = '116798';
+
     protected $map = [
         Entity::VPA                       => Entity::VPA,
         Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
@@ -50,6 +56,7 @@ class Gateway extends Base\Gateway
         Entity::TYPE                      => Entity::TYPE,
         Entity::RECEIVED                  => Entity::RECEIVED,
         Fields::PAYER_VA                  => Entity::VPA,
+        Fields::VERIFY_PAYER_VA           => Entity::VPA,
         Fields::PAYER_NAME                => Entity::NAME,
         Fields::PAYER_MOBILE              => Entity::CONTACT,
         Fields::RESPONSE                  => Entity::STATUS_CODE,
@@ -332,6 +339,13 @@ class Gateway extends Base\Gateway
     protected function getUrl($type = null): string
     {
         $url = parent::getUrl($type);
+
+        if ($this->action === Action::VERIFY)
+        {
+            // We don't need to use different URLs for different merchants from now on.
+            // Main parent MID can be appended instead of specific merchant MID
+            return sprintf($url, self::PARENT_GATEWAY_MERCHANT_ID);
+        }
 
         return sprintf($url, $this->getMerchantId());
     }
@@ -837,16 +851,18 @@ class Gateway extends Base\Gateway
 
         if ($isBharatQr === true)
         {
-            $response = $this->getBharatQrResponse($response);
+            $response = $this->getQrData($response);
         }
 
         return $response;
     }
 
-    protected function getBharatQrResponse(array $input)
+    protected function getQrData(array $input)
     {
+        $amount = $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]);
+
         $qrData = [
-            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]),
+            BharatQr\GatewayResponseParams::AMOUNT                => $amount,
             BharatQr\GatewayResponseParams::VPA                   => $input[Fields::PAYER_VA],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[Fields::MERCHANT_ID],

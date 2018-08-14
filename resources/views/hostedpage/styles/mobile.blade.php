@@ -6,7 +6,7 @@
 
 <style>
     #mobile-container {
-        min-height: 100vh;
+        min-height: 80vh;
         width: 100%;
         max-width: 412px;
         margin: 0 auto;
@@ -15,49 +15,38 @@
     }
 
     #mobile-container #header-section {
+        top: 0;
         padding-left: 24px;
         padding-right: 24px;
+        position: absolute;
+        z-index: 1;
+        width: 100%;
     }
 
     #mobile-container .content {
-        height: 100vh;
+        height: 80vh;
         position: relative;
         z-index: 1;
-    }
-
-    #mobile-container #description-section, #mobile-container #form-section {
-        padding: 32px 24px;
-        overflow: auto;
-    }
-
-    #mobile-container #description-section {
-        bottom: 0;
-        top: 112px;
-        position: absolute;
+        padding: 112px 0 56px;
     }
 
     #mobile-container .back-btn {
-        font-size: 12px;
-        color: {{$primary_text}};
+        fill: {{$secondary_color}};
         background: transparent;
         outline: none;
         border: none;
-        position: absolute;
-        right: 0;
-        top: 2px;
-        padding: 0;
-        line-height: 24px;
-    }
-
-    @media (max-width: 360px) {
-        #mobile-container .back-btn {
-            top: -20px;
-        }
+        margin-left: -16px;
+        padding: 0 16px;
+        vertical-align: middle;
+        display: inline-block;
+        line-height: 12px;
     }
 
     #mobile-container #form-section {
-        height: 100vh;
+        height: 80vh;
         z-index: 2;
+        padding: 32px 24px;
+        overflow: auto;
     }
 
     #mobile-container #form-section {
@@ -77,6 +66,8 @@
         position: absolute;
         bottom: 0;
         z-index: 100;
+        text-align: center;
+        line-height: 36px;
         background-image: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 100%);
     }
 
@@ -86,8 +77,11 @@
     }
 
     #mobile-container #description-section {
-        padding-bottom: 74px;
         border-right: 1px solid {{$border_color}};
+        position: relative;
+        height: 100%;
+        padding: 16px 32px;
+        overflow: auto;
     }
 
     #mobile-container form {

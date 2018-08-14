@@ -28,7 +28,7 @@ class Receiver extends Base\Core
     const ROOT_LENGTH                  = 4;
     // Handle length can be 3 also
     const STANDARD_HANDLE_LENGTH       = 4;
-    const DESCRIPTOR_LENGTH            = 9;
+    const DESCRIPTOR_LENGTH            = 8;
     const PRIVILEGED_DESCRIPTOR_LENGTH = 10;
     const ACCOUNT_NUMBER_LENGTH        = 16;
 
@@ -197,7 +197,7 @@ class Receiver extends Base\Core
             QrCode\Entity::AMOUNT    => $virtualAccount->getAmountExpected(),
         ];
 
-        if (isset($options[QrCode\Entity::REFERENCE])  === true)
+        if (isset($options[QrCode\Entity::REFERENCE]) === true)
         {
             $input[QrCode\Entity::REFERENCE] = $options[QrCode\Entity::REFERENCE];
         }
@@ -224,7 +224,7 @@ class Receiver extends Base\Core
 
         $this->descriptor = $options[self::DESCRIPTOR];
 
-        $validator->validateDescriptor($this->descriptor);
+        $validator->validateDescriptor($this->descriptor, $this->isPrivilegedAccount());
 
         $handle = $this->merchant->getHandle();
 
@@ -400,7 +400,6 @@ class Receiver extends Base\Core
             ($this->numeric === true))
         {
             $handle = $this->getDefaultHandle($root);
-
 
             $totalLength = self::ACCOUNT_NUMBER_LENGTH;
 

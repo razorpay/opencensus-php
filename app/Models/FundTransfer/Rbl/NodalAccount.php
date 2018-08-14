@@ -6,26 +6,25 @@ use App;
 use Config;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Rbl\Request\Transfer;
 use RZP\Models\FundTransfer\Rbl\Request\Beneficiary;
-use RZP\Models\FundTransfer\Rbl\Reconciliation\Status;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Models\FundTransfer\Rbl\Reconciliation\StatusProcessor;
 
 class NodalAccount extends NodalBase\NodalAccount
 {
-    protected $trace;
-
     protected $config;
 
     protected $transferStatus = [];
 
-    public function __construct(string $purpose)
+    public function __construct(string $purpose = null)
     {
-        parent::__construct();
+        parent::__construct($purpose);
 
-        $this->trace = App::getFacadeRoot()['trace'];
+        $this->channel = Channel::RBL;
 
         $this->initStats();
     }
@@ -40,11 +39,11 @@ class NodalAccount extends NodalBase\NodalAccount
         return $responseArray;
     }
 
-    public function initiateTransfer(PublicCollection $attempts): array
+    public function process(PublicCollection $attempts): array
     {
-        $transfer   = new Transfer();
+        $transfer = new Transfer($this->purpose);
 
-        $this->updateAttemptStatus($attempts);
+        $processedCount = 0;
 
         foreach($attempts as $entity)
         {
@@ -58,41 +57,32 @@ class NodalAccount extends NodalBase\NodalAccount
                 $this->repo->saveOrFail($entity);
 
                 $this->repo->saveOrFail($entity->source);
+
+                $this->trackAttemptsInitiatedSuccess($this->channel, $this->purpose, $entity->getSourceType());
             }
             catch (\Throwable $e)
             {
-                $this->trace->info(
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
                     TraceCode::NODAL_TRANSFER_REQUEST_FAILED,
                     [
                         'channel'    => $this->channel,
                         'entity_id'  => $entity->getId()
                     ]);
 
+                $this->trackAttemptsInitiatedFailure($this->channel, $this->purpose, $entity->getSourceType());
+
                 continue;
             }
 
+            $processedCount++;
+
             (new StatusProcessor($response))->updateTransferStatus();
-
-            $status = $transfer->isValidSuccessResponse();
-
-            $this->updateTransferStatus($status);
         }
 
+        $this->updateTransferStatus($processedCount);
+
         return $this->transferStatus;
-    }
-
-    protected function initStats()
-    {
-        $this->transferStatus = [
-            strtolower(Status::SUCCESS)  => 0,
-            strtolower(Status::FAILURE)  => 0
-        ];
-    }
-
-    protected function updateTransferStatus(bool $status)
-    {
-        $key = strtolower(($status === true) ? Status::SUCCESS : Status::FAILURE);
-
-        $this->transferStatus[$key]++;
     }
 }

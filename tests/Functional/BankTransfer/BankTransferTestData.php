@@ -321,6 +321,35 @@ return [
         ],
     ],
 
+    'testBankTransferProcessWithExtraFields' => [
+        'request' => [
+            'url' => '/ecollect/validate',
+            'method' => 'post',
+            'content' => [
+                'payee_account'      => null,
+                'payee_ifsc'         => 'RAZR0000001',
+                'payee_name'         => 'Razorpay',
+                'payer_name'         => 'Name of account holder',
+                'payer_account'      => '9876543210123456789',
+                'payer_account_type' => 'ca',
+                'payer_ifsc'         => 'HDFC0000001',
+                'payer_address'      => 'Address of payer',
+                'mode'               => 'imps',
+                'transaction_id'     => 'HDFC148415544000000000',
+                'time'               => 148415544000,
+                'amount'             => 50000,
+                'currency'           => 'INR',
+                'description'        => 'NEFT payment of 50,000 rupees with extra fields',
+                'attempt'            => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid' => true,
+            ],
+        ],
+    ],
+
     'testBankTransferNotifyFailure' => [
         'request' => [
             'url' => '/ecollect/pay',
@@ -377,5 +406,34 @@ return [
         'processed_count'   => 0,
         'total_count'       => 1,
         'type'              => 'refund',
+    ],
+
+    'createTpvRefund' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'SBIN',
+                'account_number' => '04030403040304',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'tpvPaymentNetbankingEntity' => [
+        'bank_payment_id' => '99999999',
+        'received'        => true,
+        'bank_name'       => 'SBIN',
+        'status'          => 'Ok',
     ],
 ];

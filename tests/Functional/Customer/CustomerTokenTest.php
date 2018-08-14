@@ -316,6 +316,37 @@ class CustomerTokenTest extends TestCase
         $this->assertNull($token[Token\Entity::RECURRING_DETAILS][Token\Entity::RECURRING_STATUS_SHORT]);
     }
 
+    public function testFetchTokenAuthType()
+    {
+        $token = $this->fixtures->create(
+            'token',
+            [
+                'method' => 'emandate',
+                'recurring' => true,
+                'recurring_status' => 'confirmed',
+                'auth_type' => 'netbanking'
+            ]);
+
+        $token = $this->getTokenById('token_' . $token['id']);
+
+        $this->assertNotNull($token[Token\Entity::AUTH_TYPE]);
+        $this->assertEquals('netbanking', $token[Token\Entity::AUTH_TYPE]);
+
+        $token = $this->fixtures->create(
+            'token',
+            [
+                'method' => 'emandate',
+                'recurring' => true,
+                'recurring_status' => 'confirmed',
+                'auth_type' => 'aadhaar'
+            ]);
+
+        $token = $this->getTokenById('token_' . $token['id']);
+
+        $this->assertNotNull($token[Token\Entity::AUTH_TYPE]);
+        $this->assertEquals('aadhaar', $token[Token\Entity::AUTH_TYPE]);
+    }
+
     protected function mockSession()
     {
         $data = array(

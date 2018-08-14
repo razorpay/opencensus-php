@@ -1,9 +1,3 @@
-<?php
- $contact = [
-     'phone' => '1800 209 5438',
-     'email' => 'schindlerindia.in@schindler.com'
- ];
-?>
 @section('phone')
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
         <path d="M0 0h24v24H0z" fill="none"/>
@@ -23,12 +17,14 @@
         <div class="mobile-el">
             <div class="heading" style="line-height: 32px;">Contact Us</div>
             <div>
-                @yield('phone')
-                {{$contact['phone']}}
+                <a href="tel:{{$contact['phone']}}">{{$contact['phone']}}
+                    @yield('phone')
+                </a>
             </div>
             <div>
-                @yield('email')
-                {{$contact['email']}}
+                <a href="mailto:{{$contact['email']}}?subject={{$email_subject}}" target="_blank">{{$contact['email']}}
+                    @yield('email')
+                </a>
             </div>
         </div>
     @endif
@@ -37,12 +33,14 @@
     @if($view === 'header')
         <div class="desktop-el">
             <div>
-                {{$contact['phone']}}
-                @yield('phone')
+                <a href="tel:{{$contact['phone']}}">{{$contact['phone']}}
+                    @yield('phone')
+                </a>
             </div>
             <div>
-                {{$contact['email']}}
-                @yield('email')
+                <a href="mailto:{{$contact['email']}}?subject={{$email_subject}}" target="_blank">{{$contact['email']}}
+                    @yield('email')
+                </a>
             </div>
         </div>
     @endif

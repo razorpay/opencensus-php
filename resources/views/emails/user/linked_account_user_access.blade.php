@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+
+<div>
+    Greetings! <br/><br/>
+
+    {{$routeMerchantName}} has added you as their associate account on {{$org['business_name']}}.
+    <br/>
+    You can set your password <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='
+    .$expiryTime .'&email='.$email }}" target="_blank"> here</a> and proceed to view your transactions.<br/><br/>
+
+    You can also open the following link in your browser: <br/>
+    <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&email='.$email }}" target="_blank">
+        {{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&email='.$email }}
+    </a>
+
+</div>
+
+<div>
+    <p>
+        --<br/>
+        {{$org['display_name']}} <br/>
+        <a href="mailto:support@razorpay.com">support@razorpay.com</a>
+    </p>
+    <div>
+        <img style="width:200px; height:auto;" src="{{$org['login_logo_url']}}">
+    </div>
+</div>
+</body>
+</html>

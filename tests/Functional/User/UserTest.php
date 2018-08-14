@@ -115,6 +115,8 @@ class UserTest extends TestCase
 
     public function testConfirmByEmail()
     {
+        $this->ba->adminAuth();
+
         $user = $this->fixtures->create('user', ['confirm_token' => 'confirm_token']);
 
         $testData = & $this->testData[__FUNCTION__];
@@ -124,8 +126,6 @@ class UserTest extends TestCase
         ];
 
         $testData['request']['content'] = $content;
-
-        $this->ba->appAuth();
 
         $this->startTest();
     }

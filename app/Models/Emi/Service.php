@@ -34,13 +34,13 @@ class Service extends Base\Service
         return $plans;
     }
 
-    public function getEmiOptions()
+    public function getEmiOptions($offers = null)
     {
         $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
 
-        $merchantSubventedPlans = $this->repo->merchant_emi_plans->fetchByMerchant($this->merchant->getId());
-
         $plans = [];
+
+        $emiOfferPlans = $this->getSubventedEmiPlansForOffers($offers);
 
         foreach ($emiPlans as $plan)
         {
@@ -51,7 +51,7 @@ class Service extends Base\Service
             // min amount in paisa
             $minAmount = $plan->getMinAmount();
 
-            if (in_array($plan->getId(), $merchantSubventedPlans) === true)
+            if (array_key_exists($plan->getId(), $emiOfferPlans) === true)
             {
                 $minAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback());
 
@@ -60,6 +60,7 @@ class Service extends Base\Service
                     'interest'   => 0,
                     'subvention' => Subvention::MERCHANT,
                     'min_amount' => $minAmount,
+                    'offer_id'   => $emiOfferPlans[$plan->getId()],
                 ];
             }
             else
@@ -135,6 +136,47 @@ class Service extends Base\Service
         }
 
         return $returnValue;
+    }
+
+    /**
+     * This function will fetch emi plan for given
+     * offer if it is merchant subvented.
+     *
+     * The resulting array will look like
+     * [planId1 => offerIdx, planId2 => offerIdy]
+     *
+     * @param array $offers
+     * @return array
+     */
+    protected function getSubventedEmiPlansForOffers($offers)
+    {
+        if (empty($offers) === true)
+        {
+            return [];
+        }
+
+        $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
+        $emiOfferPlans = [];
+
+        $offers->map(function ($offer) use($emiPlans, & $emiOfferPlans) {
+            $bank = $offer->getIssuer();
+
+            $network = $offer->getPaymentNetwork();
+
+            $durations = $offer->getEmiDurations() ?: Entity::VALID_DURATIONS;
+
+            foreach($emiPlans as $emiPlan)
+            {
+                if (($emiPlan->getBank() === $bank) and
+                    ($emiPlan->getNetwork() === $network) and
+                    (in_array($emiPlan->getDuration(), $durations, true) === true))
+                {
+                    $emiOfferPlans = [$emiPlan->getId() => $offer->getPublicId()] + $emiOfferPlans;
+                }
+            }
+        });
+
+        return $emiOfferPlans;
     }
 
     protected function generateEmiFileForBank($bankIfsc, $from, $to, $bank, $email = null)

@@ -6,7 +6,6 @@ use App;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Error\PublicErrorDescription;
 
@@ -233,16 +232,7 @@ class Validator extends Base\Validator
 
                 $partnerType = $submissions[Merchant\Entity::PARTNER_TYPE];
 
-                if (in_array($partnerType, Merchant\Constants::$partnerTypes, true) === false)
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
-                        Merchant\Entity::PARTNER_TYPE,
-                        [
-                            Constants::SUBMISSIONS        => $submissions,
-                            Merchant\Entity::PARTNER_TYPE => $partnerType,
-                        ]);
-                }
+                (new Merchant\Validator)->validatePartnerType($partnerType);
 
                 break;
 

@@ -5,6 +5,12 @@
     $is_test_mode               = $data['is_test_mode'] ?? false;
     $has_udf                    = (empty($udf_schema) === false);
     $max_mobile_width           = 853;
+    $contact = [
+        'phone' => '1800 209 5438',
+        'email' => 'schindlerindia.in@schindler.com'
+    ];
+
+    $email_subject = 'Query for Payment Page Id: '. $payment_page_data['id'];
 ?>
 
 
@@ -13,6 +19,7 @@
     <head>
         <title>Payment Page - {{$payment_page_data['title']}}</title>
         <meta charset="utf-8">
+        <meta name="robots" content="noindex">
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
         <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
 
@@ -40,19 +47,23 @@
 
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-        @include('hostedpage.styles.common')
+        @include('hostedpage.styles.general')
         @include('hostedpage.styles.success_animation')
         @include('hostedpage.styles.form_theme')
         @include('hostedpage.styles.desktop')
         @include('hostedpage.styles.mobile')
+        @include('hostedpage.specific.schindler-default.styles')
+        @include('hostedpage.scripts.utils')
+        @include('hostedpage.specific.helpers')
 
-        @include('hostedpage.partials.scripts')
+        @include('hostedpage.specific.schindler-default.scripts')
     </head>
 
     <body>
         <div id="hostedpage-container">
             <!-- Desktop Container -->
             <div id="desktop-container">
+                <div class="merchant-display-image"></div>
                 @include('hostedpage.partials.header')
                 <div class="content">
                     @include('hostedpage.partials.description')
@@ -63,12 +74,11 @@
 
             <!-- Mobile Container -->
             <div id="mobile-container">
+                <div class="merchant-display-image"></div>
                 <div class="content">
                     @include('hostedpage.partials.header')
-                    <div>
-                        @include('hostedpage.partials.description')
-                        <button class="btn btn--full" id="mobile-proceed-btn" onclick="window.RZP.toggleMobileForm()">PROCEED TO PAY</button>
-                    </div>
+                    @include('hostedpage.partials.description')
+                    <a href="#form" class="btn btn--full" id="mobile-proceed-btn">PROCEED TO PAY</a>
                 </div>
                 @include('hostedpage.partials.form')
             </div>

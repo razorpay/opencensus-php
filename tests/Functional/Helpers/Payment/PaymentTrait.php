@@ -25,6 +25,7 @@ trait PaymentTrait
     use PaymentAmexTrait;
     use PaymentAtomTrait;
     use PaymentHdfcTrait;
+    use PaymentAuthTrait;
     use PaymentPaytmTrait;
     use PaymentSharpTrait;
     use PaymentBladeTrait;

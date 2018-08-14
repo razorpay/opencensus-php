@@ -60,14 +60,16 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $this->assertPaymentId($input['payment']['id'], $content[AuthResponseFields::TRANSACTION_ID]);
-
-        $this->verifySecureHash($content);
-
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-        $actualAmount   = number_format($content[AuthResponseFields::AMOUNT], 2, '.', '');
-
-        $this->assertAmount($expectedAmount, $actualAmount);
+        if (isset($content[AuthResponseFields::AMOUNT],
+                  $content[AuthResponseFields::TRANSACTION_ID],
+                  $content[AuthResponseFields::STATUS_CODE]) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                null,
+                null,
+                ['response' => $input]);
+        }
 
         if ($content[AuthResponseFields::STATUS_CODE] !== Status::SUCCESS)
         {
@@ -78,6 +80,15 @@ class Gateway extends Base\Gateway
                 $content[AuthResponseFields::STATUS_CODE],
                 $message);
         }
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount   = number_format($content[AuthResponseFields::AMOUNT], 2, '.', '');
+
+        $this->assertPaymentId($input['payment']['id'], $content[AuthResponseFields::TRANSACTION_ID]);
+
+        $this->assertAmount($expectedAmount, $actualAmount);
+
+        $this->verifySecureHash($content);
 
         $gatewayPayment = $this->saveCallbackContent($input, $content);
 
@@ -140,8 +151,8 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_HEADLESS_PARSING_FAILED,
-                null, 
-                null, 
+                null,
+                null,
                 [
                     'gateway' => $this->gateway,
                 ]
@@ -218,6 +229,33 @@ class Gateway extends Base\Gateway
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
         $verify->payment = $this->saveVerifyContent($verify);
+    }
+
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
+        {
+            return true;
+        }
+
+        throw new Exception\LogicException(
+            'Verify refund not implemented',
+            null,
+            [
+                'gateway'   => 'atom',
+                'refund_id' => $input['refund']['id'],
+            ]);
     }
 
     protected function verifyAmountMismatch(Base\Verify $verify, array $input, array $response, string $entity)

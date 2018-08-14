@@ -22,4 +22,20 @@ class ReversalController extends Controller
 
         return ApiResponse::json($reversals);
     }
+
+    public function getLinkedAccountReversals()
+    {
+        $input = Request::all();
+
+        $reversals = $this->service()->fetchLinkedAccountReversals($input);
+
+        return ApiResponse::json($reversals);
+    }
+
+    public function getLinkedAccountReversal(string $id)
+    {
+        $reversal = $this->service()->fetchLinkedAccountReversal($id);
+
+        return ApiResponse::json($reversal);
+    }
 }

@@ -36,16 +36,20 @@
       "title": "Type Of Service",
       "enum": [
         "",
+        "New Installation",
         "Repair",
-        "Installation",
-        "Maintenance"
+        "Maintenance",
+        "Replacement",
+        "Others"
       ],
       "options": {
         "enum_titles": [
           "--Select--",
+          "New Installation",
           "Repair",
-          "Installation",
-          "Maintenance"
+          "Maintenance",
+          "Replacement",
+          "Others"
         ]
       }
     },
@@ -55,8 +59,7 @@
       "enum": [
         "",
         "Andhra Pradesh",
-        "Bangalore 1",
-        "Bangalore 2",
+        "Bangalore",
         "Bihar",
         "Chandigarh",
         "Chattisgarh",
@@ -94,8 +97,7 @@
         "enum_titles": [
           "--Select--",
           "Andhra Pradesh",
-          "Bangalore 1",
-          "Bangalore 2",
+          "Bangalore",
           "Bihar",
           "Chandigarh",
           "Chattisgarh",

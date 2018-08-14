@@ -114,6 +114,36 @@ return [
         ],
     ],
 
+    'testCreatePaymentLinkWithTooLargeAmount' => [
+        'request'  => [
+            'url'     => '/payment_links',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'amount'        => 50000001,
+                'currency'      => 'INR',
+                'title'         => 'Sample title',
+                'description'   => 'Sample description',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Amount exceeds maximum payment amount allowed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testFetchPaymentLink' => [
         'request'  => [
             'url'     => '/payment_links/pl_100000000000pl',

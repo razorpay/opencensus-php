@@ -142,7 +142,6 @@ class Base extends BaseProcessor
             $errorCode,
             $content[self::GATEWAY_ERROR_CODE] ?? null,
             $content[self::GATEWAY_ERROR_MESSAGE] ?? null,
-
             [
                 'payment_id' => $payment->getId(),
             ]);

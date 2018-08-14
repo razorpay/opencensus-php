@@ -5,15 +5,23 @@ namespace RZP\Models\FundTransfer\Base\Initiator;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Batch\Entity;
+use RZP\Models\FundTransfer\Attempt\Metric;
 
 abstract class NodalAccount extends Base\Core
 {
+    const SUCCESS               = 'success';
+
+    const FAILED                = 'failed';
+
     const MIN_RTGS_AMOUNT       = 200000;
+
+    const MAX_IMPS_AMOUNT       = 200000;
 
     const RTGS_CUTOFF_HOUR      = 15;
 
@@ -37,14 +45,25 @@ abstract class NodalAccount extends Base\Core
 
     protected $summary = [];
 
-    public function __construct()
+    protected $purpose = null;
+
+    protected $transferStatus = [];
+
+    public function __construct(string $purpose = null)
     {
+        $this->purpose = $purpose;
+
         $this->initSummary();
 
         parent::__construct();
     }
 
-    protected $purpose           = null;
+    public function initiateTransfer(Base\PublicCollection $attempts): array
+    {
+        $this->updateAttemptStatus($attempts);
+
+        return $this->process($attempts);
+    }
 
     protected function isRefund(): bool
     {
@@ -56,7 +75,7 @@ abstract class NodalAccount extends Base\Core
         return ($this->purpose === Attempt\Purpose::SETTLEMENT);
     }
 
-    protected function getTransferMode($amount): string
+    protected function getTransferMode($amount, Merchant\Entity $merchant): string
     {
         $rtgsCutoffTime = Carbon::createFromTime(
                                 self::RTGS_CUTOFF_HOUR,
@@ -72,6 +91,16 @@ abstract class NodalAccount extends Base\Core
             ($amount >= self::MIN_RTGS_AMOUNT))
         {
             $mode = Mode::RTGS;
+        }
+
+        //
+        // Need this only for Piggy merchants currently. Hence
+        // the check against parentId and not the merchantId.
+        // Temporary solution. Proper solution coming soon.
+        //
+        if (in_array($merchant->getParentId(), Merchant\Preferences::ONLY_NEFT_SETTLEMENT_MIDS, true) === true)
+        {
+            $mode = Mode::NEFT;
         }
 
         return $mode;
@@ -206,6 +235,27 @@ abstract class NodalAccount extends Base\Core
         ];
     }
 
+    /**
+     * This is used to initialize the response status for the API based nodal accounts
+     */
+    protected function initStats()
+    {
+        $this->transferStatus = [
+            self::SUCCESS      => 0,
+            self::FAILED       => 0,
+        ];
+    }
+
+    /**
+     * This is used to update the response status for the API based nodal accounts
+     */
+    protected function updateTransferStatus(int $initiated)
+    {
+        $this->transferStatus[self::SUCCESS] = $initiated;
+
+        $this->transferStatus[self::FAILED] = $this->count - $initiated;
+    }
+
     protected function updateSummary($type, $amount)
     {
         $this->summary['total']['count']++;
@@ -215,4 +265,21 @@ abstract class NodalAccount extends Base\Core
         $this->summary[$type]['count']++;
     }
 
+    protected function trackAttemptsInitiatedSuccess($channel, $purpose = null, $sourceType)
+    {
+        $dimensions = Metric::getDimensionsAttemptsInitiated($channel, $purpose, $sourceType);
+
+        $this->trace->count(
+            Metric::ATTEMPTS_INITIATE_SUCCESS_TOTAL,
+            $dimensions);
+    }
+
+    protected function trackAttemptsInitiatedFailure($channel, $purpose = null, $sourceType)
+    {
+        $dimensions = Metric::getDimensionsAttemptsInitiated($channel, $purpose, $sourceType);
+
+        $this->trace->count(
+            Metric::ATTEMPTS_INITIATE_FAILURE_TOTAL,
+            $dimensions);
+    }
 }

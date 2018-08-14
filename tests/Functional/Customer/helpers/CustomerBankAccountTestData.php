@@ -11,7 +11,7 @@ return [
             'content' => [
                 'ifsc_code'             => 'ICIC0001206',
                 'account_number'        => '0002020000304030434',
-                'beneficiary_name'      => 'Test R4zorpay',
+                'beneficiary_name'      => 'Test R4zorpay:',
                 'beneficiary_address1'  => 'address 1',
                 'beneficiary_address2'  => 'address 2',
                 'beneficiary_address3'  => 'address 3',
@@ -30,7 +30,7 @@ return [
             'content' => [
                 'entity'           => 'bank_account',
                 'ifsc'             => 'ICIC0001206',
-                'name'             => 'Test R4zorpay',
+                'name'             => 'Test R4zorpay:',
                 'account_number'   => '0002020000304030434',
                 'bank_name'        => 'ICICI Bank'
             ]

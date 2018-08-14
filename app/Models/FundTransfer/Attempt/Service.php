@@ -14,7 +14,12 @@ class Service extends Base\Service
 {
     public function initiateFundTransfers(array $input, $channel = null)
     {
-        $this->trace->info(TraceCode::INITIATE_FUND_TRANSFER, $input);
+        $this->trace->info(
+            TraceCode::INITIATE_FUND_TRANSFER,
+            [
+                'input'     => $input,
+                'channel'   => $channel
+            ]);
 
         $data = (new Initiator)->initiateFundTransfers($input, $channel);
 

@@ -4,6 +4,7 @@ namespace RZP\Models\Admin;
 
 use Cache;
 
+use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
@@ -242,6 +243,15 @@ class Service extends Base\Service
     public function updateGeoIps(array $input)
     {
         return (new GeoIP)->updateGeoIps($input);
+    }
+
+    public function updateMdr()
+    {
+        Jobs\MdrBackFill::dispatch($this->mode);
+
+        return [
+            'success' => true,
+        ];
     }
 
     public function dbMetaDataQuery(array $input): array

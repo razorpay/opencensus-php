@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\Bank\BankCodes;
 
 class Service extends Base\Service
 {

@@ -10,17 +10,8 @@ use RZP\Models\FileStore;
 
 abstract class FileProcessor extends NodalAccount
 {
-    public function __construct(string $purpose)
+    public function process(Base\PublicCollection $attempts): array
     {
-        parent::__construct();
-
-        $this->purpose = $purpose;
-    }
-
-    public function initiateTransfer(Base\PublicCollection $attempts): array
-    {
-        $this->updateAttemptStatus($attempts);
-
         $fileEntity = $this->generateFundTransferFile($attempts);
 
         $this->updateFundTransferFileDetails($fileEntity);
@@ -64,6 +55,8 @@ abstract class FileProcessor extends NodalAccount
             $this->repo->saveOrFail($attempt);
 
             $this->repo->saveOrFail($attempt->source);
+
+            $this->trackAttemptsInitiatedSuccess($this->channel, $this->purpose, $attempt->getSourceType());
         }
     }
 }

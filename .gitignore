@@ -20,13 +20,26 @@ environment/.env.testing_docker
 .DS_Store
 Thumbs.db
 /public/test/config.php
-/public/fonts
+#/public/fonts
 docs/
 app/config/dev
 app/config/**/dev/
 /environment/env.php
 _*
 storage/
+storage/files/batch/*
+storage/files/filestore/*
+storage/files/logos/*
+storage/files/report/*
+storage/files/settlement/*
+storage/files/qrcodes/*
+!storage/files/batch/.gitkeep
+!storage/files/filestore/.gitkeep
+!storage/files/logos/.gitkeep
+!storage/files/report/.gitkeep
+!storage/files/settlement/.gitkeep
+!storage/files/qrcodes/.gitkeep
+
 
 #eclipse
 .buildpath

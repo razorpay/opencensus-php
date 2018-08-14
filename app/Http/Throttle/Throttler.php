@@ -176,8 +176,10 @@ class Throttler
               $this->reqCtx->getOAuthPublicToken() ?:
               $this->reqCtx->getInternalAppName();
 
-        // Only use ip address for public and direct routes
-        $ip = ($this->reqCtx->isPublicAuth() or $this->reqCtx->isDirectAuth()) ? $this->reqCtx->getRequest()->ip() : '';
+        // Only use ip address for 1) api's public, direct group routes, 2) dashboard_guest(internal) group routes
+        $ip = (($this->reqCtx->isPublicAuth() === true) or
+               ($this->reqCtx->isDirectAuth() === true) or
+               ($this->reqCtx->isDashboardGuest() === true)) ? $this->reqCtx->getRequest()->ip() : '';
 
         // E.g.: payments_create:live:private:0::10000000000000:
         $args = [
@@ -187,8 +189,15 @@ class Throttler
             (int) $this->reqCtx->getProxy(),
             $this->reqCtx->getOAuthClientId(),
             $id,
-            $ip
+            $this->reqCtx->getUserId(),
+            $ip,
         ];
+
+        $extraArgs = $this->getExtraThrottleKeyArgsFromConfig();
+        if (count($extraArgs) > 0)
+        {
+            array_push($args, ...$extraArgs);
+        }
 
         return implode(':', $args);
     }
@@ -299,5 +308,45 @@ class Throttler
                $this->settings[K::GLOBAL]["{$key}"] ??
                // Again finally, the default by callee :)
                $default;
+    }
+
+    /**
+     * Returns extra arguments to be used for throttle identifier for specific route as configured
+     * @return array
+     */
+    protected function getExtraThrottleKeyArgsFromConfig(): array
+    {
+        $route  = $this->reqCtx->getRoute();
+        $config = $this->config['throttle_key'][$route] ?? null;
+
+        if ($config === null)
+        {
+            return [];
+        }
+
+        $routeParams   = $config['route_params'] ?? [];
+        $requestParams = $config['request_params'] ?? [];
+        $headerParams  = $config['header_params'] ?? [];
+
+        $args = [];
+
+        $request = $this->reqCtx->getRequest();
+
+        foreach ($routeParams as $k)
+        {
+            $args[] = $request->route()->parameter($k);
+        }
+
+        foreach ($requestParams as $k)
+        {
+            $args[] = $request->input($k);
+        }
+
+        foreach ($headerParams as $k)
+        {
+            $args[] = $request->headers->get($k);
+        }
+
+        return $args;
     }
 }

@@ -11,6 +11,7 @@ return [
         [
             Metric::LABEL_INSTANCE => '10.123.123.123',
             Metric::LABEL_ROUTE    => 'order_create',
+            Metric::LABEL_RZP_MODE => 'none',
         ],
     ],
 
@@ -23,6 +24,7 @@ return [
             Metric::LABEL_INSTANCE        => '10.123.123.123',
             Metric::LABEL_ROUTE           => 'order_create',
             Metric::LABEL_RZP_MERCHANT_ID => 'other',
+            Metric::LABEL_RZP_MODE        => 'none',
         ],
     ],
 
@@ -35,6 +37,7 @@ return [
             Metric::LABEL_INSTANCE        => '10.123.123.123',
             Metric::LABEL_ROUTE           => 'order_create',
             Metric::LABEL_RZP_MERCHANT_ID => 'merchant_00001',
+            Metric::LABEL_RZP_MODE        => 'none',
         ],
     ],
 
@@ -43,12 +46,14 @@ return [
             Metric::LABEL_ROUTE           => 'order_create',
             Metric::LABEL_RZP_MERCHANT_ID => 'merchant_00002',
             Metric::LABEL_RZP_KEY_ID      => 'key_0000000003',
+            Metric::LABEL_RZP_MODE        => 'test',
         ],
         [
             Metric::LABEL_INSTANCE        => '10.123.123.123',
             Metric::LABEL_ROUTE           => 'order_create',
             Metric::LABEL_RZP_MERCHANT_ID => 'other',
             Metric::LABEL_RZP_KEY_ID      => 'other',
+            Metric::LABEL_RZP_MODE        => 'test',
         ],
     ],
 ];

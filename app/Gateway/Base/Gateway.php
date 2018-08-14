@@ -315,6 +315,31 @@ class Gateway
         $this->mock = $mock;
     }
 
+    /**
+     * if bharatQr payment is not successful $valid will be set to false in BharatQr Service,in
+     * that case the reason of the failure is shared with gateway using exception thrown
+     * else the value of $valid will be true and we will send the respective response to gateway.
+     */
+    public function getBharatQrResponse(bool $valid, $gatewayInput = null, $exception = null)
+    {
+        if ($valid === true)
+        {
+            $xml = '<RESPONSE>OK</RESPONSE>';
+        }
+        else
+        {
+            $xml = '<RESPONSE>NOK</RESPONSE>';
+        }
+
+        $response = \Response::make($xml);
+
+        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
+
+        $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
+    }
+
     protected function checkApiSuccess(Verify $verify)
     {
         $verify->apiSuccess = true;
@@ -458,6 +483,17 @@ class Gateway
         return false;
     }
 
+    protected function isMotoTransactionRequest($input)
+    {
+        if (($input['terminal']->isMoto() === true) and
+            ($input['payment']['auth_type'] === Payment\AuthType::SKIP))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function generateRefunds($input)
     {
         $paymentIds = array_map(function($row)
@@ -494,6 +530,19 @@ class Gateway
         if (isset($request['options']) === false)
         {
             $request['options'] = [];
+        }
+
+        //
+        // Intentionally setting verify to null, so Requests does not use its default
+        // cacert (which is outdated), and curl ends up using the OS cacert by default.
+        //
+        // Ref:
+        // [1] Requests::get_default_options
+        // [2] Requests_Transport_cURL -> requesst
+        //
+        if (isset($request['options']['verify']) === false)
+        {
+            $request['options']['verify'] = null;
         }
 
         if (isset($request['headers']) === false)
@@ -632,6 +681,11 @@ class Gateway
     }
 
     public function preProcessServerCallback($input): array
+    {
+        return $input;
+    }
+
+    public function verifyBharatQrNotification($input)
     {
         return $input;
     }

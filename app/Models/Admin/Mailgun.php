@@ -112,7 +112,10 @@ class Mailgun extends Base\Core
 
     protected function bouncedCallback(array $input)
     {
-        $this->notifyBounce($input);
+        //
+        // Too many mails bouncing now, not actionable on an individual basis
+        //
+        // $this->notifyBounce($input);
 
         return 200;
     }

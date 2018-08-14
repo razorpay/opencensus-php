@@ -18,6 +18,10 @@ return [
         'secret'   => env('APP_DASHBOARD_GUEST_SECRET'),
     ],
 
+    'dashboard_internal' => [
+        'secret'   => env('APP_DASHBOARD_INTERNAL_SECRET'),
+    ],
+
     'mock_gateways' => [
         'secret'    => env('MOCK_GATEWAY_SECRET'),
     ],
@@ -210,4 +214,8 @@ return [
         'url'     => env('OTPELF_BASE_URL'),
         'api_key' => env('OTPELF_API_KEY'),
     ],
+
+    'beam' => [
+        'url' => env('BEAM_URL')
+    ]
 ];

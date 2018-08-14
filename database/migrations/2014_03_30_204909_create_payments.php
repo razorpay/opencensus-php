@@ -225,6 +225,10 @@ class CreatePayments extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->integer(Payment::MDR)
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(Payment::TAX)
                   ->unsigned()
                   ->nullable();
@@ -264,7 +268,7 @@ class CreatePayments extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->integer(Payment::REFERENCE11)
+            $table->integer(Payment::REFUND_AT)
                   ->unsigned()
                   ->nullable();
 

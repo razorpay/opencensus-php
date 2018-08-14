@@ -22,7 +22,7 @@ vendorCode?)>
 <!ELEMENT Browser (deviceCategory?, accept?, userAgent?)>
 <!ELEMENT CR (begin, end, action)>
 <!ELEMENT CH (enrolled?, acctID?, expiry?)>
-<!ELEMENT IReq (iReqCode?, iReqDetail?, vendorCode?)>
+<!ELEMENT IReq (iReqCode|iReqDetail|vendorCode)*>
 <!ELEMENT Merchant (acqBIN, merID, password?, name?, country?, url?)>
 <!ELEMENT Purchase (xid, date, amount?, purchAmount, currency,
 exponent,desc?, Recur?, install?)>

@@ -321,16 +321,6 @@ trait Capture
 
         $autoCaptured = $payment->getAutoCaptured();
 
-        if (($payment->isEmiMerchantSubvented() === true) and
-            ($autoCaptured === false))
-        {
-            $emiPlan = $payment->emiPlan;
-
-            $merchantPayback = $emiPlan->getMerchantPayback();
-
-            $captureAmount = Emi\Calculator::calculateSubventedAmount($captureAmount, $merchantPayback);
-        }
-
         if ($captureAmount !== $payment->getAmount())
         {
             throw new Exception\BadRequestException(
@@ -391,7 +381,7 @@ trait Capture
             return;
         }
 
-        $captureAmount = $discount->offer->getDiscountedAmount($order->getAmount());
+        $captureAmount = $discount->offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
     }
 
     /**
@@ -650,6 +640,8 @@ trait Capture
 
         $payment->setCaptureTimestamp();
 
+        $payment->setRefundAt(null);
+
         $payment->setAutoCaptured($autoCaptured);
 
         $this->trace->info(
@@ -675,6 +667,8 @@ trait Capture
             //set and fee values from txn
             $payment->setFee($txn->getFee());
         }
+
+        $this->calculateAndSetMdrFeeIfApplicable($payment, $txn);
 
         $this->repo->saveOrFail($txn);
 
@@ -758,6 +752,11 @@ trait Capture
             return true;
         }
 
+        if ($order->getAmountPaid() > $order->getAmount())
+        {
+            return true;
+        }
+
         if (($order->isDiscountApplicable() === true) and
             ($payment->discount !== null) and
             (($payment->getAmount() + $payment->discount->getAmount()) === $order->getAmount()))
@@ -795,6 +794,54 @@ trait Capture
 
         $invoice->updateStatusPostCapture();
 
+        $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
+        $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
+        $this->trace->count(Invoice\Metric::INVOICE_PAID_TOTAL, $dimensions);
+
         $this->repo->saveOrFail($invoice);
+    }
+
+    public function calculateAndSetMdrFeeIfApplicable(Payment\Entity $payment, Transaction\Entity $txn)
+    {
+        $paymentBaseAmount = $payment->getBaseAmount();
+        $txnFee            = $txn->getFee();
+        $mdrFee            = 0;
+
+        switch (true)
+        {
+            // BharatQr needs to be checked first, as the method in this case can be card
+            // but the mdr rate is different from card / emi payments
+            case $payment->isBharatQr():
+                $mdrFee = $this->calculateMdr($paymentBaseAmount, $txnFee, $rate = 0.008);
+
+                break;
+
+            case $payment->isMethodCardOrEmi():
+                $mdrFee = ($payment->card->isCredit() === true) ?
+                    $txnFee :
+                    $this->calculateMdr($paymentBaseAmount, $txnFee, $rate = 0.009);
+
+                break;
+
+            case $payment->isUpi():
+                $mdrFee = $this->calculateMdr($paymentBaseAmount, $txnFee, $rate = 0.009);
+
+                break;
+
+            default:
+                $mdrFee = $txnFee;
+
+                break;
+        }
+
+        $payment->setMdr($mdrFee);
+        $txn->setMdr($mdrFee);
+    }
+
+    protected function calculateMdr(int $paymentBaseAmount, int $txnFee, float $rate): int
+    {
+        $calculatedMdr = intval(ceil($paymentBaseAmount * $rate));
+
+        return ($paymentBaseAmount <= self::MIN_MDR_PAYMENT_AMOUNT) ? 0 : min($calculatedMdr, $txnFee);
     }
 }

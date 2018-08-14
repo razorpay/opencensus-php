@@ -394,8 +394,18 @@ class Core extends Base\Core
      */
     public function getFeesForOrder(Order\Entity $order)
     {
+        return $this->getFees($order->getAmountDue(), $order);
+    }
+
+    public function getFeesForBankTransfer(Entity $bankTransfer, Order\Entity $order)
+    {
+        return $this->getFees($bankTransfer->getAmount(), $order);
+    }
+
+    protected function getFees(int $amount, Order\Entity $order)
+    {
         $request = [
-            Payment\Entity::AMOUNT   => $order->getAmountDue(),
+            Payment\Entity::AMOUNT   => $amount,
             Payment\Entity::CURRENCY => $order->getCurrency(),
             Payment\Entity::METHOD   => Payment\Method::BANK_TRANSFER,
         ];

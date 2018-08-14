@@ -6,8 +6,8 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Exception\GatewayErrorException;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Gateway\Wallet\Amazonpay\RequestFields;
@@ -102,6 +102,29 @@ class AmazonpayGatewayTest extends TestCase
         $this->assertTestResponse($wallet, __FUNCTION__ . 'Wallet');
 
         $this->assertNotNull($wallet[WalletEntity::DATE]);
+    }
+
+    public function testPaymentCallbackWithoutPaymentId()
+    {
+        $payment = $this->payment;
+
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                unset($content['sellerOrderId']);
+            });
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            BadRequestException::class,
+            'Payment failed');
+
+        $payment = $this->getDbLastEntityPublic(ConstantsEntity::PAYMENT);
+
+        $this->assertEquals(Payment\Status::CREATED, $payment[Payment\Entity::STATUS]);
     }
 
     public function testPaymentAmountPrecisionCheck()

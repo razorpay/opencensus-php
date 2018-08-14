@@ -3,10 +3,12 @@
 namespace RZP\Tests\Functional\Invoice;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class InvoiceCommunicationTest extends TestCase
 {
+    use TestsMetrics;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -28,6 +30,32 @@ class InvoiceCommunicationTest extends TestCase
 
     public function testSmsAndEmailNotify()
     {
+        $metrics = $this->createMetricsMock();
+
+        $metrics->expects($this->at(8))
+                ->method('count')
+                ->with(
+                    'invoice_email_notify_total',
+                    1,
+                    [
+                        'email_type'       => 'issued',
+                        'type'             => 'invoice',
+                        'has_batch'        => 0,
+                        'has_subscription' => 0,
+                    ]);
+
+        $metrics->expects($this->at(9))
+                ->method('count')
+                ->with(
+                    'invoice_sms_notify_total',
+                    1,
+                    [
+                        'sms_type'         => 'issued',
+                        'type'             => 'invoice',
+                        'has_batch'        => 0,
+                        'has_subscription' => 0,
+                    ]);
+
         $this->startTest();
 
         $this->assertStatusesWithLastEntity(['sms_status' => 'sent', 'email_status' => 'sent']);

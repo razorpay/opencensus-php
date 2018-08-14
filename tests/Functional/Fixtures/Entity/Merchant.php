@@ -242,7 +242,7 @@ class Merchant extends Base
 
     public function createBankAccount(array $attributes = array())
     {
-        $name = random_alpha_string(10);
+        $name = random_string_special_chars(10);
 
         $code = substr(strtoupper($name), 0, 4);
 
@@ -430,6 +430,11 @@ class Merchant extends Base
     public function editFeeCredits($credits, $id = '10000000000000')
     {
         return $this->fixtures->edit('balance', $id, ['fee_credits' => $credits]);
+    }
+
+    public function editFeeCreditsThreshold($credits, $id = '10000000000000')
+    {
+        return $this->edit($id, ['fee_credits_threshold' => $credits]);
     }
 
     public function editRefundCredits($credits, $id = '10000000000000')

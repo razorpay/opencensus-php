@@ -21,7 +21,10 @@ class Refund extends Base
         $attributes['payment_id'] = $payment->getId();
         $attributes['merchant_id'] = $payment->merchant->getId();
         $attributes['base_amount'] = $attributes['amount'];
-        $attributes['status'] = 'processed';
+        if (isset($attributes['status']) === false)
+        {
+            $attributes['status'] = 'processed';
+        }
 
         $refund = parent::create($attributes);
 

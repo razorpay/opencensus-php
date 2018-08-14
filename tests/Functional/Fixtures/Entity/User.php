@@ -47,4 +47,23 @@ class User extends Base
                 'updated_at'  => 1493805150
             ]);
     }
+
+    public function getMerchantUserMapping($merchantId, $userId)
+    {
+        return DB::table('merchant_users')
+                    ->where('merchant_id', $merchantId)
+                    ->where('user_id', $userId)
+                    ->get();
+    }
+
+    public function createUserForMerchant(string $merchantId, array $attributes = array())
+    {
+        $user = $this->fixtures->create('user', $attributes);
+
+        $mappingData = ['user_id' => $user['id'], 'merchant_id' => $merchantId, 'role' => 'owner'];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        return $user;
+    }
 }

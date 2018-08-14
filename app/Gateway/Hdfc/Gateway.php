@@ -604,7 +604,7 @@ class Gateway extends Base\Gateway
                 ]);
 
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED, null, null, [], null, Base\Action::AUTHENTICATE);
         }
     }
 
@@ -838,7 +838,7 @@ class Gateway extends Base\Gateway
 
     // -------------------------Exceptions -----------------------------------------
 
-    protected function throwException($error, $safeRetry = false)
+    protected function throwException($error, $safeRetry = false, $verifyAction = null)
     {
         // Mark error as false now to remove the stale state for future function calls.
         // @todo: refactor and remove this completely.
@@ -895,8 +895,11 @@ class Gateway extends Base\Gateway
             default:
 
                 $exception = new Exception\GatewayErrorException($apiErrorCode);
+
                 break;
         }
+
+        $exception->setAction($verifyAction);
 
         $exception->setGatewayErrorCodeAndDesc($gatewayErrorCode, $gatewayErrorDesc);
 
@@ -972,7 +975,9 @@ class Gateway extends Base\Gateway
                 [
                     'issuer' => $input['card']['issuer'],
                     'iin'    => $input['card']['iin']
-                ]
+                ],
+                null,
+                Base\Action::AUTHENTICATE
             );
         }
     }
@@ -985,7 +990,12 @@ class Gateway extends Base\Gateway
             ($PaRes['Message']['PARes']['TX']['status'] === 'N'))
         {
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED);
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+                null,
+                null,
+                [],
+                null,
+                Base\Action::AUTHENTICATE);
         }
     }
 }

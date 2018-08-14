@@ -12,7 +12,7 @@ class VerifyUpiProviders extends Command
     const SPREADSHEET_URL = 'https://goo.gl/AqFY8Y';
 
     // See http://www.rubular.com/r/cCMuz21dlX for regex
-    const PSP_REGEX = '/@([a-z]+)/';
+    const PSP_REGEX = '/@([a-z0-9]+)/';
     /**
      * The name and signature of the console command.
      *

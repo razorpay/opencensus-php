@@ -6,8 +6,10 @@ use App;
 use Route;
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
+use RZP\Constants\Metric;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
+use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Http;
@@ -89,6 +91,11 @@ class Processor
      * Default UPI collect request expiry time in minutes.
      */
     const UPI_COLLECT_EXPIRY = 5;
+
+    /**
+     * Minimum payment amount for which mdr should be calculated
+     */
+    const MIN_MDR_PAYMENT_AMOUNT = 200000;
 
     /**
      * @var Merchant\Entity
@@ -190,28 +197,56 @@ class Processor
 
     public function process(array $input, $gatewayInput = []): array
     {
-        $this->setMethodForInput($input);
-
-        $payment = $this->buildPaymentEntity($input);
-
-        $ret = $this->preProcessPaymentInputs($input, $payment);
-
-        if ($ret !== null)
+        try
         {
-            return $ret;
+            $this->setMethodForInput($input);
+
+            $payment = $this->buildPaymentEntity($input);
+
+            $ret = $this->preProcessPaymentInputs($input, $payment);
+
+            if ($ret !== null)
+            {
+                return $ret;
+            }
+
+            $this->repo->transaction(function() use ($input, $payment)
+            {
+                $this->createPaymentEntity($input, $payment);
+            });
+
+            $payment = $this->payment;
+
+            // This flow is being used for only hosted (Shopify).
+            $this->checkSignature($input, $payment);
+
+            return $this->authorize($payment, $input, $gatewayInput);
         }
-
-        $this->repo->transaction(function() use ($input, $payment)
+        catch (Exception\BaseException $e)
         {
-            $this->createPaymentEntity($input, $payment);
-        });
+            $attributes = [];
 
-        $payment = $this->payment;
+            if (($e->getError() !== null) and ($e->getError() instanceof Error))
+            {
+                $attributes = $e->getError()->getAttributes();
+            }
 
-        // This flow is being used for only hosted (Shopify).
-        $this->checkSignature($input, $payment);
+            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
 
-        return $this->authorize($payment, $input, $gatewayInput);
+            $this->pushPaymentCreateErrorMetrics($attributes);
+
+            throw $e;
+        }
+        catch (\Throwable $e)
+        {
+            $attributes = [Metric::LABEL_TRACE_CODE =>  $e->getCode()];
+
+            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
+
+            $this->pushPaymentCreateErrorMetrics($attributes);
+
+            throw $e;
+        }
     }
 
     public function getPayment(): Payment\Entity
@@ -277,12 +312,9 @@ class Processor
         // We need this flow only if either:
         //   - bank_account is missing
         //   - auth_type is missing
-        //   - auth_type is aadhaar and aadhaar_number is missing
         //
         if ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
-            (empty($payment->getAuthType()) === false) and
-            (($payment->getAuthType() !== Payment\AuthType::AADHAAR) or
-             (empty($input[Payment\Entity::AADHAAR]['number']) === false)))
+            (empty($payment->getAuthType()) === false))
         {
             return null;
         }
@@ -582,7 +614,7 @@ class Processor
         {
             $orderAmount = $order->getAmount();
 
-            $discountedAmount = $this->offer->getDiscountedAmount($orderAmount);
+            $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
             $payment->setAmount($discountedAmount);
         }
@@ -645,7 +677,7 @@ class Processor
             return $offers->first();
         }
 
-        new Exception\LogicException('Auto selection of offer is not implemented yet.');
+        throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
     }
 
     protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
@@ -899,6 +931,13 @@ class Processor
      */
     public function getAsyncResponse($id)
     {
+        $response = $this->getUpiStatus($id);
+
+        if ($response !== null)
+        {
+            return $response;
+        }
+
         $payment = $this->retrieve($id);
 
         $order = $this->getOrderForPayment($payment);
@@ -930,9 +969,13 @@ class Processor
                     ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
             }
 
-            return [
+            $response = [
                 Payment\Entity::STATUS => Payment\Status::CREATED
             ];
+
+            $this->setUpiStatus($payment->getPublicId(), $response);
+
+            return $response;
         }
 
         $resource = $this->getCallbackMutexResource($payment);
@@ -1052,16 +1095,7 @@ class Processor
 
         $payment->setError($code, $desc, $internalCode);
 
-        $payment->setVerified(null);
-        $payment->setVerifyBucket(0);
-
-        // If payment still doesnt exist we set verify_at as null
-        // So that this payment doesnt get picked up by any cron
-        // for verify
-        if ($payment->exists === false)
-        {
-            $payment->setVerifyAt(null);
-        }
+        $this->updateVerifyBucketOnPaymentFailure($exception);
 
         $this->repo->saveOrFail($payment);
 
@@ -1098,6 +1132,35 @@ class Processor
         $source = $riskData[Risk\Entity::SOURCE];
 
         (new Risk\Core)->logPaymentForSource($payment, $source, $riskData);
+    }
+
+    protected function updateVerifyBucketOnPaymentFailure(Exception\BaseException $e)
+    {
+        $payment = $this->payment;
+
+        $payment->setVerified(null);
+
+        $payment->setVerifyBucket(0);
+
+        //
+        // In case the gateway error exception is thrown on authenticate
+        // we set verify bucket to null
+        //
+        if ($e instanceof Exception\GatewayErrorException)
+        {
+            if (in_array($e->getAction(), \RZP\Gateway\Base\Action::$nonVerifiableActions, true) === true)
+            {
+                $payment->setNonVerifiable();
+            }
+        }
+
+        // If payment still doesnt exist we set verify_at as null
+        // So that this payment doesnt get picked up by any cron
+        // for verify
+        if ($payment->exists === false)
+        {
+            $payment->setNonVerifiable();
+        }
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
@@ -1520,7 +1583,7 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice, true);
 
-        $invoice->getValidator()->validateInvoicePayable();
+        $invoice->getValidator()->validateInvoicePayable($payment);
 
         $payment->invoice()->associate($invoice);
     }
@@ -2180,5 +2243,89 @@ class Processor
         $this->repo->saveOrFail($order);
 
         $this->eventOrderPaid();
+    }
+
+
+    protected function getUpiStatus(string $id)
+    {
+        $key = Payment\Entity::getCacheUpiStatusKey($id);
+
+        try
+        {
+            return $this->cache->get($key);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_CACHE_READ_ERROR,
+                ['key' => $key]);
+        }
+    }
+
+    /**
+     * Key will be deleted from the cache when the upi
+     * payment entity gets updated. Deletion is in the
+     * observer class(Models/Payment/Observer.php).
+     *
+     * @param string $id
+     * @param array  $value
+     * @param float  $ttl
+     */
+    protected function setUpiStatus(string $id, array $value, float $ttl = 0.75)
+    {
+        $key = Payment\Entity::getCacheUpiStatusKey($id);
+
+        try
+        {
+            $this->cache->put($key, $value, $ttl);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_CACHE_STORE_ERROR,
+                ['key' => $key,
+                 '$value' => $value]);
+        }
+    }
+
+    protected function pushPaymentCreateErrorMetrics(array $errorAttributes)
+    {
+        $this->trace->count(
+            Metric::PAYMENT_PROCESS_FAILED,
+            [
+                Metric::LABEL_TRACE_CODE            =>  array_get($errorAttributes, Error::INTERNAL_ERROR_CODE),
+                Metric::LABEL_TRACE_FIELD           =>  array_get($errorAttributes, Error::FIELD),
+                Metric::LABEL_TRACE_SOURCE          =>  array_get($errorAttributes, Error::ERROR_CLASS),
+                Metric::LABEL_PAYMENT_IS_CREATED    =>  array_get($errorAttributes, Metric::LABEL_PAYMENT_IS_CREATED),
+            ]
+        );
+    }
+
+    protected function isPaymentEmandateAndRblGateway(Payment\Entity $payment)
+    {
+        if (($payment->isEmandate() === true) and
+            ($payment->getGateway() === Payment\Gateway::ENACH_RBL))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isPaymentTpvAndBankTransferRefund(Payment\Entity $payment)
+    {
+        if (($payment->hasOrder() === true) and
+            ($payment->isTpvMethod() === true) and
+            ($this->merchant->isTPVRequired() === true) and
+            ($this->merchant->isFeatureEnabled(Feature::BANK_TRANSFER_REFUND) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

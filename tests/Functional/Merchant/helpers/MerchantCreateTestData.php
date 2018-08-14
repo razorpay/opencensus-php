@@ -221,7 +221,46 @@ return [
         ],
     ],
 
+    'testCreateSubMerchantWrongUserRole' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'   => 'NewSubmerchant',
+                'name' => 'new name',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testCreateSubMerchantWithEmail' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant 2',
+                'email' => 'submerchant@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant 2',
+                'email' => 'submerchant@razorpay.com',
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantWithEmailUserExists' => [
         'request'  => [
             'url'     => '/submerchants',
             'method'  => 'POST',
@@ -276,9 +315,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant',
-                'email' => 'test@razorpay.com',
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'test@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => null,
+                'dashboard_access' => true,
             ],
         ],
     ],
@@ -295,9 +339,45 @@ return [
         ],
         'response' => [
             'content' => [
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'name'      => 'Submerchant',
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => false,
+                ],
+                'dashboard_access' => true,
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantByFullyManagedWithEmailUserExists' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
                 'id'    => 'NewSubmerchant',
                 'name'  => 'Submerchant',
-                'email' => 'testsub@razorpay.com',
+                'email' => 'testsub@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => true,
+                ],
+                'dashboard_access' => true,
             ],
         ],
     ],
@@ -314,9 +394,17 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant',
-                'email' => 'testsub@razorpay.com',
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => false,
+                ],
+                'dashboard_access' => true,
             ],
         ],
     ],
@@ -346,12 +434,12 @@ return [
     ],
 
     'testCreateSubMerchantByAggregatorWithoutApp' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'   => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
-                'id' => 'NewSubmerchant',
-                'name' => 'Submerchant',
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
                 'email' => 'testsub@razorpay.com',
             ],
         ],
@@ -381,17 +469,22 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant',
-                'email' => 'test@razorpay.com',
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'test@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => null,
+                'dashboard_access' => true,
             ],
         ],
     ],
 
     'testCreateMarketplaceLinkedAccount' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
                 'id'      => '7gcKngYfqyDMjN',
                 'name'    => 'Linked Account 2',
@@ -408,10 +501,48 @@ return [
         ],
     ],
 
+    'testCreateMarketplaceLinkedAccountWithDashboardUser' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account 2',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'    => '7gcKngYfqyDMjN',
+                'name'  => 'Linked Account 2',
+                'email' => 'linkedaccount@razorpay.com',
+            ],
+        ],
+    ],
+
+    'testCreateMarketplaceLinkedAccountWithAlreadyExistingUser' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account Name',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'    => '7gcKngYfqyDMjN',
+                'name'  => 'Linked Account Name',
+            ],
+        ],
+    ],
+
     'testCreateMarketplaceLinkedAccountWithoutEmail' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
                 'id'      => '7gcKngYfqyDMjN',
                 'name'    => 'Linked Account 2',
@@ -428,9 +559,9 @@ return [
     ],
 
     'testCreateLinkedAccountMaxPaymentLimit' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
                 'id'      => '7gcKngYfqyDMjN',
                 'name'    => 'Linked Account 4',
@@ -449,9 +580,9 @@ return [
     ],
 
     'testCreateMarketplaceLAWithoutEmailWithPartnerBank' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
                 'id'      => '7gcKngYfqyDMjN',
                 'name'    => 'Linked Account 2',
@@ -460,33 +591,38 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => '7gcKngYfqyDMjN',
-                'name'  => 'Linked Account 2',
+                'id'   => '7gcKngYfqyDMjN',
+                'name' => 'Linked Account 2',
             ],
         ],
     ],
 
     'testCreateSubMerchantWithoutEmailWithPartnerFMAndMarketplace' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
-                'id'      => '7gcKngYfqyDMjN',
-                'name'    => 'Linked Account 2',
+                'id'   => '7gcKngYfqyDMjN',
+                'name' => 'Linked Account 2',
             ],
         ],
         'response' => [
             'content' => [
-                'id'    => '7gcKngYfqyDMjN',
-                'name'  => 'Linked Account 2',
+                'id'               => 'acc_7gcKngYfqyDMjN',
+                'name'             => 'Linked Account 2',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => null,
+                'dashboard_access' => true,
             ],
         ],
     ],
 
     'testCreateMarketplaceLAWithoutEmailWithPartnerFM' => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
                 'id'      => '7gcKngYfqyDMjN',
                 'name'    => 'Linked Account 2',
@@ -495,16 +631,16 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => '7gcKngYfqyDMjN',
-                'name'  => 'Linked Account 2',
+                'id'   => '7gcKngYfqyDMjN',
+                'name' => 'Linked Account 2',
             ],
         ],
     ],
 
     'testLinkedAccountDefaultSchedule'   => [
-        'request' => [
-            'url' => '/submerchants',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
             'content' => [
                 'id'      => '7gbqextd68Co4t',
                 'name'    => 'Linked Account 3',
@@ -521,8 +657,40 @@ return [
         ],
     ],
 
+    'testUpdateLinkedAccountEmail' => [
+        'request'  => [
+            'url'     => '/la-merchants/email',
+            'method'  => 'put',
+            'content' => [
+                'email' => 'testing@testing.com',
+            ],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response' => [
+
+        ],
+    ],
+
+    'testUpdateLinkedAccountEmailTeamUser' => [
+        'request'  => [
+            'url'     => '/la-merchants/email',
+            'method'  => 'put',
+            'content' => [
+                'email' => 'testing2@testing.com',
+            ],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response' => [
+
+        ],
+    ],
+
     'testCreateLinkedAccountBatch' => [
-        'request' => [
+        'request'  => [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [

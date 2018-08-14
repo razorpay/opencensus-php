@@ -2,7 +2,6 @@
 
 namespace RZP\Models\BharatQr;
 
-use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\QrCode;
@@ -38,29 +37,75 @@ class Service extends Base\Service
         try
         {
             $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);
+
+            $qrData = $gatewayResponse['qr_data'];
+
+            (new Validator)->validateInput('gateway_response', $qrData);
+
+            $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
+
+            $this->determineAndSetModeForQr($qrCodeId, $gateway);
+
+            $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
+
+            $terminal = $this->getTerminal($gatewayResponse['qr_data']);
+
+            $gatewayClass->setGatewayParams($gatewayResponse, $this->mode, $terminal);
+
+            // before processing payment, we will call verify callback to check if the
+            // notification was sent by the gateway or some other source .
+            $gatewayClass->verifyBharatQrNotification($gatewayResponse);
+        }
+        catch (Exception\GatewayErrorException $ex)
+        {
+            $this->trace->traceException($ex);
+
+            return $gatewayClass->getBharatQrResponse(false, $input, $ex);
         }
         catch (\Exception $ex)
         {
             $this->trace->traceException($ex);
 
-            return $this->getResponse(false);
+            return $gatewayClass->getBharatQrResponse(false, $input);
         }
 
-        $qrData = $gatewayResponse['qr_data'];
+        $valid = $this->core->processPayment($gatewayResponse, $terminal);
 
-        (new Validator)->validateInput('gateway_response', $qrData);
-
-        $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
-
-        $this->determineAndSetModeForQr($qrCodeId, $gateway);
-
-        $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
-
-        $valid = $this->core->processPayment($gatewayResponse);
-
-        $response = $this->getResponse($valid);
+        $response = $gatewayClass->getBharatQrResponse($valid, $input);
 
         return $response;
+    }
+
+    protected function getTerminal($gatewayResponse)
+    {
+        $gateway = $gatewayResponse[GatewayResponseParams::GATEWAY];
+
+        if (isset($gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID]) === true)
+        {
+            $gatewayMerchantId = $gatewayResponse[GatewayResponseParams::GATEWAY_MERCHANT_ID];
+
+            $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
+        }
+        else
+        {
+            $gatewayMpan = $gatewayResponse[GatewayResponseParams::MPAN];
+
+            $terminal = $this->repo->terminal->findByGatewayMpan($gatewayMpan, $gateway);
+        }
+
+        if ($terminal === null)
+        {
+            throw new Exception\LogicException(
+                'Terminal should not be null here',
+                null,
+                [
+                    'gateway_merchant_id' => $gatewayMerchantId,
+                    'merchant_pan'        => $gatewayMpan,
+                ]
+            );
+        }
+
+        return $terminal;
     }
 
     protected function validateGateway(string $gateway)
@@ -87,27 +132,6 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
     }
-
-    protected function getResponse(bool $valid)
-    {
-        if ($valid === true)
-        {
-            $xml = '<RESPONSE>OK</RESPONSE>';
-        }
-        else
-        {
-            $xml = '<RESPONSE>NOK</RESPONSE>';
-        }
-
-        $response = \Response::make($xml);
-
-        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
-
-        $response->headers->set('Cache-Control', 'no-cache');
-
-        return $response;
-    }
-
     protected function determineAndSetModeForQr(string $merchantReference, string $gateway)
     {
         // We are not using verifyIdAndSilentlyStripSign here because in case
@@ -117,15 +141,15 @@ class Service extends Base\Service
 
         if ($gateway === Payment\Gateway::SHARP)
         {
-            $mode = Mode::TEST;
+            $this->mode = Mode::TEST;
         }
         else
         {
-            $mode = $this->repo->determineLiveOrTestModeForEntity($merchantReference, Constants\Entity::QR_CODE);
+            $mode = $this->repo->qr_code->determineLiveOrTestModeByMerchantReference($merchantReference);
 
-            $mode = $mode ?? Mode::LIVE;
+            $this->mode = $mode ?? Mode::LIVE;
         }
 
-        $this->app['basicauth']->setModeAndDbConnection($mode);
+        $this->app['basicauth']->setModeAndDbConnection($this->mode);
     }
 }

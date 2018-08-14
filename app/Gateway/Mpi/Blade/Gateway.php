@@ -16,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Lib\Formatters\Xml;
 use RZP\Models\Currency\Currency;
+use RZP\Gateway\Base as BaseGateway;
 use RZP\Gateway\Base\Action as Action;
 use RZP\Gateway\Mpi\Base\DeviceCategory;
 
@@ -81,12 +82,14 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($attributes, $input);
 
+
         return $this->decideAuthStepAfterEnroll($input, $response);
     }
 
     protected function decideAuthStepAfterEnroll(array $input, array $response)
     {
         $enrolled = $this->processEnrollmentResponse($input, $response);
+
         //
         // Determine card enrollment status and take next action
         //
@@ -105,7 +108,9 @@ class Gateway extends Base\Gateway
                     'Invalid enroll response',
                     [
                         'enrollment_status' => $enrolled
-                    ]);
+                    ],
+                    null,
+                    BaseGateway\Action::AUTHENTICATE);
         }
     }
 
@@ -158,7 +163,9 @@ class Gateway extends Base\Gateway
                 'eci'             => $eci,
                 'network'         => $networkCode,
                 'isInternational' => $isInternational,
-            ]
+            ],
+            null,
+            BaseGateway\Action::AUTHENTICATE
         );
     }
 
@@ -172,7 +179,9 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
                 null,
                 null,
-                $response[VERes::MESSAGE]['Error']);
+                $response[VERes::MESSAGE]['Error'],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
         }
 
         $ch = $response[VERes::MESSAGE][VERes::VERES][VERes::CH];
@@ -225,17 +234,24 @@ class Gateway extends Base\Gateway
         {
             $msg = $e->getMessage();
 
-            $this->trace->traceException($e);
-
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR;
-
-            throw new Exception\GatewayErrorException($errorCode);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
+                null,
+                $msg,
+                [],
+                $e,
+                BaseGateway\Action::AUTHENTICATE);
         }
 
         if ($ret === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR);
+                ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
+                null,
+                null,
+                [],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
         }
 
         return $paresXml;
@@ -265,7 +281,11 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                'Message element not found');
+                'Message element not found',
+                null,
+                [],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
         }
 
         (new Validator)->rules(Validator::$paresRules)
@@ -299,7 +319,10 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 '',
-                'Credentials mismatch');
+                'Credentials mismatch',
+                [],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
         }
     }
 
@@ -320,7 +343,9 @@ class Gateway extends Base\Gateway
                 [
                     'expected' => $input['payment']['public_id'],
                     'actual'   => $response[VERes::MESSAGE][VERes::ATTRIBUTES][VERes::ID],
-                ]);
+                ],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
         }
     }
 
@@ -339,7 +364,10 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
                 '',
-                $msg);
+                $msg,
+                [],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
 
             //TODO check if we need to trace response
         }
@@ -660,7 +688,12 @@ class Gateway extends Base\Gateway
 
             default:
                 throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID,
+                    null,
+                    null,
+                    [],
+                    null,
+                    BaseGateway\Action::AUTHENTICATE);
         }
 
         if ($this->mode === Mode::TEST)
@@ -724,8 +757,6 @@ class Gateway extends Base\Gateway
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException($e);
-
             $error = $e->getMessage();
 
             switch (true)
@@ -738,6 +769,8 @@ class Gateway extends Base\Gateway
                 case strpos($error, 'SignatureMethod') !== false:
                 case strpos($error, 'SignatureValue') !== false:
                 case strpos($error, 'KeyInfo') !== false:
+                    $this->trace->traceException($e);
+
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
                         null,
@@ -745,10 +778,15 @@ class Gateway extends Base\Gateway
                             'error_message' => $error
                         ]);
             }
+
             // Throw Critical for now
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                'Invalid XML');
+                'Invalid XML',
+                null,
+                [],
+                $e,
+                BaseGateway\Action::AUTHENTICATE);
         }
     }
 

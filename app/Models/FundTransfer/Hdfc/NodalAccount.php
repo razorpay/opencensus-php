@@ -77,7 +77,7 @@ class NodalAccount extends NodalBase\FileProcessor
         }
         else
         {
-            $mode = $this->getTransferMode($amount);
+            $mode = $this->getTransferMode($amount, $bankAccount->merchant);
         }
 
         return [

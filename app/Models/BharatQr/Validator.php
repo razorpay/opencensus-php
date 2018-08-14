@@ -21,10 +21,10 @@ class Validator extends Base\Validator
         GatewayResponseParams::VPA                   => 'required_if:method,upi',
         GatewayResponseParams::CARD_FIRST6           => 'required_if:method,card',
         GatewayResponseParams::CARD_LAST4            => 'required_if:method,card',
-        GatewayResponseParams::SENDER_NAME           => 'required_if:method,card',
+        GatewayResponseParams::SENDER_NAME           => 'sometimes:method,card',
         GatewayResponseParams::PROVIDER_REFERENCE_ID => 'required|string',
         GatewayResponseParams::AMOUNT                => 'required|integer|min:0',
-        GatewayResponseParams::GATEWAY_MERCHANT_ID   => 'required_without:gateway_mpan|string',
+        GatewayResponseParams::GATEWAY_MERCHANT_ID   => 'required_without:mpan|string',
         GatewayResponseParams::MPAN                  => 'required_without:gateway_merchant_id|string',
     ];
 }

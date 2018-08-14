@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Invoice;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\LineItem;
 use RZP\Models\FileStore;
+use RZP\Models\User\Role;
 
 class Service extends Base\Service
 {
@@ -52,7 +54,7 @@ class Service extends Base\Service
         // dashboard given userRole is sellerapp so only invoices created by
         // that user is visible in fetched list.
         if (($this->userId !== null) and
-            ($this->userRole === Constants::SELLERAPP_ROLE))
+            ($this->userRole === Role::SELLERAPP))
         {
             $input[Entity::USER_ID] = $this->userId;
         }
@@ -70,6 +72,12 @@ class Service extends Base\Service
                                             $this->merchant,
                                             $this->userId,
                                             $this->userRole);
+
+        //
+        // `findByPublicIdAndMerchantAndUser` handles ACL for the `sellerapp` role.
+        // Here, we also validate access for the `agent` role
+        //
+        $this->validateAgentRoleAcl($invoice);
 
         $invoice = $this->core->update($invoice, $input, $this->merchant);
 
@@ -106,14 +114,15 @@ class Service extends Base\Service
                                             $this->userId,
                                             $this->userRole);
 
-        $invoice = $this->core->delete($invoice);
+        //
+        // `findByPublicIdAndMerchantAndUser` handles ACL for the `sellerapp` role.
+        // Here, we also validate access for the `agent` role
+        //
+        $this->validateAgentRoleAcl($invoice);
 
-        if ($invoice === null)
-        {
-            return [];
-        }
+        $this->core->delete($invoice);
 
-        return $invoice->toArrayPublic();
+        return [];
     }
 
     public function addLineItems(string $id, array $input): array
@@ -217,6 +226,12 @@ class Service extends Base\Service
                                             $this->userId,
                                             $this->userRole);
 
+        //
+        // `findByPublicIdAndMerchantAndUser` handles ACL for the `sellerapp` role.
+        // Here, we also validate access for the `agent` role
+        //
+        $this->validateAgentRoleAcl($invoice);
+
         $invoice = $this->core->cancelInvoice($invoice);
 
         return $invoice->toArrayPublic();
@@ -255,6 +270,8 @@ class Service extends Base\Service
 
         $invoice = $this->repo->invoice->findByPublicId($invoiceId);
 
+        $this->trace->count(Metric::INVOICE_VIEW_TOTAL, $invoice->getMetricDimensions());
+
         $invoice->getValidator()->validateInvoiceViewable();
 
         return (new ViewDataSerializer($invoice))->serializeForHosted();
@@ -265,6 +282,7 @@ class Service extends Base\Service
      * @param bool|boolean $download
      *
      * @return string|null
+     * @throws \RZP\Exception\BadRequestException
      */
     public function getInvoicePdfSignedUrl(string $id, bool $download = false)
     {
@@ -345,5 +363,22 @@ class Service extends Base\Service
 
         $this->userId   = $dashboardHeaders['user_id'] ?? null;
         $this->userRole = $dashboardHeaders['user_role'] ?? null;
+    }
+
+    /**
+     * If the current user has role: `agent`, validate ACL for certain operations
+     *
+     * @param Entity $invoice
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateAgentRoleAcl(Entity $invoice)
+    {
+        if (($this->userRole === Role::AGENT) and
+            ($invoice->getUserId() !== $this->userId))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'This operation can only be performed by the creator');
+        }
     }
 }

@@ -26,13 +26,15 @@ class Processor extends VirtualAccount\Processor
 
     protected $terminal;
 
-    public function __construct(array $gatewayResponse, string $provider = null)
+    public function __construct(array $gatewayResponse, $terminal, string $provider = null)
     {
         parent::__construct($provider);
 
         $this->gatewayInput = $gatewayResponse['qr_data'];
 
         $this->callbackData = $gatewayResponse['callback_data'];
+
+        $this->terminal = $terminal;
     }
 
     protected function isDuplicate(Base\PublicEntity $bharatQr)
@@ -62,11 +64,13 @@ class Processor extends VirtualAccount\Processor
                         {
                             $paymentInput = $this->getPaymentArray($bharatQr);
 
+                            //
                             // This is being done because we want
                             // to skip terminal selection on payment
                             // creation and use this terminal instead
                             // as the payment has already gone through
                             // this terminal.
+                            //
                             $this->callbackData[Constants::RAZORPAY_TERMINAL_ID] = $this->getTerminal()->getId();
 
                             $res = $paymentProcessor->process($paymentInput, $this->callbackData);
@@ -75,12 +79,13 @@ class Processor extends VirtualAccount\Processor
 
                             $bharatQr->payment()->associate($payment);
 
-                            $payment->setGatewayForBharatQr($this->gatewayInput[GatewayResponseParams::GATEWAY]);
-
                             $bharatQr->virtualAccount()->associate($this->virtualAccount);
 
                             $this->repo->saveOrFail($bharatQr);
 
+                            //
+                            // @todo: remove this after validating.
+                            //
                             $this->repo->saveOrFail($payment);
 
                             $this->updateVirtualAccount($bharatQr);
@@ -92,6 +97,8 @@ class Processor extends VirtualAccount\Processor
         {
             $paymentProcessor->autoCapturePayment($payment);
         }
+
+        return $bharatQr;
     }
 
     /**
@@ -188,37 +195,8 @@ class Processor extends VirtualAccount\Processor
 
     protected function getTerminal()
     {
-        //
-        // This won't be null in case it is
-        // unexpected payment initially. We
-        // need the terminal to check if the expected
-        // is true or false. Based on this value
-        // payment is set to expected or unexpected
-        //
-        if ($this->terminal !== null)
-        {
-            return $this->terminal;
-        }
-
-        $gatewayMerchantId = $this->gatewayInput[GatewayResponseParams::GATEWAY_MERCHANT_ID];
-
-        $gateway = $this->gatewayInput[GatewayResponseParams::GATEWAY];
-
-        $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
-
-        if ($terminal === null)
-        {
-            throw new Exception\LogicException(
-                'Terminal should not be null here',
-                null,
-                ['gateway_merchant_id' => $gatewayMerchantId]);
-        }
-
-        $this->terminal = $terminal;
-
-        return $terminal;
+        return $this->terminal;
     }
-
 
     protected function getVirtualAccountFromEntity(Base\PublicEntity $bharatQr)
     {
@@ -297,11 +275,13 @@ class Processor extends VirtualAccount\Processor
 
         $card[Card\Entity::NUMBER] = $this->getLuhnValidCardNumber();
 
-        $cardHolderName = preg_replace("/[^ \w]+/", "", $this->gatewayInput[GatewayResponseParams::SENDER_NAME]);
-
-        if (empty($cardHolderName) === false)
+        if (isset($this->gatewayInput[GatewayResponseParams::SENDER_NAME]) === true)
         {
-            $card[Card\Entity::NAME] = $cardHolderName;
+            $senderName = $this->gatewayInput[GatewayResponseParams::SENDER_NAME];
+
+            $cardName = preg_replace('/[^ \w]+/', '', $senderName);
+
+            $card[Card\Entity::NAME] = $cardName ?: $card[Card\Entity::NAME];
         }
 
         return $card;

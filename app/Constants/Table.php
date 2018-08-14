@@ -152,6 +152,7 @@ class Table
 
     // Internal Purposes
     const CREDITS               = 'credits';
+    const NODAL_BENEFICIARIES    = 'nodal_beneficiaries';
 
     // Terminal Performance
     const TERMINAL_ACTION       = 'terminal_action_logs';

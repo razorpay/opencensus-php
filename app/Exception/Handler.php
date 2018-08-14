@@ -110,7 +110,7 @@ class Handler extends ExceptionHandler
 
                 break;
 
-            case $e instanceof \Razorpay\OAuth\Exception\BaseException:
+            case $e instanceof \Razorpay\OAuth\Exception\BadRequestException:
                 $response = $this->oauthRecoverableErrorResponse($this->isDebug(), $e);
                 break;
         }
@@ -250,7 +250,7 @@ class Handler extends ExceptionHandler
 
         $data = $this->getDataArrayPropertyFromException($exception, $extraData);
 
-        if ($exception instanceof \Razorpay\OAuth\Exception\BaseException === true)
+        if ($exception instanceof \Razorpay\OAuth\Exception\BadRequestException === true)
         {
             unset($data['token']);
         }

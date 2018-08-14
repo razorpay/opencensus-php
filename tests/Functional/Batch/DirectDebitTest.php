@@ -3,6 +3,7 @@ namespace RZP\Tests\Functional\Batch;
 
 use Illuminate\Support\Facades\Queue;
 
+use Cache;
 use RZP\Models\Batch;
 use RZP\Models\FileStore;
 use RZP\Jobs\Batch as BatchJob;
@@ -82,6 +83,41 @@ class DirectDebitTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
     }
 
+    public function testCreateDirectDebitBatchValidateFile()
+    {
+        $this->setUpConsumeTokenCacheMock();
+
+        $this->ba->directAuth();
+
+        $entries = $this->getDefaultFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        try
+        {
+            $this->startTest();
+        }
+        catch (\Throwable $ex)
+        {
+            $this->assertContains('Type error: Argument 2 passed to RZP\Models\Batch\Core::storeAndValidateInputFile() must be an instance of RZP\Models\Merchant\Entity, null given', $ex->getMessage());
+        }
+    }
+
+
+    protected function setUpConsumeTokenCacheMock()
+    {
+        Cache::shouldReceive('pull')
+        ->once()
+        ->with('ott')
+        ->andReturnUsing(function()
+        {
+           return [
+                'merchantId' => '10000000000000',
+                'mode' => 'test',
+            ];
+        });
+    }
+
     public function getDefaultFileEntries()
     {
         return [
@@ -96,10 +132,10 @@ class DirectDebitTest extends TestCase
                 Header::DIRECT_DEBIT_CURRENCY        => 'INR',
                 Header::DIRECT_DEBIT_RECEIPT         => 'random receipt',
                 Header::DIRECT_DEBIT_DESCRIPTION     => 'random description',
-                'notes[notes_1]'                     =>  null,
-                'notes[notes_2]'                     =>  null,
-                'notes[notes_3]'                     =>  null,
-                'notes[notes_4]'                     =>  null,
+                'notes[notes_1]'                     => null,
+                'notes[notes_2]'                     => null,
+                'notes[notes_3]'                     => null,
+                'notes[notes_4]'                     => null,
             ],
             [
                 Header::DIRECT_DEBIT_EMAIL           => 'test@razorpay.com',
@@ -113,9 +149,9 @@ class DirectDebitTest extends TestCase
                 Header::DIRECT_DEBIT_RECEIPT         => 'random receipt',
                 Header::DIRECT_DEBIT_DESCRIPTION     => 'random description',
                 'notes[notes_1]'                     => 'random notes',
-                'notes[notes_2]'                     =>  123,
-                'notes[notes_3]'                     =>  true,
-                'notes[notes_4]'                     =>  null,
+                'notes[notes_2]'                     => 123,
+                'notes[notes_3]'                     => true,
+                'notes[notes_4]'                     => null,
             ],
         ];
     }
