@@ -7,11 +7,6 @@ use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
-    public function getDelimiter()
-    {
-        return ',';
-    }
-
     public function getNumLinesToSkip(array $fileDetails)
     {
         return [

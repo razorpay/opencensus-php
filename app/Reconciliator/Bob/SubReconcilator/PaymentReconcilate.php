@@ -125,7 +125,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     /**
      * Returns if the card is debit or credit from Payment Method
-     * @param $row
+     * @param array $row Card type would be  Credit Card, Debit Card
      * @return strings|null if any card type is present
      */
     protected function getCardType($row)
@@ -150,8 +150,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     }
 
     /**
-     * Returns if the card is international or domestic
-     * @param $row
+     * Returns if the card is international or domestic. The header would be domestic. DOMESTIC
+     * @param array $row
      * @return string
      */
     protected function getCardLocale($row)
@@ -194,7 +194,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     }
 
     /**
-     * Returns the interchange type eg Visa International;
+     * Returns the interchange type eg Visa Traditional
      * @param $row
      * @return string|null
      */

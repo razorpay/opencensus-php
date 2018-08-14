@@ -1172,11 +1172,11 @@ class ReconciliationFileTest extends TestCase
 
         $payment = $this->getDbLastEntity('payment');
 
-        $this->refundPayment('pay_' . $payment['id']);
+        $this->refundPayment($payment->getPublicId());
 
         $refund = $this->getDbLastEntity('refund');
 
-        $gatewayRefund = $this->getLastEntity('card_fss', true);
+        $gatewayRefund = $this->getDbLastEntityToArray('card_fss');
 
         $headers[] = ['From Settlement'=>' To Settlement' , '31-08-2018' => '31-08-2018'];
 
