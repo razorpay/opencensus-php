@@ -6,14 +6,15 @@
     $has_udf                    = (empty($udf_schema) === false);
     $max_mobile_width           = 853;
     $contact = [
-        'phone' => '1800 209 5438',
-        'email' => 'schindlerindia.in@schindler.com'
+        'phone' => '1800 103 6354',
+        'email' => 'crossborder@delhivery.com'
     ];
 
     $email_subject = 'Query for Payment Page Id: '. $payment_page_data['id'];
-    $intro_note = 'Welcome to Schindler. Now, pay your Schindler service bill in 4 simple steps :';
+
+    $intro_note = 'Welcome to Delhivery. Now, pay your Delhivery service bill in 4 simple steps :';
     $instructions = array('Enter the details for the service you availed.', 'Choose the method of payment. ', 'Pay the amount. ', 'Receive online confirmation and get a confirmation email.');
-    $end_note =  'In case of any doubts, please reach out to Schindler on';
+    $end_note =  'In case of any doubts, please reach out to Delhivery on';
 ?>
 
 
@@ -55,18 +56,16 @@
         @include('hostedpage.styles.form_theme')
         @include('hostedpage.styles.desktop')
         @include('hostedpage.styles.mobile')
-        @include('hostedpage.specific.schindler-default.styles')
         @include('hostedpage.scripts.utils')
         @include('hostedpage.specific.helpers')
 
-        @include('hostedpage.specific.schindler-default.scripts')
+        @include('hostedpage.specific.delhivery-default.scripts')
     </head>
 
     <body>
         <div id="hostedpage-container">
             <!-- Desktop Container -->
-            <div id="desktop-container">
-                <div class="merchant-display-image"></div>
+            <div id="desktop-container" class="no-display-image">
                 @include('hostedpage.partials.header')
                 <div class="content">
                     @include('hostedpage.partials.description')
@@ -76,8 +75,7 @@
             </div>
 
             <!-- Mobile Container -->
-            <div id="mobile-container">
-                <div class="merchant-display-image"></div>
+            <div id="mobile-container" class="no-display-image">
                 <div class="content">
                     @include('hostedpage.partials.header')
                     @include('hostedpage.partials.description')

@@ -752,6 +752,11 @@ trait Capture
             return true;
         }
 
+        if ($order->getAmountPaid() > $order->getAmount())
+        {
+            return true;
+        }
+
         if (($order->isDiscountApplicable() === true) and
             ($payment->discount !== null) and
             (($payment->getAmount() + $payment->discount->getAmount()) === $order->getAmount()))

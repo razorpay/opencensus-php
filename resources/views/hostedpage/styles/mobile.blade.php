@@ -23,11 +23,6 @@
         width: 100%;
     }
 
-    #mobile-container .merchant-display-image {
-        background-size: contain;
-        background-position-y: -3%;
-    }
-
     #mobile-container .content {
         height: 80vh;
         position: relative;

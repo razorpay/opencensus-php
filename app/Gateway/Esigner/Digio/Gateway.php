@@ -194,6 +194,7 @@ class Gateway extends Base\Gateway
             // TODO: Remove sending aadhaar number later
             'aadhaar'                       => $input['token']->getAadhaarNumber(),
             'bank_identifier'               => substr($bankCode, 0, 4),
+
             'management_category'           => CategoryCode::getCategoryCodeFromMcc($mcc),
             'service_provider_name'         => $this->getGatewayMerchantId2(),
             'service_provider_utility_code' => $this->getGatewayMerchantId(),

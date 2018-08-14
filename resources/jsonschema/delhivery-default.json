@@ -1,0 +1,43 @@
+{
+  "title": " ",
+  "type": "object",
+  "required": [
+    "waybill_number",
+    "customer_name",
+    "customer_mobile",
+    "payment_type"
+  ],
+  "properties": {
+    "waybill_number": {
+      "type": "string",
+      "title": "Waybill Number",
+      "maxLength": 255
+    },
+    "customer_name": {
+      "type": "string",
+      "title": "Customer Name",
+      "maxLength": 255
+    },
+    "customer_mobile": {
+      "type": "string",
+      "title": "Customer Mobile Number",
+      "maxLength": 20
+    },
+    "payment_type": {
+      "type": "string",
+      "title": "Payment Type",
+      "enum": [
+        "",
+        "Primary Payment",
+        "Balance Payment"
+      ],
+      "options": {
+        "enum_titles": [
+          "--Select--",
+          "Primary Payment",
+          "Balance Payment"
+        ]
+      }
+    }
+  }
+}
