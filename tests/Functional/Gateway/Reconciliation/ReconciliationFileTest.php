@@ -1128,6 +1128,8 @@ class ReconciliationFileTest extends TestCase
 
         $this->fixtures->edit('card_fss', $gatewayPayment1['id'], ['ref' => null, 'tranid' => null]);
 
+        $headers[] = ['Merchant Setttlment' => '  '];
+
         $headers[] = ['From Settlement'=>' To Settlement' , '31-08-2018' => '31-08-2018'];
 
         $file = $this->writeToCsvFile($headers, 'MerchantSettlementTransactionListing');
@@ -1177,6 +1179,8 @@ class ReconciliationFileTest extends TestCase
         $refund = $this->getDbLastEntity('refund');
 
         $gatewayRefund = $this->getDbLastEntityToArray('card_fss');
+
+        $headers[] = ['Merchant Setttlment' => '  '];
 
         $headers[] = ['From Settlement'=>' To Settlement' , '31-08-2018' => '31-08-2018'];
 
