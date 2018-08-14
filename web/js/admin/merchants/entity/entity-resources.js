@@ -384,6 +384,7 @@ export function getDetailsViewMap(model) {
     {
       label: 'Submerchants',
       toHide: !details.partner_type,
+      permission: 'view_partners',
       children: () => (
         <div>
           <Table
