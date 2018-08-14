@@ -855,4 +855,21 @@ class Validator extends Base\Validator
                 ]);
         }
     }
+
+    public function validateGatewayForForceAuth()
+    {
+        $payment = $this->entity;
+
+        $gateway = $payment->getGateway();
+
+        $allowedGateways = Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS;
+
+        if (in_array($gateway, $allowedGateways, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot force authorize on this gateway',
+                'gateway',
+                $gateway);
+        }
+    }
 }

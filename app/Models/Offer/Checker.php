@@ -59,6 +59,15 @@ class Checker extends Base\Core
                 ($validOfferPeriod === true));
     }
 
+    public function checkValidityOnOrder(Order\Entity $order): bool
+    {
+        $validOrderAmount = (($this->offer->getMinAmount() === null) or
+                             ($order->getAmount() > $this->offer->getMinAmount()));
+
+        return (($validOrderAmount === true) and
+                ($this->checkApplicabilityOnOrder($order) === true));
+    }
+
     public function checkApplicabilityForPayment(Payment\Entity $payment): bool
     {
         $this->payment = $payment;

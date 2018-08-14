@@ -77,6 +77,7 @@ class Constants
     const AXIS_EXPRESS_PAY                = 'axis_express_pay';
     const BANK_TRANSFER_REFUND            = 'bank_transfer_refund';
     const LOG_RESPONSE                    = 'log_response';
+    const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -182,6 +183,7 @@ class Constants
         self::AXIS_EXPRESS_PAY                => true,
         self::BANK_TRANSFER_REFUND            => true,
         self::LOG_RESPONSE                    => true,
+        self::EXCESS_ORDER_AMOUNT             => true,
     ];
 
     // Entity type constants

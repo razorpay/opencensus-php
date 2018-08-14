@@ -13,9 +13,9 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
 use RZP\Models\Batch\Header;
-use RZP\Mail\User\PasswordReset;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\User\LinkedAccountUserAccess;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
@@ -523,7 +523,7 @@ class MerchantCreateTest extends TestCase
 
         $account = $this->startTest();
 
-        Mail::assertQueued(PasswordReset::class, function ($mail)
+        Mail::assertQueued(LinkedAccountUserAccess::class, function ($mail)
         {
             return $mail->hasTo('linkedaccount@razorpay.com');
         });
@@ -558,7 +558,7 @@ class MerchantCreateTest extends TestCase
 
         $account = $this->startTest();
 
-        Mail::assertQueued(PasswordReset::class, function ($mail)
+        Mail::assertQueued(LinkedAccountUserAccess::class, function ($mail)
         {
             return $mail->hasTo('testing@testing.com');
         });

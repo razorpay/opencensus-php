@@ -42,13 +42,8 @@ class DimensionsProcessor implements Processor
             $dimensions['rzp_mode'] = app()['rzp.mode'] ?? 'none';
         }
 
-        foreach ($dimensions as $label => $value)
-        {
-            if (empty($value) === true)
-            {
-                $dimensions[$label] = $defaultLabelValue;
-            }
-        }
+        // Stringify php values e.g. true -> 'true', 0 -> '0', as only unicode chars in label values is expected
+        $dimensions = array_map('stringify', $dimensions);
 
         return $dimensions;
     }

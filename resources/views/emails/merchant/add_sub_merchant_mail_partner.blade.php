@@ -71,17 +71,20 @@
   {{{$subMerchant['name']}}} (ID: {{{$subMerchant['id']}}}) has been added as your affiliate account on Razorpay.
   @if($subMerchant['email'] != $merchant['email'])
   <br>
-  We have sent an invite mail to {{{$subMerchant['email']}}} for setting up their Razorpay login credentials .
+  We have sent an invite mail to {{{$subMerchant['email']}}} for setting up their Razorpay account password.
   They must login and submit the activation form with KYC details to start transacting.
   @endif
 </p>
 
-<h3 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; padding: 0; margin: 0; text-align: left; line-height: 1.3; word-break: normal; font-size: 16px; font-weight: bold; color: #39ACE5; margin-top: 10px;">KYC Process</h3>
 
 @if($subMerchant['email'] != $merchant['email'])
-<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">The first step for your affiliate accounts involves filling up the activation form on the <a href="https://dashboard.razorpay.com" style="color: #24bbea; text-decoration: none !important;">Razorpay Dashboard</a>. The list of documents and details required for us to take you live can be found then in the <a href="https://dashboard.razorpay.com/#/app/activation" style="color: #24bbea; text-decoration: none !important;">Activation</a> panel. All requirements have a basic explanation alongside to help you through the process.
+<h3 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; padding: 0; margin: 0; text-align: left; line-height: 1.3; word-break: normal; font-size: 16px; font-weight: bold; color: #39ACE5; margin-top: 10px;">Activation Process</h3>
+
+<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">The first step for your affiliate account involves filling up the activation form on the <a href="https://dashboard.razorpay.com" style="color: #24bbea; text-decoration: none !important;">Razorpay Dashboard</a>. The list of documents and details required for us to take the account live can be found then in the <a href="https://dashboard.razorpay.com/#/app/activation" style="color: #24bbea; text-decoration: none !important;">Activation</a> panel. All requirements have a basic explanation alongside to help you through the process.
 @else
 </p>
+<h3 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; padding: 0; margin: 0; text-align: left; line-height: 1.3; word-break: normal; font-size: 16px; font-weight: bold; color: #39ACE5; margin-top: 10px;">Next Step: Submit Activation Form</h3>
+
 <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">As the next step, you will need to fill up the activation form for your affiliate accounts on the <a href="https://dashboard.razorpay.com" style="color: #24bbea; text-decoration: none !important;">Razorpay Dashboard</a>. The list of documents and details required for us to take them live can be found in the <a href="https://dashboard.razorpay.com/#/app/activation" style="color: #24bbea; text-decoration: none !important;">Activation</a> panel. All requirements have a basic explanation alongside to help through the process.
 @endif
 
@@ -91,7 +94,7 @@
 </p>
 <h3 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; padding: 0; margin: 0; text-align: left; line-height: 1.3; word-break: normal; font-size: 16px; font-weight: bold; color: #39ACE5; margin-top: 10px;">Activation Timeline</h3>
 
-<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">As soon as the KYC Process in completed by you, depending on the business segment, we will take you live in the upcoming 2-3 days.</p>
+<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">As soon as the Activation Process in completed, depending on the business segment, we will take the account live in the upcoming {{{ $activationDuration}}}.</p>
 
 <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
   Cheers,

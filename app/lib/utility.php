@@ -552,3 +552,22 @@ if (! function_exists('millitime'))
         return round(microtime(true) * 1000);
     }
 }
+
+if (! function_exists('stringify'))
+{
+
+    /**
+     * Stringifies given value, e.g. true -> 'true', 0 -> '0', null -> "null", 10.0 -> "10.0" etc
+     * @param  mixed  $value
+     * @return string
+     */
+    function stringify($value): string
+    {
+        if (is_string($value) === true)
+        {
+            return $value;
+        }
+
+        return json_encode($value);
+    }
+}

@@ -395,7 +395,6 @@ return [
         ],
     ],
 
-
     'testAddPartnerAccessMapForDiffOrgSubmerchant' => [
         'request'   => [
             'url'     => '/merchants/10000000000009/access_maps',
@@ -848,5 +847,30 @@ return [
             ],
         ],
     ],
+
+    'testAddPartnerAccessMapForLinkedAccountSubmerchant' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
+        ],
+    ],
+
 ];
 

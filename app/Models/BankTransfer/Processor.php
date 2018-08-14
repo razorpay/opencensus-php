@@ -25,7 +25,7 @@ class Processor extends VirtualAccount\Processor
 
     protected function getPaymentProcessor()
     {
-        if(isset($this->paymentProcessor) ===  false)
+        if (isset($this->paymentProcessor) === false)
         {
             $this->paymentProcessor = new PaymentProcessor($this->merchant);
         }
@@ -100,6 +100,9 @@ class Processor extends VirtualAccount\Processor
             {
                 throw $e;
             }
+
+            $this->trace->traceException($e, Trace::INFO,
+                TraceCode::VIRTUAL_ACCOUNT_FAILED_FOR_ORDER, ['input' => $input]);
 
             $this->processWithoutOrder($input);
         }

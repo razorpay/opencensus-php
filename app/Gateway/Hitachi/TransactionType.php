@@ -9,4 +9,5 @@ class TransactionType
     const REFUND  = 'RF';
     const CAPTURE = 'CP';
     const VOID    = 'CN';
+    const MOTO    = 'MT';
 }

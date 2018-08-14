@@ -869,6 +869,23 @@ class PartnerTest extends OAuthTestCase
         $this->assertEquals(null, $submerchant->getReferrer());
     }
 
+    public function testAddPartnerAccessMapForLinkedAccountSubmerchant()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessSubMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, ['parent_id' => self::DEFAULT_MERCHANT_ID]);
+
+        $this->createDummyPartnerApp();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     protected function createMerchantRequest(
         string $merchantRequestName,
         bool $createSubmission = false,
