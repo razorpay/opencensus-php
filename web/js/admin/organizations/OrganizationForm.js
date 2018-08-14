@@ -86,45 +86,66 @@ export default function OrgForm({
           {org.id
             ? null
             : [
-                <Field label="Full Name" name="admin.name" key="name" />,
-                <Field label="Employee Code" name="admin.username" key="1" />,
+                <Field
+                  label="Full Name"
+                  name="admin.name"
+                  key="name"
+                  required
+                />,
+                <Field
+                  label="Employee Code"
+                  name="admin.username"
+                  key="1"
+                  required
+                />,
                 <Field
                   label="Password"
                   type="password"
                   name="admin.password"
                   key="2"
+                  required
                 />,
                 <Field
                   label="Re-Type password"
                   type="password"
                   name="admin.password_confirmation"
                   key="3"
+                  required
                 />,
                 <Field
                   label="Employee Code"
                   name="admin.employee_code"
                   key="4"
+                  required
                 />,
                 <Field
                   label="Department Code"
                   name="admin.department_code"
                   key="5"
+                  required
                 />,
-                <Field label="Branch Code" name="admin.branch_code" key="6" />,
+                <Field
+                  label="Branch Code"
+                  name="admin.branch_code"
+                  key="6"
+                  required
+                />,
                 <Field
                   label="Location Code"
                   name="admin.location_code"
                   key="7"
+                  required
                 />,
                 <Field
                   label="Supervisor Code"
                   name="admin.supervisor_code"
                   key="8"
+                  required
                 />,
               ]}
           <CheckField
             label="Allow Sign Up"
-            defaultValue={org.allow_sign_up}
+            defaultChecked={org.allow_sign_up | 0}
             name="allow_sign_up"
           />
           <PermissionsList

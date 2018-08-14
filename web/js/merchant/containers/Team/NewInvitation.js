@@ -4,12 +4,12 @@ import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required, email } from 'rzp/utils/validators';
-import { roles } from 'rzp/utils/constants';
+import { roles, agentRole } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
 import { sendInvitation, fetchTeamDetails } from 'merchant/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
-const ROLES = without(roles, 'owner');
+let ROLES = without(roles, 'owner');
 const selector = formValueSelector('newInvitation');
 @connect(
   state => {
@@ -55,6 +55,10 @@ export default class NewInvitation extends Component {
 
   render() {
     const { handleSubmit, selectedRole } = this.props;
+
+    if (this.props.user.isAgentRole) {
+      ROLES = { ...ROLES, ...agentRole };
+    }
 
     return (
       <form onSubmit={handleSubmit(this.save)} style={{ marginBottom: '35px' }}>

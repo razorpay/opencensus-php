@@ -50,6 +50,7 @@ const gatewayMapping = {
   hitachi: 'Hitachi',
   wallet_openwallet: 'RZP Open Wallet',
   card_fss: 'Card FSS',
+  enach_rbl: 'eNach RBL',
 };
 
 const gatewayAcquirerMapping = {
