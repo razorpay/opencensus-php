@@ -758,9 +758,10 @@ class Gateway
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
         ],
-        // Esigner Digio is added here just for test cases
+        // Esigner Digio and Legaldesk is added here just for test cases
         AuthType::AADHAAR => [
             Gateway::ESIGNER_DIGIO,
+            Gateway::ESIGNER_LEGALDESK,
             Gateway::ENACH_RBL,
         ],
     ];
@@ -833,6 +834,9 @@ class Gateway
         // This is added here just for test cases
         // We are using UTIB in test cases
         Gateway::ESIGNER_DIGIO      => [
+            IFSC::UTIB,
+        ],
+        Gateway::ESIGNER_LEGALDESK => [
             IFSC::UTIB,
         ],
         Gateway::ENACH_RBL      => [
