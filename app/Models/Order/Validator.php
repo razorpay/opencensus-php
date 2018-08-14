@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency\Currency;
 
@@ -25,6 +26,7 @@ class Validator extends Base\Validator
         Entity::OFFERS          => 'sometimes|array',
         Entity::OFFERS . '*'    => 'filled|public_id|size:20',
         Entity::FORCE_OFFER     => 'filled|boolean',
+        Entity::PARTIAL_PAYMENT => 'sometimes|boolean',
     );
 
     protected static $createValidators = [
@@ -187,12 +189,14 @@ class Validator extends Base\Validator
      */
     protected function validateOrderAmount(int $paymentAmount)
     {
-        $orderAmountDue = $this->entity->getAmountDue();
+        $order = $this->entity;
 
         // In case of partial payment, $paymentAmount <= $orderAmountDue,
         // otherwise it should be same.
 
-        $partialPaymentAllowed = $this->entity->isPartialPaymentAllowed();
+        $partialPaymentAllowed = $order->isPartialPaymentAllowed();
+
+        $orderAmountDue = $order->getAmountDue();
 
         if (($partialPaymentAllowed === false) and
             ($orderAmountDue !== $paymentAmount))
@@ -207,7 +211,8 @@ class Validator extends Base\Validator
         }
 
         if (($partialPaymentAllowed === true) and
-            ($paymentAmount > $orderAmountDue))
+            ($paymentAmount > $orderAmountDue) and
+            ($order->merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE);

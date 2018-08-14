@@ -626,6 +626,119 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
     }
 
+    public function testVirtualAccountForOrderPartialPayment()
+    {
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(1000000, $virtualAccount['amount_paid']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+    }
+
+    public function testVirtualAccountForOrderPartialPaymentExcessAmount()
+    {
+        $this->fixtures->merchant->addFeatures(['excess_order_amount']);
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 20000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(2000000, $virtualAccount['amount_paid']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+    }
+
+    public function testVirtualAccountForOrderPartialPaymentPartialAmount()
+    {
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 5000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(500000, $virtualAccount['amount_paid']);
+        $this->assertEquals('active', $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('attempted', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+    }
+
+    public function testVirtualAccountForOrderPartialPaymentMultiple()
+    {
+        $this->fixtures->merchant->addFeatures(['excess_order_amount']);
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 5000]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals(500000, $virtualAccount['amount_paid']);
+        $this->assertEquals('active', $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('attempted', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 20000]);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals(2500000, $virtualAccount['amount_paid']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+    }
+
     public function testVirtualAccountForOrderPayCustomerFeeBearer()
     {
         $order = $this->fixtures->create('order');
@@ -648,6 +761,98 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals(1005900, $payment['amount']);
         $this->assertEquals('captured', $payment['status']);
     }
+
+    public function testVirtualAccountForOrderPayCustomerFeeBearerPartialPayment()
+    {
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10059]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(1000000, $virtualAccount['amount_paid']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals(1005900, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testVirtualAccountForOrderPayCustomerFeeBearerPartialExcessPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['excess_order_amount']);
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 20059]);
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(2000000, $virtualAccount['amount_paid']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals(2005900, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testVirtualAccountForOrderPayCustomerFeeBearerPartialMultiplePayment()
+    {
+        $this->fixtures->merchant->addFeatures(['excess_order_amount']);
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 5059]);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals(500000, $virtualAccount['amount_paid']);
+        $this->assertEquals('active', $virtualAccount['status']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('attempted', $order['status']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        $this->payVirtualAccount($virtualAccount['id'], ['amount' => 20059]);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals(2500000, $virtualAccount['amount_paid']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals('paid', $order['status']);
+    }
+
 
     public function testVirtualAccountForOrderPayAndRefund()
     {
