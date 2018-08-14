@@ -30,7 +30,7 @@ class Type
 
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
-    const ISG_BHARATQR_REFUND               = 'isg_bharatqr_refund';
+    const ISG_REFUND                        = 'isg_bharatqr_refund';
 
     const AXIS_NETBANKING_CLAIMS            = 'axis_netbanking_claims';
 
@@ -185,7 +185,7 @@ class Type
             self::MOCK_RECONCILIATION_FILE,
             self::GATEWAY_FAILED_REFUNDS,
             self::OBC_NETBANKING_REFUND,
-            self::ISG_BHARATQR_REFUND,
+            self::ISG_REFUND,
         ],
 
         Constants\Entity::BATCH => [
@@ -280,7 +280,7 @@ class Type
         self::MOCK_RECONCILIATION_FILE,
         self::GATEWAY_FAILED_REFUNDS,
         self::OBC_NETBANKING_REFUND,
-        self::ISG_BHARATQR_REFUND,
+        self::ISG_REFUND,
     ];
 
     /**

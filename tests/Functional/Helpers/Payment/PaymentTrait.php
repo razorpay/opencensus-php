@@ -39,8 +39,8 @@ trait PaymentTrait
     use PaymentAxisGeniusTrait;
     use PaymentNetbankingTrait;
     use PaymentFreechargeTrait;
-    use PaymentCybersourceTrait;
     use PaymentTraitMpiEnstage;
+    use PaymentCybersourceTrait;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
 
@@ -297,6 +297,58 @@ trait PaymentTrait
         $this->assertLessThanOrEqual(6, $count);
 
         return $content;
+    }
+
+    protected function createBharatQrPayment()
+    {
+        $paymentContent = [
+            'PRIMARY_ID'           => 'tobeset',
+            'SECONDARY_ID'         => 'reference_id',
+            'MERCHANT_PAN'         => '4403844012084006',
+            'TXN_ID'               => '1817700802564',
+            'TXN_DATE_TIME'        =>  Carbon:: now()->format('Y-m-d H:i:s'),
+            'TXN_AMOUNT'           => '1.00',
+            'AUTH_CODE'            => 'ab3456',
+            'RRN'                  => random_int(111111111111,999999999999),
+            'CONSUMER_PAN'         => '4012001037141112',
+            'STATUS_CODE'          => '00',
+            'STATUS_DESC'          => 'Transaction Approved',
+        ];
+
+        $request = [
+            'url'     => '/payment/callback/bharatqr/isg',
+            'method'  => 'post',
+            'content' => $paymentContent,
+        ];
+
+        $qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function createVirtualAccount1()
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'url'     => '/virtual_accounts',
+            'method'  => 'post',
+            'content' => [
+                'receiver_types' => 'qr_code'
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $bankAccount = $response['receivers'][0];
+
+        return $bankAccount;
     }
 
     protected function createCustomerToken(int $recurring)

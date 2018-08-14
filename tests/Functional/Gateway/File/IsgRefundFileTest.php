@@ -6,23 +6,24 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
-use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
-use RZP\Mail\Gateway\RefundFile\Constants as RefundMailConstants;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentIsgTrait;
+use RZP\Mail\Gateway\RefundFile\Constants as RefundMailConstants;
 
-class BharatQrIsgRefundFileTest extends TestCase
+class IsgRefundFileTest extends TestCase
 {
     use PaymentTrait;
+    use PaymentIsgTrait;
 
     public function setUp()
     {
         Carbon::setTestNow();
 
-        $this->testDataFilePath = __DIR__ . '/helpers/BharatQrIsgRefundFileTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/IsgRefundFileTestData.php';
 
         parent::setUp();
 
@@ -31,33 +32,13 @@ class BharatQrIsgRefundFileTest extends TestCase
         $this->fixtures->create('terminal:bharat_qr_isg_terminal');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
-
-        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
-
-        $this->fixtures->merchant->activate();
     }
 
     public function testBharatQrIsgRefundFile()
     {
         Mail::fake();
 
-        $request = $this->testData['testQrPaymentProcess'];
-
-        $qrCode = $this->createVirtualAccount();
-
-        $this->ba->directAuth();
-
-        $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
-
-        $this->mockServerContentFunction(function (&$content, $action = null) use ($request)
-        {
-            if ($action === Action::VERIFY)
-            {
-                $content = $request['content'];
-            }
-        }, $this->gateway);
-
-        $response = $this->makeRequestAndGetContent($request);
+        $response = $this->createBharatQrPayment();
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -80,7 +61,9 @@ class BharatQrIsgRefundFileTest extends TestCase
             'type' => 'isg_bharatqr_refund',
             'location' => 'Refund' . '_' . $time . '.txt',
         ];
+
         $file = $this->getLastEntity('file_store', true);
+
         $this->assertArraySelectiveEquals($expectedFilesContent, $file);
 
         Mail::assertQueued(RefundFileMail::class, function ($mail)
@@ -104,19 +87,6 @@ class BharatQrIsgRefundFileTest extends TestCase
 
             return true;
         });
-    }
-
-    protected function createVirtualAccount()
-    {
-        $this->ba->privateAuth();
-
-        $request = $this->testData[__FUNCTION__];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $bankAccount = $response['receivers'][0];
-
-        return $bankAccount;
     }
 
     protected function checkRefundsFile($filePath)

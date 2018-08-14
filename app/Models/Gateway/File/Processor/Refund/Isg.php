@@ -3,19 +3,20 @@
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
-class BharatQrIsg extends Base
+class Isg extends Base
 {
     use FileHandler;
 
     const FILE_NAME              = 'Refund';
     const EXTENSION              = FileStore\Format::TXT;
-    const FILE_TYPE              = FileStore\Type::ISG_BHARATQR_REFUND;
+    const FILE_TYPE              = FileStore\Type::ISG_REFUND;
     const GATEWAY                = Payment\Gateway::ISG;
 
     const REFUND_ID                     = 'RFD_TXN_ID';
@@ -38,13 +39,24 @@ class BharatQrIsg extends Base
         self::RRN,
     ];
 
-    protected $config;
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+
+        $end = $this->gatewayFile->getEnd();
+
+        $refunds = $this->repo->refund->findBetweenTimestampsForGateway(
+            $begin,
+            $end,
+            self::GATEWAY
+        );
+
+        return $refunds;
+    }
 
     protected function formatDataForFile(array $data)
     {
         $formattedData[] = self::REFUND_COLUMN_HEADERS;
-
-        $this->loadGatewayConfig();
 
         foreach ($data as $row)
         {
@@ -78,9 +90,9 @@ class BharatQrIsg extends Base
     protected function formatDataForMail(array $data)
     {
         $file = $this->gatewayFile
-            ->files()
-            ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-            ->first();
+                ->files()
+                ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+                ->first();
 
         $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
@@ -96,33 +108,11 @@ class BharatQrIsg extends Base
         return $mailData;
     }
 
-    public function fetchEntities(): PublicCollection
-    {
-        $begin = $this->gatewayFile->getBegin();
-
-        $end = $this->gatewayFile->getEnd();
-
-        $refunds = $this->repo->refund->findBetweenTimestampsForGateway(
-            $begin,
-            $end,
-            self::GATEWAY
-        );
-
-        return $refunds;
-    }
-
     protected function getFileToWriteNameWithoutExt()
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
         return self::FILE_NAME . '_' . $date;
-    }
-
-    protected function loadGatewayConfig()
-    {
-        $configGatewayStr = 'gateway.' . self::GATEWAY;
-
-        $this->config = $this->app['config']->get($configGatewayStr);
     }
 
     protected function formatAmount($amount)
