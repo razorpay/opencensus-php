@@ -10,9 +10,9 @@ use Symfony\Component\DomCrawler\Crawler;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Base\Action;
 use RZP\Models\Merchant\Account;
 use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Models\Payment\Verify\Action;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
@@ -299,26 +299,12 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function createBharatQrPayment()
+    protected function createBharatQrPayment($content)
     {
-        $paymentContent = [
-            'PRIMARY_ID'           => 'tobeset',
-            'SECONDARY_ID'         => 'reference_id',
-            'MERCHANT_PAN'         => '4403844012084006',
-            'TXN_ID'               => '1817700802564',
-            'TXN_DATE_TIME'        =>  Carbon:: now()->format('Y-m-d H:i:s'),
-            'TXN_AMOUNT'           => '1.00',
-            'AUTH_CODE'            => 'ab3456',
-            'RRN'                  => random_int(111111111111,999999999999),
-            'CONSUMER_PAN'         => '4012001037141112',
-            'STATUS_CODE'          => '00',
-            'STATUS_DESC'          => 'Transaction Approved',
-        ];
-
         $request = [
             'url'     => '/payment/callback/bharatqr/isg',
             'method'  => 'post',
-            'content' => $paymentContent,
+            'content' => $content,
         ];
 
         $qrCode = $this->createVirtualAccount();
@@ -326,6 +312,14 @@ trait PaymentTrait
         $this->ba->directAuth();
 
         $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use ($request)
+        {
+            if ($action === Action::VERIFY)
+            {
+                $content = $request['content'];
+            }
+        }, $this->gateway);
 
         $response = $this->makeRequestAndGetContent($request);
 

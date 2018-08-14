@@ -38,11 +38,17 @@ class IsgRefundFileTest extends TestCase
     {
         Mail::fake();
 
-        $response = $this->createBharatQrPayment();
+        $response1 = $this->createBharatQrPayment($this->getPaymentContentData());
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment1 = $this->getLastEntity('payment', true);
 
-        $refund = $this->refundPayment($payment['id']);
+        $fullRefund = $this->refundPayment($payment1['id']);
+
+        $response2 = $this->createBharatQrPayment($this->getPaymentContentData());
+
+        $payment2 = $this->getLastEntity('payment', true);
+
+        $partialRefund = $this->refundPayment($payment2['id'], 100);
 
         $this->ba->adminAuth();
 
@@ -59,7 +65,7 @@ class IsgRefundFileTest extends TestCase
 
         $expectedFilesContent = [
             'type' => 'isg_bharatqr_refund',
-            'location' => 'Refund' . '_' . $time . '.txt',
+            'location' => 'Refund' . '_' . $time . '.csv',
         ];
 
         $file = $this->getLastEntity('file_store', true);
@@ -75,7 +81,7 @@ class IsgRefundFileTest extends TestCase
             $this->assertEquals($expectedSubject, $mail->subject);
 
             $testData = [
-                'count' => 1,
+                'count' => 2,
                 'body'  => RefundMailConstants::BODY_MAP[Gateway::ISG],
             ];
 
@@ -89,16 +95,35 @@ class IsgRefundFileTest extends TestCase
         });
     }
 
+    protected function getPaymentContentData()
+    {
+         $paymentContent = [
+            'PRIMARY_ID'           => 'tobeset',
+            'SECONDARY_ID'         => 'reference_id',
+            'MERCHANT_PAN'         => '4403844012084006',
+            'TXN_ID'               => random_int(1111111111111,9999999999999),
+            'TXN_DATE_TIME'        =>  Carbon:: now()->format('Y-m-d H:i:s'),
+            'TXN_AMOUNT'           => '2.00',
+            'AUTH_CODE'            => 'ab3456',
+            'RRN'                  => random_int(111111111111,999999999999),
+            'CONSUMER_PAN'         => '4012001037141112',
+            'STATUS_CODE'          => '00',
+            'STATUS_DESC'          => 'Transaction Approved',
+         ];
+
+         return $paymentContent;
+    }
+
     protected function checkRefundsFile($filePath)
     {
         $fileContents = \file($filePath);
 
         foreach ($fileContents as &$txtString)
         {
-            $txtString = explode('|', $txtString);
+            $txtString = explode(',', $txtString);
         }
 
-        $this->assertCount(2, $fileContents);
+        $this->assertCount(3, $fileContents);
 
         $this->assertCount(8, $fileContents[0]);
     }

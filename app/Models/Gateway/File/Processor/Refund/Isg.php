@@ -15,7 +15,7 @@ class Isg extends Base
     use FileHandler;
 
     const FILE_NAME              = 'Refund';
-    const EXTENSION              = FileStore\Format::TXT;
+    const EXTENSION              = FileStore\Format::CSV;
     const FILE_TYPE              = FileStore\Type::ISG_REFUND;
     const GATEWAY                = Payment\Gateway::ISG;
 
@@ -56,19 +56,19 @@ class Isg extends Base
 
     protected function formatDataForFile(array $data)
     {
-        $formattedData[] = self::REFUND_COLUMN_HEADERS;
+        //$formattedData[] = self::REFUND_COLUMN_HEADERS;
 
         foreach ($data as $row)
         {
             $paymentDate = Carbon::createFromTimestamp(
                 $row['payment']['created_at'],
                 Timezone::IST)
-                ->format('ymdHis');
+                ->format('YmdHis');
 
             $refundDate = Carbon::createFromTimestamp(
                 $row['refund']['created_at'],
                 Timezone::IST)
-                ->format('ymdHis');
+                ->format('YmdHis');
 
             $formattedData[] = [
                 self::REFUND_ID                     => $row['refund']['id'],
@@ -82,7 +82,7 @@ class Isg extends Base
             ];
         }
 
-        $formattedData = $this->getTextData($formattedData);
+        //$formattedData = $this->getTextData($formattedData);
 
         return $formattedData;
     }
