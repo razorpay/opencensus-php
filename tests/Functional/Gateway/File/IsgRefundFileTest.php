@@ -44,7 +44,7 @@ class IsgRefundFileTest extends TestCase
 
         $fullRefund = $this->refundPayment($payment1['id']);
 
-        $response2 = $this->createBharatQrPayment($this->getPaymentContentData());
+        $response2 = $this->createBharatQrPayment($this->getPaymentContentData(300));
 
         $payment2 = $this->getLastEntity('payment', true);
 
@@ -95,7 +95,7 @@ class IsgRefundFileTest extends TestCase
         });
     }
 
-    protected function getPaymentContentData()
+    protected function getPaymentContentData($amount = 100)
     {
          $paymentContent = [
             'PRIMARY_ID'           => 'tobeset',
@@ -103,7 +103,7 @@ class IsgRefundFileTest extends TestCase
             'MERCHANT_PAN'         => '4403844012084006',
             'TXN_ID'               => random_int(1111111111111,9999999999999),
             'TXN_DATE_TIME'        =>  Carbon:: now()->format('Y-m-d H:i:s'),
-            'TXN_AMOUNT'           => '2.00',
+            'TXN_AMOUNT'           => $this->formatAmount($amount),
             'AUTH_CODE'            => 'ab3456',
             'RRN'                  => random_int(111111111111,999999999999),
             'CONSUMER_PAN'         => '4012001037141112',
@@ -126,5 +126,10 @@ class IsgRefundFileTest extends TestCase
         $this->assertCount(3, $fileContents);
 
         $this->assertCount(8, $fileContents[0]);
+    }
+
+    public function formatAmount($amount)
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 }

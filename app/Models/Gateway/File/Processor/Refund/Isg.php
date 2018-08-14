@@ -56,8 +56,6 @@ class Isg extends Base
 
     protected function formatDataForFile(array $data)
     {
-        //$formattedData[] = self::REFUND_COLUMN_HEADERS;
-
         foreach ($data as $row)
         {
             $paymentDate = Carbon::createFromTimestamp(
@@ -81,8 +79,6 @@ class Isg extends Base
                 self::RRN                           => $row['gateway']['rrn'],
             ];
         }
-
-        //$formattedData = $this->getTextData($formattedData);
 
         return $formattedData;
     }
