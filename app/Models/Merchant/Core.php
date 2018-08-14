@@ -1284,7 +1284,7 @@ class Core extends Base\Core
         $accessMapIds = $accessMaps->pluck(AccessMap\Entity::ID)->toArray();
 
         $this->trace->info(
-            TraceCode::PARTNER_ACCESS_MAPS_DELETED,
+            TraceCode::PARTNER_ACCESS_MAPS_DELETE,
             [
                 'ids' => $accessMapIds,
             ]);
