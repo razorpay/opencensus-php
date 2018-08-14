@@ -141,7 +141,7 @@ export default class EditOrg extends Component {
         if (body.hasOwnProperty(prop) && prop.indexOf('admin.') > -1) {
           let adminProp = prop.split('.')[1];
           if (!body.admin) {
-            data.body.admin = {};
+            body.admin = {};
           }
           body.admin[adminProp] = body[prop];
           delete body[prop];
@@ -182,10 +182,11 @@ export default class EditOrg extends Component {
 }
 
 export function removeEntity() {
-  return adminDelete(`orgs/${this.id}`).then(response => {
-    notifySuccess('Organisation is removed successfully');
-    this.collection.items.remove(this);
-
+  return adminDelete(`live/orgs/${this.id}`).then(response => {
+    if (response) {
+      notifySuccess('Organisation is removed successfully');
+      this.collection.items.remove(this);
+    }
     return response;
   });
 }

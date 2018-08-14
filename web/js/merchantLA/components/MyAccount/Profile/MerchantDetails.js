@@ -5,11 +5,41 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import DetailRow from 'merchant/components/DetailRow';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
+const businessTypeMap = {
+  1: 'Proprietorship',
+  2: 'Individual',
+  3: 'Partnership',
+  4: 'Private',
+  5: 'Public',
+  6: 'LLP',
+  7: 'NGO',
+  9: 'Trust',
+  10: 'Society',
+};
+
 export default connect(null, { openModal, closeModal })(
-  ({ user, openModal, closeModal }) => {
+  ({ user, openModal, closeModal, changeDisplayName }) => {
     return (
       <div class="list-group details-row-container">
         <DetailRow label="Contact Name" value={titleCase(user.name)} />
+
+        {changeDisplayName && (
+          <DetailRow
+            label="Display Name"
+            value={() => (
+              <span>
+                {user.display_name}
+                <a
+                  class="p-l"
+                  title="Edit Display Name"
+                  onClick={changeDisplayName}
+                >
+                  <i class="i i-edit" />
+                </a>
+              </span>
+            )}
+          />
+        )}
 
         <DetailRow
           label="Contact Email"
@@ -23,7 +53,7 @@ export default connect(null, { openModal, closeModal })(
 
         <DetailRow
           label="Business Type"
-          value={titleCase(user.business_type)}
+          value={titleCase(businessTypeMap[user.business_type])}
         />
 
         <DetailRow
@@ -35,12 +65,7 @@ export default connect(null, { openModal, closeModal })(
 
         <DetailRow
           label="Registered By"
-          value={() => (
-            <span>
-              <b class="text--secondary">{user.parent_name}</b> (Merchant ID:{' '}
-              {user.parent_id}){' '}
-            </span>
-          )}
+          value={user.marketplace_merchant_name}
         />
       </div>
     );

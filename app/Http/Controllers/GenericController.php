@@ -11,10 +11,29 @@ use App\Http\AppResponse;
 
 class GenericController extends Controller
 {
+    const WHITELISTED_HEADERS = [
+        'x-consumer',
+        'x-report-type',
+    ];
+
     public function handleAny($mode, $path)
     {
+        $allRequestHeaders = Request::header();
+        $headers = [];
+
+        foreach($allRequestHeaders as $key => $value) {
+            $key = strtolower($key);
+
+            if (in_array($key, self::WHITELISTED_HEADERS, true) === true) {
+                $key = title_case($key);
+
+                $headers[$key] = $value[0];
+            }
+        }
+
         $request = new App\Admin\ApiRequestAny([
-            'mode' => $mode
+            'mode'      => $mode,
+            'headers'   => $headers,
         ]);
 
         $method = Request::method();

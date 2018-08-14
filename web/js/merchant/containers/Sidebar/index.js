@@ -195,19 +195,19 @@ export default class Sidebar extends Component {
                     icon="i i-chart text-info"
                     to="/dashboard"
                     exact
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                   />
                   <MainNavLink
                     label="Transactions"
                     icon="i i-repeat text-primary"
                     to={routes.transactions}
-                    notMyRole="sellerapp"
+                    notMyRole="sellerapp agent"
                   />
                   <MainNavLink
                     label="Settlements"
                     icon="i i-done-all text-success"
                     to="/settlements"
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                   />
 
                   <div class="divider" />
@@ -216,7 +216,7 @@ export default class Sidebar extends Component {
                     label="Invoices"
                     icon="i i-notes text-warning"
                     to={routes.invoices}
-                    notMyRole="sellerapp"
+                    notMyRole="sellerapp agent"
                     isNew
                   />
                   <MainNavLink
@@ -235,26 +235,26 @@ export default class Sidebar extends Component {
                     label="Route"
                     icon="i i-store text-success"
                     to={routes.marketplace}
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                   />
                   <MainNavLink
                     label="Subscriptions"
                     icon="i i-refresh text-info"
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                     to={routes.subscriptions}
                   />
                   <MainNavLink
                     label="Smart Collect"
                     icon="i i-account-balance text-danger"
                     to="/virtualaccounts"
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                   />
 
                   <MainNavLink
                     label="Customers"
                     icon="i i-people text-warning"
                     to="/customers"
-                    notMyRole="sellerapp"
+                    notMyRole="sellerapp agent"
                   />
 
                   <div class="divider" />
@@ -263,7 +263,7 @@ export default class Sidebar extends Component {
                     label="Reports"
                     icon="i i-books text-danger"
                     to="/reports"
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                     isPending={isReportsPending}
                   />
                   <MainNavLink

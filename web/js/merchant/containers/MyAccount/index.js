@@ -25,15 +25,15 @@ export default class MyAccount extends Component {
         <header id="myaccount-header">
           <NavLink to="/profile">Profile</NavLink>
 
-          <ShowWhen notMyRole="sellerapp support">
+          <ShowWhen notMyRole="sellerapp agent support">
             <NavLink to="/credits">Credits</NavLink>
           </ShowWhen>
 
-          <ShowWhen notMyRole="sellerapp">
+          <ShowWhen notMyRole="sellerapp agent">
             <NavLink to="/addfunds">Add Funds</NavLink>
           </ShowWhen>
           {!(isPartner && isNonPurePlatformPartner) && (
-            <ShowWhen notMyRole="sellerapp" featureEnabled="Referral">
+            <ShowWhen notMyRole="sellerapp agent" featureEnabled="Referral">
               <NavLink to="/referrals">Referrals</NavLink>
             </ShowWhen>
           )}
