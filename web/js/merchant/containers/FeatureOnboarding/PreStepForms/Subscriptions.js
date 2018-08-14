@@ -6,7 +6,7 @@ import { Field } from 'redux-form';
 import { required } from 'rzp/utils/validators';
 import { lenientUrl } from 'rzp/utils/validators';
 import { updateSession } from 'merchant/modules/session';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'rzp/modules/notifications';
 
 import InputField from 'rzp/ui/Forms/InputField';

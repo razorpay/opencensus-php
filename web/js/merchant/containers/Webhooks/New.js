@@ -7,7 +7,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { required, lenientUrl } from 'rzp/utils/validators';
 import { saveWebhook } from 'merchant/modules/webhooks';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import Spinner from 'rzp/ui/Spinner';
 import {
   createAppWebhook,

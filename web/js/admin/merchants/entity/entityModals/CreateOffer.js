@@ -134,7 +134,7 @@ export default class CreateOffer extends Component {
 
           {['netbanking', 'wallet', 'upi'].indexOf(
             this.state.payment_method
-          ) !== -1 && (
+          ) === -1 && (
             <SelectField label="Payment Method Type" name="payment_method_type">
               <option value="">All</option>
               <option value="credit">Credit</option>

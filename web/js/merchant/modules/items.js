@@ -4,7 +4,7 @@ import {
   listFetchPendingState,
   listFetchSuccessState,
   listFetchErrorState,
-} from 'rzp/modules/collection';
+} from 'merchant/modules/collection';
 
 const ITEMS_FETCH = 'ITEMS_FETCH';
 const ITEMS_AUTOCOMPLETE_FETCH = 'ITEMS_AUTOCOMPLETE_FETCH';

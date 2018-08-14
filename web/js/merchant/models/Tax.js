@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 export default class Tax extends GenericEntity {
   resourceFields = ['id', 'name', 'rate', 'rate_type'];

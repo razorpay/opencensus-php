@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { withRouter } from 'react-router-dom';
 import { classList } from 'common/util';
 
@@ -212,6 +212,10 @@ export default class CreateNewContainer extends React.Component {
 
       sideEffectFieldsToUpdate['email_notify'] = isChecked ? '1' : '0';
       document.getElementsByName('email_notify')[0].checked = isChecked;
+    }
+
+    if (stateName === 'hasDesc' && fieldValue === '0') {
+      sideEffectFieldsToUpdate['description'] = undefined;
     }
 
     /* Step Last */

@@ -3,7 +3,7 @@ import {
   listFetchPendingState,
   listFetchSuccessState,
   listFetchErrorState,
-} from 'rzp/modules/collection';
+} from 'merchant/modules/collection';
 import Customer from 'merchant/models/Customer';
 
 export const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH';

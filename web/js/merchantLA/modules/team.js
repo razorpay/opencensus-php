@@ -1,6 +1,5 @@
-import request from 'rzp/utils/request';
-import { set, merge, unshift, remove } from 'rzp/utils/immutable';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merge, remove, set, unshift } from 'rzp/utils/immutable';
+import { merchantFetch } from 'merchantLA/utils/ajax';
 
 export const TEAM_FETCH = 'TEAM_FETCH';
 export const INVITATION_SEND = 'INVITATION_SEND';

@@ -1,5 +1,4 @@
 import { Component } from 'react';
-import { connect } from 'react-redux';
 import { findBy } from 'rzp/utils/rzp-utils';
 import store from 'merchant/store';
 

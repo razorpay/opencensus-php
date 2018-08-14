@@ -116,7 +116,7 @@ class AdminController extends Controller
     {
         $googleService = OAuthFacade::consumer('Google');
 
-        return (string) $googleService->getAuthorizationUri();
+        return (string) $googleService->getAuthorizationUri(["prompt" => "consent"]);
     }
 
     public function triggerGoogleOAuth($code)

@@ -68,8 +68,6 @@ export default class App extends Component {
 
     this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
 
-    this.logoutPopupShown = false;
-
     this.state = {
       isLoading: true,
     };
@@ -233,6 +231,7 @@ export default class App extends Component {
     ) {
       switch (role) {
         case 'sellerapp':
+        case 'agent':
           let url = '/paymentlinks';
           return this.props.history.replace(url);
         case 'support':

@@ -325,6 +325,7 @@ app
       $scope.sendDetails = function() {
         pushToDrip();
         invokeAdroll();
+        invokeGtag();
 
         // Fire linkedin Pixel.
         var i = new Image();
@@ -501,20 +502,37 @@ app
               return;
             }
             var scr = document.createElement('script');
+            (
+              (document.getElementsByTagName('head') || [null])[0] ||
+              document.getElementsByTagName('script')[0].parentNode
+            ).appendChild(scr);
             var host =
               'https:' == document.location.protocol
                 ? 'https://s.adroll.com'
                 : 'http://a.adroll.com';
             scr.setAttribute('async', 'true');
             scr.type = 'text/javascript';
+            scr.onload = function() {
+              __adroll.record_user({
+                adroll_segments: 'ef374af4',
+              });
+            };
             scr.src = host + '/j/roundtrip.js';
-            (
-              (document.getElementsByTagName('head') || [null])[0] ||
-              document.getElementsByTagName('script')[0].parentNode
-            ).appendChild(scr);
           };
           _onload();
         })();
+      };
+
+      /**
+       * Invokes GTAG for conversion tracking.
+       */
+      var invokeGtag = function invokeGtag() {
+        if (window.location.hostname != 'dashboard.razorpay.com') {
+          return;
+        }
+        gtag('event', 'conversion', {
+          send_to: 'AW-928471290/9KxkCP-1vIYBEPqx3boD',
+        });
       };
 
       // creates Drip lead if email present in params

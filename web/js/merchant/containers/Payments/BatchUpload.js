@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import ValidateModal from 'merchant/components/BatchNew/ValidateModal';
 import CreateModal from 'merchant/components/BatchNew/CreateModal';
 import SuccessModal from 'merchant/components/BatchNew/SuccessModal';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import Spinner from 'rzp/ui/Spinner';
 import TableSlider from 'rzp/ui/TableSlider';
 import ModalHeader from 'rzp/ui/ModalHeader';
