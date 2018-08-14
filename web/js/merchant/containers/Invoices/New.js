@@ -2118,7 +2118,7 @@ export default class InvoicesNewContainer extends Component {
                         <div class="btn-group-vertical inv__actionbutton">
                           <p>Settings</p>
                           {!merchantGSTIN &&
-                            isDraft && (
+                            (isNew || isDraft) && (
                               <label
                                 class="btn btn-default btn-block btn-lg"
                                 for="gst_enabled"
@@ -2137,6 +2137,7 @@ export default class InvoicesNewContainer extends Component {
                                         type="checkbox"
                                         disabled={locked}
                                         class="Input-el"
+                                        checked={!!merchantGSTIN}
                                         onChange={this.showGSTModal}
                                       />
                                       <div class="Input-checkbox" />
