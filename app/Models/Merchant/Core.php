@@ -1253,6 +1253,12 @@ class Core extends Base\Core
      */
     protected function deleteSupportingEntities(Entity $partner)
     {
+        if ($partner->isPurePlatformPartner() === true)
+        {
+            // A dummy application for pure platforms does not exist
+            return;
+        }
+
         // Fetch partner app and then access maps
         $partnerApp = $this->getPartnerApp($partner);
         $accessMaps = $this->repo
