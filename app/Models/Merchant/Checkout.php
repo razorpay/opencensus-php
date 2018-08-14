@@ -595,6 +595,11 @@ class Checkout
             {
                 $this->updateMethodsToEnableOnCheckout($offer, $data);
             }
+
+            //
+            // If offer is forced, checkout handles it by displaying it without list of choices
+            //
+            $data['force_offer'] = true;
         }
 
         $this->updateEmiOptionsUsingOffers($offers, $data);
