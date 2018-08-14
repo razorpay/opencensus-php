@@ -74,7 +74,9 @@ class Service extends Base\Service
         //
         // Hence, forcing the input mode to be live mode here, if not already.
         //
-        $this->core()->setModeAndDefaultConnection(Mode::LIVE);
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->core()->setModeAndDefaultConnection($liveMode);
 
         return $this->core()->saveMerchantDetails($input, $this->merchant);
     }
