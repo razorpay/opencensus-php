@@ -80,10 +80,6 @@
                 }
             };
 
-            options.prefill = {
-                contact: udfData.customer_mobile
-            };
-
             options.name = data.merchant.name;
             options.theme.color = merchant.brand_color || '#168AFA';
             options.currency = 'INR';
@@ -114,7 +110,6 @@
                 switch(path) {
                     case 'root.waybill_number': defaultMsg = 'Please enter Waybill number'; break;
                     case 'root.customer_name': defaultMsg = 'Please enter customer name'; break;
-                    case 'root.customer_mobile': defaultMsg = 'Please enter your mobile number'; break;
                     case 'root.payment_type': defaultMsg = 'Please select type of payment'; break;
                 }
 
@@ -215,7 +210,6 @@
 
             window.RZP.addAmountValidation();
             window.RZP.addAlphaFieldsValidation(['root.customer_name']);
-            window.RZP.addIntFieldsValidation(['root.customer_mobile']);
             window.RZP.addPaymentTypeValidation();
         }
 

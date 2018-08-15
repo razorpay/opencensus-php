@@ -12,7 +12,7 @@
 
     $email_subject = 'Query for Payment Page Id: '. $payment_page_data['id'];
 
-    $intro_note = 'Welcome to Delhivery. Now, pay your Delhivery service bill in 4 simple steps :';
+    $intro_note = 'Welcome to Delhivery. Now, pay your Delhivery Crossborder service bill in 4 simple steps :';
     $instructions = array('Enter the details for the service you availed.', 'Choose the method of payment. ', 'Pay the amount. ', 'Receive online confirmation and get a confirmation email.');
     $end_note =  'In case of any doubts, please reach out to Delhivery on';
 ?>
