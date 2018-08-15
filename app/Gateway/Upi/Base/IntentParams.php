@@ -12,6 +12,7 @@ class IntentParams
     const TXN_AMOUNT    = 'am';
     const TXN_CURRENCY  = 'cu';
     const MCC           = 'mc';
+    const URL           = 'url';
 
     // Extended Params 2.0
 

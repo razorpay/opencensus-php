@@ -153,6 +153,11 @@ class Gateway extends Base\Gateway
             Base\IntentParams::MCC           => '5411',
         ];
 
+        if (isset($input['upi']['reference_url']) === true)
+        {
+            $content[Base\IntentParams::URL] = $input['upi']['reference_url'];
+        }
+
         return $content;
     }
 
