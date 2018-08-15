@@ -12,4 +12,11 @@ class IntentParams
     const TXN_AMOUNT    = 'am';
     const TXN_CURRENCY  = 'cu';
     const MCC           = 'mc';
+
+    // Extended Params 2.0
+
+    const MODE          = 'mode';
+    const PURPOSE       = 'purpose';
+    const ORG_ID        = 'orgid';
+    const SIGN          = 'sign';
 }
