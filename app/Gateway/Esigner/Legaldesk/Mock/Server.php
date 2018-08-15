@@ -4,6 +4,7 @@ namespace RZP\Gateway\Esigner\Legaldesk\Mock;
 
 use RZP\Gateway\Base;
 use Lib\Formatters\Xml;
+use RZP\Models\Payment;
 use RZP\Gateway\Esigner\Legaldesk\ResponseFields;
 
 class Server extends Base\Mock\Server
@@ -32,12 +33,16 @@ class Server extends Base\Mock\Server
             'emandate_id' => $input['mandate_id'],
         ];
 
-        $url = $this->route->getUrl('gateway_payment_callback_legaldesk');
+        $enachEntity = $this->app['repo']->enach->findByMandateIdAndAction($input['mandate_id'], 'authorize');
+
+        $paymentId = Payment\Entity::getSignedId($enachEntity['payment_id']);
+
+        $callbackUrl = $this->route->getPublicCallbackUrlWithHash($paymentId);
 
         $request = [
-            'url'     => $url,
-            'method'  => 'POST',
-            'content' => $content,
+            'url' => $callbackUrl,
+            'method' => 'POST',
+            'content' => $content
         ];
 
         return $this->makePostResponse($request);

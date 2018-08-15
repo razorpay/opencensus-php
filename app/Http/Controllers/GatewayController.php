@@ -160,38 +160,6 @@ class GatewayController extends Controller
         return $this->callbackKotak();
     }
 
-    public function callbackLegaldesk()
-    {
-        $input = Request::all();
-
-        $this->app['trace']->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            [
-                'input'   => Request::all(),
-                'gateway' => 'esigner_legaldesk'
-            ]);
-
-        $result = $this->getEnachEntityByMandateId($input['emandate_id']);
-
-        $enach = $result['enach'];
-
-        $mode = $result['mode'];
-
-        if ($enach === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Failed to find requisite mandate id: ' . $input['emandate_id']);
-        }
-
-        $paymentId = $enach->getPaymentId();
-
-        $url = $this->getCallbackUrlFromPaymentIdAndMode($paymentId, $mode);
-
-        $url .= '?' . http_build_query($input);
-
-        return Redirect::to($url);
-    }
-
     public function callbackKotak()
     {
         $inputMsg = Request::get('msg');
@@ -368,30 +336,6 @@ class GatewayController extends Controller
         }
 
         return ['nb' => $nb, 'mode' => $mode];
-    }
-
-    protected function getEnachEntityByMandateId($mandateId)
-    {
-        $app = $this->app;
-
-        $repo = $app['repo']->enach;
-
-        $mode = 'test';
-
-        $app['config']->set('database.default', $mode);
-
-        $enach = $repo->findByMandateIdAndAction($mandateId, \RZP\Gateway\Base\Action::AUTHORIZE);
-
-        if ($enach === null)
-        {
-            $mode = 'live';
-
-            $app['config']->set('database.default', $mode);
-
-            $enach = $repo->findByMandateIdAndAction($mandateId, \RZP\Gateway\Base\Action::AUTHORIZE);
-        }
-
-        return ['enach' => $enach, 'mode' => $mode];
     }
 
     /**

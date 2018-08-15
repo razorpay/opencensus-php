@@ -127,7 +127,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getRedirectRequestArray(array $input, $response)
+    protected function getRedirectRequestArray($input, $response)
     {
         $request = [
             'url'     => $response[ ResponseFields::QUICK_INVITE_URL ],
@@ -136,6 +136,12 @@ class Gateway extends Base\Gateway
                 'reference_id' => $response[ ResponseFields::EMANDATE_ID ],
             ],
         ];
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, [
+            'gateway'    => $this->gateway,
+            'payment_id' => $input['payment']['id'],
+            'request'   => $request]
+        );
 
         return $request;
     }
@@ -166,6 +172,7 @@ class Gateway extends Base\Gateway
             RequestFields::COLLECTION_AMOUNT_TYPE     => Constants::COLLECTION_AMOUNT_TYPE_MAXIMUM,
             RequestFields::AMOUNT                     => $input['token']->getMaxAmount() / 100,
             RequestFields::MANDATE_TYPE_CATEGORY_CODE => CategoryCode::getCategoryCodeFromMcc($mcc),
+            RequestFields::CALLBACK_URL               => $this->input['callbackUrl'],
         ];
 
         return $this->getStandardRequestArray($content, 'POST', 'create');
