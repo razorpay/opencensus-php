@@ -137,6 +137,7 @@ class Table
     const MIGS                  = 'axis';
     const MPI                   = 'blade';
     const ENACH                 = 'enach';
+    const ESIGNER               = 'esigner';
     const PAYTM                 = 'paytm';
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
