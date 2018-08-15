@@ -27,6 +27,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::GATEWAY_REFERENCE_ID, $mandateId)
                     ->where(Entity::ACTION, $action)
-                    ->first();
+                    ->firstOrFail();
     }
 }
