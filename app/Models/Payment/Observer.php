@@ -99,6 +99,5 @@ class Observer extends BaseObserver
         ];
 
         $this->trace->count(Metric::PAYMENT_CREATED, $metricData);
-
     }
 }

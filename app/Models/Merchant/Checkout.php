@@ -10,6 +10,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Emi;
+use RZP\Models\Card;
 use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -590,10 +591,15 @@ class Checkout
 
             $checker = new Checker($offer, $verbose);
 
-            if ($checker->checkApplicabilityOnOrder($order) === true)
+            if ($checker->checkValidityOnOrder($order) === true)
             {
                 $this->updateMethodsToEnableOnCheckout($offer, $data);
             }
+
+            //
+            // If offer is forced, checkout handles it by displaying it without list of choices
+            //
+            $data['force_offer'] = true;
         }
 
         $this->updateEmiOptionsUsingOffers($offers, $data);
@@ -606,7 +612,7 @@ class Checkout
         {
             $checker = new Checker($offer, $verbose);
 
-            if ($checker->checkApplicabilityOnOrder($order) === true)
+            if ($checker->checkValidityOnOrder($order) === true)
             {
                 $data['offers'][] = $offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount);
             }
@@ -650,13 +656,7 @@ class Checkout
         {
             case Payment\Method::CARD:
             case Payment\Method::EMI:
-
-                $offerMethodType = $offer->getPaymentMethodType();
-
-                $this->updateMethodsForCardOrEmiOffer(
-                    $data,
-                    $offerMethod,
-                    $offerMethodType);
+                $this->updateMethodsForCardOrEmiOffer($data, $offer);
 
                 break;
 
@@ -705,11 +705,12 @@ class Checkout
         }
     }
 
-    protected function updateMethodsForCardOrEmiOffer(
-        array & $data,
-        string $offerMethod,
-        string $offerMethodType = null)
+    protected function updateMethodsForCardOrEmiOffer(array & $data, Offer\Entity $offer)
     {
+        $offerMethod = $offer->getPaymentMethod();
+
+        $offerMethodType = $offer->getPaymentMethodType();
+
         $data['methods'][Payment\Method::CARD] = true;
 
         if ($offerMethod === Payment\Method::EMI)
@@ -738,6 +739,11 @@ class Checkout
                 $data['methods'][Methods\Entity::DEBIT_CARD]  = true;
                 $data['methods'][Methods\Entity::CREDIT_CARD] = true;
         }
+
+        $offerNetwork = $offer->getPaymentNetwork();
+
+        $data['methods'][Merchant\Methods\Entity::AMEX] = (($offerNetwork === null) or
+                                                           ($offerNetwork === Card\Network::AMEX));
     }
 
     public function checkAndFillGatewayDowntime(Merchant\Entity $merchant, array & $data)

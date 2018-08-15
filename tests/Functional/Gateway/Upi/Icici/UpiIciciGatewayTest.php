@@ -13,13 +13,13 @@ use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class IciciGatewayTest extends TestCase
+class UpiIciciGatewayTest extends TestCase
 {
     use PaymentTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/IciciGatewayTestData.php';
+        $this->testDataFilePath = __DIR__ . '/UpiIciciGatewayTestData.php';
 
         parent::setUp();
 
@@ -735,6 +735,8 @@ EOT;
         $upi = $this->getLastEntity('upi', true);
         $this->assertTestResponse($upi, 'testPaymentUpiEntity');
         $this->assertArrayHasKey('gateway_payment_id', $upi);
+        $this->assertNotNull($upi['vpa']);
+        $this->assertNotNull($payment['vpa']);
     }
 
     public function testRefundExcelFile()

@@ -94,6 +94,7 @@ class Status extends BaseStatus
             'sfms:E70'   => self::BAD_GATEWAY,
             'sfms:E18'   => self::BAD_GATEWAY,
             'ns:E6001'   => self::BENE_NOT_REGISTERED,
+            'ns:E2005'   => self::BENE_NOT_REGISTERED,
 
             // Merchant Errors
             'ns:E406'    => self::BENEFICIARY_NOT_ACCEPTED,

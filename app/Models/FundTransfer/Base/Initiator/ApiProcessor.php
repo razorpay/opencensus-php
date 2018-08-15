@@ -6,6 +6,7 @@ use App;
 use Request;
 use Requests;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 abstract class ApiProcessor extends NodalAccount
 {
@@ -125,27 +126,46 @@ abstract class ApiProcessor extends NodalAccount
 
     public function makeRequest(): array
     {
-        $this->collectRequestData();
+        $parsedResponse = [];
 
-        $this->traceRequest();
-
-        if ($this->config['mock'] === true)
+        try
         {
-            $this->response = $this->sendMockRequest();
+            $this->collectRequestData();
+
+            $this->traceRequest();
+
+            if ($this->config['mock'] === true)
+            {
+                $this->response = $this->sendMockRequest();
+            }
+            else
+            {
+                $this->response = Requests::request(
+                    $this->url,
+                    $this->headers,
+                    $this->body,
+                    $this->method,
+                    $this->options);
+            }
+
+            $this->traceResponse($this->response);
+
+            $parsedResponse = $this->processResponse($this->response);
         }
-        else
+        catch (\Throwable $e)
         {
-            $this->response = Requests::request(
-                $this->url,
-                $this->headers,
-                $this->body,
-                $this->method,
-                $this->options);
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::NODAL_REQUEST_FAILED,
+                [
+                    'request'  => $this->requestBody(),
+                    'response' => $this->response
+                ]
+            );
         }
 
-        $this->traceResponse($this->response);
-
-        return $this->processResponse($this->response);
+        return $parsedResponse;
     }
 
     /**

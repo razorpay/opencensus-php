@@ -37,8 +37,6 @@ class PublicController extends Controller
             'c'      => $this->getCacheStatus(),
             // sec redis
             'sc'     => $this->getCacheStatus('secure'),
-            // secure Elasticache
-            'sec'    => $this->getCacheStatus('secure_elasticache'),
             // Elastic search
             's'      => $this->getEsStatus(),
         ];

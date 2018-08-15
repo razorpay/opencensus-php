@@ -57,6 +57,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateLinkedAccountMerchantEmail()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editLinkedAccountEmail($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putMerchantConfig()
     {
         $input = Request::all();

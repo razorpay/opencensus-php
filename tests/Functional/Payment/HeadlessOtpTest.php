@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use Redis;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\GatewayRequestException;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -62,6 +63,55 @@ class HeadlessOtpTest extends TestCase
         self::assertEquals('headless_otp', $payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    }
+
+    public function testHeadlessOtpAuthenticationPaymentFailed()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['otpelf']);
+        $this->mockTokenEx();
+
+        $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
+
+        $this->app->instance('card.otpelf', $otpelf);
+
+        $otpelf->shouldReceive('otpSend')
+            ->with(\Mockery::type('array'))
+            ->andReturnUsing(function ()
+            {
+                return [];
+            });
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('213433');
+
+        $this->makeRequestAndCatchException(
+        function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        },
+        GatewayRequestException::class);
     }
 
     public function testHeadlessOtpAuthenticationPaymentWithout3ds()

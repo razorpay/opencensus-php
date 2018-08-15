@@ -43,7 +43,10 @@ class StatusProcessor extends BaseRowProcessor
                                          ->setEntity($this->row)
                                          ->makeRequest();
 
-        $this->setParsedData($response);
+        if (empty($response) === false)
+        {
+            $this->setParsedData($response);
+        }
     }
 
     protected function setParsedData(array $response)

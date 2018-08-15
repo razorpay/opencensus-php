@@ -56,7 +56,7 @@ class Validator extends Base\Validator
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
         'save'                          => 'sometimes|in:0,1',
-        'recurring'                     => 'sometimes_if:method,card,emandate|in:1',
+        'recurring'                     => 'sometimes|in:1',
         'fee'                           => 'sometimes|filled|integer|max:50000000',
         Entity::TAX                     => 'sometimes|filled|integer|max:50000000',
         'on_hold'                       => 'sometimes_if:method,transfer|boolean',
@@ -79,6 +79,7 @@ class Validator extends Base\Validator
         'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
         'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch',
         'offer_id'                      => 'filled|public_id|size:20',
+        'preferred_recurring'           => 'sometimes|in:1',
     ];
 
     protected static $editRules = [
@@ -358,13 +359,11 @@ class Validator extends Base\Validator
 
     protected function validateRecurring(array $input)
     {
-        if ($input['method'] === Payment\Method::EMANDATE)
+        if ((isset($input[Entity::RECURRING]) === true) and
+            (isset($input[Entity::PREFERRED_RECURRING]) === true))
         {
-            if (isset($input['recurring']) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The recurring field should be 1 when payment method is eMandate.');
-            }
+            throw new Exception\BadRequestValidationFailureException(
+                'Request should contain either recurring or preferred_recurring, not both');
         }
     }
 
@@ -854,6 +853,23 @@ class Validator extends Base\Validator
                     Entity::STATUS          => $payment->getStatus(),
                     Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt(),
                 ]);
+        }
+    }
+
+    public function validateGatewayForForceAuth()
+    {
+        $payment = $this->entity;
+
+        $gateway = $payment->getGateway();
+
+        $allowedGateways = Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS;
+
+        if (in_array($gateway, $allowedGateways, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot force authorize on this gateway',
+                'gateway',
+                $gateway);
         }
     }
 }

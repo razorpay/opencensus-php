@@ -110,6 +110,10 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->reconcile('NetbankingRbl', $uploadedFile);
 
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals('processed', $batch['status']);
+
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity['status'], 'authorized');

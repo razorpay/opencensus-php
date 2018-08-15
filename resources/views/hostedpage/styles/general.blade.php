@@ -52,8 +52,11 @@
     #header-section {
         padding: 24px 0;
         overflow: auto;
-        background: {{$data['merchant']['brand_color']}};
         color: {{$light_color}};
+    }
+
+    .no-display-image #header-section {
+        background: {{$data['merchant']['brand_color']}};
     }
 
     #header-details {
@@ -218,7 +221,6 @@
         line-height: 20px;
         position: relative;
         height: 100%;
-        overflow: hidden;
 
         display: none;
     }

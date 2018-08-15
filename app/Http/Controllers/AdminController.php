@@ -162,6 +162,13 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateMdr()
+    {
+        $data = $this->service()->updateMdr();
+
+        return ApiResponse::json($data);
+    }
+
     public function dbMetaDataQuery()
     {
         $input = Request::all();

@@ -94,6 +94,14 @@ trait HeadlessOtp
             return ['url' => $this->getOtpSubmitUrl(), 'content' => $content, 'method' => 'POST'];
         }
 
+        if ($payment->getAuthType() === Payment\AuthType::OTP)
+        {
+            throw new Exception\GatewayRequestException(
+                'Failed to open Headless Browser',
+                null,
+                true);
+        }
+
         return $request;
     }
 
@@ -140,7 +148,7 @@ trait HeadlessOtp
             ($response['data']['action'] === 'page_resolved'))
         {
             $content = $response['data']['data'];
-            
+
             return ['url' => $this->getOtpSubmitUrl(), 'content' => $content, 'method' => 'POST'];
         }
     }

@@ -42,6 +42,10 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::FEE)
                   ->unsigned();
 
+            $table->integer(Transaction::MDR)
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(Transaction::TAX)
                   ->unsigned()
                   ->nullable();

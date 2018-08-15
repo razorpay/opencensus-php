@@ -5,6 +5,7 @@ namespace RZP\Mail\Merchant;
 use RZP\Mail\Base\Common;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
+use RZP\Models\Merchant\Detail\Entity as Detail;
 
 class CreateSubMerchantPartner extends Mailable
 {
@@ -34,7 +35,7 @@ class CreateSubMerchantPartner extends Mailable
 
     protected function addSubject()
     {
-        $this->subject('Congratulations! ' . $this->subMerchant['name'] . ' has been added as your merchant');
+        $this->subject('Congratulations! ' . $this->subMerchant['name'] . ' has been added as your sub-merchant');
 
         return $this;
     }
@@ -42,8 +43,9 @@ class CreateSubMerchantPartner extends Mailable
     protected function addMailData()
     {
         $data = [
-            'merchant'    => $this->aggregator,
-            'subMerchant' => $this->subMerchant,
+            'merchant'           => $this->aggregator,
+            'subMerchant'        => $this->subMerchant,
+            'activationDuration' => Detail::ACTIVATION_DURATION,
         ];
 
         $this->with($data);

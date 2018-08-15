@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Base\Initiator;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
@@ -61,6 +62,8 @@ abstract class NodalAccount extends Base\Core
     public function initiateTransfer(Base\PublicCollection $attempts): array
     {
         $this->updateAttemptStatus($attempts);
+
+        $this->trace->info(TraceCode::FTA_UPDATE_STATUS);
 
         return $this->process($attempts);
     }

@@ -6,8 +6,10 @@ use App;
 use Route;
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
+use RZP\Constants\Metric;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
+use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Http;
@@ -89,6 +91,11 @@ class Processor
      * Default UPI collect request expiry time in minutes.
      */
     const UPI_COLLECT_EXPIRY = 5;
+
+    /**
+     * Minimum payment amount for which mdr should be calculated
+     */
+    const MIN_MDR_PAYMENT_AMOUNT = 200000;
 
     /**
      * @var Merchant\Entity
@@ -190,28 +197,56 @@ class Processor
 
     public function process(array $input, $gatewayInput = []): array
     {
-        $this->setMethodForInput($input);
-
-        $payment = $this->buildPaymentEntity($input);
-
-        $ret = $this->preProcessPaymentInputs($input, $payment);
-
-        if ($ret !== null)
+        try
         {
-            return $ret;
+            $this->setMethodForInput($input);
+
+            $payment = $this->buildPaymentEntity($input);
+
+            $ret = $this->preProcessPaymentInputs($input, $payment);
+
+            if ($ret !== null)
+            {
+                return $ret;
+            }
+
+            $this->repo->transaction(function() use ($input, $payment)
+            {
+                $this->createPaymentEntity($input, $payment);
+            });
+
+            $payment = $this->payment;
+
+            // This flow is being used for only hosted (Shopify).
+            $this->checkSignature($input, $payment);
+
+            return $this->authorize($payment, $input, $gatewayInput);
         }
-
-        $this->repo->transaction(function() use ($input, $payment)
+        catch (Exception\BaseException $e)
         {
-            $this->createPaymentEntity($input, $payment);
-        });
+            $attributes = [];
 
-        $payment = $this->payment;
+            if (($e->getError() !== null) and ($e->getError() instanceof Error))
+            {
+                $attributes = $e->getError()->getAttributes();
+            }
 
-        // This flow is being used for only hosted (Shopify).
-        $this->checkSignature($input, $payment);
+            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
 
-        return $this->authorize($payment, $input, $gatewayInput);
+            $this->pushPaymentCreateErrorMetrics($attributes);
+
+            throw $e;
+        }
+        catch (\Throwable $e)
+        {
+            $attributes = [Metric::LABEL_TRACE_CODE =>  $e->getCode()];
+
+            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
+
+            $this->pushPaymentCreateErrorMetrics($attributes);
+
+            throw $e;
+        }
     }
 
     public function getPayment(): Payment\Entity
@@ -2255,6 +2290,19 @@ class Processor
                 ['key' => $key,
                  '$value' => $value]);
         }
+    }
+
+    protected function pushPaymentCreateErrorMetrics(array $errorAttributes)
+    {
+        $this->trace->count(
+            Metric::PAYMENT_PROCESS_FAILED,
+            [
+                Metric::LABEL_TRACE_CODE            =>  array_get($errorAttributes, Error::INTERNAL_ERROR_CODE),
+                Metric::LABEL_TRACE_FIELD           =>  array_get($errorAttributes, Error::FIELD),
+                Metric::LABEL_TRACE_SOURCE          =>  array_get($errorAttributes, Error::ERROR_CLASS),
+                Metric::LABEL_PAYMENT_IS_CREATED    =>  array_get($errorAttributes, Metric::LABEL_PAYMENT_IS_CREATED),
+            ]
+        );
     }
 
     protected function isPaymentEmandateAndRblGateway(Payment\Entity $payment)

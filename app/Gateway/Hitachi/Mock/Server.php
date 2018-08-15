@@ -20,6 +20,8 @@ class Server extends Base\Mock\Server
     {
         $content = json_decode($input, true);
 
+        $this->request($content, __FUNCTION__);
+
         $this->validateAuthorizeInput($content);
 
         $response = $this->getAuthorizeResponse($content);
@@ -135,7 +137,7 @@ class Server extends Base\Mock\Server
     protected function getAuthorizeResponse(array $input)
     {
         $response = [
-            ResponseFields::TRANSACTION_TYPE    => TransactionType::AUTH,
+            ResponseFields::TRANSACTION_TYPE    => $input[RequestFields::TRANSACTION_TYPE],
             ResponseFields::TRANSACTION_AMOUNT  => $input[RequestFields::TRANSACTION_AMOUNT],
             ResponseFields::MERCHANT_ID         => $input[RequestFields::MERCHANT_ID],
             ResponseFields::MERCHANT_REF_NUMBER => $input[RequestFields::MERCHANT_REF_NUMBER],

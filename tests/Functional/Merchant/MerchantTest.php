@@ -1674,6 +1674,38 @@ class MerchantTest extends TestCase
         }
     }
 
+    public function testGetCheckoutPreferencesWithoutOfferWithInvalidAmount()
+    {
+        $offerWithoutMinAmount = $this->fixtures->create('offer',[
+            'name'       => 'offer_without_min_amount',
+        ]);
+
+        $offerWithMinAmount = $this->fixtures->create('offer', [
+            'name'       => 'offer_with_min_amount',
+            'min_amount' => 10000,
+        ]);
+
+        // Order created with 2 offers
+        $order = $this->fixtures->order->createWithOffers([
+            $offerWithoutMinAmount,
+            $offerWithMinAmount
+        ], [ 'amount' => 5000 ]);
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent([
+            'method'  => 'GET',
+            'url'     => '/preferences?order_id=' . $order->getPublicId(),
+        ]);
+
+        $preferencesOffers = $response['offers'];
+
+        // Only 1 offers appears in preferences response
+        $this->assertEquals(count($preferencesOffers), 1);
+        // The one without a criteria on amount
+        $this->assertEquals($preferencesOffers[0]['name'], 'offer_without_min_amount');
+    }
+
     public function testGetCheckoutPreferencesWithOrderRelatedOffer()
     {
         $this->ba->publicAuth();
@@ -1840,7 +1872,7 @@ class MerchantTest extends TestCase
             'terms'          => 'Some terms',
         ]);
 
-        $order = $this->fixtures->order->createWithOffers($offer);
+        $order = $this->fixtures->order->createWithOffers($offer, ['amount' => 300000]);
 
         $testData['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 

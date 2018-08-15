@@ -212,6 +212,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NODAL_TRANSFER_REQUEST_FAILED                 = 'NODAL_TRANSFER_REQUEST_FAILED';
     const NODAL_PAYMENT_STATUS_REQUEST                  = 'NODAL_PAYMENT_STATUS_REQUEST';
     const NODAL_PAYMENT_STATUS_RESPONSE                 = 'NODAL_PAYMENT_STATUS_RESPONSE';
+    const NODAL_REQUEST_FAILED                          = 'NODAL_REQUEST_FAILED';
     const NODAL_TRANSFER_STATUS_UPDATE_FAILED           = 'NODAL_TRANSFER_STATUS_UPDATE_FAILED';
     const SETTLEMENT_API_RESPONSE                       = 'NODAL_SETTLEMENT_API_RESPONSE';
     const SETTLEMENT_API_REQUEST                        = 'NODAL_SETTLEMENT_API_REQUEST';
@@ -483,7 +484,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_ENROLLED_AUTH_REQUEST             = 'GATEWAY_ENROLLED_AUTH_REQUEST';
     const GATEWAY_ENROLLED_AUTH_RESPONSE            = 'GATEWAY_ENROLLED_AUTH_RESPONSE';
     const GATEWAY_ENROLLED_AUTH_ERROR               = 'GATEWAY_ENROLLED_AUTH_ERROR';
+    const GATEWAY_MOTO_AUTH_REQUEST                 = 'GATEWAY_MOTO_AUTH_REQUEST';
     const GATEWAY_RECURRING_AUTH_REQUEST            = 'GATEWAY_RECURRING_AUTH_REQUEST';
+    const GATEWAY_MOTO_AUTH_RESPONSE                = 'GATEWAY_MOTO_AUTH_RESPONSE';
     const GATEWAY_RECURRING_AUTH_RESPONSE           = 'GATEWAY_RECURRING_AUTH_RESPONSE';
     const GATEWAY_RECURRING_AUTH_ERROR              = 'GATEWAY_RECURRING_AUTH_ERROR';
     const GATEWAY_VALIDATE_AUTH_REQUEST             = 'GATEWAY_VALIDATE_AUTH_REQUEST';
@@ -579,7 +582,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
     const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
+    const FTA_PROCESS_BEGIN                         = 'FTA_PROCESS_BEGIN';
+    const FTA_FETCHED                               = 'FTA_FETCHED';
+    const FTA_UPDATE_STATUS                         = 'FTA_UPDATE_STATUS';
+    const FTA_FILE_CREATED                          = 'FTA_FILE_CREATED';
+    const FTA_FILE_ROWS_CREATED                     = 'FTA_FILE_ROWS_CREATED';
+    const FTA_FILE_CREATED_IN_S3                    = 'FTA_FILE_CREATED_IN_S3';
     const FTA_FILE_RECON_INVALID_STATUS_CHANGE      = 'FTA_FILE_RECON_INVALID_STATUS_CHANGE';
+    const FTA_FILE_EMAIL_SENT                       = 'FTA_FILE_EMAIL_SENT';
+    const FTA_SAVED_TO_DB                           = 'FTA_SAVED_TO_DB';
+    const FTA_BATCH_UPDATED                         = 'FTA_BATCH_UPDATED';
 
     const FTA_RECON_REPORT_FILE_CREATED             = 'FTA_RECON_REPORT_FILE_CREATED';
     const FTA_RECON_REPORT_INITIATED                = 'FTA_RECON_REPORT_INITIATED';
@@ -657,6 +669,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_EXCESS_REFUND             = 'VIRTUAL_ACCOUNT_EXCESS_REFUND';
     const VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT        = 'VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT';
     const VIRTUAL_ACCOUNT_PAYMENT_SUCCESSFUL        = 'VIRTUAL_ACCOUNT_PAYMENT_SUCCESSFUL';
+    const VIRTUAL_ACCOUNT_FAILED_FOR_ORDER          = 'VIRTUAL_ACCOUNT_FAILED_FOR_ORDER';
 
     const BANK_TRANSFER_PROCESS_REQUEST             = 'BANK_TRANSFER_PROCESS_REQUEST';
     const BANK_TRANSFER_PROCESSING                  = 'BANK_TRANSFER_PROCESSING';
@@ -1060,6 +1073,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
+    const AUTH_SERVICE_DATA_ERROR                       = 'AUTH_SERVICE_DATA_ERROR';
     const SEND_OAUTH_MAIL_REQUEST                       = 'SEND_OAUTH_MAIL_REQUEST';
     const OAUTH_TOKEN_INVALID                           = 'OAUTH_TOKEN_INVALID';
     const APP_MERCHANT_ACCESS_MAP                       = 'APP_MERCHANT_ACCESS_MAP';
@@ -1149,6 +1163,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EXCEL_READER_IMPORT_CONFIG                    = 'EXCEL_READER_IMPORT_CONFIG';
 
     const FUND_TRANSFER_RECON_EMAIL_FAILED              = 'FUND_TRANSFER_RECON_EMAIL_FAILED';
+
+    const PAYMENT_MDR_UPDATE_ERROR                      = 'PAYMENT_MDR_UPDATE_ERROR';
+    const PAYMENT_MDR_UPDATE_JOB_RECEIVED               = 'PAYMENT_MDR_UPDATE_JOB_RECEIVED';
+    const PAYMENT_MDR_LAST_UPDATED_DATA                 = 'PAYMENT_MDR_LAST_UPDATED_DATA';
+    const PAYMENT_MDR_UPDATE_SUCCESS                    = 'PAYMENT_MDR_UPDATE_SUCCESS';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

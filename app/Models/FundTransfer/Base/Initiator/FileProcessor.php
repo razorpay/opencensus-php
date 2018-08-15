@@ -7,6 +7,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
+use RZP\Trace\TraceCode;
 
 abstract class FileProcessor extends NodalAccount
 {
@@ -14,9 +15,15 @@ abstract class FileProcessor extends NodalAccount
     {
         $fileEntity = $this->generateFundTransferFile($attempts);
 
+        $this->trace->info(TraceCode::FTA_FILE_CREATED);
+
         $this->updateFundTransferFileDetails($fileEntity);
 
+        $this->trace->info(TraceCode::FTA_BATCH_UPDATED);
+
         $this->saveEntitiesToDb($attempts);
+
+        $this->trace->info(TraceCode::FTA_SAVED_TO_DB);
 
         return [
             'file' => $fileEntity->get()
@@ -25,8 +32,19 @@ abstract class FileProcessor extends NodalAccount
 
     protected function updateFundTransferFileDetails(FileStore\Creator $fileEntity)
     {
+        $fileUrl = null;
+
+        try
+        {
+            $fileUrl = $fileEntity->getUrl();
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
+        }
+
         $urls = [
-            'file' => $fileEntity->getUrl()
+            'file' => $fileUrl
         ];
 
         $fileDetails = $fileEntity->get();

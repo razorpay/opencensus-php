@@ -120,6 +120,9 @@ class Entity extends Base\PublicEntity
     const APPROVED = 'approved';
     const REJECTED = 'rejected';
 
+    // For mailers
+    const ACTIVATION_DURATION = '4-5 working days';
+
     protected $entity = 'merchant_detail';
 
     protected $primaryKey = self::MERCHANT_ID;

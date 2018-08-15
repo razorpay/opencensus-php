@@ -380,10 +380,49 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
+    public function validatePartnerWithSettingsAccess(Entity $merchant)
+    {
+        if ($merchant->isPartnerWithSettingsAccess() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::ID           => $merchant->getId(),
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]);
+        }
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
     public function validateIsNonPurePlatformPartner(Entity $merchant)
     {
         // Block non partners and pure platforms
         if ($merchant->isNonPurePlatformPartner() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::ID           => $merchant->getId(),
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]);
+        }
+    }
+
+    /**
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsPurePlatformPartner(Entity $merchant)
+    {
+        // Block non partners and non pure-platforms
+        if ($merchant->isPurePlatformPartner() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,

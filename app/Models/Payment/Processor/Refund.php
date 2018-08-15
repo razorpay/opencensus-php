@@ -977,7 +977,9 @@ trait Refund
                 null,
                 $traceData);
         }
-        else if ($balance->getBalance() < $refund->getBaseAmount())
+
+        if (($merchant->getRefundSource() === RefundSource::BALANCE) and
+            ($balance->getBalance() < $refund->getBaseAmount()))
         {
             if ($type === 'refund')
             {

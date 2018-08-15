@@ -58,6 +58,9 @@ class Entity extends Base\PublicEntity
     // Remarks field
     const DESCRIPTION        = 'description';
 
+    // Currency of payment in notification
+    const CURRENCY           = 'currency';
+
     // Attempts made by provider to notify
     const ATTEMPT            = 'attempt';
 
