@@ -816,4 +816,66 @@ return [
             ]
         ]
     ],
+
+    'testAssignIsgBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'isg',
+                'gateway_merchant_id'       => 'random',
+                'gateway_terminal_id'       => '12345678',
+                'mc_mpan'                   => '1234567880123456',
+                'visa_mpan'                 => '1234567890123456',
+                'rupay_mpan'                => '1234567890123456',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr'     => '1',
+                ],
+            ],
+
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id' => 'random',
+                'gateway_terminal_id' => '12345678',
+                'mc_mpan'             => '1234567880123456',
+                'visa_mpan'           => '1234567890123456',
+                'rupay_mpan'          => '1234567890123456',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testAddIsgBharatQrTerminalFailed' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'isg',
+                'gateway_merchant_id'       => 'random',
+                'gateway_terminal_id'       => '12345678',
+                'mc_mpan'                   => '1234567880123456',
+                'visa_mpan'                 => '1234567890123456',
+                'rupay_mpan'                => '1234567890123456',
+                'type'                      => [
+                    'bharat_qr'     => '1',
+                ],
+            ],
+
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The type.non recurring field is required.',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
 ];
