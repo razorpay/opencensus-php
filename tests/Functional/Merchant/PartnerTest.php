@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant\Partner;
 
 use RZP\Models\Batch;
 use RZP\Models\Merchant;
+use RZP\Models\User\Role;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -827,6 +828,11 @@ class PartnerTest extends OAuthTestCase
         $nonPartnerUser = $this->fixtures->create('user');
         $this->addUserToMerchant($nonPartnerUser, self::DEFAULT_SUBMERCHANT_ID, 'admin');
 
+        // Add the partner user to a random merchant who is not a submerchant to the partner.
+        $randomMerchantId = '10000000000008';
+        $randomMerchant = $this->fixtures->merchant->create(['id' => $randomMerchantId]);
+        $this->addUserToMerchant($partnerUser, $randomMerchantId, 'manager');
+
         // Map the submerchant to the partner app
         $this->fixtures->create(
             'merchant_access_map',
@@ -835,6 +841,15 @@ class PartnerTest extends OAuthTestCase
                 'entity_id'   => $app->getId(),
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
             ]);
+
+        // Add the partner user to access a linked account. Verifies later the mapping should not be deleted
+        $linkedAccount = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+        $mappingData   = [
+            'user_id'     => $partnerUser->getId(),
+            'merchant_id' => $linkedAccount->getId(),
+            'role'        => Role::LINKED_ACCOUNT_OWNER,
+        ];
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
         $submerchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
         $submerchant->retag(['Ref-' . self::DEFAULT_MERCHANT_ID]);
@@ -866,10 +881,24 @@ class PartnerTest extends OAuthTestCase
                                    ->toArray();
         $this->assertEmpty($partnerUserMapping);
 
-        // cleanup assertion - verify that the merchant user mappings have been deleted
+        // cleanup assertion - verify that the merchant's team user mappings have not been deleted
+        $nonPartnerUserMapping = $this->fixtures
+                                      ->user
+                                      ->getMerchantUserMapping(self::DEFAULT_SUBMERCHANT_ID, $nonPartnerUser->getId())
+                                      ->toArray();
+        $this->assertNotEmpty($nonPartnerUserMapping);
+
+        // cleanup assertion - verify that the partner user still has access to the linked account
+        $nonPartnerUserMapping = $this->fixtures
+                                      ->user
+                                      ->getMerchantUserMapping($linkedAccount->getId(), $partnerUser->getId())
+                                      ->toArray();
+        $this->assertNotEmpty($nonPartnerUserMapping);
+
+        // cleanup assertion - verify that the partner user's access to other teams have not been deleted
         $partnerUserMapping = $this->fixtures
                                    ->user
-                                   ->getMerchantUserMapping(self::DEFAULT_SUBMERCHANT_ID, $nonPartnerUser->getId())
+                                   ->getMerchantUserMapping($randomMerchantId, $partnerUser->getId())
                                    ->toArray();
         $this->assertNotEmpty($partnerUserMapping);
 
