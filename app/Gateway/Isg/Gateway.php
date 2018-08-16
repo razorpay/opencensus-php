@@ -440,7 +440,7 @@ class Gateway extends Base\Gateway
     {
         $date = Carbon::parse($dateTime)->format($format);
 
-        $date = str_replace("-", "", $date);
+        $date = str_replace('-', '', $date);
 
         return $date;
     }
