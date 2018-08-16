@@ -72,6 +72,7 @@ class CreateIsgGateway extends Migration
 
             $table->index(ISG::ACTION);
 
+            $table->index(ISG::PAYMENT_ID);
         });
     }
 
