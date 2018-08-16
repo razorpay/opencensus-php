@@ -154,6 +154,7 @@ export default function OrgForm({
                 name="admin[password_confirmation]"
                 required
               />
+              {/* Send default values for admin codes below */}
               <input
                 type="hidden"
                 label="Employee Code"

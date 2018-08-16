@@ -80,9 +80,9 @@ export default class EditOrg extends Component {
     this.prepareOrgs(this.props);
   }
 
-  componentDidUpdate(nextProps) {
-    if (this.props.match.params.orgId !== nextProps.match.params.orgId) {
-      this.prepareOrgs(this.props); // TODO: Strangely, nextProps is giving old value and this.props is new value
+  componentDidUpdate(prevProps) {
+    if (this.props.match.params.orgId !== prevProps.match.params.orgId) {
+      this.prepareOrgs(this.props);
     }
   }
 
