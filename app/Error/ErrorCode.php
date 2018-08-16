@@ -76,7 +76,7 @@ class ErrorCode
     const GATEWAY_ERROR_STATUS_CODE_MISMATCH                                        = 'GATEWAY_ERROR_STATUS_CODE_MISMATCH';
     const GATEWAY_ERROR_PIN_CRYPTOGRAPHY_ERROR                                      = 'GATEWAY_ERROR_PIN_CRYPTOGRAPHY_ERROR';
     const GATEWAY_ERROR_TRANSACTION_DECLINED                                        = 'GATEWAY_ERROR_TRANSACTION_DECLINED';
-    const GATEWAY_ERROR_TRANSACTION_MOT_PRESENT                                     = 'GATEWAY_ERROR_TRANSACTION_MOT_PRESENT';
+    const GATEWAY_ERROR_TRANSACTION_NOT_PRESENT                                     = 'GATEWAY_ERROR_TRANSACTION_NOT_PRESENT';
     const GATEWAY_ERROR_PIN_CHANGE_FAILED                                           = 'GATEWAY_ERROR_PIN_CHANGE_FAILED';
     const GATEWAY_ERROR_SWITCH_UNOPERATIVE                                          = 'GATEWAY_ERROR_SWITCH_UNOPERATIVE';
 
