@@ -137,6 +137,7 @@ class Entity
     const MPI_ENSTAGE            = 'mpi_enstage';
     const ATOM                   = 'atom';
     const ENACH                  = 'enach';
+    const ESIGNER                = 'esigner';
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
     const ISG                    = 'isg';
@@ -319,6 +320,7 @@ class Entity
         self::CARD_FSS               => \RZP\Gateway\Card\Fss::class,
         self::ENACH                  => \RZP\Gateway\Enach\Base::class,
         self::ENACH_RBL              => \RZP\Gateway\Enach\Rbl::class,
+        self::ESIGNER                => \RZP\Gateway\Esigner\Base::class,
         self::ESIGNER_DIGIO          => \RZP\Gateway\Esigner\Digio::class,
         self::ESIGNER_LEGALDESK      => \RZP\Gateway\Esigner\Legaldesk::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Payzapp::class,
@@ -389,6 +391,8 @@ class Entity
         self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Base::class,
 
         self::ENACH_RBL              => \RZP\Gateway\Enach\Base::class,
+
+        self::ESIGNER_LEGALDESK      => \RZP\Gateway\Esigner\Base::class,
 
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Base::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Base::class,
