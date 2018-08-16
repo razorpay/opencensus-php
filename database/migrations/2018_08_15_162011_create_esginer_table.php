@@ -29,9 +29,46 @@ class CreateEsginerTable extends Migration
 
             $table->string(Esigner::ACTION);
 
-            $table->string(Esigner::MANDATE_ID);
+            $table->string(Esigner::MANDATE_ID)
+                  ->nullable();
 
             $table->string(Esigner::STATUS)
+                  ->nullable();
+
+            $table->string(Esigner::ACCOUNT_TYPE)
+                  ->nullable();
+
+            $table->string(Esigner::ACCOUNT_NUMBER)
+                  ->nullable();
+
+            $table->string(Esigner::AGENT_TYPE, 4)
+                  ->nullable();
+
+            $table->string(Esigner::AGENT_ID)
+                  ->nullable();
+
+            $table->string(Esigner::AGENT_NAME)
+                  ->nullable();
+
+            $table->string(Esigner::SEQUENCE_TYPE)
+                  ->nullable();
+
+            $table->string(Esigner::FREQUENCY_TYPE)
+                  ->nullable();
+
+            $table->string(Esigner::START_DATE)
+                  ->nullable();
+
+            $table->string(Esigner::END_DATE)
+                  ->nullable();
+
+            $table->string(Esigner::AMOUNT_TYPE)
+                  ->nullable();
+
+            $table->string(Esigner::AMOUNT)
+                  ->nullable();
+
+            $table->string(Esigner::CATEGORY_CODE, 4)
                   ->nullable();
 
             $table->string(Esigner::ERROR_CODE)
