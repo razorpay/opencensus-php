@@ -150,7 +150,7 @@ class BladeGatewayTest extends TestCase
         $this->mockSignatureNotFound();
 
         $this->runRequestResponseFlow(
-            $data = $this->testData['testInvalidMessage'],
+            $data = $this->testData['testSignatureMissing'],
             function()
             {
                 $payment = $this->defaultAuthPayment([
@@ -163,12 +163,6 @@ class BladeGatewayTest extends TestCase
                     ]
                 ]);
             });
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertNull($payment['verify_at']);
-
-        $this->assertNull($payment['verify_bucket']);
     }
 
     public function testBlankMessage()

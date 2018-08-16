@@ -769,6 +769,21 @@ class Gateway extends Base\Gateway
         {
             $error = $e->getMessage();
 
+            switch (true) {
+                case strpos($error, 'CanonicalizationMethod') !== false:
+                case strpos($error, 'SignedInfo') !== false:
+                case strpos($error, 'Signature') !== false:
+                case strpos($error, 'DigestMethod') !== false:
+                case strpos($error, 'DigestValue') !== false:
+                case strpos($error, 'SignatureMethod') !== false:
+                case strpos($error, 'SignatureValue') !== false:
+                case strpos($error, 'KeyInfo') !== false:
+
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
+                                                          null,
+                                                          ['error_message' => $error]);
+            }
+
             // Throw Critical for now
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,

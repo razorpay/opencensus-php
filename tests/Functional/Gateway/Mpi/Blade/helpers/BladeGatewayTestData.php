@@ -58,6 +58,22 @@ return [
         ],
     ],
 
+    'testSignatureMissing' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Payment processing failed due to invalid response returned by gateway.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\BadRequestException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
+        ],
+    ],
+
     'testBlankMessage' => [
         'response'  => [
             'content'     => [
