@@ -24,8 +24,6 @@ class BackFillReversalId extends Command
 
     protected $description = 'Back fills reversal_id in to refunds table for further consumption';
 
-    const REVERSAL_REFUND_NOT_AVAILABLE = 'REVERSAL_REFUND_NOT_AVAILABLE';
-
     protected $mode;
     protected $skip;
     protected $take;
