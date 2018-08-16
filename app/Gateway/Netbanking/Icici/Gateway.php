@@ -17,6 +17,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Netbanking\Base\BankingType;
 use RZP\Models\Payment\Verify as PaymentVerify;
 
@@ -226,8 +227,12 @@ class Gateway extends Base\Gateway
             // Since there's no hot payment, we would not
             // have an amount in the first auth request
             // We get amount as `'null'` in these cases.
+            // Cases:
+            // 1. Status => Y, AMT => null
+            // 2. Status => N, AMT => 99999
             //
-            if ($callbackAmount !== 'null')
+            if (($callbackAmount !== 'null') and
+                ($callbackData[ResponseFields::PAID] === Status::Y))
             {
                 throw new Exception\GatewayErrorException(
                     ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED,
@@ -235,14 +240,20 @@ class Gateway extends Base\Gateway
                     null,
                     [
                         'gateway_payment_id' => $gatewayPayment->getId(),
-                        'callback_data' => $callbackData,
-                        'payment_id'    => $input['payment']['id'],
+                        'callback_data'      => $callbackData,
+                        'payment_id'         => $input['payment']['id'],
                     ]);
+            }
+            else if ($callbackData[ResponseFields::PAID] === Status::N)
+            {
+                $expectedAmount = $this->formatAmount($input['token']['max_amount'] / 100);
+                $actualAmount   = $this->formatAmount($callbackAmount);
+
+                $this->assertAmount($expectedAmount, $actualAmount);
             }
         }
         else
         {
-
             $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
             $actualAmount   = $this->formatAmount($callbackAmount);
 
@@ -1040,7 +1051,16 @@ class Gateway extends Base\Gateway
     {
         $siStatus = $gatewayPayment->getSIStatus();
 
-        $recurringStatus = Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? Token\RecurringStatus::REJECTED;
+        if (isset(Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus]) === false)
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                '',
+                ['gateway_payment' => $gatewayPayment->toArray()]);
+        }
+
+        $recurringStatus = Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus];
 
         // TODO: Get the failure reason mapping and
         // display the correct failure reason here

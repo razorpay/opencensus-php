@@ -17,6 +17,10 @@ class Core extends Base\Core
 
         $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
 
+        $this->app['workflow']
+            ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
+            ->handle((new \stdClass), $rule);
+
         $this->repo->saveOrFail($rule);
 
         return $rule;
@@ -47,23 +51,31 @@ class Core extends Base\Core
      */
     public function editPlanRule(String $planId, String $ruleId, array $input): Entity
     {
-        $newRule = $this->repo->transaction(function() use ($planId, $ruleId, $input)
+        $rule = $this->repo->pricing->getPricingPlanRule($planId, $ruleId);
+
+        $newRule = $rule->replicate();
+
+        $plan = $this->repo->pricing->getPricingPlanById($planId);
+
+        $planWithoutOldRule = $plan->reject(function($existingRule) use ($rule) {
+            return $existingRule->getId() === $rule->getId();
+        });
+
+        $newRule->edit($input, 'editPlanRule');
+
+        $newRule = $newRule->generateId();
+
+        $newRule->getValidator()->validateRuleDoesNotMatch($planWithoutOldRule);
+
+        $newRule->setAuditAction(Action::CREATE_UPDATE_PRICING_PLAN_RULE);
+
+        $this->app['workflow']
+             ->setEntityAndId($rule->getEntity(), $planId)
+             ->handle($rule, $newRule);
+
+        $newRule = $this->repo->transactionOnLiveAndTest(function() use ($rule, $newRule)
         {
-            $rule = $this->repo->pricing->getPricingPlanRule($planId, $ruleId);
-
-            $newRule = $rule->replicate();
-
-            $this->repo->pricing->deletePlanRuleForce($planId, $ruleId);
-
-            $plan = $this->repo->pricing->getPricingPlanById($planId);
-
-            $newRule->edit($input, 'editPlanRule');
-
-            $newRule = $newRule->generateId();
-
-            $newRule->getValidator()->validateRuleDoesNotMatch($plan);
-
-            $newRule->setAuditAction(Action::CREATE_UPDATE_PRICING_PLAN_RULE);
+            $this->repo->pricing->deletePlanRuleForce($rule->getPlanId(), $rule->getId());
 
             $this->repo->saveOrFail($newRule);
 

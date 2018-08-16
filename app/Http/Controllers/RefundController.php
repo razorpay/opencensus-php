@@ -135,6 +135,24 @@ class RefundController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postRefundRetryBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->retryBulk($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postRefundDirectRetryBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->directRetryBulk($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postRefundVerify(string $id)
     {
         $response = $this->service()->verify($id);
@@ -147,6 +165,15 @@ class RefundController extends Controller
         $input = Request::all();
 
         $data = $this->service()->editStatus($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putRefundMarkProcessedBulk()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->markProcessedBulk($input);
 
         return ApiResponse::json($data);
     }

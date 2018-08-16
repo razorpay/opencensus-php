@@ -195,6 +195,16 @@ if (! function_exists('flatten_array'))
     }
 }
 
+if (! function_exists('random_string_special_chars'))
+{
+    function random_string_special_chars($length = 1)
+    {
+        $chars = 'abcdefghijklmnopqrstuvwxyz:';
+
+        return substr(str_shuffle($chars), 0, $length);
+    }
+}
+
 /**
  * We do not check for whether this function is defined already
  * If it is defined already by some other library (like phpunit)
@@ -528,5 +538,36 @@ if (! function_exists('amount_format_IN'))
     function amount_format_IN(int $amount = null): string
     {
         return money_format_IN(number_format($amount / 100, 2, '.', ''));
+    }
+}
+
+if (! function_exists('millitime'))
+{
+    /**
+     * Gets current unix timestamp in milliseconds
+     * @return int
+     */
+    function millitime(): int
+    {
+        return round(microtime(true) * 1000);
+    }
+}
+
+if (! function_exists('stringify'))
+{
+
+    /**
+     * Stringifies given value, e.g. true -> 'true', 0 -> '0', null -> "null", 10.0 -> "10.0" etc
+     * @param  mixed  $value
+     * @return string
+     */
+    function stringify($value): string
+    {
+        if (is_string($value) === true)
+        {
+            return $value;
+        }
+
+        return json_encode($value);
     }
 }

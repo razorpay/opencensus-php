@@ -69,7 +69,9 @@ class Shared
     const OPENWALLET_RAZORPAY_TERMINAL       = '100OpenwalltTl';
     const MPESA_RAZORPAY_TERMINAL            = '100VodaMpesaTl';
     const FSS_RAZORPAY_TERMINAL              = '100FssTerminal';
+    const HITACHI_MOTO_TERMINAL              = '10hitachMotoTl';
     const ENSTAGE_TERMINAL                   = '100ensgageTrml';
+    const CSB_TPV_TERMINAL                   = '1000csbtpvTrml';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -114,6 +116,7 @@ class Shared
         self::SBIBUDDY_RAZORPAY_TERMINAL,
         self::OPENWALLET_RAZORPAY_TERMINAL,
         self::MPESA_RAZORPAY_TERMINAL,
+        self::HITACHI_MOTO_TERMINAL,
         self::ENSTAGE_TERMINAL,
     );
 
@@ -161,6 +164,7 @@ class Shared
         self::UPI_HULK_RAZORPAY_TERMINAL         => Gateway::UPI_HULK,
         self::OPENWALLET_RAZORPAY_TERMINAL       => Gateway::WALLET_OPENWALLET,
         self::MPESA_RAZORPAY_TERMINAL            => Gateway::WALLET_MPESA,
+        self::HITACHI_MOTO_TERMINAL              => Gateway::HITACHI,
         self::ENSTAGE_TERMINAL                   => Gateway::MPI_ENSTAGE,
     ];
 

@@ -184,6 +184,8 @@ function disableEmptyInputs(form) {
             <select name="currency">
                 <option value="INR">Indian Rupee</option>
                 <option value="USD">US Dollar</option>
+                <option value="EUR">Euro</option>
+                <option value="SGD">Singapore Dollar</option>
             </select>
         </td>
     </tr>
@@ -228,12 +230,18 @@ function disableEmptyInputs(form) {
             <select name="auth_type">
                 <option value="">Please Select</option>
                 <option value="pin">Card - PIN</option>
+                <option value="skip">Card - SKIP</option>
                 <option value="otp">Card - OTP</option>
                 <option value="aadhaar">eMandate - Aadhaar</option>
                 <option value="netbanking">eMandate - Netbanking</option>
             </select>
         </td>
     </tr>
+<!--    <tr>-->
+<!--        <td colspan='40'>Aadhaar Number / Aadhaar VID:</td>-->
+<!--        <td><input type="text" name="aadhaar[number]" size="12" value="123456789012"></td>-->
+<!--        <td><input type="text" name="aadhaar[vid]" size="16" value="1234567890123456"></td>-->
+<!--    </tr>-->
     <tr>
         <td colspan="40">Select Preferred Auth </td>
         <td>
@@ -268,6 +276,8 @@ function disableEmptyInputs(form) {
 <select name="currency">
     <option value="INR">Indian Rupee</option>
     <option value="USD">US Dollar</option>
+    <option value="EUR">Euro</option>
+    <option value="SGD">Singapore Dollar</option>
 </select>
 <input type="submit" value="Capture" onClick="javascript:document.capture.action = document.capture.action + document.getElementById('capture_id').value +'/capture'; document.capture.submit(); return false;"/>
 </form>

@@ -16,6 +16,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\Transfer;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -51,8 +52,9 @@ class Repository extends Base\Repository
         Entity::PAYMENT_LINK_ID => 'filled|public_id|size:17',
         Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
         Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
+        Entity::TRANSFER_ID     => 'filled|public_id|size:18',
         Entity::CAPTURED        => 'sometimes|boolean',
-        self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',
+        self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
     ];
 
     // These are admin allowed params to search on.
@@ -90,6 +92,7 @@ class Repository extends Base\Repository
         Entity::SUBSCRIPTION_ID,
         Entity::CUSTOMER_ID,
         Entity::PAYMENT_LINK_ID,
+        Entity::TRANSFER_ID,
     ];
 
     protected $cardQueryKeys = [
@@ -105,6 +108,24 @@ class Repository extends Base\Repository
             (Merchant\Entity::hascustomerTransactionHistoryEnabled($merchant->getId()) === false))
         {
             throw new Exception\ExtraFieldsException($attribute);
+        }
+    }
+
+    /**
+     * This validates the expand route to allow transfer and settlement expand only for linked account merchants
+     * @param $attribute
+     * @param $value
+     *
+     * @throws \RZP\Exception\ExtraFieldsException
+     */
+    protected function validateExpand($attribute, $value)
+    {
+        $merchant = $this->auth->getMerchant();
+
+        if (((empty($merchant) === true) or ($merchant->isLinkedAccount() === false)) and
+            (($value === 'transfer') or ($value === 'transfer.settlement')))
+        {
+            throw new Exception\ExtraFieldsException("expand=transfer");
         }
     }
 
@@ -361,7 +382,6 @@ class Repository extends Base\Repository
         {
             $query->where(Payment\Entity::GATEWAY, '=', $gateway);
         }
-
 
         if ($verifyStatus !== null)
         {
@@ -902,6 +922,24 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchAuthorizedPaymentCountForMerchants(array $merchantIds)
+    {
+        $dateFormat = '\'%Y-%m-%d\'';
+
+        $minCreatedAt = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        return $this->newQuery()
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'COUNT(*) AS count,' .
+                       'DATE_FORMAT(FROM_UNIXTIME(created_at + 19800),' . $dateFormat . ') as dates'
+                    )
+                    ->where(Entity::STATUS, '=', Status::AUTHORIZED)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->where(Entity::CREATED_AT, '<', $minCreatedAt)
+                    ->groupBy([Entity::MERCHANT_ID, 'dates'])
+                    ->get();
+    }
+
     public function fetchAuthorizedSummary()
     {
         return $this->newQuery()
@@ -913,11 +951,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByTransferIdAndMerchant(string $transferId, string $accountId)
+    public function findByTransferIdAndMerchant(string $transferId, string $accountId, array $relations = [])
     {
         return $this->newQuery()
                     ->where(Entity::TRANSFER_ID, $transferId)
                     ->merchantId($accountId)
+                    ->with($relations)
                     ->firstOrFailPublic();
     }
 
@@ -1089,7 +1128,7 @@ class Repository extends Base\Repository
 
         $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
 
-        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+        $paymentAuthorizedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
 
         $selectCols = $this->dbColumn('*');
 
@@ -1107,7 +1146,7 @@ class Repository extends Base\Repository
                     ->where($paymentRecurringColumn, '=', 1)
                     ->where($paymentMethodColumn, '=', Method::EMANDATE)
                     ->where(Entity::GATEWAY, '=', $gateway)
-                    ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+                    ->whereBetween($paymentAuthorizedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
                     ->where($tokenRecurringColumn, '!=', 1)
                     ->whereNotNull(Entity::AUTHORIZED_AT)
@@ -1439,5 +1478,19 @@ class Repository extends Base\Repository
                     ->whereNull(Payment\Entity::RECEIVER_ID)
                     ->limit(1000)
                     ->get();
+    }
+
+    public function buildUpdateMdrQuery(string $lastUpdatedPaymentId = null, int $lastUpdatedPaymentCapturedAt)
+    {
+        $query = $this->newQuery()->with('transaction')
+                      ->where(Entity::GATEWAY, Payment\Gateway::HITACHI)
+                      ->whereBetween(Entity::CAPTURED_AT, [$lastUpdatedPaymentCapturedAt, 1533925800]);
+
+        if ($lastUpdatedPaymentId !== null)
+        {
+            $query->where(Entity::ID, '>', $lastUpdatedPaymentId);
+        }
+
+        return $query;
     }
 }

@@ -46,13 +46,5 @@ return [
 
     'trace_code_class' => RZP\Trace\TraceCode::class,
 
-    /*
-    |--------------------------------------------------------------------------
-    | Handlers in addition to what trace package already pushes to monolog.
-    | Each member of list must be an object of class implementing Monolog\Handler\HandlerInterface.
-    |--------------------------------------------------------------------------
-    */
-    'additional_handlers' => [
-        MetricsHandler::class,
-    ],
+    'metrics' => require __DIR__ . '/metrics.php',
 ];

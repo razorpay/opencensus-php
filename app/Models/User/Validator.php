@@ -3,6 +3,7 @@
 namespace RZP\Models\User;
 
 use App;
+use Hash;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -34,13 +35,13 @@ class Validator extends Base\Validator
     protected static $changePasswordRules = [
         Entity::PASSWORD              => 'required|between:8,50|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
-        Entity::OLD_PASSWORD          => 'sometimes|string',
+        Entity::OLD_PASSWORD          => 'required|string',
     ];
 
     protected static $actionRules = [
         Entity::ACTION                => 'required|custom',
         Entity::MERCHANT_ID           => 'required|max:14',
-        Entity::ROLE                  => 'sometimes|string|in:owner,manager,operations,finance,support,admin,sellerapp',
+        Entity::ROLE                  => 'sometimes|string|custom',
     ];
 
     protected static $loginRules = [
@@ -80,6 +81,10 @@ class Validator extends Base\Validator
         'captcha'
     ];
 
+    protected static $changePasswordValidators = [
+        'old_password'
+    ];
+
     /**
      * merchant can not edit or delete his own user id.
      * @param array $input
@@ -101,6 +106,16 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateOldPassword(array $input)
+    {
+        $user = $this->entity;
+
+        if (Hash::check($input[Entity::OLD_PASSWORD], $user->getPassword()) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OLD_PASSWORD_MISMATCH);
+        }
+    }
+
     /**
      * This function handles https://www.owasp.org/index.php/Top_10_2013-A4-Insecure_Direct_Object_References
      * @param array $input
@@ -118,6 +133,12 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateRole(string $attribute, string $role)
+    {
+        if (Role::exists($role) === false) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
+        }
+    }
     /**
      * Google captcha validation.
      *

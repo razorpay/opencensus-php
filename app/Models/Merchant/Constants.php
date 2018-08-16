@@ -14,6 +14,12 @@ final class Constants
     const DATE                                    = 'date';
     const SIGNUP_DATE                             = 'signup_date';
 
+    // Used for pagination in submerchant listing for partners
+    const TO                                      = 'to';
+    const FROM                                    = 'from';
+    const SKIP                                    = 'skip';
+    const COUNT                                   = 'count';
+
     // Partner constants
     const BANK                                    = 'bank';
     const PARTNER                                 = 'partner';
@@ -28,6 +34,17 @@ final class Constants
         self::AGGREGATOR,
         self::FULLY_MANAGED,
         self::PURE_PLATFORM,
+    ];
+
+    /**
+     * Partner types that are allowed to view and manage
+     * partner settings like client creds and webhooks.
+     *
+     * @var array
+     */
+    public static $settingsAccessPartnerTypes = [
+        self::FULLY_MANAGED,
+        self::AGGREGATOR,
     ];
 
     /**

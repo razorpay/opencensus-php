@@ -15,6 +15,15 @@ class EmiPlan extends Base
             'merchant_payback'  => '518',
         ],
         [
+            'id'                => '20101010101010',
+            'duration'          => '6',
+            'rate'              => '1200',
+            'methods'           => 'debitcard',
+            'bank'              => 'HDFC',
+            'min_amount'        => '300000',
+            'merchant_payback'  => '518',
+        ],
+        [
             'id'                => '10101010101011',
             'duration'          => '3',
             'rate'              => '1400',
@@ -93,6 +102,26 @@ class EmiPlan extends Base
             'min_amount'        => '250000',
             'subvention'        => 'merchant',
             'merchant_payback'  => 549,
+        ],
+        [
+            'id'                => '10111110111110',
+            'duration'          => '9',
+            'rate'              => '1200',
+            'methods'           => 'debitcard',
+            'network'           => 'AMEX',
+            'min_amount'        => '300000',
+            'merchant_payback'  => '518',
+            'bank'              => null,
+        ],
+        [
+            'id'                => '11101010111111',
+            'duration'          => '6',
+            'rate'              => '1200',
+            'methods'           => 'debitcard',
+            'network'           => 'AMEX',
+            'min_amount'        => '300000',
+            'merchant_payback'  => '600',
+            'bank'              => null,
         ],
     ];
 

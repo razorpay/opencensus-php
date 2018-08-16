@@ -5,14 +5,16 @@ namespace RZP\Models\User;
 use Mail;
 use Hash;
 use Config;
+
+use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
-use RZP\Models\Admin\AdminLead;
 use RZP\Mail\User as UserMail;
-use RZP\Models\User;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Admin\AdminLead;
 
 class Service extends Base\Service
 {
@@ -219,7 +221,25 @@ class Service extends Base\Service
 
     public function confirmUserByData(array $input): array
     {
-        $user = (new Core)->confirmUserByData($input);
+        $user = null;
+
+        (new Entity)->getValidator()->validateInput('confirm', $input);
+
+        // need to validate if it is only a confirm_token or an email
+        if (empty($input[Entity::CONFIRM_TOKEN]) === false)
+        {
+            $user = $this->repo->user->findByToken($input[Entity::CONFIRM_TOKEN]);
+        }
+        else if (empty($input[Entity::EMAIL]) === false and $this->auth->isAdminAuth() === true)
+        {
+            $user = $this->repo->user->findByEmail($input[Entity::EMAIL]);
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+        }
+
+        $user = (new Core)->confirm($user);
 
         $data = $user->toArrayPublic();
 
@@ -228,11 +248,11 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function changePassword(string $id, array $input): array
+    public function changePassword(array $input): array
     {
-        $user = $this->repo->user->findOrFailPublic($id);
+        $user = $this->user;
 
-        $user = (new Core)->changePassword($user, $input);
+        (new Core)->edit($user, $input, 'changePassword');
 
         return $user->toArrayPublic();
     }
@@ -311,23 +331,6 @@ class Service extends Base\Service
         return $data;
     }
 
-    /**
-     * Returns user by email.
-     * @param string $email
-     *
-     * @return array
-     */
-    public function getUserByEmail(string $email)
-    {
-        $user = $this->repo->user->findByEmail($email);
-
-        $responseData = [
-            'id' => $user->getId(),
-        ];
-
-        return $responseData;
-    }
-
     public function postResetPassword(array $input)
     {
         if (isset($input['email']) === true)
@@ -359,7 +362,68 @@ class Service extends Base\Service
     }
 
     /**
-     * @param array $input
+     * This email goes to sub-merchant user when the aggregator/partner
+     * tries to create a login for him but the user account already
+     * exists and we just attach it to the sub-merchant in question.
+     *
+     * @param  Entity          $user
+     * @param  Merchant\Entity $submerchant
+     *
+     * @return array
+     */
+    public function postAccountMappedEmail(Entity $user, Merchant\Entity $submerchant)
+    {
+        $orgId = $this->auth->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+        $org['hostname'] = $this->auth->getOrgHostName();
+
+        $submerchantArray = $submerchant->toArrayPublic();
+
+        $accountMappedMail = new UserMail\MappedToAccount($user, $org, $submerchantArray);
+
+        Mail::queue($accountMappedMail);
+
+        return ['success' => true];
+    }
+
+    /**
+     * Sends Linked Account access email with user password reset link.
+     *
+     * @param Entity            $user
+     * @param Merchant\Entity   $subMerchant
+     *
+     * @return array
+     */
+    public function postLinkedAccountAccessEmail(Entity $user, Merchant\Entity $subMerchant): array
+    {
+        $orgId = $this->auth->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+        $org['hostname'] = $this->auth->getOrgHostName();
+
+        $linkedAccountAccessMail = new UserMail\LinkedAccountUserAccess($user, $org, $subMerchant);
+
+        Mail::queue($linkedAccountAccessMail);
+
+        return ['success' => true];
+    }
+
+    public function getTokenAndExpiry(string $userId): array
+    {
+        $expiryTime = Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME;
+
+        $token = (new User\Core)->generateToken($userId, $expiryTime);
+
+        return [$token, $expiryTime];
+    }
+
+    /**
+     * @param  array $input
+     *
+     * @return array
      *
      * @throws Exception\BadRequestException
      */
@@ -386,6 +450,12 @@ class Service extends Base\Service
             ];
 
             (new Core)->changePassword($user, $changePasswordData);
+
+            // Password reset via mail essentially confirms the email.
+            if ($user->getConfirmedAttribute() === false)
+            {
+                (new Core)->confirm($user);
+            }
         }
 
         return ['success' => true];
@@ -410,6 +480,36 @@ class Service extends Base\Service
                     $data['final_' . $attribution] = $utmParams[Constants::ATTRIBUTIONS][1][$attribution] ?? "";
                 }
             }
+        }
+    }
+
+    /**
+     * If we create a new user we send him a password reset link to start using dasboard
+     * The reset flow will also confirm the user in the process.
+     * If we find an existing user with the sub-merchant email then we send a mail informing
+     * that he has access to sub-merchant account also now.
+     *
+     * @param User\Entity     $subMerchantUser
+     * @param Merchant\Entity $subMerchant
+     * @param boolean         $createdNew
+     *
+     */
+    public function sendAccountLinkedCommunicationEmail(
+                                                        User\Entity $subMerchantUser,
+                                                        Merchant\Entity $subMerchant,
+                                                        bool $createdNew)
+    {
+        if (($createdNew === true) and ($subMerchant->isLinkedAccount() === true))
+        {
+            $this->postLinkedAccountAccessEmail($subMerchantUser, $subMerchant);
+        }
+        else if ($createdNew === true)
+        {
+            $this->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+        }
+        else
+        {
+            $this->postAccountMappedEmail($subMerchantUser, $subMerchant);
         }
     }
 }

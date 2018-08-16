@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Settlement\SlackNotification;
@@ -38,7 +39,7 @@ class Initiator extends Base\Core
      */
     public function initiateFundTransfers(array $input, string $channel): array
     {
-        $isValidTime = $this->isValidTime();
+        $isValidTime = $this->isValidTime($channel);
 
         if ($isValidTime === false)
         {
@@ -53,6 +54,8 @@ class Initiator extends Base\Core
             self::MUTEX_RESOURCE,
             function() use ($input, $channel)
             {
+                RuntimeManager::setMemoryLimit('1024M');
+
                 return $this->processBankTransfers($input, $channel);
             },
             self::MUTEX_LOCK_TIMEOUT,
@@ -66,6 +69,8 @@ class Initiator extends Base\Core
      */
     protected function processBankTransfers(array $input, string $channel): array
     {
+        $this->trace->info(TraceCode::FTA_PROCESS_BEGIN);
+
         return $this->repo->transaction(function() use ($input, $channel)
         {
             (new Validator)->validateInput('initiate_fund_transfer', $input);
@@ -87,6 +92,8 @@ class Initiator extends Base\Core
                                 $channel,
                                 $limit,
                                 ['source']);
+
+            $this->trace->info(TraceCode::FTA_FETCHED, ['count' => $attempts->count()]);
 
             $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
 
@@ -116,7 +123,7 @@ class Initiator extends Base\Core
 
         $data += $response;
 
-        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $slackData);
+        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
         (new SlackNotification)->success('setl_initiate', $slackData);
 
@@ -151,21 +158,38 @@ class Initiator extends Base\Core
      */
     protected function getLimitForChannel(string $channel)
     {
-        if ($channel === Channel::AXIS)
+        switch ($channel)
         {
-            return 1000;
-        }
+            case Channel::AXIS:
+                return 500;
 
-        return null;
+            case Channel::YESBANK:
+                return 100;
+
+            case Channel::ICICI:
+                return null;
+
+            case Channel::KOTAK:
+                return null;
+
+            default:
+                return 100;
+        }
     }
 
     /**
      *
-     * @return bool
+     * @param string $channel
+     * @return bool Returns if transfers can be initiated now
      * Returns if transfers can be initiated now
      */
-    protected function isValidTime(): bool
+    protected function isValidTime(string $channel): bool
     {
+        if (in_array($channel, Channel::get24x7Channels(), true) === true)
+        {
+            return true;
+        }
+
         if (($this->mode !== Mode::TEST) and
             ($this->env !== 'testing') and
             (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false))

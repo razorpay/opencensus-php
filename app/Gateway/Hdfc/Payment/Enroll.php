@@ -4,6 +4,7 @@ namespace RZP\Gateway\Hdfc\Payment;
 
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
+use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
@@ -77,7 +78,7 @@ trait Enroll
         {
             $this->persistAfterEnroll();
 
-            $this->throwException($this->enrollResponse['error'], true);
+            $this->throwException($this->enrollResponse['error'], true, Base\Action::AUTHENTICATE);
         }
 
         //

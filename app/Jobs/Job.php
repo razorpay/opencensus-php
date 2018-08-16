@@ -53,6 +53,12 @@ class Job implements ShouldQueue
 
     protected $taskId;
 
+    /**
+     * Default timeout value for a job is 60s.
+     * @var integer
+     */
+    public $timeout = 60;
+
     public function __construct(string $mode = null)
     {
         $this->mode = $mode;

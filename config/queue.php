@@ -167,7 +167,10 @@ return [
         'test'       => env('AWS_SHIELD_QUEUE'),
         'live'       => env('AWS_SHIELD_QUEUE'),
     ],
-
+    'beam_request' => [
+        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
+        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    ],
     /*
      | Lists various queues to be used per mailable
      */

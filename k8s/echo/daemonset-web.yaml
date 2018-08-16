@@ -1,0 +1,85 @@
+apiVersion: apps/v1beta2
+kind: DaemonSet
+metadata:
+  name: api-web
+  namespace: echo
+spec:
+  selector:
+    matchLabels:
+      name: api-web
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        iam.amazonaws.com/role: echo-api
+      labels:
+        name: api-web
+    spec:
+      containers:
+      - args:
+        - web
+        env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              key: APP_MODE
+              name: api
+        image: razorpay/api:8f38ab13cab96a5decf0a598145af2c9b7deb4d8
+        imagePullPolicy: IfNotPresent
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/rm
+              - -f
+              - /app/public/commit.txt
+              - ;
+              - sleep
+              - "5"
+              - ;
+              - /usr/sbin/apachectl
+              - stop
+        livenessProbe:
+          httpGet:
+            path: /commit.txt
+            port: 80
+            httpHeaders:
+              - name: Host
+                value: echo-api.razorpay.in
+          initialDelaySeconds: 180
+          periodSeconds: 2
+        name: api
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /commit.txt
+            port: 80
+            httpHeaders:
+              - name: Host
+                value: echo-api.razorpay.in
+          initialDelaySeconds: 180
+          periodSeconds: 120
+        resources:
+        volumeMounts:
+        - mountPath: /app/storage/logs/
+          name: trace
+        - mountPath: /var/log/apache/
+          name: apache
+      dnsPolicy: Default
+      imagePullSecrets:
+      - name: registry
+      nodeSelector:
+        node-role.kubernetes.io/node-api: ""
+      restartPolicy: Always
+      volumes:
+      - name: trace
+        hostPath:
+          path: /var/log/fluentd/splunk/api/trace
+      - name: apache
+        hostPath:
+          path: /var/log/fluentd/splunk/api/apache

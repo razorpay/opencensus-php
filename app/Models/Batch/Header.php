@@ -287,8 +287,21 @@ class Header
     const DIRECT_DEBIT_PAYMENT_ID      = 'payment_id';
     const DIRECT_DEBIT_REMARKS         = 'remarks';
 
-    const ELFIN_LONG_URL             = 'Long Url';
-    const ELFIN_SHORT_URL            = 'Short Url';
+    const ELFIN_LONG_URL               = 'Long Url';
+    const ELFIN_SHORT_URL              = 'Short Url';
+
+    //
+    // OAuth Migration Token
+    // Also uses MERCHANT_ID declared above
+    //
+    const ACCESS_TOKEN                 = 'access_token';
+    const PUBLIC_TOKEN                 = 'public_token';
+    const REFRESH_TOKEN                = 'refresh_token';
+
+    // Partner submerchant headers
+    const PARTNER_TYPE         = 'partner_type';
+    const SUBMERCHANT_ID       = 'submerchant_id';
+    const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
 
     /**
      * Input and output file headers
@@ -737,6 +750,42 @@ class Header
             self::OUTPUT => [
                 self::ELFIN_LONG_URL,
                 self::ELFIN_SHORT_URL,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::OAUTH_MIGRATION_TOKEN => [
+
+            self::INPUT => [
+                self::MERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::ACCESS_TOKEN,
+                self::PUBLIC_TOKEN,
+                self::REFRESH_TOKEN,
+
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::PARTNER_SUBMERCHANTS => [
+
+            self::INPUT => [
+                self::PARTNER_MERCHANT_ID,
+                self::PARTNER_TYPE,
+                self::SUBMERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::PARTNER_MERCHANT_ID,
+                self::PARTNER_TYPE,
+                self::SUBMERCHANT_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

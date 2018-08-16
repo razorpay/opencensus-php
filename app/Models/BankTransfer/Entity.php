@@ -7,9 +7,12 @@ use Razorpay\IFSC\IFSC;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Bank\BankCodes;
+use Razorpay\Trace\Facades\Trace;
 
 /**
  * @property Payment\Entity        $payment
@@ -26,12 +29,15 @@ class Entity extends Base\PublicEntity
     // Details of the sender bank account
     const PAYER_NAME            = 'payer_name';
     const PAYER_ACCOUNT         = 'payer_account';
+    const PAYER_ACCOUNT_TYPE    = 'payer_account_type';
     const PAYER_IFSC            = 'payer_ifsc';
+    const PAYER_ADDRESS         = 'payer_address';
     const PAYER_BANK_ACCOUNT    = 'payer_bank_account';
     const PAYER_BANK_ACCOUNT_ID = 'payer_bank_account_id';
     const PAYER_BANK_NAME       = 'payer_bank_name';
 
     // Details of the receiver bank account
+    const PAYEE_NAME         = 'payee_name';
     const PAYEE_ACCOUNT      = 'payee_account';
     const PAYEE_IFSC         = 'payee_ifsc';
 
@@ -55,6 +61,12 @@ class Entity extends Base\PublicEntity
     // Remarks field
     const DESCRIPTION        = 'description';
 
+    // Currency of payment in notification
+    const CURRENCY           = 'currency';
+
+    // Attempts made by provider to notify
+    const ATTEMPT            = 'attempt';
+
     // Indicates whether the bank transfer corresponds
     // to an active virtual account on our side. If
     // false, this transfer will need to be refunded
@@ -74,6 +86,8 @@ class Entity extends Base\PublicEntity
 
     // Input keys
     const REFUND_ID          = 'refund_id';
+
+    const GATEWAY            = 'gateway';
 
     protected $fillable = [
         self::PAYER_NAME,
@@ -117,6 +131,7 @@ class Entity extends Base\PublicEntity
         self::PAYER_BANK_NAME,
         self::DESCRIPTION,
         self::MODE,
+        self::GATEWAY,
         self::UTR,
         self::TIME,
         self::EXPECTED,
@@ -331,6 +346,44 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYER_IFSC);
     }
 
+    public function getMappedPayerIfsc()
+    {
+        $ifsc = $this->getPayerIfsc();
+
+        if ((strlen($ifsc) !== BankAccount\Entity::IFSC_CODE_LENGTH) and
+            ($this->getMode() === Mode::IMPS))
+        {
+            if ($this->getGateway() === VirtualAccount\Provider::KOTAK)
+            {
+                 /**
+                  *  In can of Kotak, we get Bank Code followed by 10 digit Mobile number.
+                  *  Bank Codes vary from 3 digits to 5 digits
+                  *  but we are only taking first 3 digits into consideration.
+                  */
+                $impsBankCode = substr($ifsc, 0, 3);
+
+                $ifsc = BankCodes::getIfscForImpsBankCode($impsBankCode);
+
+                if($ifsc === null)
+                {
+                    Trace::info(TraceCode::BANK_TRANSFER_BANK_CODE_MISSING, ['bank_code' => $impsBankCode]);
+                }
+            }
+            else if ($this->getGateway() === VirtualAccount\Provider::YESBANK)
+            {
+                $nbin = $ifsc;
+
+                $ifsc = BankCodes::getIfscForNbin($nbin);
+
+                if($ifsc === null)
+                {
+                    Trace::info(TraceCode::BANK_TRANSFER_NBIN_CODE_MISSING, ['nbin' => $nbin]);
+                }
+            }
+        }
+        return $ifsc;
+    }
+
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
@@ -354,6 +407,11 @@ class Entity extends Base\PublicEntity
     public function isExpected()
     {
         return $this->getAttribute(self::EXPECTED);
+    }
+
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
     }
 
     // ----------------------- Setters -----------------------------------------
@@ -381,5 +439,10 @@ class Entity extends Base\PublicEntity
     public function setPayerIfsc(string $ifsc)
     {
         $this->setAttribute(self::PAYER_IFSC, $ifsc);
+    }
+
+    public function setGateway(string $gateway)
+    {
+        $this->setAttribute(self::GATEWAY, $gateway);
     }
 }

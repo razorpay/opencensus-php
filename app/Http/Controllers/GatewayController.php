@@ -7,6 +7,7 @@ use Redirect;
 use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
@@ -40,8 +41,8 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-        throw new Exception\LogicException(
-            'Payment id not found in either database',
+            throw new Exception\LogicException(
+                'Payment id not found in either database',
                 null,
                 [
                     'gateway'    => $gatewayDriver,
@@ -73,7 +74,11 @@ class GatewayController extends Controller
         if ($mode === null)
         {
             throw new Exception\LogicException(
-                'Payment id not found in either database: ' . $paymentId);
+                'Payment id not found in either database',
+                null,
+                [
+                    'payment_id' => $paymentId
+                ]);
         }
 
         $this->app['basicauth']->setMode($mode);
@@ -246,6 +251,17 @@ class GatewayController extends Controller
     public function callbackAmazonpay()
     {
         $input = Request::all();
+
+        if (isset($input[AmazonResponse::SELLER_ORDER_ID]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                [
+                    'gateway' => Gateway::WALLET_AMAZONPAY,
+                    'input'   => $input,
+                ]);
+        }
 
         $this->app['trace']->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,

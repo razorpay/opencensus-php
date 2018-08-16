@@ -6,9 +6,11 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Currency;
+use RZP\Models\Reversal;
 use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
+use RZP\Models\Payment\Refund\Metric as RefundMetric;
 
 /**
  * @property Payment\Entity     $payment
@@ -26,6 +28,9 @@ class Entity extends Base\PublicEntity
     const CURRENCY               = 'currency';
     const BASE_AMOUNT            = 'base_amount';
     const STATUS                 = 'status';
+    const ERROR_CODE             = 'error_code';
+    const INTERNAL_ERROR_CODE    = 'internal_error_code';
+    const ERROR_DESCRIPTION      = 'error_description';
     const NOTES                  = 'notes';
 
     //merchant reference number for refund if provided by merchant
@@ -34,16 +39,27 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID         = 'transaction_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const BATCH_ID               = 'batch_id';
+    const REVERSAL_ID            = 'reversal_id';
 
+    const GATEWAY                = 'gateway';
     const GATEWAY_REFUNDED       = 'gateway_refunded';
     const REFERENCE1             = 'reference1';
     const REFERENCE2             = 'reference2';
+    const REFERENCE3             = 'reference3';
+    const REFERENCE4             = 'reference4';
+    const REFERENCE5             = 'reference5';
+    const REFERENCE6             = 'reference6';
+    const REFERENCE7             = 'reference7';
+    const REFERENCE9             = 'reference9';
+
     const ATTEMPTS               = 'attempts';
     const LAST_ATTEMPTED_AT      = 'last_attempted_at';
 
     const ACQUIRER_DATA          = 'acquirer_data';
     const ARN                    = 'arn';
+    const REVERSAL               = 'reversal';
 
+    const BANK_ACCOUNT_ID        = 'bank_account_id';
 
     protected static $sign = 'rfnd';
 
@@ -54,7 +70,8 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         self::ID,
         self::AMOUNT,
-        self::CURRENCY
+        self::CURRENCY,
+        self::GATEWAY
     ];
 
     protected $fillable = [
@@ -74,6 +91,10 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::BASE_AMOUNT,
         self::STATUS,
+        self::ERROR_CODE,
+        self::INTERNAL_ERROR_CODE,
+        self::ERROR_DESCRIPTION,
+        self::GATEWAY,
         self::GATEWAY_REFUNDED,
         self::NOTES,
         self::RECEIPT,
@@ -85,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
         self::REFERENCE1,
+        self::BANK_ACCOUNT_ID,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -98,7 +120,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::RECEIPT,
         self::ACQUIRER_DATA,
-        self::CREATED_AT
+        self::REVERSAL,
+        self::CREATED_AT,
     ];
 
     protected $hiddenInReport = [self::ACQUIRER_DATA];
@@ -173,9 +196,19 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
     }
 
+    public function bankAccount()
+    {
+        return $this->belongsTo('RZP\Models\BankAccount\Entity');
+    }
+
     public function billdesk()
     {
         return $this->hasOne('RZP\Gateway\Billdesk\Entity');
+    }
+
+    public function reversal()
+    {
+        return $this->belongsTo(Reversal\Entity::class, self::REVERSAL_ID);
     }
 
     public function build(array $input = [])
@@ -204,6 +237,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CURRENCY, $this->payment->getCurrency());
     }
 
+    protected function generateGateway($input)
+    {
+        $this->setAttribute(self::GATEWAY, $this->payment->getGateway());
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -229,6 +267,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::GATEWAY_REFUNDED) === true);
     }
 
+    public function isBatch(): bool
+    {
+        return ($this->getBatchId() !== null);
+    }
+
     public function isProcessed()
     {
         return ($this->getAttribute(self::STATUS) === Status::PROCESSED);
@@ -249,6 +292,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
+    public function getInternalErrorCode()
+    {
+        return $this->getAttribute(self::INTERNAL_ERROR_CODE);
+    }
+
+    public function getErrorDescription()
+    {
+        return $this->getAttribute(self::ERROR_DESCRIPTION);
+    }
+
     public function getAttempts()
     {
         return $this->getAttribute(self::ATTEMPTS);
@@ -262,6 +320,11 @@ class Entity extends Base\PublicEntity
     public function getAcquirerData()
     {
         return $this->getAttribute(self::ACQUIRER_DATA);
+    }
+
+    public function getLastAttemptedAt()
+    {
+        return $this->getAttribute(self::LAST_ATTEMPTED_AT);
     }
 
     public function getChannel()
@@ -312,12 +375,55 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
+        $this->pushStatusChangeMetrics($status);
+
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function pushStatusChangeMetrics($statusToChange)
+    {
+        if (Status::isStatusTrackedForMetrics($statusToChange) === false)
+        {
+            return;
+        }
+
+        $dimensions = RefundMetric::getDimensions($this);
+
+        switch ($statusToChange)
+        {
+            case Status::PROCESSED:
+
+                $this->pushMetricsForProcessedStatusChange($dimensions);
+
+                break;
+
+            case Status::FAILED:
+
+                $this->pushMetricsForFailedStatusChange($dimensions);
+
+                break;
+        }
+    }
+
+    public function setError($errorCode, $errorDesc, $internalErrorCode)
+    {
+        $this->setAttribute(self::ERROR_CODE, $errorCode);
+        $this->setAttribute(self::ERROR_DESCRIPTION, $errorDesc);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
+    }
+
+    public function setErrorNull()
+    {
+        $this->setAttribute(self::ERROR_CODE, null);
+        $this->setAttribute(self::INTERNAL_ERROR_CODE, null);
+        $this->setAttribute(self::ERROR_DESCRIPTION, null);
     }
 
     public function setStatusProcessed()
     {
-        $this->setAttribute(self::STATUS, Status::PROCESSED);
+        $this->setStatus(Status::PROCESSED);
+
+        $this->setErrorNull();
     }
 
     public function setBaseAmount()
@@ -378,6 +484,10 @@ class Entity extends Base\PublicEntity
         // 'Ixigo', 'Akbar Travels', 'Akbar Travels',
         // 'Royal Bison', 'Pizza Hut', 'Pizza Hut',
         // 'Pizza Hut', 'Stark', 'Stark',
+        // 'Logicboxes', 'ResellerClub', 'BigRock',
+        // 'HostGator', 'Pay.pw', 'BlueHost',
+        // 'ConstantContact', 'Directi Web Technology', 'Kissht'
+        // 'Policy Bazaar', 'Zen Lefin',
 
         $merchantIds = [
             '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
@@ -393,6 +503,10 @@ class Entity extends Base\PublicEntity
             '8RerE9oY0d7rbC', '6o1ohA0HNz3B2S', '62UtF084z3H6RT',
             'A85zyC8z78QJnt', '9Am5NzeJvtuBFy', '97hA1mKLFFI4Bi',
             '9GhIX26dnSuWKM', '9mr3eFWa79LBay', '9yEM7JR6WzZUds',
+            '9Y9m9XscC6Kh4W', '8WRMdGzG1z5Eqw', '9naAGQdroegWIX',
+            '9okVtwZr5vLm4K', '9oklLp2FhXTolM', 'A0ERwPs8muf9YS',
+            'A0HuEfx39zhjr9', 'A5ONBRrNJ7dS1K', 'ATUwkTaTTae5B3',
+            '7LAuMvKMcy7s0f', '9ARetirTY8olre',
         ];
 
         $currentMerchantId = $this->getMerchantId();
@@ -498,5 +612,53 @@ class Entity extends Base\PublicEntity
         }
 
         return $data;
+    }
+
+    public function getTimeFromCreatedInMinutes(): int
+    {
+        return intval(($this->freshTimestamp() - $this->getCreatedAt()) / 60);
+    }
+
+    public function getLastAttemptToProcessedTimeInMinutes(): int
+    {
+        return intval(($this->freshTimestamp() - $this->getLastAttemptedAt()) / 60);
+    }
+
+    public function getCapturedToCreateTimeInMinutes(): int
+    {
+        return intval(($this->getCreatedAt() - $this->payment->getCapturedAt()) / 60);
+    }
+
+    public function getAuthorizedToCreateTimeInMinutes(): int
+    {
+        return intval(($this->getCreatedAt() - $this->payment->getAuthorizeTimestamp()) / 60);
+    }
+
+    protected function pushMetricsForProcessedStatusChange(array $dimensions)
+    {
+        if ($this->isProcessed() === false)
+        {
+            app('trace')->histogram(
+                RefundMetric::REFUND_PROCESSED_FROM_CREATED_MINUTES,
+                $this->getTimeFromCreatedInMinutes(),
+                $dimensions
+            );
+        }
+        else if ($this->isStatusFailed() === true)
+        {
+            app('trace')->histogram(
+                RefundMetric::REFUND_PROCESSED_FROM_LAST_FAILED_ATTEMPT_MINUTES,
+                $this->getLastAttemptToProcessedTimeInMinutes(),
+                $dimensions
+            );
+        }
+    }
+
+    protected function pushMetricsForFailedStatusChange(array $dimensions)
+    {
+        if ($this->isStatusFailed() === false)
+        {
+            app('trace')->count(RefundMetric::REFUND_FAILED_TOTAL, $dimensions);
+        }
     }
 }

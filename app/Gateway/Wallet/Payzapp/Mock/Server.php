@@ -46,6 +46,8 @@ class Server extends Base\Mock\Server
         $content['msgHash'] = $this->getGatewayInstance()
                                    ->getHashForAuthorizeResponse($contentToHash);
 
+        $this->content($content, __FUNCTION__);
+
         $request = array(
             'url' => $input['wIapDefaults']['wIapReturnUrl'],
             'content' => $content,

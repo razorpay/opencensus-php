@@ -47,6 +47,8 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
                 return trim(trim(str_replace("'", '', $value)));
             }, $row);
 
+        $this->checkValidStatus($row);
+
         $gatewayPayment = $this->updateGatewayPayment($row);
 
         $payment = $this->repo->payment->fetchDebitEmandatePaymentPendingAuth(
@@ -61,8 +63,6 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
     protected function updateGatewayPayment(array $row): NetbankingEntity
     {
         $paymentId = $row[self::HEADING_PAYMENT_ID];
-
-        $this->checkValidStatus($row);
 
         $attributes = $this->getGatewayAttributes($row);
 
@@ -83,11 +83,10 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
         if (in_array(strtolower($row[self::HEADING_STATUS]), $this->allowedStatuses, true) === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 '',
-                'Unrecognized gateway status ' . $row[self::HEADING_STATUS],
-                ['row' => $row]
-            );
+                '',
+                ['row' => $row]);
         }
     }
 

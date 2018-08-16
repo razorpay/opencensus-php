@@ -30,19 +30,19 @@ class EventServiceProvider extends ServiceProvider
         ],
 
         CacheEvents\CacheHit::class => [
-            Listeners\QueryCacheEventListener::class,
+            Listeners\CacheEventListener::class,
         ],
 
         CacheEvents\CacheMissed::class => [
-            Listeners\QueryCacheEventListener::class,
+            Listeners\CacheEventListener::class,
         ],
 
         CacheEvents\KeyWritten::class => [
-            Listeners\QueryCacheEventListener::class,
+            Listeners\CacheEventListener::class,
         ],
 
         CacheEvents\KeyForgotten::class => [
-            Listeners\QueryCacheEventListener::class,
+            Listeners\CacheEventListener::class,
         ],
 
         QueueEvents\JobProcessed::class => [

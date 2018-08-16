@@ -104,7 +104,7 @@ class CardTest extends TestCase
 
         $payment['card']['number'] = '4532111111175901';
 
-        $this->fixtures->create( 'iin', ['iin' => '453211', 'country' => 'US']);
+        $this->fixtures->create( 'iin', ['iin' => '453211', 'country' => 'US', 'enabled' => 0]);
 
         $this->ba->publicAuth();
 

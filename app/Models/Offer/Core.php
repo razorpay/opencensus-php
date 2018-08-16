@@ -3,6 +3,7 @@
 namespace RZP\Models\Offer;
 
 use RZP\Exception;
+use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -17,27 +18,43 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Core extends Base\Core
 {
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     public function create(array $input)
     {
         $merchant = $this->merchant;
 
-        $this->verifyIdAndStripSignForLinkedOfferIds($input);
+        $resource = 'offer_create_' . $merchant->getId();
 
-        $offer = new Entity;
+        return $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($input, $merchant)
+            {
+                $this->verifyIdAndStripSignForLinkedOfferIds($input);
 
-        $offer->merchant()->associate($merchant);
+                $offer = new Entity;
 
-        $offer = $offer->build($input);
+                $offer->merchant()->associate($merchant);
 
-        $this->validateMerchant($merchant, $input);
+                $offer = $offer->build($input);
 
-        $this->checkConflictingOffers($offer);
+                $this->validateMerchant($merchant, $input);
 
-        $this->repo->saveOrFail($offer);
+                $this->checkConflictingOffers($offer);
 
-        $this->traceNonExistingIins($offer, $merchant);
+                $this->repo->saveOrFail($offer);
 
-        return $offer;
+                $this->traceNonExistingIins($offer, $merchant);
+
+                return $offer;
+            });
     }
 
     public function update(Entity $offer, array $input)
@@ -219,7 +236,32 @@ class Core extends Base\Core
         // required to uniquely define an offer
         $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $this->merchant->getId());
 
-        if ($existingOffers->count() > 0)
+        /**
+         * This will check if any existing offer with
+         * same emi duration exists. For example
+         * existing offer has null emi_durations that
+         * means all emi durations are valid. So any
+         * new offer with same issuer and any emi duration like
+         * 3 will fail
+         */
+        if ($offer->getEmiSubvention() === true)
+        {
+            $existingDurations = [];
+
+            $existingOffers->each(function ($existingOffer) use(& $existingDurations) {
+                $existingOfferDuration = $existingOffer[Entity::EMI_DURATIONS] ?: Emi\Entity::VALID_DURATIONS;
+
+                $existingDurations = array_merge($existingDurations, $existingOfferDuration);
+            });
+
+            $offerEmiDurations = $offer->getEmiDurations() ?: Emi\Entity::VALID_DURATIONS;
+
+            if (empty(array_intersect($offerEmiDurations, $existingDurations)) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
+            }
+        }
+        else if($existingOffers->count() > 0)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
         }

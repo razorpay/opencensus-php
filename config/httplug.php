@@ -16,8 +16,8 @@ return [
                 'max' => 3,
                 'strict' => false,
             ],
-            'timeout' => 20,
-            'connect_timeout' => 20,
+            'timeout' => 10,
+            'connect_timeout' => 10,
         ],
 
         /**

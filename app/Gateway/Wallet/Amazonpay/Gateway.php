@@ -88,8 +88,12 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($content[ResponseFields::SELLER_ORDER_ID], $input['payment']['id']);
 
         // Amazon may return amount as 100 or 100.00
-        // Just to be at safe side, we are converting to int
-        $this->assertAmount(intval($content[ResponseFields::AMOUNT] * 100), $input['payment']['amount']);
+        // Formatting payment amount to number
+        $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+
+        $expectedAmount = $this->formatAmount($input['payment']['amount']);
+
+        $this->assertAmount($actualAmount, $expectedAmount);
 
         $this->verifySecureHash($content);
 
@@ -450,9 +454,11 @@ class Gateway extends Base\Gateway
 
         if (isset($content[ResponseFields::ORDER_TOTAL][ResponseFields::ORDER_AMOUNT]) === true)
         {
-            $actualAmount = intval($content[ResponseFields::ORDER_TOTAL][ResponseFields::ORDER_AMOUNT] * 100);
+            $orderAmount = $content[ResponseFields::ORDER_TOTAL][ResponseFields::ORDER_AMOUNT];
 
-            $expectedAmount = $payment['amount'];
+            $actualAmount = number_format($orderAmount, 2, '.', '');
+
+            $expectedAmount = $this->formatAmount($payment['amount']);
 
             $verify->amountMismatch = ($expectedAmount !== $actualAmount);
         }

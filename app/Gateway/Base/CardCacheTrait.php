@@ -78,4 +78,9 @@ trait CardCacheTrait
 
         return $key;
     }
+
+    protected function getDriver($input)
+    {
+        return $this->app['config']->get('cache.secure_default');
+    }
 }

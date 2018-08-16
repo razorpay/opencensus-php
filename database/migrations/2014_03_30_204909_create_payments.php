@@ -214,10 +214,18 @@ class CreatePayments extends Migration
             $table->tinyInteger(Payment::VERIFY_BUCKET)
                   ->nullable();
 
+            $table->integer(Payment::VERIFY_AT)
+                  ->unsigned()
+                  ->nullable();
+
             $table->text(Payment::CALLBACK_URL)
                   ->nullable();
 
             $table->integer(Payment::FEE)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Payment::MDR)
                   ->unsigned()
                   ->nullable();
 
@@ -260,11 +268,7 @@ class CreatePayments extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->integer(Payment::REFERENCE10)
-                  ->unsigned()
-                  ->nullable();
-
-            $table->integer(Payment::REFERENCE11)
+            $table->integer(Payment::REFUND_AT)
                   ->unsigned()
                   ->nullable();
 
@@ -317,6 +321,7 @@ class CreatePayments extends Migration
             $table->index(Payment::UPDATED_AT);
             $table->index(Payment::CAPTURED_AT);
             $table->index(Payment::MERCHANT_ID);
+            $table->index(Payment::VERIFY_AT);
             $table->index([Payment::MERCHANT_ID, Payment::CREATED_AT]);
             $table->index([Payment::MERCHANT_ID, Payment::STATUS, Payment::CREATED_AT]);
             $table->index([Payment::MERCHANT_ID, Payment::CAPTURED_AT]);

@@ -69,6 +69,9 @@ class CreateMerchants extends Migration
             $table->string(Merchant::BILLING_LABEL)
                   ->nullable();
 
+            $table->string(Merchant::DISPLAY_NAME, 255)
+                  ->nullable();
+
             $table->string(Merchant::CHANNEL, 32);
 
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
@@ -79,6 +82,10 @@ class CreateMerchants extends Migration
 
             $table->tinyInteger(Merchant::FEE_MODEL)
                   ->default(FeeModel::getValueForFeeModelString(FeeModel::PREPAID));
+
+            $table->bigInteger(Merchant::FEE_CREDITS_THRESHOLD)
+                  ->unsigned()
+                  ->nullable();
 
             $table->tinyInteger(Merchant::REFUND_SOURCE)
                   ->default(RefundSource::getValueForRefundSourceString(RefundSource::BALANCE));

@@ -64,7 +64,7 @@ trait EmandateTrait
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
             RequestFields::CORP_ID         => $this->getEmandateMerchantId(),
-            RequestFields::TYPE            => Constants::TYPE,
+            RequestFields::TYPE            => $this->getType(),
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
             RequestFields::CURRENCY        => Currency::INR,
@@ -262,7 +262,7 @@ trait EmandateTrait
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
             RequestFields::CORP_ID         => $this->getEmandateMerchantId(),
-            RequestFields::TYPE            => Constants::TYPE,
+            RequestFields::TYPE            => $this->getType(),
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
             RequestFields::BANK_REF_NO     => $gatewayEntity[Netbanking\Entity::BANK_PAYMENT_ID]
@@ -436,7 +436,7 @@ trait EmandateTrait
     public function getEmandateEncryptedData(array $data): string
     {
         return base64_encode(
-            $this->getEncryptor()->encryptString(
+            $this->getEmandateEncryptor()->encryptString(
                 urldecode(http_build_query($data))
             )
         );
@@ -444,7 +444,7 @@ trait EmandateTrait
 
     public function getEmandateDecryptedData(string $body, array $input = []): array
     {
-        $decrypted = $this->getEncryptor()->decryptString(base64_decode($body));
+        $decrypted = $this->getEmandateEncryptor()->decryptString(base64_decode($body));
 
         parse_str($decrypted, $output);
 
@@ -463,7 +463,7 @@ trait EmandateTrait
         return $output;
     }
 
-    protected function getEncryptor()
+    protected function getEmandateEncryptor()
     {
         $aes = new AESCrypto(AES::MODE_ECB, $this->getEmandateSecret());
 
@@ -531,7 +531,9 @@ trait EmandateTrait
             unset($arrayToBeHashed[3]);
         }
 
-        return $this->generateHash($arrayToBeHashed);
+        $str = implode('', $arrayToBeHashed);
+
+        return $this->getHashOfString($str);
     }
 
     protected function getEmandateSecret() : string
@@ -557,6 +559,16 @@ trait EmandateTrait
         }
 
         return $this->input['terminal']['gateway_terminal_password'];
+    }
+
+    protected function getType()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return Constants::TYPE_TEST;
+        }
+
+        return Constants::TYPE_LIVE;
     }
 
     public function getEmandateMerchantId()

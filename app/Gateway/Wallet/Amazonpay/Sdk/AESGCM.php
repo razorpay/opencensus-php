@@ -530,4 +530,12 @@ final class AESGCM
             throw new AssertionException($message);
         }
     }
+
+    private static function assertTrue(bool $bool, string $message)
+    {
+        if ($bool !== true)
+        {
+            throw new AssertionException($message);
+        }
+    }
 }

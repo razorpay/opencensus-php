@@ -483,6 +483,17 @@ class Gateway
         return false;
     }
 
+    protected function isMotoTransactionRequest($input)
+    {
+        if (($input['terminal']->isMoto() === true) and
+            ($input['payment']['auth_type'] === Payment\AuthType::SKIP))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function generateRefunds($input)
     {
         $paymentIds = array_map(function($row)
@@ -519,6 +530,19 @@ class Gateway
         if (isset($request['options']) === false)
         {
             $request['options'] = [];
+        }
+
+        //
+        // Intentionally setting verify to null, so Requests does not use its default
+        // cacert (which is outdated), and curl ends up using the OS cacert by default.
+        //
+        // Ref:
+        // [1] Requests::get_default_options
+        // [2] Requests_Transport_cURL -> requesst
+        //
+        if (isset($request['options']['verify']) === false)
+        {
+            $request['options']['verify'] = null;
         }
 
         if (isset($request['headers']) === false)
@@ -981,6 +1005,16 @@ class Gateway
         $certificatePath = $this->app['config']->get('gateway.certificate_path');
 
         $gatewayCertPath = $certificatePath . '/' . $this->getGatewayCertDirName();
+
+        if (file_exists($gatewayCertPath) === false)
+        {
+            //
+            // We are using 077 permissions because default is 0777
+            // We want recursive generation of path for this case
+            // http://php.net/manual/en/function.mkdir.php
+            //
+            mkdir($gatewayCertPath, 0777, true);
+        }
 
         return $gatewayCertPath;
     }

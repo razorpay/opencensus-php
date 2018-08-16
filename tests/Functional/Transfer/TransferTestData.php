@@ -24,7 +24,10 @@ return [
         'notes'         => [
             'order_info'    => 'random_string',
             'version'       => 2,
+            'roll_no'       => 'iec2011025',
+            'student_name'  => 'student',
         ],
+        'linked_account_notes' => ['roll_no', 'student_name'],
         'on_hold'       => '1',
         'on_hold_until' => 1586055431,
     ],
@@ -331,4 +334,86 @@ return [
             ],
         ],
     ],
+
+    'testRetrieveLaTransfers' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/la-transfers',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [],
+            ],
+        ]
+    ],
+
+    'testFetchLaTransfer' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/la-transfers/%s',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ]
+    ],
+
+    'testLaFetchTransferReversals' => [
+        'request' => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ]
+    ],
+
+    'testLaFetchReversals' => [
+        'request' => [
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testLaNotesKeyMissing' => [
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING,
+        ],
+    ],
+
+    'testLinkedAccountValidation' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/la-transfers',
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT,
+        ],
+    ]
 ];

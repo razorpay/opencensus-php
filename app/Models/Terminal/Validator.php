@@ -295,6 +295,8 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [
@@ -382,6 +384,8 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
     ];
 
     protected static $upiHulkTerminalRules = [

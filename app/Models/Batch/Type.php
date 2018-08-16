@@ -35,9 +35,17 @@ class Type
     const DIRECT_DEBIT          = 'direct_debit';
 
     /**
+     * This is for one time migration of OAuth merchants to Pure-Platform
+     * type partners. This bypasses oauth authentication by end merchant.
+     */
+    const OAUTH_MIGRATION_TOKEN = 'oauth_migration_token';
+
+    /**
      * This type is used to create short urls in bulk async using elfin (hence gimli) service via api
      */
     const ELFIN                 = 'elfin';
+
+    const PARTNER_SUBMERCHANTS  = 'partner_submerchants';
 
     public static $disabledTypes = [
         //
@@ -81,6 +89,8 @@ class Type
         self::DIRECT_DEBIT,
         self::RECURRING_CHARGE,
         self::ELFIN,
+        self::OAUTH_MIGRATION_TOKEN,
+        self::PARTNER_SUBMERCHANTS,
     ];
 
     public static function exists(string $type)

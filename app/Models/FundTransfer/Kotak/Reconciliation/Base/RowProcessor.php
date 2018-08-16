@@ -22,4 +22,9 @@ abstract class RowProcessor extends BaseRowProcessor
 
         $this->reconEntityId = $this->parsedData['payment_ref_no'];
     }
+
+    protected function getUtrToUpdate()
+    {
+        return $this->parsedData['utr'];
+    }
 }

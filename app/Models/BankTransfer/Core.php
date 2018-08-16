@@ -40,12 +40,14 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function create(array $input)
+    protected function create(array $input, string $provider)
     {
         // This method does not save to DB. It should not save to DB,
         // because it is used to validate-and-modify the input received
         // in the notify request. We only create a bank_transfer obj here.
         $bankTransfer = (new Entity)->build($input);
+
+        $bankTransfer->setGateway($provider);
 
         return $bankTransfer;
     }
@@ -59,18 +61,18 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    public function process(array $input, string $provider = null)
+    public function process(array $input, string $provider)
     {
         $this->trace->info(
             TraceCode::BANK_TRANSFER_PROCESSING,
             $input
         );
 
-        $processor = new Processor($provider);
+        $processor = new Processor();
 
         try
         {
-            $bankTransfer = $this->create($input);
+            $bankTransfer = $this->create($input, $provider);
 
             $this->mutex->acquireAndRelease(
                 $input[Entity::PAYEE_ACCOUNT],
@@ -150,11 +152,11 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    public function notify(array $input)
+    public function notify(array $input, string $provider)
     {
         // Bank Transfer core does not save to DB in this step.
         // This is effectively just a modify-and-validate.
-        $this->create($input);
+        $this->create($input, $provider);
 
         $bankTransfer = $this->repo
                              ->bank_transfer
@@ -394,8 +396,18 @@ class Core extends Base\Core
      */
     public function getFeesForOrder(Order\Entity $order)
     {
+        return $this->getFees($order->getAmountDue(), $order);
+    }
+
+    public function getFeesForBankTransfer(Entity $bankTransfer, Order\Entity $order)
+    {
+        return $this->getFees($bankTransfer->getAmount(), $order);
+    }
+
+    protected function getFees(int $amount, Order\Entity $order)
+    {
         $request = [
-            Payment\Entity::AMOUNT   => $order->getAmountDue(),
+            Payment\Entity::AMOUNT   => $amount,
             Payment\Entity::CURRENCY => $order->getCurrency(),
             Payment\Entity::METHOD   => Payment\Method::BANK_TRANSFER,
         ];

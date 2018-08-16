@@ -12,6 +12,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYMENT_NEW_REQUEST                           = 'PAYMENT_NEW_REQUEST';
     const PAYMENT_CREATED                               = 'PAYMENT_CREATED';
+    const PAYMENT_CREATED_RESPONSE                      = 'PAYMENT_CREATED_RESPONSE';
     const PAYMENT_CREATE_FAILED                         = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                          = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_PENDING                          = 'PAYMENT_AUTH_PENDING';
@@ -187,6 +188,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_RETRY_INITIATED                        = 'REFUND_RETRY_INITIATED';
     const REFUND_RETRY_RESULT                           = 'REFUND_RETRY_RESULT';
     const REFUND_RETRY_SKIPPED                          = 'REFUND_RETRY_SKIPPED';
+    const REFUND_RETRY_BULK_INITIATED                   = 'REFUND_RETRY_BULK_INITIATED';
+    const REFUND_RETRY_BULK_SUMMARY                     = 'REFUND_RETRY_BULK_SUMMARY';
+    const REFUND_MARK_PROCESSED_BULK_INITIATED          = 'REFUND_MARK_PROCESSED_BULK_INITIATED';
+    const REFUND_MARK_PROCESSED_BULK_SUMMARY            = 'REFUND_MARK_PROCESSED_BULK_SUMMARY';
+    const REFUND_MARK_PROCESSED_OLD_STATUS              = 'REFUND_MARK_PROCESSED_OLD_STATUS';
+    const REFUND_DIRECT_RETRY_BULK_INITIATED            = 'REFUND_DIRECT_RETRY_BULK_INITIATED';
+    const REFUND_DIRECT_RETRY_BULK_SUMMARY              = 'REFUND_DIRECT_RETRY_BULK_SUMMARY';
 
     const REQUESTS_JOB_REQUEST                          = 'REQUESTS_JOB_REQUEST';
     const REQUESTS_JOB_RESPONSE                         = 'REQUESTS_JOB_RESPONSE';
@@ -204,6 +212,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NODAL_TRANSFER_REQUEST_FAILED                 = 'NODAL_TRANSFER_REQUEST_FAILED';
     const NODAL_PAYMENT_STATUS_REQUEST                  = 'NODAL_PAYMENT_STATUS_REQUEST';
     const NODAL_PAYMENT_STATUS_RESPONSE                 = 'NODAL_PAYMENT_STATUS_RESPONSE';
+    const NODAL_REQUEST_FAILED                          = 'NODAL_REQUEST_FAILED';
+    const NODAL_TRANSFER_STATUS_UPDATE_FAILED           = 'NODAL_TRANSFER_STATUS_UPDATE_FAILED';
+    const SETTLEMENT_API_RESPONSE                       = 'NODAL_SETTLEMENT_API_RESPONSE';
+    const SETTLEMENT_API_REQUEST                        = 'NODAL_SETTLEMENT_API_REQUEST';
 
     const KOTAK_NODAL_BALANCE_REQUEST                   = 'KOTAK_NODAL_BALANCE_REQUEST';
     const KOTAK_NODAL_BALANCE_RESPONSE                  = 'KOTAK_NODAL_BALANCE_RESPONSE';
@@ -349,7 +361,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
-    const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
     const INVOICE_PDF_GEN_SYNC                          = 'INVOICE_PDF_GEN_SYNC';
 
     const PROMOTION_CREATE_REQUEST                      = 'PROMOTION_CREATE_REQUEST';
@@ -473,7 +484,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_ENROLLED_AUTH_REQUEST             = 'GATEWAY_ENROLLED_AUTH_REQUEST';
     const GATEWAY_ENROLLED_AUTH_RESPONSE            = 'GATEWAY_ENROLLED_AUTH_RESPONSE';
     const GATEWAY_ENROLLED_AUTH_ERROR               = 'GATEWAY_ENROLLED_AUTH_ERROR';
+    const GATEWAY_MOTO_AUTH_REQUEST                 = 'GATEWAY_MOTO_AUTH_REQUEST';
     const GATEWAY_RECURRING_AUTH_REQUEST            = 'GATEWAY_RECURRING_AUTH_REQUEST';
+    const GATEWAY_MOTO_AUTH_RESPONSE                = 'GATEWAY_MOTO_AUTH_RESPONSE';
     const GATEWAY_RECURRING_AUTH_RESPONSE           = 'GATEWAY_RECURRING_AUTH_RESPONSE';
     const GATEWAY_RECURRING_AUTH_ERROR              = 'GATEWAY_RECURRING_AUTH_ERROR';
     const GATEWAY_VALIDATE_AUTH_REQUEST             = 'GATEWAY_VALIDATE_AUTH_REQUEST';
@@ -564,13 +577,25 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_SORTING                  = 'GATEWAY_DOWNTIME_SORTING';
     const GATEWAY_DOWNTIME_SORTING_FAILED           = 'GATEWAY_DOWNTIME_SORTING_FAILED';
     const GATEWAY_DOWNTIME_WEBHOOK                  = 'GATEWAY_DOWNTIME_WEBHOOK';
+    const GATEWAY_ONBOARD_REQUEST                   = 'GATEWAY_ONBOARD_REQUEST';
+    const GATEWAY_ONBOARD_RESPONSE                  = 'GATEWAY_ONBOARD_RESPONSE';
 
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
     const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
+    const FTA_PROCESS_BEGIN                         = 'FTA_PROCESS_BEGIN';
+    const FTA_FETCHED                               = 'FTA_FETCHED';
+    const FTA_UPDATE_STATUS                         = 'FTA_UPDATE_STATUS';
+    const FTA_FILE_CREATED                          = 'FTA_FILE_CREATED';
+    const FTA_FILE_ROWS_CREATED                     = 'FTA_FILE_ROWS_CREATED';
+    const FTA_FILE_CREATED_IN_S3                    = 'FTA_FILE_CREATED_IN_S3';
     const FTA_FILE_RECON_INVALID_STATUS_CHANGE      = 'FTA_FILE_RECON_INVALID_STATUS_CHANGE';
+    const FTA_FILE_EMAIL_SENT                       = 'FTA_FILE_EMAIL_SENT';
+    const FTA_SAVED_TO_DB                           = 'FTA_SAVED_TO_DB';
+    const FTA_BATCH_UPDATED                         = 'FTA_BATCH_UPDATED';
 
     const FTA_RECON_REPORT_FILE_CREATED             = 'FTA_RECON_REPORT_FILE_CREATED';
     const FTA_RECON_REPORT_INITIATED                = 'FTA_RECON_REPORT_INITIATED';
+    const LOCKED_FUND_TRANSFER_ATTEMPTS             = 'LOCKED_FUND_TRANSFER_ATTEMPTS';
     const SETTLEMENT_REVERSE_FILE_SKIPPED           = 'SETTLEMENT_REVERSE_FILE_SKIPPED';
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
@@ -605,6 +630,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_RETRY_REQUEST                  = 'SETTLEMENT_RETRY_REQUEST';
     const SETTLEMENTS_CHANNEL_BULK_UPDATE_REQUEST   = 'SETTLEMENTS_CHANNEL_BULK_UPDATE_REQUEST';
     const SETTLEMENTS_CHANNEL_BULK_UPDATE_RESPONSE  = 'SETTLEMENTS_CHANNEL_BULK_UPDATE_RESPONSE';
+    const ATTEMPT_RECONCILIATION_STATUS             = 'ATTEMPT_RECONCILIATION_STATUS';
     const SETTLEMENTS_CHANNEL_UPDATE_FAILED         = 'SETTLEMENTS_CHANNEL_UPDATE_FAILED';
     const SETTLEMENT_PROCESSED_WEBHOOOK_FAILED      = 'SETTLEMENT_PROCESSED_WEBHOOOK_FAILED';
     const CLIENT_CERTIFICATE_FILE_GENERATED         = 'CLIENT_CERTIFICATE_FILE_GENERATED';
@@ -643,6 +669,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_EXCESS_REFUND             = 'VIRTUAL_ACCOUNT_EXCESS_REFUND';
     const VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT        = 'VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT';
     const VIRTUAL_ACCOUNT_PAYMENT_SUCCESSFUL        = 'VIRTUAL_ACCOUNT_PAYMENT_SUCCESSFUL';
+    const VIRTUAL_ACCOUNT_FAILED_FOR_ORDER          = 'VIRTUAL_ACCOUNT_FAILED_FOR_ORDER';
 
     const BANK_TRANSFER_PROCESS_REQUEST             = 'BANK_TRANSFER_PROCESS_REQUEST';
     const BANK_TRANSFER_PROCESSING                  = 'BANK_TRANSFER_PROCESSING';
@@ -656,6 +683,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_UNEXPECTED                  = 'BANK_TRANSFER_UNEXPECTED';
     const BANK_TRANSFER_PROVIDER_VALIDATION_FAILED  = 'BANK_TRANSFER_PROVIDER_VALIDATION_FAILED';
     const BANK_TRANSFER_IFSC_CODE_MISSING           = 'BANK_TRANSFER_IFSC_CODE_MISSING';
+    const BANK_TRANSFER_NBIN_CODE_MISSING           = 'BANK_TRANSFER_NBIN_CODE_MISSING';
+    const BANK_TRANSFER_BANK_CODE_MISSING           = 'BANK_TRANSFER_BANK_CODE_MISSING';
     const BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED   = 'BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED';
     const BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED  = 'BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED';
 
@@ -669,6 +698,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_RECEIVER_UPDATED                  = 'PAYMENT_RECEIVER_UPDATED';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
+
+    const BENEFICIARY_REGISTRATION_FAILED_RESPONSE  = 'BENEFICIARY_REGISTRATION_FAILED_RESPONSE';
+    const BENEFICIARY_REGISTRATION_FAILED           = 'BENEFICIARY_REGISTRATION_FAILED';
+    const BENEFICIARY_REGISTRATION_SUMMARY          = 'BENEFICIARY_REGISTRATION_SUMMARY';
+
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
     const MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED     = 'MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED';
     const MERCHANT_NOTIFY_HOLIDAY                   = 'MERCHANT_NOTIFY_HOLIDAY';
@@ -695,7 +729,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_PAYOUT_RETRY_REQUEST             = 'MERCHANT_PAYOUT_RETRY_REQUEST';
     const MERCHANT_PAYOUT_RETRY_FAILED              = 'MERCHANT_PAYOUT_RETRY_FAILED';
     const MERCHANT_PAYOUT_RETRIED_IDS               = 'MERCHANT_PAYOUT_RETRIED_IDS';
-
+    const MERCHANT_ONBOARD_REQUEST                  = 'MERCHANT_ONBOARD_REQUEST';
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
 
     const MERCHANT_ARCHIVE                          = 'MERCHANT_ARCHIVE';
@@ -1041,6 +1075,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
+    const AUTH_SERVICE_DATA_ERROR                       = 'AUTH_SERVICE_DATA_ERROR';
     const SEND_OAUTH_MAIL_REQUEST                       = 'SEND_OAUTH_MAIL_REQUEST';
     const OAUTH_TOKEN_INVALID                           = 'OAUTH_TOKEN_INVALID';
     const APP_MERCHANT_ACCESS_MAP                       = 'APP_MERCHANT_ACCESS_MAP';
@@ -1090,7 +1125,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_CODE_URL                                   = 'QR_CODE_URL';
     const QUERY_CACHE_STORE_ERROR                       = 'QUERY_CACHE_STORE_ERROR';
     const QUERY_CACHE_FLUSH_ERROR                       = 'QUERY_CACHE_FLUSH_ERROR';
-    const QUERY_CACHE_EVENT_ERROR                       = 'QUERY_CACHE_EVENT_ERROR';
+    const METRIC_CACHE_EVENT_ERROR                      = 'METRIC_CACHE_EVENT_ERROR';
+
+    //upi status cache
+    const UPI_CACHE_STORE_ERROR                         = 'UPI_CACHE_STORE_ERROR';
+    const UPI_CACHE_FLUSH_ERROR                         = 'UPI_CACHE_FLUSH_ERROR';
+    const UPI_CACHE_READ_ERROR                          = 'UPI_CACHE_READ_ERROR';
 
     // Account codes
     const ACCOUNT_CREATED                               = 'ACCOUNT_CREATED';
@@ -1109,8 +1149,27 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SERVER_ERROR_LOG_RISK                         = 'SERVER_ERROR_LOG_RISK';
 
+    const BEAM_REQUEST                                  = 'BEAM_REQUEST';
+    const BEAM_RESPONSE                                 = 'BEAM_RESPONSE';
+    const BEAM_PUSH                                     = 'BEAM_PUSH';
+
     // Partners trace codes
     const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';
+    const PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT     = 'PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT';
+    const PARTNER_CREATE_ACCESS_MAP_REQUEST             = 'PARTNER_CREATE_ACCESS_MAP_REQUEST';
+    const PARTNER_DELETE_ACCESS_MAP_REQUEST             = 'PARTNER_DELETE_ACCESS_MAP_REQUEST';
+
+    const FEE_CREDITS_THRESHOLD_ALERT                   = 'FEE_CREDITS_THRESHOLD_ALERT';
+
+    // Excel reader debug trace codes
+    const EXCEL_READER_IMPORT_CONFIG                    = 'EXCEL_READER_IMPORT_CONFIG';
+
+    const FUND_TRANSFER_RECON_EMAIL_FAILED              = 'FUND_TRANSFER_RECON_EMAIL_FAILED';
+
+    const PAYMENT_MDR_UPDATE_ERROR                      = 'PAYMENT_MDR_UPDATE_ERROR';
+    const PAYMENT_MDR_UPDATE_JOB_RECEIVED               = 'PAYMENT_MDR_UPDATE_JOB_RECEIVED';
+    const PAYMENT_MDR_LAST_UPDATED_DATA                 = 'PAYMENT_MDR_LAST_UPDATED_DATA';
+    const PAYMENT_MDR_UPDATE_SUCCESS                    = 'PAYMENT_MDR_UPDATE_SUCCESS';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -1233,7 +1292,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::CREATE_MERCHANT_DETAIL                    => 'Creating Merchant Detail',
         self::PAYMENT_TRANSFER_VALIDATION_FAILED        => 'Transfer failed while validating transfer amount',
         self::CREATE_MERCHANT_DETAIL_FAILED             => 'Merchant Detail creation failed',
-
+        self::MERCHANT_ONBOARD_REQUEST                  => 'Merchant onboarding request initiated',
         self::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED     => 'Subscription payment authorization failed',
         self::SUBSCRIPTION_STATE_UNEXPECTED             => 'Unexpected state of subscription',
         self::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE    => 'Not capturing late auth subscription payment',

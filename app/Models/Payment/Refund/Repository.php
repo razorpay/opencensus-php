@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use DB;
 use Carbon\Carbon;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -22,8 +24,11 @@ class Repository extends Base\Repository
         Entity::PAYMENT_ID      => 'sometimes|alpha_dash|min:14|max:18',
     );
 
+    // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = [
         Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::REVERSAL_ID     => 'filled|public_id|size:18',
+        self::EXPAND . '.*'     => 'filled|string|in:reversal|custom:expand',
     ];
 
     protected $appFetchParamRules = array(
@@ -41,7 +46,26 @@ class Repository extends Base\Repository
         Entity::BATCH_ID,
         Entity::PAYMENT_ID,
         Entity::TRANSACTION_ID,
+        Entity::REVERSAL_ID,
     ];
+
+    /**
+     * This validates the expand route to allow reversal expand only for linked account merchants
+     * @param $attribute
+     * @param $value
+     *
+     * @throws \RZP\Exception\ExtraFieldsException
+     */
+    protected function validateExpand($attribute, $value)
+    {
+        $merchant = $this->merchant;
+        
+        if ((optional($this->merchant)->isLinkedAccount() === false) and
+            $value === 'reversal')
+        {
+            throw new Exception\ExtraFieldsException("expand=reversal");
+        }
+    }
 
     protected function addQueryParamGateway($query, $params)
     {
@@ -166,6 +190,25 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
+    /**
+     * @param string $reversalId
+     * @param string $accountId
+     * @param array  $relations
+     *
+     * @return \RZP\Models\Payment\Refund\Entity
+     */
+    public function findByReversalIdAndMerchant(
+                                            string $reversalId,
+                                            string $accountId,
+                                            array $relations = []): Refund\Entity
+    {
+        return $this->newQuery()
+                    ->where(Entity::REVERSAL_ID, $reversalId)
+                    ->merchantId($accountId)
+                    ->with($relations)
+                    ->firstOrFailPublic();
+    }
+
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
         return $this->fetchBetweenTimestampWithRelations(
@@ -288,6 +331,26 @@ class Repository extends Base\Repository
             ->get();
 
         return $refunds;
+    }
+
+    public function fetchFailedRefundsByGateway()
+    {
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
+
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $data =  $this->newQuery()
+                       ->select(DB::raw('payments.gateway as gateway, count(*) AS count'))
+                       ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                       ->where($refundStatus, '=', Refund\STATUS::FAILED)
+                       ->groupBy($paymentGateway)
+                       ->get();
+
+        return $data;
     }
 
     public function fetchFailedRefundsForGatewayBetweenTimestamps($from, $to, $gateway)

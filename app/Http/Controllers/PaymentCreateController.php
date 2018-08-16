@@ -74,7 +74,8 @@ class PaymentCreateController extends Controller
         return $ret;
     }
 
-    public function getCreatePaymentCheckoutCallback() {
+    public function getCreatePaymentCheckoutCallback()
+    {
         return View::make('gateway.gatewayAsyncForm')
                 ->with('data', $templateData);
     }
@@ -92,7 +93,11 @@ class PaymentCreateController extends Controller
 
         $data = $this->service(E::PAYMENT)->process($input);
 
-        return $this->processCoprotoData($data);
+        $response = $this->processCoprotoData($data);
+
+        $this->logResponseIfApplicable($response);
+
+        return $response;
     }
 
     /**
@@ -250,6 +255,15 @@ class PaymentCreateController extends Controller
         $payment = $this->service(E::PAYMENT)->otpResend($id, $input);
 
         return ApiResponse::json($payment);
+    }
+
+    public function postOtpResendPrivate($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::PAYMENT)->otpResend($id, $input);
+
+        return $this->processCoprotoData($data);
     }
 
     /*
@@ -440,6 +454,63 @@ class PaymentCreateController extends Controller
         else
         {
             return $data;
+        }
+    }
+
+    protected function logResponseIfApplicable($ret)
+    {
+        try
+        {
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            if ($merchant->isFeatureEnabled(Feature::LOG_RESPONSE) === true)
+            {
+                $dataToTrace = [];
+
+                if (is_array($ret) === true)
+                {
+                    $dataToTrace = $ret;
+                }
+                else
+                {
+                    $responseClassName = get_class($ret);
+
+                    switch ($responseClassName)
+                    {
+                        case 'Illuminate\View\View':
+                            $dataToTrace = $ret->render();
+                            break;
+
+                        case 'Illuminate\Http\Response':
+                        case 'Illuminate\Http\RedirectResponse':
+                            $dataToTrace = $ret->getContent();
+                            break;
+
+                        default:
+                            $dataToTrace = $ret;
+                    }
+                }
+
+                $pattern = ['/\"[0-9]{14,19}\"/', '/\"[0-9]{3}\"/'];
+
+                $replacement = '"**redacted**"';
+
+                $responseToTrace = preg_replace($pattern, $replacement, $dataToTrace);
+
+                if ($responseToTrace !== null)
+                {
+                    $this->trace->info(
+                        TraceCode::PAYMENT_CREATED_RESPONSE,
+                        [
+                            'response'      => $responseToTrace,
+                            'merchant_id'   => $merchant->getId(),
+                        ]);
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            // Ignore
         }
     }
 

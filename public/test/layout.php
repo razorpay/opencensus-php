@@ -119,7 +119,7 @@ $('#keys').onclick = t.onkeypress = e => {
     i.className = 'open';
     i.contentDocument.write(`
       <script>${t.value}<\/script>
-      <script>options['modal.ondismiss']=_=>parent.i.className=""<\/script>
+      <script>options['modal.onhidden']=_=>parent.i.className=""<\/script>
       <script src="https://checkout.razorpay.com/v1/checkout.js" onload="Razorpay.open(options)"><\/script>
     `)
     i.contentDocument.close();

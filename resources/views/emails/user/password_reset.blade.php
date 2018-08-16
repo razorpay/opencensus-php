@@ -7,7 +7,7 @@
 <h2>Password Reset</h2>
 
 <div>
-    To reset your password, <a href="{{ $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&email='.$email }}" target="_blank">click here</a>. <br/>
+    To reset your password, <a href=" {{'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&email='.$email }}" target="_blank">click here</a>. <br/>
 
     Or you may open the following link in your browser: <br/>
     <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&email='.$email }}" target="_blank">

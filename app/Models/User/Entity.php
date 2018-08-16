@@ -65,15 +65,10 @@ class Entity extends Base\PublicEntity
     protected static $generators = [
         self::ID,
         self::CONFIRM_TOKEN,
-        self::PASSWORD,
     ];
 
     protected static $modifiers = [
         self::EMAIL,
-    ];
-
-    protected static $unsetCreateInput = [
-        self::PASSWORD,
     ];
 
     protected $generateIdOnCreate = true;
@@ -105,11 +100,6 @@ class Entity extends Base\PublicEntity
         $token = bin2hex($bytes);
 
         return $token;
-    }
-
-    protected function generatePassword(array $input)
-    {
-        $this->setAttribute(self::PASSWORD, Hash::make($input[self::PASSWORD]));
     }
 
     /**
@@ -144,6 +134,11 @@ class Entity extends Base\PublicEntity
     public function setConfirmTokenNull()
     {
         $this->setAttribute(self::CONFIRM_TOKEN, null);
+    }
+
+    protected function setPasswordAttribute($password)
+    {
+        $this->attributes[self::PASSWORD] = Hash::make($password);
     }
 
     public function getEmail()

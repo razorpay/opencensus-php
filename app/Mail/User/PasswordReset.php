@@ -2,40 +2,31 @@
 
 namespace RZP\Mail\User;
 
-use Carbon\Carbon;
 use RZP\Mail\Base;
 use RZP\Models\User;
 
 class PasswordReset extends Base\Mailable
 {
-    const EXPIRYTIME = 86400; //24 hours
-
     protected $org;
 
+    /**
+     * @var User\Entity
+     */
     protected $user;
 
     protected $token;
 
     protected $expiryTime;
 
-    public function __construct($user, $org)
+    public function __construct(User\Entity $user, $org)
     {
         parent::__construct();
 
         $this->user = $user->toArrayPublic();
 
-        $this->token = $this->getToken();
+        list($this->token, $this->expiryTime) = (new User\Service)->getTokenAndExpiry($this->user['id']);
 
         $this->org = $org;
-    }
-
-    protected function getToken()
-    {
-        $this->expiryTime = Carbon::now()->timestamp + self::EXPIRYTIME;
-
-        $token = (new User\Core)->generateToken($this->user['id'], $this->expiryTime);
-
-        return $token;
     }
 
     protected function addRecipients()
