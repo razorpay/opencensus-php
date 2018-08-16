@@ -6,6 +6,7 @@ use Cache;
 use Carbon\Carbon;
 use GuzzleHttp;
 use DOMDocument;
+use Noodlehaus\ErrorException;
 use RZP\Constants\Timezone;
 use RZP\Exception;
 use Requests_Hooks;
@@ -218,13 +219,27 @@ class Gateway extends Base\Gateway
      *
      * @param String base64 encoded PAres
      * @return string ParesXml
-     * @throws ErrorException if pares could not be inflated
+     * @throws Exception\GatewayErrorException if pares could not be inflated
      */
     protected function inflatePares($pares)
     {
         $decodePares = base64_decode($pares);
 
-        $paresXml = gzinflate(substr($decodePares, 2));
+        try
+        {
+            $paresXml = gzinflate(substr($decodePares, 2));
+        }
+        catch (ErrorException $e)
+        {
+            $message = $e->getMessage();
+
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                                                      null,
+                                                      $message,
+                                                      [],
+                                                      $e,
+                                                      BaseGateway\Action::AUTHENTICATE);
+        }
 
         return $paresXml;
     }
@@ -780,8 +795,8 @@ class Gateway extends Base\Gateway
                 case strpos($error, 'KeyInfo') !== false:
 
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
-                                                          null,
-                                                          ['error_message' => $error]);
+                                                            null,
+                                                            ['error_message' => $error]);
             }
 
             // Throw Critical for now

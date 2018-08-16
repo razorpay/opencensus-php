@@ -46,7 +46,7 @@ trait PaymentAuthTrait
                 $content['Message']['Signature'] = (new \RZP\Gateway\Mpi\Blade\Mock\Server('route'))->getSignature();
 
 
-                $xml =base64_encode(gzcompress(\Lib\Formatters\Xml::create('ThreeDSecure', $content)));
+                $xml = base64_encode(gzcompress(\Lib\Formatters\Xml::create('ThreeDSecure', $content)));
 
                 return [
                     'success' => true,

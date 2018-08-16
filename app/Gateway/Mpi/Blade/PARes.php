@@ -27,6 +27,4 @@ class PARes
     const ERROR             = 'Error';
     const ERROR_CODE        = 'errorCode';
     const ERROR_MESSAGE     = 'errorMessage';
-
-
 }
