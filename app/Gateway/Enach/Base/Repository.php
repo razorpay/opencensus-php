@@ -21,12 +21,4 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::REGISTRATION_STATUS)
                     ->firstOrFail();
     }
-
-    public function findByMandateIdAndAction($mandateId, $action)
-    {
-        return $this->newQuery()
-                    ->where(Entity::GATEWAY_REFERENCE_ID, $mandateId)
-                    ->where(Entity::ACTION, $action)
-                    ->firstOrFail();
-    }
 }
