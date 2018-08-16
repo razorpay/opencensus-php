@@ -114,7 +114,15 @@ class Gateway extends Base\Gateway
                 break;
 
             default:
-                throw new Exception\RuntimeException('Not a valid response code');
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                    null,
+                    null,
+                    [
+                        'gateway'   => $this->gateway,
+                        'request'   => $input,
+                        'response'  => $response,
+                    ]);
         }
 
         $this->handleGatewayError($gatewayErrorCode, $input, $response);
