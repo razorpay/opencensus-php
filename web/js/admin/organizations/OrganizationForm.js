@@ -3,6 +3,7 @@ import Form from 'ui/Form';
 import Field, { FileField, SelectField, CheckField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import PermissionsList from './PermissionsList';
+import { titleCase } from 'common/util';
 
 export default function OrgForm({
   org,
@@ -94,48 +95,26 @@ export default function OrgForm({
           {org.id ? (
             <div class="logo-container">
               <header>Upload/Select Logo:</header>
-              <div class="orgs-logo">
-                {filesURL.login_logo_url && (
-                  <img src={filesURL.login_logo_url} width="75" height="75" />
-                )}
-                <FileField
-                  name="login_logo_url"
-                  label="Login Logo"
-                  class="orgs-file"
-                  accept="image/jpeg,image/jpg,image/png"
-                  onChange={e =>
-                    onFileUpload(e.target.files[0], 'login_logo', 'login')
-                  }
-                />
-              </div>
-              <div class="orgs-logo">
-                {filesURL.main_logo_url && (
-                  <img src={filesURL.main_logo_url} width="75" height="75" />
-                )}
-                <FileField
-                  name="main_logo_url"
-                  label="Main (Dashboard) Logo"
-                  class="orgs-file"
-                  accept="image/jpeg,image/jpg,image/png"
-                  onChange={e =>
-                    onFileUpload(e.target.files[0], 'main_logo', 'main')
-                  }
-                />
-              </div>
-              <div class="orgs-logo">
-                {filesURL.invoice_logo_url && (
-                  <img src={filesURL.invoice_logo_url} width="75" height="75" />
-                )}
-                <FileField
-                  name="invoice_logo_url"
-                  label="Invoice Logo"
-                  class="orgs-file"
-                  accept="image/jpeg,image/jpg,image/png"
-                  onChange={e =>
-                    onFileUpload(e.target.files[0], 'invoice_logo', 'invoice')
-                  }
-                />
-              </div>
+              {['main', 'login', 'invoice'].map(type => (
+                <div class="orgs-logo" key={type}>
+                  {filesURL[`${type}_logo_url`] && (
+                    <img
+                      src={filesURL[`${type}_logo_url`]}
+                      width="75"
+                      height="75"
+                    />
+                  )}
+                  <FileField
+                    name={`${type}_url`}
+                    label={`${titleCase(type)} Logo`}
+                    class="orgs-file"
+                    accept="image/jpeg,image/jpg,image/png"
+                    onChange={e =>
+                      onFileUpload(e.target.files[0], `${type}_logo`, type)
+                    }
+                  />
+                </div>
+              ))}
             </div>
           ) : (
             <div class="org-admin">

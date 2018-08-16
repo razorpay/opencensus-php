@@ -208,8 +208,9 @@ export default class EditOrg extends Component {
     }
   };
 
-  handleFileUpload = (file, fileName = '', type = '') => {
+  handleFileUpload = (file, fileName, type) => {
     const { filesURL } = this.state;
+
     let fileData = {
       [fileName]: file,
       type,
@@ -218,6 +219,7 @@ export default class EditOrg extends Component {
     return adminFormUpload(fileData, `/admin/org/${this.org.id}`).then(resp => {
       if (resp.data.success) {
         notifySuccess('File uploaded successfully');
+
         this.setState({
           filesURL: {
             ...filesURL,
