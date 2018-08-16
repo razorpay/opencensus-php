@@ -33,7 +33,7 @@ class Server extends Base\Mock\Server
             'emandate_id' => $input['mandate_id'],
         ];
 
-        $enachEntity = $this->app['repo']->enach->findByMandateIdAndAction($input['mandate_id'], 'authorize');
+        $enachEntity = $this->app['repo']->esigner->findByMandateIdAndAction($input['mandate_id'], 'authorize');
 
         $paymentId = Payment\Entity::getSignedId($enachEntity['payment_id']);
 
