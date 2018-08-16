@@ -10,6 +10,7 @@ use RZP\Models\Reversal;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Models\Payment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Entity as Merchant;
@@ -194,6 +195,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->morphMany(Reversal\Entity::class, 'entity');
     }
+
 
     public function recipientSettlement()
     {
