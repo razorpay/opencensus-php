@@ -50,34 +50,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                                                                      [Icici\Confirmation::YES]);
     }
 
+    /**
+     * Allowing force authorize for all the failed payments.
+     * Few reasons of failure are :
+     * 1. Verify returns failure if multiple payments are created at bank's side,
+     *    as verify return status of first failed payment.
+     * 2. Payments happened at midnight duration, difference in dates at bank's system and Razorpay system.
+     */
     protected function setAllowForceAuthorization()
     {
-        $this->allowForceAuthorization = $this->validatePaymentForForceAuthorize();
-    }
-
-    /**
-     * This methods checks if payment is made from 11:50 pm to midnight.
-     * Only payments made during this time will be force authorized.
-     * This is done because tracking api of netbanking ICICI takes payment date into consideration
-     * and for payments made during midnight, date saved in ICICI db can be of next day's date which leads to
-     * wrong status of payment in tracking/verify response.
-     * @return bool
-     */
-    protected function validatePaymentForForceAuthorize()
-    {
-        $createdTime = $this->payment->getCreatedAt() ;
-
-        $createdDate =  Carbon::createFromTimestamp($createdTime, Timezone::IST);
-
-        $nextDate = Carbon::createFromTimestamp($createdTime, Timezone::IST)->endOfDay();
-
-        $difference = $nextDate->diffInSeconds($createdDate);
-
-        if ($difference <= 600)
-        {
-            return true;
-        }
-
-        return false;
+        $this->allowForceAuthorization = true;
     }
 }
