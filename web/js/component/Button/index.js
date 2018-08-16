@@ -64,13 +64,19 @@ export class AsyncBtn extends React.PureComponent {
     * Only 3 props are different than Button and has to be consumed here, not sent to Button component
     * Note: onClick needs to be consumed here
     * */
-    let { children, pendingState, onClick, ...rest } = this.props;
+    let {
+      children,
+      pendingState,
+      onClick,
+      showLoader = true,
+      ...rest
+    } = this.props;
 
     if (this.state.isPending) {
       children = (
         <span class="btn-pending">
           {pendingState}
-          <span class="spin-btn white" />
+          {showLoader && <span class="spin-btn white" />}
         </span>
       );
     }

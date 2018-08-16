@@ -1,6 +1,6 @@
 import GenericEntity from './GenericEntity';
 import Payment from './Payment';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const fields = [
   'id',

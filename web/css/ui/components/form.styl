@@ -273,14 +273,32 @@ input[type=checkbox]:not(.ui-checkbox)
     height: 14px
     line-height: 14px;
 
-.PowerSelect__TriggerInput
-  box-shadow: none !important
-  text-overflow: ellipsis
 
-//downward triangle sign for searchable input
-.searchable-select .PowerSelect__TriggerInputContainer:after
-  content: '\25BC'
-  display: inline-block
-  position: absolute
-  top: 7px
-  right: 5px
+.custom-select
+  position: relative
+
+  input
+    width: 100%
+
+  .custom-icon, .typeAheadSkin
+    position: absolute
+    pointer-events: none
+
+  .custom-icon
+    top: 11px
+    left: 8px
+    font-size: 20px
+    z-index: 1
+    color: #e0e0e0
+
+  .typeAheadSkin
+    z-index: 2
+    background-color: #fff
+    top: 10px
+    width: 87%
+    margin-left: 30px
+    font-size: 12px
+
+  .PowerSelect__TriggerInput
+    padding-left: 32px
+

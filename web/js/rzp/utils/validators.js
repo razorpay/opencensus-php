@@ -23,7 +23,7 @@ export const isUrlLenient = url => {
 export const flexibleDevUrl = url => {
   url = url || '';
 
-  let urlRegExp = /^(http(s?)?:\/\/)?\w+(\.\w+)*(:[0-9]+)?\/?(\/[.\w]*)*$/;
+  let urlRegExp = /^(http(s?)?:\/\/)?[\w.-]+(\.[\w.-]+)*(:[0-9]+)?\/?(\/[.\w\-]*)*$/;
 
   return urlRegExp.test(url);
 };

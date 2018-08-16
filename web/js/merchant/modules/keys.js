@@ -5,12 +5,23 @@ const KEYS_FETCH = 'KEYS_FETCH';
 const KEY_GENERATE = 'KEY_GENERATE';
 const KEY_ROLL = 'KEY_ROLL';
 
-export const fetchKeys = params => {
+export const fetchKeys = (params = {}, hasKeyAccess) => {
   let key = new Key();
+
+  let request;
+
+  if (params.mode === 'live' && !hasKeyAccess) {
+    request = Promise.resolve({
+      success: true,
+      data: { count: 0, items: [], entity: 'collection' },
+    });
+  } else {
+    request = key.fetchAll(params);
+  }
 
   return {
     type: KEYS_FETCH,
-    payload: key.fetchAll(params),
+    payload: request,
   };
 };
 

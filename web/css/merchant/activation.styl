@@ -151,19 +151,17 @@ $side-width = 240px
 .Activation--success
   padding: 24px
 
-  .side-title
+  side-title
     text-align: center
     font-size: 18px
     font-weight: bold
     display: block
-    margin-bottom: 4px
+    margin-bottom: 12px
 
   .submit-illustration
-    background: url(/img/activation/submit-success.svg) no-repeat
     width: calc(100% + 48px)
-    height: 175px
+    padding: 12px 0 12px 24px
     margin-left: -24px
-    background-position: right
 
   .LinkCard
     color: #58666e
@@ -174,12 +172,14 @@ $side-width = 240px
     font-size: 16px
     background: #fff
     padding: 24px 6%
-    margin: -20px -12% 30px -12%
+    margin: -20px -12% 20px -12%
     border: 1px solid #e0e0e0
     box-shadow: 8px 8px 8px 0 rgba(132,155,191,0.1)
     color: $heading-primary
     font-weight: 600
     border-radius: 2px
+    position relative
+    z-index: 2
 
     .desc
       font-size: 14px
@@ -213,10 +213,6 @@ $side-width = 240px
     bottom: 0
     right: 0
     width: 58%
-    height: 94%
-    background: url(/img/activation/welcome.svg) no-repeat
-    background-position: bottom right
-    background-size: contain
     z-index: 1
 
   .short-content

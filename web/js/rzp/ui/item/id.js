@@ -37,7 +37,7 @@ export const idLink = (id, label) => {
   return item;
 };
 
-/* 
+/*
   idKey: value of this key in item object will be appened to url
   labeKey: value of this key in item object will be displayed as label in link
 */

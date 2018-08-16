@@ -15,6 +15,7 @@ export ConfirmUser from './ConfirmUser';
 export AuthorizeFailedPayment from './AuthorizeFailedPayment';
 export RetryFailedSettlements from './RetryFailedSettlements';
 export VerifyPayment from './VerifyPayment';
+export BulkVerifyPayments from './BulkVerifyPayments';
 
 export TriggerDummyError from './TriggerDummyError';
 export MakeAPICall from './MakeAPICall';
@@ -37,3 +38,11 @@ export FundTransferUpdate from './FundTransferUpdate';
 export MerchantInvoiceNote from './MerchantInvoiceNote';
 
 export BatchUpload from './BatchUpload';
+
+export SQLReportGenerator from './SQLReportGenerator';
+
+export ProcessBulkRefunds from './ProcessBulkRefunds';
+
+export RetryBulkRefunds from './RetryBulkRefunds';
+
+export RetryBulkRefundsWithoutVerifying from './RetryBulkRefundsWithoutVerifying';

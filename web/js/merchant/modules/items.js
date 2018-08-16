@@ -4,7 +4,7 @@ import {
   listFetchPendingState,
   listFetchSuccessState,
   listFetchErrorState,
-} from 'rzp/modules/collection';
+} from 'merchant/modules/collection';
 
 const ITEMS_FETCH = 'ITEMS_FETCH';
 const ITEMS_AUTOCOMPLETE_FETCH = 'ITEMS_AUTOCOMPLETE_FETCH';
@@ -35,7 +35,11 @@ export const saveItem = params => {
 
   return {
     type: item.isNew ? ITEM_CREATE : ITEM_EDIT,
-    payload: item.save(),
+    payload: item.save(null, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }),
   };
 };
 

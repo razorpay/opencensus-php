@@ -9,23 +9,48 @@ import { required, email, phone } from 'rzp/utils/validators';
 import * as CustomerActions from 'merchant/modules/customers';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { PowerSelect } from 'react-power-select';
+import { fetchStates } from 'merchant/modules/states';
+import {
+  getKeysSeparatedByPipe,
+  isAddressValid,
+  isValidGSTIN,
+} from 'rzp/utils/rzp-utils';
+import AddressEntry from 'merchant/components/AddressEntry.js';
+import { validateGSTIN } from 'rzp/utils/validators';
 
 function validate(values) {
   let errors = {};
 
-  if (!values.email && !values.contact) {
-    errors._error = 'Please provide either email or contact';
+  if (values.gstin && !isValidGSTIN(values.gstin)) {
+    errors._error = 'Please provide a valid GSTIN';
   }
 
   return errors;
 }
 
-@connect(null, {
-  ...CustomerActions,
-  ...ModalActions,
-  ...NotificationsActions,
-})
+const selector = formValueSelector('newCustomer');
+
+@connect(
+  state => {
+    return {
+      // Screen 1
+      name: selector(state, 'name'),
+      email: selector(state, 'email'),
+      contact: selector(state, 'contact'),
+
+      shipping_same_as_billing: selector(state, 'shipping_same_as_billing'),
+      add_customer_address: selector(state, 'add_customer_address'),
+      add_shipping_address: selector(state, 'add_shipping_address'),
+    };
+  },
+  {
+    fetchStates,
+    ...CustomerActions,
+    ...ModalActions,
+    ...NotificationsActions,
+  }
+)
 @reduxForm({
   form: 'newCustomer',
   validate,
@@ -35,6 +60,7 @@ export default class AddCustomer extends Component {
     super(...arguments);
     this.state = {
       errors: null,
+      screenIndex: 0, // Start on screen 1.
     };
   }
 
@@ -42,6 +68,25 @@ export default class AddCustomer extends Component {
     if (this.props.customer) {
       this.props.initialize(this.props.customer);
     }
+
+    let promises = [this.props.fetchStates()];
+    this.setState({
+      isLoading: true,
+    });
+
+    Promise.all(promises)
+      .then(([states]) => {
+        this.setState({
+          isLoading: false,
+          states: states && states.data && states.data.items,
+        });
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
   }
 
   componentDidMount() {
@@ -53,6 +98,19 @@ export default class AddCustomer extends Component {
     });
   }
 
+  /**
+   * Method to change the screen.
+   * @param {Integer} screenIndex Screen # to show.
+   */
+  changeScreen = screenIndex => {
+    this.setState({
+      screenIndex,
+    });
+  };
+
+  /**
+   * Send Analytics event when unmounted.
+   */
   componentWillUnmount() {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Customers',
@@ -62,7 +120,61 @@ export default class AddCustomer extends Component {
     });
   }
 
+  /**
+   * Prepare props for saving and return extra props.
+   * @param {Object} props
+   * @return {Object}
+   */
+  prepareForSave = props => {
+    let _props = {};
+
+    // If address is to be saved.
+    if (props.add_customer_address) {
+      // Bililng Address
+      _props.billing_address = this.state.editedBillingAddress;
+
+      // Check if billing and shipping addresses are same despite the checkbox,
+      if (!props.shipping_same_as_billing) {
+        let shippingAddr = this.state.editedShippingAddress;
+        let billingAddr = this.state.editedBillingAddress;
+        let areAddressesSame = true;
+
+        // Check if shipping address is the same as billing address.
+        if (shippingAddr) {
+          Object.keys(billingAddr).forEach(key => {
+            if (billingAddr[key] !== shippingAddr[key]) {
+              areAddressesSame = false;
+            }
+          });
+        }
+
+        // Set the flag manually.
+        props.shipping_same_as_billing = areAddressesSame;
+      }
+
+      // Shipping Address
+      // We don't have shipping address if it's supposed to be the same as the billing address.
+      if (!props.shipping_same_as_billing) {
+        _props.shipping_address = this.state.editedShippingAddress;
+      }
+
+      // Remove shipping address if it doesn't need to be added.
+      if (!props.add_shipping_address) {
+        delete _props.shipping_address;
+      }
+    }
+    return _props;
+  };
+
+  /**
+   * Saves the customer.
+   * @param {Object} props
+   * @return {Promise}
+   */
   save = props => {
+    const { shipping_same_as_billing } = props;
+
+    // Analytics.
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Customers',
       eventAction: `Submit Form - ${
@@ -70,10 +182,18 @@ export default class AddCustomer extends Component {
       } Customer`,
       eventLabel: getKeysSeparatedByPipe(props),
     });
+
+    // Get extra props.
+    let extraProps = this.prepareForSave({ ...props });
+
+    // Save customer.
     return this.props
-      .saveCustomer(props)
+      .saveCustomer({
+        ...props,
+        ...extraProps,
+      })
       .then(customer => {
-        this.props.onSave(customer);
+        this.props.onSave(customer, shipping_same_as_billing);
         this.props.showNotification({
           type: 'success',
           message: 'Customer saved successfully',
@@ -86,87 +206,371 @@ export default class AddCustomer extends Component {
       });
   };
 
+  /**
+   * Method to invoke when Same Shipping address as Billing address is clicked on Screen 3
+   * @param {Event} e
+   */
+  onSameShippingAsBilling = e => {
+    // Get value of checkbox before it was clicked.
+    let { shipping_same_as_billing } = this.props;
+
+    // Since it has changed, negate it.
+    shipping_same_as_billing = !shipping_same_as_billing;
+
+    // Set shipping address the same as billing address.
+    if (shipping_same_as_billing) {
+      this.setState({
+        editedShippingAddress: this.state.editedBillingAddress,
+      });
+    }
+  };
+
+  /**
+   * Unchecks shipping address same as billing address checkbox
+   */
+  uncheckShippingSameAsBilling = () => {
+    this.props.change('shipping_same_as_billing', false);
+  };
+
+  /**
+   * Toggles the "Add Customer Address" checkbox.
+   */
+  toggleAddCustomerAddress = e => {
+    this.setState({
+      address: e.target.checked,
+    });
+  };
+
+  /**
+   * Invoked when Billing Address is changed.
+   * @param {Object} address
+   */
+  onBillingAddressChange = address => {
+    this.setState({
+      editedBillingAddress: address,
+    });
+  };
+
+  /**
+   * Invoked when Shipping Address is changed/
+   * @param {Object} address
+   */
+  onShippingAddressChange = address => {
+    this.uncheckShippingSameAsBilling();
+    this.setState({
+      editedShippingAddress: address,
+    });
+  };
+
+  /**
+   * Closure/Handler for changeScreen.
+   * @param {Number} screenNumber
+   * @return {Function}
+   */
+  getChangeScreenHandler = screenNumber => {
+    return () => this.changeScreen(screenNumber);
+  };
+
   render() {
-    const { handleSubmit, invalid, customer } = this.props;
+    const {
+      handleSubmit,
+      customer,
+      saveLabel,
+
+      name,
+      email: _email, // Renaming this because an `email` function is imported for validation.
+      contact,
+
+      shipping_same_as_billing,
+      add_customer_address: address,
+      add_shipping_address,
+    } = this.props;
+
+    const {
+      screenIndex,
+      states = [],
+      editedBillingAddress,
+      editedShippingAddress,
+    } = this.state;
+
+    let screens = [];
+
+    /**
+     * Array of Booleans that depicts whether or not the CTA on the screen corresponding to the index
+     * is supposed to be disabled or not.
+     */
+    const disabled = [
+      // Screen 1
+      !(name || _email || contact),
+
+      // Screen 2
+      !isAddressValid(editedBillingAddress),
+
+      // Screen 3
+      !isAddressValid(editedShippingAddress),
+    ];
+
+    // Ask Address only when this is not an Edit Modal or the `add_customer_address` prop is true.
+    let askAddress =
+      typeof this.props.askAddress === 'undefined'
+        ? !(customer && customer.id) || address
+        : this.props.askAddress;
+
+    // Add Screen 1
+    const screen1 = (
+      <div class="modal-body CustomerCreationModal">
+        <Alert type="error" message={this.state.errors} />
+        <form autoComplete="off">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label>Company/Individual Name</label>
+                <div>
+                  <Field
+                    name="name"
+                    placeholder="Customer Name"
+                    component={InputField}
+                    class="form-control"
+                    autoFocus={true}
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <div>
+                  <Field
+                    name="email"
+                    placeholder="Email Address"
+                    component={InputField}
+                    type="email"
+                    class="form-control"
+                    validate={email('Please provide a valid email')}
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Contact No.</label>
+                <div>
+                  <Field
+                    name="contact"
+                    placeholder="Contact Number"
+                    component={InputField}
+                    class="form-control"
+                    type="tel"
+                    validate={[phone('Invalid Contact')]}
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>GSTIN</label>
+                <div>
+                  <Field
+                    name="gstin"
+                    placeholder="e.g 22AAAAA0000A1Z5"
+                    component={InputField}
+                    class="form-control"
+                    validate={[validateGSTIN]}
+                  />
+                </div>
+              </div>
+              {askAddress && (
+                <div class="form-group">
+                  <div class="rzpCheckbox" style={{ marginTop: '4px' }}>
+                    <Field
+                      name="add_customer_address"
+                      id="add_customer_address"
+                      component="input"
+                      type="checkbox"
+                    />
+                    <label
+                      for="add_customer_address"
+                      style={{ fontWeight: 'normal' }}
+                      class="icon i-check"
+                    >
+                      Add Billing Address
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          {customer &&
+            customer.id && (
+              <div class="row">
+                <div class="col-md-12">
+                  <p>
+                    Note: The updated customer details will be reflected
+                    everywhere in the future.
+                  </p>
+                </div>
+              </div>
+            )}
+          <div class="row">
+            <div class="col-md-12">
+              <div class="Modal__actions">
+                <button
+                  class="btn btn-primary btn-block"
+                  type="button"
+                  disabled={disabled[screenIndex]}
+                  onClick={
+                    address
+                      ? this.getChangeScreenHandler(1)
+                      : handleSubmit(this.save)
+                  }
+                >
+                  {address ? 'Add Billing Address' : saveLabel}
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    );
+
+    screens.push(screen1);
+
+    // Add Screen 2
+    screens.push(
+      <div class="modal-body CustomerCreationModal">
+        <Alert type="error" message={this.state.errors} />
+        <form autoComplete="off">
+          <div class="row CustomerCreationModal__header-action">
+            <div class="col-md-12">
+              <span
+                onClick={this.getChangeScreenHandler(0)}
+                class="text-primary cursor-pointer"
+              >
+                <i class="i i-arrow-back" />Back to Customer Details
+              </span>
+            </div>
+          </div>
+          <div class="CustomerCreationModal__headers">
+            <label>Billing Address</label>
+          </div>
+          <AddressEntry
+            onChange={this.onBillingAddressChange}
+            states={states}
+            address={editedBillingAddress}
+            hideCountry={true}
+            showDisabledCountry={true}
+          />
+          <div class="row CustomerCreationModal__bottom">
+            <div class="col-md-12">
+              <div>
+                <div class="rzpCheckbox">
+                  <Field
+                    name="add_shipping_address"
+                    id="add_shipping_address"
+                    component="input"
+                    type="checkbox"
+                  />
+                  <label
+                    for="add_shipping_address"
+                    style={{ fontWeight: 'normal' }}
+                    class="icon i-check"
+                  >
+                    Add Shipping Address
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="Modal__actions">
+                {add_shipping_address ? (
+                  <button
+                    class="btn btn-primary btn-block"
+                    disabled={disabled[screenIndex]}
+                    type="button"
+                    onClick={this.getChangeScreenHandler(2)}
+                  >
+                    Add Shipping Address
+                  </button>
+                ) : (
+                  <AsyncButton
+                    type="submit"
+                    class="btn btn-primary btn-block"
+                    text={this.props.saveLabel}
+                    pendingText="Saving..."
+                    disabled={disabled[screenIndex]}
+                    onClick={handleSubmit(this.save)}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    );
+
+    // Add Screen 3
+    screens.push(
+      <div class="modal-body CustomerCreationModal">
+        <Alert type="error" message={this.state.errors} />
+        <form autoComplete="off">
+          <div class="row CustomerCreationModal__header-action">
+            <div class="col-md-12">
+              <span
+                onClick={this.getChangeScreenHandler(1)}
+                class="text-primary cursor-pointer"
+              >
+                <i class="i i-arrow-back" />Back to Billing Address
+              </span>
+            </div>
+          </div>
+          <div class="CustomerCreationModal__headers">
+            <label>Shipping Address</label>
+            <div class="rzpCheckbox">
+              <Field
+                name="shipping_same_as_billing"
+                id="shipping_same_as_billing"
+                component="input"
+                type="checkbox"
+                onChange={this.onSameShippingAsBilling}
+              />
+              <label
+                for="shipping_same_as_billing"
+                style={{ fontWeight: 'normal' }}
+                class="icon i-check"
+              >
+                Same as Billing Address
+              </label>
+            </div>
+          </div>
+          <AddressEntry
+            onChange={this.onShippingAddressChange}
+            states={states}
+            address={editedShippingAddress}
+            hideCountry={true}
+            showDisabledCountry={true}
+          />
+          <div class="row">
+            <div class="col-md-12">
+              <div class="Modal__actions">
+                <AsyncButton
+                  type="submit"
+                  class="btn btn-primary btn-block"
+                  text={this.props.saveLabel}
+                  pendingText="Saving..."
+                  disabled={disabled[screenIndex]}
+                  onClick={handleSubmit(this.save)}
+                />
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    );
 
     return (
-      <div>
+      <div id="create-customer-modal">
         <ModalHeader
-          title={customer && customer.id ? 'Edit Customer' : 'New Customer'}
+          title={customer && customer.id ? 'Edit Customer' : 'Add Customer'}
           onCloseClick={this.props.closeModal}
         />
 
-        <div class="modal-body">
-          <Alert type="error" message={this.state.errors} />
-
-          <form onSubmit={handleSubmit(this.save)}>
-            <div class="form-group">
-              <label>Name</label>
-              <div>
-                <Field
-                  name="name"
-                  component={InputField}
-                  class="form-control"
-                  autoFocus={true}
-                />
-              </div>
-            </div>
-
-            <div class="help-block">
-              Either <b>email</b> or <b>Contact No.</b> is mandatory.
-            </div>
-
-            <div class="form-group">
-              <label>Email</label>
-              <div>
-                <Field
-                  name="email"
-                  component={InputField}
-                  type="email"
-                  class="form-control"
-                  validate={email('Please provide a valid email')}
-                />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Contact No.</label>
-              <div>
-                <Field
-                  name="contact"
-                  component={InputField}
-                  class="form-control"
-                  type="tel"
-                  validate={[phone('Invalid Contact')]}
-                />
-              </div>
-            </div>
-
-            {/*
-            <div class='form-group'>
-              <label>Address</label>
-              <div>
-                <Field
-                  name='address'
-                  component='textarea'
-                  class='form-control'
-                />
-              </div>
-            </div>
-*/}
-
-            <div class="Modal__actions">
-              <AsyncButton
-                type="submit"
-                class="btn btn-primary btn-block"
-                text={this.props.saveLabel}
-                pendingText="Saving..."
-                disabled={invalid}
-                onClick={handleSubmit(this.save)}
-              />
-            </div>
-          </form>
-        </div>
+        {screens[screenIndex || 0]}
       </div>
     );
   }

@@ -1,5 +1,5 @@
 import ajax from 'merchant/utils/ajax';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 export var pokeConfig = {
   merchantId: '',

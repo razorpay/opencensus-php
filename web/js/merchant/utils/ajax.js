@@ -1,6 +1,33 @@
 import ajax from 'rzp/utils/ajax';
 import { getMode } from 'merchant/store';
 
+export function merchantFetch(params) {
+  if (typeof params === 'string') {
+    params = {
+      url: params,
+    };
+  }
+
+  let mode = params.mode;
+  if (mode) {
+    delete params.mode;
+  } else {
+    mode = getMode();
+  }
+
+  if (params.accountId) {
+    params.headers = {
+      ...params.headers,
+      'X-Razorpay-Account': params.accountId,
+    };
+  }
+  delete params.accountId;
+
+  params.url = `/merchant/api/${mode}/${params.url}`;
+
+  return ajax(params);
+}
+
 export default (url, params = {}, baseUrl = '') => {
   if (typeof url === 'object') {
     params = url;
@@ -25,7 +52,7 @@ export default (url, params = {}, baseUrl = '') => {
     }
   }
 
-  return ajax(ajaxParams);
+  return ajax(ajaxParams, getMode());
 };
 
 // Replaces consecutive & trailing slashes from the URL

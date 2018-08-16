@@ -3,6 +3,7 @@ import { Doughnut } from 'react-chartjs-2';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
+import debounce from 'rzp/utils/debounce';
 import takeScreenshot from 'rzp/utils/screenshot';
 import { showNotification } from 'rzp/modules/notifications';
 
@@ -28,6 +29,10 @@ import {
   trackNoData,
 } from 'merchant/containers/Home/ga';
 
+import Mobile from 'merchant/containers/Home/Traffic/Mobile';
+
+const aggTypes = groupValues.map(value => groupMeta[value]);
+
 const chartOptions = {
     tooltips: {
       enabled: false,
@@ -52,6 +57,7 @@ class Traffic extends Component {
       loading: false,
       selectedGrouping: groupMeta[groupValues[0]],
       groupsState: {},
+      windowWidth: window.innerWidth,
     };
 
     groupValues.forEach(groupValue => {
@@ -67,6 +73,7 @@ class Traffic extends Component {
 
     this.onGroupChange = ::this.onGroupChange;
     this.handleImageExportClick = ::this.handleImageExportClick;
+    this.handleResize = debounce(::this.handleResize, 250);
 
     this.data = null;
   }
@@ -232,12 +239,54 @@ class Traffic extends Component {
     }
   }
 
-  componentDidMount() {
+  setChartSize() {
+    if (!this.chartContent) {
+      return;
+    }
+
     const { width, height } = this.chartContent.getBoundingClientRect();
 
     // fixing with and height of chart container so that
     // the chart size would not grow
     this.chartContent.style.width = width + 'px';
+  }
+
+  handleResize() {
+    return this.setState(
+      {
+        hideChart: true,
+      },
+      () => {
+        if (!this.chartContent) {
+          return;
+        }
+
+        this.chartContent.style.width = '100%';
+
+        window.setTimeout(() => {
+          this.setChartSize();
+          this.setState({ hideChart: false });
+        });
+      }
+    );
+  }
+
+  componentDidMount() {
+    if (this.props.isMobile) {
+      return;
+    }
+
+    this.setChartSize();
+
+    window.addEventListener('resize', this.handleResize);
+  }
+
+  componentWillUnmount() {
+    if (this.props.isMobile) {
+      return;
+    }
+
+    window.removeEventListener('resize', this.handleResize);
   }
 
   render() {
@@ -246,7 +295,21 @@ class Traffic extends Component {
       { isCurrency } = groupMeta[selectedGrouping.value],
       { chartData, legendData } = groupState,
       hasNoData = !chartData || chartData.labels.length === 0,
-      { sectionTitle, startDate, endDate } = this.props;
+      { sectionTitle, startDate, endDate, isMobile } = this.props;
+
+    if (isMobile) {
+      const mobileProps = {
+        isLoading: loading || groupState.loading,
+        hasNoData,
+        error: groupState.error,
+        data: legendData,
+        aggTypes,
+        onAggChange: this.onGroupChange,
+        selectedAgg: selectedGrouping,
+        isCurrency,
+      };
+      return <Mobile {...mobileProps} />;
+    }
 
     return (
       <GenericPanel
@@ -260,7 +323,7 @@ class Traffic extends Component {
           <div className="panel-actions pull-right">
             <div className="panel-action-item">
               <GroupingDropdown
-                grouping={groupValues.map(value => groupMeta[value])}
+                grouping={aggTypes}
                 selectedGrouping={selectedGrouping}
                 onGroupChange={this.onGroupChange}
                 displayTextKey="title"
@@ -285,8 +348,14 @@ class Traffic extends Component {
                 ref={node => (this.chartContent = node)}
               >
                 {!groupState.loading &&
-                  chartData && (
-                    <Doughnut options={chartOptions} data={chartData} />
+                  chartData &&
+                  !this.state.hideChart && (
+                    <Doughnut
+                      ref={node => (this.chartInstance = node)}
+                      options={chartOptions}
+                      data={chartData}
+                      windowWidth={this.state.windowWidth}
+                    />
                   )}
               </div>
             </div>

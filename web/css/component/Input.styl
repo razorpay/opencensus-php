@@ -13,7 +13,7 @@
     bottom: 1px
     width: 36px
     font-size: 14px
-    background-color: #EEEEEE
+    background-color: #F0F3F4
     color: #57666D
     text-align: center
     line-height: 36px
@@ -86,6 +86,13 @@
   &.Input--large .Input-elWrapper
     width: 320px
 
+.Input--checkbox.Input--checkbox
+  .Input-elWrapper
+    width: 100%;
+
+.Input--capitalize .Input-el
+  text-transform: uppercase
+
 .Input--pair
   .Input-pair
     position: relative
@@ -119,7 +126,7 @@
       color: $textDangerColor
 
 .Input--disabled
-  opacity: 0.5
+  opacity: 0.35
 
   label
     cursor: unset !important
@@ -230,7 +237,10 @@
   font-size: 14px
   padding: 0 12px
   &[type=checkbox], &[type=radio]
-    display: none
+    display: block
+    height: 0
+    margin: 0
+    opacity: 0
 
   &--before
     padding-left: 48px
@@ -289,6 +299,13 @@ textarea.Input-el
     transform: rotate(45deg) scale(1.5)
     margin: 0 0 0 4px
 
+:focus + .Input-checkbox
+  border-color: $primary-color
+
+:focus + .Input-checkbox--label
+  color: #22527b
+  text-decoration: underline
+
 :checked + .Input-checkbox
   background: $primary-color
   border-color: $primary-color
@@ -321,6 +338,9 @@ textarea.Input-el
   border: 1px solid #ccc
   transition: .2s
 
+:focus + .Input-radio
+  border-color: $primary-color
+
 :checked + .Input-radio
   background: $primary-color
   border: 3px solid #fff
@@ -338,6 +358,9 @@ textarea.Input-el
 
     &.shallow
       color: #606061
+
+  &-list
+    padding-left: 16px
 
 .Input-error
   display: none
@@ -374,15 +397,19 @@ textarea.Input-el
 .Input-el
   &::-webkit-input-placeholder /* Chrome/Opera/Safari */
     opacity: 0.8
+    text-transform: initial
 
   &::-moz-placeholder /* Firefox 19+ */
     opacity: 0.8
+    text-transform: initial
 
   &:-ms-input-placeholder /* IE 10+ */
     opacity: 0.8
+    text-transform: initial
 
   &:-moz-placeholder /* Firefox 18- */
     opacity: 0.8
+    text-transform: initial
 
 /* Calendar picker styles */
 .Input--Calendar-content
@@ -415,6 +442,7 @@ textarea.Input-el
   .rdtPicker
     width: 100%
     bottom: 37px
+    padding: 8px 5%
 
   .rdtCounterSeparator
     line-height: 84px

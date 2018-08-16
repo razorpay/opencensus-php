@@ -282,6 +282,8 @@ export default class TerminalForm extends Component {
             <option value="" />
             <option value="INR">INR</option>
             <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+            <option value="SGD">SGD</option>
           </SelectField>
 
           <SelectField name="emi" label="Emi" defaultValue="">
@@ -404,6 +406,15 @@ export default class TerminalForm extends Component {
             name="type[bharat_qr]"
             defaultChecked={
               entity && entity.type && entity.type.indexOf('bharat_qr') >= 0
+            }
+          />
+          <CheckField
+            label="Debit Recurring"
+            name="type[debit_recurring]"
+            defaultChecked={
+              entity &&
+              entity.type &&
+              entity.type.indexOf('debit_recurring') >= 0
             }
           />
 

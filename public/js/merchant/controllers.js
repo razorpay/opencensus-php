@@ -62,7 +62,7 @@ angular
         today: new Date(),
         // for chart colors
         color: {
-          primary: '#7266ba',
+          primary: '#528ff0',
           info: '#23b7e5',
           success: '#27c24c',
           warning: '#fad733',

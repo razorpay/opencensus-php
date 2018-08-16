@@ -6,7 +6,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import { required, email } from 'rzp/utils/validators';
 import { roles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
-import { sendInvitation, fetchTeamDetails } from 'rzp/modules/team';
+import { sendInvitation, fetchTeamDetails } from 'merchant/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
 const ROLES = without(roles, 'owner');

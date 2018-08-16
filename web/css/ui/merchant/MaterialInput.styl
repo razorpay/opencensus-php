@@ -1,0 +1,140 @@
+$borderColors = {
+  default: rgba(33,33,33, 0.2)
+  focus: $primary-color
+  hover: lighten($primary-color, 70%)
+}
+
+$textColors = {
+  input: rgba(33,33,33, 0.8)
+}
+
+.material-input
+  border: none
+  border-bottom: 1px solid $borderColors.default
+  transition: border-color ease-in-out 0.15s
+  color: $textColors.input
+  resize: none
+
+  &:hover
+    border-bottom-color: $borderColors.hover
+
+  &:focus,
+  &:active
+    border-bottom-color: $borderColors.focus
+
+  input
+    color: $textColors.input
+
+  .quick-create
+    background-color: #FBFBFB
+
+  .quick-create,
+  .PowerSelect__Option
+    padding: 6px 8px
+    font-size: 14px
+
+  .PowerSelect__Option,
+  .quick-create
+    &:focus,
+    &:hover
+      background-color: #F6F6F6
+
+  .quick-create,
+  .PowerSelect__Options
+    border: 1px solid #F0F0F0
+    background-color: white;
+
+  .inlineField__value-container
+    margin-top: 4px;
+
+input,
+textarea
+  &.material-input
+    width: 100%
+    height: 24px
+
+input,
+textarea,
+.PowerSelect
+  &.material-input
+    padding: 5px 0
+
+.PowerSelect
+  &.material-input
+    border-bottom: 1px solid $borderColors.default
+  input.PowerSelect__TriggerInput
+    pointer-events: none
+
+.PowerSelect--focused
+  &.material-input
+    // Using important here because otherwise when PowerSelect is focused but cursor is still hovering,
+    // the hovering styles will be applied.
+    border-bottom-color: $borderColors.focus !important
+
+.inlineField
+  .material-input
+    margin-left: 5px;
+    margin-right: 5px;
+
+.material-input__Menu
+  .quick-create,
+  .PowerSelect__Option
+    padding: 4px 8px
+    font-size: 14px;
+    &:hover,
+    &:focus
+      background-color: #F6F6F6
+
+.material-input__datepicker
+  .SingleDatePicker
+    border: none
+    border-bottom: 1px solid $borderColors.default
+    transition: border-color ease-in-out 0.15s
+
+    .SingleDatePicker_picker
+      z-index: 2
+
+    .DateInput
+      width: 100%;
+
+    &:hover
+      border-bottom-color: $borderColors.hover
+
+    .SingleDatePickerInput_calendarIcon
+      padding-top: 0
+      transition: color ease-in-out 0.15s
+      position: absolute;
+      right: -8px;
+      top: -1px;
+      opacity: 0.5;
+      z-index: 1
+
+    .DateInput
+      height: unset;
+      input
+        padding: 5px 0;
+        height: 1.4em
+
+    .DateInput_fang
+      z-index: 3
+
+    .SingleDatePickerInput_clearDate
+      margin-top: -11px;
+      margin-right: 24px;
+      transform: scale(0.7);
+      top: 0;
+      &:hover
+        background: none;
+
+  &.material-input__datepicker-focused
+    .SingleDatePicker
+      border-bottom-color: $borderColors.focus
+
+    .SingleDatePickerInput_calendarIcon
+      color: $borderColors.focus
+      opacity: 1
+
+.PowerSelect__Tether,
+.PowerSelect__Menu
+  &.material-input
+    border-bottom: none

@@ -27,12 +27,21 @@
   }
 
   .Modal__actions {
-    padding-top: 16px;
+    padding-top: 8px;
   }
 }
 
 .Modal--regular {
   max-width: 625px;
+  @media (max-width: 625px) {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+
+.Modal--medium {
+  max-width: 375px;
   @media (max-width: 625px) {
     margin-left: 10px;
     margin-right: 10px;

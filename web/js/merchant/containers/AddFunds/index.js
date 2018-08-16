@@ -30,6 +30,7 @@ export default class AddFundsContainer extends Component {
     this.state = {
       isSaving: false,
       status: {},
+      hasKeys: false,
     };
   }
 
@@ -38,11 +39,15 @@ export default class AddFundsContainer extends Component {
       this.props.user.current,
       key => {
         this.key = key;
+
+        this.setState({
+          hasKeys: true,
+        });
       },
       error => {
         this.setState({
           status: {
-            type: 'info',
+            type: 'warning',
             message: (
               <span>
                 API keys need to be generated before adding funds.{' '}
@@ -182,7 +187,7 @@ export default class AddFundsContainer extends Component {
               class="btn btn-primary"
               text={this.state.isSaving ? 'Adding Funds...' : 'Add Funds'}
               style={{ marginTop: '10px' }}
-              disabled={this.state.isSaving}
+              disabled={!this.state.hasKeys || this.state.isSaving}
               type="button"
               onClick={handleSubmit(this.openCheckout)}
             />

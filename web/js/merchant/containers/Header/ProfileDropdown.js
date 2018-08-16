@@ -6,9 +6,15 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { openModal, closeModal } from 'rzp/modules/modals';
+import Image from 'rzp/ui/Image';
+import ModalHeader from 'rzp/ui/ModalHeader';
+import Group, { GroupItem } from 'rzp/ui/Group';
 
 import { logout, showOrHideTour } from 'merchant/modules/session';
 import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
+import SwitchMerchant, {
+  SwitchMerchantTypeahead,
+} from 'merchant/components/HeaderNav/SwitchMerchant';
 
 @withRouter
 @connect(
@@ -16,6 +22,7 @@ import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
     return {
       ...state.session,
       ...state.config.config,
+      isMobileResolution: state.app.isMobileResolution,
     };
   },
   { logout, closeModal, openModal, showOrHideTour }
@@ -35,8 +42,29 @@ export default class ProfileDropdown extends Component {
 
   submitFeedback = () => {
     this.props.openModal({
-      size: 'small',
       component: <SubmitFeedback analytics={this.props.analytics} />,
+    });
+  };
+
+  openSwitchMerchantModal = () => {
+    const { user, onSwitchMerchant } = this.props;
+
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <div className="switch-merchant-modal-content">
+          <ModalHeader
+            title="Switch Merchant"
+            onCloseClick={this.props.closeModal}
+          />
+          <div className="modal-body">
+            <SwitchMerchantTypeahead
+              user={user}
+              onSwitchMerchant={onSwitchMerchant}
+            />
+          </div>
+        </div>
+      ),
     });
   };
 
@@ -54,12 +82,28 @@ export default class ProfileDropdown extends Component {
   };
 
   render() {
-    let { user, mode, analytics = () => {} } = this.props;
+    let {
+      user,
+      mode,
+      showMobileNav,
+      showGSTModal,
+      isMobileResolution,
+      analytics = () => {},
+    } = this.props;
     let merchant = user.merchants[user.current];
     return (
       <Dropdown closeOnClick={false}>
         <DropdownTrigger class="dropdown-toggle">
-          {user.name || user.user.name} <span class="caret" />
+          {isMobileResolution ? (
+            <span className="merchant-logo-preview">
+              <Image src={user.logo_url}>
+                <img src="/dist/css/assets/business_thumbnail.svg" />
+              </Image>
+            </span>
+          ) : (
+            user.name || user.user.name
+          )}{' '}
+          <span class="caret" />
         </DropdownTrigger>
         <DropdownContent>
           <div class="dropdown-menu ProfileDropdown">
@@ -67,51 +111,61 @@ export default class ProfileDropdown extends Component {
               <div class="media">
                 <div class="media-left">
                   <div class="media-object">
-                    {this.props.logo_url ? (
-                      <img class="img-responsive" src={this.props.logo_url} />
-                    ) : (
-                      <i class="i-business" />
-                    )}
+                    <Image src={user.logo_url}>
+                      <img src="/dist/css/assets/business.svg" />
+                    </Image>
                   </div>
                 </div>
-                <div class="media-body">
+                <div class="media-body merchant-details-container">
                   <div class="merchantname">{merchant.name}</div>
-                  <div>
-                    <small>{merchant.id}</small>
-                    <CustomClipboard
-                      value={merchant.id}
-                      onCopy={() => analytics('Copy - Merchant ID')}
-                    >
-                      <button
-                        class="btn btn-default btn-xs"
-                        style={{ marginLeft: '5px' }}
+                  <Group>
+                    <GroupItem>
+                      <small>{merchant.id}</small>
+                    </GroupItem>
+                    <GroupItem>
+                      <CustomClipboard
+                        value={merchant.id}
+                        onCopy={() => analytics('Copy - Merchant ID')}
                       >
-                        Copy <b>Merchant Id</b>
-                      </button>
-                    </CustomClipboard>
-                  </div>
+                        <button class="btn btn-default btn-xs">
+                          Copy Merchant Id
+                        </button>
+                      </CustomClipboard>
+                    </GroupItem>
+                  </Group>
                 </div>
               </div>
             )}
 
-            <div class="media">
-              <div class="media-left">
-                <div class="media-object">
-                  <i class="i i-account" />
+            {showMobileNav && (
+              <React.Fragment>
+                {Object.keys(user.merchants).length > 1 && (
+                  <div
+                    className="media media-action"
+                    onClick={this.openSwitchMerchantModal}
+                  >
+                    <div className="media-body">Switch Merchant</div>
+                  </div>
+                )}
+                <div className="media media-action" onClick={showGSTModal}>
+                  <div className="media-body">GST Details</div>
                 </div>
-              </div>
-              <div class="media-body">
-                <div>Logged in as</div>
-                <p>
-                  <b>{user.user.email}</b>
-                </p>
-                <button class="btn btn-primary btn-sm" onClick={this.logout}>
-                  Log out
-                </button>
-              </div>
+                <div class="media media-action">
+                  <div class="media-body">
+                    <a target="_blank" href="https://docs.razorpay.com">
+                      Documentation
+                    </a>
+                  </div>
+                </div>
+              </React.Fragment>
+            )}
+
+            <div className="media media-action" onClick={this.submitFeedback}>
+              <div className="media-body">Give feedback or suggestions</div>
             </div>
 
             {mode === 'live' &&
+              !showMobileNav &&
               user.isNewAnalyticsEnabled && (
                 <div
                   class="media media-action"
@@ -126,13 +180,20 @@ export default class ProfileDropdown extends Component {
                 </div>
               )}
 
-            <div class="media media-action" onClick={this.submitFeedback}>
-              <div class="media-left">
-                <div class="media-object">
-                  <i class="i i-help" />
-                </div>
+            <div class="media loggedin-as">
+              <div class="media-body">
+                <div>Logged in as</div>
+                <p className="account-details">
+                  <i class="i i-account" />{' '}
+                  <span title={user.user.email}>{user.user.email}</span>
+                </p>
+                <button
+                  class="btn btn-primary logout-btn"
+                  onClick={this.logout}
+                >
+                  Log out
+                </button>
               </div>
-              <div class="media-body">Give feedback or suggestions</div>
             </div>
           </div>
         </DropdownContent>

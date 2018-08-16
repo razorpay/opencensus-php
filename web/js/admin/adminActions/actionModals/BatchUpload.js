@@ -47,14 +47,16 @@ export default class BatchUpload extends Component {
 
     form = { ...body, ...form };
 
-    return adminFormUpload(form, `/admin/batches`).then(response => {
-      if (response.data.success) {
-        notifySuccess('Batch uploaded successfully!');
-        closeModal();
-      } else {
-        notifyError(response.data.errors[0]);
+    return adminFormUpload(form, `/admin/api/live/admin/batches`).then(
+      response => {
+        if (response.data.success) {
+          notifySuccess('Batch uploaded successfully!');
+          closeModal();
+        } else {
+          notifyError(response.data.errors[0]);
+        }
       }
-    });
+    );
   };
 
   render() {

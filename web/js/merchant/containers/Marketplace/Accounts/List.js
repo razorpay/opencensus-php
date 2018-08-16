@@ -14,6 +14,8 @@ import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { luminateRow } from 'merchant/modules/app';
 
+import { showWhenUtil } from 'merchant/components/ShowWhen';
+
 @connect(state => state.accounts, {
   ...AccountActions,
   ...ModalActions,
@@ -38,19 +40,30 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onAccountCreation = account => {
+    this.onAccountEdit(account);
+    this.showAccountDetailsModal(account); // Open activation modal
+  };
+
+  onAccountEdit = account => {
     // Reset pagination and fetch results of updated pagination
     const paginationSkip = 0;
     this.setState({ skip: paginationSkip });
     this.fetchAccounts(paginationSkip, this.state.count);
-
-    // Open activation modal
-    this.showAccountDetailsModal(account);
   };
 
   showAddAccountModal = () => {
     this.props.openModal({
       size: 'small',
       component: <AccountCreation onSave={this.onAccountCreation} />,
+    });
+  };
+
+  showEditAccountModal = account => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <AccountCreation onSave={this.onAccountEdit} accountData={account} />
+      ),
     });
   };
 
@@ -125,6 +138,11 @@ export default class AccountsListContainer extends ListContainer {
         <AccountsList
           accounts={accounts}
           isLoading={loading}
+          showEditAccountModal={
+            showWhenUtil({ featureEnabled: 'enable_la_dashboard' })
+              ? this.showEditAccountModal
+              : undefined
+          }
           onEdit={this.showAccountDetailsModal}
         />
 

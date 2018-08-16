@@ -17,7 +17,7 @@ export const invoiceStatusMap = {
   next_due: 'label-semi-muted',
 };
 
-export const reusableLinksStatusMap = {
+export const paymentPagesStatusMap = {
   active: 'label-info',
   inactive: 'label-muted',
 };
@@ -90,7 +90,7 @@ const entityMap = {
   payment: paymentStatusMap,
   settlement: settlementStatusMap,
   invoice: invoiceStatusMap,
-  payment_link: reusableLinksStatusMap,
+  payment_link: paymentPagesStatusMap,
   order: orderStatusMap,
   batch: batchUploadStatusMap,
   virtual_account: virtualAccountStatusMap,
@@ -101,7 +101,7 @@ const entityMap = {
 };
 
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);
-export const ReusableLinksStatusLabel = StatusLabel(reusableLinksStatusMap);
+export const PaymentPagesStatusLabel = StatusLabel(paymentPagesStatusMap);
 export const OrderStatusLabel = StatusLabel(orderStatusMap);
 export const PaymentStatusLabel = StatusLabel(paymentStatusMap);
 export const SettlementStatusLabel = StatusLabel(settlementStatusMap);

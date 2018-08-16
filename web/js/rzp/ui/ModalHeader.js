@@ -13,7 +13,10 @@ const ModalHeader = props => (
 );
 
 ModalHeader.propTypes = {
-  title: PropTypes.string.isRequired,
+  title: PropTypes.oneOfType([
+    PropTypes.string.isRequired,
+    PropTypes.node.isRequired,
+  ]),
   onCloseClick: PropTypes.func,
 };
 
