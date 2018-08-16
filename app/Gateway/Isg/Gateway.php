@@ -227,6 +227,7 @@ class Gateway extends Base\Gateway
             $verify->amountMismatch = false;
         }
     }
+
     protected function setVerifyStatus(Verify $verify)
     {
         $this->checkApiSuccess($verify);
