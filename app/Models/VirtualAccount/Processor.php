@@ -12,31 +12,14 @@ use RZP\Models\VirtualAccount;
 abstract class Processor extends Base\Core
 {
     protected $virtualAccount;
-    protected $provider;
-    protected $merchant;
     protected $validator;
     protected $receiver;
 
-    public function __construct(string $provider = null)
+    public function __construct()
     {
         parent::__construct();
 
         $this->validator = new Validator;
-
-        //
-        // These flows are initiated by the provider bank hitting
-        // our APIs. Provider banks are currently authenticated by
-        // registering them as apps, and using AppAuth.
-        //
-        // For manual insertion of a bank transfer, it
-        // is also possible to give provider as input
-        //
-        if ($provider === null)
-        {
-            $provider = $this->app['basicauth']->getInternalApp();
-        }
-
-        $this->provider = $provider;
     }
 
     /**
