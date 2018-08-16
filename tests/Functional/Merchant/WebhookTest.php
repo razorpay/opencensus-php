@@ -199,7 +199,7 @@ class WebhookTest extends TestCase
 
         $this->assertEquals(['Razorpay-Webhook/v1'], $request->getHeader('User-Agent'));
         $this->assertEquals(['application/json'], $request->getHeader('Content-Type'));
-        $this->assertEquals('http://example.com/v1/dummy/route', (string) $request->getUri());
+        $this->assertEquals('http://webhook.com/v1/dummy/route', (string) $request->getUri());
 
         $body = (string) $request->getBody();
         $decodedBody = json_decode($body, true);
@@ -365,7 +365,7 @@ class WebhookTest extends TestCase
 
         $events = $response['items'][0]['events'];
 
-        $this->assertArrayHasKey('subscription.charged', $events);;
+        $this->assertArrayHasKey('subscription.charged', $events);
     }
 
     public function testOrderPaidWebhookEventData()
@@ -947,7 +947,7 @@ class WebhookTest extends TestCase
         $input = [
             'entity_type' => 'application',
             'entity_id'   => $appId,
-            'url'         => 'http://example.com/v1/dummy/route',
+            'url'         => 'http://webhook.com/v1/dummy/route',
         ];
 
         if ($defaultMerchant === false)
@@ -962,7 +962,7 @@ class WebhookTest extends TestCase
 
     protected function createMerchantWebhook(array $params = [])
     {
-        $input = ['url' => 'http://sample.com/v1/dummy/route'];
+        $input = ['url' => 'http://webhook.com/v1/dummy/route'];
 
         $input = array_merge($input, $params);
 
