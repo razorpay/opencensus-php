@@ -1,16 +1,21 @@
 import React, { Component } from 'react';
 import fetch from 'common/fetch';
-import { adminFetch, adminPut } from 'common/fetch';
+import {
+  adminFetch,
+  adminFormUpload,
+  adminFormUpload2,
+  adminPut,
+  adminDelete,
+} from 'common/fetch';
 import OrgForm from './OrganizationForm';
 import { notifyError, notifySuccess } from 'common/modal';
-
-import { adminDelete } from 'common/fetch';
 
 export default class EditOrg extends Component {
   state = {
     permissions: null,
     selectedPerms: null,
     workflowPerms: null,
+    filesURL: {},
   };
 
   prepareOrgs = props => {
@@ -37,7 +42,8 @@ export default class EditOrg extends Component {
     Promise.all(requests).then(([allPerms, org, assignablePerms]) => {
       let permissions = allPerms.items,
         selectedPerms = {},
-        workflowPerms = {};
+        workflowPerms = {},
+        filesURL = {};
       //If add new, then assignable perms as selected
       if (!orgId) {
         assignablePerms.items.forEach(aPerm => {
@@ -50,6 +56,12 @@ export default class EditOrg extends Component {
         org.workflow_permissions.forEach(wPerm => {
           workflowPerms[wPerm.id] = true;
         });
+
+        filesURL = {
+          main_logo_url: org.main_logo_url,
+          invoice_logo_url: org.invoice_logo_url,
+          login_logo_url: org.login_logo_url,
+        };
       }
 
       this.org = org || {};
@@ -58,6 +70,7 @@ export default class EditOrg extends Component {
         selectedPerms,
         workflowPerms,
         permissions,
+        filesURL,
         pending: false,
       });
     });
@@ -129,7 +142,7 @@ export default class EditOrg extends Component {
   };
 
   handleSave = body => {
-    let { selectedPerms, workflowPerms } = this.state;
+    let { selectedPerms, workflowPerms, filesURL } = this.state;
 
     body.permissions = [];
     body.workflow_permissions = [];
@@ -152,7 +165,15 @@ export default class EditOrg extends Component {
     }
 
     if (body.id) {
+      //delete unwanted props
       delete body.id;
+
+      ['login_logo_url', 'main_logo_url', 'invoice_logo_url'].map(prop => {
+        if (filesURL[prop]) {
+          body[prop] = filesURL[prop];
+        }
+      });
+
       return adminPut({
         url: `live/orgs/${this.org.id}`,
         content_type: 'application/json',
@@ -173,19 +194,40 @@ export default class EditOrg extends Component {
         }
       }
 
-      return fetch({
-        url: '/admin/api/live/orgs',
-        method: 'post',
-        data: body,
-      }).then(data => {
-        if (data) {
+      //- for array of permissions
+      return adminFormUpload2(body, '/admin/api/live/orgs').then(resp => {
+        if (resp.data.success) {
           notifySuccess('Org successfully added!');
           setTimeout(() => {
-            this.props.history.replace(`/orgs/${data.id}`);
+            this.props.history.replace(`/orgs/${resp.data.data.id}`);
           }, 1000);
+        } else {
+          notifyError(resp.data.errors[0]);
         }
       });
     }
+  };
+
+  handleFileUpload = (file, fileName = '', type = '') => {
+    const { filesURL } = this.state;
+    let fileData = {
+      [fileName]: file,
+      type,
+    };
+
+    return adminFormUpload(fileData, `/admin/org/${this.org.id}`).then(resp => {
+      if (resp.data.success) {
+        notifySuccess('File uploaded successfully');
+        this.setState({
+          filesURL: {
+            ...filesURL,
+            [`${fileName}_url`]: resp.data.data,
+          },
+        });
+      } else {
+        notifyError(resp.data.errors[0]);
+      }
+    });
   };
 
   _fetchFn = url => adminFetch(url);
@@ -203,6 +245,7 @@ export default class EditOrg extends Component {
           handleAllSelect={this.handleAllSelect}
           handlePermissionSelect={this.handlePermissionSelect}
           handleWorkflowPermissionSelect={this.handleWorkflowPermissionSelect}
+          onFileUpload={this.handleFileUpload}
         />
       </div>
     );

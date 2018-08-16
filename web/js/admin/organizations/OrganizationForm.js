@@ -1,6 +1,6 @@
 import React from 'react';
 import Form from 'ui/Form';
-import Field, { SelectField, CheckField } from 'ui/Field';
+import Field, { FileField, SelectField, CheckField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import PermissionsList from './PermissionsList';
 
@@ -13,12 +13,15 @@ export default function OrgForm({
   handlePermissionSelect,
   handleWorkflowPermissionSelect,
   handleSave,
+  onFileUpload,
+  filesURL,
 }) {
   return (
     <div class="box">
       <header>{org.id ? `Edit Org - ${org.id}` : 'Add an Organization'}</header>
       <Form onSubmit={handleSave}>
         <div class="orgs-form-container">
+          <header>Orgs Details:</header>
           <input
             type="hidden"
             name="id"
@@ -82,72 +85,112 @@ export default function OrgForm({
             required
             defaultValue={org.signature_email}
           />
-
-          {org.id
-            ? null
-            : [
-                <Field
-                  label="Full Name"
-                  name="admin.name"
-                  key="name"
-                  required
-                />,
-                <Field
-                  label="User Name"
-                  name="admin.username"
-                  key="1"
-                  required
-                />,
-                <Field
-                  label="Password"
-                  type="password"
-                  name="admin.password"
-                  key="2"
-                  required
-                />,
-                <Field
-                  label="Re-Type password"
-                  type="password"
-                  name="admin.password_confirmation"
-                  key="3"
-                  required
-                />,
-                <Field
-                  label="Employee Code"
-                  name="admin.employee_code"
-                  key="4"
-                  required
-                />,
-                <Field
-                  label="Department Code"
-                  name="admin.department_code"
-                  key="5"
-                  required
-                />,
-                <Field
-                  label="Branch Code"
-                  name="admin.branch_code"
-                  key="6"
-                  required
-                />,
-                <Field
-                  label="Location Code"
-                  name="admin.location_code"
-                  key="7"
-                  required
-                />,
-                <Field
-                  label="Supervisor Code"
-                  name="admin.supervisor_code"
-                  key="8"
-                  required
-                />,
-              ]}
           <CheckField
             label="Allow Sign Up"
             defaultChecked={org.allow_sign_up | 0}
             name="allow_sign_up"
           />
+
+          {org.id ? (
+            <div class="logo-container">
+              <header>Upload/Select Logo:</header>
+              <div class="orgs-logo">
+                {filesURL.login_logo_url && (
+                  <img src={filesURL.login_logo_url} width="75" height="75" />
+                )}
+                <FileField
+                  name="login_logo_url"
+                  label="Login Logo"
+                  class="orgs-file"
+                  accept="image/jpeg,image/jpg,image/png"
+                  onChange={e =>
+                    onFileUpload(e.target.files[0], 'login_logo', 'login')
+                  }
+                />
+              </div>
+              <div class="orgs-logo">
+                {filesURL.main_logo_url && (
+                  <img src={filesURL.main_logo_url} width="75" height="75" />
+                )}
+                <FileField
+                  name="main_logo_url"
+                  label="Main (Dashboard) Logo"
+                  class="orgs-file"
+                  accept="image/jpeg,image/jpg,image/png"
+                  onChange={e =>
+                    onFileUpload(e.target.files[0], 'main_logo', 'main')
+                  }
+                />
+              </div>
+              <div class="orgs-logo">
+                {filesURL.invoice_logo_url && (
+                  <img src={filesURL.invoice_logo_url} width="75" height="75" />
+                )}
+                <FileField
+                  name="invoice_logo_url"
+                  label="Invoice Logo"
+                  class="orgs-file"
+                  accept="image/jpeg,image/jpg,image/png"
+                  onChange={e =>
+                    onFileUpload(e.target.files[0], 'invoice_logo', 'invoice')
+                  }
+                />
+              </div>
+            </div>
+          ) : (
+            <div class="org-admin">
+              <header>Admin Details:</header>
+              <Field label="Admin Name" name="admin[name]" required />
+              <Field label="User Name" name="admin[username]" required />
+              <Field
+                label="Password"
+                type="password"
+                name="admin[password]"
+                required
+              />
+              <Field
+                label="Re-Type password"
+                type="password"
+                name="admin[password_confirmation]"
+                required
+              />
+              <input
+                type="hidden"
+                label="Employee Code"
+                name="admin[employee_code]"
+                value="E001"
+                required
+              />
+              <input
+                type="hidden"
+                label="Department Code"
+                name="admin[department_code]"
+                value="D001"
+                required
+              />
+              <input
+                type="hidden"
+                label="Branch Code"
+                name="admin[branch_code]"
+                value="B001"
+                required
+              />
+              <input
+                type="hidden"
+                label="Location Code"
+                name="admin[location_code]"
+                value="L001"
+                required
+              />
+              <input
+                type="hidden"
+                label="Supervisor Code"
+                name="admin[supervisor_code]"
+                value="S001"
+                required
+              />
+            </div>
+          )}
           <PermissionsList
             permissions={permissions}
             workflowPerms={workflowPerms}
