@@ -30,7 +30,7 @@ class Type
 
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
-    const ISG_REFUND                        = 'isg_bharatqr_refund';
+    const ISG_REFUND                        = 'isg_refund';
 
     const AXIS_NETBANKING_CLAIMS            = 'axis_netbanking_claims';
 

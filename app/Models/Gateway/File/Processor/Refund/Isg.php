@@ -45,11 +45,7 @@ class Isg extends Base
 
         $end = $this->gatewayFile->getEnd();
 
-        $refunds = $this->repo->refund->findBetweenTimestampsForGateway(
-            $begin,
-            $end,
-            self::GATEWAY
-        );
+        $refunds = $this->repo->refund->findBetweenTimestampsForGateway($begin, $end, self::GATEWAY);
 
         return $refunds;
     }
@@ -58,15 +54,13 @@ class Isg extends Base
     {
         foreach ($data as $row)
         {
-            $paymentDate = Carbon::createFromTimestamp(
-                $row['payment']['created_at'],
-                Timezone::IST)
-                ->format('YmdHis');
+            $paymentDate = Carbon::createFromTimestamp($row['payment']['created_at'],
+                                                       Timezone::IST)
+                                                       ->format('YmdHis');
 
-            $refundDate = Carbon::createFromTimestamp(
-                $row['refund']['created_at'],
-                Timezone::IST)
-                ->format('YmdHis');
+            $refundDate = Carbon::createFromTimestamp($row['refund']['created_at'],
+                                                      Timezone::IST)
+                                                      ->format('YmdHis');
 
             $formattedData[] = [
                 self::REFUND_ID                     => $row['refund']['id'],
@@ -86,9 +80,9 @@ class Isg extends Base
     protected function formatDataForMail(array $data)
     {
         $file = $this->gatewayFile
-                ->files()
-                ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                ->first();
+                     ->files()
+                     ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+                     ->first();
 
         $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 

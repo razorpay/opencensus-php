@@ -32,19 +32,21 @@ class IsgRefundFileTest extends TestCase
         $this->fixtures->create('terminal:bharat_qr_isg_terminal');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
     }
 
     public function testBharatQrIsgRefundFile()
     {
-        Mail::fake();
+        //Mail::fake();
 
-        $response1 = $this->createBharatQrPayment($this->getPaymentContentData());
+        $this->createBharatQrPayment($this->getPaymentContentData());
 
         $payment1 = $this->getLastEntity('payment', true);
 
         $fullRefund = $this->refundPayment($payment1['id']);
 
-        $response2 = $this->createBharatQrPayment($this->getPaymentContentData(300));
+        $this->createBharatQrPayment($this->getPaymentContentData(300));
 
         $payment2 = $this->getLastEntity('payment', true);
 
@@ -64,7 +66,7 @@ class IsgRefundFileTest extends TestCase
         $time = Carbon::now(Timezone::IST)->format('dmY');
 
         $expectedFilesContent = [
-            'type' => 'isg_bharatqr_refund',
+            'type' => 'isg_refund',
             'location' => 'Refund' . '_' . $time . '.csv',
         ];
 
@@ -102,7 +104,7 @@ class IsgRefundFileTest extends TestCase
             'SECONDARY_ID'         => 'reference_id',
             'MERCHANT_PAN'         => '4403844012084006',
             'TXN_ID'               => random_int(1111111111111,9999999999999),
-            'TXN_DATE_TIME'        =>  Carbon:: now()->format('Y-m-d H:i:s'),
+            'TXN_DATE_TIME'        => Carbon:: now()->format('Y-m-d H:i:s'),
             'TXN_AMOUNT'           => $this->formatAmount($amount),
             'AUTH_CODE'            => 'ab3456',
             'RRN'                  => random_int(111111111111,999999999999),
