@@ -19,7 +19,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 class Metric
 {
     // Counter type metric names only for gateway api calls
-    const GATEWAY_REQUEST_COUNT          = 'gateway_request_count';
+    const GATEWAY_REQUEST_COUNT          = 'gateway_request_count_v2';
 
     // class constants for usage in the class
     const SUCCESS                        = 'success';
@@ -48,7 +48,8 @@ class Metric
     const EXCLUDED_ACTIONS = [
         Payment\Action::VERIFY,
         Payment\Action::GENERATE_REFUNDS,
-        Payment\Action::GENERATE_CLAIMS
+        Payment\Action::GENERATE_CLAIMS,
+        Payment\Action::VALIDATE_VPA
     ];
 
     protected $trace;
