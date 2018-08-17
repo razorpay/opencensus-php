@@ -57,16 +57,9 @@ class Repository extends Base\Repository
 
     public function fetchReversalsList($skip = 0, $take = 100, $entityType = Entity::TRANSFER)
     {
-        $reversalColumns = $this->dbColumn('*');
-
-        $reversalsId = $this->repo->reversal->dbColumn(Reversal\Entity::ID);
-
-        $reversalEntityType = $this->repo->reversal->dbColumn(Reversal\Entity::ENTITY_TYPE);
-
         return $this->newQuery()
-                    ->select($reversalColumns)
-                    ->where($reversalEntityType, $entityType)
-                    ->orderBy($reversalsId, 'desc')
+                    ->where(Reversal\Entity::ENTITY_TYPE, $entityType)
+                    ->orderBy(Reversal\Entity::ID, 'desc')
                     ->skip($skip)
                     ->take($take)
                     ->get();

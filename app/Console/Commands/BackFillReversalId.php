@@ -19,7 +19,7 @@ class BackFillReversalId extends Command
     protected $signature = 'rzp:backfill:reversal_id
                             {mode           : Database & application mode the command will run in (test|live)}
                             {--skip=0       : Skip offset (eg. skip first 100 rows) }
-                            {--take=5000    : Take count (eg. 1000 at a time) }
+                            {--take=1000    : Take count (eg. 1000 at a time) }
                             {--db_save      : Dry run the command}';
 
     protected $description = 'Back fills reversal_id in to refunds table for further consumption';
@@ -53,11 +53,9 @@ class BackFillReversalId extends Command
 
     protected function init()
     {
-        \Database\DefaultConnection::set($this->mode);
-
         $this->app = App::getFacadeRoot();
 
-        $this->app['rzp.mode'] = $this->mode;
+        $this->app['basicauth']->setModeAndDbConnection($this->mode);
 
         $this->trace = $this->app['trace'];
         $this->repo = $this->app['repo'];
@@ -65,19 +63,31 @@ class BackFillReversalId extends Command
 
     protected function process()
     {
+        $this->trace->info(
+            TraceCode::MISC_TRACE_CODE,
+            [
+                'command' => 'BackFillReversalId',
+                'mode'    => $this->mode,
+                'skip'    => $this->skip,
+                'take'    => $this->take,
+                'db_save' => $this->dbSave,
+            ]
+        );
+
         $reversals = $this->repo->reversal->fetchReversalsList($this->skip, $this->take);
 
         foreach ($reversals as $reversal)
         {
             $transfer = $reversal->entity;
 
-            $merchantId = $transfer->to->id;
+            $merchantId = $transfer->getToId();
 
             $payment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $merchantId);
 
             $refunds = $payment->refunds()
                                ->where(Refund\Entity::AMOUNT, $reversal->getAmount())
                                ->whereNull(Refund\Entity::REVERSAL_ID)
+                               ->orderBy(Refund\Entity::ID, 'desc')
                                ->get();
 
             if (count($refunds) === 0)
@@ -86,6 +96,7 @@ class BackFillReversalId extends Command
                     TraceCode::REVERSAL_REFUND_NOT_AVAILABLE,
                     [
                         'reversal_id' => $reversal->getId(),
+                        'db_save'     => $this->dbSave,
                     ]);
                 continue;
             }
@@ -97,6 +108,7 @@ class BackFillReversalId extends Command
                 [
                     'reversal_id' => $reversal->getId(),
                     'refund_id'   => $refund->getId(),
+                    'db_save'     => $this->dbSave,
                 ]
             );
 
