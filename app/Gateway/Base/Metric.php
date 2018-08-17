@@ -294,6 +294,8 @@ class Metric
     {
         try
         {
+            $action = snake_case($action);
+
             if (in_array($action, self::EXCLUDED_ACTIONS, true) === false)
             {
                 $dimensions = $this->getDimensions($action, $input);
