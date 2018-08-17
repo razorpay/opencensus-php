@@ -86,11 +86,29 @@ class SubscriptionProxy
     {
         $url = $request->path();
 
+        $body = [];
+
         if ($request->getQueryString() !== null)
         {
-            $url .= $request->getQueryString();
+            $url .= '?' . $request->getQueryString();
         }
 
+        if ($request->post() !== null)
+        {
+            $body = $request->post();
+        }
+
+        $headers = $this->getHeaders();
+
+        $method = $request->method();
+
+        $response = $this->sendRequestAndParseResponse($url, $method, $body, $headers);
+
+        return $response;
+    }
+
+    protected function getHeaders(): array
+    {
         $headers = [];
 
         if ($this->ba->getMerchantId() !== null)
@@ -101,18 +119,7 @@ class SubscriptionProxy
         $headers['X-Razorpay-Mode'] = $this->ba->getMode();
         $headers['X-Razorpay-Auth'] = $this->ba->getAuthType();
 
-        $method = $request->method();
-
-        $body = [];
-
-        if ($request->post() !== null)
-        {
-            $body = $request->post();
-        }
-
-        $response = $this->sendRequestAndParseResponse($url, $method, $body, $headers);
-
-        return $response;
+        return $headers;
     }
 
     protected function sendRequestAndParseResponse(
