@@ -997,20 +997,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFUND_SOURCE);
     }
 
-    public function getDisplayName()
-    {
-        $displayName = $this->getAttribute(self::DISPLAY_NAME);
-
-        $merchantName = $this->getAttribute(self::NAME);
-
-        if (empty($displayName) === false)
-        {
-            return $displayName . " - ". $merchantName;
-        }
-
-        return $merchantName;
-    }
-
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
     {
         $relativeLogoUrl = $this->getLogoUrl();
@@ -1610,7 +1596,7 @@ class Entity extends Base\PublicEntity
             self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
             self::LOGO_URL       => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
-            self::DISPLAY_NAME   => $this->getDisplayName(),
+            self::DISPLAY_NAME   => $this->getAttribute(self::DISPLAY_NAME),
             self::PARTNER_TYPE   => $this->getAttribute(self::PARTNER_TYPE),
             self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
