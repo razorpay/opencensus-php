@@ -137,8 +137,7 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
-        throw new Exception\RuntimeException(
-            'Verify is not implemented');
+        return $this->callAuthenticationGateway($input);
     }
 
     protected function callAuthenticationGateway(array $input)

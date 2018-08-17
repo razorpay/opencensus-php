@@ -47,10 +47,14 @@ class Gateway extends Base\Gateway
 
         list($request, $gatewayPayment) = $this->getMandateCreationRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_MANDATE_REQUEST, [
-            'gateway' => $this->gateway,
-            'payment_id' => $input['payment']['id'],
-            'request' => $request]);
+        $this->trace->info(
+            TraceCode::GATEWAY_MANDATE_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'request'    => $request
+            ]
+        );
 
         $response = $this->sendGatewayRequest($request);
 
@@ -58,10 +62,13 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $response);
 
-        $this->trace->info(TraceCode::GATEWAY_MANDATE_RESPONSE, [
-            'gateway'    => $this->gateway,
-            'payment_id' => $input['payment']['id'],
-            'response'   => $response]
+        $this->trace->info(
+            TraceCode::GATEWAY_MANDATE_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'response'   => $response
+            ]
         );
 
         if ($response[ResponseFields::STATUS] !== Status::SUCCESS)
@@ -144,6 +151,15 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
     protected function getRedirectRequestArray($input, $response)
     {
         $request = [
@@ -154,10 +170,13 @@ class Gateway extends Base\Gateway
             ],
         ];
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, [
-            'gateway'    => $this->gateway,
-            'payment_id' => $input['payment']['id'],
-            'request'   => $request]
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'request'    => $request
+            ]
         );
 
         return $request;
