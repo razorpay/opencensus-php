@@ -87,4 +87,56 @@ class ThrottleTest extends TestCase
         $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:block' => 1]);
         $this->startTest($this->testData[__FUNCTION__.'2']);
     }
+
+    public function testGetOrderWhenIPBlockedGlobally()
+    {
+        // Case 1: Blocks GET /invoice route for test global for non blacklisted IP, so GET /orders should pass
+        $this->setRedisGlobalSettings([K::SKIP => 0, K::MOCK => 1, K::BLOCK => 0, K::BLOCKED_IP_LIST => '10.0.123.124'.K::LIST_DELIMITER.'10.0.123.125']);
+        $this->startTest($this->testData[__FUNCTION__.'1']);
+
+        // Case 2: Blocks GET /orders route too for test global for current blacklisted IP, so GET /orders should error
+        $this->setRedisGlobalSettings([K::SKIP => 0, K::MOCK => 1, K::BLOCK => 0, K::BLOCKED_IP_LIST => '10.0.123.123'.K::LIST_DELIMITER.'10.0.123.124']);
+        $this->startTest($this->testData[__FUNCTION__.'2']);
+    }
+
+    public function testGetOrderWhenIPBlockedForTestMerchant()
+    {
+        // Case 1: Blocks GET /invoice route for test mid, so GET /orders should pass
+        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:invoice_fetch_multiple:'.K::BLOCKED_IP_LIST => '10.0.123.123'.K::LIST_DELIMITER.'10.0.123.125']);
+        $this->startTest($this->testData[__FUNCTION__.'1']);
+
+        // Case 2: Blocks GET /orders route too for test mid, so GET /orders should error
+        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:'.K::BLOCKED_IP_LIST => '10.0.123.123'.K::LIST_DELIMITER.'10.0.123.124']);
+        $this->startTest($this->testData[__FUNCTION__.'2']);
+    }
+
+    public function testGetOrderWhenUABlockedGlobally()
+    {
+        // Case 1: Blocks GET /invoice route for test global for non blacklisted UA, so GET /orders should pass
+        $this->setRedisGlobalSettings([K::SKIP => 0, K::MOCK => 1, K::BLOCK => 0, K::BLOCKED_UA_LIST => 'Razorpay UA'.K::LIST_DELIMITER.'CurlBOT']);
+        $this->startTest($this->testData[__FUNCTION__.'1']);
+
+        // Case 2: Blocks GET /orders route too for test global for current UA, so GET /orders should error
+        $this->setRedisGlobalSettings([K::SKIP => 0, K::MOCK => 1, K::BLOCK => 0, K::BLOCKED_UA_LIST => 'Razorpay UA'.K::LIST_DELIMITER.'CurlBOT']);
+        $this->startTest($this->testData[__FUNCTION__.'2']);
+
+        // Case 3: Blocks GET /orders route too for test global for partial match of blacklisted UA, so GET /orders should error
+        $this->setRedisGlobalSettings([K::SKIP => 0, K::MOCK => 1, K::BLOCK => 0, K::BLOCKED_UA_LIST => 'Razorpay UA'.K::LIST_DELIMITER.'CurlBOT']);
+        $this->startTest($this->testData[__FUNCTION__.'3']);
+    }
+
+    public function testGetOrderWhenUABlockedForTestMerchant()
+    {
+        // Case 1: Blocks GET /invoice route for test mid non blacklisted UA, so GET /orders should pass
+        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:invoice_fetch_multiple:'.K::BLOCKED_UA_LIST => 'Razorpay UA'.K::LIST_DELIMITER.'CurlBOT']);
+        $this->startTest($this->testData[__FUNCTION__.'1']);
+
+        // Case 2: Blocks GET /orders route too for test mid, blacklisted UA, so GET /orders should error
+        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:'.K::BLOCKED_UA_LIST => 'Razorpay UA'.K::LIST_DELIMITER.'CurlBOT']);
+        $this->startTest($this->testData[__FUNCTION__.'2']);
+
+        // Case 3: Blocks GET /orders route too for test mid, partial match of blacklisted UA, so GET /orders should error
+        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:'.K::BLOCKED_UA_LIST => 'Razorpay UA'.K::LIST_DELIMITER.'CurlBOT']);
+        $this->startTest($this->testData[__FUNCTION__.'3']);
+    }
 }

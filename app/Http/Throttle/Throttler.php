@@ -126,6 +126,50 @@ class Throttler
         {
             throw new BlockException(null, ['key' => $this->getThrottleKey()]);
         }
+        else {
+            // Check here to block based on IP and UserAgent
+            $this->attemptBlock();
+        }
+    }
+
+    protected function attemptBlock()
+    {
+        $ip = $this->reqCtx->getRequest()->ip();
+        $userAgent = $this->reqCtx->getRequest()->userAgent();
+
+        $blockedIPList    = $this->getBlockedIPList();
+        if($blockedIPList)
+        {
+            $blockedIPList = trim($blockedIPList, K::LIST_DELIMITER);
+            $blockedIPList = K::LIST_DELIMITER.$blockedIPList.K::LIST_DELIMITER;
+
+            # For IP check exact match
+            $ip = K::LIST_DELIMITER.$ip.K::LIST_DELIMITER;
+            if($this->contains($ip, $blockedIPList))
+            {
+                throw new BlockException(null, ['key' => $this->getThrottleKey()]);
+            }
+        }
+
+        $blockedUserAgentList = $this->getBlockedUserAgentList();
+        if($blockedUserAgentList)
+        {
+            $blockedUserAgentList = trim($blockedUserAgentList, K::LIST_DELIMITER);
+            $blockedUserAgentList = K::LIST_DELIMITER.$blockedUserAgentList.K::LIST_DELIMITER;
+
+            # Match the first part of the UA
+            $userAgent = K::LIST_DELIMITER.$userAgent;
+            if($this->contains($userAgent, $blockedUserAgentList))
+            {
+                throw new BlockException(null, ['key' => $this->getThrottleKey()]);
+            }
+        }
+
+    }
+
+    protected function contains($needle, $haystack)
+    {
+        return strpos($haystack, $needle) !== false;
     }
 
     protected function attemptThrottleIfApplicable()
@@ -232,7 +276,27 @@ class Throttler
         return $this->getThrottleValue(K::MAX_BUCKET_SIZE, K::DEFAULT_MAX_BUCKET_SIZE);
     }
 
+    protected function getBlockedIPList(): string
+    {
+        return $this->getThrottleValueString(K::BLOCKED_IP_LIST, K::DEFAULT_BLOCKED_IP_LIST);
+    }
+
+    protected function getBlockedUserAgentList()
+    {
+        return $this->getThrottleValueString(K::BLOCKED_UA_LIST, K::DEFAULT_BLOCKED_UA_LIST);
+    }
+
     protected function getThrottleValue(string $key, int $default): int
+    {
+        return $this->getThrottle( $key,  $default);
+    }
+
+    protected function getThrottleValueString(string $key, int $default)
+    {
+        return $this->getThrottle( $key,  $default);
+    }
+
+    protected function getThrottle(string $key, int $default)
     {
         //
         // Redis data structures which is used in cascading fashion to get
@@ -261,6 +325,9 @@ class Throttler
         //      <mode>:<auth>:<proxy>:lrv:           2
         //      <mode>:<auth>:<proxy>:lrd:           1
         //      <mode>:<auth>:<proxy>:mbs:           30
+        //
+        //      <mode>:<auth>:<proxy>:ipList:        ip1||ip2||ip3
+        //      <mode>:<auth>:<proxy>:userAgentList: ua1||ua2||ua3
         //
         //      // Per auth, per route
         //      <mode>:<auth>:<proxy>:<route>:skip:  0

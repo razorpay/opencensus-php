@@ -37,6 +37,9 @@ final class Constant
     const LEAK_RATE_VALUE            = 'lrv';
     const LEAK_RATE_DURATION         = 'lrd';
     const MAX_BUCKET_SIZE            = 'mbs';
+    const BLOCKED_IP_LIST            = 'blockedIpList';
+    const BLOCKED_UA_LIST            = 'blockedUserAgentList';
+    const LIST_DELIMITER             = '||';
 
     const DEFAULT_BLOCK              = false;
     const DEFAULT_SKIP               = true;
@@ -44,4 +47,6 @@ final class Constant
     const DEFAULT_LEAK_RATE_VALUE    = 2;
     const DEFAULT_LEAK_RATE_DURATION = 1;
     const DEFAULT_MAX_BUCKET_SIZE    = 30;
+    const DEFAULT_BLOCKED_IP_LIST    = 0;
+    const DEFAULT_BLOCKED_UA_LIST    = 0;
 }

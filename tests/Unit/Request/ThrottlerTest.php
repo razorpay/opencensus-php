@@ -142,6 +142,25 @@ class ThrottlerTest extends TestCase
         $throttlerMock->throttle();
     }
 
+    /**
+     * When there is redis connection error:
+     * - Must not trigger attemptBlock
+     * - Must not throw any exception
+     */
+    public function testAttemptBlockWhenRedisConnectionError()
+    {
+        $this->invokeRequestCaseAndBindNewContext('privateRoute');
+
+        $throttlerMock = $this->createThrottlerMock(['attemptBlock', 'initRedisConnection']);
+        $throttlerMock->expects($this->once())
+            ->method('initRedisConnection')
+            ->will($this->throwException(new \Exception));
+        $throttlerMock->expects($this->never())
+            ->method('attemptBlock');
+
+        $throttlerMock->throttle();
+    }
+
     public function testAssertThrottleKeysPickForInvoiceSendNotification()
     {
         $this->invokeRequestCaseAndBindNewContext(
