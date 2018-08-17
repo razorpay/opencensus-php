@@ -40,10 +40,10 @@ class ReconcilationFields
 
     const INTERCHANGE_CATEGORY       = 'Interchange Category';
 
-    //Determines if its domestic/international
+    // Determines if its domestic/international
     const DESTINATION                = 'Destination';
 
-    //Card Type
+    // Card Type
     const CARD_TYPE                  = 'Card Type';
 
     const PAYMENT_AGGREGATOR_ID      = 'Merchant Aggregator ID';
@@ -134,7 +134,7 @@ class ReconcilationFields
 
     const UDF_16                     = 'UDF 16';
 
-    //The date actually on which payment got settled
+    // The date actually on which payment got settled
     const PAYMENT_DATE               = 'Payment Date';
 
     const TRANSACTION_STATUS         = 'Transaction Status';

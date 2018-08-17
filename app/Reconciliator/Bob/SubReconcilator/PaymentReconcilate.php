@@ -31,7 +31,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'info_code'          => Base\InfoCode::AMOUNT_MISMATCH,
+                    'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
                     'message'           => 'Payment amount mismatch',
                     'expected_amount'   => $paymentAmount,
                     'currency'          => $this->payment->getCurrency(),
@@ -79,8 +79,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     }
 
     /**
-     * Its is present as Retrieval Reference Number in recon file
-     * It should be set as ref setReferenceNumberInGateway
+     * It is present as Retrieval Reference Number in recon file
+     * It should be set as ref setReference Number In Gateway
      * in the gateway entity.
      * @param $row
      * @return string
@@ -92,7 +92,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     /**
      * Since we need to update rrn we would need gatewayPayment
-     * Fetching this based on id because recon has failed payment also
      * @param $row
      * @return string
      */
@@ -116,7 +115,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getCardDetails($row)
     {
         return [
-            Base\Reconciliate::CARD_TYPE  => $this->getCardType($row),
+            BaseReconciliate::CARD_TYPE  => $this->getCardType($row),
             BaseReconciliate::CARD_LOCALE => $this->getCardLocale($row),
             BaseReconciliate::ISSUER      => $this->getIssuer($row),
             BaseReconciliate::CARD_TRIVIA => $this->getCardTrivia($row),
@@ -150,7 +149,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     }
 
     /**
-     * Returns if the card is international or domestic. The header would be domestic. DOMESTIC
+     * Returns if the card is international or domestic.
      * @param array $row
      * @return string
      */
@@ -204,7 +203,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     }
 
     /**
-     * Returns the service tax gst +csf tax. csf tax is usually zero
+     * Returns the service tax gst + csf tax. csf tax is usually zero
      * @param $row
      * @return integer
      */
@@ -219,13 +218,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $lateSettelementFee = $row[ReconcilationFields::LATE_SETTLEMENT_FEE_AMOUNT];
 
-        $rrfAmount  = $row[ReconcilationFields::RRF_AMOUNT];
+        $rrfAmount = $row[ReconcilationFields::RRF_AMOUNT];
 
         $msfAmount = abs($row[ReconcilationFields::MSF_AMOUNT]);
 
         $tax = $this->getGatewayServiceTax($row);
 
-        $fee = $lateSettelementFee + $rrfAmount + $msfAmount +$tax;
+        $fee = $lateSettelementFee + $rrfAmount + $msfAmount + $tax;
 
         return Base\Helper::getIntegerFormattedAmount($fee);
     }
@@ -235,12 +234,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @param $row
      * @return string|null
      */
-    protected function getGatewayTransactionId($row)
+    protected function getGatewayTransactionId(array $row)
     {
         return $row[ReconcilationFields::PG_TRANSACTION_ID] ?? null;
     }
 
-    protected function getGatewaySettledAt($row)
+    protected function getGatewaySettledAt(array $row)
     {
         if(empty($row[ReconcilationFields::PAYMENT_DATE]) === false)
         {
@@ -253,6 +252,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         if (empty($row[ReconcilationFields::AUTH_CODE]) === true)
         {
             $this->reportMissingColumn($row, ReconcilationFields::AUTH_CODE);
+
             return null;
         }
 

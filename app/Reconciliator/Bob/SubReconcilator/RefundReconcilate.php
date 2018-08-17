@@ -23,9 +23,9 @@ class RefundReconciliate extends Base\RefundReconciliate
                     ->findOrFailRefundByRefundId($refundId);
     }
 
-    protected function getGatewaySettledAt($row)
+    protected function getGatewaySettledAt(array $row)
     {
-        if(empty($row[ReconcilationFields::PAYMENT_DATE]) === false)
+        if (empty($row[ReconcilationFields::PAYMENT_DATE]) === false)
         {
             $date = Carbon::createFromFormat('d-m-Y',
                                              $row[ReconcilationFields::PAYMENT_DATE],
@@ -92,6 +92,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         if (empty(ReconcilationFields::TRANSACTION_CURRENCY_CODE) === true)
         {
             $this->reportMissingColumn($row, ReconcilationFields::TRANSACTION_CURRENCY_CODE);
+
             return null;
         }
 
@@ -102,7 +103,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        $expectedCurrency = ($convertCurrency === true) ? "INR" : $this->payment->getCurrency();
+        $expectedCurrency = ($convertCurrency === true) ? 'INR' : $this->payment->getCurrency();
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 

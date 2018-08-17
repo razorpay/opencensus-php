@@ -110,6 +110,7 @@ class ReconciliationFileTest extends TestCase
     protected function assertBatchStatus(string $status = Status::PROCESSED)
     {
         $batch = $this->getDbLastEntityToArray('batch');
+
         $this->assertEquals($batch['status'], $status);
     }
 
@@ -303,7 +304,6 @@ class ReconciliationFileTest extends TestCase
         $updatedTransaction = $this->getLastEntity('transaction', true);
 
         $updatedRefund = $this->getLastEntity('refund', true);
-
         $this->assertEquals($entries[0]['Reference Tran Id'], $updatedRefund['arn']);
         $this->assertNotNull($updatedTransaction['reconciled_at']);
 
@@ -1138,9 +1138,8 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing', $file);
 
-        $this->runForFiles([$file], 'Bob');
+        $response = $this->runForFiles([$file], 'Bob');
 
-        //tests transaction entity is updated properly
         $transactionEntity = $this->getDbLastEntity('transaction');
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
@@ -1204,7 +1203,7 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->testData['facades']['testFssBobRecon'];
 
-        $facade['Transaction Amount'] = number_format($gatewayPayment['amount']/100, 2);
+        $facade['Transaction Amount'] = number_format($gatewayPayment['amount'] / 100, 2);
 
         $facade['Settlement Amount'] = $facade['Transaction Amount']/100;
 

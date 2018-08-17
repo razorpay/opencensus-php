@@ -20,11 +20,11 @@ class CombinedReconciliate extends Base\CombinedReconciliate
     {
         $transactionType = strtolower($row[ReconcilationFields::TRANSACTION_TYPE]);
 
-        $reconcilationTypeMapping = [
+        $reconciliationTypeMapping = [
             'purchase'  => Base\Reconciliate::PAYMENT,
             'refund'    => Base\Reconciliate::REFUND,
         ];
 
-        return (isset($reconcilationTypeMapping[$transactionType]) === true) ? $reconcilationTypeMapping[$transactionType] : null;
+        return (isset($reconciliationTypeMapping[$transactionType]) === true) ? $reconciliationTypeMapping[$transactionType] : null;
     }
 }
