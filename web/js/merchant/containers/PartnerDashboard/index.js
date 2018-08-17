@@ -14,7 +14,6 @@ export default () => (
       </NavLink>
       {/* <NavLink to="/submerchants/settings">Settings</NavLink> */}
     </header>
-    <TestModeBanner />
     <content>
       <Switch>
         <Route path="/submerchants/settings" component={Settings} />
