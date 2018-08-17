@@ -8,14 +8,23 @@ import Field, {
 import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
-import {
-  notifySuccess,
-  openModal,
-  closeModal,
-  notifyError,
-} from 'common/modal';
+import { notifySuccess, openModal, notifyError } from 'common/modal';
 
 import { adminFormUpload } from 'common/fetch';
+
+const convertToJson = (headersString = '') => {
+  const headers = headersString.split('\n');
+  return headers.reduce((accumulator, header) => {
+    const headerArray = header.split(':');
+
+    return {
+      ...accumulator,
+      // first value in header array is key
+      // second value in header array is value
+      [headerArray[0].trim()]: headerArray[1].trim(),
+    };
+  }, {});
+};
 
 export default class MakeAPICall extends Component {
   constructor() {
@@ -37,7 +46,7 @@ export default class MakeAPICall extends Component {
     let { auth, method, file } = this.state;
     return (
       <div class="makeapicall">
-        <Form class="full-span" style={{ width: '650px' }}>
+        <Form class="full-span full-elements" style={{ width: '650px' }}>
           <div class="field url">
             <label>URL</label>
             <span class="base-url">api/v1/</span>
@@ -94,7 +103,19 @@ export default class MakeAPICall extends Component {
             file.length > 0 ? (
               <Field label="File Name" name="file_name" key="file_name" />
             ) : null,
-            <TextAreaField label="Request Headers" name="headers" />,
+            <TextAreaField
+              label="Request Headers"
+              name="headers"
+              placeholder={'X-Key: Value\nX-Key-2: Value-2'}
+              helpMsg={
+                <span>
+                  Each new line will be consider a new header entry separated by
+                  colon(:), <em>example given below</em>
+                  <div>x-key-1:value</div>
+                  <div>x-key-2:value</div>
+                </span>
+              }
+            />,
           ]}
 
           <AsyncButton
@@ -105,7 +126,7 @@ export default class MakeAPICall extends Component {
               let url = body.url;
               delete body.url;
 
-              let headers = JSON.parse(body.headers);
+              let headers = convertToJson(body.headers);
               delete body.headers;
 
               if (!body.file) {
