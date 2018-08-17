@@ -20,6 +20,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -34,6 +35,9 @@ use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
+/**
+ * @group dns-sensitive
+ */
 class MerchantTest extends TestCase
 {
     use PaymentTrait;
@@ -41,6 +45,7 @@ class MerchantTest extends TestCase
     use SettlementTrait;
     use InteractsWithSession;
     use HeimdallTrait;
+    use MocksDnsTrait;
     use DbEntityFetchTrait;
     use OAuthTrait;
 
@@ -53,6 +58,8 @@ class MerchantTest extends TestCase
         $this->ba->appAuth();
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->setupMockDns();
 
         $this->app->make(Factory::class)->load($factoryPath);
     }

@@ -44,6 +44,7 @@ class Kernel extends HttpKernel
         'auth'               => Middleware\Authenticate::class,
         'admin_access'       => Middleware\AdminAccess::class,
         'user_access'        => Middleware\UserAccess::class,
+        'subscription_proxy' => Middleware\SubscriptionProxy::class,
         'workflow'           => Middleware\Workflow::class,
         'merchant_ip_filter' => Middleware\MerchantIpFilter::class,
         'event_tracker'      => Middleware\EventTracker::class,

@@ -1752,7 +1752,8 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'razorpay upi mindgate',
             'gateway_terminal_id'       => 'nodal account upi hdfc',
             'gateway_merchant_id2'      => 'razorpay@hdfcbank',
-            'gateway_terminal_password' => 'razorpay_password',
+            // Sample hex for as encryption, not in used
+            'gateway_terminal_password' => '93158d5892188161a259db660ddb1d0b',
             'upi'                       => 1,
             'gateway_acquirer'          => 'hdfc',
         ];
@@ -1762,7 +1763,7 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedUpiMindgateIntentTerminal(array $attributes)
+    public function createSharedUpiMindgateIntentTerminal(array $override)
     {
         $attributes = [
             'id'                        => Shared::UPI_MINDGATE_INTENT_TERMINAL,
@@ -1772,7 +1773,24 @@ class Terminal extends Base
             ]
         ];
 
-        return $this->createSharedUpiMindgateTerminal($attributes);
+        return $this->createSharedUpiMindgateTerminal(array_merge($attributes, $override));
+    }
+
+    public function createSharedUpiMindgateSignedIntentTerminal(array $override)
+    {
+        $privateKey = 'MHQCAQEEIPk6R12xwmvV/JJDehGHSrQpNZxE3jmNXHcmgNUY2858oAcGBSuBBAAK' .
+                      'oUQDQgAES9US3XYL8yPYqqnScq2+hTmuKBnl70RMeSDEmFN/euNHoQs+7ouwI/OH' .
+                      '9sivFz/5a5n9ZEvc7aakvVauZi/rAA==';
+
+        $publicKey = 'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAES9US3XYL8yPYqqnScq2+hTmuKBnl70RM' .
+                     'eSDEmFN/euNHoQs+7ouwI/OH9sivFz/5a5n9ZEvc7aakvVauZi/rAA==';
+
+        $attributes = [
+            'gateway_terminal_password2'    => $privateKey,
+            'gateway_access_code'           => $publicKey,
+        ];
+
+        return $this->createSharedUpiMindgateIntentTerminal(array_merge($attributes, $override));
     }
 
     public function createSharedUpiMindgateTpvTerminal(array $attributes = [])

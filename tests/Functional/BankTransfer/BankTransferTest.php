@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\BankTransfer;
 use RZP\Constants\Entity;
 use RZP\Models\Payment\Refund;
 use RZP\Models\BankTransfer\Entity as E;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
@@ -218,7 +219,15 @@ class BankTransferTest extends TestCase
     public function testBankTransferImps()
     {
         $accountNumber = $this->bankAccount['account_number'];
-        $ifsc = $this->bankAccount['ifsc'];
+
+        $ifsc = Provider::IFSC[Provider::KOTAK];
+
+        $this->fixtures->base->editEntity(
+            'bank_account',
+            $this->bankAccount['id'],
+            [
+                'ifsc_code' => $ifsc
+            ]);
 
         $request = $this->testData[__FUNCTION__];
 
@@ -226,7 +235,11 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
-        $this->ba->appAuth();
+        $request['server']['REMOTE_ADDR'] = '14.141.97.12';
+
+        $this->cloud = false;
+
+        $this->ba->kotakAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -236,6 +249,8 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        // Testing if gateway is correct
+        $this->assertEquals('kotak', $bankTransfer['gateway']);
         $this->assertEquals('IMPS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
@@ -273,6 +288,65 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(4000000, $payment['amount_refunded']);
+    }
+
+    public function testBankTransferImpsWithNbin()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $ifsc = Provider::IFSC[Provider::YESBANK];
+
+        $this->fixtures->base->editEntity(
+            'bank_account',
+            $this->bankAccount['id'],
+            [
+                'ifsc_code' => $ifsc
+            ]);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = $accountNumber;
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $this->cloud = false;
+
+        $this->ba->yesbankAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $utr = $response['transaction_id'];
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        // Testing if gateway is correct
+        $this->assertEquals('yesbank', $bankTransfer['gateway']);
+        $this->assertEquals('IMPS', $bankTransfer['mode']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        // Customer bank account created
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        // Set to mapped IFSC code for PAYTM Nbin
+        $this->assertEquals('PYTM0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        // IMPS refunds are not permitted
+        $this->refundPayment($payment['id'], 4000000);
+        $refund =  $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(4000000, $refund['amount']);
     }
 
     public function testBankTransferImpsUnmappedBankCode()
@@ -725,7 +799,15 @@ class BankTransferTest extends TestCase
     public function testBankTransferImpsFromRogueBankStripAccount()
     {
         $accountNumber = $this->bankAccount['account_number'];
-        $ifsc = $this->bankAccount['ifsc'];
+
+        $ifsc = Provider::IFSC[Provider::KOTAK];
+
+        $this->fixtures->base->editEntity(
+            'bank_account',
+            $this->bankAccount['id'],
+            [
+                'ifsc_code' => $ifsc
+            ]);
 
         $request = $this->testData[__FUNCTION__];
 
@@ -733,7 +815,11 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
-        $this->ba->appAuth();
+        $request['server']['REMOTE_ADDR'] = '14.141.97.12';
+
+        $this->cloud = false;
+
+        $this->ba->kotakAuth();
 
         $this->makeRequestAndGetContent($request);
 

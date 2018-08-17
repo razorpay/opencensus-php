@@ -3,19 +3,22 @@
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
 use RZP\Constants\Mode;
-use RZP\Constants\Entity as ConstantsEntity;
-use RZP\Gateway\Upi\Base\Entity;
-use RZP\Models\Merchant\Account;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
-use RZP\Tests\Functional\Fixtures\Entity\Terminal;
+use RZP\Models\Payment\Gateway;
+use RZP\Gateway\Upi\Base\Entity;
+use RZP\Gateway\Upi\Base\Secure;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class UpiMindgateGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     /**
      * @var Terminal
@@ -165,6 +168,81 @@ class UpiMindgateGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals('random@rzp', $payment['vpa']);
+    }
+
+    public function testSignedIntentPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_signed_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+        $this->assertArrayHasKey('qr_code_url', $response['data']);
+
+        $upi = $this->getDbLastEntity('upi');
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals('pay', $upi['type']);
+        $this->assertEquals('1UpiIntMndgate', $payment['terminal_id']);
+        $this->assertNull($payment['vpa']);
+
+        $secure = new Secure([
+            Secure::PUBLIC_KEY => $payment->terminal['gateway_access_code'],
+        ]);
+
+        $this->assertTrue($secure->verifyIntent($response['data']['intent_url']));
+        $this->assertTrue($secure->verifyIntent($response['data']['qr_code_url']));
+    }
+
+    public function testSignedIntentInvoice()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_signed_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        // Adding current merchant for test only
+        \Cache::forever('npci_upi_demo',
+                        [
+                            'merchants' => [
+                                '10000000000000' => 'https://cdn.razorpay.com/i?',
+                            ],
+                        ]);
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        \Cache::forget('npci_upi_demo');
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+        $this->assertArrayHasKey('qr_code_url', $response['data']);
+
+        $upi = $this->getDbLastEntity('upi');
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals('pay', $upi['type']);
+        $this->assertEquals('1UpiIntMndgate', $payment['terminal_id']);
+        $this->assertNull($payment['vpa']);
+
+        $secure = new Secure([
+            Secure::PUBLIC_KEY => $payment->terminal['gateway_access_code'],
+        ]);
+
+        $this->assertTrue($secure->verifyIntent($response['data']['intent_url']));
+        $this->assertTrue($secure->verifyIntent($response['data']['qr_code_url']));
+
+        $this->assertContains('&url=', $response['data']['intent_url']);
+        $this->assertContains('&url=', $response['data']['qr_code_url']);
     }
 
     public function testUpiAmountCap()
