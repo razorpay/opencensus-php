@@ -38,7 +38,7 @@ class IsgRefundFileTest extends TestCase
 
     public function testBharatQrIsgRefundFile()
     {
-        //Mail::fake();
+        Mail::fake();
 
         $this->createBharatQrPayment($this->getPaymentContentData());
 
@@ -46,7 +46,7 @@ class IsgRefundFileTest extends TestCase
 
         $fullRefund = $this->refundPayment($payment1['id']);
 
-        $this->createBharatQrPayment($this->getPaymentContentData(300));
+        $this->createBharatQrPayment($this->getPaymentContentData(257));
 
         $payment2 = $this->getLastEntity('payment', true);
 

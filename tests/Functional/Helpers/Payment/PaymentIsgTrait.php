@@ -14,7 +14,7 @@ trait PaymentIsgTrait
             'content' => $content,
         ];
 
-        $qrCode = $this->createVirtualAccount([], true, null, true);
+        $qrCode = $this->createVirtualAccount();
 
         $this->ba->directAuth();
 
