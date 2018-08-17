@@ -892,6 +892,8 @@ class Core extends Base\Core
      */
     public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant): array
     {
+        (new Validator)->validateIsNotLinkedAccount($submerchant);
+
         $this->trace->info(
             TraceCode::PARTNER_CREATE_ACCESS_MAP_REQUEST,
             [

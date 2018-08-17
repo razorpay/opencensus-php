@@ -64,6 +64,23 @@ return [
         ],
     ],
 
+    'testBankTransferImpsWithNbin' => [
+        'url'     => '/ecollect/validate',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => '9761',
+            'mode'           => 'imps',
+            'transaction_id' => strtoupper(random_alphanum_string(22)),
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'IMPS payment of 50,000 rupees',
+        ],
+    ],
+
     'testBankTransferYesBankRefundsNotAllowed' => [
         'request' => [
             'url'     => '/ecollect/validate',
@@ -338,6 +355,7 @@ return [
                 'transaction_id'     => 'HDFC148415544000000000',
                 'time'               => 148415544000,
                 'amount'             => 50000,
+                'currency'           => 'INR',
                 'description'        => 'NEFT payment of 50,000 rupees with extra fields',
                 'attempt'            => 1,
             ],

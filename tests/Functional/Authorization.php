@@ -273,6 +273,24 @@ class Authorization
         $this->appAuth('rzp_'.$mode, $pwd);
     }
 
+    public function kotakAuth($mode = 'test')
+    {
+        $kotakConfig = \Config::get('applications.kotak');
+
+        $pwd = $kotakConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
+    public function yesbankAuth($mode = 'test')
+    {
+        $kotakConfig = \Config::get('applications.yesbank');
+
+        $pwd = $kotakConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
     public function noAuth()
     {
         $this->directAuth();

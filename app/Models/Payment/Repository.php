@@ -1484,14 +1484,12 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()->with('transaction')
                       ->where(Entity::GATEWAY, Payment\Gateway::HITACHI)
-                      ->where(Entity::CAPTURED_AT, '>=', $lastUpdatedPaymentCapturedAt);
+                      ->whereBetween(Entity::CAPTURED_AT, [$lastUpdatedPaymentCapturedAt, 1533925800]);
 
         if ($lastUpdatedPaymentId !== null)
         {
             $query->where(Entity::ID, '>', $lastUpdatedPaymentId);
         }
-
-        $query->limit(15000);
 
         return $query;
     }

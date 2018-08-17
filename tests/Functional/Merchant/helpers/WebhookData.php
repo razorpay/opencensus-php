@@ -10,7 +10,7 @@ return [
         'request' => [
             'url' => '/webhooks',
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -19,7 +19,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => true,
                 ],
@@ -32,7 +32,7 @@ return [
         'request' => [
             'url' => '/webhooks',
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -59,7 +59,7 @@ return [
         'request' => [
             'url' => '/webhooks',
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -69,7 +69,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => true,
                 ],
@@ -82,7 +82,7 @@ return [
         'request' => [
             'url' => '/webhooks',
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -108,7 +108,7 @@ return [
         'request' => [
             'url' => '/oauth/applications/10000000000App/webhooks',
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -117,7 +117,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'url'            => 'http://example.com',
+                'url'            => 'http://webhook.com',
                 'events'         => [
                     'payment.authorized' => true,
                 ],
@@ -131,7 +131,7 @@ return [
         'request' => [
             'url' => '/webhooks',
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'secret' => 'cef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1c',
                 'events' => [
                     'payment.authorized' => '1',
@@ -266,7 +266,7 @@ return [
                 'count' => 1,
                 'items' => [
                     [
-                        'url' => 'http://example.com/v1/dummy/route',
+                        'url' => 'http://webhook.com/v1/dummy/route',
                         'events' => [
                             'payment.authorized' => true
                         ],
@@ -311,7 +311,7 @@ return [
                 'count'  => 1,
                 'items'  => [
                     [
-                        'url'            => 'http://example.com/v1/dummy/route',
+                        'url'            => 'http://webhook.com/v1/dummy/route',
                         'events'         => [
                             'payment.authorized' => true
                         ],
@@ -352,7 +352,7 @@ return [
         'request'  => [
             'url'     => '/oauth/applications/10000000000Appp/webhooks',
             'content' => [
-                'url'    => 'http://example.com',
+                'url'    => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -491,7 +491,7 @@ return [
     ],
 
     'testAppWebhookData' => [
-        'url'     => 'http://example.com/v1/dummy/route',
+        'url'     => 'http://webhook.com/v1/dummy/route',
         'method'  => 'post',
         'content' => [
             'entity'   => 'event',
@@ -549,7 +549,7 @@ return [
     ],
 
     'testMerchantWebhookData' => [
-        'url'     => 'http://sample.com/v1/dummy/route',
+        'url'     => 'http://webhook.com/v1/dummy/route',
         'method'  => 'post',
         'content' => [
             'entity'   => 'event',
@@ -737,7 +737,7 @@ return [
     ],
 
     'testWebhookEventDataJustBeforeFiring' => [
-        'url' => 'http://example.com/v1/dummy/route',
+        'url' => 'http://webhook.com/v1/dummy/route',
         'method' => 'post',
         'content' => [
             'entity' => 'event',
@@ -771,7 +771,7 @@ return [
     ],
 
     'testExceptionOnWebhookFire' => [
-        'url' => 'http://example.com/v1/dummy/route',
+        'url' => 'http://webhook.com/v1/dummy/route',
         'method' => 'post',
         'content' => [
             'entity' => 'event',
@@ -801,7 +801,7 @@ return [
     ],
 
     'testSecretValueInWebhookEventDataJustBeforeFiring' => [
-        'url' => 'http://example.com/v1/dummy/route',
+        'url' => 'http://webhook.com/v1/dummy/route',
         'method' => 'post',
         'content' => [
             'entity' => 'event',

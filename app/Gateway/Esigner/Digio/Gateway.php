@@ -183,6 +183,7 @@ class Gateway extends Base\Gateway
         $bankCode = $this->getTerminalAccessCode($input);
 
         $mcc = $this->input['terminal']['category'];
+        $serviceProviderName = $input['merchant']->getFilteredDba() ?: $this->getGatewayMerchantId2();
 
         $traceContent = $content = [
             'mandate_request_id'            => $input['payment']['id'],
@@ -195,7 +196,7 @@ class Gateway extends Base\Gateway
             'aadhaar'                       => $input['token']->getAadhaarNumber(),
             'bank_identifier'               => substr($bankCode, 0, 4),
             'management_category'           => CategoryCode::getCategoryCodeFromMcc($mcc),
-            'service_provider_name'         => $this->getGatewayMerchantId2(),
+            'service_provider_name'         => substr($serviceProviderName, 0, 40),
             'service_provider_utility_code' => $this->getGatewayMerchantId(),
             'login_id'                      => $this->getGatewayTerminalId(),
             'customer_account_number'       => $input['token']->getAccountNumber(),

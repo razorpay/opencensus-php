@@ -70,22 +70,33 @@
 <p>
   {{{$merchant['name']}}} has added you as their affiliate  partner on Razorpay.
   <br>
+  <br>
   @if($token)
-  You can set up your login credentials <a href="{{ $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&email='.$subMerchant['email'] }}" target="_blank">here</a> and submit the activation form with KYC details to start transacting.
+  <u>Get Started with Your Account</u>
+  <br>
+  To get started with your Razorpay account, please create a password. After that, you will need to submit the activation form with KYC details to start transacting.
+  <br>
+  <a href="{{ $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&email='.$subMerchant['email'] }}" target="_blank">Create a Password</a>
   @else
   You can {{$token}} login to your account with your existing credentials and submit the activation form with KYC details to start transacting.
   @endif
 </p>
 
-<h3>KYC Process</h3>
+<h3>Activation Process</h3>
 
-<p>The first step involves filling up the activation form on the <a href="{{ $org['hostname']}}">Razorpay Dashboard</a>. The list of documents and details required for us to take you live can be found then in the <a href="{{ $org['hostname'] . '/#/app/activation'}}">Activation</a> panel. All requirements have a basic explanation alongside to help you through the process.
+<p>The first step involves filling up the activation form on the <a href="{{ $org['hostname']}}">Razorpay Dashboard</a>. The list of documents and details required for us to take you live can be found then in the <a href="{{ $org['hostname'] . '/#/app/activation'}}">Activation</a> form. All requirements have a basic explanation alongside to help you through the process.
 
-<p>This process is crucial as we share the same KYC with our partner banks who do their own due diligence. Also, signing up allows you to generate test keys from our dashboard which can be used for integrating payments in your product. You can just swap your test keys with your live keys once your account is activated.
+<p>This process is crucial as we share the same KYC with our partner banks who do their own due diligence.
 
 <h3>Activation Timeline</h3>
 
-<p>As soon as the KYC Process in completed by you, depending on the business segment, we will take you live in the upcoming 2-3 days.</p>
+<p>As soon as the Activation Process in completed by you, depending on the business segment, we will take you live in the upcoming {{{ $activationDuration}}}.</p>
+
+@if($token)
+<u>Integration: Start accepting Payments</u>
+<br>
+<p>Also, signing up allows you to <a href="{{ $org['hostname'] . '/#/app/keys' }}" target="_blank">generate test keys</a> from our dashboard which can be used for integrating payments in your product. You can just swap your test keys with your live keys once your account is activated.</p>
+@endif
 
 <p>
   Cheers,

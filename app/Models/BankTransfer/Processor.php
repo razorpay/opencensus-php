@@ -4,7 +4,6 @@ namespace RZP\Models\BankTransfer;
 
 use App;
 use Cache;
-
 use Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -15,6 +14,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends VirtualAccount\Processor
@@ -25,7 +25,7 @@ class Processor extends VirtualAccount\Processor
 
     protected function getPaymentProcessor()
     {
-        if(isset($this->paymentProcessor) ===  false)
+        if (isset($this->paymentProcessor) === false)
         {
             $this->paymentProcessor = new PaymentProcessor($this->merchant);
         }
@@ -100,6 +100,9 @@ class Processor extends VirtualAccount\Processor
             {
                 throw $e;
             }
+
+            $this->trace->traceException($e, Trace::INFO,
+                TraceCode::VIRTUAL_ACCOUNT_FAILED_FOR_ORDER, ['input' => $input]);
 
             $this->processWithoutOrder($input);
         }
@@ -214,6 +217,15 @@ class Processor extends VirtualAccount\Processor
         }
     }
 
+    private function getBankTransferEntity(Base\PublicEntity $bankTransfer): Entity
+    {
+        if (($bankTransfer instanceof Entity) === false)
+        {
+            throw new InvalidArgumentException('Not a valid class');
+        }
+        return $bankTransfer;
+    }
+
     /**
      * Given a bank transfer, locate the bank account that is
      * being paid, and the associated active VA, if present.
@@ -222,12 +234,14 @@ class Processor extends VirtualAccount\Processor
      *
      * @return null|VirtualAccount\Entity
      */
-    protected function getVirtualAccountFromEntity(Base\PublicEntity $bankTransfer)
+    protected function getVirtualAccountFromEntity(Base\PublicEntity $transfer)
     {
-        // TODO: Put assert on entity type
+        // Because PHP doesn't support generics, we are applying this hack.
+        $bankTransfer = $this->getBankTransferEntity($transfer);
+
         $accountNumber = $bankTransfer->getPayeeAccount();
 
-        $bankAccount = $this->getBankAccountFromNumber($accountNumber);
+        $bankAccount = $this->getBankAccountFromNumber($accountNumber, $bankTransfer->getGateway());
 
         if ($bankAccount === null)
         {
@@ -354,7 +368,7 @@ class Processor extends VirtualAccount\Processor
 
         // Ignore payments made to reserved accounts, i.e. accounts that use the
         // reserved roots. We will use this for other cool stuff.
-        if (VirtualAccount\Provider::isReservedAccount($payeeAccount, $this->provider) === true)
+        if (VirtualAccount\Provider::isReservedAccount($payeeAccount, $bankTransfer->getGateway()) === true)
         {
             $this->trace->info(
                 TraceCode::BANK_TRANSFER_RESERVED_ACCOUNT,
@@ -375,9 +389,9 @@ class Processor extends VirtualAccount\Processor
      *
      * @return BankAccount\Entity|null
      */
-    protected function getBankAccountFromNumber(string $accountNumber)
+    protected function getBankAccountFromNumber(string $accountNumber, string $gateway)
     {
-        $bankCode = VirtualAccount\Provider::getBankCode($this->provider);
+        $bankCode = VirtualAccount\Provider::getBankCode($gateway);
 
         $bankAccount = $this->repo
                             ->bank_account

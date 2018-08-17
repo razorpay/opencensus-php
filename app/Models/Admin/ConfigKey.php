@@ -11,6 +11,7 @@ class ConfigKey
     const BLOCK_BANK_TRANSFERS_FOR_CRYPTO       = 'block_bank_transfers_for_crypto';
     const SKIP_SLAVE                            = 'skip_slave';
     const DISABLE_MAGIC                         = 'disable_magic';
+    const NPCI_UPI_DEMO                         = 'npci_upi_demo';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
@@ -20,6 +21,7 @@ class ConfigKey
         self::BLOCK_BANK_TRANSFERS_FOR_CRYPTO,
         self::SKIP_SLAVE,
         self::DISABLE_MAGIC,
+        self::NPCI_UPI_DEMO,
     ];
 
     public static function isSensitive(string $key)

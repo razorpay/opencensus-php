@@ -50,7 +50,8 @@
         "datadog/php-datadogstatsd": "^1.0",
         "symfony/dom-crawler": "3.*",
         "justinrainbow/json-schema": "^5.2",
-        "phpoffice/phpspreadsheet": "^1.4"
+        "phpoffice/phpspreadsheet": "^1.4",
+        "mdanter/ecc": "^0.5.0"
     },
     "repositories": [
         {

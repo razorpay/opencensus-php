@@ -335,7 +335,7 @@ return [
             'raw' => json_encode([
                 'international' => '1',
                 'linked_account_kyc' => '1',
-                'website' => 'http://abc.com',
+                'website' => 'https://www.example.com',
                 'category' => '1111',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
@@ -358,7 +358,7 @@ return [
                 'international' => true,
                 'linked_account_kyc' => true,
                 'category' => 1111,
-                'website' => 'http://abc.com',
+                'website' => 'https://www.example.com',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
                 ],
