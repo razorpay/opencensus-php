@@ -19,10 +19,7 @@ const fields = [
 ];
 
 const Actions = ({ item }) => (
-  <div>
-    <div class="link m-t m-r ">
-      <Link to={`/orgs/${item.id}`}>Edit</Link>
-    </div>
+  <object>
     <div class="link m-t m-r">
       <Link to={`/fieldmaps/${item.id}`}>FieldMaps</Link>
     </div>
@@ -38,7 +35,7 @@ const Actions = ({ item }) => (
         <span class="dot-loader">.</span>
       </AsyncButton>
     )}
-  </div>
+  </object>
 );
 
 @observer
@@ -64,6 +61,7 @@ class OrganizationsList extends Component {
         <PageTable
           model={this.collection}
           fields={fields}
+          href={href}
           searchFilters={[
             'id',
             'display_name',
@@ -76,5 +74,6 @@ class OrganizationsList extends Component {
     );
   }
 }
+const href = item => '/orgs/' + item.id;
 
 export default OrganizationsList;
