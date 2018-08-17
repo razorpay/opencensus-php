@@ -13,9 +13,9 @@ const phases = [
 
 const statues = ['open', 'under_review', 'lost', 'won', 'closed'];
 
-export default ({ type, ...otherProps }) => {
+export default props => {
   return (
-    <ListFilter {...otherProps}>
+    <ListFilter {...props}>
       <div class="form-group list-filter-item">
         <label>Dispute Id</label>
         <Field name="id" component="input" class="form-control input-sm" />

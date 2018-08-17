@@ -16,8 +16,7 @@ import { showNotification } from 'rzp/modules/notifications';
 const hostToIframeHost = {
   'dashboard.razorpay.in': 'http://api.razorpay.in',
   'dashboard.razorpay.com': 'https://api.razorpay.com',
-  'beta-dashboard.razorpay.com': 'https://beta-api.razorpay.com',
-  'beta-dashboard.razorpay.in': 'https://beta-api.razorpay.com',
+  'beta-dashboard.razorpay.in': 'https://beta-api.razorpay.in',
 };
 
 const iframeHost = hostToIframeHost[location.hostname];

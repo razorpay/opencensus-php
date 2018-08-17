@@ -174,7 +174,11 @@ const actions = {
   ),
 
   refund: (entity, entityComponent) => (
-    <action.RefundActions entity={entity} mode={entityComponent.params.mode} />
+    <action.RefundActions
+      entity={entity}
+      mode={entityComponent.params.mode}
+      updateEntity={entityComponent::updateEntity}
+    />
   ),
 
   payment: (entity, entityComponent) => (

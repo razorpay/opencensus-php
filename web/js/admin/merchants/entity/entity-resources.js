@@ -8,6 +8,7 @@ import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Table from 'ui/Table';
+import AsyncButton from 'ui/AsyncButton';
 import ShowWhen from 'admin/components/ShowWhen';
 import CreditsDetails from './entityDetails/CreditsDetails';
 import FeaturesDetails from './entityDetails/FeaturesDetails';
@@ -54,6 +55,25 @@ function _getAdminsFields(adminsMap) {
   return [
     ['Role', item => (adminsMap[item.id] ? adminsMap[item.id].role : '')],
     ['Name', item => item.name],
+  ];
+}
+
+function _getSubmerchantFields(unlinkSubmerchant) {
+  return [
+    ['Merchant Id', item => item.id],
+    ['Merchant Name', item => item.name],
+    [
+      'Actions',
+      item => (
+        <AsyncButton
+          class="link danger"
+          onClick={() => unlinkSubmerchant(item.id)}
+          confirm="Are you sure you want to unlink this submerchant"
+        >
+          Unlink
+        </AsyncButton>
+      ),
+    ],
   ];
 }
 
@@ -320,6 +340,7 @@ export function getDetailsViewMap(model) {
     bankDetails,
     creditsLogs,
     adminsMap,
+    submerchants,
   } = model.merchant;
 
   return [
@@ -359,6 +380,19 @@ export function getDetailsViewMap(model) {
       value: details.partner_type
         ? snakeToTitleCase(details.partner_type)
         : _getBoolIcon(false),
+    },
+    {
+      label: 'Submerchants',
+      toHide: !details.partner_type,
+      permission: 'view_partners',
+      children: () => (
+        <div>
+          <Table
+            items={submerchants}
+            fields={_getSubmerchantFields(model.unlinkSubmerchant)}
+          />
+        </div>
+      ),
     },
     {
       label: 'Marketplace Merchant',

@@ -30,6 +30,7 @@
     window.rzp_org = {!! $org !!};
     window.api_host = "{!! $api_host !!}"
   </script>
+  <script src="https://cdn.razorpay.com/static/ticket-system/bundle.js"></script>
   <!-- Raven Code -->
   @if(env('APP_ENV') === 'production')
     <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>

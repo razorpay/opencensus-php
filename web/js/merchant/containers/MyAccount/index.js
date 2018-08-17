@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Route, NavLink, withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import Profile from 'merchant/containers/Profile';
@@ -10,24 +11,32 @@ import TeamManagement from 'merchant/containers/Team';
 
 import { trackLinkClick } from './ga';
 
+@connect(state => ({
+  ...state.session,
+}))
 export default class MyAccount extends Component {
   render() {
+    const { partner_type } = this.props.user;
+    const isPartner = !!partner_type;
+    const isNonPurePlatformPartner =
+      isPartner && partner_type !== 'pure_platform';
     return (
       <tabbed-container>
         <header id="myaccount-header">
           <NavLink to="/profile">Profile</NavLink>
 
-          <ShowWhen notMyRole="sellerapp support">
+          <ShowWhen notMyRole="sellerapp agent support">
             <NavLink to="/credits">Credits</NavLink>
           </ShowWhen>
 
-          <ShowWhen notMyRole="sellerapp">
+          <ShowWhen notMyRole="sellerapp agent">
             <NavLink to="/addfunds">Add Funds</NavLink>
           </ShowWhen>
-
-          <ShowWhen notMyRole="sellerapp" featureEnabled="Referral">
-            <NavLink to="/referrals">Referrals</NavLink>
-          </ShowWhen>
+          {!(isPartner && isNonPurePlatformPartner) && (
+            <ShowWhen notMyRole="sellerapp agent" featureEnabled="Referral">
+              <NavLink to="/referrals">Referrals</NavLink>
+            </ShowWhen>
+          )}
 
           <ShowWhen myRole="owner">
             <NavLink to="/team">Manage Team</NavLink>
