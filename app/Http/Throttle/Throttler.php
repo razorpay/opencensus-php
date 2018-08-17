@@ -326,8 +326,8 @@ class Throttler
         //      <mode>:<auth>:<proxy>:lrd:           1
         //      <mode>:<auth>:<proxy>:mbs:           30
         //
-        //      <mode>:<auth>:<proxy>:ipList:        ip1||ip2||ip3
-        //      <mode>:<auth>:<proxy>:userAgentList: ua1||ua2||ua3
+        //      <mode>:<auth>:<proxy>:blockedIpList:        ip1||ip2||ip3
+        //      <mode>:<auth>:<proxy>:blockedUserAgentList: ua1||ua2||ua3
         //
         //      // Per auth, per route
         //      <mode>:<auth>:<proxy>:<route>:skip:  0
