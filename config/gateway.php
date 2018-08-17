@@ -134,9 +134,8 @@ return [
         'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
     'isg' => [
-        'test_hash_secret'        => env('ISG_GATEWAY_TEST_BHARAT_QR_SECRET'),
-        'live_hash_secret'        => env('ISG_GATEWAY_LIVE_BHARAT_QR_SECRET'),
-    ],
+        'bharat_qr_secret' => env('ISG_GATEWAY_BHARAT_QR_SECRET'),
+        ],
 
     'first_data' => [
         // Test credentials
@@ -445,8 +444,12 @@ return [
     'netbanking_axis' => [
         // retail netbanking
         'live_hash_secret'                  => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
+        'live_hash_secret_new'              => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_NEW'),
         'test_hash_secret'                  => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret_new'              => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_NEW'),
         'test_merchant_id'                  => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        'verify_live_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_VERIFY_LIVE_HASH_SECRET'),
+        'verify_test_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_VERIFY_TEST_HASH_SECRET'),
 
         // corporate netbanking
         'live_hash_secret_corporate'        => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_CORPORATE'),
@@ -505,9 +508,10 @@ return [
             'gateway_merchant_id'          => env('ENSTAGE_TEST_MERCHANT_ID'),
             'gateway_merchant_name'        => 'Test Merchant',
         ],
-        '6ZJzxyLFWrGs74' => [
-            'gateway_merchant_id'          => 'Wibmo_RYatra_Axis_Expay',
-            'gateway_merchant_name'        => 'RYatra_Axis_Expay',
+        // Hardcoding the values here.
+        'live' => [
+            'gateway_merchant_id'          => 'Wibmo_Razorpay_Axis_Expay',
+            'gateway_merchant_name'        => 'Razorpay_Axis_Expay',
         ],
         'test_acq_bin'                      => env('ENSTAGE_TEST_GATEWAY_ACQUIRER_BIN'),
         'test_secret_key'                   => env('ENSTAGE_TEST_SECRET_KEY_ID'),

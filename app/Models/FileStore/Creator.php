@@ -878,7 +878,7 @@ class Creator extends Base\Core
         $this->file->merchant()->associate($merchant);
     }
 
-    protected function getFullFileName()
+    public function getFullFileName()
     {
         $extension = $this->file->getExtension();
 

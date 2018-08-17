@@ -100,6 +100,12 @@ class Service extends Base\Service
 
     public function deletePricingPlanRuleForce($planId, $ruleId)
     {
+        $rule = $this->repo->pricing->getPricingPlanRule($planId, $ruleId);
+
+        $this->app['workflow']
+             ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
+             ->handle($rule, (new \stdClass));
+
         $flag = $this->repo->pricing->deletePlanRuleForce($planId, $ruleId);
 
         if ($flag === true)

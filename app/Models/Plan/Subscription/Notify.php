@@ -89,9 +89,6 @@ class Notify extends Processor\Notify
          */
         try
         {
-            // Send out notification for Slack
-            $this->notifyViaSlack($event);
-
             // Mails use the entire template
             // So there is no need to get separate data for each
             $this->notifyViaMail($event);
@@ -108,37 +105,6 @@ class Notify extends Processor\Notify
             );
 
             $this->trace->traceException($e);
-        }
-    }
-
-    protected function notifyViaSlack($event)
-    {
-        $slackMessages = [
-            Event::AUTHENTICATED   => 'SUBSCRIPTION_AUTHENTICATED',
-            Event::CHARGED         => 'SUBSCRIPTION_CHARGED',
-            Event::PENDING         => 'SUBSCRIPTION_PENDING',
-            Event::HALTED          => 'SUBSCRIPTION_HALTED',
-            Event::CANCELLED       => 'SUBSCRIPTION_CANCELLED',
-            Event::COMPLETED       => 'SUBSCRIPTION_COMPLETED',
-            Event::CARD_CHANGED    => 'SUBSCRIPTION_CARD_CHANGED',
-            Event::INVOICE_CHARGED => 'SUBSCRIPTION_INVOICE_CHARGED',
-        ];
-
-        $settings = [
-            'channel' => $this->getSlackChannel(),
-            'color'   => $this->getSlackColor($event),
-        ];
-
-        //
-        // Send out Slack notifications for the event
-        // You can control slack posts via SLACK_ENABLE
-        //
-        if ((array_key_exists($event, $slackMessages)) and
-            ($this->isSlackEnabled() === true))
-        {
-            $slackData = $this->getSlackData($event);
-
-            $this->app['slack']->queue($slackMessages[$event], $slackData, $settings);
         }
     }
 
@@ -186,102 +152,6 @@ class Notify extends Processor\Notify
         }
 
         return true;
-    }
-
-    /**
-     * Returns color to use for slack posts
-     *
-     * @param string $event
-     *
-     * @return string
-     */
-    protected function getSlackColor(string $event)
-    {
-        switch ($event)
-        {
-            case Event::AUTHENTICATED:
-            case Event::CHARGED:
-            case Event::CARD_CHANGED:
-            case Event::COMPLETED:
-            case Event::INVOICE_CHARGED:
-                return 'good';
-            case Event::PENDING:
-            case Event::CANCELLED:
-                return 'warning';
-            case Event::HALTED:
-                return 'danger';
-        }
-    }
-
-    /**
-     * Returns the slack channel to be used for posting
-     */
-    protected function getSlackChannel()
-    {
-        $config = $this->app['config'];
-
-        return $config->get('slack.channels.subscriptions');
-    }
-
-    /**
-     * Returns slack formatted version of a subscription id
-     *
-     * @param string $id
-     *
-     * @return string
-     */
-    protected function getSubscriptionLinkForSlack(string $id)
-    {
-        return "<https://dashboard.razorpay.com/admin#/app/entity/live/subscription/$id>";
-    }
-
-    /**
-     * Returns a flat array that is to be sent to Slack for a trigger event
-     *
-     * @param  string $event Trigger event
-     * @return array Flat array of data to be sent to Slack
-     */
-    protected function getSlackData($event)
-    {
-        $data = $this->template['subscription'];
-        $data['id'] = $this->getSubscriptionLinkForSlack($data['id']);
-
-        $payment   = null;
-        $paymentId = null;
-
-        if ($this->payment !== null)
-        {
-            $payment = $this->template['payment'];
-
-            $paymentId = $payment['id'];
-        }
-
-        switch ($event)
-        {
-            case Event::AUTHENTICATED:
-            case Event::CHARGED:
-            case Event::CARD_CHANGED:
-            case Event::COMPLETED:
-            case Event::INVOICE_CHARGED:
-                $data['payment_id'] = $this->getPaymentLinkForSlack($paymentId);
-                break;
-            case Event::PENDING:
-            case Event::HALTED:
-                $data['payment'] = $payment;
-                $data['payment']['id'] = $this->getPaymentLinkForSlack($paymentId);
-                break;
-            case Event::CANCELLED:
-                break;
-            default:
-                break;
-        }
-
-        // Add merchant data
-        $data['merchant'] = $this->getMerchantForSlack();
-
-        $data = $this->flatten($data);
-
-        return $data;
     }
 
     /**
@@ -423,21 +293,6 @@ class Notify extends Processor\Notify
         return ((is_numeric($value)) and
             ($value <= PHP_INT_MAX) and
             ($value >= -PHP_INT_MAX));
-    }
-
-    /**
-     * Whether to send slack notifications
-     *
-     * @return boolean
-     */
-    protected function isSlackEnabled()
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return false;
-        }
-
-        return true;
     }
 
     /**

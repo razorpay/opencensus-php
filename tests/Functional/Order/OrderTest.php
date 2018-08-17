@@ -544,6 +544,44 @@ class OrderTest extends TestCase
         $this->assertEquals($order['entity'], $entityOffer['entity_type']);
     }
 
+    public function testCreateOrderWithRepeatedOffers()
+    {
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);
+
+        $this->testData[__FUNCTION__]['request']['content']['offers'] = [
+            $offer->getPublicId(),
+            $offer->getPublicId(),
+        ];
+
+        //
+        // Backward compatible
+        //
+        $this->testData[__FUNCTION__]['response']['content']['offer_id'] = $offer->getPublicId();
+        $this->testData[__FUNCTION__]['response']['content']['offers'][] = $offer->getPublicId();
+
+        $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(false, $order['force_offer']);
+
+        // Pivot table entry also got created
+        $entityOffer = $this->getLastEntity('entity_offer', true);
+        $this->assertEquals($offer->getId(), $entityOffer['offer_id']);
+        $this->assertEquals($order['id'], 'order_' . $entityOffer['entity_id']);
+        $this->assertEquals($order['entity'], $entityOffer['entity_type']);
+    }
+
+    public function testCreateOrderWithOffersAndOfferID()
+    {
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);
+
+        $this->testData[__FUNCTION__]['request']['content']['offers'][] = $offer->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testCreateOrderWithOfferAndDiscounting()
     {
         $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);
@@ -1171,6 +1209,83 @@ class OrderTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    public function testPartialPaymentExcessAmount()
+    {
+        $this->fixtures->merchant->addFeatures(['excess_order_amount']);
+        $order = $this->fixtures->create(
+            'order',
+            [
+                'payment_capture' => true,
+                'partial_payment' => true,
+                'amount'          => 50000,
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 70000;
+
+        $expectedPaymentResponse = [
+            'status'   => 'captured',
+            'order_id' => $order->getPublicId(),
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals('paid', $order['status']);
+        $this->assertEquals(70000, $order['amount_paid']);
+        $this->assertEquals(-20000, $order['amount_due']);
+    }
+
+    public function testPartialPaymentExcessAmountMultiple()
+    {
+        $this->fixtures->merchant->addFeatures(['excess_order_amount']);
+        $order = $this->fixtures->create(
+            'order',
+            [
+                'payment_capture' => true,
+                'partial_payment' => true,
+                'amount'          => 50000,
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 30000;
+
+        $expectedPaymentResponse = [
+            'status'   => 'captured',
+            'order_id' => $order->getPublicId(),
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals('attempted', $order['status']);
+        $this->assertEquals(30000, $order['amount_paid']);
+        $this->assertEquals(20000, $order['amount_due']);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount']   = 50000;
+
+        $expectedPaymentResponse = [
+            'status'   => 'captured',
+            'order_id' => $order['id'],
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals('paid', $order['status']);
+        $this->assertEquals(80000, $order['amount_paid']);
+        $this->assertEquals(-30000, $order['amount_due']);
     }
 
     protected function setUpTerminals()

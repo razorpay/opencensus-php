@@ -26,6 +26,8 @@ class MerchantInvoiceCorrection extends Job
      */
     protected $queueConfigKey = 'merchant_invoice';
 
+    public $timeout = 3600;
+
     public function __construct(
         string $merchantId,
         int $month,

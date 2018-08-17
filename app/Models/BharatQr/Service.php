@@ -35,11 +35,6 @@ class Service extends Base\Service
 
         $gatewayClass = $this->app['gateway']->gateway($gateway);
 
-        if (($this->app['env'] === 'testing') && ($gateway === Entity::ISG))
-        {
-            $gatewayClass->setMode(Mode::TEST);
-        }
-
         try
         {
             $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);

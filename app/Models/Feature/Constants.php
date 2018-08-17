@@ -73,6 +73,12 @@ class Constants
     const PAYMENT_NOBRANDING              = 'payment_nobranding';
     const ENABLE_VPA_VALIDATE             = 'enable_vpa_validate';
     const ALLOW_SUBMERCHANT_WITHOUT_EMAIL = 'allow_sub_without_email';
+    const HDFC_DEBIT_SI                   = 'hdfc_debit_si';
+    const AXIS_EXPRESS_PAY                = 'axis_express_pay';
+    const BANK_TRANSFER_REFUND            = 'bank_transfer_refund';
+    const LOG_RESPONSE                    = 'log_response';
+    const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
+    const SUBSCRIPTION_V2                 = 'subscription_v2';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -174,6 +180,12 @@ class Constants
         self::OTPELF                          => true,
         self::ENABLE_VPA_VALIDATE             => true,
         self::ALLOW_SUBMERCHANT_WITHOUT_EMAIL => true,
+        self::HDFC_DEBIT_SI                   => true,
+        self::AXIS_EXPRESS_PAY                => true,
+        self::BANK_TRANSFER_REFUND            => true,
+        self::LOG_RESPONSE                    => true,
+        self::EXCESS_ORDER_AMOUNT             => true,
+        self::SUBSCRIPTION_V2                 => true,
     ];
 
     // Entity type constants

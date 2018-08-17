@@ -21,11 +21,12 @@ class Fields
     const COLLECT_BY_DATE           = 'collectByDate';
     const BILL_NUMBER               = 'billNumber';
     const PAYEE_VA                  = 'payeeVA';
-    const VERIFY_AMOUNT             = 'Amount';
+    const VERIFY_AMOUNT             = 'amount';
     const PAYER_AMOUNT              = 'PayerAmount';
     const PAYER_MOBILE              = 'PayerMobile';
     const PAYER_NAME                = 'PayerName';
     const PAYER_VA                  = 'PayerVA';
+    const VERIFY_PAYER_VA           = 'payerVA';
     const PAYER_VA_REQ              = 'payerVa';
     const REFUND_ID                 = 'refund_id';
     const REFUND_AMOUNT             = 'refundAmount';

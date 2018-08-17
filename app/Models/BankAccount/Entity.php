@@ -3,12 +3,16 @@
 namespace RZP\Models\BankAccount;
 
 use App;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Razorpay\IFSC\IFSC;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
 
+/**
+ * @property Merchant\Entity     $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
@@ -402,6 +406,15 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::TYPE] = Type::VIRTUAL_ACCOUNT;
 
         $this->source()->associate($virtualAccount);
+    }
+
+    public function associateSource(Base\Entity $entity, string $type)
+    {
+        Type::validateType($type);
+
+        $this->attributes[self::TYPE] = $type;
+
+        $this->source()->associate($entity);
     }
 
     public function getRedactedAccountNumber()

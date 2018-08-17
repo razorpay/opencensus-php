@@ -2,20 +2,19 @@
 
 namespace RZP\Models\User;
 
-use Config;
 use Hash;
-
+use Config;
 use Carbon\Carbon;
 use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\RequestJob;
-use RZP\Jobs\MailChimpSubscribe;
 use RZP\Constants\Timezone;
+use RZP\Jobs\MailChimpSubscribe;
 
 class Core extends Base\Core
 {
@@ -28,18 +27,21 @@ class Core extends Base\Core
         return $user;
     }
 
-    public function edit(Entity $user, array $input)
+    public function edit(Entity $user, array $input, $operation = 'edit')
     {
-        $user->edit($input);
+        $user->edit($input, $operation);
 
         $this->repo->saveOrFail($user);
 
-        $this->trace->info(
-            TraceCode::USER_EDIT,
-            [
-                'user_id'     => $user->getId(),
-                'input'       => $input,
-            ]);
+        if ($operation === 'edit')
+        {
+            $this->trace->info(
+                TraceCode::USER_EDIT,
+                [
+                    'user_id'     => $user->getId(),
+                    'input'       => $input
+                ]);
+        }
 
         return $user;
     }
@@ -60,43 +62,8 @@ class Core extends Base\Core
         return $user;
     }
 
-    public function confirmUserByData(array $input)
-    {
-        $user = null;
-
-        (new Entity)->getValidator()->validateInput('confirm', $input);
-
-        // need to validate if it is only a confirm_token or an email
-        if (empty($input[Entity::CONFIRM_TOKEN]) === false)
-        {
-            $user = $this->repo->user->findByToken($input[Entity::CONFIRM_TOKEN]);
-        }
-        else if (empty($input[Entity::EMAIL]) === false)
-        {
-            $user = $this->repo->user->findByEmail($input[Entity::EMAIL]);
-        }
-        else
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
-        }
-
-        return $this->confirm($user);
-    }
-
     public function changePassword(Entity $user, array $input)
     {
-        $oldPassword = $input[Entity::OLD_PASSWORD] ?? null;
-
-        if ((empty($oldPassword) === false) and
-            (Hash::check($oldPassword, $user->getPassword()) === false))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OLD_PASSWORD_MISMATCH);
-        }
-
-        (new Validator)->validateInput('change_password', $input);
-
-        $input[Entity::PASSWORD] = Hash::make($input[Entity::PASSWORD]);
-
         $user->fill($input);
 
         $this->repo->saveOrFail($user);
@@ -153,9 +120,12 @@ class Core extends Base\Core
     /**
      * This function is used to add new relationship between user and merchant
      * This uses laravel attach which will create a new mapping.
+     *
      * @param  Entity $user
-     * @param  array  $input
+     * @param  array $input
+     *
      * @return array
+     * @throws Exception\BadRequestException
      */
     protected function attach(Entity $user, array $input)
     {
@@ -170,6 +140,13 @@ class Core extends Base\Core
         $merchantId = $input[Entity::MERCHANT_ID];
 
         $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $mapping = $this->repo->merchant->getMerchantUserMapping($merchantId, $user->getId(), $input[Entity::ROLE]);
+
+        if (empty($mapping) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS);
+        }
 
         $this->repo->attach($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
 

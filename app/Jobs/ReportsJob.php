@@ -20,6 +20,8 @@ class ReportsJob extends Job
 
     protected $merchantId;
 
+    public $timeout = 300;
+
     /**
      * Create a new job instance.
      *

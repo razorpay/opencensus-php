@@ -4,21 +4,34 @@ namespace RZP\Models\BankTransfer;
 
 use App;
 use Cache;
-
 use Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
-use RZP\Models\Currency\Currency;
-use RZP\Trace\TraceCode;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Currency\Currency;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends VirtualAccount\Processor
 {
     const PAYER_BANK_ACCOUNT_MAX_LENGTH = 20;
+
+    protected $paymentProcessor;
+
+    protected function getPaymentProcessor()
+    {
+        if (isset($this->paymentProcessor) === false)
+        {
+            $this->paymentProcessor = new PaymentProcessor($this->merchant);
+        }
+
+        return $this->paymentProcessor;
+    }
 
     /**
      * Check if the UTR received has ever been encountered before for the same
@@ -60,6 +73,41 @@ class Processor extends VirtualAccount\Processor
         return true;
     }
 
+    protected function processWithoutOrder(array $input)
+    {
+        if (isset($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            $paymentInput = array_except($input, [Payment\Entity::ORDER_ID]);
+        }
+
+        $this->getPaymentProcessor()->process($paymentInput);
+    }
+
+    protected function processBankTransfer(array $input)
+    {
+        try
+        {
+            $this->getPaymentProcessor()->process($input);
+        }
+        catch (\Exception $e)
+        {
+            /*
+             * Exception might have been because of Validation Failure on Order.
+             * In this case we will make the payment without Order and refund
+             * it in later flow.
+             */
+            if (isset($input[Payment\Entity::ORDER_ID]) === false)
+            {
+                throw $e;
+            }
+
+            $this->trace->traceException($e, Trace::INFO,
+                TraceCode::VIRTUAL_ACCOUNT_FAILED_FOR_ORDER, ['input' => $input]);
+
+            $this->processWithoutOrder($input);
+        }
+    }
+
     /**
      * Processing the bank transfer
      *  - Create bank transfer, associate with the merchant, and the identified VA
@@ -73,6 +121,8 @@ class Processor extends VirtualAccount\Processor
      */
     protected function processPayment(Base\PublicEntity $bankTransfer)
     {
+        $this->checkIfAccountIsBlocked($bankTransfer);
+
         if ($bankTransfer->isExpected() === false)
         {
             if ($this->checkReservedAccount($bankTransfer) === true)
@@ -81,14 +131,14 @@ class Processor extends VirtualAccount\Processor
             }
         }
 
-        $paymentProcessor = new PaymentProcessor($this->merchant);
+        $paymentProcessor = $this->getPaymentProcessor();
 
         $payment = $this->repo->transaction(
                         function() use ($bankTransfer, $paymentProcessor)
                         {
                             $paymentInput = $this->getPaymentArray($bankTransfer);
 
-                            $paymentProcessor->process($paymentInput);
+                            $this->processBankTransfer($paymentInput);
 
                             $payment = $paymentProcessor->getPayment();
 
@@ -111,7 +161,6 @@ class Processor extends VirtualAccount\Processor
 
         if ($bankTransfer->isExpected() === true)
         {
-            // Amount mismatched payments made to order VAs are immediately refunded
             if ($this->shouldRefundOrderPayment($bankTransfer) === true)
             {
                 $paymentProcessor->refundAuthorizedPayment($payment);
@@ -125,6 +174,58 @@ class Processor extends VirtualAccount\Processor
         return $bankTransfer;
     }
 
+    protected function checkIfAccountIsBlocked(Base\PublicEntity $bankTransfer)
+    {
+        $payeeAccount = $bankTransfer->getPayeeAccount();
+
+        //
+        // Cases of duplicate VAs. Payments to these accounts are to be
+        // blocked till the cases are resolved with the merchants.
+        //
+        // Throwing this exception will cause it to be traced critical,
+        // and a slack notification sent to #tech_va_logs
+        //
+        $blockedAccounts = [
+            '2223330048089327',
+            '2223330004373571',
+            '2223330035064789',
+            '2223330035727499',
+            '2223330036078115',
+            '2223330051029132',
+            '2223330053833583',
+            '2223330058630167',
+            '2223330062713538',
+            '2223330066512545',
+            '2223330098769820',
+            '2223330001094652',
+            '2223330015368288',
+            '2223330022707272',
+            '2223330024009748',
+            '2223330024620707',
+            '2223330036226710',
+            '2223330036538719',
+            '2223330066361910',
+            '22233300678743457',
+            '2223330082601751',
+            '2223330093686538',
+            '2223330098561246',
+        ];
+
+        if (in_array($payeeAccount, $blockedAccounts, true) === true)
+        {
+            throw new LogicException('Payment made to blocked account', null, $bankTransfer->toArray());
+        }
+    }
+
+    private function getBankTransferEntity(Base\PublicEntity $bankTransfer): Entity
+    {
+        if (($bankTransfer instanceof Entity) === false)
+        {
+            throw new InvalidArgumentException('Not a valid class');
+        }
+        return $bankTransfer;
+    }
+
     /**
      * Given a bank transfer, locate the bank account that is
      * being paid, and the associated active VA, if present.
@@ -133,12 +234,14 @@ class Processor extends VirtualAccount\Processor
      *
      * @return null|VirtualAccount\Entity
      */
-    protected function getVirtualAccountFromEntity(Base\PublicEntity $bankTransfer)
+    protected function getVirtualAccountFromEntity(Base\PublicEntity $transfer)
     {
-        // TODO: Put assert on entity type
+        // Because PHP doesn't support generics, we are applying this hack.
+        $bankTransfer = $this->getBankTransferEntity($transfer);
+
         $accountNumber = $bankTransfer->getPayeeAccount();
 
-        $bankAccount = $this->getBankAccountFromNumber($accountNumber);
+        $bankAccount = $this->getBankAccountFromNumber($accountNumber, $bankTransfer->getGateway());
 
         if ($bankAccount === null)
         {
@@ -182,7 +285,7 @@ class Processor extends VirtualAccount\Processor
 
             if ($this->virtualAccount->merchant->isFeeBearerCustomer() === true)
             {
-                $paymentArray[Payment\Entity::FEE] = (new Core)->getFeesForOrder($order);
+                $paymentArray[Payment\Entity::FEE] = (new Core)->getFeesForBankTransfer($bankTransfer, $order);
             }
         }
 
@@ -217,8 +320,13 @@ class Processor extends VirtualAccount\Processor
             return false;
         }
 
-        if (($bankTransfer->virtualAccount->getAmountExpected() != $bankTransfer->getAmount()) or
-            ($bankTransfer->virtualAccount->entity->isPaid() === true))
+        /**
+         * If Virtual Account has an Order but Bank Transfer Payment
+         * doesn't have an order then this is probably because
+         * Validations on Order are failing and Payment is created
+         * without Order to refund that while further processing.
+         */
+        if ($bankTransfer->payment->hasOrder() === false)
         {
             return true;
         }
@@ -260,7 +368,7 @@ class Processor extends VirtualAccount\Processor
 
         // Ignore payments made to reserved accounts, i.e. accounts that use the
         // reserved roots. We will use this for other cool stuff.
-        if (VirtualAccount\Provider::isReservedAccount($payeeAccount, $this->provider) === true)
+        if (VirtualAccount\Provider::isReservedAccount($payeeAccount, $bankTransfer->getGateway()) === true)
         {
             $this->trace->info(
                 TraceCode::BANK_TRANSFER_RESERVED_ACCOUNT,
@@ -281,9 +389,9 @@ class Processor extends VirtualAccount\Processor
      *
      * @return BankAccount\Entity|null
      */
-    protected function getBankAccountFromNumber(string $accountNumber)
+    protected function getBankAccountFromNumber(string $accountNumber, string $gateway)
     {
-        $bankCode = VirtualAccount\Provider::getBankCode($this->provider);
+        $bankCode = VirtualAccount\Provider::getBankCode($gateway);
 
         $bankAccount = $this->repo
                             ->bank_account

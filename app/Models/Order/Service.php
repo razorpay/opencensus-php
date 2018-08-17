@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Order;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -43,6 +44,15 @@ class Service extends Base\Service
         if ($this->isOldFormat($input) === false)
         {
             return;
+        }
+
+        if (isset($input[Entity::OFFERS]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Request should send either offer_id or offers', null, [
+                    Entity::OFFER_ID => $input[Entity::OFFER_ID],
+                    Entity::OFFERS   => $input[Entity::OFFERS],
+                ]);
         }
 
         $additionalInput = [

@@ -403,8 +403,10 @@ class AnalyticsTest extends TestCase
             $this->doAuthPayment($payment, $requestServer);
         });
 
+        $paymentEntity   = $this->getLastPayment(true);
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
+        $this->assertNull($paymentEntity['verify_at']);
         $this->assertEquals((float) 15.3, $paymentAnalytic[AnalyticsEntity::RISK_SCORE]);
         $this->assertEquals('maxmind', $paymentAnalytic[AnalyticsEntity::RISK_ENGINE]);
 

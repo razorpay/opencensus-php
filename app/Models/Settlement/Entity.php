@@ -122,6 +122,12 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\BankAccount\Entity');
     }
 
+    public function bankAccountForFundTransferRecon()
+    {
+        return $this->belongsTo('RZP\Models\BankAccount\Entity', self::BANK_ACCOUNT_ID, BankAccount\Entity::ID)
+                    ->withTrashed();
+    }
+
     // Fetches the transaction of type Settlement
     public function transaction()
     {

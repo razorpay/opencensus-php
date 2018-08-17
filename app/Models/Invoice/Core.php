@@ -85,12 +85,19 @@ class Core extends Base\Core
                         ->generate($input);
 
         $this->trace->info(TraceCode::INVOICE_CREATED, $invoice->toArrayPublic());
+        $this->trace->count(Metric::INVOICE_CREATED_TOTAL, $invoice->getMetricDimensions());
 
         $this->repo->loadRelations($invoice);
 
         if ($invoice->isIssued())
         {
-            InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+            $pendingDispatch = InvoiceJob::dispatch($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+
+            // Internal flow (e.g. via subscription) requires delay to accommodate for time in wrapping txn commit
+            if ($invoice->hasSubscription())
+            {
+                $pendingDispatch->delay(self::QUEUE_JOB_DELAY);
+            }
         }
 
         return $invoice;
@@ -419,6 +426,8 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($invoice);
             });
+
+        $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, $invoice->getMetricDimensions());
 
         InvoiceJob::dispatch($this->mode, InvoiceJob::EXPIRED, $invoice->getId());
 

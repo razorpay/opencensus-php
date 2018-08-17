@@ -222,6 +222,22 @@ class Core extends Base\Core
         return $ba;
     }
 
+
+    public function createBankAccountForSource($input, $merchant, $source, $sourceType, $addRule)
+    {
+        $ba = new BankAccount\Entity;
+
+        $ba = $ba->build($input, $addRule);
+
+        $ba->merchant()->associate($merchant);
+
+        $ba->associateSource($source, $sourceType);
+
+        $this->repo->saveOrFail($ba);
+
+        return $ba;
+    }
+
     /**
      * All bank account creation happens via this function
      *

@@ -8,10 +8,10 @@ use Requests_Hooks;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\FundTransfer\Base\Initiator\RequestProcessor;
+use RZP\Models\FundTransfer\Base\Initiator\ApiProcessor;
 use RZP\Models\FundTransfer\Rbl\Reconciliation\Status;
 
-abstract class Base extends RequestProcessor
+abstract class Base extends ApiProcessor
 {
     const TIMEOUT           = '240';
 
@@ -58,9 +58,9 @@ abstract class Base extends RequestProcessor
 
     protected $method = 'POST';
 
-    public function __construct()
+    public function __construct(string $purpose = null)
     {
-        parent::__construct();
+        parent::__construct($purpose);
 
         $this->channel = Channel::RBL;
 
@@ -124,14 +124,24 @@ abstract class Base extends RequestProcessor
 
         $hooks->register('curl.before_send', [$this, 'setCurlSslOpts']);
 
+        //
+        // Intentionally setting verify to null, so Requests does not use its default
+        // cacert (which is outdated), and curl ends up using the OS cacert by default.
+        //
+        // Ref:
+        // [1] Requests::get_default_options
+        // [2] Requests_Transport_cURL -> requesst
+        //
+
         $options = [
-            'hooks'   => $hooks,
-            'timeout' => self::TIMEOUT,
-            'auth'    => [
+            'hooks'     => $hooks,
+            'timeout'   => self::TIMEOUT,
+            'auth'      => [
                 $this->config['username'],
                 $this->config['password'],
             ],
-            'idn'     => false,
+            'idn'       => false,
+            'verify'    => null,
         ];
 
         return $options;
@@ -142,59 +152,6 @@ abstract class Base extends RequestProcessor
         curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
 
         curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientCertificateKey());
-    }
-
-    protected function getClientCertificate(): string
-    {
-        $certPath = $this->getGatewayCertDirPath();
-
-        $certFile = $certPath . '/' . $this->getClientCertificateName();
-
-        // Download cert file from vault if already not present and store locally
-        if (file_exists($certFile) === false)
-        {
-            $cert = $this->config['client_certificate'];
-
-            $cert = str_replace('\n', PHP_EOL, $cert);
-
-            file_put_contents($certFile, $cert);
-        }
-
-        return $certFile;
-    }
-
-    protected function getClientCertificateKey(): string
-    {
-        $certPath = $this->getGatewayCertDirPath();
-
-        $certFile = $certPath . '/' . $this->getClientCertificateKeyName();
-
-        // Download cert key file from vault if already not present and store locally
-        if (file_exists($certFile) === false)
-        {
-            $key = $this->config['client_certificate_key'];
-
-            $key = str_replace('\n', PHP_EOL, $key);
-
-            file_put_contents($certFile, $key);
-        }
-
-        return $certFile;
-    }
-
-    protected function getClientCertificateName(): string
-    {
-        return $this->config['certificate_name'];
-    }
-
-    protected function getGatewayCertDirPath(): string
-    {
-        return $this->config['certificate_path'];
-    }
-
-    protected function getClientCertificateKeyName(): string
-    {
-        return $this->config['certificate_key_name'];
     }
 
     /**
@@ -274,16 +231,20 @@ abstract class Base extends RequestProcessor
     /**
      * {@inheritdoc}
      */
-    protected function mockResponseGenerator(array $input): array
+    protected function mockResponseGenerator(array $input): string
     {
         // Currently code wont go in this block.
         if ((isset($input['failed_response']) === true) and
             ($input['failed_response'] === '1'))
         {
-            return $this->mockGenerateFailedResponse();
+            $content = $this->mockGenerateFailedResponse();
+        }
+        else
+        {
+            $content = $this->mockGenerateSuccessResponse();
         }
 
-        return $this->mockGenerateSuccessResponse();
+        return $content;
     }
 
     /**
@@ -339,14 +300,14 @@ abstract class Base extends RequestProcessor
     /**
      * Generates successful response for given request
      *
-     * @return array
+     * @return string
      */
-    protected abstract function mockGenerateFailedResponse(): array;
+    protected abstract function mockGenerateFailedResponse(): string;
 
     /**
      * Generates failed response for given request
      *
-     * @return array
+     * @return string
      */
-    protected abstract function mockGenerateSuccessResponse(): array;
+    protected abstract function mockGenerateSuccessResponse(): string;
 }

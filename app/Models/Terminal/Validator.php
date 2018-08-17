@@ -128,6 +128,19 @@ class Validator extends Base\Validator
         Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
     ];
 
+    protected static $isgTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:isg',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string|max:15',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|string|size:8',
+        Entity::TYPE                       => 'required|array',
+        Entity::TYPE . '.bharat_qr'        => 'required|in:1',
+        Entity::TYPE . '.non_recurring'    => 'required|in:1',
+        Entity::MC_MPAN                    => 'required|string|size:16',
+        Entity::VISA_MPAN                  => 'required|string|size:16',
+        Entity::RUPAY_MPAN                 => 'required|string|size:16',
+        Entity::EXPECTED                   => 'sometimes|boolean',
+    ];
+
     protected static $aepsIciciTerminalRules = [
         Entity::GATEWAY                    => 'required|in:aeps_icici',
         Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num',
@@ -282,6 +295,8 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [
@@ -369,6 +384,8 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
+        Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
     ];
 
     protected static $upiHulkTerminalRules = [

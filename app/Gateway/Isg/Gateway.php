@@ -49,16 +49,14 @@ class Gateway extends Base\Gateway
 
             return null;
         }
-        else
-        {
-            throw new Exception\LogicException(
-                'Not a Bharat Qr Payment',
-                null,
-                [
-                    'input'     => $input,
-                    'gateway'   => $this->gateway,
-                ]);
-        }
+
+        throw new Exception\LogicException(
+            'Not a Bharat Qr Payment',
+            null,
+            [
+                'input'     => $input,
+                'gateway'   => $this->gateway
+            ]);
     }
 
     public function verify(array $input)
@@ -114,7 +112,15 @@ class Gateway extends Base\Gateway
                 break;
 
             default:
-                throw new Exception\RuntimeException('Not a valid response code');
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                    null,
+                    null,
+                    [
+                        'gateway'   => $this->gateway,
+                        'request'   => $input,
+                        'response'  => $response,
+                    ]);
         }
 
         $this->handleGatewayError($gatewayErrorCode, $input, $response);
@@ -219,6 +225,7 @@ class Gateway extends Base\Gateway
             $verify->amountMismatch = false;
         }
     }
+
     protected function setVerifyStatus(Verify $verify)
     {
         $this->checkApiSuccess($verify);
@@ -295,9 +302,9 @@ class Gateway extends Base\Gateway
         $verify->verifyResponseContent = $responseArray;
     }
 
-    protected function getLiveSecret()
+    public function getSecret()
     {
-        return $this->config['live_hash_secret'];
+        return $this->config['bharat_qr_secret'];
     }
 
     protected function getDecryptedString($string)
@@ -438,9 +445,7 @@ class Gateway extends Base\Gateway
 
     protected function getFormattedDate(string $dateTime, $format = 'Y-m-d')
     {
-        $date = Carbon::parse($dateTime)->format($format);
-
-        $date = str_replace("-", "", $date);
+        $date = Carbon::parse($dateTime)->format('Ymd');
 
         return $date;
     }

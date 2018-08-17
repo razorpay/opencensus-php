@@ -26,9 +26,9 @@ class Processor extends VirtualAccount\Processor
 
     protected $terminal;
 
-    public function __construct(array $gatewayResponse, $terminal, string $provider = null)
+    public function __construct(array $gatewayResponse, $terminal)
     {
-        parent::__construct($provider);
+        parent::__construct();
 
         $this->gatewayInput = $gatewayResponse['qr_data'];
 

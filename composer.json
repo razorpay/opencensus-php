@@ -43,11 +43,15 @@
         "bacon/bacon-qr-code": "1.0.3",
         "watson/rememberable": "^2.0",
         "razorpay/hodor": "dev-master",
-        "razorpay/trace": "~2.0",
+        "razorpay/trace": "~2.1",
         "razorpay/oauth": "dev-master",
         "fideloper/proxy": "~3.0",
         "nojacko/email-validator": "^1.1",
-        "datadog/php-datadogstatsd": "^1.0"
+        "datadog/php-datadogstatsd": "^1.0",
+        "symfony/dom-crawler": "3.*",
+        "justinrainbow/json-schema": "^5.2",
+        "phpoffice/phpspreadsheet": "^1.4",
+        "mdanter/ecc": "^0.5.0"
     },
     "repositories": [
         {
@@ -78,6 +82,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/hodor.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/metrics-php.git"
         }
     ],
     "require-dev": {
@@ -87,7 +95,6 @@
         "codacy/coverage": "dev-master",
         "tijsverkoyen/css-to-inline-styles": "2.*",
         "php-http/mock-client": "^0.3.3",
-        "symfony/dom-crawler": "3.*",
         "phpunit/phpunit": "^6.2",
         "symfony/phpunit-bridge": "3.3.*@dev",
         "codedungeon/phpunit-result-printer": "^0.5.4",

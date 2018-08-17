@@ -3,9 +3,11 @@
 namespace RZP\Models\Transaction;
 
 use Carbon\Carbon;
+use Mail;
 use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
 use RZP\Models\Dispute;
 use RZP\Models\Reversal;
@@ -990,6 +992,8 @@ class Core extends Base\Core
 
         $merchantId = $merchantBalance->merchant->getId();
 
+        $feeCreditsThreshold = $merchantBalance->merchant->getFeeCreditsThreshold();
+
         $feeCredits = $this->getMerchantCreditsOfType($merchantBalance, Credits\Type::FEE);
 
         if ($feeCredits < $fee)
@@ -1016,6 +1020,41 @@ class Core extends Base\Core
 
         // // Nodal balance needs to be saved because of amount credit update
         // $this->repo->balance->updateBalance($nodalBalance);
+
+        if ($feeCreditsThreshold !== null)
+        {
+            $this->sendFeeCreditAlertIfNeeded($fee, $feeCredits, $feeCreditsThreshold, $merchantBalance->merchant);
+        }
+    }
+
+
+    private function sendFeeCreditAlertIfNeeded(int $fee, int $feeCredits, int $feeCreditsThreshold, Merchant\Entity $merchant)
+    {
+        $alertRatios = [1, 0.75, 0.5, 0.25, 0.1];
+
+        sort($alertRatios);
+
+        foreach ($alertRatios as $alertRatio)
+        {
+            if (($feeCredits >= ($alertRatio * $feeCreditsThreshold)) and
+                (($feeCredits - $fee) < ($alertRatio * $feeCreditsThreshold)))
+            {
+                $data = [
+                    'alert_ratio'  => $alertRatio,
+                    'email'        => $merchant->getTransactionReportEmail(),
+                    'merchant_id'  => $merchant->getId(),
+                    'fee_credits'  => ($feeCredits - $fee)
+                ];
+
+                $this->trace->info(TraceCode::FEE_CREDITS_THRESHOLD_ALERT, $data);
+
+                $createAlertMail = new FeeCreditsAlert($data);
+
+                Mail::queue($createAlertMail);
+
+                break;
+            }
+        }
     }
 
     public function updateRefundCredits(Transaction\Entity $txn)

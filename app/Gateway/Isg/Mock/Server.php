@@ -41,16 +41,16 @@ class Server extends Base\Mock\Server
             Field::SECONDARY_ID                 => 'reference_id',
             Field::MERCHANT_PAN                 => '4403844012084006',
             Field::TRANSACTION_ID               => '1817700802564',
-            Field::TRANSACTION_DATE_TIME        =>  Carbon:: now()->format('Y-m-d H:i:s'),
+            Field::TRANSACTION_DATE_TIME        => Carbon:: now()->format('Y-m-d H:i:s'),
             Field::TRANSACTION_AMOUNT           => '1.00',
             Field::AUTH_CODE                    => 'ab3456',
-            Field::RRN                          =>  random_int(111111111111,999999999999),
+            Field::RRN                          => random_int(111111111111,999999999999),
             Field::CONSUMER_PAN                 => '4012001037141112',
             Field::STATUS_CODE                  => '00',
             Field::STATUS_DESC                  => 'Transaction Approved',
         ];
 
-        $encryptedCardNumber =  $this->getEncryptedString($attributes[Field::CONSUMER_PAN]);
+        $encryptedCardNumber = $this->getEncryptedString($attributes[Field::CONSUMER_PAN]);
 
         $attributes[Field::CONSUMER_PAN] = $encryptedCardNumber;
 

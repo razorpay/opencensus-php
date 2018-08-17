@@ -50,6 +50,7 @@ class Netbanking
     const ACCOUNT_NUMBER_LENGTHS = [
         IFSC::UTIB => 15,
         IFSC::FDRL => 14,
+        IFSC::CSBK => 18,
     ];
 
     protected static $self = [
@@ -81,7 +82,8 @@ class Netbanking
         IFSC::UTIB,
         IFSC::FDRL,
         IFSC::RATN,
-         IFSC::INDB,
+        IFSC::INDB,
+        IFSC::CSBK,
     ];
 
     protected static $paytm = array(

@@ -15,15 +15,49 @@ use RZP\Models\Merchant\Entity as Merchant;
 
 class Core extends Base\Core
 {
+    const VA_BANK_ACCOUNT_GENERATION = 'va_bank_account_generation';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     public function create(
         array $input,
         Merchant $merchant,
         Customer\Entity $customer = null,
         Order $order = null): Entity
     {
-        $virtualAccount = $this->createEntityAndAssociate($merchant);
+        //
+        // VA creation is a bit broken at the moment. Creation requires multiple entities (VA+receivers)
+        // to be committed to the DB, but while building receivers we also need to take a lock on the
+        // generated account number and do a DB query to check for uniqueness. This will require a
+        // refactor to be solved.
+        //
+        // For now, we're simply adding a global lock on VA creation to avoid duplicates being created.
+        //
+        $virtualAccount = $this->mutex->acquireAndRelease(
+            self::VA_BANK_ACCOUNT_GENERATION,
+            function() use ($input, $merchant, $customer, $order)
+            {
+                $virtualAccount = $this->createEntityAndAssociate($merchant);
 
-        return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
+                return $this->buildVirtualAccountAndReceivers($virtualAccount, $input, $customer, $order);
+            },
+            // The entire VA creation process inside this lock actually takes
+            // an avg of 10ms, so 1000x i.e. 10 seconds is more than adequate TTL
+            10,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+            // A process will generally not need to do multiple retries at all,
+            // since the retry times are adequate for the previous process to complete.
+            2,
+            // 2x and 4x of avg response time for this entire route (not just the process within the lock)
+            200,
+            400);
+
+        return $virtualAccount;
     }
 
     /**

@@ -214,6 +214,7 @@ class Event
         self::TOKEN_REJECTED            => Feature\Constants::CHARGE_AT_WILL,
         self::VIRTUAL_ACCOUNT_CREDITED  => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::VIRTUAL_ACCOUNT_CREATED   => Feature\Constants::VIRTUAL_ACCOUNTS,
+        self::SETTLEMENT_PROCESSED      => Feature\Constants::MARKETPLACE,
     ];
 
     /**

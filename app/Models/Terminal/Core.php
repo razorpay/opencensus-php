@@ -250,7 +250,7 @@ class Core extends Base\Core
         //
         // This function should be called only for second recurring payments!
         //
-        if ($payment->isSecondRecurring(true, $gatewayTokens) === false)
+        if ($payment->isSecondRecurring() === false)
         {
             throw new Exception\LogicException(
                 'Invalid function call!',
