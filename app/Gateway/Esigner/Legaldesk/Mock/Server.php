@@ -25,6 +25,18 @@ class Server extends Base\Mock\Server
         return $this->makeJsonResponse($responseContent);
     }
 
+    /**
+     * @param $input
+     * @return mixed
+     *
+     * We do not send the callback URL in the signing request
+     * Instead, we send it in the mandate create request and store it
+     * in their backend.
+     *
+     * Hence, we fetch the payment id from the mandate id stored in esigner
+     * entity and then generate the corresponding callback URL and redirect to that
+     * from the mock signing request.
+     */
     public function sign($input)
     {
         $content = [
