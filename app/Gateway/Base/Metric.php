@@ -44,12 +44,12 @@ class Metric
     const DIMENSION_TERMINAL_ID          = 'terminal_id';
     const DIMENSION_MERCHANT_CATEGORY    = 'merchant_category';
 
-    // Actions array for which we need not push data to prometheus
-    const EXCLUDED_ACTIONS = [
-        Payment\Action::VERIFY,
-        Payment\Action::GENERATE_REFUNDS,
-        Payment\Action::GENERATE_CLAIMS,
-        Payment\Action::VALIDATE_VPA
+    // Actions array for which we need to push data to prometheus
+    const ACTIONS_TO_ALLOW  = [
+        Payment\Action::AUTHORIZE,
+        Payment\Action::CALLBACK,
+        Payment\Action::CAPTURE,
+        Payment\Action::REFUND
     ];
 
     protected $trace;
@@ -91,7 +91,7 @@ class Metric
 
         $terminalId = $this->getTerminalId($input);
 
-        $merchantCategory = $this->getMerchantCategory($input);
+        $merchantCategory = 'none';
 
         return [
             Metric::DIMENSION_GATEWAY              => $gateway,
@@ -193,7 +193,8 @@ class Metric
 
     protected function getCardNetwork($method, $input)
     {
-        $network = ($method === Payment\Method::CARD) ? $input[Payment\Method::CARD][Card\Entity::NETWORK] : 'none';
+        $network = ($method === Payment\Method::CARD) ? $input[Payment\Method::CARD][Card\Entity::NETWORK_CODE] :
+            'none';
 
         return $network;
     }
@@ -285,20 +286,16 @@ class Metric
         return $input[Entity::TERMINAL][Terminal\Entity::ID];
     }
 
-    protected function getMerchantCategory($input)
-    {
-        return $input[Entity::MERCHANT]->getCategory();
-    }
-
     public function pushGatewayDimensions($action, $input, $status)
     {
         try
         {
             $action = snake_case($action);
 
-            if (in_array($action, self::EXCLUDED_ACTIONS, true) === false)
+            if (in_array($action, self::ACTIONS_TO_ALLOW, true) === true)
             {
                 $dimensions = $this->getDimensions($action, $input);
+
                 $dimensions[Metric::DIMENSION_STATUS] = $status;
 
                 app('trace')->count(Metric::GATEWAY_REQUEST_COUNT, $dimensions);
