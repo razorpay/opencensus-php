@@ -686,17 +686,26 @@ class Processor
 
         Offer\Entity::verifyIdAndStripSign($offerId);
 
+        // TODO: this needs to be checked for shared merchant offers also
+        // skipping for now because there aren't any
+        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
+
+        // if its just a checkout display offer, just return null so that further validations
+        // and associations don't happen.
+        if ($offer->getCheckoutDisplay() === true)
+        {
+            return null;
+        }
+
         // If offer is present in the payment request, we need to validate it against the order.
         if ($payment->order->offers->contains($offerId) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
             [
-                'offer_id' => $offer->getPublicId(),
-                'order_id' => $order->getPublicId(),
+                'offer_id' => Offer\Entity::getSignedId($id),
+                'order_id' => $payment->order->getPublicId(),
             ]);
         }
-
-        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
 
         return $offer;
     }
