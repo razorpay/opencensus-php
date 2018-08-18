@@ -702,7 +702,7 @@ class Processor
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
             [
-                'offer_id' => Offer\Entity::getSignedId($id),
+                'offer_id' => Offer\Entity::getSignedId($offerId),
                 'order_id' => $payment->order->getPublicId(),
             ]);
         }
