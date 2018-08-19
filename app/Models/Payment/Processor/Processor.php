@@ -680,7 +680,7 @@ class Processor
         throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
     }
 
-    protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
+    protected function validateAndFetchOffer(Payment\Entity $payment, array $input)
     {
         $offerId = $input[Payment\Entity::OFFER_ID];
 
