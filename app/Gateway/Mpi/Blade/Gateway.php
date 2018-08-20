@@ -6,7 +6,6 @@ use Cache;
 use Carbon\Carbon;
 use GuzzleHttp;
 use DOMDocument;
-use Noodlehaus\ErrorException;
 use RZP\Constants\Timezone;
 use RZP\Exception;
 use Requests_Hooks;
@@ -229,7 +228,7 @@ class Gateway extends Base\Gateway
         {
             $paresXml = gzinflate(substr($decodePares, 2));
         }
-        catch (ErrorException $e)
+        catch (\ErrorException $e)
         {
             $message = $e->getMessage();
 
