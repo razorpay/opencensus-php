@@ -2549,6 +2549,12 @@ final class Route
         $uri     = $info[1];
         $action  = $info[2];
 
+        // For any we have to register all the methods their is no specific called any in HTTP methods.
+        if ($methods === ['any'])
+        {
+            $methods = Router::$verbs;
+        }
+
         $router = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
 
         //
