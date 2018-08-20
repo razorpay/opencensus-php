@@ -16,7 +16,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
             {option.id === user.current ? (
               <i class="i i-check text-success pull-right" />
             ) : null}
-            <span>{option.display_name}</span>
+            <span>{option.display_name || option.name}</span>
           </a>
         );
       }}
