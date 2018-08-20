@@ -5,7 +5,7 @@ import Time from 'rzp/ui/Time';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import DetailRow from '../DetailRow';
 import ProgressBar from 'rzp/ui/ProgressBar';
-import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';

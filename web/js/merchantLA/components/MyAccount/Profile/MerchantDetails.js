@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Time from 'rzp/ui/Time';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import DetailRow from 'merchant/components/DetailRow';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
 const businessTypeMap = {
