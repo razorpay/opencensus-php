@@ -13,4 +13,5 @@ class Url
     const AUTHORIZE = '/#/gateway/login/{id}/{txnId}/{contact}';
     const CREATE = '/v2/client/enach/mandate/create_form';
     const FETCH  = '/v2/client/enach/mandate/download';
+    const VERIFY = '/v2/client/enach/mandate/form';
 }
