@@ -65,14 +65,13 @@ export default class AddWebhook extends Component {
       });
   }
 
-  save = props => {
-    let data = { ...props };
-
+  save = data => {
+    const { appId, mode } = this.props;
     let saveWebhook;
-    if (this.props.appId) {
+    if (appId) {
       saveWebhook = this.props.webhook
-        ? editAppWebhook(data)
-        : createAppWebhook(this.props.appId, data);
+        ? editAppWebhook({ data, mode })
+        : createAppWebhook({ appId, data, mode });
     } else {
       saveWebhook = this.props.saveWebhook(data);
     }
