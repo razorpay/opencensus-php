@@ -160,6 +160,33 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('REQUEST_VALIDATION_FAILED', $enach['error_code']);
     }
 
+    public function testVerify()
+    {
+        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $response = $this->doAuthPayment($payment);
+
+        $verify = $this->verifyPayment($response['razorpay_payment_id']);
+
+        $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(1, $payment[Payment::VERIFIED]);
+
+        $gateway = $this->getLastEntity('enach', true);
+
+        $this->assertNotNull($gateway['signed_xml']);
+    }
+
     public function testAcknowledgementSuccessfulReconciliation()
     {
         list($payment, $token, $order) = $this->createEmandatePayment();
