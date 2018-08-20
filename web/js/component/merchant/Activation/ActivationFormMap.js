@@ -401,8 +401,8 @@ const registrationDetails = [
       className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
       _when: excludeFor_Indiv_NotReg,
-      description: function() {
-        if (this.state.has_gstin == '1') {
+      description: activation => {
+        if (activation.state.has_gstin == '1') {
           return 'You can add your GST details later once you are registered';
         }
       },
@@ -532,11 +532,11 @@ const uploadFields = [
     name: 'business_proof_url',
     label: 'Business Registration Proof',
     _autoRenderImpure: true, // Here, Description on other field while render.
-    description: function() {
+    description: activation => {
       const currentBusinessType =
-        this.state.dirty.business_type != null
-          ? this.state.dirty.business_type
-          : this.props.data.business_type;
+        activation.state.dirty.business_type != null
+          ? activation.state.dirty.business_type
+          : activation.props.data.business_type;
 
       const li1 =
         'GST Certificate / Shop Establishment Act Certificate / Registration Certificate';
