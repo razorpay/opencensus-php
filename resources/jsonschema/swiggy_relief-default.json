@@ -2,16 +2,10 @@
   "title": " ",
   "type": "object",
   "required": [
-    "waybill_number",
     "customer_name",
     "payment_type"
   ],
   "properties": {
-    "waybill_number": {
-      "type": "string",
-      "title": "Waybill Number",
-      "maxLength": 255
-    },
     "customer_name": {
       "type": "string",
       "title": "Customer Name",
@@ -19,17 +13,17 @@
     },
     "payment_type": {
       "type": "string",
-      "title": "Payment Type",
+      "title": "Donate to",
       "enum": [
         "",
-        "Primary Payment",
-        "Balance Payment"
+        "Kerala CM's Distress Relief Fund",
+        "Karnataka CM Relief Fund Natural Calamity 2018 (Kodagu)"
       ],
       "options": {
         "enum_titles": [
-          "--Select--",
-          "Primary Payment",
-          "Balance Payment"
+          "-- Select --",
+          "Kerala CM's Distress Relief Fund",
+          "Karnataka CM Relief Fund Natural Calamity 2018 (Kodagu)"
         ]
       }
     }

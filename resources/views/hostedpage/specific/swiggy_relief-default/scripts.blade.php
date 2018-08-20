@@ -108,7 +108,6 @@
 
                 // Default errors;
                 switch(path) {
-                    case 'root.waybill_number': defaultMsg = 'Please enter the Waybill Number'; break;
                     case 'root.customer_name': defaultMsg = 'Please enter the Customer Name'; break;
                     case 'root.payment_type': defaultMsg = 'Please select type of payment'; break;
                 }
