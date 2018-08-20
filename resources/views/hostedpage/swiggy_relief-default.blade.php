@@ -5,12 +5,11 @@
     $is_test_mode               = $data['is_test_mode'] ?? false;
     $has_udf                    = (empty($udf_schema) === false);
     $max_mobile_width           = 853;
-    $contact = [
-        'phone' => '',
-        'email' => ''
-    ];
 
     $email_subject = 'Query for Payment Page Id: '. $payment_page_data['id'];
+
+    $intro_note = 'Kerala and Karnataka have been hit by relentless rain for the last two weeks. Rains, floods and landslides have resulted in loss of life and extensive damage in these states.';
+    $end_note = 'You can choose which fund you want to Donate to: Kerala Relief Fund or Karnataka Relief Fund. Your contribution can go a long way in rebuilding the lives of flood-affected people in these states.';
 ?>
 
 
@@ -62,9 +61,9 @@
         <div id="hostedpage-container">
             <!-- Desktop Container -->
             <div id="desktop-container" class="no-display-image">
-                @include('hostedpage.specific.swiggy_relief-default.header')
+                @include('hostedpage.partials.header')
                 <div class="content" style="min-height: 450px !important;">
-                    @include('hostedpage.specific.swiggy_relief-default.description')
+                    @include('hostedpage.partials.description')
                     @include('hostedpage.partials.form')
                 </div>
                 @include('hostedpage.partials.footer')
@@ -73,8 +72,8 @@
             <!-- Mobile Container -->
             <div id="mobile-container" class="no-display-image">
                 <div class="content">
-                    @include('hostedpage.specific.swiggy_relief-default.header')
-                    @include('hostedpage.specific.swiggy_relief-default.description')
+                    @include('hostedpage.partials.header')
+                    @include('hostedpage.partials.description')
                     <a href="#form" class="btn btn--full" id="mobile-proceed-btn">PROCEED TO PAY</a>
                 </div>
                 @include('hostedpage.partials.form')

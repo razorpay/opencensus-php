@@ -9,13 +9,15 @@
     @endif
     <p>{{$intro_note}}</p>
 
-    <ol>
-        @foreach ($instructions as $key => $ins)
-            <li>{{$ins}}</li>
-        @endforeach
-    </ol>
+    @if(empty($instructions) === false)
+        <ol>
+            @foreach ($instructions as $key => $ins)
+                <li>{{$ins}}</li>
+            @endforeach
+        </ol>
+    @endif
 
-    <p style="opacity: 0.8">{{$end_note}} <a href="mailto:{{$contact['email']}}?subject={{$email_subject}}" target="_blank">{{$contact['email']}}</a> or <a href="tel:{{$contact['phone']}}">{{$contact['phone']}}</a></p>
+    <p style="opacity: 0.8">{{$end_note}} @if(isset($contact) === true)<a href="mailto:{{$contact['email']}}?subject={{$email_subject}}" target="_blank">{{$contact['email']}}</a> or <a href="tel:{{$contact['phone']}}">{{$contact['phone']}}</a>@endif</p>
 
     <div class="footer description-footer">
         <a href="https://razorpay.com/" target="_blank">
