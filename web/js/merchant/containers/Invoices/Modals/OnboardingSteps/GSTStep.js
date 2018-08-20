@@ -36,16 +36,14 @@ export default class GSTStepOnboarding extends Component {
         <div class="row">
           <div class="col-md-12">
             <small class="help-block">STEP 2/2</small>
-            <span class="section-title" style={{ display: 'inline-block' }}>
-              GST Details:
-            </span>
+            <div class="section-title">GST Details:</div>
             {merchantGstin ? (
               <Fragment>
                 <div class="m-t">
                   Your Business GSTIN:{' '}
                   <span class="section-title">{merchantGstin}</span>
                 </div>
-                <p class="help-block p-t">
+                <p class="help-block">
                   To update your GST details, reach out to us at{' '}
                   <a href="mailto:support@razorpay.com">support@razorpay.com</a>
                 </p>
@@ -53,7 +51,7 @@ export default class GSTStepOnboarding extends Component {
             ) : (
               <Fragment>
                 <div class="m-t">No GSTIN added</div>
-                <p class="help-block p-t">
+                <p class="help-block">
                   You can still create Non-GST invoices. For GST Invoices, you
                   can add your GSTIN later from Invoice Settings.
                 </p>
@@ -68,7 +66,7 @@ export default class GSTStepOnboarding extends Component {
                 class="btn btn-default m-r"
                 onClick={e => onSwitchStep(e, 0)}
               >
-                Previos Step
+                Previous Step
               </button>
               <AsyncButton
                 type="submit"
