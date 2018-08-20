@@ -379,14 +379,13 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestData($verify)
     {
-        $request = $this->getStandardRequestArray([], 'get');
+        $request = $this->getStandardRequestArray([], 'get', null, false);
 
         $gatewayPayment = $verify->payment;
 
         $request['url'] = $request['url'] . '/' . $gatewayPayment->getGatewayReferenceId();
 
         return $request;
-
     }
 
     protected function verifyPayment(Verify $verify)
