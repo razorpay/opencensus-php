@@ -81,7 +81,7 @@ export default function UploadReconciliationFile() {
             gateway: data.gateway,
           };
           if (data.force_authorization) {
-            form.force_authorization = data.force_authorization;
+            form.force_authorization = data.force_authorization.split(',');
           }
           for (let i = 0; i < files.length; i++) {
             if (files[i]) form['attachment-' + (i + 1)] = files[i];
