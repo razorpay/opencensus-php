@@ -229,7 +229,7 @@ class ReconciliationFileTest extends TestCase
         $this->runForFiles([$file], 'Axis', [], ['pay_'. $payment['id']]);
 
         $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
-s($updatedPayment);
+
         $this->assertEquals('authorized', $updatedPayment['status']);
     }
 
