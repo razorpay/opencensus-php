@@ -3,21 +3,21 @@
   "type": "object",
   "required": [
     "customer_name",
-    "payment_type"
+    "donate_to"
   ],
   "properties": {
     "customer_name": {
       "type": "string",
-      "title": "Customer Name",
+      "title": "Name",
       "maxLength": 255
     },
-    "payment_type": {
+    "donate_to": {
       "type": "string",
       "title": "Donate to",
       "enum": [
         "",
-        "Kerala CM's Distress Relief Fund",
-        "Karnataka CM Relief Fund Natural Calamity 2018 (Kodagu)"
+        "kerala",
+        "karnataka"
       ],
       "options": {
         "enum_titles": [

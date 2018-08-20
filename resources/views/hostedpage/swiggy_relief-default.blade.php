@@ -6,15 +6,11 @@
     $has_udf                    = (empty($udf_schema) === false);
     $max_mobile_width           = 853;
     $contact = [
-        'phone' => '1800 103 6354',
-        'email' => 'crossborder@delhivery.com'
+        'phone' => '',
+        'email' => ''
     ];
 
     $email_subject = 'Query for Payment Page Id: '. $payment_page_data['id'];
-
-    $intro_note = 'Welcome to Delhivery. Now, pay your Delhivery Crossborder service bill in 4 simple steps :';
-    $instructions = array('Enter the details for the service you availed.', 'Choose the method of payment. ', 'Pay the amount. ', 'Receive online confirmation and get a confirmation email.');
-    $end_note =  'In case of any doubts, please reach out to Delhivery on';
 ?>
 
 
@@ -59,16 +55,16 @@
         @include('hostedpage.scripts.utils')
         @include('hostedpage.specific.helpers')
 
-        @include('hostedpage.specific.delhivery-default.scripts')
+        @include('hostedpage.specific.swiggy_relief-default.scripts')
     </head>
 
     <body>
         <div id="hostedpage-container">
             <!-- Desktop Container -->
             <div id="desktop-container" class="no-display-image">
-                @include('hostedpage.partials.header')
-                <div class="content">
-                    @include('hostedpage.partials.description')
+                @include('hostedpage.specific.swiggy_relief-default.header')
+                <div class="content" style="min-height: 450px !important;">
+                    @include('hostedpage.specific.swiggy_relief-default.description')
                     @include('hostedpage.partials.form')
                 </div>
                 @include('hostedpage.partials.footer')
@@ -77,8 +73,8 @@
             <!-- Mobile Container -->
             <div id="mobile-container" class="no-display-image">
                 <div class="content">
-                    @include('hostedpage.partials.header')
-                    @include('hostedpage.partials.description')
+                    @include('hostedpage.specific.swiggy_relief-default.header')
+                    @include('hostedpage.specific.swiggy_relief-default.description')
                     <a href="#form" class="btn btn--full" id="mobile-proceed-btn">PROCEED TO PAY</a>
                 </div>
                 @include('hostedpage.partials.form')

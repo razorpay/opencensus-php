@@ -3,8 +3,8 @@
     'use strict';
 
     (function(global){
-        function evalPaymentType() {
-            var formEle = document.querySelector('[data-schemapath="root.payment_type"]').getElementsByClassName('form-group')[0];
+        function evalDonateTo() {
+            var formEle = document.querySelector('[data-schemapath="root.donate_to"]').getElementsByClassName('form-group')[0];
             var value = formEle.getElementsByTagName('select')[0].value;
 
             if(!value) {
@@ -14,21 +14,21 @@
             }
         }
 
-        function addPaymentTypeValidation() {
+        function addDonateToValidation() {
             var p = document.createElement('p');
             p.className = 'help-block errormsg';
-            p.innerHTML = 'Please select the Payment Type';
+            p.innerHTML = 'Please select the fund your wish to donate to';
 
-            var parentEle = document.querySelector('[data-schemapath="root.payment_type"]').getElementsByClassName('form-group')[0];
+            var parentEle = document.querySelector('[data-schemapath="root.donate_to"]').getElementsByClassName('form-group')[0];
             parentEle.append(p);
 
             editor.watch('root.service_type', function () {
-                evalPaymentType();
+                evalDonateTo();
             });
         }
 
-        global.evalPaymentType = evalPaymentType;
-        global.addPaymentTypeValidation = addPaymentTypeValidation;
+        global.evalDonateTo = evalDonateTo;
+        global.addDonateToValidation = addDonateToValidation;
 
     })(window.RZP = window.RZP || {});
 </script>
@@ -108,8 +108,8 @@
 
                 // Default errors;
                 switch(path) {
-                    case 'root.customer_name': defaultMsg = 'Please enter the Customer Name'; break;
-                    case 'root.payment_type': defaultMsg = 'Please select type of payment'; break;
+                    case 'root.customer_name': defaultMsg = 'Please enter your Name'; break;
+                    case 'root.donate_to': defaultMsg = 'Please select type of payment'; break;
                 }
 
                 if (!value) {
@@ -152,7 +152,7 @@
             console.log(errors);
             var hasError;
 
-            window.RZP.evalPaymentType(); // Just to show error;
+            window.RZP.evalDonateTo(); // Just to show error;
 
             if (errors.length) {
                 editor.options.show_errors = "always";
@@ -209,7 +209,7 @@
 
             window.RZP.addAmountValidation();
             window.RZP.addAlphaFieldsValidation(['root.customer_name']);
-            window.RZP.addPaymentTypeValidation();
+            window.RZP.addDonateToValidation();
         }
 
 
