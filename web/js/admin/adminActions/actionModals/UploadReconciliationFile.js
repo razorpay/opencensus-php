@@ -64,6 +64,7 @@ export default function UploadReconciliationFile() {
         ))}
       </SelectField>
       <FileField multiple label="Attach Multiple Files" name="files" />
+      <Field name="force_authorization" />
       <AsyncButton
         text="Upload"
         class="btn"
@@ -79,6 +80,9 @@ export default function UploadReconciliationFile() {
             'attachment-count': files.length || 0,
             gateway: data.gateway,
           };
+          if (data.force_authorization) {
+            form.force_authorization = data.force_authorization;
+          }
           for (let i = 0; i < files.length; i++) {
             if (files[i]) form['attachment-' + (i + 1)] = files[i];
           }
