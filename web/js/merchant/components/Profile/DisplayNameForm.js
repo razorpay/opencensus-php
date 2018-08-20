@@ -58,8 +58,8 @@ export default class DisplayNameForm extends PureComponent {
               autoFocus={true}
             />
             <small class="help-block">
-              This is the display name that will be visible in the switch
-              account dropdown of your Parent Merchant
+              This is the display name that will be displayed in the Switch
+              Merchant dropdown.
             </small>
           </div>
 

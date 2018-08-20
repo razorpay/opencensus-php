@@ -20,7 +20,22 @@ export default connect(null, { openModal, closeModal })(
 
         {changeDisplayName && (
           <DetailRow
-            label="Display Name"
+            label={() => (
+              <div>
+                <span>Display Name</span>
+                <small class="help-content">
+                  <i class="i i-info-outline" />
+                  <Popover align="top" theme="dark">
+                    <PopoverBody>
+                      <div>
+                        This is the display name that will be displayed in the
+                        Switch Merchant dropdown.
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </div>
+            )}
             value={() => (
               <span>
                 {user.display_name}
