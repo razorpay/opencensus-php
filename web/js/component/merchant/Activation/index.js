@@ -16,6 +16,7 @@ import {
 import mainFormTabsContent, {
   mainFormTabs,
   mainFormFieldNamesMeta,
+  INDIVIDUAL,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
@@ -214,7 +215,13 @@ export default class ActivationWizard extends React.Component {
 
     if (firstInValid === null) {
       firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
-      !isFormSubmitted && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
+
+      if (!this.isLinkedAccountForm && this.isIndividualTypeLock) {
+        // For non-LA account
+        firstInValid = 1; // Business Overview tab
+      } else {
+        !isFormSubmitted && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
+      }
     }
 
     this.state.activeTab = firstInValid;
@@ -525,6 +532,13 @@ export default class ActivationWizard extends React.Component {
     return !!this.props.accountId;
   }
 
+  get isIndividualTypeLock() {
+    const businessType =
+      this.state.dirty.business_type || this.props.data.business_type;
+
+    return businessType == INDIVIDUAL;
+  }
+
   /*
   * Handle Account No. re-enter match before saving.
   * It mimicks loader used for API to handle cases if tab is changed.
@@ -744,6 +758,11 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
+    if (!this.isLinkedAccountForm && isValid && this.isIndividualTypeLock) {
+      // For non-LA account
+      isValid = false;
+    }
+
     return isValid;
   }
 
@@ -839,9 +858,11 @@ export default class ActivationWizard extends React.Component {
       moreTabs.push(
         <li
           key="submit-tab"
-          onClick={this.toggleSubmitLayer}
+          onClick={
+            this.isIndividualTypeLock ? undefined : this.toggleSubmitLayer
+          }
           class={classList(
-            !this.isAllTabsValid() && 'disabled',
+            (!this.isAllTabsValid() || this.isIndividualTypeLock) && 'disabled',
             this.state.showSubmitLayer && 'active',
             'li--submit'
           )}
@@ -871,6 +892,13 @@ export default class ActivationWizard extends React.Component {
           tabClickHandler={this.changeTab}
           activeTab={activeTab}
           activeTabContdition={!this.state.showSubmitLayer}
+          disableTabCondition={tabId => {
+            return (
+              !this.isLinkedAccountForm &&
+              this.isIndividualTypeLock &&
+              [2, 3, 4].indexOf(tabId) > -1
+            );
+          }}
         />
 
         {/* Activation form Content */}
@@ -1045,12 +1073,16 @@ export default class ActivationWizard extends React.Component {
                 )}
 
                 {/* Action Button 2 */}
-                {isLastTab || (
-                  <Button.Primary iconAfter="chevron-right" onClick={this.next}>
-                    <span class="device--desktop">Save & Next</span>
-                    <span class="device--mobile">Next</span>
-                  </Button.Primary>
-                )}
+                {isLastTab ||
+                  ((this.isLinkedAccountForm || !this.isIndividualTypeLock) && (
+                    <Button.Primary
+                      iconAfter="chevron-right"
+                      onClick={this.next}
+                    >
+                      <span class="device--desktop">Save & Next</span>
+                      <span class="device--mobile">Next</span>
+                    </Button.Primary>
+                  ))}
 
                 {/* Action Button 3 */}
                 {isLastTab &&
