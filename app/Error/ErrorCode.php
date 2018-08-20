@@ -785,8 +785,6 @@ class ErrorCode
     const BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE                                       = 'BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE';
     const BAD_REQUEST_AUTH_SERVICE_ERROR                                            = 'BAD_REQUEST_AUTH_SERVICE_ERROR';
 
-    const BAD_REQUEST_RAZORX_ERROR                                                  = 'BAD_REQUEST_RAZORX_ERROR';
-
     const BAD_REQUEST_COUPON_LIMIT_REACHED                                          = 'BAD_REQUEST_COUPON_LIMIT_REACHED';
     const BAD_REQUEST_COUPON_ALREADY_USED                                           = 'BAD_REQUEST_COUPON_ALREADY_USED';
     const BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT                                 = 'BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT';

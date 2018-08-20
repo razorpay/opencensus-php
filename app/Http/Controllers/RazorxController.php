@@ -65,11 +65,11 @@ class RazorxController extends Controller
         }
         catch(\Throwable $e)
         {
-            $this->trace->traceException($e);
-
             throw new Exception\ServerErrorException(
                 'Error completing the request',
-                ErrorCode::SERVER_ERROR_RAZORX_FAILURE
+                ErrorCode::SERVER_ERROR_RAZORX_FAILURE,
+                null,
+                $e
             );
         }
     }
