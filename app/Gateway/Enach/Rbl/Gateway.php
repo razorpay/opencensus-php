@@ -92,6 +92,22 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        list($content, $dataToTrace) = $this->callAuthenticationGateway($input);
+
+        $enach = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'],
+            Action::AUTHORIZE
+        );
+
+        $this->updateGatewayPaymentEntity($enach, $content, false);
+
+        return $dataToTrace;
+    }
+
     protected function getRecurringData()
     {
         $recurringData = [
@@ -133,12 +149,6 @@ class Gateway extends Base\Gateway
     {
         throw new Exception\RuntimeException(
             'Refund is not implemented');
-    }
-
-    public function verify(array $input)
-    {
-        throw new Exception\RuntimeException(
-            'Verify is not implemented');
     }
 
     protected function callAuthenticationGateway(array $input)
