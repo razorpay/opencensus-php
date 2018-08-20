@@ -201,7 +201,7 @@
                                 <td class="content" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
                                     <div class="footerRZP" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-align: right; padding-left: 10%; padding-bottom: 24px; font-size: 10px; color: #9B9B9B;">
                                         @if($invoice['type_label'] === 'Invoice')
-                                            Sign up at <a href="https://razorpay.com/invoices" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">razorpay.com/invoices</a> to create invoices and accept payments for your business.
+                                          Reach out to us by replying to this email or at <a href="mailto:support@razorpay.com">support@razorpay.com</a>
                                         @else
                                             Sign up at <a href="https://razorpay.com/payment-links" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">razorpay.com/payment-links</a> to create payment links and accept payments for your business.
                                         @endif

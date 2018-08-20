@@ -15,25 +15,19 @@
     }
 
     #mobile-container #header-section {
+        top: 0;
         padding-left: 24px;
         padding-right: 24px;
+        position: absolute;
+        z-index: 1;
+        width: 100%;
     }
 
     #mobile-container .content {
         height: 80vh;
         position: relative;
         z-index: 1;
-    }
-
-    #mobile-container #description-section, #mobile-container #form-section {
-        padding: 32px 24px;
-        overflow: auto;
-    }
-
-    #mobile-container #description-section {
-        bottom: 0;
-        top: 112px;
-        position: absolute;
+        padding: 112px 0 56px;
     }
 
     #mobile-container .back-btn {
@@ -51,6 +45,8 @@
     #mobile-container #form-section {
         height: 80vh;
         z-index: 2;
+        padding: 32px 24px;
+        overflow: auto;
     }
 
     #mobile-container #form-section {
@@ -81,8 +77,11 @@
     }
 
     #mobile-container #description-section {
-        padding-bottom: 74px;
         border-right: 1px solid {{$border_color}};
+        position: relative;
+        height: 100%;
+        padding: 16px 32px;
+        overflow: auto;
     }
 
     #mobile-container form {

@@ -60,14 +60,16 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $this->assertPaymentId($input['payment']['id'], $content[AuthResponseFields::TRANSACTION_ID]);
-
-        $this->verifySecureHash($content);
-
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-        $actualAmount   = number_format($content[AuthResponseFields::AMOUNT], 2, '.', '');
-
-        $this->assertAmount($expectedAmount, $actualAmount);
+        if (isset($content[AuthResponseFields::AMOUNT],
+                  $content[AuthResponseFields::TRANSACTION_ID],
+                  $content[AuthResponseFields::STATUS_CODE]) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                null,
+                null,
+                ['response' => $input]);
+        }
 
         if ($content[AuthResponseFields::STATUS_CODE] !== Status::SUCCESS)
         {
@@ -78,6 +80,15 @@ class Gateway extends Base\Gateway
                 $content[AuthResponseFields::STATUS_CODE],
                 $message);
         }
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount   = number_format($content[AuthResponseFields::AMOUNT], 2, '.', '');
+
+        $this->assertPaymentId($input['payment']['id'], $content[AuthResponseFields::TRANSACTION_ID]);
+
+        $this->assertAmount($expectedAmount, $actualAmount);
+
+        $this->verifySecureHash($content);
 
         $gatewayPayment = $this->saveCallbackContent($input, $content);
 

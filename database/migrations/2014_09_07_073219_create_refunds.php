@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Reversal\Entity as Reversal;
 use RZP\Models\Payment\Refund\Entity as Refund;
 use RZP\Models\Transaction\Entity as Transaction;
 
@@ -73,7 +74,6 @@ class CreateRefunds extends Migration
             $table->integer(Refund::LAST_ATTEMPTED_AT)
                   ->nullable();
 
-
             $table->string(Refund::REFERENCE1)
                   ->nullable();
 
@@ -95,11 +95,14 @@ class CreateRefunds extends Migration
             $table->string(Refund::REFERENCE7)
                   ->nullable();
 
-            $table->string(Refund::REFERENCE8)
+            $table->string(Refund::BANK_ACCOUNT_ID)
                   ->nullable();
 
             $table->bigInteger(Refund::REFERENCE9)
                   ->unsigned()
+                  ->nullable();
+
+            $table->char(Refund::REVERSAL_ID, Reversal::ID_LENGTH)
                   ->nullable();
 
             $table->integer(Refund::CREATED_AT);

@@ -5,12 +5,14 @@ namespace RZP\Models\FundTransfer\Base\Initiator;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Batch\Entity;
+use RZP\Models\FundTransfer\Attempt\Metric;
 
 abstract class NodalAccount extends Base\Core
 {
@@ -55,6 +57,15 @@ abstract class NodalAccount extends Base\Core
         $this->initSummary();
 
         parent::__construct();
+    }
+
+    public function initiateTransfer(Base\PublicCollection $attempts): array
+    {
+        $this->updateAttemptStatus($attempts);
+
+        $this->trace->info(TraceCode::FTA_UPDATE_STATUS);
+
+        return $this->process($attempts);
     }
 
     protected function isRefund(): bool
@@ -255,5 +266,23 @@ abstract class NodalAccount extends Base\Core
 
         $this->summary[$type]['amount'] += $amount;
         $this->summary[$type]['count']++;
+    }
+
+    protected function trackAttemptsInitiatedSuccess($channel, $purpose = null, $sourceType)
+    {
+        $dimensions = Metric::getDimensionsAttemptsInitiated($channel, $purpose, $sourceType);
+
+        $this->trace->count(
+            Metric::ATTEMPTS_INITIATE_SUCCESS_TOTAL,
+            $dimensions);
+    }
+
+    protected function trackAttemptsInitiatedFailure($channel, $purpose = null, $sourceType)
+    {
+        $dimensions = Metric::getDimensionsAttemptsInitiated($channel, $purpose, $sourceType);
+
+        $this->trace->count(
+            Metric::ATTEMPTS_INITIATE_FAILURE_TOTAL,
+            $dimensions);
     }
 }

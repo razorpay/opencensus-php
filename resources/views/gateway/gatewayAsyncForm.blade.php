@@ -359,7 +359,11 @@
           $('retry-btn').className = 'hide';
           $('message-txt').innerHTML = '<b>Select UPI App</b>Payment will be made to Razorpay\'s VPA';
           window.pollStatus = function(resp) {
-            if (!Object.keys(resp).length || /txnId=(undefined|null|)(&|$)/i.test(resp.response)) {
+            if (!Object.keys(resp).length ||
+                /txnId=(undefined|null|)(&|$)/i.test(resp.response) ||
+                // For PhonePe (txnId starts with YBL), if bleTxId doesn't exist, the user cancelled.
+                (/txnId=YBL/i.test(resp.response) && Object.keys(resp).indexOf('bleTxId') < 0)
+            ) {
               fetchWait(cancel_url);
               $('cancel-btn').className = '';
               $('retry-btn').className = '';

@@ -9,19 +9,18 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 
 use RZP\Base;
-use RZP\Constants\Timezone;
 use RZP\Exception;
-use RZP\Models\Payment;
 use Razorpay\IFSC\IFSC;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
-use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\VirtualAccount\Receiver;
 
 class Validator extends Base\Validator
 {
@@ -57,7 +56,7 @@ class Validator extends Base\Validator
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
         'save'                          => 'sometimes|in:0,1',
-        'recurring'                     => 'sometimes_if:method,card,emandate|in:1',
+        'recurring'                     => 'sometimes|in:1',
         'fee'                           => 'sometimes|filled|integer|max:50000000',
         Entity::TAX                     => 'sometimes|filled|integer|max:50000000',
         'on_hold'                       => 'sometimes_if:method,transfer|boolean',
@@ -80,6 +79,7 @@ class Validator extends Base\Validator
         'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
         'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch',
         'offer_id'                      => 'filled|public_id|size:20',
+        'preferred_recurring'           => 'sometimes|in:1',
     ];
 
     protected static $editRules = [
@@ -121,14 +121,15 @@ class Validator extends Base\Validator
     ];
 
     protected static $transferRules = [
-        'transfers'                  => 'required|array',
-        'transfers.*.customer'       => 'sometimes|public_id',
-        'transfers.*.account'        => 'sometimes|public_id',
-        'transfers.*.amount'         => 'required|integer|min:100',
-        'transfers.*.currency'       => 'required|string|size:3',
-        'transfers.*.notes'          => 'sometimes|notes',
-        'transfers.*.on_hold'        => 'sometimes|boolean',
-        'transfers.*.on_hold_until'  => 'sometimes|epoch',
+        'transfers'                        => 'required|array',
+        'transfers.*.customer'             => 'sometimes|public_id',
+        'transfers.*.account'              => 'sometimes|public_id',
+        'transfers.*.amount'               => 'required|integer|min:100',
+        'transfers.*.currency'             => 'required|string|size:3',
+        'transfers.*.notes'                => 'sometimes|notes',
+        'transfers.*.linked_account_notes' => 'sometimes|array',
+        'transfers.*.on_hold'              => 'sometimes|boolean',
+        'transfers.*.on_hold_until'        => 'sometimes|epoch',
     ];
 
     protected static $getFlowsRules = [
@@ -358,13 +359,11 @@ class Validator extends Base\Validator
 
     protected function validateRecurring(array $input)
     {
-        if ($input['method'] === Payment\Method::EMANDATE)
+        if ((isset($input[Entity::RECURRING]) === true) and
+            (isset($input[Entity::PREFERRED_RECURRING]) === true))
         {
-            if (isset($input['recurring']) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The recurring field should be 1 when payment method is eMandate.');
-            }
+            throw new Exception\BadRequestValidationFailureException(
+                'Request should contain either recurring or preferred_recurring, not both');
         }
     }
 
@@ -854,6 +853,23 @@ class Validator extends Base\Validator
                     Entity::STATUS          => $payment->getStatus(),
                     Entity::ACKNOWLEDGED_AT => $payment->getAcknowledgedAt(),
                 ]);
+        }
+    }
+
+    public function validateGatewayForForceAuth()
+    {
+        $payment = $this->entity;
+
+        $gateway = $payment->getGateway();
+
+        $allowedGateways = Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS;
+
+        if (in_array($gateway, $allowedGateways, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot force authorize on this gateway',
+                'gateway',
+                $gateway);
         }
     }
 }

@@ -34,8 +34,9 @@ class AuthType
     ];
 
     public static $featureToAuthMap = [
-        self::PIN => Feature\Constants::ATM_PIN_AUTH,
-        self::OTP => Feature\Constants::OTPELF,
+        self::PIN  => Feature\Constants::ATM_PIN_AUTH,
+        self::OTP  => Feature\Constants::OTPELF,
+        self::SKIP => Feature\Constants::DIRECT_DEBIT,
     ];
 
     public static function isAuthTypeValid($type, $method): bool

@@ -52,6 +52,15 @@ trait OtpResend
 
     protected function runOtpResendFlow($gatewayInput, $payment)
     {
+        // Checking if the resend is called for headless otp
+        if (($payment->isMethodCardOrEmi() === true) and
+            ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP))
+        {
+            $request = $this->resendHeadlessOtp($payment, $gatewayInput);
+
+            return $this->getOtpPaymentCreatedResponse($request, $payment);
+        }
+
         return $this->callGatewayOtpGenerate($gatewayInput, $payment, true);
     }
 

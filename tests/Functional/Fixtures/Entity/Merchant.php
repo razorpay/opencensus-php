@@ -242,7 +242,7 @@ class Merchant extends Base
 
     public function createBankAccount(array $attributes = array())
     {
-        $name = random_alpha_string(10);
+        $name = random_string_special_chars(10);
 
         $code = substr(strtoupper($name), 0, 4);
 

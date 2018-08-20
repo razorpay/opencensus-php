@@ -450,4 +450,14 @@ return [
         'terminal_id'        => '100HitachiTmnl',
         'entity'             => 'payment',
     ],
+
+    'motoTransactionRequest' => [
+        'pTranType' => 'MT',
+        'pECI'      =>  '02',
+        'pPan'      => '5567630000002004',
+        'pXID'      => '',
+        'pALGO'     => '',
+        'pCAVV2'    => '',
+        'pUCAF'     => '',
+    ],
 ];

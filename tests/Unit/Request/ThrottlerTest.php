@@ -142,6 +142,24 @@ class ThrottlerTest extends TestCase
         $throttlerMock->throttle();
     }
 
+    public function testAssertThrottleKeysPickForInvoiceSendNotification()
+    {
+        $this->invokeRequestCaseAndBindNewContext(
+            'publicRouteWithKeyInQuery',
+            'invoice_send_notification',
+            'invoices/inv_1000000invoice/notify/email');
+
+        $throttler = new Throttler;
+
+        $this->assertEquals(
+            '10000000000000',
+            $throttler->getIdSettingsKey());
+
+        $this->assertEquals(
+            'invoice_send_notification:test:public:0::10000000000000::1.1.1.1:inv_1000000invoice',
+            $throttler->getThrottleKey());
+    }
+
     /**
      * Runs all available request cases against a set of settings.
      * For each request and settings combination asserts following:

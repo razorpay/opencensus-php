@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\Bank\BankCodes;
 
 class Validator extends Base\Validator
 {
@@ -30,6 +31,7 @@ class Validator extends Base\Validator
         Entity::REQ_UTR            => 'required|string|max:30',
         Entity::TIME               => 'required',
         Entity::AMOUNT             => 'required|numeric|min:0',
+        Entity::CURRENCY           => 'nullable|in:INR',
         Entity::DESCRIPTION        => 'nullable|string|max:255',
         Entity::ATTEMPT            => 'nullable|integer',
     ];
@@ -103,7 +105,7 @@ class Validator extends Base\Validator
         {
             $ifsc = $bankTransfer->getPayerIfsc();
 
-            $bankCode = substr($ifsc, 0, -10);
+            $bankCode = substr($ifsc, 0, 3);
 
             if (($bankTransfer->payerBankAccount->getIfscCode() === null) and
                 (BankCodes::hasIfscMapping($bankCode) === false))

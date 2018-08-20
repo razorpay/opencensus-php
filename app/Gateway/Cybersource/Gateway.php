@@ -54,11 +54,11 @@ class Gateway extends Base\Gateway
 
     protected $eci;
 
-    public function __construct()
+    public function setGatewayParams($input, $mode, $terminal)
     {
-        parent::__construct();
+        parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->secureCacheDriver = Config::get('cache.secure_default');
+        $this->secureCacheDriver = $this->getDriver($input);
     }
 
     public function authorize(array $input)

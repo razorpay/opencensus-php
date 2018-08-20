@@ -23,14 +23,27 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_RRN                      = 'rrn';
     const COLUMN_AUTH_CODE                = 'authapproval_code';
     const COLUMN_GATEWAY_FEE              = 'msf_amount';
-    const COLUMN_GATEWAY_SERVICE_TAX      = 'msf_tax_amount';
+    const COLUMN_GATEWAY_SERVICE_TAX      = ['msf_tax_amount', 'gst_on_msf'];
     const COLUMN_GATEWAY_SETTLED_AT       = 'settlement_date';
 
     const SETTLEMENT_DATE_FORMAT     = 'd/m/Y';
 
+    /**
+     * If we are not able to find payment id to reconcile,
+     * this ratio defines the minimum proportion of columns to be filled in a valid row.
+     * In CardFSS MIS, last row can have some string like "END OF REPORT" or some random value`
+     * So if less than 20% data is present in a row, we don't mark row unprocessing status as failure.
+     */
+    const MIN_ROW_FILLED_DATA_RATIO = 0.20;
+
     protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
+
+        if (empty($paymentId) === true)
+        {
+            $this->evaluateRowProcessedStatus($row);
+        }
 
         return $paymentId;
     }
@@ -83,18 +96,34 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
+        $serviceTax = null;
+
         //
-        // Can't put empty check, because msf_tax_amount can be zero
+        // In new MIS files, we are getting GST with
+        // column name GST/Service Tax
         //
-        if (isset($row[self::COLUMN_GATEWAY_SERVICE_TAX]) === false)
+        $serviceTaxColumn = array_first(self::COLUMN_GATEWAY_SERVICE_TAX, function ($cst) use ($row)
         {
-            $this->reportMissingColumn($row, self::COLUMN_GATEWAY_SERVICE_TAX);
+            //
+            // We are not using isset() here because as isset() returns false even when key is
+            // set but the value is null.
+            // e.g : $arr = ['a' => null]; isset(arr['a']) returns FALSE.
+            // Here the column  we are checking can have value NULL or 0 or anything. We just want to
+            // ensure that the column is present in the file, value can be null or anything. we should
+            // return false only if the column itself is not present. so using array_key_exists().
+            //
+            return (array_key_exists($cst, $row) === true);
+        });
+
+        if ($serviceTaxColumn === null)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_GATEWAY_SERVICE_TAX[0]);
 
             return null;
         }
 
         // Convert service tax into paise
-        $serviceTax = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_GATEWAY_SERVICE_TAX]);
+        $serviceTax = Base\Helper::getIntegerFormattedAmount($row[$serviceTaxColumn]);
 
         return abs($serviceTax);
     }
@@ -108,8 +137,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         //
         // Can't put empty check, because msf can be zero
+        // Checking if the column is present in the row. Not using isset() here, as isset()
+        // returns FALSE even if the key is present but the value is NULL. We should return false
+        // only if the column itself is not present
         //
-        if (isset($row[self::COLUMN_GATEWAY_FEE]) === false)
+        if (array_key_exists(self::COLUMN_GATEWAY_FEE, $row) === false)
         {
             $this->reportMissingColumn($row, self::COLUMN_GATEWAY_FEE);
 
@@ -194,6 +226,26 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         if (empty($rowDetails[BaseReconciliate::AUTH_CODE]) === false)
         {
             $this->setPaymentReference2($rowDetails[BaseReconciliate::AUTH_CODE]);
+        }
+    }
+
+    /**
+     * This function evaluate and marks the row processing as success or failure based on
+     * percentage of data available in a row.
+     *
+     * @param $row
+     */
+    protected function evaluateRowProcessedStatus(array $row)
+    {
+        $nonEmptyData = array_filter($row, function($value) {
+            return filled($value);
+        });
+
+        $rowFilledRatio = count($nonEmptyData) / count($row);
+
+        if ($rowFilledRatio < self::MIN_ROW_FILLED_DATA_RATIO)
+        {
+            $this->setFailUnprocessedRow(false);
         }
     }
 }

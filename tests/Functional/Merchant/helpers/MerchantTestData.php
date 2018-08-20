@@ -335,7 +335,7 @@ return [
             'raw' => json_encode([
                 'international' => '1',
                 'linked_account_kyc' => '1',
-                'website' => 'http://abc.com',
+                'website' => 'https://www.example.com',
                 'category' => '1111',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
@@ -358,7 +358,7 @@ return [
                 'international' => true,
                 'linked_account_kyc' => true,
                 'category' => 1111,
-                'website' => 'http://abc.com',
+                'website' => 'https://www.example.com',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
                 ],
@@ -743,6 +743,7 @@ return [
                 'brand_color'         => '00bcd4',
                 'handle'              => 'LOLO',
                 'invoice_label_field' => 'business_name',
+                'display_name'        => 'Display',
             ],
             'url'     => '/account/config',
             'method'  => 'put',
@@ -757,6 +758,7 @@ return [
                 'brand_color'         => '#00BCD4',
                 'handle'              => 'LOLO',
                 'invoice_label_field' => 'business_name',
+                'display_name'        => 'Display',
             ]
         ]
     ],
@@ -1067,7 +1069,7 @@ return [
             'content' => [
                 'ifsc_code'             => 'ICIC0001206',
                 'account_number'        => '0002020000304030434',
-                'beneficiary_name'      => 'Test R4zorpay',
+                'beneficiary_name'      => 'Test R4zorpay:',
                 'beneficiary_address1'  => 'address 1',
                 'beneficiary_address2'  => 'address 2',
                 'beneficiary_address3'  => 'address 3',
@@ -1087,7 +1089,7 @@ return [
                 'merchant_id' => '10000000000000',
                 'ifsc_code' => 'ICIC0001206',
                 'account_number' => '0002020000304030434',
-                'beneficiary_name' => 'Test R4zorpay',
+                'beneficiary_name' => 'Test R4zorpay:',
                 'beneficiary_address1' => 'address 1',
                 'beneficiary_address2' => 'address 2',
                 'beneficiary_address3' => 'address 3',
@@ -1106,7 +1108,7 @@ return [
             'content' => [
                 'ifsc_code'             => 'ICIC0001206',
                 'account_number'        => '0002020000304030434',
-                'beneficiary_name'      => 'Test R4zorpay',
+                'beneficiary_name'      => 'Test R4zorpay:',
                 'beneficiary_address1'  => 'address 1',
                 'beneficiary_address2'  => 'address 2',
                 'beneficiary_address3'  => 'address 3',
@@ -1126,7 +1128,7 @@ return [
                 'merchant_id' => '10000000000000',
                 'ifsc_code' => 'ICIC0001206',
                 'account_number' => '0002020000304030434',
-                'beneficiary_name' => 'Test R4zorpay',
+                'beneficiary_name' => 'Test R4zorpay:',
                 'beneficiary_address1' => 'address 1',
                 'beneficiary_address2' => 'address 2',
                 'beneficiary_address3' => 'address 3',
@@ -1145,7 +1147,7 @@ return [
             'content' => [
                 'ifsc_code'             => 'ICIC0001206',
                 'account_number'        => '2020000304030434',
-                'beneficiary_name'      => 'Test R4zorpay',
+                'beneficiary_name'      => 'Test R4zorpay:',
                 'beneficiary_address1'  => 'address 1',
                 'beneficiary_address2'  => 'address 2',
                 'beneficiary_address3'  => 'address 3',
@@ -1165,7 +1167,7 @@ return [
                 'merchant_id' => '10000000000000',
                 'ifsc_code' => 'ICIC0001206',
                 'account_number' => '2020000304030434',
-                'beneficiary_name' => 'Test R4zorpay',
+                'beneficiary_name' => 'Test R4zorpay:',
                 'beneficiary_address1' => 'address 1',
                 'beneficiary_address2' => 'address 2',
                 'beneficiary_address3' => 'address 3',
@@ -1184,7 +1186,7 @@ return [
             'content' => [
                 'ifsc_code'             => 'IIC0001206',
                 'account_number'        => '0002020000304030434',
-                'beneficiary_name'      => 'Test R4zorpay',
+                'beneficiary_name'      => 'Test R4zorpay:',
                 'beneficiary_address1'  => 'address 1',
                 'beneficiary_address2'  => 'address 2',
                 'beneficiary_address3'  => 'address 3',
@@ -1239,7 +1241,7 @@ return [
             'content' => [
                 'ifsc_code'             => 'ICIC0001206',
                 'account_number'        => '0002020005304612497',
-                'beneficiary_name'      => 'Test R4zorpay',
+                'beneficiary_name'      => 'Test R4zorpay:',
                 'beneficiary_address1'  => '4ddr3ss 1',
                 'beneficiary_address2'  => '4ddr3ss 2',
                 'beneficiary_address3'  => '4ddr3ss 3',
@@ -1259,7 +1261,7 @@ return [
                 'merchant_id' => '10000000000000',
                 'ifsc_code' => 'ICIC0001206',
                 'account_number' => '0002020005304612497',
-                'beneficiary_name' => 'Test R4zorpay',
+                'beneficiary_name' => 'Test R4zorpay:',
                 'beneficiary_address1' => '4ddr3ss 1',
                 'beneficiary_address2' => '4ddr3ss 2',
                 'beneficiary_address3' => '4ddr3ss 3',
@@ -1570,6 +1572,33 @@ return [
             ],
             [
                 'offer' => [
+                    'name'                => 'Amex offer',
+                    'payment_method'      => 'card',
+                    'payment_network'     => 'AMEX',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity' => 'methods',
+                            'card'   => true,
+                            'amex'   => true,
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Amex offer',
+                                'payment_method'  => 'card',
+                                'payment_network' => 'AMEX',
+                                'display_text'    => 'Some display text',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
                     'payment_method'      => 'netbanking',
                     'payment_network'     => 'HDFC',
                     'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
@@ -1732,7 +1761,7 @@ return [
                     'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
                     'display_text'        => 'Some display text',
                     'percent_rate'        => 5000,
-                    'min_amount'          => 200000,
+                    'min_amount'          => 2000,
                     'terms'               => 'Some terms',
                 ],
                 'response' => [
@@ -1746,7 +1775,7 @@ return [
                                 'name'            => 'Test Offer',
                                 'payment_method'  => 'card',
                                 'original_amount' => 100000,
-                                'amount'          => 100000,
+                                'amount'          => 50000,
                             ]
                         ],
                     ]
@@ -1777,8 +1806,8 @@ return [
                         'name'            => 'Test Offer',
                         'payment_method'  => 'emi',
                         'display_text'    => 'Some display text',
-                        'original_amount' => 100000,
-                        'amount'          => 100000,
+                        'original_amount' => 300000,
+                        'amount'          => 150000,
                     ],
                 ],
             ],
@@ -3069,46 +3098,25 @@ return [
     ],
 
     'testCreateSubmerchantLogin' => [
-        'request' => [
-            'url' => '/submerchant/user/10000000000040',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
             'content' => []
         ],
         'response' => [
-            'content' => [],
+            'content'     => [],
             'status_code' => 200,
         ],
     ],
 
-    'testCreateSubmerchantLoginSameEmail' => [
-        'request' => [
-            'url' => '/submerchant/user/10000000000040',
-            'method' => 'POST',
+    'testCreateSubmerchantLoginPartnerAppMissing' => [
+        'request'   => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
             'content' => []
         ],
         'response'  => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The email has already been taken.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testCreateSubmerchantLoginPartnerAppMissing' => [
-        'request' => [
-            'url' => '/submerchant/user/10000000000040',
-            'method' => 'POST',
-            'content' => []
-        ],
-        'response' => [
-            'content' => [
+            'content'     => [
                 'error' => [
                     'description' => 'DB Query Failed',
                 ]
@@ -3122,56 +3130,164 @@ return [
     ],
 
     'testCreateSubmerchantLoginDuplicate' => [
-        'request' => [
-            'url' => '/submerchant/user/10000000000040',
-            'method' => 'POST',
+        'request'   => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
             'content' => []
         ],
         'response'  => [
-            'content' => [
+            'content'     => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The email has already been taken.',
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginUserExists' => [
+        'request'  => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
         ],
     ],
 
     'testCreateLinkedAccountLogin' => [
-        'request' => [
-            'url' => '/submerchant/user/10000000000040',
-            'method' => 'POST',
+        'request'   => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
             'content' => []
         ],
         'response'  => [
-            'content' => [
+            'content'     => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN,
                 ],
             ],
             'status_code' => 403,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
         ],
     ],
 
     'testCreateSubmerchantLoginPartnerWithMarketplace' => [
-        'request' => [
-            'url' => '/submerchant/user/10000000000040',
-            'method' => 'POST',
+        'request'  => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
             'content' => []
         ],
         'response' => [
-            'content' => [],
+            'content'     => [],
             'status_code' => 200,
+        ],
+    ],
+
+    'testAggregatorInviteSubMerchantToManageDash' => [
+        'request'  => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
+            'content' => ['email' => 'invite.owner@razorpay.com']
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFullyManagedInviteSubMerchantToManageDash' => [
+        'request'   => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
+            'content' => ['email' => 'invite.owner@razorpay.com']
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_MERCHANT_USER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAggregatorInviteSubMerchantToManageDash2Owners' => [
+        'request'   => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
+            'content' => ['email' => 'invite.owner@razorpay.com']
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_MERCHANT_USER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAggregatorInviteSubMerchantToManageDashAlreadyOwner' => [
+        'request'   => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
+            'content' => ['email' => 'invite.owner@razorpay.com']
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS,
+        ],
+    ],
+
+    'testOldAggregatorInviteSubMerchantUserWithEmail' => [
+        'request'   => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
+            'content' => ['email' => 'invite.owner@razorpay.com']
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_MERCHANT_USER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

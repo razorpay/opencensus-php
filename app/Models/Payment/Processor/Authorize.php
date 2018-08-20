@@ -361,6 +361,15 @@ trait Authorize
                             ->with('data', $templateData)
                             ->render();
 
+            $next = ['otp_submit'];
+
+            if (isset($request['content']['next']) === true)
+            {
+                $next = $this->getNextOtpAction($request['content']['next']);
+
+                unset($request['content']['next']);
+            }
+
             $response = [
                 'type'       => 'otp',
                 'request'    => [
@@ -369,7 +378,7 @@ trait Authorize
                 ],
                 'version'    => 1,
                 'payment_id' => $payment->getPublicId(),
-                'next'       => ['otp_submit'],
+                'next'       => $next,
                 'gateway'    => $response['gateway'],
             ];
         }
@@ -494,58 +503,30 @@ trait Authorize
      */
     public function forceAuthorizeFailedPayment(Payment\Entity $payment, array $input = []): array
     {
+        $payment->getValidator()->validateGatewayForForceAuth();
+
         $this->setPayment($payment);
 
-        if ($payment->isFailed() === false)
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $input)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Non failed payment given for authorization');
-        }
+            $this->repo->reload($payment);
 
-        if (in_array($payment->getGateway(), Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS, true) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                                        'Cannot force authorize on this gateway',
-                                        'gateway',
-                                        $payment->getGateway());
-        }
-
-        if ($payment->hasCard() === true)
-        {
-            $card = $this->repo->card->fetchForPayment($payment);
-        }
-
-        $this->segment->trackPayment($payment, TraceCode::FORCE_AUTH_FAILED_PAYMENT);
-
-        $this->repo->transaction(function() use ($payment, $input)
-        {
-            $data = array('payment' => $payment->toArray(), 'gateway' => $input);
-
-            $flag = $this->callGatewayFunction(Action::FORCE_AUTHORIZE_FAILED, $data);
-
-            if ($flag === false)
+            if ($payment->isFailed() === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Payment expected to have succeeded on the gateway has actually not. ' .
-                    'Should not have called this function in this scenario');
+                    'Non failed payment given for authorization');
             }
 
-            $this->lockForUpdateAndReload($payment);
+            $this->repo->transaction(function() use ($payment, $input)
+            {
+                $this->forceAuthorizeFailedOnGateway($payment, $input);
 
-            assert ($payment->isFailed() === true);
+                $this->authorizeFailedPaymentOnApi($payment, []);
+            });
 
-            $payment->setErrorNull();
-            $payment->setVerified(true);
-
-            // The first argument marks the payment as converted from failed
-            // to authorized
-            $this->updateAndNotifyPaymentAuthorized([], true);
-
-            $this->repo->saveOrFail($payment);
         });
 
-        // TODO: Remove reload once the branch hotfix/authorize-transaction-save is merged.
-        return $payment->reload()->toArrayAdmin();
+        return $payment->toArrayAdmin();
     }
 
     protected function runPaymentInputValidations(Payment\Entity $payment, array $input)
@@ -909,6 +890,15 @@ trait Authorize
                         'The otp authentication type is not applicable on the given card');
                 }
                 break;
+
+            case Payment\AuthType::SKIP:
+                // Skip auth flow is supported only for Master Card, Visa and Rupay.
+                if (Payment\Gateway::isDirectDebitSupported($payment->card->getNetworkCode()) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The skip authentication type is not applicable on the given card');
+                }
+                break;
         }
     }
 
@@ -1159,13 +1149,6 @@ trait Authorize
             throw new Exception\BadRequestValidationFailureException(
                 'The auth_type field is required when method is ' . Method::EMANDATE
             );
-        }
-
-        if (($payment->getAuthType() === Payment\AuthType::AADHAAR) and
-            (empty($input[Payment\Entity::AADHAAR]['number']) === true))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'The aadhaar[number] field is required.');
         }
 
         $bank = $payment->getBank();
@@ -1486,63 +1469,88 @@ trait Authorize
     {
         $this->repo->transaction(function() use ($payment)
         {
-            $data = array('payment' => $payment->toArray());
+            $response = $this->runAuthorizeFailedOnGateway($payment);
 
-            if ($payment->getGlobalOrLocalTokenEntity() !== null)
-            {
-                $data['token'] = $payment->getGlobalOrLocalTokenEntity();
-            }
-
-            if ($payment->isMethodCardOrEmi())
-            {
-                $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
-            }
-
-            $response = $this->callGatewayFunction(Action::AUTHORIZE_FAILED, $data);
-
-            $this->lockForUpdateAndReload($payment);
-
-            if ($payment->isStatusCreatedOrFailed() === false)
-            {
-                $this->segment->trackPayment($payment,
-                                             TraceCode::PAYMENT_ALREADY_AUTHORIZED,
-                                             $data);
-
-                throw new Exception\BadRequestValidationFailureException(
-                    'Payment being authorized is actually already authorized by some other thread.',
-                    null,
-                    ['payment_id' => $payment->getId()]);
-            }
-
-            $payment->setVerified(true);
-
-            // handle the special caes when timeout cron marks a payment as failed
-            // because of race conditions with verify,
-            // We just need to reverse the things done in timeout cron, we dont
-            // need to update the acquirer data here as that should have already
-            // been set in the payment when payment was intitally authorized.
-            if (($payment->hasBeenAuthorized() === true) and
-                ($payment->isFailed() === true))
-            {
-                $payment->setErrorNull();
-
-                $payment->setStatus(Payment\Status::AUTHORIZED);
-
-                $payment->setLateAuthorized(true);
-            }
-            else
-            {
-                // The first argument marks the payment as converted from failed
-                // to authorized
-                $this->updateAndNotifyPaymentAuthorized($response, true);
-            }
-
-            $this->autoCapturePaymentIfApplicable($payment);
-
-            $this->repo->saveOrFail($payment);
-
-            $this->setPayment($payment);
+            $this->authorizeFailedPaymentOnApi($payment, $response);
         });
+    }
+
+    protected function runAuthorizeFailedOnGateway(Payment\Entity $payment)
+    {
+        $data = ['payment' => $payment->toArray()];
+
+        if ($payment->getGlobalOrLocalTokenEntity() !== null)
+        {
+            $data['token'] = $payment->getGlobalOrLocalTokenEntity();
+        }
+
+        if ($payment->isMethodCardOrEmi())
+        {
+            $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
+        }
+
+        $response = $this->callGatewayFunction(Action::AUTHORIZE_FAILED, $data);
+
+        return $response;
+    }
+
+    protected function forceAuthorizeFailedOnGateway(Payment\Entity $payment, array $input)
+    {
+        $data = [
+            'payment' => $payment->toArray(),
+            'gateway' => $input
+        ];
+
+        $flag = $this->callGatewayFunction(Action::FORCE_AUTHORIZE_FAILED, $data);
+
+        if ($flag === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment expected to have succeeded on the gateway has actually not. ' .
+                'Should not have called this function in this scenario');
+        }
+    }
+
+    protected function authorizeFailedPaymentOnApi(Payment\Entity $payment, array $response)
+    {
+        $this->lockForUpdateAndReload($payment);
+
+        if ($payment->isStatusCreatedOrFailed() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment being authorized is actually already authorized by some other thread.',
+                null,
+                ['payment_id' => $payment->getId()]);
+        }
+
+        $payment->setVerified(true);
+
+        // handle the special caes when timeout cron marks a payment as failed
+        // because of race conditions with verify,
+        // We just need to reverse the things done in timeout cron, we dont
+        // need to update the acquirer data here as that should have already
+        // been set in the payment when payment was intitally authorized.
+        if (($payment->hasBeenAuthorized() === true) and
+            ($payment->isFailed() === true))
+        {
+            $payment->setErrorNull();
+
+            $payment->setStatus(Payment\Status::AUTHORIZED);
+
+            $payment->setLateAuthorized(true);
+        }
+        else
+        {
+            // The first argument marks the payment as converted from failed
+            // to authorized
+            $this->updateAndNotifyPaymentAuthorized($response, true);
+        }
+
+        $this->autoCapturePaymentIfApplicable($payment);
+
+        $this->repo->saveOrFail($payment);
+
+        $this->setPayment($payment);
     }
 
     protected function processCurrencyConversions(Payment\Entity $payment)
@@ -1648,6 +1656,16 @@ trait Authorize
             }
         }
 
+        //
+        // Appends dummy cvv if auth type of payment is skip. Validate merchant later
+        // for moto feature else decline the payment.
+        // TODO: Need to change if AMEX card is enabled for skip
+        //
+        if ($payment->getAuthType() === Payment\AuthType::SKIP)
+        {
+            $input['card']['cvv'] = Card\Entity::DUMMY_CVV;
+        }
+
         // First fetch the relevant customer (global or local)
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
                                                                 $input, $this->merchant, $followGlobal ?? false);
@@ -1718,6 +1736,15 @@ trait Authorize
             }
             else
             {
+                try
+                {
+                    $this->updateGatewayInputForInvoice($gatewayInput, $payment);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException($e);
+                }
+
                 $this->validateIfIntentEnabled($payment);
             }
         }
@@ -1727,9 +1754,73 @@ trait Authorize
             $this->setGatewayInputForAeps($input, $gatewayInput);
         }
 
+        $this->validateRecurringAndPreferredRecurring($payment, $input);
+
         $payment->setInternational();
 
         $this->setRecurringType($payment, $input);
+
+        $this->setAutoRefundTimestamp($payment);
+    }
+
+    protected function updateGatewayInputForInvoice(& $gatewayInput, Payment\Entity $payment)
+    {
+        $config = Cache::getFacadeRoot()->get(ConfigKey::NPCI_UPI_DEMO, []);
+
+        $merchants = $config['merchants'] ?? [];
+
+        if (isset($merchants[$payment->getMerchantId()]) === false)
+        {
+            return;
+        }
+
+        $elfin = $this->app['elfin'];
+
+        $baseUrl = $merchants[$payment->getMerchantId()];
+
+        $query = [
+            'payment_id'    => $payment->getPublicId(),
+            'amount'        => $payment->getAmount(),
+            'contact'       => $payment->getContact(),
+            'email'         => $payment->getEmail(),
+            'description'   => $payment->getDescription(),
+        ];
+
+        $referenceUrl = $elfin->shorten($baseUrl . http_build_query($query));
+
+        $shouldEncode = $config['should_encode_invoice_url'] ?? false;
+
+        if ($shouldEncode === true)
+        {
+            $referenceUrl = urlencode($referenceUrl);
+        }
+
+        $gatewayInput['upi']['reference_url'] = $referenceUrl;
+    }
+
+    protected function validateRecurringAndPreferredRecurring(Payment\Entity $payment, array $input)
+    {
+        if (isset($input[Payment\Entity::RECURRING]) === true)
+        {
+            if (in_array($payment->getMethod(), Payment\Method::$recurringMethods, true) === false)
+            {
+              throw new Exception\BadRequestValidationFailureException(
+                    'Recurring field may be sent only when method is card, eMandate');
+            }
+        }
+        else if ($this->isPreferredRecurring($input) === true)
+        {
+            $recurring = false;
+
+            if (($payment->isCard() === true) and
+                ($payment->hasCard() === true) and
+                ($payment->card->isRecurringSupported() === true))
+            {
+                $recurring = true;
+            }
+
+            $payment->setRecurring($recurring);
+        }
     }
 
     protected function setRecurringType(Payment\Entity $payment, array $input)
@@ -1742,7 +1833,8 @@ trait Authorize
 
             $type = Payment\RecurringType::INITIAL;
 
-            if (($token->isLocal() === true) and
+            if (($token !== null) and
+                ($token->isLocal() === true) and
                 ($token->isRecurring() === true) and
                 ($this->app['basicauth']->isPrivateAuth() === true) and
                 (isset($input['token']) === true))
@@ -1776,6 +1868,26 @@ trait Authorize
         }
 
         $payment->setRecurringType($type);
+    }
+
+    protected function setAutoRefundTimestamp(Payment\Entity $payment)
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $minAutoRefundTime = $currentTime + Merchant\Entity::MIN_AUTO_REFUND_DELAY;
+
+        $merchantAutoRefundTime = $currentTime + $payment->merchant->getAutoRefundDelay();
+
+        $merchantAutoRefundTime = max($minAutoRefundTime, $merchantAutoRefundTime);
+
+        if ($payment->isEmandate() === true)
+        {
+            $emandateAutoRefundTime = $currentTime + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
+
+            $merchantAutoRefundTime = $emandateAutoRefundTime;
+        }
+
+        $payment->setRefundAt($merchantAutoRefundTime);
     }
 
     protected function addTestSuccessFlagToGatewayInput(array $input, array & $gatewayInput)
@@ -2116,7 +2228,8 @@ trait Authorize
         // If save is set to true or recurring is set to true,
         // we save the card details while processing the payment
         $saveMethod = (($payment->getSave() === true) or
-                       ($payment->isRecurring() === true));
+                       ($payment->isRecurring() === true) or
+                       ($this->isPreferredRecurring($input) === true));
 
         if ($saveMethod === false)
         {
@@ -2136,7 +2249,8 @@ trait Authorize
         // If save is set to true or recurring is set to true,
         // we save the card details while processing the payment
         $saveMethod = (($payment->getSave() === true) or
-                       ($payment->isRecurring() === true));
+                       ($payment->isRecurring() === true) or
+                       ($this->isPreferredRecurring($input) === true));
 
         if ($saveMethod === false)
         {
@@ -2264,6 +2378,9 @@ trait Authorize
 
             $saveMethodInput[Token\Entity::AADHAAR_NUMBER] =
                     $input[Payment\Entity::AADHAAR]['number'] ?? null;
+
+            $saveMethodInput[Token\Entity::AADHAAR_VID] =
+                $input[Payment\Entity::AADHAAR]['vid'] ?? null;
 
             $saveMethodInput[Token\Entity::EXPIRED_AT] =
                     $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
@@ -4336,5 +4453,10 @@ trait Authorize
         }
 
         return false;
+    }
+
+    protected function isPreferredRecurring(array $input)
+    {
+        return (empty($input[Payment\Entity::PREFERRED_RECURRING]) === false);
     }
 }

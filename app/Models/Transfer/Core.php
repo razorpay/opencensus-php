@@ -4,15 +4,15 @@ namespace RZP\Models\Transfer;
 
 use RZP\Constants;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Transfer;
-use RZP\Models\Transaction;
-use RZP\Models\Customer;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Transfer;
+use RZP\Models\Customer;
+use RZP\Models\Transaction;
 
 class Core extends Base\Core
 {
@@ -207,7 +207,6 @@ class Core extends Base\Core
                             $transfer->getId(),
                             $transfer->getToId());
 
-
         $payment->setOnHold($transferOnHold);
 
         $payment->setOnHoldUntil($transferOnHoldUntil);
@@ -349,6 +348,11 @@ class Core extends Base\Core
 
         $transfer = $this->createTransfer($source, $to, $input, $merchant);
 
+        // Extract Notes from the input and sync it to payment entity.
+        $laNotes = $this->getLinkedAccountNotes($input);
+
+        $input[Transfer\Entity::NOTES] = $laNotes;
+
         $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $originPayment);
 
         $transferPayment->transfer()->associate($transfer);
@@ -356,6 +360,31 @@ class Core extends Base\Core
         $this->repo->saveOrFail($transferPayment);
 
         return $transfer;
+    }
+
+    /**
+     * Extract lanotes from transfer notes.
+     * @param array $input
+     *
+     * @throws \RZP\Exception\BadRequestException
+     * @return array
+     */
+    public function getLinkedAccountNotes(array $input): array
+    {
+        $transferNotes = $input[Entity::NOTES] ?? [];
+
+        $laNotesKeys = $input[Entity::LINKED_ACCOUNT_NOTES] ?? [];
+
+        $laNotes = [];
+
+        if ((empty($laNotesKeys) === false) and (is_array($laNotesKeys) === true))
+        {
+            $laNotes = array_only($transferNotes, $laNotesKeys);
+
+            (new Validator)->validateLinkedAccountNotes($laNotes, $laNotesKeys);
+        }
+
+        return $laNotes;
     }
 
     protected function verifyFeatureAllowed(string $feature, Merchant\Entity $merchant)

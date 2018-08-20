@@ -32,7 +32,10 @@ class StatusProcessor extends BaseRowProcessor
                                          ->setEntity($this->row)
                                          ->makeRequest();
 
-        $this->setParsedData($response);
+        if (empty($response) === false)
+        {
+            $this->setParsedData($response);
+        }
     }
 
     protected function setParsedData(array $response)
@@ -50,7 +53,7 @@ class StatusProcessor extends BaseRowProcessor
 
     protected function updateReconEntity()
     {
-        $this->reconEntity->setUtr($this->parsedData[self::UTR]);
+        $this->updateUtrOnReconEntity();
 
         $this->reconEntity->setBankStatusCode($this->parsedData[self::BANK_STATUS_CODE]);
 
@@ -61,5 +64,10 @@ class StatusProcessor extends BaseRowProcessor
         $this->reconEntity->setRemarks($this->parsedData[self::REMARK]);
 
         $this->reconEntity->saveOrFail();
+    }
+
+    protected function getUtrToUpdate()
+    {
+        return $this->parsedData[self::UTR];
     }
 }

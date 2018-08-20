@@ -70,24 +70,35 @@
 <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
   {{{$merchant['name']}}} has added you as their affiliate  partner on Razorpay.
   <br>
+  <br>
   @if($token)
-  You can set up your login credentials <a href="{{ $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&amp;email='.$subMerchant['email'] }}" target="_blank" style="color: #24bbea; text-decoration: none !important;">here</a> and submit the activation form with KYC details to start transacting.
+  <u>Get Started with Your Account</u>
+  <br>
+  To get started with your Razorpay account, please create a password. After that, you will need to submit the activation form with KYC details to start transacting.
+  <br>
+  <a href="{{ $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&amp;email='.$subMerchant['email'] }}" target="_blank" style="color: #24bbea; text-decoration: none !important;">Create a Password</a>
   @else
   You can {{$token}} login to your account with your existing credentials and submit the activation form with KYC details to start transacting.
   @endif
 </p>
 
-<h3 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; padding: 0; margin: 0; text-align: left; line-height: 1.3; word-break: normal; font-size: 16px; font-weight: bold; color: #39ACE5; margin-top: 10px;">KYC Process</h3>
+<h3 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; padding: 0; margin: 0; text-align: left; line-height: 1.3; word-break: normal; font-size: 16px; font-weight: bold; color: #39ACE5; margin-top: 10px;">Activation Process</h3>
 
-<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">The first step involves filling up the activation form on the <a href="{{ $org['hostname']}}" style="color: #24bbea; text-decoration: none !important;">Razorpay Dashboard</a>. The list of documents and details required for us to take you live can be found then in the <a href="{{ $org['hostname'] . '/#/app/activation'}}" style="color: #24bbea; text-decoration: none !important;">Activation</a> panel. All requirements have a basic explanation alongside to help you through the process.
+<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">The first step involves filling up the activation form on the <a href="{{ $org['hostname']}}" style="color: #24bbea; text-decoration: none !important;">Razorpay Dashboard</a>. The list of documents and details required for us to take you live can be found then in the <a href="{{ $org['hostname'] . '/#/app/activation'}}" style="color: #24bbea; text-decoration: none !important;">Activation</a> form. All requirements have a basic explanation alongside to help you through the process.
 
 </p>
-<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">This process is crucial as we share the same KYC with our partner banks who do their own due diligence. Also, signing up allows you to generate test keys from our dashboard which can be used for integrating payments in your product. You can just swap your test keys with your live keys once your account is activated.
+<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">This process is crucial as we share the same KYC with our partner banks who do their own due diligence.
 
 </p>
 <h3 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; padding: 0; margin: 0; text-align: left; line-height: 1.3; word-break: normal; font-size: 16px; font-weight: bold; color: #39ACE5; margin-top: 10px;">Activation Timeline</h3>
 
-<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">As soon as the KYC Process in completed by you, depending on the business segment, we will take you live in the upcoming 2-3 days.</p>
+<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">As soon as the Activation Process in completed by you, depending on the business segment, we will take you live in the upcoming {{{ $activationDuration}}}.</p>
+
+@if($token)
+<u>Integration: Start accepting Payments</u>
+<br>
+<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">Also, signing up allows you to <a href="{{ $org['hostname'] . '/#/app/keys' }}" target="_blank" style="color: #24bbea; text-decoration: none !important;">generate test keys</a> from our dashboard which can be used for integrating payments in your product. You can just swap your test keys with your live keys once your account is activated.</p>
+@endif
 
 <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
   Cheers,

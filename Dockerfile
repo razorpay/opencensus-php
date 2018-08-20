@@ -10,7 +10,7 @@ WORKDIR /app
 RUN apk add --allow-untrusted --no-cache \
     --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
     libxrender libx11-dev fontconfig zlib-dev gnu-libiconv \
-    ca-certificates wkhtmltopdf ttf-freefont dbus p7zip && \
+    ca-certificates wkhtmltopdf ttf-freefont dbus p7zip php7-sockets && \
     #https://github.com/gliderlabs/docker-alpine/issues/30#issuecomment-372020089
     update-ca-certificates 2>/dev/null && \
     cd /tmp && git clone https://github.com/razorpay/docker-alpine-wkhtmltopdf.git && \
@@ -24,6 +24,7 @@ COPY composer.json composer.lock /app/
 # A single character change in this command will trigger a new
 # composer install
 RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
+    composer global require hirak/prestissimo && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \
     composer clear-cache && \
@@ -34,8 +35,10 @@ RUN composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
 
 COPY --chown=apache:www-data . /app/
 
+RUN cp dockerconf/mpm.conf /etc/apache2/conf.d/mpm.conf
+
 # This step can't run without some classes from above step
-RUN composer dump-autoload && php artisan optimize
+RUN composer dump-autoload -o && php artisan optimize
 
 EXPOSE 80
 ENTRYPOINT ["/app/dockerconf/entrypoint.sh"]

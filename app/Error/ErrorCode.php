@@ -130,6 +130,8 @@ class ErrorCode
 
     const GATEWAY_ERROR_MANDATE_CREATION_FAILED                                     = 'GATEWAY_ERROR_MANDATE_CREATION_FAILED';
 
+    const GATEWAY_ERROR_ONBOARDING_FAILED                                           = 'GATEWAY_ERROR_ONBOARDING_FAILED';
+
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
     const BAD_REQUEST_INVALID_IDS                                                   = 'BAD_REQUEST_INVALID_IDS';
@@ -164,6 +166,7 @@ class ErrorCode
     const BAD_REQUEST_PARTNER_ACCOUNT_ID_REQUIRED                                   = 'BAD_REQUEST_PARTNER_ACCOUNT_ID_REQUIRED';
     const BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER                                    = 'BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER';
     const BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING                                = 'BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING';
+    const BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS                                 = 'BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                     = 'BAD_REQUEST_UNAUTHORIZED_INVALID_HASH';
     const BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN                                    = 'BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN';
     const BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT                                   = 'BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT';
@@ -456,6 +459,7 @@ class ErrorCode
     const BAD_REQUEST_NOTES_KEY_CANNOT_BE_ARRAY                                     = 'BAD_REQUEST_NOTES_KEY_CANNOT_BE_ARRAY';
     const BAD_REQUEST_NOTES_KEY_TOO_LARGE                                           = 'BAD_REQUEST_NOTES_KEY_TOO_LARGE';
     const BAD_REQUEST_NOTES_VALUE_TOO_LARGE                                         = 'BAD_REQUEST_NOTES_VALUE_TOO_LARGE';
+    const BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                              = 'BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING';
     const BAD_REQUEST_INVALID_TRANSACTION_AMOUNT                                    = 'BAD_REQUEST_INVALID_TRANSACTION_AMOUNT';
 
     const BAD_REQUEST_UNKNOWN_SCHEDULE                                              = 'BAD_REQUEST_UNKNOWN_SCHEDULE';
@@ -623,6 +627,7 @@ class ErrorCode
     const SERVER_ERROR_RAZORX_FAILURE                                               = 'SERVER_ERROR_RAZORX_FAILURE';
 
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
+    const SERVER_ERROR_HARVESTER_INVALID_RESPONSE                                   = 'SERVER_ERROR_HARVESTER_INVALID_RESPONSE';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
@@ -811,10 +816,17 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME                                 = 'BAD_REQUEST_MERCHANT_REQUEST_INVALID_NAME';
     const BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING                          = 'BAD_REQUEST_MERCHANT_REQUEST_SUBMISSIONS_MISSING';
 
+    // Linked Account
+    const BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT                                 = 'BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT';
+
     // Partners error codes
     const SERVER_ERROR_PARTNER_APP_NOT_FOUND                                        = 'SERVER_ERROR_PARTNER_APP_NOT_FOUND';
     const BAD_REQUEST_INVALID_PARTNER_ACTION                                        = 'BAD_REQUEST_INVALID_PARTNER_ACTION';
+
+    const SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT                                 = 'SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT';
+    const SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE                                 = 'SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                       = 'BAD_REQUEST_MERCHANT_IS_NOT_PARTNER';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                                   = 'BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                              = 'BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER';
+    const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                                = 'BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS';
 }

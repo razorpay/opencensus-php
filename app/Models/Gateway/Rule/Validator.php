@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\Rule;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
@@ -40,14 +41,17 @@ class Validator extends Base\Validator
         Entity::CURRENCY         => 'filled|in:INR,USD,EUR,SGD',
         Entity::COMMENTS         => 'filled|string|max:255',
         Entity::RECURRING        => 'filled|boolean',
+        Entity::RECURRING_TYPE   => 'sometimes_if:recurring,1|in:auto,initial',
     ];
 
     protected static $editRules = [
-        Entity::GROUP       => 'filled|string|max:50',
-        Entity::FILTER_TYPE => 'filled|in:select,reject',
-        Entity::LOAD        => 'filled|numeric|between:0,100',
-        Entity::IINS        => 'filled|array',
-        Entity::COMMENTS    => 'filled|string|max:255',
+        Entity::GROUP            => 'filled|string|max:50',
+        Entity::FILTER_TYPE      => 'filled|in:select,reject',
+        Entity::LOAD             => 'filled|numeric|between:0,100',
+        Entity::IINS             => 'filled|array',
+        Entity::COMMENTS         => 'filled|string|max:255',
+        Entity::RECURRING        => 'filled|boolean',
+        Entity::RECURRING_TYPE   => 'sometimes_if:recurring,1|in:auto,initial',
     ];
 
     protected static $createValidators = [
@@ -59,6 +63,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY,
         Entity::IINS,
         self::AMOUNTS,
+        Entity::RECURRING_TYPE,
     ];
 
     protected static $editValidators = [
@@ -70,6 +75,23 @@ class Validator extends Base\Validator
     protected function validateGateway(string $attribute, string $gateway)
     {
         Gateway::validateGateway($gateway);
+    }
+
+    protected function validateRecurringType(array $input)
+    {
+        if ((isset($input['recurring']) === false) or
+            (isset($input['recurring_type']) === false))
+        {
+                return true;
+        }
+
+        $recurringGateway = Payment\Gateway::isRecurringGateway($input['gateway']);
+
+        if ($recurringGateway === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Recurring type can only be set for recurring Gateways');
+        }
     }
 
     protected function validateGatewayAcquirer(array $input)

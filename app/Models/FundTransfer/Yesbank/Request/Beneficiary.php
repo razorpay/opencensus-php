@@ -47,6 +47,10 @@ class Beneficiary extends Base
      */
     protected function getContent(): string
     {
+        $beneName = $this->entity->getBeneficiaryName();
+
+        $normalizedName =  $this->normalizeBeneficiaryName($beneName);
+
         return '<CustId>'
              . $this->customerId
              . '</CustId>'
@@ -60,7 +64,7 @@ class Beneficiary extends Base
              . Constants::BENE_PAYMENT_TYPE
              . '</PaymentType>'
              . '<BeneName>'
-             . ($this->entity->getBeneficiaryName() ?? 'NA')
+             . $normalizedName
              . '</BeneName>'
              . '<BeneType>'
              . Constants::BENE_TYPE

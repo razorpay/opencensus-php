@@ -127,11 +127,11 @@ class Server extends Base\Mock\Server
             AuthResponseFields::DISCRIMINATOR       => 'NB',
         ];
 
-        $this->content($response, 'callback');
+        $this->content($response, 'hash');
 
         $response[AuthResponseFields::SIGNATURE] = $this->generateHash($response, 'response');
 
-        $this->content($response, 'hash');
+        $this->content($response, 'callback');
 
         return $response;
     }
@@ -186,20 +186,6 @@ class Server extends Base\Mock\Server
 
     public function getSecret()
     {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->getTestSecret();
-        }
-        else
-        {
-            return $this->getLiveSecret();
-        }
-    }
-
-    public function getTestSecret()
-    {
-        assert ($this->mode === Mode::TEST);
-
         if ($this->action === Action::AUTHORIZE)
         {
             $secret = $this->config['test_authorize_hash_secret'];
@@ -207,20 +193,6 @@ class Server extends Base\Mock\Server
         else
         {
             $secret = $this->config['test_callback_hash_secret'];
-        }
-
-        return $secret;
-    }
-
-    public function getLiveSecret()
-    {
-        if ($this->action === Action::AUTHORIZE)
-        {
-            $secret = $this->config['live_authorize_hash_secret'];
-        }
-        else if ($this->action === Action::CALLBACK)
-        {
-            $secret = $this->config['live_hash_secret'];
         }
 
 

@@ -24,6 +24,7 @@ use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
@@ -40,6 +41,7 @@ use RZP\Models\Payment\Processor\Netbanking;
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
  * @property PaymentLink\Entity     $paymentLink
+ * @property Transaction\Entity     $transaction
  */
 class Entity extends Base\PublicEntity
 {
@@ -108,7 +110,6 @@ class Entity extends Base\PublicEntity
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
     // From 11 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
-    const REFERENCE11           = 'reference11';
     const REFERENCE12           = 'reference12';
     const REFERENCE13           = 'reference13';
     const REFERENCE14           = 'reference14';
@@ -126,12 +127,14 @@ class Entity extends Base\PublicEntity
     const OTP_ATTEMPTS          = 'otp_attempts';
     const OTP_COUNT             = 'otp_count';
     const FEE                   = 'fee';
+    const MDR                   = 'mdr';
     const RECURRING             = 'recurring';
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
     const CONVERT_CURRENCY      = 'convert_currency';
     const AUTH_TYPE             = 'auth_type';
     const ACKNOWLEDGED_AT       = 'acknowledged_at';
+    const REFUND_AT             = 'refund_at';
 
     const MAX_AMOUNT            = 'max_amount';
     const EXPIRE_BY             = 'expire_by';
@@ -155,6 +158,7 @@ class Entity extends Base\PublicEntity
     const CARD                  = 'card';
     const EMI_PLAN              = 'emi_plan';
     const DISPUTES              = 'disputes';
+    const TRANSFER              = 'transfer';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -169,6 +173,8 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER        = 'account_number';
 
     const OFFER_ID              = 'offer_id';
+
+    const PREFERRED_RECURRING   = 'preferred_recurring';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -285,6 +291,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING,
         self::SAVE,
         self::FEE,
+        self::MDR,
         self::TAX,
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
@@ -292,11 +299,12 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_ID,
         self::CONVERT_CURRENCY,
         self::AUTH_TYPE,
-        self::CREATED_AT,
-        self::UPDATED_AT,
         self::DISPUTED,
         self::RECURRING_TYPE,
         self::ACKNOWLEDGED_AT,
+        self::REFUND_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -333,6 +341,7 @@ class Entity extends Base\PublicEntity
         self::EMI_PLAN,
         self::DISPUTES,
         self::CREATED_AT,
+        self::TRANSFER,
     ];
 
     /**
@@ -411,6 +420,7 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL        => null,
         self::SAVE                 => false,
         self::FEE                  => null,
+        self::MDR                  => null,
         self::TAX                  => null,
         self::OTP_ATTEMPTS         => null,
         self::OTP_COUNT            => null,
@@ -426,6 +436,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
+        self::REFUND_AT            => null
     ];
 
     protected $amounts = [
@@ -912,6 +923,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE, $fee);
     }
 
+    public function setMdr(int $mdr)
+    {
+        $this->setAttribute(self::MDR, $mdr);
+    }
+
     public function setRecurring($recurring)
     {
         $this->setAttribute(self::RECURRING, $recurring);
@@ -1026,6 +1042,11 @@ class Entity extends Base\PublicEntity
     public function setAcknowledgedAt(int $timestamp)
     {
         $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
+    }
+
+    public function setRefundAt(int $timestamp = null)
+    {
+        $this->setAttribute(self::REFUND_AT, $timestamp);
     }
 
     public function setReceiverId(string $receiverId)
@@ -1196,6 +1217,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $count;
+    }
+
+    protected function getMdrAttribute($mdr)
+    {
+        if ($mdr === null)
+        {
+            return $this->getFee();
+        }
+
+        return $mdr;
     }
 
     public function getMetadata($key = null, $default = null)
@@ -1524,13 +1555,20 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Getters ---------------------------------------------
 
-    public function getBankCodeFromVpa()
+    public function getPspFromVpa()
     {
         $vpa = $this->getAttribute(self::VPA);
 
         $vpaParts = explode('@', $vpa);
 
         $psp = end($vpaParts);
+
+        return $psp;
+    }
+
+    public function getBankCodeFromVpa()
+    {
+        $psp = $this->getPspFromVpa();
 
         return ProviderCode::getBankCode($psp);
     }
@@ -2181,7 +2219,7 @@ class Entity extends Base\PublicEntity
             '10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f',
             '7thBRSDflu7NHL', '87qTXzFTBLFN7i', '9sOd4xwUKox63N',
             '9fI2f7tNoAmVhu', '6H7N6hlcv29OMG', '8tiqrk8Qpc47l9',
-            '6ZLE5BE57SExGF'
+            '6ZLE5BE57SExGF', 'AaHmTPyOrH1ivc',
         ];
 
         $currentMerchantId = $this->getMerchantId();
@@ -2581,7 +2619,9 @@ class Entity extends Base\PublicEntity
             self::ERROR_CODE,
             self::GATEWAY,
             self::RECEIVER_ID,
-            self::RECEIVER_TYPE);
+            self::RECEIVER_TYPE,
+            self::VERIFY_AT,
+            self::VERIFY_BUCKET);
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));
 
@@ -2774,5 +2814,22 @@ class Entity extends Base\PublicEntity
         parent::verifyIdAndStripSign($id);
 
         return 'upi.polling.' . $id . '.status';
+    }
+
+    public function getTransactionType()
+    {
+        if ($this->isRecurring() === true)
+        {
+            return $this->getRecurringType();
+        }
+
+        switch ( $this->getAuthType() )
+        {
+            case AuthType::SKIP:
+                return 'MOTO';
+
+            default:
+                return 'PG';
+        }
     }
 }

@@ -6,8 +6,10 @@ use App;
 use Route;
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
+use RZP\Constants\Metric;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
+use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Http;
@@ -89,6 +91,11 @@ class Processor
      * Default UPI collect request expiry time in minutes.
      */
     const UPI_COLLECT_EXPIRY = 5;
+
+    /**
+     * Minimum payment amount for which mdr should be calculated
+     */
+    const MIN_MDR_PAYMENT_AMOUNT = 200000;
 
     /**
      * @var Merchant\Entity
@@ -190,28 +197,56 @@ class Processor
 
     public function process(array $input, $gatewayInput = []): array
     {
-        $this->setMethodForInput($input);
-
-        $payment = $this->buildPaymentEntity($input);
-
-        $ret = $this->preProcessPaymentInputs($input, $payment);
-
-        if ($ret !== null)
+        try
         {
-            return $ret;
+            $this->setMethodForInput($input);
+
+            $payment = $this->buildPaymentEntity($input);
+
+            $ret = $this->preProcessPaymentInputs($input, $payment);
+
+            if ($ret !== null)
+            {
+                return $ret;
+            }
+
+            $this->repo->transaction(function() use ($input, $payment)
+            {
+                $this->createPaymentEntity($input, $payment);
+            });
+
+            $payment = $this->payment;
+
+            // This flow is being used for only hosted (Shopify).
+            $this->checkSignature($input, $payment);
+
+            return $this->authorize($payment, $input, $gatewayInput);
         }
-
-        $this->repo->transaction(function() use ($input, $payment)
+        catch (Exception\BaseException $e)
         {
-            $this->createPaymentEntity($input, $payment);
-        });
+            $attributes = [];
 
-        $payment = $this->payment;
+            if (($e->getError() !== null) and ($e->getError() instanceof Error))
+            {
+                $attributes = $e->getError()->getAttributes();
+            }
 
-        // This flow is being used for only hosted (Shopify).
-        $this->checkSignature($input, $payment);
+            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
 
-        return $this->authorize($payment, $input, $gatewayInput);
+            $this->pushPaymentCreateErrorMetrics($attributes);
+
+            throw $e;
+        }
+        catch (\Throwable $e)
+        {
+            $attributes = [Metric::LABEL_TRACE_CODE =>  $e->getCode()];
+
+            $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
+
+            $this->pushPaymentCreateErrorMetrics($attributes);
+
+            throw $e;
+        }
     }
 
     public function getPayment(): Payment\Entity
@@ -277,12 +312,9 @@ class Processor
         // We need this flow only if either:
         //   - bank_account is missing
         //   - auth_type is missing
-        //   - auth_type is aadhaar and aadhaar_number is missing
         //
         if ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
-            (empty($payment->getAuthType()) === false) and
-            (($payment->getAuthType() !== Payment\AuthType::AADHAAR) or
-             (empty($input[Payment\Entity::AADHAAR]['number']) === false)))
+            (empty($payment->getAuthType()) === false))
         {
             return null;
         }
@@ -648,23 +680,32 @@ class Processor
         throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
     }
 
-    protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
+    protected function validateAndFetchOffer(Payment\Entity $payment, array $input)
     {
         $offerId = $input[Payment\Entity::OFFER_ID];
 
         Offer\Entity::verifyIdAndStripSign($offerId);
+
+        // TODO: this needs to be checked for shared merchant offers also
+        // skipping for now because there aren't any
+        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
+
+        // if its just a checkout display offer, just return null so that further validations
+        // and associations don't happen.
+        if ($offer->getCheckoutDisplay() === true)
+        {
+            return null;
+        }
 
         // If offer is present in the payment request, we need to validate it against the order.
         if ($payment->order->offers->contains($offerId) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
             [
-                'offer_id' => $offer->getPublicId(),
-                'order_id' => $order->getPublicId(),
+                'offer_id' => Offer\Entity::getSignedId($offerId),
+                'order_id' => $payment->order->getPublicId(),
             ]);
         }
-
-        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
 
         return $offer;
     }
@@ -2213,6 +2254,7 @@ class Processor
         $this->eventOrderPaid();
     }
 
+
     protected function getUpiStatus(string $id)
     {
         $key = Payment\Entity::getCacheUpiStatusKey($id);
@@ -2257,5 +2299,42 @@ class Processor
                 ['key' => $key,
                  '$value' => $value]);
         }
+    }
+
+    protected function pushPaymentCreateErrorMetrics(array $errorAttributes)
+    {
+        $this->trace->count(
+            Metric::PAYMENT_PROCESS_FAILED,
+            [
+                Metric::LABEL_TRACE_CODE            =>  array_get($errorAttributes, Error::INTERNAL_ERROR_CODE),
+                Metric::LABEL_TRACE_FIELD           =>  array_get($errorAttributes, Error::FIELD),
+                Metric::LABEL_TRACE_SOURCE          =>  array_get($errorAttributes, Error::ERROR_CLASS),
+                Metric::LABEL_PAYMENT_IS_CREATED    =>  array_get($errorAttributes, Metric::LABEL_PAYMENT_IS_CREATED),
+            ]
+        );
+    }
+
+    protected function isPaymentEmandateAndRblGateway(Payment\Entity $payment)
+    {
+        if (($payment->isEmandate() === true) and
+            ($payment->getGateway() === Payment\Gateway::ENACH_RBL))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isPaymentTpvAndBankTransferRefund(Payment\Entity $payment)
+    {
+        if (($payment->hasOrder() === true) and
+            ($payment->isTpvMethod() === true) and
+            ($this->merchant->isTPVRequired() === true) and
+            ($this->merchant->isFeatureEnabled(Feature::BANK_TRANSFER_REFUND) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

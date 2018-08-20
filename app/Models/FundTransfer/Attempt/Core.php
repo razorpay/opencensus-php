@@ -2,9 +2,15 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
+use Carbon\Carbon;
+
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
+use RZP\Models\BankAccount\Entity as BankAccountEntity;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Core extends Base\Core
 {
@@ -40,5 +46,36 @@ class Core extends Base\Core
 
             $settlementCore->triggerSettlementWebhook($entity);
         }
+    }
+
+    /**
+     * Creates FundTransferAttempt entity for enach payments. Channel is default to YESBANK
+     * @param Base\Entity $source - currently refund entity
+     * @param $channel = Settlement\Channel::YESBANK
+    */
+    public function createFundTransferAttempt(
+        Base\Entity $source,
+        string $channel = Settlement\Channel::YESBANK,
+        string $purpose = Purpose::REFUND)
+    {
+        $fundTransferAttempt = new Entity;
+
+        $fundTransferAttempt->merchant()->associate($source->merchant);
+
+        $fundTransferAttempt->source()->associate($source);
+
+        $fundTransferAttempt->bankAccount()->associate($source->bankAccount);
+
+        $values = [
+            Entity::INITIATE_AT     => Carbon::now(Timezone::IST)->getTimestamp(),
+            Entity::CHANNEL         => $channel,
+            Entity::VERSION         => Version::V3,
+            Entity::STATUS          => Status::CREATED,
+            Entity::PURPOSE         => $purpose,
+        ];
+
+        $fundTransferAttempt->fillAndGenerateId($values);
+
+        $this->repo->saveOrFail($fundTransferAttempt);
     }
 }

@@ -599,7 +599,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             BaseReconciliate::GATEWAY_SERVICE_TAX    => $serviceTax,
             BaseReconciliate::GATEWAY_FEE            => $fee,
             BaseReconciliate::GATEWAY_SETTLED_AT     => $gatewaySettledAt,
-            BaseReconciliate::GATEWAY_TRANSACTION_ID => $gatewayTransactionId,
+            BaseReconciliate::GATEWAY_TRANSACTION_ID => trim($gatewayTransactionId),
             BaseReconciliate::REFERENCE_NUMBER       => trim($referenceNumber),
             BaseReconciliate::GATEWAY_PAYMENT_DATE   => trim($gatewayPaymentDate),
             BaseReconciliate::AUTH_CODE              => trim($authCode),
@@ -1827,7 +1827,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
-        $dbReferenceNumber = $gatewayPayment->getBankPaymentId();
+        $dbReferenceNumber = trim($gatewayPayment->getBankPaymentId());
 
         if ((empty($dbReferenceNumber) === false) and
             ($dbReferenceNumber !== $referenceNumber))
@@ -1861,7 +1861,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function setGatewayTransactionId(string $gatewayTransactionId, PublicEntity $gatewayPayment)
     {
-        $dbGatewayTransactionId = $gatewayPayment->getGatewayTransactionId();
+        $dbGatewayTransactionId = trim($gatewayPayment->getGatewayTransactionId());
 
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))

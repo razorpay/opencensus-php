@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\Bank\BankCodes;
 
 class Service extends Base\Service
 {
@@ -56,7 +57,7 @@ class Service extends Base\Service
 
         $this->validateProvider();
 
-        $valid = $this->core->process($input);
+        $valid = $this->core->process($input, $this->provider);
 
         return [
             'valid'          => $valid,
@@ -82,7 +83,7 @@ class Service extends Base\Service
 
         $this->validateProvider();
 
-        $success = $this->core->notify($input);
+        $success = $this->core->notify($input, $this->provider);
 
         return [
             'success'        => $success,

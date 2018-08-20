@@ -59,8 +59,7 @@
       "enum": [
         "",
         "Andhra Pradesh",
-        "Bangalore 1",
-        "Bangalore 2",
+        "Bangalore",
         "Bihar",
         "Chandigarh",
         "Chattisgarh",
@@ -98,8 +97,7 @@
         "enum_titles": [
           "--Select--",
           "Andhra Pradesh",
-          "Bangalore 1",
-          "Bangalore 2",
+          "Bangalore",
           "Bihar",
           "Chandigarh",
           "Chattisgarh",

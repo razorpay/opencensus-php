@@ -20,6 +20,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
+        $reconStatus = $this->getReconPaymentStatus($row);
+
+        if ($reconStatus === Status::FAILED)
+        {
+            $this->setFailUnprocessedRow(false);
+
+            return null;
+        }
+        
         return $row[Constants::COLUMN_PAYMENT_ID] ?? null;
     }
 

@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Payment;
 
+use Cache;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Receiver;
+use RZP\Models\Payment\Processor\Processor;
 
 class Core extends Base\Core
 {
@@ -82,5 +85,49 @@ class Core extends Base\Core
             'success_count' => $successCount,
             'failure_count' => $failureCount,
         ];
+    }
+
+    public function updateMdr(string $lastUpdatedPaymentId = null, int $lastUpdatedPaymentCapturedAt)
+    {
+        $paymentsToUpdateQuery = $this->repo->payment->buildUpdateMdrQuery($lastUpdatedPaymentId, $lastUpdatedPaymentCapturedAt);
+
+        $successCount = 0;
+
+        $paymentsToUpdateQuery->chunk(500, function ($payments, $successCount)
+        {
+            $this->repo->transaction(function () use ($payments)
+            {
+                foreach ($payments as $payment)
+                {
+                    $txn = $payment->transaction;
+
+                    $processor = new Processor($payment->merchant);
+
+                    $processor->calculateAndSetMdrFeeIfApplicable($payment, $txn);
+
+                    $this->repo->saveOrFail($txn);
+
+                    $this->repo->saveOrFail($payment);
+                }
+            });
+
+            $successCount = $successCount + 500;
+
+            $this->trace->info(TraceCode::PAYMENT_MDR_UPDATE_SUCCESS, [
+                'success_count' => $successCount,
+            ]);
+
+            $lastUpdatedPayment           = $payments->last();
+            $lastUpdatedPaymentId         = $lastUpdatedPayment->getId();
+            $lastUpdatedPaymentCapturedAt = $lastUpdatedPayment->getCapturedAt();
+
+            Cache::forever($this->mode . '_' . 'payment_mdr_update_data',
+                $lastUpdatedPaymentId . ':' . $lastUpdatedPaymentCapturedAt);
+
+            if ($successCount > 15000)
+            {
+                return false;
+            }
+        });
     }
 }

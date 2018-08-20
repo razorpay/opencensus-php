@@ -571,6 +571,12 @@ class Gateway
         IFSC::CNRB
     ];
 
+    public static $directDebitCardNetworks = [
+        Network::VISA,
+        Network::MC,
+        Network::MAES,
+    ];
+
     /**
      * List of ALL auth types and the corresponding
      * banks supported by that auth type.
@@ -606,6 +612,7 @@ class Gateway
             IFSC::BNPA,
             IFSC::BURX,
             IFSC::CBIN,
+            IFSC::CHAX,
             IFSC::CHSX,
             IFSC::CITI,
             IFSC::CMCX,
@@ -613,6 +620,7 @@ class Gateway
             IFSC::CORP,
             IFSC::COSB,
             IFSC::CSBK,
+            IFSC::CSBX,
             IFSC::CURX,
             IFSC::DBSS,
             IFSC::DCBL,
@@ -642,16 +650,16 @@ class Gateway
             IFSC::KAIJ,
             IFSC::KARB,
             IFSC::KASX,
+            IFSC::KBCX,
             IFSC::KDCX,
             IFSC::KHAX,
             IFSC::KKBK,
             IFSC::KNPX,
             IFSC::KOCX,
             IFSC::KSCB,
+            IFSC::KTBX,
             IFSC::KUNS,
             IFSC::KVBL,
-            IFSC::KTBX,
-            IFSC::KBCX,
             IFSC::LBMX,
             IFSC::LCCX,
             IFSC::LKMX,
@@ -664,19 +672,25 @@ class Gateway
             IFSC::NAIX,
             IFSC::NALX,
             IFSC::NCCX,
+            IFSC::NDCX,
+            IFSC::NICB,
             IFSC::NOBX,
             IFSC::NOIX,
             IFSC::NSBX,
             IFSC::NSGX,
-            IFSC::NDCX,
             IFSC::ORBC,
             IFSC::PALX,
+            IFSC::PATX,
             IFSC::PCUX,
+            IFSC::PLUX,
+            IFSC::PMCB,
+            IFSC::PRTH,
             IFSC::RAMX,
             IFSC::RATN,
             IFSC::RCUX,
             IFSC::REBX,
             IFSC::RGCX,
+            IFSC::RNSX,
             IFSC::SAGX,
             IFSC::SCBL,
             IFSC::SCCX,
@@ -685,13 +699,16 @@ class Gateway
             IFSC::SHUX,
             IFSC::SIBL,
             IFSC::SRCB,
+            IFSC::SSDX,
+            IFSC::SSLX,
             IFSC::STRX,
             IFSC::SUTB,
             IFSC::SVCB,
+            IFSC::SVNX,
             IFSC::SWMX,
             IFSC::SYNB,
-            IFSC::SVNX,
             IFSC::TACX,
+            IFSC::TBCX,
             IFSC::TCUB,
             IFSC::TECX,
             IFSC::TEHX,
@@ -704,10 +721,12 @@ class Gateway
             IFSC::UCBA,
             IFSC::UCBS,
             IFSC::UCUX,
+            IFSC::UKGX,
             IFSC::UTIB,
             IFSC::UTZX,
             IFSC::VARA,
             IFSC::VCCX,
+            IFSC::VEDX,
             IFSC::VIJX,
             IFSC::VJSX,
             IFSC::YESB,
@@ -1397,6 +1416,11 @@ class Gateway
     public static function getNetworksSupportedForCardRecurring(): array
     {
         return self::$recurringCardNetworks;
+    }
+
+    public static function isDirectDebitSupported(string $networkCode): bool
+    {
+        return (in_array($networkCode, self::$directDebitCardNetworks, true) === true);
     }
 
     public static function getIssuersSupportedForDebitCardRecurring(): array

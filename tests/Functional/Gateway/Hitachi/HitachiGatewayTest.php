@@ -492,6 +492,23 @@ class HitachiGatewayTest extends TestCase
         $this->paymentRefundReverseTestHelper($payment);
     }
 
+     public function testReverseFailureDuetoFormatError()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockFormatErrorOnReversal();
+
+        $this->refundAuthorizedPayment($payment['id']);
+
+        $gatewayEntity = $this->getLastEntity('hitachi', true);
+
+        $this->assertEquals('30', $gatewayEntity['pRespCode']);
+
+        $this->assertNull($gatewayEntity['pRRN']);
+    }
+
     public function testReverseFailure()
     {
         $this->doAuthPayment($this->payment);
@@ -779,6 +796,51 @@ class HitachiGatewayTest extends TestCase
         $hitachiPayment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(0, $hitachiPayment['verified']);
+    }
+
+    public function testMotoTransaction()
+    {
+        $motoTerminal = $this->fixtures->create('terminal:shared_hitachi_moto_terminal');
+
+        $this->fixtures->merchant->addFeatures(['direct_debit']);
+
+        $this->payment['auth_type'] = 'skip';
+
+        unset($this->payment['card']['cvv']);
+
+        $testData = $this->testData['motoTransactionRequest'];
+
+        $this->mockServerRequestFunction(
+            function(& $request) use ($testData)
+            {
+                $this->assertArraySelectiveEquals($testData, $request);
+                $this->assertFalse(isset($request['pCVV2']));
+            });
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($motoTerminal['id'], $payment['terminal_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('skip', $payment['auth_type']);
+    }
+
+    public function testMotoTransactionNotSelectedWhenAuthTypeNotSet()
+    {
+        $motoTerminal = $this->fixtures->create('terminal:shared_hitachi_moto_terminal');
+
+        $this->fixtures->merchant->addFeatures(['direct_debit']);
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['auth_type']);
+
+        $this->assertEquals('authorized', $payment['status']);
     }
 
     public function expressPayEnrolled($iin, $network)

@@ -2,10 +2,22 @@
 
 namespace RZP\Models\Base;
 
+use App;
 use RZP\Exception;
 
 class Observer
 {
+    protected $app;
+
+    protected $trace;
+
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
+    }
+
     /**
      * Used to flush the cache on updates, for entities which are using
      * query cache. We flush the cache by deleting all keys with the tag

@@ -8,6 +8,7 @@ namespace RZP\Models\PaymentLink;
 final class Metric
 {
     // Counters
+    const PAYMENT_PAGE_VIEW_TOTAL             = 'payment_page_view_total';
     const PAYMENT_PAGE_PAID_TOTAL             = 'payment_page_paid_total';
     const PAYMENT_PAGE_EXPIRED_TOTAL          = 'payment_page_expired_total';
     const PAYMENT_PAGE_EMAIL_NOTIFY_TOTAL     = 'payment_page_email_notify_total';

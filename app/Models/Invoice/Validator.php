@@ -607,7 +607,7 @@ class Validator extends Base\Validator
 
         $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
         $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
-        $this->getTrace()->count(Metric::INVOICE_PAYMENT_ATTEMPTS_TOTAL, 1, $dimensions);
+        $this->getTrace()->count(Metric::INVOICE_PAYMENT_ATTEMPTS_TOTAL, $dimensions);
 
         if ($invoice->trashed())
         {

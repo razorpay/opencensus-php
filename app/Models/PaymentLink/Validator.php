@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::TITLE         => 'required|filled|string|max:40',
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
-        Entity::SLUG          => 'filled|alpha_num|min:4|max:20',
+        Entity::SLUG          => 'filled|alpha_num|min:4|max:30',
     ];
 
     protected static $editRules = [
@@ -43,7 +43,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION   => 'sometimes|string|max:2048|nullable',
         Entity::NOTES         => 'sometimes|notes',
         // Todo: Discuss with product on should making slug null be allowed in patch requests?
-        Entity::SLUG          => 'filled|alpha_num|min:4|max:20',
+        Entity::SLUG          => 'filled|alpha_num|min:4|max:30',
     ];
 
     protected static $sendNotificationRules = [

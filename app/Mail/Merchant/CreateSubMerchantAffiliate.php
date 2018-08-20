@@ -5,8 +5,9 @@ namespace RZP\Mail\Merchant;
 use RZP\Mail\Base\Common;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
-use RZP\Mail\User\PasswordReset;
 use RZP\Models\User\Entity as User;
+use RZP\Models\Merchant\Detail\Entity as Detail;
+use RZP\Models\User\Service as UserService;
 
 class CreateSubMerchantAffiliate extends Mailable
 {
@@ -47,7 +48,7 @@ class CreateSubMerchantAffiliate extends Mailable
 
         if (empty($user) === false)
         {
-            list($this->token, $this->expiryTime) = (new PasswordReset($user, $org))->getTokenAndExpiry();
+            list($this->token, $this->expiryTime) = (new UserService)->getTokenAndExpiry($user->getId());
         }
     }
 
@@ -72,11 +73,12 @@ class CreateSubMerchantAffiliate extends Mailable
     protected function addMailData()
     {
         $data = [
-            'merchant'    => $this->aggregator,
-            'subMerchant' => $this->subMerchant,
-            'token'       => $this->token,
-            'expiryTime'  => $this->expiryTime,
-            'org'         => $this->org,
+            'merchant'           => $this->aggregator,
+            'subMerchant'        => $this->subMerchant,
+            'token'              => $this->token,
+            'expiryTime'         => $this->expiryTime,
+            'org'                => $this->org,
+            'activationDuration' => Detail::ACTIVATION_DURATION,
         ];
 
         $this->with($data);

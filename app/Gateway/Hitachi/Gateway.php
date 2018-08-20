@@ -16,6 +16,7 @@ use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Mpi\Base\Eci;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
@@ -24,6 +25,7 @@ class Gateway extends Base\Gateway
 {
     use Base\CardCacheTrait;
     use Base\AuthorizeFailed;
+    use Base\GatewayTerminalTrait;
 
     protected $gateway = 'hitachi';
 
@@ -35,11 +37,11 @@ class Gateway extends Base\Gateway
     const TIME_FORMAT = 'His';
     const DATE_FORMAT = 'md';
 
-    public function __construct()
+    public function setGatewayParams($input, $mode, $terminal)
     {
-        parent::__construct();
+        parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->secureCacheDriver = $this->app['config']->get('cache.secure_default');
+        $this->secureCacheDriver = $this->getDriver($input);
     }
 
     public function otpGenerate(array $input)
@@ -61,6 +63,11 @@ class Gateway extends Base\Gateway
         if ($this->isSecondRecurringPaymentRequest($input) === true)
         {
             return $this->authorizeRecurring($input);
+        }
+
+        if ($this->isMotoTransactionRequest($input) === true)
+        {
+            return $this->authorizeMoto($input);
         }
 
         $authenticationGateway = $this->decideAuthenticationGateway($input);
@@ -279,6 +286,21 @@ class Gateway extends Base\Gateway
         }
 
         return $authenticationGateway;
+    }
+
+    protected function authorizeMoto(array $input)
+    {
+        $request = $this->getAuthorizeRequestArrayForMoto($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_MOTO_AUTH_RESPONSE);
+
+        $attributes = $this->getAttributesFromAuthResponse($response);
+
+        $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+
+        $this->checkErrorsAndThrowException($response);
     }
 
     protected function authorizeRecurring(array $input)
@@ -503,7 +525,7 @@ class Gateway extends Base\Gateway
         if (($network === Card\Network::VISA) or
             ($network === Card\Network::MC))
         {
-            $content[RequestFields::ECI] = '02';
+            $content[RequestFields::ECI] = Eci::SI;
         }
         else
         {
@@ -520,6 +542,34 @@ class Gateway extends Base\Gateway
         $traceRequest['content'] = $traceContent;
 
         $this->trace->info(TraceCode::GATEWAY_RECURRING_AUTH_REQUEST,
+            [
+                'request'    => $traceRequest,
+                'gateway'    => 'hitachi',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $request;
+    }
+
+    protected function getAuthorizeRequestArrayForMoto(array $input)
+    {
+        $content = $this->getDefaultAuthorizeRequestArray($input);
+
+        $content[RequestFields::TRANSACTION_TYPE] = TransactionType::MOTO;
+
+        $content[RequestFields::ECI] = Eci::MOTO;
+
+        $content[RequestFields::AUTH_STATUS] = Mpi\Base\AuthenticationStatus::N;
+
+        $traceContent = $content;
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
+        $request = $traceRequest = $this->getStandardRequestArray($content);
+
+        $traceRequest['content'] = $traceContent;
+
+        $this->trace->info(TraceCode::GATEWAY_MOTO_AUTH_REQUEST,
             [
                 'request'    => $traceRequest,
                 'gateway'    => 'hitachi',
@@ -613,7 +663,8 @@ class Gateway extends Base\Gateway
             RequestFields::EXPIRY_DATE         => $expiry,
         ];
 
-        if ($this->isSecondRecurringPaymentRequest($input) === false)
+        if (($this->isSecondRecurringPaymentRequest($input) === false) and
+            ($this->isMotoTransactionRequest($input) === false))
         {
             $data[RequestFields::CVV2] = $input['card']['cvv'];
         }
@@ -746,10 +797,21 @@ class Gateway extends Base\Gateway
 
     protected function getAttributesFromRefundReverseResponse(array $response) : array
     {
-        $attributes = [
-            Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM],
-            Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE],
-        ];
+        if ((isset($response['response_code']) === true) and
+            ($response['response_code'] === '30'))
+        {
+            $attributes = [
+                Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
+                Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE] ?? $response['response_code'],
+            ];
+        }
+        else
+        {
+            $attributes = [
+                Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM],
+                Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE],
+            ];
+        }
 
         return $attributes;
     }

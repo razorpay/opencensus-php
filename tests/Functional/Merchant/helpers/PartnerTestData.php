@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant\Partner;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Batch\Header;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
@@ -338,6 +339,21 @@ return [
         ],
     ],
 
+    'testDeleteRelatedEntitiesOnUnmarkingPartner' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+    ],
+
     'testAddPartnerAccessMapSubmerchantAccessUnauthorized' => [
         'request'   => [
             'url'     => '/merchants/10000000000009/access_maps',
@@ -378,7 +394,6 @@ return [
             ],
         ],
     ],
-
 
     'testAddPartnerAccessMapForDiffOrgSubmerchant' => [
         'request'   => [
@@ -574,6 +589,75 @@ return [
         ],
     ],
 
+    'testPartnerSubmerchantsBatch' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'partner_submerchants',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'partner_submerchants',
+                'status'           => 'created',
+                'total_count'      => 2,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => null,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testPartnerSubmerchantsBatchInvalidId' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'partner_submerchants',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'partner_submerchants',
+                'status'           => 'created',
+                'total_count'      => 1,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => null,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
+
+    'testPartnerSubmerchantsBatchFileRows' => [
+        [
+            Header::PARTNER_MERCHANT_ID  => '10000000000000',
+            Header::PARTNER_TYPE         => 'reseller',
+            Header::SUBMERCHANT_ID       => '100DemoAccount',
+        ],
+        [
+            Header::PARTNER_MERCHANT_ID  => '10000000000000',
+            Header::PARTNER_TYPE         => '',
+            Header::SUBMERCHANT_ID       => '10000000000001',
+        ],
+    ],
+
+    'testPartnerSubmerchantsBatchInvalidIdFileRows' => [
+        [
+            Header::PARTNER_MERCHANT_ID  => '1NonExistentId',
+            Header::PARTNER_TYPE         => 'reseller',
+            Header::SUBMERCHANT_ID       => '100DemoAccount',
+        ],
+    ],
+
     'testNoSubmerchantAccountAccessForReseller' => [
         'request'   => [
             'url'     => '/merchants/10000000000009/access_maps',
@@ -588,5 +672,205 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testFetchPartnerSubmerchant' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_10000000000009',
+                'entity'           => 'merchant',
+                'user'             => [],
+                'details'          => [
+                    'activation_status' => 'under_review',
+                ],
+                'dashboard_access' => false,
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantProxyAuth' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_10000000000009',
+                'entity'           => 'merchant',
+                'user'             => [],
+                'dashboard_access' => true,
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantProxyAuthSellerApp' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response'   => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AUTHENTICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testFetchPartnerSubmerchants' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                    [
+                        'id'               => 'acc_10000000000011',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsDeleted' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsFilters' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'name'              => 'random_name_1',
+                'email'             => 'user@example.com',
+                'id'                => '10000000000009',
+                'activation_status' => 'under_review',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'name'             => 'random_name_1',
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsPaginationFilters' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'skip'  => 1,
+                'count' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000011',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsEmptyList' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
+
+    'testAddPartnerAccessMapForLinkedAccountSubmerchant' => [
+        'request'   => [
+            'url'     => '/merchants/10000000000009/access_maps',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
+        ],
+    ],
+
 ];
 

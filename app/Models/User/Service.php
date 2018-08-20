@@ -5,6 +5,8 @@ namespace RZP\Models\User;
 use Mail;
 use Hash;
 use Config;
+
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -360,6 +362,65 @@ class Service extends Base\Service
     }
 
     /**
+     * This email goes to sub-merchant user when the aggregator/partner
+     * tries to create a login for him but the user account already
+     * exists and we just attach it to the sub-merchant in question.
+     *
+     * @param  Entity          $user
+     * @param  Merchant\Entity $submerchant
+     *
+     * @return array
+     */
+    public function postAccountMappedEmail(Entity $user, Merchant\Entity $submerchant)
+    {
+        $orgId = $this->auth->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+        $org['hostname'] = $this->auth->getOrgHostName();
+
+        $submerchantArray = $submerchant->toArrayPublic();
+
+        $accountMappedMail = new UserMail\MappedToAccount($user, $org, $submerchantArray);
+
+        Mail::queue($accountMappedMail);
+
+        return ['success' => true];
+    }
+
+    /**
+     * Sends Linked Account access email with user password reset link.
+     *
+     * @param Entity            $user
+     * @param Merchant\Entity   $subMerchant
+     *
+     * @return array
+     */
+    public function postLinkedAccountAccessEmail(Entity $user, Merchant\Entity $subMerchant): array
+    {
+        $orgId = $this->auth->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+        $org['hostname'] = $this->auth->getOrgHostName();
+
+        $linkedAccountAccessMail = new UserMail\LinkedAccountUserAccess($user, $org, $subMerchant);
+
+        Mail::queue($linkedAccountAccessMail);
+
+        return ['success' => true];
+    }
+
+    public function getTokenAndExpiry(string $userId): array
+    {
+        $expiryTime = Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME;
+
+        $token = (new User\Core)->generateToken($userId, $expiryTime);
+
+        return [$token, $expiryTime];
+    }
+
+    /**
      * @param  array $input
      *
      * @return array
@@ -419,6 +480,36 @@ class Service extends Base\Service
                     $data['final_' . $attribution] = $utmParams[Constants::ATTRIBUTIONS][1][$attribution] ?? "";
                 }
             }
+        }
+    }
+
+    /**
+     * If we create a new user we send him a password reset link to start using dasboard
+     * The reset flow will also confirm the user in the process.
+     * If we find an existing user with the sub-merchant email then we send a mail informing
+     * that he has access to sub-merchant account also now.
+     *
+     * @param User\Entity     $subMerchantUser
+     * @param Merchant\Entity $subMerchant
+     * @param boolean         $createdNew
+     *
+     */
+    public function sendAccountLinkedCommunicationEmail(
+                                                        User\Entity $subMerchantUser,
+                                                        Merchant\Entity $subMerchant,
+                                                        bool $createdNew)
+    {
+        if (($createdNew === true) and ($subMerchant->isLinkedAccount() === true))
+        {
+            $this->postLinkedAccountAccessEmail($subMerchantUser, $subMerchant);
+        }
+        else if ($createdNew === true)
+        {
+            $this->postResetPassword([User\Entity::EMAIL => $subMerchantUser[User\Entity::EMAIL]]);
+        }
+        else
+        {
+            $this->postAccountMappedEmail($subMerchantUser, $subMerchant);
         }
     }
 }

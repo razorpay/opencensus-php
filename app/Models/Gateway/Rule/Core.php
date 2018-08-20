@@ -178,11 +178,12 @@ class Core extends Base\Core
         switch ($method)
         {
             case Payment\Method::CARD:
-                $params[Entity::METHOD_TYPE]   = $card->getType();
-                $params[Entity::NETWORK]       = $card->getNetworkCode();
-                $params[Entity::ISSUER]        = $card->getIssuer();
-                $params[Entity::INTERNATIONAL] = $payment->isInternational();
-                $params[Entity::RECURRING]     = $payment->isRecurring();
+                $params[Entity::METHOD_TYPE]    = $card->getType();
+                $params[Entity::NETWORK]        = $card->getNetworkCode();
+                $params[Entity::ISSUER]         = $card->getIssuer();
+                $params[Entity::INTERNATIONAL]  = $payment->isInternational();
+                $params[Entity::RECURRING]      = $payment->isRecurring();
+                $params[Entity::RECURRING_TYPE] = $payment->getRecurringType();
 
                 break;
 
