@@ -14,7 +14,7 @@ import {
 
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
-const INDIVIDUAL = 2;
+export const INDIVIDUAL = 2;
 const PARTNERSHIP = 3;
 const PRIVATE = 4; // 'Private Limited',
 const PUBLIC = 5; // 'Public Limited',
@@ -29,6 +29,9 @@ const NOT_REGISTERED = 11; // 'Society'
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
+
+const individualMsg =
+  'We are not supporting individuals (unregistered businesses) at the moment. We shall inform you when we start supporting individuals.';
 
 const stateOptions = ['--Select--'].concat(
   Object.keys(states).map(c => {
@@ -96,12 +99,9 @@ const businessModel = [
       if (currentBusinessType && !this.props.accountId) {
         if (currentBusinessType == INDIVIDUAL) {
           return (
-            <div class="warning-svg">
+            <div class="warning-svg red">
               {WarningSvg()}
-              <span>
-                Review of activation form for individuals takes longer. We may
-                not be able to support a few business models at this moment.
-              </span>
+              <span>{individualMsg}</span>
             </div>
           );
         } else if (currentBusinessType == NOT_REGISTERED) {
