@@ -6,9 +6,9 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Models\Base;
+use RZP\Models\Settlement\Channel;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
-use RZP\Models\Transaction\Channel;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Refund extends Base\Core
@@ -26,9 +26,9 @@ class Refund extends Base\Core
     {
         $bankTransfer = $this->getBankTransfer($input['payment']);
 
-        $bankTransfer->getValidator()->validateRefundIsAllowed();
-
         $bankAccount = $this->createOrUpdateBankAccount($input, $bankTransfer);
+
+        $bankAccount->getValidator()->validateRefundIsAllowed();
 
         $this->createRefundAttemptEntity($input, $bankTransfer, $bankAccount);
     }
@@ -69,7 +69,7 @@ class Refund extends Base\Core
 
         $data = [
             FundTransferAttempt\Entity::PURPOSE         => FundTransferAttempt\Purpose::REFUND,
-            FundTransferAttempt\Entity::CHANNEL         => $bankTransfer->merchant->getChannel(),
+            FundTransferAttempt\Entity::CHANNEL         => Channel::YESBANK,
             FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
             FundTransferAttempt\Entity::NARRATION       => $this->getNarration($bankTransfer),
