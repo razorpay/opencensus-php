@@ -10,10 +10,6 @@ return [
         'cloud'     => true,
     ],
 
-    'subscriptions' => [
-        'secret'    => env('APP_SUBSCRIPTIONS_SECRET'),
-    ],
-
     'dashboard_guest'   => [
         'secret'   => env('APP_DASHBOARD_GUEST_SECRET'),
     ],
@@ -217,5 +213,11 @@ return [
 
     'beam' => [
         'url' => env('BEAM_URL')
-    ]
+    ],
+
+    'subscriptions' => [
+        'url'      => env('APP_SUBSCRIPTIONS_URL'),
+        'username' => 'rzp',
+        'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
+    ],
 ];

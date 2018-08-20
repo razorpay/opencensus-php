@@ -289,9 +289,9 @@ class ErrorCodes
     {
         $errorCode = $row[Batch\Header::ENACH_REGISTER_RETURN_CODE] ?? '';
 
-        self::throwInvalidResponseErrorIfCodeNotMapped($errorCode, self::$registerPublicErrorCodeMappings, $row);
+        $deafultErrorCode = ErrorCode::GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED;
 
-        $errorCode = self::$registerPublicErrorCodeMappings[$errorCode];
+        $errorCode = self::$registerPublicErrorCodeMappings[$errorCode] ?? $deafultErrorCode;
 
         return self::getDescriptionFromErrorCode($errorCode);
     }
@@ -300,9 +300,9 @@ class ErrorCodes
     {
         $errorCode = $row[EnachRbl::GATEWAY_ERROR_CODE];
 
-        self::throwInvalidResponseErrorIfCodeNotMapped($errorCode, self::$debitPublicErrorCodeMappings, $row);
+        $deafultErrorCode = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
-        return self::$debitPublicErrorCodeMappings[$errorCode];
+        return self::$debitPublicErrorCodeMappings[$errorCode] ?? $deafultErrorCode;
     }
 
     protected static function throwInvalidResponseErrorIfCodeNotMapped($errorCode, array $mapping, array $content)

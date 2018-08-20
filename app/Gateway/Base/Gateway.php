@@ -16,6 +16,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
+use RZP\Gateway\Base\Metric;
 use RZP\Models\Payment\Status;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Constants\Entity as ConstantsEntity;
@@ -194,6 +195,29 @@ class Gateway
         $this->cache = $this->app['cache'];
 
         $this->externalMockDomain = env('EXTERNAL_MOCK_GATEWAY_DOMAIN');
+    }
+
+    public function call($action, $input)
+    {
+        try
+        {
+            $response = $this->$action($input);
+
+            $this->pushDimensions($action, $input, Metric::SUCCESS);
+
+            return $response;
+        }
+        catch (\Throwable $exc)
+        {
+            if (property_exists($exc, 'isPropagatedException') === false)
+            {
+                $this->pushDimensions($action, $input, Metric::FAILED);
+
+                $exc->isPropagatedException = true;
+            }
+
+            throw $exc;
+        }
     }
 
     public function authorize(array $input)
@@ -1197,5 +1221,12 @@ class Gateway
     protected function getExternalMockUrl(string $type)
     {
         return $this->externalMockDomain . '/' . $this->gateway . $this->getRelativeUrl($type);
+    }
+
+    protected function pushDimensions($action, $input, $status)
+    {
+        $gatewayMetric = new Metric;
+
+        $gatewayMetric->pushGatewayDimensions($action, $input, $status);
     }
 }

@@ -2307,6 +2307,22 @@ final class Route
         'payment_create_openwallet',
     ];
 
+    const SUBSCRIPTION_PROXY_ROUTES = [
+        'plan_create',
+        'plan_create',
+        'plan_fetch',
+        'plan_fetch_multiple',
+        'subscription_create',
+        'subscription_fetch',
+        'subscription_fetch_multiple',
+        'subscription_cancel',
+        'addon_fetch',
+        'addon_fetch_multiple',
+        'addon_delete',
+        'subscription_create_addon',
+        'subscription_fetch_due_addons',
+    ];
+
     /**
      * @var Router
      */
@@ -2632,6 +2648,13 @@ final class Route
         $currentRoute = $this->getCurrentRouteName();
 
         return (in_array($currentRoute, self::S2S_PAYMENT_ROUTES, true) === true);
+    }
+
+    public function isSubscriptionProxyRoute(): bool
+    {
+        $currentRoute = $this->getCurrentRouteName();
+
+        return (in_array($currentRoute, self::SUBSCRIPTION_PROXY_ROUTES, true) === true);
     }
 
     public function getHashOf(string $string): string

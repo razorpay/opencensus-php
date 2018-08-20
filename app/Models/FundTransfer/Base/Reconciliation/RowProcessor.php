@@ -42,7 +42,10 @@ abstract class RowProcessor extends Base\Core
     {
         $this->processRow();
 
-        $this->fetchEntities();
+        if(empty($this->reconEntityId) === false)
+        {
+            $this->fetchEntities();
+        }
 
         if (empty($this->reconEntity) === true)
         {

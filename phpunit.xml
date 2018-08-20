@@ -32,7 +32,18 @@
       </testsuite>
   </testsuites>
   <listeners>
-    <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener" />
+    <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener">
+      <arguments>
+        <array>
+          <element key="dns-sensitive">
+            <array>
+              <element key="0"><string>Illuminate\Validation\Concerns</string></element>
+              <element key="1"><string>RZP\Models\Merchant\Webhook</string></element>
+            </array>
+          </element>
+        </array>
+      </arguments>
+    </listener>
   </listeners>
   <filter>
     <whitelist>

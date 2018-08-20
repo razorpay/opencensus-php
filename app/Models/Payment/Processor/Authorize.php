@@ -1736,6 +1736,15 @@ trait Authorize
             }
             else
             {
+                try
+                {
+                    $this->updateGatewayInputForInvoice($gatewayInput, $payment);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException($e);
+                }
+
                 $this->validateIfIntentEnabled($payment);
             }
         }
@@ -1752,6 +1761,41 @@ trait Authorize
         $this->setRecurringType($payment, $input);
 
         $this->setAutoRefundTimestamp($payment);
+    }
+
+    protected function updateGatewayInputForInvoice(& $gatewayInput, Payment\Entity $payment)
+    {
+        $config = Cache::getFacadeRoot()->get(ConfigKey::NPCI_UPI_DEMO, []);
+
+        $merchants = $config['merchants'] ?? [];
+
+        if (isset($merchants[$payment->getMerchantId()]) === false)
+        {
+            return;
+        }
+
+        $elfin = $this->app['elfin'];
+
+        $baseUrl = $merchants[$payment->getMerchantId()];
+
+        $query = [
+            'payment_id'    => $payment->getPublicId(),
+            'amount'        => $payment->getAmount(),
+            'contact'       => $payment->getContact(),
+            'email'         => $payment->getEmail(),
+            'description'   => $payment->getDescription(),
+        ];
+
+        $referenceUrl = $elfin->shorten($baseUrl . http_build_query($query));
+
+        $shouldEncode = $config['should_encode_invoice_url'] ?? false;
+
+        if ($shouldEncode === true)
+        {
+            $referenceUrl = urlencode($referenceUrl);
+        }
+
+        $gatewayInput['upi']['reference_url'] = $referenceUrl;
     }
 
     protected function validateRecurringAndPreferredRecurring(Payment\Entity $payment, array $input)

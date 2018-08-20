@@ -236,4 +236,11 @@
         left: 0;
     }
 
+    @supports not (-ms-high-contrast: none) {
+        /* Non-IE styles here */
+        #success-section {
+            overflow: hidden;
+        }
+    }
+
 </style>

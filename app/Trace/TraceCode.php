@@ -212,6 +212,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NODAL_TRANSFER_REQUEST_FAILED                 = 'NODAL_TRANSFER_REQUEST_FAILED';
     const NODAL_PAYMENT_STATUS_REQUEST                  = 'NODAL_PAYMENT_STATUS_REQUEST';
     const NODAL_PAYMENT_STATUS_RESPONSE                 = 'NODAL_PAYMENT_STATUS_RESPONSE';
+    const NODAL_REQUEST_FAILED                          = 'NODAL_REQUEST_FAILED';
     const NODAL_TRANSFER_STATUS_UPDATE_FAILED           = 'NODAL_TRANSFER_STATUS_UPDATE_FAILED';
     const SETTLEMENT_API_RESPONSE                       = 'NODAL_SETTLEMENT_API_RESPONSE';
     const SETTLEMENT_API_REQUEST                        = 'NODAL_SETTLEMENT_API_REQUEST';
@@ -346,6 +347,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE          = 'SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE';
     const SUBSCRIPTION_CANCEL_DUE_SUMMARY               = 'SUBSCRIPTION_CANCEL_DUE_SUMMARY';
     const SUBSCRIPTION_CANCEL_FAILED                    = 'SUBSCRIPTION_CANCEL_FAILED';
+    const SUBSCRIPTION_SERVICE_PROXY_REQUEST            = 'SUBSCRIPTION_SERVICE_PROXY_REQUEST';
+    const SUBSCRIPTION_SERVICE_PROXY_RESPONSE           = 'SUBSCRIPTION_SERVICE_PROXY_RESPONSE';
 
     const EMANDATE_DEBIT_REQUEST                        = 'EMANDATE_DEBIT_REQUEST';
     const EMANDATE_DEBIT_RECON_REQUEST                  = 'EMANDATE_DEBIT_RECON_REQUEST';
@@ -682,6 +685,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_UNEXPECTED                  = 'BANK_TRANSFER_UNEXPECTED';
     const BANK_TRANSFER_PROVIDER_VALIDATION_FAILED  = 'BANK_TRANSFER_PROVIDER_VALIDATION_FAILED';
     const BANK_TRANSFER_IFSC_CODE_MISSING           = 'BANK_TRANSFER_IFSC_CODE_MISSING';
+    const BANK_TRANSFER_NBIN_CODE_MISSING           = 'BANK_TRANSFER_NBIN_CODE_MISSING';
+    const BANK_TRANSFER_BANK_CODE_MISSING           = 'BANK_TRANSFER_BANK_CODE_MISSING';
     const BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED   = 'BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED';
     const BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED  = 'BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED';
 
@@ -950,6 +955,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSFER_REVERSAL_REQUEST                     = 'TRANSFER_REVERSAL_REQUEST';
     const TRANSFER_REVERSAL_SUCCESS                     = 'TRANSFER_REVERSAL_SUCCESS';
     const TRANSFER_UPDATE_SETTLEMENT_ID_FAILED          = 'TRANSFER_UPDATE_SETTLEMENT_ID_FAILED';
+    const REVERSAL_REFUND_NOT_AVAILABLE                 = 'REVERSAL_REFUND_NOT_AVAILABLE';
+    const REVERSAL_REFUND_AVAILABLE                     = 'REVERSAL_REFUND_AVAILABLE';
 
 // Trace Code for Gateway Absence StatusCake
     const GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN     = 'GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN';
@@ -1169,6 +1176,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_MDR_LAST_UPDATED_DATA                 = 'PAYMENT_MDR_LAST_UPDATED_DATA';
     const PAYMENT_MDR_UPDATE_SUCCESS                    = 'PAYMENT_MDR_UPDATE_SUCCESS';
 
+    const GATEWAY_ERROR_METRIC_DIMENSION_FETCH          = 'GATEWAY_ERROR_METRIC_DIMENSION_FETCH';
+
+    const SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED   = 'SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED';
+
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
@@ -1313,6 +1325,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::GRATIS_TO_POSTPAID_INPUT                  => 'Mark gratis transactions as postpaid request',
         self::GRATIS_TO_POSTPAID_FAILED                 => 'Transaction conversion from gratis to postpaid failed',
         self::GRATIS_TO_POSTPAID_RESPONSE               => 'Gratis to postpaid response',
+
+        self::GATEWAY_ERROR_METRIC_DIMENSION_FETCH      => 'Exception fetching metric dimensions',
     );
 
     /**

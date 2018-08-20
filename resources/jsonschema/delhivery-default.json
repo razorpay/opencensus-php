@@ -4,7 +4,6 @@
   "required": [
     "waybill_number",
     "customer_name",
-    "customer_mobile",
     "payment_type"
   ],
   "properties": {
@@ -17,11 +16,6 @@
       "type": "string",
       "title": "Customer Name",
       "maxLength": 255
-    },
-    "customer_mobile": {
-      "type": "string",
-      "title": "Customer Mobile Number",
-      "maxLength": 20
     },
     "payment_type": {
       "type": "string",
