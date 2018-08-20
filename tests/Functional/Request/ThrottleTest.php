@@ -88,55 +88,29 @@ class ThrottleTest extends TestCase
         $this->startTest($this->testData[__FUNCTION__.'2']);
     }
 
-    public function testGetOrderWhenIPBlockedGlobally()
+    public function testGetOrderWhenIPBlocked()
     {
-        // Case 1: Blocks GET /invoice route for test global for non blacklisted IP, so GET /orders should pass
-        $this->setRedisGlobalSettings([K::SKIP => 0, K::MOCK => 1, K::BLOCK => 0, K::BLOCKED_IP_LIST => '10.0.123.124'.K::LIST_DELIMITER.'10.0.123.125']);
-        $this->startTest($this->testData[__FUNCTION__.'1']);
+        // Case 1: Test request ip is 10.0.123.123 and following request should NOT be blocked
+        $this->setRedisGlobalSettings([K::BLOCKED_IPS => '10.0.123.124' . K::LIST_DELIMITER . '10.0.123.125']);
+        $this->startTest($this->testData[__FUNCTION__ . 'Success']);
 
-        // Case 2: Blocks GET /orders route too for test global for current blacklisted IP, so GET /orders should error
-        $this->setRedisGlobalSettings([K::SKIP => 0, K::MOCK => 1, K::BLOCK => 0, K::BLOCKED_IP_LIST => '10.0.123.123'.K::LIST_DELIMITER.'10.0.123.124']);
-        $this->startTest($this->testData[__FUNCTION__.'2']);
+        // Case 2: Test request ip is 10.0.123.123 and following request should be blocked
+        $this->setRedisGlobalSettings([K::BLOCKED_IPS => '10.0.123.123' . K::LIST_DELIMITER . '10.0.123.124']);
+        $this->startTest($this->testData[__FUNCTION__ . 'Failure']);
     }
 
-    public function testGetOrderWhenIPBlockedForTestMerchant()
+    public function testGetOrderWhenUABlocked()
     {
-        // Case 1: Blocks GET /invoice route for test mid, so GET /orders should pass
-        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:invoice_fetch_multiple:'.K::BLOCKED_IP_LIST => '10.0.123.123'.K::LIST_DELIMITER.'10.0.123.125']);
-        $this->startTest($this->testData[__FUNCTION__.'1']);
+        // Case 1: User agent does not exists in blocked list, so should not be blocked
+        $this->setRedisGlobalSettings([K::BLOCKED_USER_AGENTS => 'Razorpay UA' . K::LIST_DELIMITER . 'CurlBOT']);
+        $this->startTest($this->testData[__FUNCTION__ . 'Success']);
 
-        // Case 2: Blocks GET /orders route too for test mid, so GET /orders should error
-        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:'.K::BLOCKED_IP_LIST => '10.0.123.123'.K::LIST_DELIMITER.'10.0.123.124']);
-        $this->startTest($this->testData[__FUNCTION__.'2']);
-    }
+        // Case 2: User agent does exists in blocked list, so should be blocked
+        $this->setRedisGlobalSettings([K::BLOCKED_USER_AGENTS => 'Razorpay UA' . K::LIST_DELIMITER . 'CurlBOT']);
+        $this->startTest($this->testData[__FUNCTION__ .  'Failure1']);
 
-    public function testGetOrderWhenUABlockedGlobally()
-    {
-        // Case 1: Blocks GET /invoice route for test global for non blacklisted UA, so GET /orders should pass
-        $this->setRedisGlobalSettings([K::SKIP => 0, K::MOCK => 1, K::BLOCK => 0, K::BLOCKED_UA_LIST => 'Razorpay UA'.K::LIST_DELIMITER.'CurlBOT']);
-        $this->startTest($this->testData[__FUNCTION__.'1']);
-
-        // Case 2: Blocks GET /orders route too for test global for current UA, so GET /orders should error
-        $this->setRedisGlobalSettings([K::SKIP => 0, K::MOCK => 1, K::BLOCK => 0, K::BLOCKED_UA_LIST => 'Razorpay UA'.K::LIST_DELIMITER.'CurlBOT']);
-        $this->startTest($this->testData[__FUNCTION__.'2']);
-
-        // Case 3: Blocks GET /orders route too for test global for partial match of blacklisted UA, so GET /orders should error
-        $this->setRedisGlobalSettings([K::SKIP => 0, K::MOCK => 1, K::BLOCK => 0, K::BLOCKED_UA_LIST => 'Razorpay UA'.K::LIST_DELIMITER.'CurlBOT']);
-        $this->startTest($this->testData[__FUNCTION__.'3']);
-    }
-
-    public function testGetOrderWhenUABlockedForTestMerchant()
-    {
-        // Case 1: Blocks GET /invoice route for test mid non blacklisted UA, so GET /orders should pass
-        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:invoice_fetch_multiple:'.K::BLOCKED_UA_LIST => 'Razorpay UA'.K::LIST_DELIMITER.'CurlBOT']);
-        $this->startTest($this->testData[__FUNCTION__.'1']);
-
-        // Case 2: Blocks GET /orders route too for test mid, blacklisted UA, so GET /orders should error
-        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:'.K::BLOCKED_UA_LIST => 'Razorpay UA'.K::LIST_DELIMITER.'CurlBOT']);
-        $this->startTest($this->testData[__FUNCTION__.'2']);
-
-        // Case 3: Blocks GET /orders route too for test mid, partial match of blacklisted UA, so GET /orders should error
-        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:'.K::BLOCKED_UA_LIST => 'Razorpay UA'.K::LIST_DELIMITER.'CurlBOT']);
-        $this->startTest($this->testData[__FUNCTION__.'3']);
+        // Case 2: User agent does exists in blocked list with partial prefixed match, so should be blocked
+        $this->setRedisGlobalSettings([K::BLOCKED_USER_AGENTS => 'Razorpay UA' . K::LIST_DELIMITER . 'CurlBOT']);
+        $this->startTest($this->testData[__FUNCTION__ .  'Failure2']);
     }
 }

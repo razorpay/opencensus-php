@@ -151,12 +151,12 @@ class ThrottlerTest extends TestCase
     {
         $this->invokeRequestCaseAndBindNewContext('privateRoute');
 
-        $throttlerMock = $this->createThrottlerMock(['attemptBlock', 'initRedisConnection']);
+        $throttlerMock = $this->createThrottlerMock(['blockIfApplicable', 'initRedisConnection']);
         $throttlerMock->expects($this->once())
-            ->method('initRedisConnection')
-            ->will($this->throwException(new \Exception));
+                      ->method('initRedisConnection')
+                      ->will($this->throwException(new \Exception));
         $throttlerMock->expects($this->never())
-            ->method('attemptBlock');
+                      ->method('blockIfApplicable');
 
         $throttlerMock->throttle();
     }

@@ -126,50 +126,45 @@ class Throttler
         {
             throw new BlockException(null, ['key' => $this->getThrottleKey()]);
         }
-        else {
-            // Check here to block based on IP and UserAgent
-            $this->attemptBlock();
-        }
+
+        $this->blockIfApplicableByIpAndUserAgent();
     }
 
-    protected function attemptBlock()
+    /**
+     * Blocks current request if rule exists for the same in redis config.
+     */
+    protected function blockIfApplicableByIpAndUserAgent()
     {
-        $ip = $this->reqCtx->getRequest()->ip();
+        $ip        = $this->reqCtx->getRequest()->ip();
         $userAgent = $this->reqCtx->getRequest()->userAgent();
 
-        $blockedIPList    = $this->getBlockedIPList();
-        if($blockedIPList)
-        {
-            $blockedIPList = trim($blockedIPList, K::LIST_DELIMITER);
-            $blockedIPList = K::LIST_DELIMITER.$blockedIPList.K::LIST_DELIMITER;
+        $blockedIPs = $this->getBlockedIPs();
 
-            # For IP check exact match
-            $ip = K::LIST_DELIMITER.$ip.K::LIST_DELIMITER;
-            if($this->contains($ip, $blockedIPList))
+        if (empty($blockedIPs) === false)
+        {
+            // For IP, do exact match
+            $wrappedIp  = str_wrap($ip, K::LIST_DELIMITER);
+            $blockedIPs = str_wrap($blockedIPs, K::LIST_DELIMITER);
+
+            if (str_contains($blockedIPs, $wrappedIp) === true)
             {
                 throw new BlockException(null, ['key' => $this->getThrottleKey()]);
             }
         }
 
-        $blockedUserAgentList = $this->getBlockedUserAgentList();
-        if($blockedUserAgentList)
-        {
-            $blockedUserAgentList = trim($blockedUserAgentList, K::LIST_DELIMITER);
-            $blockedUserAgentList = K::LIST_DELIMITER.$blockedUserAgentList.K::LIST_DELIMITER;
+        $blockedUserAgents = $this->getBlockedUserAgents();
 
-            # Match the first part of the UA
-            $userAgent = K::LIST_DELIMITER.$userAgent;
-            if($this->contains($userAgent, $blockedUserAgentList))
+        if(empty($blockedUserAgents) === false)
+        {
+            // For user agents, match just the beginning
+            $wrappedUserAgent  = str_start($userAgent, K::LIST_DELIMITER);
+            $blockedUserAgents = str_wrap($blockedUserAgents, K::LIST_DELIMITER);
+
+            if(str_contains($blockedUserAgents, $wrappedUserAgent) === true)
             {
                 throw new BlockException(null, ['key' => $this->getThrottleKey()]);
             }
         }
-
-    }
-
-    protected function contains($needle, $haystack)
-    {
-        return strpos($haystack, $needle) !== false;
     }
 
     protected function attemptThrottleIfApplicable()
@@ -248,55 +243,61 @@ class Throttler
 
     protected function isBlocked(): bool
     {
-        return $this->getThrottleValue(K::BLOCK, K::DEFAULT_BLOCK);
+        return $this->getThrottleValueAsInt(K::BLOCK, K::DEFAULT_BLOCK);
     }
 
     protected function isThrottleSkipped(): bool
     {
-        return $this->getThrottleValue(K::SKIP, K::DEFAULT_SKIP);
+        return $this->getThrottleValueAsInt(K::SKIP, K::DEFAULT_SKIP);
     }
 
     protected function isThrottleMocked(): bool
     {
-        return $this->getThrottleValue(K::MOCK, K::DEFAULT_MOCK);
+        return $this->getThrottleValueAsInt(K::MOCK, K::DEFAULT_MOCK);
     }
 
     protected function getThrottleLeakRateValue(): int
     {
-        return $this->getThrottleValue(K::LEAK_RATE_VALUE, K::DEFAULT_LEAK_RATE_VALUE);
+        return $this->getThrottleValueAsInt(K::LEAK_RATE_VALUE, K::DEFAULT_LEAK_RATE_VALUE);
     }
 
     protected function getThrottleLeakRateDuration(): int
     {
-        return $this->getThrottleValue(K::LEAK_RATE_DURATION, K::DEFAULT_LEAK_RATE_DURATION);
+        return $this->getThrottleValueAsInt(K::LEAK_RATE_DURATION, K::DEFAULT_LEAK_RATE_DURATION);
     }
 
     protected function getThrottleMaxBucketSize(): int
     {
-        return $this->getThrottleValue(K::MAX_BUCKET_SIZE, K::DEFAULT_MAX_BUCKET_SIZE);
+        return $this->getThrottleValueAsInt(K::MAX_BUCKET_SIZE, K::DEFAULT_MAX_BUCKET_SIZE);
     }
 
-    protected function getBlockedIPList(): string
+    protected function getBlockedIPs(): string
     {
-        return $this->getThrottleValueString(K::BLOCKED_IP_LIST, K::DEFAULT_BLOCKED_IP_LIST);
+        return $this->getThrottleValueAsString(K::BLOCKED_IPS, K::DEFAULT_BLOCKED_IPS);
     }
 
-    protected function getBlockedUserAgentList()
+    protected function getBlockedUserAgents(): string
     {
-        return $this->getThrottleValueString(K::BLOCKED_UA_LIST, K::DEFAULT_BLOCKED_UA_LIST);
+        return $this->getThrottleValueAsString(K::BLOCKED_USER_AGENTS, K::DEFAULT_BLOCKED_USER_AGENTS);
     }
 
-    protected function getThrottleValue(string $key, int $default): int
+    protected function getThrottleValueAsInt(string $key, int $default): int
     {
-        return $this->getThrottle( $key,  $default);
+        return $this->getThrottleValue($key, $default);
     }
 
-    protected function getThrottleValueString(string $key, int $default)
+    protected function getThrottleValueAsString(string $key, string $default): string
     {
-        return $this->getThrottle( $key,  $default);
+        return $this->getThrottleValue($key, $default);
     }
 
-    protected function getThrottle(string $key, int $default)
+    /**
+     * Gets configuration value for given key from redis config cascadingly.
+     * @param  string     $key
+     * @param  int|string $default
+     * @return int|string
+     */
+    protected function getThrottleValue(string $key, $default)
     {
         //
         // Redis data structures which is used in cascading fashion to get
