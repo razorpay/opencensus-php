@@ -683,6 +683,7 @@ class Gateway
             IFSC::PATX,
             IFSC::PCUX,
             IFSC::PLUX,
+            IFSC::PMCB,
             IFSC::PRTH,
             IFSC::RAMX,
             IFSC::RATN,
