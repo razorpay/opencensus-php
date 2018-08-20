@@ -58,10 +58,6 @@ function defaultFieldProps(f) {
     f.required = true;
   }
 
-  if (f.hasOwnProperty('description') && typeof f.description === 'function') {
-    f.description = f.description.bind(self); // Dynamic description based on other fields must be able to access this.state.dirty and this.props
-  }
-
   if (f.hasOwnProperty('validator') && typeof f.validator === 'function') {
     f.validator = f.validator.bind(self); // Field dependent on other field must auto update its validator. Recommended to use with `_autoRenderImpure` to auto show error simultaneously as the other fiels is being updated.
   }
@@ -1216,6 +1212,10 @@ function ActivationField(field) {
   // Show bank account number if it's activated/locked
   if (rest.hasOwnProperty('type') && rest.type === 'password' && isFormLocked) {
     rest.type = 'text';
+  }
+
+  if (rest.description && typeof rest.description === 'function') {
+    rest.description = rest.description(this);
   }
 
   return (
