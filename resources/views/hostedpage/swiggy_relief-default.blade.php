@@ -63,7 +63,7 @@
             <div id="desktop-container" class="no-display-image">
                 @include('hostedpage.partials.header')
                 <div class="content" style="min-height: 450px !important;">
-                    @include('hostedpage.partials.description')
+                    @include('hostedpage.specific.swiggy_relief-default.description')
                     @include('hostedpage.partials.form')
                 </div>
                 @include('hostedpage.partials.footer')
@@ -73,7 +73,7 @@
             <div id="mobile-container" class="no-display-image">
                 <div class="content">
                     @include('hostedpage.partials.header')
-                    @include('hostedpage.partials.description')
+                    @include('hostedpage.specific.swiggy_relief-default.description')
                     <a href="#form" class="btn btn--full" id="mobile-proceed-btn">PROCEED TO PAY</a>
                 </div>
                 @include('hostedpage.partials.form')
