@@ -115,10 +115,10 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Request failed. Please try after sometime.',
+                    'description' => 'Access forbidden for requested resource',
                 ],
             ],
-            'status_code' => 429,
+            'status_code' => 403,
         ],
     ],
 
@@ -144,10 +144,10 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Request failed. Please try after sometime.',
+                    'description' => 'Access forbidden for requested resource',
                 ],
             ],
-            'status_code' => 429,
+            'status_code' => 403,
         ],
     ],
 
@@ -179,10 +179,10 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Request failed. Please try after sometime.',
+                    'description' => 'Access forbidden for requested resource',
                 ],
             ],
-            'status_code' => 429,
+            'status_code' => 403,
         ],
     ],
 
@@ -198,10 +198,10 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Request failed. Please try after sometime.',
+                    'description' => 'Access forbidden for requested resource',
                 ],
             ],
-            'status_code' => 429,
+            'status_code' => 403,
         ],
     ],
 ];
