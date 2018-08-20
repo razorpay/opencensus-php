@@ -189,11 +189,13 @@ class Handler extends ExceptionHandler
         if ($exception instanceof BlockException)
         {
             $this->traceException($exception, Trace::ALERT, TraceCode::THROTTLE_REQUEST_BLOCKED);
+
             return ApiResponse::requestBlocked();
         }
         else
         {
             $this->traceException($exception, Trace::ALERT, TraceCode::THROTTLE_REQUEST_THROTTLED);
+
             return ApiResponse::rateLimitExceeded();
         }
     }
