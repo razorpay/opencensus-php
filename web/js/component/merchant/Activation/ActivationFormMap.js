@@ -90,13 +90,14 @@ const businessModel = [
       { label: 'Society', name: SOCIETY },
       { label: 'NGO', name: NGO },
     ],
-    description: function() {
+    description: activation => {
       // Changing description of self
       const currentBusinessType =
-        this.state.dirty.business_type || this.props.data.business_type;
+        activation.state.dirty.business_type ||
+        activation.props.data.business_type;
 
       // if user has selected individual/not yet registered business type
-      if (currentBusinessType && !this.props.accountId) {
+      if (currentBusinessType && !activation.props.accountId) {
         if (currentBusinessType == INDIVIDUAL) {
           return (
             <div class="warning-svg red">
