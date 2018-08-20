@@ -28,6 +28,8 @@ class Preferences
     const MID_UBER             = '82LK42BGTN2bOe';
     const MID_AMIT_MAHBUBANI   = '7SVOQZGZuwHr4I';
     const MID_ICICI_LOMBARD    = 'AXRuIp5uiz5Jsp';
+    const MID_SWIGGY_RELIEF    = 'AnlYFL226PmnRg';
+    const MID_KARVY            = 'AmReTNPu1KFKBn';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [
@@ -119,6 +121,8 @@ class Preferences
         self::MID_CLEARTAX,
         self::MID_APARTMENTADDA,
         self::MID_INVEZTA,
+        self::MID_SWIGGY_RELIEF,
+        self::MID_KARVY,
     ];
 
     const ONLY_NEFT_SETTLEMENT_MIDS = [
