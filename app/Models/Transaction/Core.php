@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Transaction;
 
-use Carbon\Carbon;
 use Mail;
-use RZP\Constants\Timezone;
+use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
@@ -1043,7 +1043,10 @@ class Core extends Base\Core
                     'alert_ratio'  => $alertRatio,
                     'email'        => $merchant->getTransactionReportEmail(),
                     'merchant_id'  => $merchant->getId(),
-                    'fee_credits'  => ($feeCredits - $fee)
+                    'merchant_dba'  => $merchant->getBillingLabel(),
+                    'fee_credits'  => '₹ '.(($feeCredits - $fee)/100),
+                    'org_hostname' => $merchant->org->getPrimaryHostName(),
+                    'timestamp'    => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
                 ];
 
                 $this->trace->info(TraceCode::FEE_CREDITS_THRESHOLD_ALERT, $data);
