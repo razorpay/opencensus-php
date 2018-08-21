@@ -3,7 +3,8 @@
   "type": "object",
   "required": [
     "customer_name",
-    "donate_to"
+    "customer_contact",
+    "customer_email"
   ],
   "properties": {
     "customer_name": {
@@ -11,21 +12,16 @@
       "title": "Name",
       "maxLength": 255
     },
-    "donate_to": {
+    "customer_contact": {
       "type": "string",
-      "title": "Donate to",
-      "enum": [
-        "",
-        "kerala",
-        "karnataka"
-      ],
-      "options": {
-        "enum_titles": [
-          "-- Select --",
-          "Kerala CM's Distress Relief Fund",
-          "Karnataka CM Relief Fund Natural Calamity 2018 (Kodagu)"
-        ]
-      }
+      "title": "Contact Number",
+      "maxLength": 20,
+      "minLength": 10
+    },
+    "customer_email": {
+      "type": "string",
+      "title": "Email",
+      "maxLength": 150
     }
   }
 }

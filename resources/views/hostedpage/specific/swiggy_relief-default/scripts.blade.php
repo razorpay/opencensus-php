@@ -1,39 +1,5 @@
 {{-- Helpers --}}
 <script>
-    'use strict';
-
-    (function(global){
-        function evalDonateTo() {
-            var formEle = document.querySelector('[data-schemapath="root.donate_to"]').getElementsByClassName('form-group')[0];
-            var value = formEle.getElementsByTagName('select')[0].value;
-
-            if(!value) {
-                window.RZP.addClass(formEle, 'has-error');
-            } else {
-                window.RZP.removeClass(formEle, 'has-error');
-            }
-        }
-
-        function addDonateToValidation() {
-            var p = document.createElement('p');
-            p.className = 'help-block errormsg';
-            p.innerHTML = 'Please select the fund your wish to donate to';
-
-            var parentEle = document.querySelector('[data-schemapath="root.donate_to"]').getElementsByClassName('form-group')[0];
-            parentEle.append(p);
-
-            editor.watch('root.service_type', function () {
-                evalDonateTo();
-            });
-        }
-
-        global.evalDonateTo = evalDonateTo;
-        global.addDonateToValidation = addDonateToValidation;
-
-    })(window.RZP = window.RZP || {});
-</script>
-
-<script>
     (function(global){
         function initCheckout(globalScope, udfData, amount) {
             var data = globalScope.data;
@@ -47,6 +13,10 @@
                 payment_link_id: paymentPageObj.id,
                 amount: amount,
                 notes: udfData,
+                prefill: {
+                    contact: udfData.customer_contact,
+                    email: udfData.customer_email
+                },
                 handler: function(response) {
                     var amountPaid = amount;
 
@@ -109,11 +79,22 @@
                 // Default errors;
                 switch(path) {
                     case 'root.customer_name': defaultMsg = 'Please enter your Name'; break;
-                    case 'root.donate_to': defaultMsg = 'Please select type of payment'; break;
                 }
 
                 if (!value) {
                     errorMsg = defaultMsg;
+                }
+
+                if (!errorMsg) {
+                    if (path === 'root.customer_email') {
+                        var emailRegExp = new RegExp(
+                            /^$|[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/
+                        );
+
+                        if (value && !emailRegExp.test(value)) {
+                            errorMsg = 'Please enter valid Email';
+                        }
+                    }
                 }
 
                 if(errorMsg) {
@@ -151,8 +132,6 @@
             var errors = editor.validate();
             console.log(errors);
             var hasError;
-
-            window.RZP.evalDonateTo(); // Just to show error;
 
             if (errors.length) {
                 editor.options.show_errors = "always";
@@ -209,9 +188,8 @@
 
             window.RZP.addAmountValidation();
             window.RZP.addAlphaFieldsValidation(['root.customer_name']);
-            window.RZP.addDonateToValidation();
+            window.RZP.addIntFieldsValidation(['root.customer_contact']);
         }
-
 
         global.initCheckout = initCheckout;
         global.initJSONEditor = initJSONEditor;

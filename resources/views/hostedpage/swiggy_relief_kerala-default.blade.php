@@ -8,26 +8,26 @@
 
     $email_subject = 'Query for Payment Page Id: '. $payment_page_data['id'];
 
-    $intro_note = 'Kerala and Karnataka have been hit by relentless rain for the last two weeks. Rains, floods and landslides have resulted in loss of life and extensive damage in these states.';
-    $end_note = 'You can choose which fund you want to Donate to: Kerala Relief Fund or Karnataka Relief Fund. Your contribution can go a long way in rebuilding the lives of flood-affected people in these states.';
+    $intro_note = 'Kerala and Karnataka have been hit by relentless rain for the last two weeks. Rains, floods and landslides have resulted in loss of life and extensive damage.';
+    $end_note = 'Your contribution can go a long way in rebuilding the lives of flood-affected people in these states.';
 ?>
 
 
 <!doctype html>
 <html lang="en">
     <head>
-        <title>Payment Page - {{$payment_page_data['title']}}</title>
+        <title>{{$payment_page_data['title']}}</title>
         <meta charset="utf-8">
         <meta name="robots" content="noindex">
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
         <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
 
         @if (isset($payment_page_data))
-            <meta property="og:title" content="Payment request by {{$data['merchant']['name']}} for {{$payment_page_data['title']}}">
+            <meta property="og:title" content="Swiggy Cares for Kerala and Karnataka Flood Relief">
             <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://razorpay.com/favicon.png'}}">
             <meta property="og:image:width" content="276px">
             <meta property="og:image:height" content="276px">
-            <meta property="og:description" content="Click on this link to pay to {{$data['merchant']['name']}}">
+            <meta property="og:description" content="Click on this link to donate to {{$data['merchant']['name']}}">
         @endif
 
         <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />
@@ -63,7 +63,7 @@
             <div id="desktop-container" class="no-display-image">
                 @include('hostedpage.partials.header')
                 <div class="content" style="min-height: 450px !important;">
-                    @include('hostedpage.specific.swiggy_relief-default.description')
+                    @include('hostedpage.specific.swiggy_relief-default.description', ['fund_type' => 'kerala'])
                     @include('hostedpage.partials.form')
                 </div>
                 @include('hostedpage.partials.footer')
@@ -73,7 +73,7 @@
             <div id="mobile-container" class="no-display-image">
                 <div class="content">
                     @include('hostedpage.partials.header')
-                    @include('hostedpage.specific.swiggy_relief-default.description')
+                    @include('hostedpage.specific.swiggy_relief-default.description', ['fund_type' => 'kerala'])
                     <a href="#form" class="btn btn--full" id="mobile-proceed-btn">PROCEED TO PAY</a>
                 </div>
                 @include('hostedpage.partials.form')
