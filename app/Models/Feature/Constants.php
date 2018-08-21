@@ -81,6 +81,7 @@ class Constants
     const SUBSCRIPTION_V2                 = 'subscription_v2';
     const EXPOSE_ARN_PAYMENT              = 'expose_arn_payment';
     const EXPOSE_ARN_REFUND               = 'expose_arn_refund';
+    const OFFERS                          = 'offers';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -190,6 +191,7 @@ class Constants
         self::SUBSCRIPTION_V2                 => true,
         self::EXPOSE_ARN_PAYMENT              => true,
         self::EXPOSE_ARN_REFUND               => true,
+        self::OFFERS                          => true,
     ];
 
     // Entity type constants
