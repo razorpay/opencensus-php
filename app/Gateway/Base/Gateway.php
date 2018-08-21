@@ -624,6 +624,34 @@ class Gateway
         return $response;
     }
 
+    protected function callGatewayWrapper($callGatewayClosure, $request, $maxRetryCount = 3)
+    {
+        $currentRetryCount = 1;
+
+        $loopOver = true;
+
+        while ($loopOver)
+        {
+            try
+            {
+                $response = $this->$callGatewayClosure($request);
+
+                $loopOver = false;
+
+                return $response;
+            }
+            catch (Exception\GatewayTimeoutException $exc)
+            {
+                if ($currentRetryCount >= $maxRetryCount)
+                {
+                    throw $exc;
+                }
+
+                $currentRetryCount++;
+            }
+        }
+    }
+
     protected function validateResponse(\Requests_Response $response)
     {
         if (in_array($response->status_code, [503, 504], true) === true)

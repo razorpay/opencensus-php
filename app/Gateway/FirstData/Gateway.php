@@ -946,7 +946,7 @@ class Gateway extends Base\Gateway
 
         $this->traceSoapRequest($request);
 
-        $response = $this->sendGatewayRequest($request);
+        $response = $this->callGatewayWrapper("sendGatewayRequest", $request);
 
         $this->trace->info(
             TraceCode::GATEWAY_RESPONSE,
