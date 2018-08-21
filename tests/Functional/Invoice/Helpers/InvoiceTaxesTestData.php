@@ -58,7 +58,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000001',
                                 'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'rate'       => 100000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
@@ -81,7 +81,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000001',
                                 'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'rate'       => 100000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -90,7 +90,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000002',
                                 'name'       => 'Tax #2',
-                                'rate'       => 2000,
+                                'rate'       => 200000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -176,7 +176,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000001',
                                 'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'rate'       => 100000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
@@ -199,7 +199,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000002',
                                 'name'       => 'Tax #2',
-                                'rate'       => 2000,
+                                'rate'       => 200000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
@@ -222,7 +222,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000001',
                                 'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'rate'       => 100000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -231,7 +231,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000002',
                                 'name'       => 'Tax #2',
-                                'rate'       => 2000,
+                                'rate'       => 200000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -302,7 +302,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000001',
                                 'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'rate'       => 100000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
@@ -325,7 +325,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000001',
                                 'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'rate'       => 100000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -334,7 +334,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000002',
                                 'name'       => 'Tax #2',
-                                'rate'       => 2000,
+                                'rate'       => 200000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -405,7 +405,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000001',
                                 'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'rate'       => 100000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -414,7 +414,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000002',
                                 'name'       => 'Tax #2',
-                                'rate'       => 2000,
+                                'rate'       => 200000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -437,7 +437,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000001',
                                 'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'rate'       => 100000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000002',
                                 'group_name' => 'Tax Group #2',
@@ -510,7 +510,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000001',
                                 'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'rate'       => 100000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
@@ -519,7 +519,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000002',
                                 'name'       => 'Tax #2',
-                                'rate'       => 2000,
+                                'rate'       => 200000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
@@ -584,8 +584,8 @@ return [
                         'amount'  => 1000,
                         'tax_id'  => 'tax_00000000000001',
                         'tax_ids' => [
-                            T::getIdPrefix() . GstTaxIdMap::CGST_500,
-                            T::getIdPrefix() . GstTaxIdMap::SGST_500
+                            T::getIdPrefix() . GstTaxIdMap::CGST_50000,
+                            T::getIdPrefix() . GstTaxIdMap::SGST_50000
                         ],
                     ],
                 ],
@@ -622,8 +622,8 @@ return [
                         'amount'        => 100000,
                         'quantity'      => 5,
                         'tax_ids'       => [
-                            T::getIdPrefix() . GstTaxIdMap::CGST_500,
-                            T::getIdPrefix() . GstTaxIdMap::SGST_500
+                            T::getIdPrefix() . GstTaxIdMap::CGST_50000,
+                            T::getIdPrefix() . GstTaxIdMap::SGST_50000
                         ],
                         'tax_inclusive' => false,
                     ],
@@ -631,7 +631,7 @@ return [
                         'name'          => 'Item #2',
                         'amount'        => 100000,
                         'quantity'      => 2,
-                        'tax_ids'       => [T::getIdPrefix() . GstTaxIdMap::IGST_2800],
+                        'tax_ids'       => [T::getIdPrefix() . GstTaxIdMap::IGST_280000],
                         'tax_inclusive' => false,
                     ],
                 ],
@@ -663,18 +663,18 @@ return [
                         'quantity'      => 5,
                         'taxes'         => [
                             [
-                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::CGST_500,
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::CGST_50000,
                                 'name'       => 'CGST 5%',
-                                'rate'       => 500,
+                                'rate'       => 50000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
                                 'tax_amount' => 25000,
                             ],
                             [
-                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::SGST_500,
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::SGST_50000,
                                 'name'       => 'SGST 5%',
-                                'rate'       => 500,
+                                'rate'       => 50000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
@@ -695,9 +695,9 @@ return [
                         'quantity'      => 2,
                         'taxes'         => [
                             [
-                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::IGST_2800,
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::IGST_280000,
                                 'name'       => 'IGST 28%',
-                                'rate'       => 2800,
+                                'rate'       => 280000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
@@ -717,6 +717,112 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithSharedGstTaxes2' => [
+        'request' => [
+            'url'    => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'name'          => 'Item #1',
+                        'amount'        => 1000,
+                        'quantity'      => 1,
+                        'tax_ids'       => [
+                            T::getIdPrefix() . GstTaxIdMap::CGST_1250,
+                            T::getIdPrefix() . GstTaxIdMap::SGST_1250,
+                        ],
+                        'tax_inclusive' => false,
+                    ],
+                    [
+                        'name'          => 'Item #2',
+                        'amount'        => 500,
+                        'quantity'      => 2,
+                        'tax_ids'       => [T::getIdPrefix() . GstTaxIdMap::IGST_2500],
+                        'tax_inclusive' => false,
+                    ],
+                ],
+                'type'     => 'invoice',
+                'draft'    => '0',
+                'customer' => [
+                    'email' => 'test@test.test'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'name'    => null,
+                    'email'   => 'test@test.test',
+                    'contact' => null
+                ],
+                'line_items' => [
+                    [
+                        'name'          => 'Item #1',
+                        'description'   => null,
+                        'amount'        => 1000,
+                        'gross_amount'  => 1000,
+                        'tax_amount'    => 3,
+                        'net_amount'    => 1003,
+                        'currency'      => 'INR',
+                        'tax_inclusive' => false,
+                        'unit'          => null,
+                        'quantity'      => 1,
+                        'taxes'         => [
+                            [
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::SGST_1250,
+                                'name'       => 'SGST 0.125%',
+                                'rate'       => 1250,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 1,
+                            ],
+                            [
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::CGST_1250,
+                                'name'       => 'CGST 0.125%',
+                                'rate'       => 1250,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 1,
+                            ],
+                        ],
+                    ],
+                    [
+                        'name'          => 'Item #2',
+                        'description'   => null,
+                        'amount'        => 500,
+                        'gross_amount'  => 1000,
+                        'tax_amount'    => 3,
+                        'net_amount'    => 1003,
+                        'currency'      => 'INR',
+                        'tax_inclusive' => false,
+                        'unit'          => null,
+                        'quantity'      => 2,
+                        'taxes'         => [
+                            [
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::IGST_2500,
+                                'name'       => 'IGST 0.25%',
+                                'rate'       => 2500,
+                                'rate_type'  => 'percentage',
+                                'group_id'   => null,
+                                'group_name' => null,
+                                'tax_amount' => 3,
+                            ],
+                        ],
+                    ],
+                ],
+                'gross_amount'          => 2000,
+                'tax_amount'            => 5,
+                'amount'                => 2005,
+                'currency'              => 'INR',
+                'description'           => null,
+                'type'                  => 'invoice',
+                'group_taxes_discounts' => false,
+            ],
+        ],
+    ],
+
     'testCreateInvoiceLineItemWithItemCessTax' => [
         'request' => [
             'url'    => '/invoices',
@@ -727,8 +833,8 @@ return [
                         'item_id'       => 'item_00000000000003',
                         'quantity'      => 5,
                         'tax_ids'       => [
-                            T::getIdPrefix() . GstTaxIdMap::CGST_500,
-                            T::getIdPrefix() . GstTaxIdMap::SGST_500
+                            T::getIdPrefix() . GstTaxIdMap::CGST_50000,
+                            T::getIdPrefix() . GstTaxIdMap::SGST_50000
                         ],
                         'tax_inclusive' => false,
                     ],
@@ -756,24 +862,24 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000002',
                                 'name'       => 'Tax #2',
-                                'rate'       => 2000,
+                                'rate'       => 200000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
                             ],
                             [
-                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::CGST_500,
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::CGST_50000,
                                 'name'       => 'CGST 5%',
-                                'rate'       => 500,
+                                'rate'       => 50000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
                                 'tax_amount' => 25000,
                             ],
                             [
-                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::SGST_500,
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::SGST_50000,
                                 'name'       => 'SGST 5%',
-                                'rate'       => 500,
+                                'rate'       => 50000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
@@ -800,8 +906,8 @@ return [
                         'amount'   => 100,
                         'quantity' => 5,
                         'tax_ids'  => [
-                            T::getIdPrefix() . GstTaxIdMap::CGST_250,
-                            T::getIdPrefix() . GstTaxIdMap::SGST_250
+                            T::getIdPrefix() . GstTaxIdMap::CGST_25000,
+                            T::getIdPrefix() . GstTaxIdMap::SGST_25000
                         ],
                         'tax_inclusive' => false,
                     ],
@@ -826,7 +932,7 @@ return [
                             [
                                 'tax_id'     => 'tax_9nDpYhZ0d60X7V',
                                 'name'       => 'CGST 2.5%',
-                                'rate'       => 250,
+                                'rate'       => 25000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
@@ -835,7 +941,7 @@ return [
                             [
                                 'tax_id'     => 'tax_9nDpYoeYBsXRvC',
                                 'name'       => 'SGST 2.5%',
-                                'rate'       => 250,
+                                'rate'       => 25000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
                                 'group_name' => null,
@@ -912,7 +1018,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000001',
                                 'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'rate'       => 100000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -921,7 +1027,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000002',
                                 'name'       => 'Tax #2',
-                                'rate'       => 2000,
+                                'rate'       => 200000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -944,7 +1050,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000001',
                                 'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'rate'       => 100000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -953,7 +1059,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000002',
                                 'name'       => 'Tax #2',
-                                'rate'       => 2000,
+                                'rate'       => 200000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -989,7 +1095,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000001',
                                 'name'       => 'Tax #1',
-                                'rate'       => 1000,
+                                'rate'       => 100000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',
@@ -998,7 +1104,7 @@ return [
                             [
                                 'tax_id'     => 'tax_00000000000002',
                                 'name'       => 'Tax #2',
-                                'rate'       => 2000,
+                                'rate'       => 200000,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => 'taxg_00000000000001',
                                 'group_name' => 'Tax Group #1',

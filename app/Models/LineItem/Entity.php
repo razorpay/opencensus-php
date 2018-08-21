@@ -12,8 +12,6 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const PRECISION_MULTIPLIER = 100;
-
     const ENTITY_ID        = 'entity_id';
     const ENTITY_TYPE      = 'entity_type';
     const MERCHANT_ID      = 'merchant_id';
@@ -138,7 +136,7 @@ class Entity extends Base\PublicEntity
         self::TAX_INCLUSIVE,
         self::HSN_CODE,
         self::SAC_CODE,
-        // self::TAX_RATE,
+        self::TAX_RATE,
         self::UNIT,
         self::QUANTITY,
     ];
@@ -205,7 +203,7 @@ class Entity extends Base\PublicEntity
 
     public function getTaxAmount()
     {
-        return $this->getAttribute(self::TAX_AMOUNT)/self::PRECISION_MULTIPLIER;
+        return $this->getAttribute(self::TAX_AMOUNT);
     }
 
     public function getNetAmount()
@@ -270,11 +268,6 @@ class Entity extends Base\PublicEntity
     public function setTaxAmount(int $taxAmount)
     {
         $this->setAttribute(self::TAX_AMOUNT, $taxAmount);
-    }
-
-    public function setTaxRate(int $taxRate)
-    {
-        $this->setAttribute(self::TAX_RATE, $taxRate*self::PRECISION_MULTIPLIER);
     }
 
     public function setNetAmount(int $netAmount)
