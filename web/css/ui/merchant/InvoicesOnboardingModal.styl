@@ -1,14 +1,4 @@
 .InvoicesOnboardingModal
-  background-image: url('assets/invoice_onboarding_illustration.svg');
-  background-position: center;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position-x: 284px;
-  background-position-y: -8px;
-
-  @media screen and (max-width: 991px)
-    background: none;
-
   .modal-header
     &::after
       background-color: #96C5FF
@@ -31,3 +21,13 @@
     margin-top: 8px;
     .btn-block
       width: auto;
+
+  .invoice-gst-form-label
+    padding-left: 32px;
+    .InputField 
+      display: inline-block;
+      width: 50%;
+  hr
+    margin: 10px 0;
+    width: 40%;
+    border-color: rgba(33,33,33,0.1);

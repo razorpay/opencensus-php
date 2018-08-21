@@ -23,6 +23,7 @@ import activationReducer from 'merchant/modules/activation';
 import refundReducer from 'merchant/modules/refunds/details';
 import paymentReducer from 'merchant/modules/payments/details';
 import transferReducer from 'merchant/modules/marketplace/transfer';
+import reversalReducer from 'merchant/modules/marketplace/reversal';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
 import referralsReducer from 'merchant/modules/referrals';
 import applicationsReducer from 'merchant/modules/applications';
@@ -30,6 +31,7 @@ import {
   virtualAccountsReducer,
   virtualAccountReducer,
 } from 'merchant/modules/virtualaccounts';
+import submerchantReducer from 'merchant/modules/submerchant';
 import statesReducer from 'merchant/modules/states';
 import taxesReducer from 'merchant/modules/taxes';
 
@@ -50,6 +52,7 @@ import {
   refundsReducer,
   settlementsReducer,
   disputesReducer,
+  submerchantsReducer,
 } from 'merchant/modules/collection';
 
 import {
@@ -105,10 +108,13 @@ export default combineReducers({
   mpPayments: mpPaymentsReducer,
   transfers: transfersReducer,
   transfer: transferReducer,
+  reversal: reversalReducer,
   reversals: reversalsReducer,
   virtualaccounts: virtualAccountsReducer,
   virtualaccount: virtualAccountReducer,
   states: statesReducer,
   taxes: taxesReducer,
   reports: reportsReducer,
+  submerchants: submerchantsReducer,
+  submerchant: submerchantReducer,
 });

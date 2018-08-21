@@ -39,7 +39,7 @@ export default function SQLReportGenerator() {
         },
         data: {
           config_id: body.config_id,
-          email_ids: [],
+          emails: [],
           start_time: startDate.unix(),
           end_time: endDate.unix(),
           mode: 'live',
@@ -54,8 +54,8 @@ export default function SQLReportGenerator() {
         return;
       }
 
-      if (body.email_ids) {
-        payload.data.email_ids = splitAndFilter(body.email_ids, ',');
+      if (body.emails) {
+        payload.data.emails = splitAndFilter(body.emails, ',');
       }
 
       adminPost(payload).then(response => {
@@ -77,7 +77,7 @@ export default function SQLReportGenerator() {
       <TextAreaField
         label="Email Ids"
         type="text"
-        name="email_ids"
+        name="emails"
         required
         placeholder="Enter comma separated email ids"
       />

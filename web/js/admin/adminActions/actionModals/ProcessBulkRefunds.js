@@ -4,7 +4,13 @@ import { TextAreaField } from 'ui/Field';
 
 import { adminPut } from 'common/fetch';
 import { splitAndFilter } from 'common/util';
-import { closeModal, notifyError, notifySuccess } from 'common/modal';
+import {
+  closeModal,
+  notifyError,
+  notifySuccess,
+  openModal,
+} from 'common/modal';
+import { ModalContent } from 'component/Modal';
 
 export default function ProcessBulkRefunds() {
   function onSubmit(body) {
@@ -20,6 +26,13 @@ export default function ProcessBulkRefunds() {
         if (response) {
           notifySuccess('Refund has been successfully processed.');
           closeModal();
+          openModal(
+            <ModalContent header="API Response:" noPadding>
+              <div class="code" style={{ width: '650px' }}>
+                {JSON.stringify(response, null, 4)}}
+              </div>
+            </ModalContent>
+          );
         }
       });
     } else {

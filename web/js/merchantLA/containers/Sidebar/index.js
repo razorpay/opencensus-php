@@ -70,38 +70,41 @@ export default class Sidebar extends Component {
                 null;
               } else {
                 <div class="nav">
+                  {/*
                   <MainNavLink
                     label="Home"
                     icon="i i-chart text-info"
                     to="/dashboard"
                     exact
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                   />
+*/}
                   <MainNavLink
                     label="Transfers"
-                    icon="i i-repeat text-primary"
+                    icon="i i-transfers text-primary"
                     to={routes.transfers}
-                    notMyRole="sellerapp"
+                    notMyRole="sellerapp agent"
                   />
                   <MainNavLink
                     label="Reversals"
-                    icon="i i-repeat text-primary"
+                    icon="i i-reversal text-warm"
                     to={routes.reversals}
-                    notMyRole="sellerapp"
+                    notMyRole="sellerapp agent"
                   />
                   <MainNavLink
                     label="Settlements"
                     icon="i i-done-all text-success"
                     to="/settlements"
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                   />
-                  <MainNavLink
+                  {/* temporarily disable reports for LA */}
+                  {/* <MainNavLink
                     label="Reports"
                     icon="i i-books text-danger"
                     to="/reports"
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                     isPending={isReportsPending}
-                  />
+                  /> */}
                   <MainNavLink
                     label="Account Settings"
                     icon="i i-account text-primary"

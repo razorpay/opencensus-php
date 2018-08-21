@@ -11,8 +11,8 @@ export default () => {
           <div class="img">
             <img src="img/onboarding/invoices/1.svg" alt="step.1" />
           </div>
-          <div class="title">1. Create Invoices quickly</div>
-          through our easy t o use platform
+          <div class="title">1. Create GST Invoices quickly</div>
+          through our easy to use platform
           <i class="i i-chevron-right" />
         </div>
 
@@ -20,7 +20,7 @@ export default () => {
           <div class="img">
             <img src="img/onboarding/invoices/2.svg" alt="step.2" />
           </div>
-          <div class="title">2. Send it to your customer</div>
+          <div class="title">2. Notify your customer</div>
           through email or sms
           <i class="i i-chevron-right" />
         </div>

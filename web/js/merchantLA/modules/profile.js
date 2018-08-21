@@ -10,9 +10,12 @@ export const updatePassword = data => {
   });
 };
 
-export const fetchBankAccount = () => {
-  return merchantFetch({
-    url: 'account/bank_account',
-    mode: 'live',
-  });
+export const updateDisplayName = data => {
+  return () => {
+    return merchantFetch({
+      url: 'account/config',
+      method: 'put',
+      data,
+    });
+  };
 };

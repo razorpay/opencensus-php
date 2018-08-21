@@ -16,12 +16,6 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
       <td class="text-right">
         <Amount value={settlement.amount} />
       </td>
-      <td class="text-right">
-        <Amount value={settlement.fees} />
-      </td>
-      <td class="text-right">
-        <Amount value={settlement.tax} />
-      </td>
       <td>
         <Time value={settlement.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
@@ -47,8 +41,6 @@ export default props => {
           <tr>
             <th>Settlement Id</th>
             <th class="text-right">Amount</th>
-            <th class="text-right">Fees</th>
-            <th class="text-right">Tax</th>
             <th>Created At</th>
             <th>Status</th>
             <th />

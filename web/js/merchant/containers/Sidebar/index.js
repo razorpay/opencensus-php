@@ -107,7 +107,8 @@ export default class Sidebar extends Component {
     let { user, config, logoURL, showMobileMenu } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
-
+    const isNonPurePlatformPartner =
+      !!user.partner_type && user.partner_type !== 'pure_platform';
     return (
       <React.Fragment>
         <div class={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
@@ -178,24 +179,37 @@ export default class Sidebar extends Component {
                       </Link>
                     )}
                   </ShowWhen>
+                  {isNonPurePlatformPartner && (
+                    <ShowWhen notMyRole="sellerapp">
+                      <MainNavLink
+                        label="Partner Dashboard"
+                        icon="i i-partner text-success"
+                        to="/submerchants"
+                        /* temporary false feature */
+                        featureEnabled="partner_tmp"
+                        exact
+                      />
+                      <div class="divider" />
+                    </ShowWhen>
+                  )}
                   <MainNavLink
                     label="Home"
                     icon="i i-chart text-info"
                     to="/dashboard"
                     exact
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                   />
                   <MainNavLink
                     label="Transactions"
                     icon="i i-repeat text-primary"
                     to={routes.transactions}
-                    notMyRole="sellerapp"
+                    notMyRole="sellerapp agent"
                   />
                   <MainNavLink
                     label="Settlements"
                     icon="i i-done-all text-success"
                     to="/settlements"
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                   />
 
                   <div class="divider" />
@@ -204,7 +218,7 @@ export default class Sidebar extends Component {
                     label="Invoices"
                     icon="i i-notes text-warning"
                     to={routes.invoices}
-                    notMyRole="sellerapp"
+                    notMyRole="sellerapp agent"
                     isNew
                   />
                   <MainNavLink
@@ -223,26 +237,26 @@ export default class Sidebar extends Component {
                     label="Route"
                     icon="i i-store text-success"
                     to={routes.marketplace}
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                   />
                   <MainNavLink
                     label="Subscriptions"
                     icon="i i-refresh text-info"
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                     to={routes.subscriptions}
                   />
                   <MainNavLink
                     label="Smart Collect"
                     icon="i i-account-balance text-danger"
                     to="/virtualaccounts"
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                   />
 
                   <MainNavLink
                     label="Customers"
                     icon="i i-people text-warning"
                     to="/customers"
-                    notMyRole="sellerapp"
+                    notMyRole="sellerapp agent"
                   />
 
                   <div class="divider" />
@@ -251,7 +265,7 @@ export default class Sidebar extends Component {
                     label="Reports"
                     icon="i i-books text-danger"
                     to="/reports"
-                    notMyRole="sellerapp support"
+                    notMyRole="sellerapp agent support"
                     isPending={isReportsPending}
                   />
                   <MainNavLink

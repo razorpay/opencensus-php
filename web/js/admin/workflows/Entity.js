@@ -66,9 +66,9 @@ export default class EditWorkflow extends Component {
     this.prepareWorkflow(this.props);
   }
 
-  componentDidUpdate(nextProps) {
-    if (this.props.match.params.id !== nextProps.match.params.id) {
-      this.prepareWorkflow(this.props); // TODO: Strangely, nextProps is giving old value and this.props is new value
+  componentDidUpdate(prevProps) {
+    if (this.props.match.params.id !== prevProps.match.params.id) {
+      this.prepareWorkflow(this.props);
     }
   }
 

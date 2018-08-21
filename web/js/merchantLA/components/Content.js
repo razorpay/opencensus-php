@@ -77,19 +77,26 @@ export default class Content extends Component {
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
-          <Route path="/dashboard" component={Home} />
-          <Redirect from="/" exact to="/dashboard" />
+          {/*<Route path="/dashboard" component={Home} />*/}
+          {/*<Redirect from="/" exact to="/dashboard" />*/}
+
+          <Redirect from="/" exact to="/transfers" />
 
           <Route path="/transfers" component={Transfers} />
           <Route path="/reversals" component={Reversals} />
           <Route path="/settlements" component={Settlements} />
-
-          <Route path="/reports" component={Reports} />
+          {/* temporarily disable reports for LA */}
+          {/* <Route path="/reports" component={Reports} /> */}
 
           <Route path="/profile" component={MyAccount} />
-          <Route path="/team" component={MyAccount} />
-
-          <Redirect to="/dashboard" />
+          <ShowWhenRoute
+            path="/team"
+            component={MyAccount}
+            myRole="linked_account_owner"
+            // myRole="owner"
+          />
+          <Redirect to="/transfers" />
+          {/*<Redirect to="/dashboard" />*/}
         </Switch>
       </ErrorBoundary>
     );

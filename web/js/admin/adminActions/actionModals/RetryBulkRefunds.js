@@ -4,7 +4,13 @@ import { TextAreaField } from 'ui/Field';
 
 import { adminPost } from 'common/fetch';
 import { splitAndFilter } from 'common/util';
-import { closeModal, notifyError, notifySuccess } from 'common/modal';
+import {
+  closeModal,
+  notifyError,
+  notifySuccess,
+  openModal,
+} from 'common/modal';
+import { ModalContent } from 'component/Modal';
 
 export default function RetryBulkRefunds() {
   function onSubmit(body) {
@@ -18,8 +24,16 @@ export default function RetryBulkRefunds() {
 
       adminPost(payload).then(response => {
         if (response) {
+          console.log('response :', response);
           notifySuccess('Refund retry has been successfully initiated.');
           closeModal();
+          openModal(
+            <ModalContent header="API Response" noPadding>
+              <div class="code" style={{ width: '650px' }}>
+                {JSON.stringify(response, null, 4)}}
+              </div>
+            </ModalContent>
+          );
         }
       });
     } else {

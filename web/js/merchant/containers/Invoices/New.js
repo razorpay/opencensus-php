@@ -19,6 +19,7 @@ import {
   capitalize,
   isAddressValid,
   calculateTax,
+  isBlank,
 } from 'rzp/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -50,6 +51,7 @@ import * as constants from 'rzp/utils/constants';
 import InvoicesOnboarding from 'merchant/containers/Invoices/Modals/Onboarding';
 import { luminateRow } from 'merchant/modules/app';
 import { track, trackLinkClick } from './ga';
+import AddGST from 'merchant/containers/Profile/AddGST';
 
 function validate(values) {
   let errors = {
@@ -320,12 +322,12 @@ export default class InvoicesNewContainer extends Component {
     let user = this.props.session.user;
     let merchant = user.merchants[user.current];
     let logoUrl = this.props.config.logo_url;
-    let gstin = user.gstin || user.p_gstin;
+    let gstin = user.gstin;
     let cin = user.company_cin;
 
     let { config: { invoice_label_field } } = this.props;
-
     let merchantAltBillingLabel = user.business_name || user.business_dba;
+
     if (invoice_label_field && user[invoice_label_field]) {
       merchantAltBillingLabel = user[invoice_label_field];
     }
@@ -630,7 +632,6 @@ export default class InvoicesNewContainer extends Component {
       track({
         eventAction: 'Click - Start Creating Invoices',
       });
-      this.props.closeModal();
       this.getMerchantInfo();
     };
 
@@ -640,10 +641,11 @@ export default class InvoicesNewContainer extends Component {
     };
 
     this.props.openModal({
-      size: 'large',
+      size: 'regular',
       component: (
         <InvoicesOnboarding
           merchant={this.props.session.user}
+          invoiceLabelField={this.props.config.invoice_label_field}
           onStart={onStart}
           onCloseClick={onCloseClick}
         />
@@ -1246,9 +1248,9 @@ export default class InvoicesNewContainer extends Component {
     });
 
     /**
-     * Show onboarding modal if invoice_label_field is null.
+     * Show onboarding modal if invoice_label_field is null or GSTIN is empty.
      */
-    let { invoice_label_field } = this.props.config;
+    const { invoice_label_field } = this.props.config;
 
     if (invoice_label_field === null) {
       this.showOnboardingModal();
@@ -1347,6 +1349,13 @@ export default class InvoicesNewContainer extends Component {
       false,
       autoselectPlaceOfSupply
     );
+  };
+
+  showGSTModal = () => {
+    return this.props.openModal({
+      size: 'small',
+      component: <AddGST reloadAfterSave={true} />,
+    });
   };
 
   render() {
@@ -1453,13 +1462,13 @@ export default class InvoicesNewContainer extends Component {
                       <div class="row">
                         <div class="col-md-12">
                           <div class="inv__titlesection">
-                            <h3>Invoice</h3>
+                            <h3>Invoice #</h3>
                             {locked && !invoice.receipt ? (
                               <InlineField
                                 formName="newInvoice"
                                 name="id"
                                 component="input"
-                                class="form-control input-xs"
+                                class="material-input input-xs"
                                 disabled={true}
                                 size={30}
                               />
@@ -1953,6 +1962,7 @@ export default class InvoicesNewContainer extends Component {
 
                       <div class="row" style={{ marginTop: '40px' }}>
                         <div class="col-md-12">
+                          <label class="text-uppercase">Customer Notes</label>
                           <InlineField
                             formName="newInvoice"
                             name="comment"
@@ -1970,6 +1980,9 @@ export default class InvoicesNewContainer extends Component {
 
                       <div class="row">
                         <div class="col-md-12">
+                          <label class="text-uppercase">
+                            Terms and Conditions
+                          </label>
                           <InlineField
                             formName="newInvoice"
                             name="terms"
@@ -2000,7 +2013,10 @@ export default class InvoicesNewContainer extends Component {
                 </div>
 
                 <ShowWhen notMyRole="support finance">
-                  <div class="col-md-4 col-sm-4" style={{ marginTop: '48px' }}>
+                  <div
+                    class="col-md-4 col-sm-4 invoices--side"
+                    style={{ marginTop: '48px' }}
+                  >
                     {!locked && (
                       <div class="inv__cta">
                         <div class="btn-group-vertical">
@@ -2101,6 +2117,35 @@ export default class InvoicesNewContainer extends Component {
                         </div>
                         <div class="btn-group-vertical inv__actionbutton">
                           <p>Settings</p>
+                          {!merchantGSTIN &&
+                            (isNew || isDraft) && (
+                              <label
+                                class="btn btn-default btn-block btn-lg"
+                                for="gst_enabled"
+                              >
+                                <div class="row">
+                                  <div class="col-xs-10">
+                                    <h3>Create GST Enabled Invoices</h3>
+                                    <p>Add your GST number</p>
+                                  </div>
+                                  <div class="col-xs-2">
+                                    <div class="custom-checkbox">
+                                      <Field
+                                        name="gst_enabled"
+                                        id="gst_enabled"
+                                        component="input"
+                                        type="checkbox"
+                                        disabled={locked}
+                                        class="Input-el"
+                                        checked={!!merchantGSTIN}
+                                        onChange={this.showGSTModal}
+                                      />
+                                      <div class="Input-checkbox" />
+                                    </div>
+                                  </div>
+                                </div>
+                              </label>
+                            )}
                           <label
                             class="btn btn-default btn-block btn-lg"
                             for="partial_payment"
