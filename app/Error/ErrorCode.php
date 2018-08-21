@@ -71,8 +71,12 @@ class ErrorCode
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
     const GATEWAY_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT                              = 'GATEWAY_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT';
     const GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED                                   = 'GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED';
-
+    const GATEWAY_ERROR_CONSUMER_PAN_TAMPERED                                       = 'GATEWAY_ERROR_CONSUMER_PAN_TAMPERED';
+    const GATEWAY_ERROR_MERCHANT_PAN_TAMPERED                                       = 'GATEWAY_ERROR_MERCHANT_PAN_TAMPERED';
+    const GATEWAY_ERROR_STATUS_CODE_MISMATCH                                        = 'GATEWAY_ERROR_STATUS_CODE_MISMATCH';
     const GATEWAY_ERROR_PIN_CRYPTOGRAPHY_ERROR                                      = 'GATEWAY_ERROR_PIN_CRYPTOGRAPHY_ERROR';
+    const GATEWAY_ERROR_TRANSACTION_DECLINED                                        = 'GATEWAY_ERROR_TRANSACTION_DECLINED';
+    const GATEWAY_ERROR_TRANSACTION_NOT_PRESENT                                     = 'GATEWAY_ERROR_TRANSACTION_NOT_PRESENT';
     const GATEWAY_ERROR_PIN_CHANGE_FAILED                                           = 'GATEWAY_ERROR_PIN_CHANGE_FAILED';
     const GATEWAY_ERROR_SWITCH_UNOPERATIVE                                          = 'GATEWAY_ERROR_SWITCH_UNOPERATIVE';
 
