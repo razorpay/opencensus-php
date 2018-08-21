@@ -2399,3 +2399,30 @@ INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_typ
 
 # Setting default mercahnt id for existing emi plans
 UPDATE emi_plans SET merchant_id = '100000Razorpay';
+
+# 1st revision to GST default taxes
+
+INSERT INTO `taxes` (`id`, `merchant_id`, `name`, `rate_type`, `rate`, `created_at`, `updated_at`, `deleted_at`)
+VALUES
+    ('9nDEUuY6bMVa65', '100000Razorpay', 'IGST 0.1%', 'percentage', 1000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nDyMRwQQmzKmn', '100000Razorpay', 'IGST 0.25%', 'percentage', 2500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nDz0oSwuCqct2', '100000Razorpay', 'IGST 3%', 'percentage', 30000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nDS50aqhA7TdV', '100000Razorpay', 'CGST 0.05%', 'percentage', 500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nDSOMffy02J6l', '100000Razorpay', 'CGST 0.1%', 'percentage', 1000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9ndzIuY66e4Z7w', '100000Razorpay', 'CGST 0.125%', 'percentage', 1250, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nDongIFqOHM7p', '100000Razorpay', 'CGST 0.25%', 'percentage', 2500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9ndzUuWKXMvGIo', '100000Razorpay', 'CGST 1.5%', 'percentage', 15000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nDT1zZV64hp0L', '100000Razorpay', 'SGST 0.05%', 'percentage', 500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nDTKJ3gMSfjhe', '100000Razorpay', 'SGST 0.1%', 'percentage', 1000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nD00MK9Km0l2u', '100000Razorpay', 'SGST 0.125%', 'percentage', 1250, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nDpcJrq9e3pHO', '100000Razorpay', 'SGST 0.25%', 'percentage', 2500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nD0DxxkA0UwrU', '100000Razorpay', 'SGST 1.5%', 'percentage', 15000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nD0SGKzqwxJJK', '100000Razorpay', 'SGST 3%', 'percentage', 30000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nDTh4wpU0YDCU', '100000Razorpay', 'UTGST 0.05%', 'percentage', 500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nDUYqZko0Jrxj', '100000Razorpay', 'UTGST 0.1%', 'percentage', 1000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nD0ea41MeQhwQ', '100000Razorpay', 'UTGST 0.125%', 'percentage', 1250, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nDq6h2an6eK6G', '100000Razorpay', 'UTGST 0.25%', 'percentage', 2500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nD0tKICPabvSI', '100000Razorpay', 'UTGST 1.5%', 'percentage', 15000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('9nD1422wiGxC81', '100000Razorpay', 'UTGST 3%', 'percentage', 30000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL);
+
+UPDATE taxes SET rate = rate * 100 WHERE rate_type = "percentage";

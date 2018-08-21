@@ -40,12 +40,7 @@ class GstTaxIdMap
 
     // UTGST
     const DEPRECATED_UTGST_0    = '9nDpYuFVNQcVaU';
-    const DEPRECATED_UTGST_10   = '9nDUYqZko0Jrxj';
-    const DEPRECATED_UTGST_12   = '9nD0ea41MeQhwQ';
-    const DEPRECATED_UTGST_25   = '9nDq6h2an6eK6G';
-    const DEPRECATED_UTGST_150  = '9nD0tKICPabvSI';
     const DEPRECATED_UTGST_250  = '9nDpYv53mqSsip';
-    const DEPRECATED_UTGST_300  = '9nD1422wiGxC81';
     const DEPRECATED_UTGST_500  = '9nDpYvgwu0p8WP';
     const DEPRECATED_UTGST_600  = '9nDpYwRScK0Mz2';
     const DEPRECATED_UTGST_900  = '9nDpYxMkO0LLhz';

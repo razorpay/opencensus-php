@@ -79,14 +79,14 @@ return [
             'content' => [
                 'name'      => 'New tax',
                 'rate_type' => 'percentage',
-                'rate'      => 10200,
+                'rate'      => 1020000,
             ],
         ],
         'response'  => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'rate should be between 0 to 10000 if rate_type is percentage',
+                    'description' => 'rate should be between 0 to 1000000 if rate_type is percentage',
                 ],
             ],
             'status_code' => 400,
@@ -130,7 +130,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'rate should be between 0 to 10000 if rate_type is percentage',
+                    'description' => 'rate should be between 0 to 1000000 if rate_type is percentage',
                 ],
             ],
             'status_code' => 400,
