@@ -60,7 +60,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'message'           => 'Payment currency mismatch',
+                    'message'           => Base\InfoCode::CURRENCY_MISMATCH,
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
                     'row'               => $row,
@@ -136,7 +136,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_PARSE_ERROR,
-                    'message'         => 'Unable to figure out the card type.',
+                    'message'         => Base\InfoCode::CARD_TYPE_ABSENT,
                     'recon_card_type' => $cardType,
                     'row'             => $row,
                     'gateway'         => $this->gateway
@@ -162,7 +162,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_PARSE_ERROR,
-                    'message'         => 'Unable to figure out the card locale.',
+                    'message'         => Base\InfoCode::CARD_LOCALE_MISSING,
                     'recon_card_type' => $cardLocale,
                     'row'             => $row,
                     'gateway'         => $this->gateway

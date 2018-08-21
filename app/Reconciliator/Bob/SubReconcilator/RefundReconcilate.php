@@ -112,13 +112,14 @@ class RefundReconciliate extends Base\RefundReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'message'           => 'Refund currency mismatch',
+                    'message'           => Base\InfoCode::CURRENCY_MISMATCH,
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
                     'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
             return false;
+
         }
 
         return true;
