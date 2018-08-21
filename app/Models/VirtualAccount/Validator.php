@@ -58,6 +58,7 @@ class Validator extends Base\Validator
     protected function validateReceivers(string $key, array $value, array $data)
     {
         if ((isset($value[Entity::TYPES]) === true) and
+            (is_array($value[Entity::TYPES]) === true) and
             (Receiver::areTypesValid($value[Entity::TYPES]) === false))
         {
             throw new Exception\BadRequestException(
