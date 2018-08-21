@@ -59,6 +59,13 @@ class Generator extends Base\Core
      */
     protected $batch;
 
+    /**
+     * Flag to check if duplicate invoice creation with same internal_ref is allowed
+     *
+     * @var boolean
+     */
+    protected $shouldFailOnDuplicateInternalRef;
+
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
@@ -102,9 +109,23 @@ class Generator extends Base\Core
         return $this;
     }
 
+    public function setShouldFailOnDuplicateInternalRef(bool $shouldFailOnDuplicateInternalRef)
+    {
+        $this->shouldFailOnDuplicateInternalRef = $shouldFailOnDuplicateInternalRef;
+
+        return $this;
+    }
+
     public function generate(array $input): Entity
     {
         $this->generateInvoiceSkeleton($input);
+
+        $this->checkDuplicateInternalRef($input);
+
+        if ($this->invoice->exists === true)
+        {
+            return $this->invoice;
+        }
 
         $this->repo->transaction(
             function() use ($input)
@@ -271,6 +292,38 @@ class Generator extends Base\Core
         $invoice->setMerchantLabel($this->merchant->getLabelForInvoice());
 
         $this->invoice = $invoice;
+    }
+
+    protected function checkDuplicateInternalRef(array $input)
+    {
+        if ($this->invoice->getInternalRef() === null)
+        {
+            return;
+        }
+
+        $existingInvoiceWithInternalRef = $this->repo
+                                               ->invoice
+                                               ->findDuplicateInvoiceByInternalRefForMerchant(
+                                                    $this->invoice,
+                                                    $this->invoice->getMerchantId());
+
+        if ($existingInvoiceWithInternalRef === null)
+        {
+            return;
+        }
+
+        if ($this->shouldFailOnDuplicateInternalRef === true)
+        {
+            throw new LogicException('internal_ref must be unique for each invoice',
+                ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+                [
+                    'invoice_id'          => $this->invoice->getId(),
+                    'existing_invoice_id' => $existingInvoiceWithInternalRef->getId(),
+                    'internal_ref'        => $this->invoice->getInternalRef()
+                ]);
+        }
+
+        $this->invoice = $existingInvoiceWithInternalRef;
     }
 
     /**
