@@ -4,138 +4,107 @@ namespace RZP\Reconciliator\Bob;
 
 class ReconcilationFields
 {
-    const TRANSACTION_DATE           = 'Transaction Date';
+    const TRANSACTION_DATE           = 'transaction_date';
 
-    const TRANSACTION_TIME           = 'Transaction Time';
+    const TRANSACTION_TIME           = 'transaction_time';
 
-    const SETTLEMENT_DATE            = 'Settlement Date';
+    const SETTLEMENT_DATE            = 'settlement_date';
 
-    const MERCHANT_TYPE              = 'Merchant Type';
+    const MERCHANT_TYPE              = 'transaction_source';
 
-    const TRANSACTION_SOURCE         = 'Transaction Source';
+    const TRANSACTION_SOURCE         = 'transaction_id';
 
-    const MERCHANT_AGGREGATOR_ID     = 'Merchant Aggregator ID';
+    const MERCHANT_AGGREGATOR_ID     = 'merchant_aggregator_id';
 
-    const MID                        = 'MID';
+    const MID                        = 'mid';
 
-    const MERCHANT_LEGAL_NAME        = 'Merchant Legal Name';
+    const MERCHANT_LEGAL_NAME        = 'merchant_legal_name';
 
-    const SID                        = 'SID';
+    const SID                        = 'sid';
 
-    const STORE_TRADING              = 'Store Trading';
+    const STORE_TRADING              = 'store_trading';
 
-    const TID                        = 'TID';
+    const TID                        = 'tid';
 
-    const BATCH_NUMBER               = 'Batch Number';
+    const BATCH_NUMBER               = 'batch_number';
 
-    const CARD_NUMBER                = 'Card Number';
+    const CARD_NUMBER                = 'card_number';
 
-    const DELIVERY_CHANNEL           = 'Delivery Channel';
+    const DELIVERY_CHANNEL           = 'delivery_channel';
 
-    const PAYMENT_METHOD             = 'Payment Method';
+    const PAYMENT_METHOD             = 'payment_method';
 
-    const ONUS_INDICATOR             = 'Onus Indicator';
+    const ONUS_INDICATOR             = 'onus_indicator';
 
     const INTERCHANGE                = 'Interchange';
 
     const INTERCHANGE_CATEGORY       = 'Interchange Category';
 
     // Determines if its domestic/international
-    const DESTINATION                = 'Destination';
+    const DESTINATION                = 'destination';
 
     // Card Type
-    const CARD_TYPE                  = 'Card Type';
+    const CARD_TYPE                  = 'card_type';
 
-    const PAYMENT_AGGREGATOR_ID      = 'Merchant Aggregator ID';
+    const PAYMENT_AGGREGATOR_ID      = 'merchant_aggregator_id';
 
-    const ISSUER_BANK                = 'Issuer Bank';
+    const ISSUER_BANK                = 'issuer_bank';
 
-    const MERCHANT_CATEGORY_CODE     = 'Merchant Category Code';
+    const MERCHANT_CATEGORY_CODE     = 'merchant_category_code';
 
-    const MCC_CATEGORY               = 'MCC Category';
+    const MCC_CATEGORY               = 'mcc_category';
 
-    const TRANSACTION_CATEGORY       = 'Transaction Category';
+    const TRANSACTION_CATEGORY       = 'transaction_category';
 
-    const TRANSACTION_TYPE           = 'Transaction Type';
+    const TRANSACTION_TYPE           = 'transaction_type';
 
-    const TRANSACTION_CURRENCY_CODE  = 'Transaction Currency Code';
+    const TRANSACTION_CURRENCY_CODE  = 'transaction_currency_code';
 
-    const TRANSACTION_AMOUNT         = 'Transaction Amount';
+    const TRANSACTION_AMOUNT         = 'transaction_amount';
 
-    const ADDITIONAL_AMOUNT          = 'Additional Amount';
+    const ADDITIONAL_AMOUNT          = 'additional_amount';
 
-    const SETTLEMENT_AMOUNT          = 'Settlement Currency';
+    const SETTLEMENT_AMOUNT          = 'settlement_currency';
 
-    const LATE_SETTLEMENT_FEE_AMOUNT = 'Late Settlement Fee Amount';
+    const LATE_SETTLEMENT_FEE_AMOUNT = 'late_settlement_fee_amount';
 
-    const RRF_AMOUNT                 = 'RRF Amount';
+    const RRF_AMOUNT                 = 'rrf_amount';
 
-    const MSF_AMOUNT                 = 'MSF Amount';
+    const MSF_AMOUNT                 = 'msf_amount';
 
-    const GST                        = 'GST';
+    const GST                        = 'gst';
 
-    const MIN_AMOUNT                 = 'Min Amount';
+    const MIN_AMOUNT                 = 'min_amount';
 
-    const MAX_AMOUNT                 = 'Max Amount';
+    const MAX_AMOUNT                 = 'max_amount';
 
-    const CSF_AMOUNT                 = 'CSF Amount';
+    const CSF_AMOUNT                 = 'csf_amount';
 
-    const CSF_TAX                    = 'CSF Tax';
+    const CSF_TAX                    = 'csf_tax';
 
-    const NET_AMOUNT                 = 'Net Amount';
+    const NET_AMOUNT                 = 'net_amount';
 
-    const APPROVED_INDICATOR         = 'Approved/Declined Indicator';
+    const APPROVED_INDICATOR         = 'approveddeclined_indicator';
 
-    const INVOICE_NUMBER             = 'Invoice Number';
+    const INVOICE_NUMBER             = 'invoice_number';
 
-    const AUTH_CODE                  = 'Auth/Approval Code';
+    const AUTH_CODE                  = 'authapproval_code';
 
-    const RRN                        = 'Retrieval Reference Number';
+    const RRN                        = 'retrieval_reference_number';
 
-    const TRACE_NO                   = 'System Trace Audit Number';
+    const TRACE_NO                   = 'trace_no';
 
-    const PG_PAYMENT_TRANSACTION_ID  = 'PG Payment Transaction ID';
+    const PG_PAYMENT_TRANSACTION_ID  = 'pg_payment_transaction_id';
 
-    const PG_TRANSACTION_ID          = 'PG Transaction ID';
+    const PG_TRANSACTION_ID          = 'pg_transaction_id';
 
-    const MERCHANT_TRACK_ID          = 'Merchant Track ID';
+    const MERCHANT_TRACK_ID          = 'merchant_track_id';
 
-    const HOST_TRANSACTION_ID        = 'Host Transaction ID';
+    const HOST_TRANSACTION_ID        = 'host_transaction_id';
 
-    const UDF_1                      = 'UDF 1';
-
-    const UDF_2                      = 'UDF 2';
-
-    const UDF_3                      = 'UDF 3';
-
-    const UDF_4                      = 'UDF 4';
-
-    const UDF_5                      = 'UDF 5';
-
-    const UDF_6                      =  'UDF 6';
-
-    const UDF_7                      = 'UDF 7';
-
-    const UDF_8                      = 'UDF 8';
-
-    const UDF_9                      = 'UDF 9';
-
-    const UDF_10                     = 'UDF 10';
-
-    const UDF_11                     = 'UDF 11';
-
-    const UDF_12                     = 'UDF 12';
-
-    const UDF_13                     = 'UDF 13';
-
-    const UDF_14                     = 'UDF 14';
-
-    const UDF_15                     = 'UDF 15';
-
-    const UDF_16                     = 'UDF 16';
 
     // The date actually on which payment got settled
-    const PAYMENT_DATE               = 'Payment Date';
+    const PAYMENT_DATE               = 'payment_date';
 
-    const TRANSACTION_STATUS         = 'Transaction Status';
+    const TRANSACTION_STATUS         = 'transaction_status';
 }
