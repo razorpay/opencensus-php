@@ -266,6 +266,15 @@ trait Support
         {
             $data['udf5'] = '';
         }
+        $this->setDebitSecondRecurringPayment($input);
+
+        if (($this->secondDebitRecurringFlag === true) and
+            ($type === 'refund'))
+        {
+            $data['trackid'] = $input['payment']['id'];
+            $data['transid'] = $data['trackid'];
+            $data['udf5']    = 'TrackID';
+        }
     }
 
     protected function verifyAndSaveSupportResponse($type, $input)
