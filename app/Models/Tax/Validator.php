@@ -61,7 +61,7 @@ class Validator extends Base\Validator
 
     private function validatePercentageRate(int $rate)
     {
-        if (($rate < 0) or ($rate > 10000))
+        if (($rate < 0) or ($rate > 1000000))
         {
             $message = 'rate should be between 0 to 10000 if rate_type is percentage';
 
