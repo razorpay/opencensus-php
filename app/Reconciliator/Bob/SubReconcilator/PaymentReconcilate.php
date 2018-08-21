@@ -17,7 +17,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 {
     public function getPaymentId(array $row)
     {
-        return $row[ReconcilationFields::MERCHANT_TRACK_ID];
+        return $row[ReconcilationFields::MERCHANT_TRACK_ID] ?? null;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)

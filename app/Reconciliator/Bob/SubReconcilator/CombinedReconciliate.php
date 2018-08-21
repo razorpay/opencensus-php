@@ -6,6 +6,14 @@ use RZP\Reconciliator\Base;
 
 class CombinedReconciliate extends Base\CombinedReconciliate
 {
+    const PURCHASE_TXN = 'purchase';
+    const REFUND_TXN   = 'refund';
+
+    const TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP = [
+        self::PURCHASE_TXN => Base\Reconciliate::PAYMENT,
+        self::REFUND_TXN   => Base\Reconciliate::REFUND
+    ];
+
     /**
      * Column 'Transaction Type' in excel indicates whether
      * txn is payment or refund
@@ -20,11 +28,6 @@ class CombinedReconciliate extends Base\CombinedReconciliate
     {
         $transactionType = strtolower($row[ReconcilationFields::TRANSACTION_TYPE]);
 
-        $reconciliationTypeMapping = [
-            'purchase'  => Base\Reconciliate::PAYMENT,
-            'refund'    => Base\Reconciliate::REFUND,
-        ];
-
-        return (isset($reconciliationTypeMapping[$transactionType]) === true) ? $reconciliationTypeMapping[$transactionType] : null;
+        return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$transactionType] ?? null ;
     }
 }

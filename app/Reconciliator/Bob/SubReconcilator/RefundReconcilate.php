@@ -8,12 +8,13 @@ use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Currency\Currency;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
     public function getRefundId(array $row)
     {
-        return $row[ReconcilationFields::MERCHANT_TRACK_ID];
+        return $row[ReconcilationFields::MERCHANT_TRACK_ID] ?? null;
     }
 
     protected function getGatewayRefund(string $refundId)
@@ -103,7 +104,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
-        $expectedCurrency = ($convertCurrency === true) ? 'INR' : $this->payment->getCurrency();
+        $expectedCurrency = ($convertCurrency === true) ? Currency::INR : $this->payment->getCurrency();
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 
@@ -118,6 +119,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
+
             return false;
 
         }

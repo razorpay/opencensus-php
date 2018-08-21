@@ -790,4 +790,20 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $gatewayRefund->setBankPaymentId($referenceNumber);
     }
+
+    /**
+     * @param array $row
+     * @param string $columnName
+     */
+    protected function reportMissingColumn(array $row, string $columnName)
+    {
+        $this->trace->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'message'           => 'Unable to get the expected column.',
+                'column_name'       => $columnName,
+                'row'               => $row,
+                'gateway'           => $this->gateway
+            ]);
+    }
 }
