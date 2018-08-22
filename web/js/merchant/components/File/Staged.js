@@ -95,8 +95,8 @@ export default class Staged extends React.Component {
               )}
             </React.Fragment>
           )}
+          <div>{this.props.children}</div>
         </div>
-        <div>{this.props.children}</div>
         {!isDisabled &&
           onCloseClick &&
           currentStatus !== 'process' && (
