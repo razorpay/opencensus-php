@@ -19,7 +19,7 @@ import {
 import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import { showNotification } from 'rzp/modules/notifications';
-import { groupBy } from 'rzp/utils/pokedex';
+import { groupBy } from 'rzp/utils/rzp-utils';
 import Change from 'rzp/ui/Change';
 
 import { fetch } from 'merchantLA/modules/pokedex';

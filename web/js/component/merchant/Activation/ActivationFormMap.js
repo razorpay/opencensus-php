@@ -14,7 +14,7 @@ import {
 
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
-const INDIVIDUAL = 2;
+export const INDIVIDUAL = 2;
 const PARTNERSHIP = 3;
 const PRIVATE = 4; // 'Private Limited',
 const PUBLIC = 5; // 'Public Limited',
@@ -29,6 +29,9 @@ const NOT_REGISTERED = 11; // 'Society'
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
+
+const individualMsg =
+  'We are not supporting individuals (unregistered businesses) at the moment. We shall inform you when we start supporting individuals.';
 
 const stateOptions = ['--Select--'].concat(
   Object.keys(states).map(c => {
@@ -87,21 +90,19 @@ const businessModel = [
       { label: 'Society', name: SOCIETY },
       { label: 'NGO', name: NGO },
     ],
-    description: function() {
+    description: activation => {
       // Changing description of self
       const currentBusinessType =
-        this.state.dirty.business_type || this.props.data.business_type;
+        activation.state.dirty.business_type ||
+        activation.props.data.business_type;
 
       // if user has selected individual/not yet registered business type
-      if (currentBusinessType && !this.props.accountId) {
+      if (currentBusinessType && !activation.props.accountId) {
         if (currentBusinessType == INDIVIDUAL) {
           return (
-            <div class="warning-svg">
+            <div class="warning-svg red">
               {WarningSvg()}
-              <span>
-                Review of activation form for individuals takes longer. We may
-                not be able to support a few business models at this moment.
-              </span>
+              <span>{individualMsg}</span>
             </div>
           );
         } else if (currentBusinessType == NOT_REGISTERED) {
@@ -400,8 +401,8 @@ const registrationDetails = [
       className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
       _when: excludeFor_Indiv_NotReg,
-      description: function() {
-        if (this.state.has_gstin == '1') {
+      description: activation => {
+        if (activation.state.has_gstin == '1') {
           return 'You can add your GST details later once you are registered';
         }
       },
@@ -531,11 +532,11 @@ const uploadFields = [
     name: 'business_proof_url',
     label: 'Business Registration Proof',
     _autoRenderImpure: true, // Here, Description on other field while render.
-    description: function() {
+    description: activation => {
       const currentBusinessType =
-        this.state.dirty.business_type != null
-          ? this.state.dirty.business_type
-          : this.props.data.business_type;
+        activation.state.dirty.business_type != null
+          ? activation.state.dirty.business_type
+          : activation.props.data.business_type;
 
       const li1 =
         'GST Certificate / Shop Establishment Act Certificate / Registration Certificate';
