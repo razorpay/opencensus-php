@@ -624,7 +624,14 @@ class Gateway
         return $response;
     }
 
-    protected function callGatewayWrapper($callGatewayClosure, $request, $maxRetryCount = 3)
+    /**
+     * @param $closureFunction -- any function on which we want to try retry on GatewayRequestException failure
+     * @param \Exception -- any exception that we want to catch and retry on
+     * @param int $maxRetryCount -- max number of retries we want and then throw exception after $maxRetryCount attempts
+     * @return $response -- return the response of the closure function
+     * @throws Exception\GatewayRequestException
+     */
+    protected function retryHandler($closureFunction, $exceptionClass, $maxRetryCount = 3)
     {
         $currentRetryCount = 1;
 
@@ -634,20 +641,27 @@ class Gateway
         {
             try
             {
-                $response = $this->$callGatewayClosure($request);
+                $response = $closureFunction();
 
                 $loopOver = false;
 
                 return $response;
             }
-            catch (Exception\GatewayTimeoutException $exc)
+            catch (\Exception $exc)
             {
-                if ($currentRetryCount >= $maxRetryCount)
+                if (get_class($exc) === $exceptionClass)
+                {
+                    if ($currentRetryCount >= $maxRetryCount)
+                    {
+                        throw $exc;
+                    }
+
+                    $currentRetryCount++;
+                }
+                else
                 {
                     throw $exc;
                 }
-
-                $currentRetryCount++;
             }
         }
     }

@@ -946,7 +946,22 @@ class Gateway extends Base\Gateway
 
         $this->traceSoapRequest($request);
 
-        $response = $this->callGatewayWrapper("sendGatewayRequest", $request);
+        $sendGatewayFunc = function () use (&$request)
+        {
+            return $this->sendGatewayRequest($request);
+        };
+
+        if ($this->action === Payment\Action::CAPTURE)
+        {
+            $retryAttempts = 3;
+        }
+        else
+        {
+            $retryAttempts = 1;
+        }
+
+        $response = $this->retryHandler($sendGatewayFunc, Exception\GatewayRequestException::class,
+            $retryAttempts);
 
         $this->trace->info(
             TraceCode::GATEWAY_RESPONSE,
