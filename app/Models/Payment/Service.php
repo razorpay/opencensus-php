@@ -693,6 +693,17 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function getPaymentFlowsPrivate(array $input)
+    {
+        (new Card\Validator)->validateInput('card_number', $input);
+
+        $iin = substr($input['card_number'], 0, 6);
+        unset($input['card_number']);
+        $input['iin'] = $iin;
+
+        return $this->getPaymentFlows($input);
+    }
+
     /**
      * We only return the payment status in case of an async
      * payment + status being either of created or authorized
