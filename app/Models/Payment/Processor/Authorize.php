@@ -76,6 +76,8 @@ trait Authorize
         // cards used in payment is international
         $this->processCurrencyConversions($payment);
 
+        $this->setAnalyticsLog($payment);
+
         $this->runPaymentInputValidations($payment, $input);
 
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
@@ -106,8 +108,6 @@ trait Authorize
         }
 
         $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
-
-        $this->createAnalyticsLog($payment);
 
         $this->runShieldCheck($payment);
 
@@ -257,8 +257,6 @@ trait Authorize
     public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
-
-        $this->createAnalyticsLog($this->payment);
 
         $this->runShieldCheck($this->payment);
     }
@@ -1361,7 +1359,11 @@ trait Authorize
 
     protected function runFraudChecks(Payment\Entity $payment)
     {
-        if ($payment->shouldRunFraudChecks() === true)
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true)
+        {
+            $this->validateFraudDetectionV2($payment);
+        }
+        else if ($payment->shouldRunFraudChecks() === true)
         {
             $this->validateEmailTld($payment);
 
@@ -1387,6 +1389,11 @@ trait Authorize
      */
     protected function runShieldCheck(Payment\Entity $payment)
     {
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true)
+        {
+            return;
+        }
+
         // We do not want to call shield in case for Payments in Test mode
         if ($this->mode === Mode::TEST)
         {
@@ -3677,11 +3684,13 @@ trait Authorize
         }
     }
 
-    protected function createAnalyticsLog(Payment\Entity $payment)
+    protected function setAnalyticsLog(Payment\Entity $payment)
     {
         try
         {
-            (new Analytics\Service)->createLog($payment);
+            $paymentAnalytics = (new Analytics\Core)->create($payment);
+
+            $payment->setMetadataKey('payment_analytics', $paymentAnalytics);
         }
         catch (\Throwable $e)
         {
