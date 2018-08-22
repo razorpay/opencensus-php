@@ -24,6 +24,7 @@ export function showWhenUtil(props) {
     myRole = '',
     featureEnabled,
     apiFeatureEnabled,
+    additionalCondition,
   } = props;
 
   const user = store && store.getState().session.user;
@@ -80,6 +81,10 @@ export function showWhenUtil(props) {
     featureEnabled.some(r => tags.includes(r.toLowerCase()))
   ) {
     isContentVisible = true;
+  }
+
+  if (isContentVisible && additionalCondition) {
+    isContentVisible = additionalCondition(user);
   }
 
   if (

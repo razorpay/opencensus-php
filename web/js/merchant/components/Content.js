@@ -149,11 +149,11 @@ export default class Content extends Component {
           <Route path="/dashboard" component={Home} />
           <Redirect from="/" exact to="/dashboard" />
 
-          {!!user.partner_type ? (
-            <Route path="/submerchants" component={PartnerDashboard} />
-          ) : (
-            <Redirect exact from="/submerchants" to="/dashboard" />
-          )}
+          <ShowWhenRoute
+            path="/submerchants"
+            component={PartnerDashboard}
+            additionalCondition={user => user.isPartner()}
+          />
 
           <Route path="/payments" component={Transactions} />
           <Route path="/refunds" component={Transactions} />

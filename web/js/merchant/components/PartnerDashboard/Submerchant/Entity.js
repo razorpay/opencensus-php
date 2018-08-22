@@ -9,7 +9,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 
 export default props => {
-  const { submerchant, isLoading, error, showFullDetails } = props;
+  const { submerchant, isLoading, error } = props;
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -65,29 +65,26 @@ export default props => {
                   )}
                 </EntityDetailRow>
 
-                <ShowWhen myRole="owner admin manager">
-                  {showFullDetails &&
-                    props.userPartnerType === 'aggregator' && (
-                      <div class="pair-group-item">
-                        {submerchant.user ? (
-                          <Fragment>
-                            <strong>{submerchant.user.email}</strong> is
-                            managing the dashboard for this merchant
-                          </Fragment>
-                        ) : (
-                          <Fragment>
-                            <a
-                              class="btn-link"
-                              onClick={props.onInviteMerchant}
-                            >
-                              Invite
-                            </a>{' '}
-                            the merchant to sign up on Razorpay, and manage the
-                            account
-                          </Fragment>
-                        )}
-                      </div>
+                <ShowWhen
+                  myRole="owner admin manager"
+                  additionalCondition={user => user.isPartner('aggregator')}
+                >
+                  <div class="pair-group-item">
+                    {submerchant.user ? (
+                      <Fragment>
+                        <strong>{submerchant.user.email}</strong> is managing
+                        the dashboard for this merchant
+                      </Fragment>
+                    ) : (
+                      <Fragment>
+                        <a class="btn-link" onClick={props.onInviteMerchant}>
+                          Invite
+                        </a>{' '}
+                        the merchant to sign up on Razorpay, and manage the
+                        account
+                      </Fragment>
                     )}
+                  </div>
                 </ShowWhen>
               </div>
             </div>
