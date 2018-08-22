@@ -625,14 +625,15 @@ class Gateway
     }
 
     /**
-     * @param $closureFunction -- any function on which we want to try retry on GatewayRequestException failure
-     * @param \Exception -- any exception that we want to catch and retry on
+     * @param array $objFunc -- this contains the class object and the function name as indexed array
+     * @param array $funcParams -- this contains the function params to be passed to the function name passed
+     * in $objFunc
+     * @param array $exceptionClassList -- list of exceptions to catch and retry on
      * @param int $maxRetryCount -- max number of retries we want and then throw exception after $maxRetryCount attempts
-     * @param ...otherParams -- this includes all the parameters we need to pass to the closure function
-     * @return $response -- return the response of the closure function
+     * @return $response -- return the response of the closure $objFunc
      * @throws Exception\GatewayRequestException
      */
-    protected function retryHandler($closureFunction, $exceptionClassList = [], $maxRetryCount = 1, ...$otherParams)
+    protected function retryHandler($objFunc, $funcParams, $exceptionClassList = [], $maxRetryCount = 1)
     {
         $currentRetryCount = 1;
 
@@ -640,7 +641,7 @@ class Gateway
         {
             try
             {
-                $response = $closureFunction(...$otherParams);
+                $response = call_user_func_array($objFunc, $funcParams);
 
                 return $response;
             }
