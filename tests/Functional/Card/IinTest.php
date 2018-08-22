@@ -147,6 +147,37 @@ class IinTest extends TestCase
         $this->assertEquals(null, $iin['issuer']);
     }
 
+    public function testGetCardPaymentFlowsFailure()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCardPaymentFlowsEmpty()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCardPaymentFlows()
+    {
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'otpelf']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

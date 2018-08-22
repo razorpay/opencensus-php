@@ -254,4 +254,57 @@ return [
             ],
         ],
     ],
+
+    'testGetCardPaymentFlowsFailure' => [
+        'request'  => [
+            'url'     => '/payment/flows',
+            'content' => [
+                'card_number' => '42123012001036275556342',
+            ],
+            'method'  => 'post',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The card number is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetCardPaymentFlowsEmpty' => [
+        'request'  => [
+            'url'     => '/payment/flows',
+            'content' => [
+                'card_number' => '4012001036275556',
+            ],
+            'method'  => 'post',
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+        ],
+    ],
+
+    'testGetCardPaymentFlows' => [
+        'request'  => [
+            'url'     => '/payment/flows',
+            'content' => [
+                'card_number' => '4012001036275556',
+            ],
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'pin' => true,
+                'otp' => true,
+            ],
+        ],
+    ],
 ];
