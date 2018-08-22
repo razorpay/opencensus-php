@@ -51,6 +51,7 @@ class Generator extends Base\Core
      * @var Subscription\Entity
      */
     protected $subscription;
+    protected $subscriptionId;
 
     /**
      * The batch entity using which invoice was created.
@@ -86,13 +87,23 @@ class Generator extends Base\Core
     }
 
     /**
-     * @param null|Subscription\Entity $subscription
+     * Argument can be subscription object (for internal API usage) or
+     * a signed subcription id (in case of a request from SubServ)
+     *
+     * @param null|Subscription\Entity|string $subscription
      *
      * @return Generator
      */
-    public function setSubscription(Subscription\Entity $subscription = null)
+    public function setSubscription($subscription = null)
     {
-        $this->subscription = $subscription;
+        if (($subscription instanceof Subscription\Entity) === true)
+        {
+            $this->subscription = $subscription;
+        }
+        else if (is_string($subscription) === true)
+        {
+            $this->subscriptionId = Subscription\Entity::verifyIdAndStripSign($subscription);
+        }
 
         return $this;
     }
@@ -165,6 +176,10 @@ class Generator extends Base\Core
             {
                 $this->invoice->setSubscriptionStatus(Status::HALTED);
             }
+        }
+        else if ($this->subscriptionId !== null)
+        {
+            $this->invoice->setSubscriptionId($this->subscriptionId);
         }
 
         if ($this->batch !== null)
