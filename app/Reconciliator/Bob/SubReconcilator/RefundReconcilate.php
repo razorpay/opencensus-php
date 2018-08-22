@@ -35,8 +35,15 @@ class RefundReconciliate extends Base\RefundReconciliate
         }
     }
 
-    protected function getReferenceNumber(array $row)
+    protected function getArn(array $row)
     {
+        $onusIndicator = $row[ReconcilationFields::ONUS_INDICATOR];
+
+        if ($onusIndicator === 'YES')
+        {
+
+        }
+
         return $row[ReconcilationFields::RRN] ?? null;
     }
 
@@ -77,15 +84,15 @@ class RefundReconciliate extends Base\RefundReconciliate
     }
 
     /**
-     * The card_fss entity ref column should be updated with rrn
+     * The card_fss entity ref column should be updated with arn
      * It should be set as ref setReferenceNumberInGateway
      * in the gateway entity.
      * @param string       $referenceNumber
      * @param PublicEntity $gatewayPayment CardFss Entity
      * */
-    protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
+    protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {
-        $gatewayPayment->setRef($referenceNumber);
+        $gatewayRefund->setRef($arn);
     }
 
     protected function getReconCurrencyCode($row)
