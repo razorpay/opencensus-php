@@ -633,7 +633,8 @@ class Gateway
      * @return $response -- return the response of the closure $objFunc
      * @throws Exception\GatewayRequestException
      */
-    protected function retryHandler($objFunc, array $funcParams, array $exceptionClassList = [], int $maxRetryCount = 1)
+    protected function retryHandler(callable $objFunc, array $funcParams, array $exceptionClassList = [],
+                                    int $maxRetryCount = 1)
     {
         $currentRetryCount = 1;
 
