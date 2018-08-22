@@ -1008,9 +1008,9 @@ export default class ActivationWizard extends React.Component {
                 // **5. Alert: Form is Submitted
 
                 icon = 'i-check';
-                msg = `Your activation form is already submitted. It usually takes ${activationDuration} for the review.`;
+                msg = `Our team will review the form and submitted documents.`;
                 secondaryMsg =
-                  'For any clarifications, we will reach out on your contact email.';
+                  'We will reach out on your contact email for all updates.';
               }
 
               {
