@@ -54,6 +54,16 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
         $this->allowForceAuthorization = $this->validatePaymentForForceAuthorize($payment);
+
+        //
+        // Calling parent function here because for this gateway allowing force authorize is conditional.
+        // If payment is not around midnight but payment is given for force_authorize in API call,
+        // we force authorize the payment. And if payment is around midnight, we don't check force_authorize input.
+        //
+        if ($this->allowForceAuthorization === false)
+        {
+            parent::setAllowForceAuthorization($payment);
+        }
     }
 
     /**
