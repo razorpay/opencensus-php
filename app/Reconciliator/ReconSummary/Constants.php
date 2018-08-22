@@ -17,6 +17,12 @@ class Constants
     const RECON_COUNT_PERCENTAGE    = 'recon_count_percentage';
     const RECON_AMOUNT_PERCENTAGE   = 'recon_amount_percentage';
 
+    // constants for input params to get recon summary
+    const TO                        = 'to';
+    const FROM                      = 'from';
+    const EMAILS                    = 'emails';
+    const ATTACH                    = 'attach';
+
     // List of gateways included in recon summary mail generation
     const GATEWAYS = [
         'ebs',
