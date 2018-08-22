@@ -304,12 +304,15 @@ class Reconciliation extends Base
 
         $forceUpdateFields = $this->settingsAccessor->get(RequestProcessor\Base::FORCE_UPDATE)->toArray();
 
+        $forceAuthorizePayments = $this->settingsAccessor->get(RequestProcessor\Base::FORCE_AUTHORIZE)->toArray();
+
         //
         // In some cases, like when batch is retried, there are no additional input_details
         // set, in the request. So we set input_details as an empty array.
         //
         $arrayContent[self::EXTRA_DETAILS][RequestProcessor\Base::INPUT_DETAILS] = [
-            RequestProcessor\Base::FORCE_UPDATE => $forceUpdateFields
+            RequestProcessor\Base::FORCE_UPDATE     => $forceUpdateFields,
+            RequestProcessor\Base::FORCE_AUTHORIZE  => $forceAuthorizePayments
         ];
     }
 

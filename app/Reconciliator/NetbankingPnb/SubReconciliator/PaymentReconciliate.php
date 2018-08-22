@@ -60,7 +60,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return intval(number_format($paymentAmount, 2, '.', ''));
     }
 
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
         $this->allowForceAuthorization = true;
     }

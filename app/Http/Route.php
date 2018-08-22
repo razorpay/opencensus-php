@@ -2312,13 +2312,12 @@ final class Route
 
     const SUBSCRIPTION_PROXY_ROUTES = [
         'plan_create',
-        'plan_create',
         'plan_fetch',
         'plan_fetch_multiple',
         'subscription_create',
         'subscription_fetch',
         'subscription_fetch_multiple',
-        'subscription_cancel',
+        // 'subscription_cancel',
         'addon_fetch',
         'addon_fetch_multiple',
         'addon_delete',

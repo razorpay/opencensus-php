@@ -161,6 +161,9 @@ class CreateInvoices extends Migration
             $table->string(Entity::CALLBACK_METHOD, 16)
                   ->nullable();
 
+            $table->string(Entity::INTERNAL_REF, 64)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
             $table->integer(Entity::DELETED_AT)
@@ -185,6 +188,7 @@ class CreateInvoices extends Migration
             $table->index(Entity::SOURCE);
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
             $table->index([Entity::MERCHANT_ID, Entity::RECEIPT]);
+            $table->index([Entity::INTERNAL_REF, Entity::MERCHANT_ID]);
             $table->index([Entity::STATUS, Entity::EXPIRE_BY, Entity::DELETED_AT]);
 
             $table->foreign(Entity::ORDER_ID)

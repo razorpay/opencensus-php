@@ -929,11 +929,12 @@ class RefundTest extends TestCase
 
     public function testFetchRefundById()
     {
+        $this->fixtures->merchant->addFeatures(['expose_arn_refund']);
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
 
         $actual = $rfnd->toArrayPublic();
-        $actual['acquirer_data'] = $actual['acquirer_data']->toArray();
+        $actual['acquirer_data'] = $rfnd->getAcquirerData()->toArray();
 
         $refund = $this->getEntityById('refund', $rfnd['public_id']);
         $this->assertArraySelectiveEquals($actual, $refund);

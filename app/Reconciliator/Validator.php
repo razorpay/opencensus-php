@@ -120,9 +120,11 @@ class Validator
     ];
 
     const MANUAL_INPUT_RULES = [
-        RequestProcessor\Base::ATTACHMENT_COUNT    => 'required|integer|min:0|max:10',
-        RequestProcessor\Base::GATEWAY             => 'required|custom',
-        RequestProcessor\Base::FORCE_UPDATE        => 'sometimes|custom',
+        RequestProcessor\Base::ATTACHMENT_COUNT         => 'required|integer|min:0|max:10',
+        RequestProcessor\Base::GATEWAY                  => 'required|custom',
+        RequestProcessor\Base::FORCE_UPDATE             => 'sometimes|custom',
+        RequestProcessor\Base::FORCE_AUTHORIZE          => 'sometimes',
+        RequestProcessor\Base::FORCE_AUTHORIZE . '.*'   => 'sometimes|public_id'
     ];
 
     public function filterEmails(array $emailDetails)
