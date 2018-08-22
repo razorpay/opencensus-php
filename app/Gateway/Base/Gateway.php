@@ -645,15 +645,18 @@ class Gateway
             }
             catch (\Exception $exc)
             {
-                if (in_array(get_class($exc), $exceptionClassList))
+                if (in_array(get_class($exc), $exceptionClassList, true) === true)
                 {
                     if ($currentRetryCount < $maxRetryCount)
                     {
                         $currentRetryCount++;
 
+                        $this->trace->info(TraceCode::FIRST_DATA_CAPTURE_ERROR, [$this->input, $this->action]);
+
                         continue;
                     }
                 }
+
                 throw $exc;
             }
         }
