@@ -286,7 +286,7 @@ export default class Content extends Component {
   }
 }
 
-const ShowWhenRoute = ({ component: Component, ...rest }) => (
+export const ShowWhenRoute = ({ component: Component, ...rest }) => (
   <Route
     {...rest}
     render={props =>

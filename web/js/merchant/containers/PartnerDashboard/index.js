@@ -2,7 +2,8 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 
-import TestModeBanner from 'merchant/containers/TestModeBanner';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { ShowWhenRoute } from 'merchant/components/Content';
 
 import SubMerchantList from './SubMerchant/List';
 import Settings from './Settings';
@@ -20,15 +21,23 @@ export default class PartnerDashboard extends Component {
           <NavLink exact to="/submerchants">
             Affiliated Accounts
           </NavLink>
-          {isSettingsAccessible && (
+          <ShowWhen
+            additionalCondition={user =>
+              user.isPartner('aggregator', 'fully_managed')
+            }
+          >
             <NavLink to="/submerchants/settings">Settings</NavLink>
-          )}
+          </ShowWhen>
         </header>
         <content>
           <Switch>
-            {isSettingsAccessible && (
-              <Route path="/submerchants/settings" component={Settings} />
-            )}
+            <ShowWhenRoute
+              additionalCondition={user =>
+                user.isPartner('aggregator', 'fully_managed')
+              }
+              path="/submerchants/settings"
+              component={Settings}
+            />
             <Route path="/submerchants" component={SubMerchantList} />
           </Switch>
         </content>
