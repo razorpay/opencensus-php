@@ -631,7 +631,7 @@ class Gateway
      * @return $response -- return the response of the closure function
      * @throws Exception\GatewayRequestException
      */
-    protected function retryHandler($closureFunction, $exceptionClass, $maxRetryCount = 3)
+    protected function retryHandler($closureFunction, $exceptionClass = null, $maxRetryCount = 1)
     {
         $currentRetryCount = 1;
 
