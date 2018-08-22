@@ -814,6 +814,7 @@ final class Route
         // TODO: Should change to just /signed_url (No 'get' and underscore)
         'ufh_get_file_signed_url'                  => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
 
+        'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -1605,6 +1606,7 @@ final class Route
         'shield_rules_delete',
         'shield_rules_evaluate',
 
+        'razorx_route',
         'user_fetch_admin',
         'merchant_requests_list',
         'merchant_requests_update',
@@ -1955,6 +1957,7 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
+        'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'invoice_issue_by_batch'                   => '*',
         'invoice_notify_by_batch'                  => '*',
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
@@ -2544,6 +2547,12 @@ final class Route
         $methods = explode(',', $info[0]);
         $uri     = $info[1];
         $action  = $info[2];
+
+        // For any we have to register all the methods their is no specific called any in HTTP methods.
+        if ($methods === ['any'])
+        {
+            $methods = Router::$verbs;
+        }
 
         $router = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
 
