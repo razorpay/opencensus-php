@@ -1,10 +1,15 @@
 import React from 'react';
-import Field, { FileField, SelectField, SelectMode } from 'ui/Field';
+import Field, {
+  FileField,
+  SelectField,
+  SelectMode,
+  TextAreaField,
+} from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import Form from 'ui/Form';
 import { notifySuccess, notifyError, closeModal } from 'common/modal';
-
-import { adminFormUpload } from 'common/fetch';
+import { splitAndFilter } from 'common/util';
+import { adminFormUpload3 } from 'common/fetch';
 
 const gateWayOptions = [
   'HDFC',
@@ -64,7 +69,11 @@ export default function UploadReconciliationFile() {
         ))}
       </SelectField>
       <FileField multiple label="Attach Multiple Files" name="files" />
-      <Field name="force_authorization" />
+      <TextAreaField
+        label="Force Authorization"
+        name="force_authorization"
+        placeholder="Enter comma separated ids"
+      />
       <AsyncButton
         text="Upload"
         class="btn"
@@ -81,13 +90,16 @@ export default function UploadReconciliationFile() {
             gateway: data.gateway,
           };
           if (data.force_authorization) {
-            form.force_authorization = data.force_authorization.split(',');
+            form.force_authorization = splitAndFilter(
+              data.force_authorization,
+              ','
+            );
           }
           for (let i = 0; i < files.length; i++) {
             if (files[i]) form['attachment-' + (i + 1)] = files[i];
           }
 
-          return adminFormUpload(
+          return adminFormUpload3(
             form,
             '/admin/' + data.mode + '/reconciliate'
           ).then(response => {
