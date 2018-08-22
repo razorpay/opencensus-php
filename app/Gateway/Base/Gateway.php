@@ -628,10 +628,11 @@ class Gateway
      * @param $closureFunction -- any function on which we want to try retry on GatewayRequestException failure
      * @param \Exception -- any exception that we want to catch and retry on
      * @param int $maxRetryCount -- max number of retries we want and then throw exception after $maxRetryCount attempts
+     * @param ...otherParams -- this includes all the parameters we need to pass to the closure function
      * @return $response -- return the response of the closure function
      * @throws Exception\GatewayRequestException
      */
-    protected function retryHandler($closureFunction, $exceptionClassList = [], $maxRetryCount = 1)
+    protected function retryHandler($closureFunction, $exceptionClassList = [], $maxRetryCount = 1, ...$otherParams)
     {
         $currentRetryCount = 1;
 
@@ -639,7 +640,7 @@ class Gateway
         {
             try
             {
-                $response = $closureFunction();
+                $response = $closureFunction(...$otherParams);
 
                 return $response;
             }
