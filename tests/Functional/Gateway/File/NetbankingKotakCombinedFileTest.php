@@ -94,6 +94,13 @@ class NetbankingKotakCombinedFileTest extends TestCase
 
             $this->checkRefundsFile($mail->viewData['refundsFile']);
 
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
+
             return true;
         });
     }
@@ -174,6 +181,13 @@ class NetbankingKotakCombinedFileTest extends TestCase
             $this->checkClaimsFile($mail->viewData['claimsFile']);
 
             $this->checkRefundsFile($mail->viewData['refundsFile']);
+
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
 
             return true;
         });

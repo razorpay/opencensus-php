@@ -3,10 +3,14 @@
 namespace RZP\Models\Gateway\File\Processor;
 
 use RZP\Exception;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Core;
 use RZP\Models\FileStore;
 use RZP\Models\Gateway\File;
+use RZP\Constants\Entity as E;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\File\Type;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
@@ -209,5 +213,32 @@ abstract class Base extends Core
         }
 
         return null;
+    }
+
+    /**
+     * This function is marking all the netbanking refunds sent in gateway file as reconciled.
+     * As we are sending refunds to bank and there is no acknowledgment of actual processing from bank side,
+     * after sending file we mark them as reconciled, assuming refunds are processed at bank side.
+     *
+     * @param $data
+     */
+    protected function reconcileNetbankingRefunds(array $data)
+    {
+        $refundIds = [];
+
+        foreach ($data as $refundData)
+        {
+            $gateway = $refundData[E::PAYMENT][Payment\Entity::GATEWAY] ?? null;
+
+            if (in_array($gateway, Gateway::$refundFileNetbankingGateways, true) === true)
+            {
+                $refundIds[] = $refundData[E::REFUND][Refund\Entity::ID];
+            }
+        }
+
+        if (empty($refundIds) === false)
+        {
+            $this->repo->transaction->bulkReconciliationUpdate($refundIds);
+        }
     }
 }
