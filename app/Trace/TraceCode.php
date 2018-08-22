@@ -882,6 +882,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHIELD_JOB_RECEIVED                           = 'SHIELD_JOB_RECEIVED';
     const SHIELD_JOB_ERROR                              = 'SHIELD_JOB_ERROR';
     const SHIELD_JOB_DISPATCH_ERROR                     = 'SHIELD_JOB_DISPATCH_ERROR';
+    const FRAUD_DETECTION_STARTED                       = 'FRAUD_DETECTION_STARTED';
+    const FRAUD_DETECTION_DONE                          = 'FRAUD_DETECTION_DONE';
+    const FRAUD_DETECTION_FAILED                        = 'FRAUD_DETECTION_FAILED';
+    const FRAUD_DETECTION_SKIPPED                       = 'FRAUD_DETECTION_SKIPPED';
 
     const BATCH_FILE_DELETE_ERROR                       = 'BATCH_FILE_DELETE_ERROR';
 
