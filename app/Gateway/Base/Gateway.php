@@ -651,17 +651,14 @@ class Gateway
             {
                 if (get_class($exc) === $exceptionClass)
                 {
-                    if ($currentRetryCount >= $maxRetryCount)
+                    if ($currentRetryCount < $maxRetryCount)
                     {
-                        throw $exc;
-                    }
+                        $currentRetryCount++;
 
-                    $currentRetryCount++;
+                        continue;
+                    }
                 }
-                else
-                {
-                    throw $exc;
-                }
+                throw $exc;
             }
         }
     }
