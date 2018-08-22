@@ -77,6 +77,7 @@ class Gateway
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
+    const NODAL_YESBANK      = 'nodal_yesbank';
 
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],

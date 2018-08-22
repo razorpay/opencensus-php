@@ -363,6 +363,7 @@ class UpiIciciGatewayReconTest extends TestCase
                             'merchant_id' => Merchant\Account::TEST_ACCOUNT,
                             'amount'      => $this->payment['amount'],
                             'base_amount' => $this->payment['amount'],
+                            'gateway'     => 'upi_icici',
                         ]);
 
             $transaction = $this->fixtures->create(

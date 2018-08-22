@@ -4174,3 +4174,7 @@ ALTER TABLE bank_transfers
 ALTER TABLE invoices
     ADD COLUMN internal_ref VARCHAR(64) DEFAULT NULL AFTER CALLBACK_METHOD,
     ADD INDEX invoices_internal_ref_merchant_id_index (internal_ref, merchant_id);
+
+ALTER TABLE refunds
+    ADD INDEX `refunds_gateway_index` (`gateway`);
+
