@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
+use RZP\Models\Risk;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -126,7 +127,7 @@ class FraudDetectionTest extends TestCase
         unset($payment['card']);
         unset($payment['bank']);
 
-        $payment['token'] = $paymentEntity['token_id'];;
+        $payment['token'] = $paymentEntity['token_id'];
 
         $this->ba->privateAuth();
 
@@ -149,5 +150,49 @@ class FraudDetectionTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    public function testFraudDetectedByShield()
+    {
+        $this->mockShield();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4012010000000007';
+
+        $data = $this->testData['testFraudDetected'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals(
+            Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD,
+            $riskEntity['reason']
+        );
+    }
+
+    public function testFraudNotDetectedByShield()
+    {
+        $this->mockShield();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PRE_AUTH_SHIELD_INTG]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '5105105105105100';
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
     }
 }
