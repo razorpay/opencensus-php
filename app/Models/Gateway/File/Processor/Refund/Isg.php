@@ -5,19 +5,25 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 use Carbon\Carbon;
 
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
+use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Isg extends Base
 {
     use FileHandler;
 
-    const FILE_NAME              = 'Refund';
-    const EXTENSION              = FileStore\Format::CSV;
-    const FILE_TYPE              = FileStore\Type::ISG_REFUND;
-    const GATEWAY                = Payment\Gateway::ISG;
+    const FILE_NAME_REFUND              = 'Refund';
+    const FILE_NAME_SUMMARY             = 'Summary';
+    const EXTENSION_REFUND              = FileStore\Format::CSV;
+    const EXTENSION_SUMMARY             = FileStore\Format::TXT;
+    const FILE_TYPE_REFUND              = FileStore\Type::ISG_REFUND;
+    const FILE_TYPE_SUMMARY             = FileStore\Type::ISG_SUMMARY;
+    const GATEWAY                       = Payment\Gateway::ISG;
 
     const REFUND_ID                     = 'RFD_TXN_ID';
     const MERCHANT_PAN                  = 'MERCHANT_PAN';
@@ -50,7 +56,67 @@ class Isg extends Base
         return $refunds;
     }
 
-    protected function formatDataForFile(array $data)
+    public function createFile($data)
+    {
+        // Don't process further if file is already generated
+        if ($this->isFileGenerated() === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $refundFileData = $this->formatDataForRefundFile($data);
+
+            $refundFileName = $this->getRefundFileToWriteNameWithoutExt();
+
+            $creator = new FileStore\Creator;
+
+            $creator->extension(self::EXTENSION_REFUND)
+                ->content($refundFileData)
+                ->name($refundFileName)
+                ->store(FileStore\Store::S3)
+                ->type(self::FILE_TYPE_REFUND)
+                ->entity($this->gatewayFile)
+                ->save();
+
+            $file = $creator->getFileInstance();
+
+            $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
+
+            $summaryFileData = $this->formatDataForSummaryFile(count($data));
+
+            $summaryFileName = $this->getSummaryFileToWriteNameWithoutExt();
+
+            $creator = new FileStore\Creator;
+
+            $creator->extension(self::EXTENSION_SUMMARY)
+                ->content($summaryFileData)
+                ->name($summaryFileName)
+                ->store(FileStore\Store::S3)
+                ->type(self::FILE_TYPE_SUMMARY)
+                ->entity($this->gatewayFile)
+                ->save();
+
+            $file = $creator->getFileInstance();
+
+            $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
+
+            $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+        }
+
+        catch (\Throwable $e)
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id'        => $this->gatewayFile->getId(),
+                ],
+                $e);
+        }
+    }
+
+    protected function formatDataForRefundFile(array $data)
     {
         foreach ($data as $row)
         {
@@ -77,32 +143,62 @@ class Isg extends Base
         return $formattedData;
     }
 
+    protected function formatDataForSummaryFile($count)
+    {
+        $data = 'Total Refunds Records : ' . $count;
+
+        return $data;
+    }
+
     protected function formatDataForMail(array $data)
     {
-        $file = $this->gatewayFile
-                     ->files()
-                     ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                     ->first();
+        $refundFile = $this->gatewayFile
+                    ->files()
+                    ->where(FileStore\Entity::TYPE, static::FILE_TYPE_REFUND)
+                    ->first();
 
-        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+        $summaryFile = $this->gatewayFile
+                    ->files()
+                    ->where(FileStore\Entity::TYPE, static::FILE_TYPE_SUMMARY)
+                    ->first();
+
+        $signedUrlRefund = (new FileStore\Accessor)->getSignedUrlOfFile($refundFile);
+
+        $signedUrlSummary = (new FileStore\Accessor)->getSignedUrlOfFile($summaryFile);
 
         $today = Carbon::now(Timezone::IST)->format('jS F Y');
 
         $mailData = [
-            'file_name'  => $file->getLocation(),
-            'signed_url' => $signedUrl,
             'count'      => count($data),
+        ];
+
+        $mailData[] = [
+            'file_name'  => $refundFile->getLocation(),
+            'signed_url' => $signedUrlRefund,
+            'date'       => $today
+        ];
+
+        $mailData[] = [
+            'file_name'  => $summaryFile->getLocation(),
+            'signed_url' => $signedUrlSummary,
             'date'       => $today
         ];
 
         return $mailData;
     }
 
-    protected function getFileToWriteNameWithoutExt()
+    protected function getRefundFileToWriteNameWithoutExt()
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        return self::FILE_NAME . '_' . $date;
+        return self::FILE_NAME_REFUND . '_' . $date;
+    }
+
+    protected function getSummaryFileToWriteNameWithoutExt()
+    {
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+
+        return self::FILE_NAME_SUMMARY . '_' . $date;
     }
 
     protected function formatAmount($amount)

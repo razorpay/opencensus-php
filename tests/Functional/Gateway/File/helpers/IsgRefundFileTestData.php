@@ -4,7 +4,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 return [
-    'testBharatQrIsgRefundFile' => [
+    'testIsgRefundFile' => [
         'request' => [
             'content' => [
                 'type'    => 'refund',

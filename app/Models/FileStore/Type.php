@@ -31,6 +31,7 @@ class Type
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
     const ISG_REFUND                        = 'isg_refund';
+    const ISG_SUMMARY                       = 'isg_summary';
 
     const AXIS_NETBANKING_CLAIMS            = 'axis_netbanking_claims';
 
@@ -186,6 +187,7 @@ class Type
             self::GATEWAY_FAILED_REFUNDS,
             self::OBC_NETBANKING_REFUND,
             self::ISG_REFUND,
+            self::ISG_SUMMARY,
         ],
 
         Constants\Entity::BATCH => [
@@ -281,6 +283,7 @@ class Type
         self::GATEWAY_FAILED_REFUNDS,
         self::OBC_NETBANKING_REFUND,
         self::ISG_REFUND,
+        self::ISG_SUMMARY,
     ];
 
     /**

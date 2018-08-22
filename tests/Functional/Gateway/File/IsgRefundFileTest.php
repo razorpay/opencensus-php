@@ -36,7 +36,7 @@ class IsgRefundFileTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
     }
 
-    public function testBharatQrIsgRefundFile()
+    public function testIsgRefundFile()
     {
         Mail::fake();
 
@@ -66,13 +66,23 @@ class IsgRefundFileTest extends TestCase
         $time = Carbon::now(Timezone::IST)->format('dmY');
 
         $expectedFilesContent = [
-            'type' => 'isg_refund',
-            'location' => 'Refund' . '_' . $time . '.csv',
+            'entity' => 'collection',
+            'count' => 2,
+            'items' => [
+                [
+                    'type' => 'isg_summary',
+                    'location' => 'Summary' . '_' . $time . '.txt',
+                ],
+                [
+                    'type' => 'isg_refund',
+                    'location' => 'Refund' . '_' . $time . '.csv',
+                ],
+            ],
         ];
 
-        $file = $this->getLastEntity('file_store', true);
+        $files = $this->getEntities('file_store', ['count' => 2], true);
 
-        $this->assertArraySelectiveEquals($expectedFilesContent, $file);
+        $this->assertArraySelectiveEquals($expectedFilesContent, $files);
 
         Mail::assertQueued(RefundFileMail::class, function ($mail)
         {
@@ -89,9 +99,11 @@ class IsgRefundFileTest extends TestCase
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-            $this->checkRefundsFile($mail->viewData['signed_url']);
+            $this->checkRefundsFile($mail->viewData[0]['signed_url']);
 
-            $this->assertCount(1, $mail->attachments);
+            $this->checkSummaryFile($mail->viewData[1]['signed_url']);
+
+            $this->assertCount(2, $mail->attachments);
 
             return true;
         });
@@ -128,6 +140,13 @@ class IsgRefundFileTest extends TestCase
         $this->assertCount(3, $fileContents);
 
         $this->assertCount(8, $fileContents[0]);
+    }
+
+    protected function checkSummaryFile($filePath)
+    {
+        $fileContents = \file($filePath);
+
+        $this->assertNotNull($fileContents);
     }
 
     public function formatAmount($amount)
