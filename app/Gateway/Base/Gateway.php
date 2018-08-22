@@ -633,8 +633,8 @@ class Gateway
      * @return $response -- return the response of the closure $objFunc
      * @throws Exception\GatewayRequestException
      */
-    protected function retryHandler(callable $objFunc, array $funcParams, array $exceptionClassList = [],
-                                    int $maxRetryCount = 1)
+    protected function retryHandler(callable $callable, array $arguments, array $exceptionClasses = [],
+                                    int $retryCount = 1)
     {
         $currentRetryCount = 1;
 
@@ -642,15 +642,15 @@ class Gateway
         {
             try
             {
-                $response = call_user_func_array($objFunc, $funcParams);
+                $response = call_user_func_array($callable, $arguments);
 
                 return $response;
             }
             catch (\Exception $exc)
             {
-                if (in_array(get_class($exc), $exceptionClassList, true) === true)
+                if (in_array(get_class($exc), $exceptionClasses, true) === true)
                 {
-                    if ($currentRetryCount < $maxRetryCount)
+                    if ($currentRetryCount < $retryCount)
                     {
                         $currentRetryCount++;
 
