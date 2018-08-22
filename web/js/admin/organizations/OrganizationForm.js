@@ -16,6 +16,7 @@ export default function OrgForm({
   handleSave,
   onFileUpload,
   filesURL,
+  uploadingFiles,
 }) {
   return (
     <div class="box">
@@ -109,10 +110,14 @@ export default function OrgForm({
                     label={`${titleCase(type)} Logo`}
                     class="orgs-file"
                     accept="image/jpeg,image/jpg,image/png"
+                    disabled={uploadingFiles.indexOf(`${type}_logo_url`) > -1}
                     onChange={e =>
                       onFileUpload(e.target.files[0], `${type}_logo`, type)
                     }
                   />
+                  {uploadingFiles.indexOf(`${type}_logo_url`) > -1 && (
+                    <span class="spinner" style={{ verticalAlign: 'top' }} />
+                  )}
                 </div>
               ))}
             </div>
@@ -182,10 +187,11 @@ export default function OrgForm({
         </div>
         <div class="orgs-form-btn">
           <AsyncButton
-            text="Save"
+            text={uploadingFiles.length ? 'Uploading File ...' : 'Save'}
             class="btn"
             pendingClass="small spinner"
             onSubmit={handleSave}
+            disabled={!!uploadingFiles.length}
           />
         </div>
       </Form>
