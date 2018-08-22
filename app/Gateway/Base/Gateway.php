@@ -654,7 +654,7 @@ class Gateway
                     {
                         $currentRetryCount++;
 
-                        $this->trace->info(TraceCode::FIRST_DATA_CAPTURE_ERROR, [$this->input, $this->action]);
+                        $this->trace->traceException($exc);
 
                         continue;
                     }

@@ -1180,8 +1180,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED   = 'SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED';
 
-    const FIRST_DATA_CAPTURE_ERROR                      = 'FIRST_DATA_CAPTURE_ERROR';
-
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -1329,8 +1327,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::GRATIS_TO_POSTPAID_RESPONSE               => 'Gratis to postpaid response',
 
         self::GATEWAY_ERROR_METRIC_DIMENSION_FETCH      => 'Exception fetching metric dimensions',
-
-        self::FIRST_DATA_CAPTURE_ERROR                  => 'Exception while capture call of First Data',
     );
 
     /**
