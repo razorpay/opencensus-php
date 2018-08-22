@@ -147,7 +147,11 @@ export default class Content extends Component {
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
-          <Redirect from="/" exact to="/dashboard" />
+          <Redirect
+            to={user.isPartner() ? 'submerchants' : '/dashboard'}
+            from="/"
+            exact
+          />
 
           <ShowWhenRoute
             path="/submerchants"
