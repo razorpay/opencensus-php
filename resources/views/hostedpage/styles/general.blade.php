@@ -157,6 +157,20 @@
         padding: 10px 16px;
         border-radius: 2px;
         overflow: auto;
+        position: relative;
+    }
+
+    .btn::after {
+        content: '';
+        position: absolute;
+        width: 100%; height:100%;
+        top:0; left:0;
+        background:rgba(0,0,0,0.1);
+        opacity: 0;
+    }
+
+    .btn:focus::after {
+        opacity: 1;
     }
 
     .btn-link {
