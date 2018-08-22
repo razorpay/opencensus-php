@@ -9,9 +9,9 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Esigner\Base;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Bank\Name as BankName;
 use RZP\Gateway\Enach\Base\CategoryCode;
@@ -19,22 +19,6 @@ use RZP\Gateway\Enach\Base\CategoryCode;
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'esigner_legaldesk';
-
-    protected $map = [
-        RequestFields::DEBTOR_ACCOUNT_TYPE        => Base\Entity::ACCOUNT_TYPE,
-        RequestFields::DEBTOR_ACCOUNT_ID          => Base\Entity::ACCOUNT_NUMBER,
-        RequestFields::INSTRUCTED_AGENT_ID_TYPE   => Base\Entity::AGENT_TYPE,
-        RequestFields::INSTRUCTED_AGENT_ID        => Base\Entity::AGENT_ID,
-        RequestFields::INSTRUCTED_AGENT_NAME      => Base\Entity::AGENT_NAME,
-        RequestFields::OCCURANCE_SEQUENCE_TYPE    => Base\Entity::SEQUENCE_TYPE,
-        RequestFields::OCCURANCE_FREQUENCY_TYPE   => Base\Entity::FREQUENCY_TYPE,
-        RequestFields::FIRST_COLLECTION_DATE      => Base\Entity::START_DATE,
-        RequestFields::FINAL_COLLECTION_DATE      => Base\Entity::END_DATE,
-        RequestFields::COLLECTION_AMOUNT_TYPE     => Base\Entity::AMOUNT_TYPE,
-        RequestFields::AMOUNT                     => Base\Entity::AMOUNT,
-        RequestFields::MANDATE_TYPE_CATEGORY_CODE => Base\Entity::CATEGORY_CODE,
-        RequestFields::EMANDATE_ID                => Base\Entity::MANDATE_ID,
-    ];
 
     /**
      * @param array $input
@@ -47,7 +31,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        list($request, $gatewayPayment) = $this->getMandateCreationRequestArray($input);
+        $request = $this->getMandateCreationRequestArray($input);
 
         $this->trace->info(
             TraceCode::GATEWAY_MANDATE_REQUEST,
@@ -61,8 +45,6 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $response = json_decode($response->body, true);
-
-        $this->updateGatewayPaymentEntity($gatewayPayment, $response);
 
         $this->trace->info(
             TraceCode::GATEWAY_MANDATE_RESPONSE,
@@ -80,7 +62,7 @@ class Gateway extends Base\Gateway
                 $response[ResponseFields::ERROR],
                 [
                     'payment_id'             => $input['payment']['id'],
-                'token_id'                   => $input['token']['id'],
+                    'token_id'               => $input['token']['id'],
                     'mandate_crete_response' => $response,
                 ]);
         }
@@ -300,12 +282,7 @@ class Gateway extends Base\Gateway
             RequestFields::CALLBACK_URL               => $this->input['callbackUrl'],
         ];
 
-        $gatewayPayment = $this->createGatewayPaymentEntity($content);
-
-        return [
-            $this->getStandardRequestArray($content, 'POST', 'create'),
-            $gatewayPayment
-        ];
+        return $this->getStandardRequestArray($content, 'POST', 'create');
     }
 
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null, $json = true)
@@ -365,5 +342,10 @@ class Gateway extends Base\Gateway
         $dt = Carbon::createFromTimestamp($paymentCreatedAt, Timezone::IST);
 
         return Holidays::getNextWorkingDay($dt);
+    }
+
+    protected function getRepository()
+    {
+        return;
     }
 }

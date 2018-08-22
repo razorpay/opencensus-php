@@ -54,11 +54,16 @@ class Server extends Base\Mock\Server
             'emandate_id' => $input['mandate_id'],
         ];
 
-        $enachEntity = $this->app['repo']->esigner->findByMandateIdAndAction($input['mandate_id'], 'authorize');
+        // In tests we create a payment with the gateway Legaldesk, however when testing it via mocks
+        // out of the tests, the payment would be having the gateway Enach RBL
+        $payment = $this->app['repo']->payment->getLastCreatedPaymentByGateway(Payment\Gateway::ESIGNER_LEGALDESK);
 
-        $paymentId = Payment\Entity::getSignedId($enachEntity['payment_id']);
+        if ($payment === null)
+        {
+            $payment = $this->app['repo']->payment->getLastCreatedPaymentByGateway(Payment\Gateway::ENACH_RBL);
+        }
 
-        $callbackUrl = $this->route->getPublicCallbackUrlWithHash($paymentId);
+        $callbackUrl = $this->route->getPublicCallbackUrlWithHash($payment[Payment\Entity::PUBLIC_ID]);
 
         $request = [
             'url' => $callbackUrl,
