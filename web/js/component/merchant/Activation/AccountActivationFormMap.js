@@ -13,8 +13,6 @@ const NGO = 7; // 'NGO'
 //const Educational_Institute = 8 // Removed now
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
-const NOT_REGISTERED = 11; // 'Society'
-//const Others = 12 // Removed now
 
 // For marketplace linked account which required kyc
 const needsKYC = activation => !!activation.props.data.need_kyc;
@@ -35,7 +33,6 @@ const businessFields = [
       { label: 'Proprietorship', name: PROPRIETORSHIP },
       { label: 'Partnership', name: PARTNERSHIP },
       { label: 'Individual', name: INDIVIDUAL },
-      { label: 'Not yet registered', name: NOT_REGISTERED },
       { label: 'Public Limited', name: PUBLIC },
       { label: 'LLP', name: LLP },
       { label: 'Trust', name: TRUST },
