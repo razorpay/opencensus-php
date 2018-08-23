@@ -9,6 +9,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as EnachRblDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
+use RZP\Gateway\Netbanking\Axis\EMandateDebitReconFileHeadings as AxisEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
 class Header
@@ -172,6 +173,23 @@ class Header
     const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
     const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
     const HDFC_EM_DEBIT_NARRATION           = HdfcEMDebitHeadings::NARRATION;
+
+    //
+    // AXIS Emandate Debit Response File Headers
+    //
+    const AXIS_EM_DEBIT_HEADING_PAYMENT_ID         = AxisEMDebitHeadings::HEADING_PAYMENT_ID;
+    const AXIS_EM_DEBIT_HEADING_DEBIT_DATE         = AxisEMDebitHeadings::HEADING_DEBIT_DATE;
+    const AXIS_EM_DEBIT_HEADING_MERCHANT_ID        = AxisEMDebitHeadings::HEADING_MERCHANT_ID;
+    const AXIS_EM_DEBIT_HEADING_BANK_REF_NUMBER    = AxisEMDebitHeadings::HEADING_BANK_REF_NUMBER;
+    const AXIS_EM_DEBIT_HEADING_CUSTOMER_NAME      = AxisEMDebitHeadings::HEADING_CUSTOMER_NAME;
+    const AXIS_EM_DEBIT_HEADING_DEBIT_ACCOUNT      = AxisEMDebitHeadings::HEADING_DEBIT_ACCOUNT;
+    const AXIS_EM_DEBIT_HEADING_DEBIT_AMOUNT       = AxisEMDebitHeadings::HEADING_DEBIT_AMOUNT;
+    const AXIS_EM_DB_HEADING_MIS_INFO3             = AxisEMDebitHeadings::HEADING_MIS_INFO3;
+    const AXIS_EM_DEBIT_HEADING_MIS_INFO4          = AxisEMDebitHeadings::HEADING_MIS_INFO4;
+    const AXIS_EM_DEBIT_HEADING_FILE_REF           = AxisEMDebitHeadings::HEADING_FILE_REF;
+    const AXIS_EM_DEBIT_HEADING_STATUS             = AxisEMDebitHeadings::HEADING_STATUS;
+    const AXIS_EM_DEBIT_HEADING_REMARK             = AxisEMDebitHeadings::HEADING_REMARK;
+    const AXIS_EM_DEBIT_HEADING_RECORD_IDENTIFIER  = AxisEMDebitHeadings::HEADING_RECORD_IDENTIFIER;
 
     //
     // eNach Acknowledgement Response File Headers
@@ -474,6 +492,24 @@ class Header
                 self::HDFC_EM_DEBIT_STATUS,
                 self::HDFC_EM_DEBIT_REJECTION_REMARKS,
                 self::HDFC_EM_DEBIT_NARRATION,
+            ]
+        ],
+
+        'emandate_debit_axis' => [
+            self::INPUT => [
+                self::AXIS_EM_DEBIT_HEADING_PAYMENT_ID,
+                self::AXIS_EM_DEBIT_HEADING_DEBIT_DATE,
+                self::AXIS_EM_DEBIT_HEADING_MERCHANT_ID,
+                self::AXIS_EM_DEBIT_HEADING_BANK_REF_NUMBER,
+                self::AXIS_EM_DEBIT_HEADING_CUSTOMER_NAME,
+                self::AXIS_EM_DEBIT_HEADING_DEBIT_ACCOUNT,
+                self::AXIS_EM_DEBIT_HEADING_DEBIT_AMOUNT,
+                self::AXIS_EM_DB_HEADING_MIS_INFO3,
+                self::AXIS_EM_DEBIT_HEADING_MIS_INFO4,
+                self::AXIS_EM_DEBIT_HEADING_FILE_REF,
+                self::AXIS_EM_DEBIT_HEADING_STATUS,
+                self::AXIS_EM_DEBIT_HEADING_REMARK,
+                self::AXIS_EM_DEBIT_HEADING_RECORD_IDENTIFIER,
             ]
         ],
 
