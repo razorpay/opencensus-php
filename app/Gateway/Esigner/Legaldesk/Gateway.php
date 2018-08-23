@@ -9,7 +9,10 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
-use RZP\Gateway\Esigner\Base;
+
+use RZP\Gateway\Base;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Bank\Name as BankName;
 use RZP\Gateway\Enach\Base\CategoryCode;
@@ -17,22 +20,6 @@ use RZP\Gateway\Enach\Base\CategoryCode;
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'esigner_legaldesk';
-
-    protected $map = [
-        RequestFields::DEBTOR_ACCOUNT_TYPE        => Base\Entity::ACCOUNT_TYPE,
-        RequestFields::DEBTOR_ACCOUNT_ID          => Base\Entity::ACCOUNT_NUMBER,
-        RequestFields::INSTRUCTED_AGENT_ID_TYPE   => Base\Entity::AGENT_TYPE,
-        RequestFields::INSTRUCTED_AGENT_ID        => Base\Entity::AGENT_ID,
-        RequestFields::INSTRUCTED_AGENT_NAME      => Base\Entity::AGENT_NAME,
-        RequestFields::OCCURANCE_SEQUENCE_TYPE    => Base\Entity::SEQUENCE_TYPE,
-        RequestFields::OCCURANCE_FREQUENCY_TYPE   => Base\Entity::FREQUENCY_TYPE,
-        RequestFields::FIRST_COLLECTION_DATE      => Base\Entity::START_DATE,
-        RequestFields::FINAL_COLLECTION_DATE      => Base\Entity::END_DATE,
-        RequestFields::COLLECTION_AMOUNT_TYPE     => Base\Entity::AMOUNT_TYPE,
-        RequestFields::AMOUNT                     => Base\Entity::AMOUNT,
-        RequestFields::MANDATE_TYPE_CATEGORY_CODE => Base\Entity::CATEGORY_CODE,
-        RequestFields::EMANDATE_ID                => Base\Entity::MANDATE_ID,
-    ];
 
     /**
      * @param array $input
@@ -45,23 +32,28 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        list($request, $gatewayPayment) = $this->getMandateCreationRequestArray($input);
+        $request = $this->getMandateCreationRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_MANDATE_REQUEST, [
-            'gateway' => $this->gateway,
-            'payment_id' => $input['payment']['id'],
-            'request' => $request]);
+        $this->trace->info(
+            TraceCode::GATEWAY_MANDATE_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'request'    => $request
+            ]
+        );
 
         $response = $this->sendGatewayRequest($request);
 
         $response = json_decode($response->body, true);
 
-        $this->updateGatewayPaymentEntity($gatewayPayment, $response);
-
-        $this->trace->info(TraceCode::GATEWAY_MANDATE_RESPONSE, [
-            'gateway'    => $this->gateway,
-            'payment_id' => $input['payment']['id'],
-            'response'   => $response]
+        $this->trace->info(
+            TraceCode::GATEWAY_MANDATE_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'response'   => $response
+            ]
         );
 
         if ($response[ResponseFields::STATUS] !== Status::SUCCESS)
@@ -71,7 +63,7 @@ class Gateway extends Base\Gateway
                 $response[ResponseFields::ERROR],
                 [
                     'payment_id'             => $input['payment']['id'],
-                'token_id'                   => $input['token']['id'],
+                    'token_id'               => $input['token']['id'],
                     'mandate_crete_response' => $response,
                 ]);
         }
@@ -108,11 +100,7 @@ class Gateway extends Base\Gateway
             );
         }
 
-        $request = $this->getMandateFetchRequestArray($input);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $response = json_decode($response->body, true);
+        $response = $this->getMandateStatusAndSignedXml($input['gateway']['emandate_id'], $input);
 
         if ($response[ResponseFields::STATUS] != Status::SUCCESS)
         {
@@ -144,6 +132,76 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->throwExceptionOnMismatch = false;
+
+        $verifyResponse = $this->runPaymentVerifyFlow($verify);
+
+        $signedXml = base64_decode($verify->verifyResponseContent[ResponseFields::CONTENT]) ?? null;
+
+        return [
+            'verify_response' => $verifyResponse,
+            'signed_xml'      => $signedXml
+        ];
+    }
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $verify->verifyResponseContent = $this->getMandateStatusAndSignedXml(
+            $gatewayPayment['mandate_id'],
+            $verify->input
+        );
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     *
+     * This can be called from both verify and from the callback.
+     */
+    protected function getMandateStatusAndSignedXml($mandateId, $input)
+    {
+        $content = [
+            'emandate_id'        => $mandateId,
+            'type'               => Type::CREATE,
+            'mandate_request_id' => $input['token']['id'],
+        ];
+
+        $request = $this->getStandardRequestArray($content, 'POST', 'fetch', true);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'mandate_id' => $mandateId,
+            ]
+        );
+
+        $response =  $this->sendGatewayRequest($request);
+
+        $content = json_decode($response->body, true);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response'   => $content,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]
+        );
+
+        return $content;
+    }
+
     protected function getRedirectRequestArray($input, $response)
     {
         $request = [
@@ -154,13 +212,46 @@ class Gateway extends Base\Gateway
             ],
         ];
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, [
-            'gateway'    => $this->gateway,
-            'payment_id' => $input['payment']['id'],
-            'request'   => $request]
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'request'    => $request
+            ]
         );
 
         return $request;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkVerifyGatewaySuccess($verify);
+
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        // Their verify response does not have amount. So, we set it to false without the check.
+        $verify->amountMismatch = false;
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+    }
+
+    protected function checkVerifyGatewaySuccess($verify)
+    {
+        // Initially assume gatewaySuccess is false
+        $verify->gatewaySuccess = false;
+
+        if ($verify->verifyResponseContent[ResponseFields::STATUS] === Status::SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
+        }
     }
 
     protected function getMandateCreationRequestArray(array $input)
@@ -192,22 +283,7 @@ class Gateway extends Base\Gateway
             RequestFields::CALLBACK_URL               => $this->input['callbackUrl'],
         ];
 
-        $gatewayPayment = $this->createGatewayPaymentEntity($content);
-
-        return [
-            $this->getStandardRequestArray($content, 'POST', 'create'),
-            $gatewayPayment
-        ];
-    }
-
-    protected function getMandateFetchRequestArray(array $input)
-    {
-        $content = [
-            RequestFields::EMANDATE_ID        => $input['gateway'][ResponseFields::EMANDATE_ID],
-            RequestFields::MANDATE_REQUEST_ID => $input['token']['id'],
-        ];
-
-        return $this->getStandardRequestArray($content, 'GET', 'fetch', false);
+        return $this->getStandardRequestArray($content, 'POST', 'create');
     }
 
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null, $json = true)
@@ -267,5 +343,10 @@ class Gateway extends Base\Gateway
         $dt = Carbon::createFromTimestamp($paymentCreatedAt, Timezone::IST);
 
         return Holidays::getNextWorkingDay($dt);
+    }
+
+    protected function getRepository()
+    {
+        return;
     }
 }

@@ -2,15 +2,14 @@
 
 namespace RZP\Gateway\Enach\Rbl;
 
-use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
-use phpseclib\Crypt\AES;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Enach\Base;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
 use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
 use RZP\Trace\TraceCode;
@@ -137,8 +136,38 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
-        throw new Exception\RuntimeException(
-            'Verify is not implemented');
+        parent::verify($input);
+
+        $response = $this->callAuthenticationGateway($input);
+
+        $this->updateGatewayPaymentIfRequired($response['signed_xml']);
+
+        return $response['verify_response'];
+    }
+
+    protected function updateGatewayPaymentIfRequired($signedXml)
+    {
+        $input = $this->input;
+
+        $enach = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'],
+            Action::AUTHORIZE
+        );
+
+        // For late authorized payments, update the enach entity with signed_xml
+        if (($enach[Base\Entity::STATUS] === null) and
+            ($enach[Base\Entity::SIGNED_XML] === null) and
+            ($signedXml !== null)
+        )
+        {
+            $enachAttributes = [
+                Base\Entity::SIGNED_XML => $signedXml
+            ];
+
+            $enach->fill($enachAttributes);
+
+            $enach->saveOrFail();
+        }
     }
 
     protected function callAuthenticationGateway(array $input)

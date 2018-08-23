@@ -25,6 +25,15 @@ class Server extends Base\Mock\Server
         return $this->makeJsonResponse($responseContent);
     }
 
+    public function verify($input)
+    {
+        $input = json_decode($input, true);
+
+        $response = $this->getXmlFetchResponse($input);
+
+        return $this->makeJsonResponse($response);
+    }
+
     /**
      * @param $input
      * @return mixed
@@ -45,11 +54,16 @@ class Server extends Base\Mock\Server
             'emandate_id' => $input['mandate_id'],
         ];
 
-        $enachEntity = $this->app['repo']->esigner->findByMandateIdAndAction($input['mandate_id'], 'authorize');
+        // In tests we create a payment with the gateway Legaldesk, however when testing it via mocks
+        // out of the tests, the payment would be having the gateway Enach RBL
+        $payment = $this->app['repo']->payment->getLastCreatedPaymentByGateway(Payment\Gateway::ESIGNER_LEGALDESK);
 
-        $paymentId = Payment\Entity::getSignedId($enachEntity['payment_id']);
+        if ($payment === null)
+        {
+            $payment = $this->app['repo']->payment->getLastCreatedPaymentByGateway(Payment\Gateway::ENACH_RBL);
+        }
 
-        $callbackUrl = $this->route->getPublicCallbackUrlWithHash($paymentId);
+        $callbackUrl = $this->route->getPublicCallbackUrlWithHash($payment[Payment\Entity::PUBLIC_ID]);
 
         $request = [
             'url' => $callbackUrl,
@@ -96,6 +110,25 @@ class Server extends Base\Mock\Server
             ResponseFields::EMANDATE_ID         => $mandateId,
             ResponseFields::RESPONSE_TIME_STAMP => '2018-08-09T20:04:59',
             ResponseFields::QUICK_INVITE_URL    => $this->getMockPaymentGatewayUrl($mandateId)
+        ];
+    }
+
+    protected function getXmlFetchResponse($input)
+    {
+        $xmlContent = [];
+
+        $this->content($xmlContent, 'fetch_mandate_xml');
+
+        $xml = Xml::create('Document', $xmlContent);
+
+        return [
+            ResponseFields::STATUS              => 'success',
+            ResponseFields::API_RESPONSE_ID     => '5b6c51139788dd40bd25ded6',
+            ResponseFields::ERROR               => 'NA',
+            ResponseFields::ERROR_CODE          => 'NA',
+            ResponseFields::RESPONSE_TIME_STAMP => '2018-08-09T20:04:59',
+            ResponseFields::CONTENT             => $xml,
+            ResponseFields::CONTENT_TYPE        => 'xml',
         ];
     }
 
