@@ -66,6 +66,7 @@ class Gateway extends Base\Gateway
     /**
      * Authorizes a payment using UPI Gateway
      * @param array $input
+     *
      * @return array
      * @throws Exception\GatewayErrorException
      */
@@ -77,28 +78,35 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-        $response = $this->fetchToken($input);
+        $tokenResponse = $this->fetchToken($input);
 
-        if($response[Fields::CODE] == '000')
+        if($tokenResponse[Fields::CODE] == Status::SUCCESS)
         {
             parent::action($input, Action::AUTHORIZE);
 
-            $request =  $this->getCollectRequestArray($response);
+            $request =  $this->getCollectRequestArray($tokenResponse);
 
             $request['headers'] = [
                 'Content-Type' => 'application/json',
             ];
 
-            $response1 = $this->sendGatewayRequest($request);
+            $collectResponse = $this->sendGatewayRequest($request);
 
-            $response1 = $this->parseGatewayResponse($response1->body);
+            $collectResponse = $this->parseGatewayResponse($collectResponse->body);
 
-            $this->updateGatewayPaymentEntity($gatewayPayment, $response1);
+            $this->updateGatewayPaymentEntity($gatewayPayment, $collectResponse);
+
+            $this->trace->info(TraceCode::GATEWAY_AUTH_REQUEST, [
+                'tokenResponse'     => $tokenResponse,
+                'collectResponse'   => $collectResponse,
+                'gateway'           => $this->gateway,
+                'type'              => $type
+            ]);
         }
-
+        
         else
         {
-            throw new \Exception();
+            throw new Exception\GatewayErrorException($tokenResponse);
         }
 
         $vpa = self::DEFAULT_PAYEE_VPA;
