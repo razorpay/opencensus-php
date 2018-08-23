@@ -41,10 +41,9 @@ class RefundReconciliate extends Base\RefundReconciliate
 
         if ($onusIndicator === 'YES')
         {
+            return $row[ReconciliationFields::RRN] ?? null;
 
         }
-
-        return $row[ReconciliationFields::RRN] ?? null;
     }
 
     protected function getReconRefundAmount(array $row)
