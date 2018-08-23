@@ -69,6 +69,7 @@ class UserRolesScope
             'merchant_replace_key'                => [Role::OWNER, Role::ADMIN],
             'merchant_add_bank_account'           => [Role::OWNER, Role::ADMIN],
             'merchant_bank_account_change_status' => [Role::OWNER, Role::ADMIN],
+            'create_submerchant_user'             => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
             // webhook routes
             'webhook_create'         => [Role::OWNER, Role::MANAGER, Role::ADMIN],

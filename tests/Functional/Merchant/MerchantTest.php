@@ -2812,6 +2812,39 @@ class MerchantTest extends TestCase
         Mail::assertNotQueued(MappedToAccount::class);
     }
 
+    public function testCreateSubmerchantLoginByAdmin()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'     => '10000000000040',
+            'email'  => 'test1@razorpay.com',
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+
+        $merchant->reTag(["ref-10000000000000"]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', null, 'manager');
+
+        $this->startTest();
+
+        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertNotEmpty($mailData['token']);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertTrue($mailable->hasTo('test1@razorpay.com'));
+
+            return true;
+        });
+
+        Mail::assertNotQueued(MappedToAccount::class);
+    }
+
     public function testCreateSubmerchantLoginPartnerAppMissing()
     {
         $this->fixtures->create('merchant', [
