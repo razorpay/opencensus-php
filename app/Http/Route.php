@@ -2395,13 +2395,17 @@ final class Route
 
     public function getUrlWithPublicAuth($routeName, array $parameters = [], $key = '')
     {
-        // If current request was on keyless public auth, append the x_entity_id query for public urls.
+        // If current request was on keyless public auth, append the x_entity_id query for public urls
+        // only if the same is not required in route parameters in which case it will be there in $parameters already.
         if (($key === '') and ($this->ba->isKeylessPublicAuth() === true))
         {
-            $parameters['x_entity_id'] = $this->ba->getKeylessXEntityId();
+            if (str_contains(self::$apiRoutes[$routeName][1], '{x_entity_id}') === false)
+            {
+                $parameters['x_entity_id'] = $this->ba->getKeylessXEntityId();
+            }
         }
         // For a partner token authenticated route, keep the token in the public URL
-        if (($key === '') and ($this->ba->isPartnerAuth() === true))
+        else if (($key === '') and ($this->ba->isPartnerAuth() === true))
         {
             $parts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $this->ba->getPublicKey());
 
