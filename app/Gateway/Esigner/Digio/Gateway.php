@@ -384,7 +384,11 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        $request['url'] = $request['url'] . '/' . $gatewayPayment->getGatewayReferenceId();
+        $replacePairs = [
+            '{id}' => $gatewayPayment->getGatewayReferenceId(),
+        ];
+
+        $request['url'] = strtr($request['url'], $replacePairs);
 
         return $request;
     }
