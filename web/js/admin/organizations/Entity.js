@@ -16,6 +16,7 @@ export default class EditOrg extends Component {
     selectedPerms: null,
     workflowPerms: null,
     filesURL: {},
+    uploadingFiles: [],
   };
 
   prepareOrgs = props => {
@@ -208,6 +209,21 @@ export default class EditOrg extends Component {
     }
   };
 
+  handleUploadingFiles = fileName => {
+    let uploadingFiles = [...this.state.uploadingFiles];
+    const fileIndex = uploadingFiles.indexOf(`${fileName}_url`);
+
+    if (fileIndex > -1) {
+      uploadingFiles.splice(fileIndex, 1);
+    } else {
+      uploadingFiles.push(`${fileName}_url`);
+    }
+
+    this.setState({
+      uploadingFiles,
+    });
+  };
+
   handleFileUpload = (file, fileName, type) => {
     const { filesURL } = this.state;
 
@@ -216,7 +232,13 @@ export default class EditOrg extends Component {
       type,
     };
 
+    //- add file
+    this.handleUploadingFiles(fileName);
+
     return adminFormUpload(fileData, `/admin/org/${this.org.id}`).then(resp => {
+      //- remove file
+      this.handleUploadingFiles(fileName);
+
       if (resp.data.success) {
         notifySuccess('File uploaded successfully');
 

@@ -98,7 +98,10 @@ export default class Model extends BaseModel {
         this.fetchPartnerActivationRequest(requestType);
       }
 
-      if (user.permissions.find(perm => perm === 'view_partners')) {
+      if (
+        !!data.partner_type &&
+        user.permissions.find(perm => perm === 'view_partners')
+      ) {
         this.fetchPartnerSubmerchants();
       }
     });

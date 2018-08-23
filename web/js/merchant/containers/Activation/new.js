@@ -403,8 +403,8 @@ const SuccessScreen = _ => {
       <div class="Activation-info">
         <i class="i i-check" /> Activation Form Submitted
         <p class="desc">
-          The review process usually takes {activationDuration}. For any
-          clarifications, we will reach out on your contact email.
+          Our team will review the form and submitted documents. We will reach
+          out on your contact email for all updates.
         </p>
       </div>
 
@@ -439,8 +439,8 @@ const WelcomeScreen = ({ openWizard }) => {
           start accepting payments.
         </p>
         <p>
-          Once you submit the form, it may take upto {activationDuration} to get
-          your account activated.
+          Once you submit the form, our team will review it to activate your
+          account.
         </p>
 
         <Button.Primary onClick={openWizard}>
