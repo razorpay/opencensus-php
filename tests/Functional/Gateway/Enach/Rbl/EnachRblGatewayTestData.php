@@ -1,9 +1,11 @@
 <?php
 
 use Carbon\Carbon;
-
-use RZP\Error\PublicErrorCode;
 use RZP\Constants\Timezone;
+
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testAuthenticationFailed' => [
@@ -157,4 +159,20 @@ return [
             ],
         ],
     ],
+
+    'testDigioCallbackFailedVerifySuccess' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR_REQUEST_TIMEOUT,
+                ],
+            ],
+            'status_code' => 504,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
+    ]
 ];

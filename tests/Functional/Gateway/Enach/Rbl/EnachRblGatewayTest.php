@@ -160,9 +160,10 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('REQUEST_VALIDATION_FAILED', $enach['error_code']);
     }
 
-    public function testVerify()
+    public function testDigioVerify()
     {
-        $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+
         $payment['bank_account'] = [
             'account_number' => '914010009305862',
             'ifsc'           => 'utib0000123',
@@ -170,11 +171,52 @@ class EnachRblGatewayTest extends TestCase
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
         $payment['order_id'] = $order->getPublicId();
 
         $response = $this->doAuthPayment($payment);
 
         $verify = $this->verifyPayment($response['razorpay_payment_id']);
+
+        $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(1, $payment[Payment::VERIFIED]);
+
+        $gateway = $this->getLastEntity('enach', true);
+
+        $this->assertNotNull($gateway['signed_xml']);
+    }
+
+    public function testDigioCallbackFailedVerifySuccess()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->mockPaymentRequestTimeout();
+
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $verify = $this->verifyPayment($payment['id']);
 
         $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
 
@@ -1270,5 +1312,16 @@ class EnachRblGatewayTest extends TestCase
         ];
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function mockPaymentRequestTimeout()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if($action == 'callback')
+            {
+                throw new Exception\GatewayTimeoutException('Gateway timed out');
+            }
+        }, 'esigner_digio');
     }
 }

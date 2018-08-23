@@ -39,6 +39,8 @@ class Server extends Base\Mock\Server
 
     public function callback($input)
     {
+        $this->content($input);
+
         $xmlContent = [
 
         ];
