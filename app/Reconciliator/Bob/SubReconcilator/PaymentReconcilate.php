@@ -9,8 +9,9 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
-use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Card\Fss\Status;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Currency\Currency;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
@@ -51,7 +52,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
     {
-        $expectedCurrency = $this->payment->getCurrency();
+        $convertCurrency = $this->payment->getConvertCurrency();
+
+        $expectedCurrency = ($convertCurrency === true) ? Currency::INR : $this->payment->getCurrency();
 
         $reconCurrency = $this->getReconCurrencyCode($row);
 
@@ -236,16 +239,16 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getGatewayFee($row)
     {
+        if (isset($row[ReconciliationFields::MSF_AMOUNT]) === false)
+        {
+            $this->reportMissingColumn($row, ReconciliationFields::MSF_AMOUNT);
+        }
+
         $lateSettelementFee = $row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT];
 
         $rrfAmount = $row[ReconciliationFields::RRF_AMOUNT];
 
         $msfAmount = abs($row[ReconciliationFields::MSF_AMOUNT]);
-
-        if (isset($row[ReconciliationFields::MSF_AMOUNT]) === false)
-        {
-            $this->reportMissingColumn($row, ReconciliationFields::MSF_AMOUNT);
-        }
 
         $tax = $this->getGatewayServiceTax($row);
 
@@ -266,7 +269,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewaySettledAt(array $row)
     {
-        if(empty($row[ReconciliationFields::PAYMENT_DATE]) === false)
+        if (empty($row[ReconciliationFields::PAYMENT_DATE]) === false)
         {
             return Carbon::createFromFormat('d-m-Y', $row[ReconciliationFields::PAYMENT_DATE], Timezone::IST)->timestamp;
         }

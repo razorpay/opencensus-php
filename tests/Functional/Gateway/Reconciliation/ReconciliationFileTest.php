@@ -1122,9 +1122,10 @@ class ReconciliationFileTest extends TestCase
         $payment = $this->getNewPaymentEntity(false, true);
 
         $this->assertNull($payment['reference1']);
-        $this->fixtures->edit('payment', $payment['id'], ['reference2' => null]);
 
         $gatewayPayment1 = $this->getDbLastEntityToArray('card_fss');
+
+        $this->fixtures->edit('card_fss', $gatewayPayment1['id'], ['ref' => null]);
 
         $headers[] = ['Merchant Setttlment' => '  '];
 
@@ -1190,6 +1191,7 @@ class ReconciliationFileTest extends TestCase
         $refund = $this->getDbLastEntity('refund');
 
         $this->assertEquals('175309', $refund['reference1']);
+        $this->assertEquals('175309', $refund['reference2']);
 
         $transactionEntity = $this->getLastEntity('transaction', true);
 
