@@ -219,11 +219,21 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getGatewayServiceTax($row)
     {
+        if (isset($row[ReconciliationFields::GST]) === false)
+        {
+            $this->reportMissingColumn($row, ReconciliationFields::GST);
+        }
+
         $tax = abs($row[ReconciliationFields::GST]) + abs($row[ReconciliationFields::CSF_TAX]);
 
         return Base\Helper::getIntegerFormattedAmount($tax);
     }
 
+    /**
+     * Returns the gateway Payment Fee. All apart from msf amount are zero from sample recon
+     * @param $row
+     * @return integer
+     */
     protected function getGatewayFee($row)
     {
         $lateSettelementFee = $row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT];
@@ -231,6 +241,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $rrfAmount = $row[ReconciliationFields::RRF_AMOUNT];
 
         $msfAmount = abs($row[ReconciliationFields::MSF_AMOUNT]);
+
+        if (isset($row[ReconciliationFields::MSF_AMOUNT]) === false)
+        {
+            $this->reportMissingColumn($row, ReconciliationFields::MSF_AMOUNT);
+        }
 
         $tax = $this->getGatewayServiceTax($row);
 
