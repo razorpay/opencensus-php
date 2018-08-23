@@ -140,7 +140,11 @@
           <label class="form-label details-label" for="business_name">Company Name</label>
           <input type="text" name="business_name" id="business_name" ng-model="signup.merchantData.business_name"
             class="form-control auth-form-input" placeholder="Ex: Xyz Software Private Limited" required ng-minlength="4" >
-          <button override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.business_name && signup.merchantData.contact_mobile)" class="btn btn-primary form-control signup-details-button m-b" ng-click="sendDetails()">
+
+          <label class="form-label details-label" for="business_website">Company Website</label>
+          <input type="text" name="business_website" id="business_website" ng-model="signup.merchantData.business_website"
+                 class="form-control auth-form-input" ng-pattern="websiteRegex" placeholder="Ex: https://www.razorpay.com" >
+          <button type="submit" override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.business_name && signup.merchantData.contact_mobile)" class="btn btn-primary form-control signup-details-button m-b" ng-click="sendDetails()">
             Finish
           </button>
         </form>

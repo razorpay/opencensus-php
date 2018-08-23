@@ -14,6 +14,7 @@ app
     'transformRequestAsFormPost',
     '$window',
     '$localStorage',
+    'utils',
     function(
       $scope,
       $timeout,
@@ -26,7 +27,8 @@ app
       organization,
       transformRequestAsFormPost,
       $window,
-      $localStorage
+      $localStorage,
+      utils
     ) {
       $scope.toArray = function(obj) {
         if (!obj) {
@@ -50,6 +52,11 @@ app
 
       $scope.isLoggedIn = false;
 
+      $scope.websiteRegex = RegExp(
+        '^((https?)://)?([a-z]+[.])?[a-z0-9-]+([.][a-z]{1,4}){1,2}(/.*[?].*)?$',
+        'i'
+      );
+
       // signup state container
       $scope.signup = {
         currentStep: 0, // 0, 1, 2
@@ -65,6 +72,7 @@ app
           role: null,
           department: null,
           business_name: '',
+          business_website: '',
           contact_mobile: '',
           contact_name: '',
         },
@@ -210,6 +218,8 @@ app
               $scope.lock_email = data.data.email ? true : false;
               $scope.signup.merchantData.business_name =
                 form_data.merchant_name;
+              $scope.signup.merchantData.business_website =
+                form_data.business_website;
               $scope.signup.merchantData.contact_name = form_data.contact_name;
               $scope.merchant_invitation = true;
             }
@@ -319,6 +329,14 @@ app
       };
 
       $scope.sendDetails = function() {
+        if (!$scope.forms.detailsForm.business_website.$valid) {
+          return;
+        } else if ($scope.signup.merchantData.business_website) {
+          $scope.signup.merchantData.business_website = utils.autoPrefixUrls(
+            $scope.signup.merchantData.business_website
+          );
+        }
+
         pushToDrip();
         invokeAdroll();
         invokeGtag();
@@ -894,6 +912,7 @@ app
           $scope.signup.merchantData.role = null;
           $scope.signup.merchantData.department = null;
           $scope.signup.merchantData.business_name = '';
+          $scope.signup.merchantData.business_website = '';
           $scope.signup.merchantData.contact_mobile = '';
           $scope.signup.merchantData.contact_name = '';
           $scope.email_not_verified = false;
