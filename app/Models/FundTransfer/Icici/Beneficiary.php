@@ -8,16 +8,17 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Mail\Base\Constants;
-use RZP\Services\BeamClient;
+use RZP\Services\Beam\Service;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
+use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Models\FundTransfer\Base\Beneficiary\FileProcessor;
 
 class Beneficiary extends FileProcessor
 {
-    const BEAM_JOB_NAME = 'icici_settlement_beneficiary';
+    const BEAM_FILE_TYPE = 'Beneficiary';
 
     protected $id;
 
@@ -165,40 +166,24 @@ class Beneficiary extends FileProcessor
      */
     protected function sendFile(FileStore\Creator $file)
     {
-        $data =  [
-            BeamClient::BEAM_PUSH_FILES   => [$file->getFullFileName()],
-            BeamClient::BEAM_PUSH_JOBNAME => self::BEAM_JOB_NAME
-        ];
+        $fileInfo = [$file->getFullFileName()];
 
-        $mailInfo   = $this->getBeamMailInfo($file);
+        $data =  [
+            Service::BEAM_PUSH_FILES   => $fileInfo,
+            Service::BEAM_PUSH_JOBNAME => BeamConstants::ICICI_BENEFICIARY_JOB_NAME
+        ];
 
         // In seconds
         $timelines = [15, 28, 56, 112, 225, 450, 900, 1800, 3600, 2*3600];
 
-        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
-    }
-
-    /**
-     * Set beam mail data
-     * @param FileStore\Creator $file
-     * @return array
-     */
-    protected function getBeamMailInfo(FileStore\Creator $file): array
-    {
-        $recipient = Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS];
-
-        $subject   = 'Beneficiary file failure';
-
-        $fileParam = explode('/', $file->getFullFileName());
-
-        $body      = 'Hi,\n Beneficiary file send failed through Beam.\n'.
-                     'Channel  :: ' . $this->channel . '\n'.
-                     'Filename :: ' . $fileParam[count($fileParam) - 1] . '\n';
-
-        return [
-            'recipient' => $recipient,
-            'subject'   => $subject,
-            'body'      => $body
+        $mailInfo = [
+            'fileInfo'  => $fileInfo,
+            'channel'   => $this->channel,
+            'filetype'  => self::BEAM_FILE_TYPE,
+            'subject'   => 'File send failure',
+            'recipient' => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS]
         ];
+
+        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
     }
 }

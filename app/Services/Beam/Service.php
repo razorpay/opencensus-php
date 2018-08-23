@@ -1,16 +1,16 @@
 <?php
 
-namespace RZP\Services;
+namespace RZP\Services\Beam;
 
 use App;
 
-use RZP\Constants\Mode;
 use RZP\Jobs\BeamJob;
+use RZP\Constants\Mode;
 use RZP\Constants\Beam;
 use RZP\Trace\TraceCode;
 use RZP\Foundation\Application;
 
-class BeamClient
+class Service
 {
     const HTTP_POST         = 'POST';
 
@@ -24,11 +24,15 @@ class BeamClient
 
     const BEAM_TEST_JOBNAME = 'test_pass';
 
+    protected $mode;
+
     protected $trace;
 
     protected $config;
 
-    protected $mode;
+    protected $jobName;
+
+    protected $mailInfo;
 
     public function __construct(Application $app)
     {
@@ -40,8 +44,7 @@ class BeamClient
     }
 
     /**
-     * Sends a beam push request.
-     * Here push data accepts an array for 'files' key
+     * Here, we create a request to be pushed to beam
      * @param array $pushData
      * @param array $intervalInfo
      * @param array $mailInfo
@@ -77,8 +80,7 @@ class BeamClient
             TraceCode::BEAM_PUSH,
             [
                 'request'  => $request,
-                'interval' => $intervalInfo,
-                'mailInfo' => $mailInfo
+                'interval' => $intervalInfo
             ]
         );
 
