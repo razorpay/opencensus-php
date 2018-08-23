@@ -78,6 +78,7 @@ class Gateway
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
+    const NODAL_YESBANK      = 'nodal_yesbank';
 
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
@@ -140,6 +141,7 @@ class Gateway
     * since their verify API's stop working after a certain time
     */
     const FORCE_AUTHORIZE_GATEWAYS = [
+        self::CARD_FSS,
         self::AXIS_MIGS,
         self::WALLET_JIOMONEY,
         self::NETBANKING_RBL,

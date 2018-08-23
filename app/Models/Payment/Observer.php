@@ -9,11 +9,14 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\Observer as BaseObserver;
+use RZP\Models\Risk\Core as RiskCore;
 
 class Observer extends BaseObserver
 {
     public function created(Entity $payment)
     {
+        $this->saveRelatedEntitiesFromMetaData($payment);
+
         $this->pushCreatedMetrics($payment);
     }
 
@@ -55,14 +58,34 @@ class Observer extends BaseObserver
         }
     }
 
+    protected function saveRelatedEntitiesFromMetaData(Entity $payment)
+    {
+        $paymentAnalytics = $payment->getMetaData("payment_analytics");
+
+        if (is_null($paymentAnalytics) === false)
+        {
+            $this->app['repo']->saveOrFail($paymentAnalytics);
+        }
+
+        $riskEntity = $payment->getMetaData("risk_entity");
+
+        if (is_null($riskEntity) === false)
+        {
+            $source = $riskEntity["source"];
+            $riskData = $riskEntity["risk_data"];
+
+            (new RiskCore)->logPaymentForSource($payment, $source, $riskData);
+        }
+    }
+
     protected function pushCreatedMetrics(Entity $payment)
     {
         $metricData = [
-            Metric::LABEL_PAYMENT_METHOD                =>  $payment->getMethod(),
-            Metric::LABEL_PAYMENT_CURRENCY              =>  $payment->getCurrency(),
-            Metric::LABEL_PAYMENT_INTERNATIONAL         =>  $payment->isInternational(),
-            Metric::LABEL_PAYMENT_TRANSACTION_TYPE      =>  $payment->getTransactionType(),
-            Metric::LABEL_PAYMENT_STATUS                =>  $payment->getStatus().'_'.$payment->getInternalErrorCode(),
+            Metric::LABEL_PAYMENT_METHOD           => $payment->getMethod(),
+            Metric::LABEL_PAYMENT_CURRENCY         => $payment->getCurrency(),
+            Metric::LABEL_PAYMENT_INTERNATIONAL    => $payment->isInternational(),
+            Metric::LABEL_PAYMENT_TRANSACTION_TYPE => $payment->getTransactionType(),
+            Metric::LABEL_PAYMENT_STATUS           => $payment->getStatus().'_'.$payment->getInternalErrorCode(),
         ];
 
         if ($payment->hasCard() === true)
