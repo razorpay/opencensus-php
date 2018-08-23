@@ -100,10 +100,9 @@ class Gateway extends Base\Gateway
                 'tokenResponse'     => $tokenResponse,
                 'collectResponse'   => $collectResponse,
                 'gateway'           => $this->gateway,
-                'type'              => $type
             ]);
         }
-        
+
         else
         {
             throw new Exception\GatewayErrorException($tokenResponse);
