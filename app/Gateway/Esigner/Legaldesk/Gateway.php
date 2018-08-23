@@ -141,7 +141,7 @@ class Gateway extends Base\Gateway
 
         $verifyResponse = $this->runPaymentVerifyFlow($verify);
 
-        $signedXml = $verify->verifyResponseContent[ResponseFields::CONTENT] ?? null;
+        $signedXml = base64_decode($verify->verifyResponseContent[ResponseFields::CONTENT]) ?? null;
 
         return [
             'verify_response' => $verifyResponse,
@@ -169,7 +169,7 @@ class Gateway extends Base\Gateway
     {
         $content = [
             'emandate_id'        => $mandateId,
-            'type'               => 'create',
+            'type'               => Type::CREATE,
             'mandate_request_id' => $input['token']['id'],
         ];
 
