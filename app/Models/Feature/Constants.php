@@ -79,6 +79,9 @@ class Constants
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
     const SUBSCRIPTION_V2                 = 'subscription_v2';
+    const EXPOSE_ARN_PAYMENT              = 'expose_arn_payment';
+    const EXPOSE_ARN_REFUND               = 'expose_arn_refund';
+    const OFFERS                          = 'offers';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -86,6 +89,9 @@ class Constants
 
     // Payment authentication
     const ATM_PIN_AUTH                  = 'atm_pin_auth';
+
+    // Pre-Auth Shield Integration
+    const PRE_AUTH_SHIELD_INTG          = 'pre_auth_shield_intg';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -182,10 +188,14 @@ class Constants
         self::ALLOW_SUBMERCHANT_WITHOUT_EMAIL => true,
         self::HDFC_DEBIT_SI                   => true,
         self::AXIS_EXPRESS_PAY                => true,
+        self::PRE_AUTH_SHIELD_INTG            => true,
         self::BANK_TRANSFER_REFUND            => true,
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
         self::SUBSCRIPTION_V2                 => true,
+        self::EXPOSE_ARN_PAYMENT              => true,
+        self::EXPOSE_ARN_REFUND               => true,
+        self::OFFERS                          => true,
     ];
 
     // Entity type constants

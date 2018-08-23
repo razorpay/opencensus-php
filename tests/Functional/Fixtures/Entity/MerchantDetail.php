@@ -70,7 +70,7 @@ class MerchantDetail extends Base
             "business_type"                 => "1",
             "business_name"                 => "Acme",
             "business_dba"                  => "Acme",
-            "business_website"              => "http://www.website.com/",
+            "business_website"              => "http://www.example.com/",
             "business_international"        => 0,
             "business_paymentdetails"       => "B2C",
             "business_registered_address"   => "Adress",

@@ -1277,6 +1277,8 @@ trait Refund
 
             $this->refund->setBatchFundTransferId(null);
 
+            $this->refund->setGateway(Payment\Gateway::NODAL_YESBANK);
+
             $refunded = true;
         }
         catch (Exception\BaseException $e)

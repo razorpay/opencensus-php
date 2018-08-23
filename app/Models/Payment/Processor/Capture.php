@@ -406,6 +406,10 @@ trait Capture
                 // after marking the payment as failed.
                 $this->recordCapture();
             });
+
+        $this->triggerPaymentCapturedEvents();
+
+        $this->notifyPaymentCaptured();
     }
 
     protected function callAndHandleCaptureOnGateway(array $data)
@@ -513,10 +517,6 @@ trait Capture
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
-
-        $this->triggerPaymentCapturedEvents();
-
-        $this->notifyPaymentCaptured();
     }
 
     /**

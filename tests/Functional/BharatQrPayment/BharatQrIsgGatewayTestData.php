@@ -28,6 +28,7 @@ return [
             Field::CONSUMER_PAN                 => '4012001037141112',
             Field::STATUS_CODE                  => '00',
             Field::STATUS_DESC                  => 'Transaction Approved',
+            Field::TIP_AMOUNT                   => '1.20',
         ],
     ],
 ];

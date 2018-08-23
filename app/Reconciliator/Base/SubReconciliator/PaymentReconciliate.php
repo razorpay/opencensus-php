@@ -571,10 +571,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->setPaymentAndTransaction($row, $paymentId);
 
         //
-        // Setting allowForceAuthorization after setting payment instance
-        // because this attribute can be dependent on payment instance's attributes. For eg. payment's created_at
+        // Have to set allowForceAuthorization AFTER setting payment instance because this
+        // attribute can be dependent on payment instance's attributes. For eg. payment's created_at
         //
-        $this->setAllowForceAuthorization();
+        $this->setAllowForceAuthorization($this->payment);
 
         $cardDetails = $this->getCardDetails($row);
 
@@ -1768,13 +1768,42 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * This function should be implemented in the child class
-     * It tells whether we should attempt force authorize on
-     * the gateway. Default is false.
+     * This function should be implemented in the child class if we ALWAYS
+     * want to force authorize or NEVER want to force authorize or if there
+     * are any custom requirements for force authorization like in nb_icici
+     *
+     * This base function will be used if we want to force authorize
+     * only specific payments. This will be used only for the gateways
+     * where force_authorize has been implemented already.
+     *
+     * @param Payment\Entity $payment
      */
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
-        $this->allowForceAuthorization = false;
+        if (in_array($payment->getGateway(), Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS, true) === true)
+        {
+            $this->allowForceAuthorization = $this->shouldForceAuthorize($payment);
+        }
+        else
+        {
+            $this->allowForceAuthorization = false;
+        }
+    }
+
+    /**
+     * Checks if given payment id is in input array of force authorize payments
+     *
+     * @param PaymentEntity $payment
+     *
+     * @return bool
+     */
+    protected function shouldForceAuthorize(Payment\Entity $payment) : bool
+    {
+        $forceAuthorizePayments = $this->extraDetails
+            [RequestProcessor\Base::INPUT_DETAILS]
+            [RequestProcessor\Base::FORCE_AUTHORIZE] ?? [];
+
+        return in_array($payment->getPublicId(), $forceAuthorizePayments, true);
     }
 
     /**

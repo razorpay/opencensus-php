@@ -23,6 +23,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Mail\Gateway\EMandate\Base as Email;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -30,9 +31,13 @@ use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 
+/**
+ * @group dns-sensitive
+ */
 class EnachRblGatewayTest extends TestCase
 {
     use AttemptTrait;
+    use MocksDnsTrait;
     use TransactionTrait;
     use DbEntityFetchTrait;
     use AttemptReconcileTrait;
@@ -50,6 +55,8 @@ class EnachRblGatewayTest extends TestCase
         $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL]);
 
         $this->gateway = 'enach_rbl';
+
+        $this->setupMockDns();
     }
 
     public function testSuccessfulEsignGeneration()
@@ -273,7 +280,8 @@ class EnachRblGatewayTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($testData, function() use ($url, $batchFile) {
+        $this->runRequestResponseFlow($testData, function() use ($url, $batchFile)
+        {
             $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
         });
     }

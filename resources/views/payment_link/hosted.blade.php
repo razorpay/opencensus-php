@@ -14,6 +14,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
 <head>
     <title>Payment Page</title>
     <meta charset="utf-8">
+    @include('hostedpage.partials.robot')
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
 

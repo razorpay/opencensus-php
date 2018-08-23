@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\NetbankingIcici;
 
 use Carbon\Carbon;
+use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
@@ -50,9 +51,19 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                                                                      [Icici\Confirmation::YES]);
     }
 
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
-        $this->allowForceAuthorization = $this->validatePaymentForForceAuthorize();
+        $this->allowForceAuthorization = $this->validatePaymentForForceAuthorize($payment);
+
+        //
+        // Calling parent function here because for this gateway allowing force authorize is conditional.
+        // If payment is not around midnight but payment is given for force_authorize in API call,
+        // we force authorize the payment. And if payment is around midnight, we don't check force_authorize input.
+        //
+        if ($this->allowForceAuthorization === false)
+        {
+            parent::setAllowForceAuthorization($payment);
+        }
     }
 
     /**
@@ -61,11 +72,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * This is done because tracking api of netbanking ICICI takes payment date into consideration
      * and for payments made during midnight, date saved in ICICI db can be of next day's date which leads to
      * wrong status of payment in tracking/verify response.
+     *
+     * @param Payment\Entity $payment
+     *
      * @return bool
      */
-    protected function validatePaymentForForceAuthorize()
+    protected function validatePaymentForForceAuthorize(Payment\Entity $payment)
     {
-        $createdTime = $this->payment->getCreatedAt() ;
+        $createdTime = $payment->getCreatedAt() ;
 
         $createdDate =  Carbon::createFromTimestamp($createdTime, Timezone::IST);
 

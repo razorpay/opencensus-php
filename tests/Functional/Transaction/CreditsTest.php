@@ -270,6 +270,8 @@ class CreditsTest extends TestCase
 
             $this->assertEquals(10000000000000, $viewData['merchant_id']);
 
+            $this->assertEquals('dashboard.razorpay.in', $viewData['org_hostname']);
+
             $this->assertEquals('emails.merchant.fee_credits_alert', $mail->view);
 
             return true;
@@ -304,7 +306,7 @@ class CreditsTest extends TestCase
         {
             $viewData = $mail->viewData;
 
-            if ($viewData['fee_credits'] === 4098)
+            if ($viewData['fee_credits'] === '₹ 40.98')
             {
                 $this->assertEquals(0.5, $viewData['alert_ratio']);
 

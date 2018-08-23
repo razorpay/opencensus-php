@@ -6,19 +6,26 @@ use DB;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
+/**
+ * @group dns-sensitive
+ */
 class MerchantDetailTest extends TestCase
 {
     use PaymentTrait;
     use HeimdallTrait;
+    use MocksDnsTrait;
 
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantDetailTestData.php';
 
         parent::setUp();
+
+        $this->setupMockDns();
     }
 
     public function testGetMerchantDetails()

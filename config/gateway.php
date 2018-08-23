@@ -137,6 +137,10 @@ return [
         'bharat_qr_secret' => env('ISG_GATEWAY_BHARAT_QR_SECRET'),
         ],
 
+    'isg' => [
+        'bharat_qr_secret' => env('ISG_GATEWAY_BHARAT_QR_SECRET'),
+     ],
+
     'first_data' => [
         // Test credentials
         'test_store_id'                     => env('FIRST_DATA_TEST_STORE_ID'),

@@ -123,6 +123,8 @@ class Entity extends Base\PublicEntity
     const CALLBACK_URL             = 'callback_url';
     const CALLBACK_METHOD          = 'callback_method';
 
+    const INTERNAL_REF             = 'internal_ref';
+
     const DELETED_AT               = 'deleted_at';
 
     // ---------------------- Input Keys -----------------------------
@@ -292,6 +294,7 @@ class Entity extends Base\PublicEntity
         self::SUPPLY_STATE_CODE,
         self::CALLBACK_URL,
         self::CALLBACK_METHOD,
+        self::INTERNAL_REF,
     ];
 
     protected $visible = [
@@ -342,6 +345,7 @@ class Entity extends Base\PublicEntity
         self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
         self::USER_ID,
+        self::INTERNAL_REF,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -896,6 +900,11 @@ class Entity extends Base\PublicEntity
             'has_batch'        => (int) $this->hasBatch(),
             'has_subscription' => (int) $this->hasSubscription(),
         ];
+    }
+
+    public function getInternalRef()
+    {
+        return $this->getAttribute(self::INTERNAL_REF);
     }
 
     // -------------------------------------- End Getters ------------

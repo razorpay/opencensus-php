@@ -9,6 +9,7 @@ use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Mail\Dispute\Creation as DisputeCreationMail;
@@ -19,6 +20,7 @@ class DisputeTest extends TestCase
 {
     use WebhookTrait;
     use PaymentTrait;
+    use MocksDnsTrait;
 
     protected $payment = null;
 
@@ -96,8 +98,13 @@ class DisputeTest extends TestCase
         Mail::assertNotSent(DisputeCreationMail::class);
     }
 
+    /**
+     * @group dns-sensitive
+     */
     public function testDisputeCreatedWebhook()
     {
+        $this->setupMockDns();
+
         $this->createWebhook(['events' => ['payment.dispute.created' => '1']]);
 
         $payment = $this->doAuthAndCapturePayment();
@@ -738,7 +745,7 @@ class DisputeTest extends TestCase
         $testData['request']['content'][DisputeEntity::SUBMIT] = true;
 
         $this->runRequestResponseFlow($testData);
-}
+    }
 
     public function testEditDisputeMerchantAcceptDispute()
     {

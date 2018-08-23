@@ -35,6 +35,8 @@ class NetbankingObcGatewayTest extends TestCase
 
     public function testPayment()
     {
+        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
+
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
@@ -135,7 +137,7 @@ class NetbankingObcGatewayTest extends TestCase
                 $this->verifyPayment($payment[Payment\Entity::ID]);
             });
     }
-    
+
     public function testPaymentAmountMismatch()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);

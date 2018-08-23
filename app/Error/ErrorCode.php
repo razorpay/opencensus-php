@@ -628,6 +628,8 @@ class ErrorCode
     const SERVER_ERROR_WEBHOOK_IN_TRANSACTION                                       = 'SERVER_ERROR_WEBHOOK_IN_TRANSACTION';
     const SERVER_ERROR_SIGNED_XML_EMPTY                                             = 'SERVER_ERROR_SIGNED_XML_EMPTY';
 
+    const SERVER_ERROR_RAZORX_FAILURE                                               = 'SERVER_ERROR_RAZORX_FAILURE';
+
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
     const SERVER_ERROR_HARVESTER_INVALID_RESPONSE                                   = 'SERVER_ERROR_HARVESTER_INVALID_RESPONSE';
 
@@ -825,6 +827,8 @@ class ErrorCode
     const SERVER_ERROR_PARTNER_APP_NOT_FOUND                                        = 'SERVER_ERROR_PARTNER_APP_NOT_FOUND';
     const BAD_REQUEST_INVALID_PARTNER_ACTION                                        = 'BAD_REQUEST_INVALID_PARTNER_ACTION';
 
+    const SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT                                 = 'SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT';
+    const SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE                                 = 'SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                       = 'BAD_REQUEST_MERCHANT_IS_NOT_PARTNER';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                                   = 'BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                              = 'BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER';

@@ -882,6 +882,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHIELD_JOB_RECEIVED                           = 'SHIELD_JOB_RECEIVED';
     const SHIELD_JOB_ERROR                              = 'SHIELD_JOB_ERROR';
     const SHIELD_JOB_DISPATCH_ERROR                     = 'SHIELD_JOB_DISPATCH_ERROR';
+    const FRAUD_DETECTION_STARTED                       = 'FRAUD_DETECTION_STARTED';
+    const FRAUD_DETECTION_DONE                          = 'FRAUD_DETECTION_DONE';
+    const FRAUD_DETECTION_FAILED                        = 'FRAUD_DETECTION_FAILED';
+    const FRAUD_DETECTION_SKIPPED                       = 'FRAUD_DETECTION_SKIPPED';
 
     const BATCH_FILE_DELETE_ERROR                       = 'BATCH_FILE_DELETE_ERROR';
 
@@ -955,6 +959,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSFER_REVERSAL_REQUEST                     = 'TRANSFER_REVERSAL_REQUEST';
     const TRANSFER_REVERSAL_SUCCESS                     = 'TRANSFER_REVERSAL_SUCCESS';
     const TRANSFER_UPDATE_SETTLEMENT_ID_FAILED          = 'TRANSFER_UPDATE_SETTLEMENT_ID_FAILED';
+    const REVERSAL_REFUND_NOT_AVAILABLE                 = 'REVERSAL_REFUND_NOT_AVAILABLE';
+    const REVERSAL_REFUND_AVAILABLE                     = 'REVERSAL_REFUND_AVAILABLE';
 
 // Trace Code for Gateway Absence StatusCake
     const GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN     = 'GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN';
@@ -1157,9 +1163,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Partners trace codes
     const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';
-    const PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT     = 'PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT';
+    const PARTNER_ACCESS_MAPS_DELETE                    = 'PARTNER_ACCESS_MAPS_DELETE';
     const PARTNER_CREATE_ACCESS_MAP_REQUEST             = 'PARTNER_CREATE_ACCESS_MAP_REQUEST';
     const PARTNER_DELETE_ACCESS_MAP_REQUEST             = 'PARTNER_DELETE_ACCESS_MAP_REQUEST';
+    const PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT     = 'PARTNER_USER_ALREADY_OWNER_TO_SUBMERCHANT';
 
     const FEE_CREDITS_THRESHOLD_ALERT                   = 'FEE_CREDITS_THRESHOLD_ALERT';
 
@@ -1172,6 +1179,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_MDR_UPDATE_JOB_RECEIVED               = 'PAYMENT_MDR_UPDATE_JOB_RECEIVED';
     const PAYMENT_MDR_LAST_UPDATED_DATA                 = 'PAYMENT_MDR_LAST_UPDATED_DATA';
     const PAYMENT_MDR_UPDATE_SUCCESS                    = 'PAYMENT_MDR_UPDATE_SUCCESS';
+
+    const GATEWAY_ERROR_METRIC_DIMENSION_FETCH          = 'GATEWAY_ERROR_METRIC_DIMENSION_FETCH';
+
+    const SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED   = 'SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED';
+
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -1317,6 +1329,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::GRATIS_TO_POSTPAID_INPUT                  => 'Mark gratis transactions as postpaid request',
         self::GRATIS_TO_POSTPAID_FAILED                 => 'Transaction conversion from gratis to postpaid failed',
         self::GRATIS_TO_POSTPAID_RESPONSE               => 'Gratis to postpaid response',
+
+        self::GATEWAY_ERROR_METRIC_DIMENSION_FETCH      => 'Exception fetching metric dimensions',
     );
 
     /**

@@ -8,7 +8,6 @@ use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Reconciliator\Metrics\Metric;
 use RZP\Reconciliator\Metrics\Dimensions;
-use RZP\Tests\Functional\Assertion\Validator\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
@@ -82,7 +81,7 @@ class SubReconciliate extends Base\Core
 
     /**
      * Contains details for files, email or manual details
-     * Manual details is being used to check for force_update
+     * Manual details is being used to check for force_update and force_authorize payments
      *
      * @var array
      */

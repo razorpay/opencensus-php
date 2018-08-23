@@ -26,7 +26,7 @@ class CreateIsgGateway extends Migration
             $table->char(ISG::PAYMENT_ID, Payment::ID_LENGTH);
 
             $table->char(ISG::REFUND_ID, Refund::ID_LENGTH)
-                    ->nullable();
+                  ->nullable();
 
             $table->char(ISG::ACTION, 10)
                   ->nullable();
@@ -60,7 +60,7 @@ class CreateIsgGateway extends Migration
             $table->integer(ISG::TIP_AMOUNT)
                   ->nullable();
 
-            $table->char(ISG::STATUS_CODE, 2)
+            $table->char(ISG::STATUS_CODE, 10)
                   ->nullable();
 
             $table->char(ISG::STATUS_DESC, 30)

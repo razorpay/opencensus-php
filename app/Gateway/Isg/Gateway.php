@@ -145,15 +145,17 @@ class Gateway extends Base\Gateway
 
     protected function checkVerifyCallbackResponse($response, $input)
     {
-        $this->checkMismatch($response[Field::TRANSACTION_AMOUNT],
-            $input[Field::TRANSACTION_AMOUNT],
+
+        $this->checkMismatch($this->getFormattedAmount($response[Field::TRANSACTION_AMOUNT]),
+            $this->getFormattedAmount($input[Field::TRANSACTION_AMOUNT]),
             $input,
             $response,
             'E001'
         );
 
-        $this->checkMismatch($response[Field::MERCHANT_PAN],
-            $input[Field::MERCHANT_PAN],
+
+        $this->checkMismatch(trim($response[Field::MERCHANT_PAN]),
+            trim($input[Field::MERCHANT_PAN]),
             $input,
             $response,
             'E003'
@@ -199,6 +201,7 @@ class Gateway extends Base\Gateway
                 ]);
         }
     }
+
     protected function verifyPayment($verify)
     {
         $this->setVerifyStatus($verify);
@@ -414,7 +417,7 @@ class Gateway extends Base\Gateway
 
         if (isset($input[Field::TIP_AMOUNT]) === true)
         {
-            $attributes[Field::TIP_AMOUNT] = $input[Field::TIP_AMOUNT];
+            $attributes[Entity::TIP_AMOUNT] = $this->getIntegerFormattedAmount($input[Field::TIP_AMOUNT]);
         }
 
         $statusDescription = Status::getStatusCodeDescription($input[Field::STATUS_CODE]);
@@ -443,7 +446,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getFormattedDate(string $dateTime, $format = 'Y-m-d')
+    protected function getFormattedDate(string $dateTime)
     {
         $date = Carbon::parse($dateTime)->format('Ymd');
 

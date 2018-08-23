@@ -447,7 +447,7 @@ class Core extends Base\Core
     protected function getShortenUrlRequestParams(Entity $paymentLink, string $slug = null): array
     {
         // Following are default set of parameters, when there is no slug passed in input
-        // URL: https://pages.razorpay.in/pl_10000000000000/view OR https://pages.razorpay.in/AlphaNumMin4Max20Slug
+        // URL: https://pages.razorpay.in/pl_10000000000000/view OR https://pages.razorpay.in/AlphaNumMin4Max30Slug
         $url = $paymentLink->getHostedViewUrl($this->plHostedBaseUrl, $slug);
         // Fail: In case not able to shorten URL, will keep above value itself as short URL and continue with creation
         $fail = false;

@@ -673,6 +673,60 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableMobikwik();
     }
 
+    public function testPaymentWithCheckoutDisplayOffer()
+    {
+        $this->setUpTerminals();
+
+        $offer = $this->fixtures->create('offer', [
+            'payment_method'   => 'wallet',
+            'issuer'           => 'amazonpay',
+            'starts_at'        => Carbon::now(Timezone::IST)->subMonth()->timestamp,
+            'checkout_display' => 1,
+        ]);
+
+        $order = $this->fixtures->create('order', [
+            'merchant_id' => Account::TEST_ACCOUNT,
+            'amount' => 1000,
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['offer_id'] = $offer->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $res = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_order_id', $res);
+        $this->assertArrayHasKey('razorpay_signature', $res);
+        $this->assertEquals($order->getPublicId(), $res['razorpay_order_id']);
+
+        $payment = $this->getLastEntity('payment');
+        $this->capturePayment($res['razorpay_payment_id'], $payment['amount']);
+
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'paid');
+
+        $order = $this->fixtures->create('order', [
+            'merchant_id' => Account::TEST_ACCOUNT,
+            'offer_id'    => $offer->getId(),
+            'amount'      => 1000,
+        ]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $res = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_order_id', $res);
+        $this->assertArrayHasKey('razorpay_signature', $res);
+        $this->assertEquals($order->getPublicId(), $res['razorpay_order_id']);
+
+        $payment = $this->getLastEntity('payment');
+        $this->capturePayment($res['razorpay_payment_id'], $payment['amount']);
+
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'paid');
+    }
+
     public function testPaymentOnOfferWithNullMethod()
     {
         $this->mockTokenex();

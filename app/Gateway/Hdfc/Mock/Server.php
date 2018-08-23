@@ -423,6 +423,8 @@ class Server extends Base\Mock\Server
 
         // assert ($this->data['udf5'] === 'PaymentID');
 
+        $this->request($this->data, $this->action);
+
         $payment = $this->getByGatewayTxnIdAndStatusExist('captured');
 
         if ($payment === false)

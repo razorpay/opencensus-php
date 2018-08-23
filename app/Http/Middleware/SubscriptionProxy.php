@@ -86,11 +86,31 @@ class SubscriptionProxy
     {
         $url = $request->path();
 
+        $body = [];
+
         if ($request->getQueryString() !== null)
         {
-            $url .= $request->getQueryString();
+            $url .= '?' . $request->getQueryString();
         }
 
+        if ($request->post() !== null)
+        {
+            $body = $request->post();
+        }
+
+        $headers = $this->getHeaders();
+
+        $method = $request->method();
+
+        $body = $this->getRequestBody($request);
+
+        $response = $this->sendRequestAndParseResponse($url, $method, $body, $headers);
+
+        return $response;
+    }
+
+    protected function getHeaders(): array
+    {
         $headers = [];
 
         if ($this->ba->getMerchantId() !== null)
@@ -101,18 +121,7 @@ class SubscriptionProxy
         $headers['X-Razorpay-Mode'] = $this->ba->getMode();
         $headers['X-Razorpay-Auth'] = $this->ba->getAuthType();
 
-        $method = $request->method();
-
-        $body = [];
-
-        if ($request->post() !== null)
-        {
-            $body = $request->post();
-        }
-
-        $response = $this->sendRequestAndParseResponse($url, $method, $body, $headers);
-
-        return $response;
+        return $headers;
     }
 
     protected function sendRequestAndParseResponse(
@@ -174,6 +183,46 @@ class SubscriptionProxy
             'connection timed out',
             'aborted due to timeout',
         ]);
+    }
+
+    protected function getRequestBody(Request $request)
+    {
+        if ($request->post() === null)
+        {
+            return [];
+        }
+
+        $queryStringArray = $this->getQueryStringAsArray($request->getQueryString());
+
+        return array_diff_assoc($request->post(), $queryStringArray);
+    }
+
+    protected function getQueryStringAsArray(string $queryString = null): array
+    {
+        $queryStringArray = [];
+
+        if ($queryString === null)
+        {
+            return $queryStringArray;
+        }
+
+        $queryStringChunks = explode('&', $queryString);
+
+        foreach ($queryStringChunks as $queryChunk)
+        {
+            $queryChunk = urldecode($queryChunk);
+
+            if (str_contains($queryChunk, '=') === true)
+            {
+                $queryStringArray[str_before($queryChunk, '=')] = str_after($queryChunk, '=');
+            }
+            else
+            {
+                $queryStringArray[$queryChunk] = '';
+            }
+        }
+
+        return $queryStringArray;
     }
 
     protected function shouldProxyToSubscriptionService(): bool

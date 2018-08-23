@@ -38,8 +38,7 @@ class GatewayManager extends \Illuminate\Support\Manager
         // Laravel helper function converts snake case to camel case
         $action = camel_case($action);
 
-        // Call function on actual gateway instance
-        return $gateway->$action($input);
+        return $gateway->call($action, $input);
     }
 
     protected function registerMocks($gatewayConfig)

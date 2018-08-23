@@ -50,6 +50,7 @@ class GenerateEmailTemplates extends Command
             'emails/merchant/settlement_failure',
             'emails/merchant/payzapp',
             'emails/merchant/welcome',
+            'emails/merchant/fee_credits_alert',
 
             'emails/partials/footer',
             'emails/partials/header',

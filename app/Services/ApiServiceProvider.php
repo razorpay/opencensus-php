@@ -186,6 +186,8 @@ class ApiServiceProvider extends BaseServiceProvider
             return new RazorXClient($app);
         });
 
+        $this->registerShieldClient();
+
         $this->app->singleton('beam', function($app)
         {
             return new BeamClient($app);
@@ -255,6 +257,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'sns',
             'pincodesearch',
             'razorx',
+            'shield.service',
             'beam',
         ];
     }
@@ -485,7 +488,7 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerShield()
+    protected function registerShieldClient()
     {
         $this->app->singleton('shield', function($app)
         {
@@ -494,6 +497,14 @@ class ApiServiceProvider extends BaseServiceProvider
             $implementation = $mock ? Mock\ShieldClient::class : ShieldClient::class;
 
             return new $implementation;
+        });
+    }
+
+    protected function registerShield()
+    {
+        $this->app->singleton('shield.service', function($app)
+        {
+            return new Shield($app);
         });
     }
 

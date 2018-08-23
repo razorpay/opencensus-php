@@ -536,6 +536,7 @@ class Reporting implements ExternalService
         $hasMarketplaceTag             = in_array(Feature::MARKETPLACE, $features, true);
         $hasOpenwalletTag              = in_array(Feature::OPENWALLET, $features, true);
         $hasMarketplaceOrOpenwalletTag = ($hasMarketplaceTag or $hasOpenwalletTag);
+        $hasOfferTag                   = in_array(Feature::OFFERS, $features, true);
 
         $items = $items->filter(function ($value, $key) use (
             $hasPlTag,
@@ -559,6 +560,13 @@ class Reporting implements ExternalService
                 default:
                     return true;
             }
+        });
+
+        $items = $items->filter(function ($value) use ($hasOfferTag)
+        {
+            return (($value['name'] === 'Offer Payments') and
+                ($value['type'] === Table::PAYMENT) and
+                ($value['consumer'] === Account::SHARED_ACCOUNT)) ? $hasOfferTag : true;
         });
 
         $configs['items'] = $items->values()->all();
