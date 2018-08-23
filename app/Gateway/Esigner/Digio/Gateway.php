@@ -415,7 +415,7 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $status = Status::NOTSIGNED;
+        $status = Status::UNSIGNED;
 
         if (isset($content['status']) === true)
         {
