@@ -145,14 +145,12 @@ class Gateway extends Base\Gateway
 
     protected function checkVerifyCallbackResponse($response, $input)
     {
-
         $this->checkMismatch($this->getFormattedAmount($response[Field::TRANSACTION_AMOUNT]),
             $this->getFormattedAmount($input[Field::TRANSACTION_AMOUNT]),
             $input,
             $response,
             'E001'
         );
-
 
         $this->checkMismatch(trim($response[Field::MERCHANT_PAN]),
             trim($input[Field::MERCHANT_PAN]),

@@ -133,9 +133,6 @@ return [
         'test_hash_secret2'    => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
         'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
-    'isg' => [
-        'bharat_qr_secret' => env('ISG_GATEWAY_BHARAT_QR_SECRET'),
-        ],
 
     'isg' => [
         'bharat_qr_secret' => env('ISG_GATEWAY_BHARAT_QR_SECRET'),

@@ -57,7 +57,7 @@ class NetbankingIciciRefundFileTest extends TestCase
             'type'        => 'icici_netbanking_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
-            'name' => "Icici_Netbanking_Refunds_test_$today",
+            'name'        => "Icici_Netbanking_Refunds_test_$today",
             'extension'   => 'xlsx',
         ];
 
