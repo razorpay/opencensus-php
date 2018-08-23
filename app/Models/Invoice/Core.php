@@ -82,6 +82,20 @@ class Core extends Base\Core
         $shouldFailOnDuplicateInternalRef = boolval($input['fail_existing'] ?? true);
         unset($input['fail_existing']);
 
+        //
+        // This happens when the invoice is being created for a subscription,
+        // but not internally via API. Instead, the request has come to
+        // API from SubServ. In this case, we don't have a subscription
+        // object, but do need to set the id in invoice entity.
+        //
+        if (($subscription === null) and
+            (empty($input[Entity::SUBSCRIPTION_ID]) === false))
+        {
+            $subscription = $input[Entity::SUBSCRIPTION_ID];
+
+            unset($input[Entity::SUBSCRIPTION_ID]);
+        }
+
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
                         ->setBatch($batch)

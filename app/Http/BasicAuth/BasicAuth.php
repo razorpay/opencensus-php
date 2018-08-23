@@ -1246,6 +1246,13 @@ class BasicAuth
         return ($this->getInternalApp() === 'dashboard');
     }
 
+    public function isDebugApp()
+    {
+        $app = $this->getInternalApp();
+
+        return Route::isDebugApp($app);
+    }
+
     public function isCron()
     {
         return ($this->getInternalApp() === 'cron');

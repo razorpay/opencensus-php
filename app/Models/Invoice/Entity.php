@@ -1012,6 +1012,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SUBSCRIPTION_STATUS, $subscriptionStatus);
     }
 
+    public function setSubscriptionId(string $subscriptionId)
+    {
+        $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
+    }
+
     public function setShortUrl(string $shortUrl)
     {
         $this->setAttribute(self::SHORT_URL, $shortUrl);

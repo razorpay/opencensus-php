@@ -2190,6 +2190,15 @@ final class Route
         ],
     ];
 
+    //
+    // Apps that receive a debug error response by default. We do
+    // this because the receiving app may required extra information
+    // like internal_error_code to correctly handle exceptions
+    //
+    const DEBUG_APPS = [
+        'subscriptions',
+    ];
+
     protected static $jsonpRoutes = [
         'checkout',
         'payment_create_jsonp',
@@ -2669,6 +2678,11 @@ final class Route
         $currentRoute = $this->getCurrentRouteName();
 
         return (in_array($currentRoute, self::SUBSCRIPTION_PROXY_ROUTES, true) === true);
+    }
+
+    public static function isDebugApp(string $app = null): bool
+    {
+        return (in_array($app, self::DEBUG_APPS, true) === true);
     }
 
     public function getHashOf(string $string): string
