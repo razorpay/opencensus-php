@@ -45,6 +45,7 @@ class UserRolesScope
             'invitation_delete' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
             'invitation_edit'   => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
             'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+            'invitation_fetch'  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
 
             // merchant routes
             'balance_fetch'                       => array_merge(
@@ -62,6 +63,7 @@ class UserRolesScope
             ],
             'merchant_edit_email_la'              => [Role::OWNER, Role::ADMIN],
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],
+            'merchant_fetch_keys'                 => [Role::OWNER, Role::ADMIN],
             'merchant_edit_config_logo'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_fetch_config'               => Role::allExceptPaymentLinkRoles(),
             'merchant_fetch_referrals'            => Role::allExceptPaymentLinkRoles(),
@@ -70,6 +72,9 @@ class UserRolesScope
             'merchant_add_bank_account'           => [Role::OWNER, Role::ADMIN],
             'merchant_bank_account_change_status' => [Role::OWNER, Role::ADMIN],
             'create_submerchant_user'             => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+
+            // Merchant user routes
+            'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
 
             // webhook routes
             'webhook_create'         => [Role::OWNER, Role::MANAGER, Role::ADMIN],
