@@ -373,7 +373,8 @@ class Gateway extends Base\Gateway
                 'response_body' => $response->body,
                 'content'       => $verify->verifyResponseContent,
                 'payment_id'    => $verify->input['payment']['id'],
-                'status_code'   => $response->status_code
+                'status_code'   => $response->status_code,
+                'gateway'       => $this->gateway,
             ]);
     }
 
