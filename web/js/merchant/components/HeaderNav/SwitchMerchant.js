@@ -26,7 +26,8 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
                 containerClass="switch-merchant__Tether"
               >
                 <PopoverBody>
-                  <div>{option.name}</div>
+                  <div>{option.display_name || option.name}</div>
+                  <div class="text--secondary">({option.name})</div>
                 </PopoverBody>
               </Popover>
             </span>
