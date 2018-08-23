@@ -86,10 +86,6 @@ app
               name: 'Individual',
               value: 2,
             },
-            5: {
-              name: 'Not yet registered',
-              value: 11,
-            },
             6: {
               name: 'Public Limited',
               value: 5,
@@ -326,6 +322,7 @@ app
         pushToDrip();
         invokeAdroll();
         invokeGtag();
+        invokeBing();
 
         // Fire linkedin Pixel.
         var i = new Image();
@@ -485,7 +482,7 @@ app
         (function() {
           var _onload = function() {
             // Use only on prod.
-            if (window.location.hostname != 'dashboard.razorpay.com') {
+            if (window.location.hostname !== 'dashboard.razorpay.com') {
               return;
             }
 
@@ -524,10 +521,26 @@ app
       };
 
       /**
+       * Invoke Bing for conversion tracking.
+       */
+      var invokeBing = function invokeBing() {
+        if (window.location.hostname !== 'dashboard.razorpay.com') {
+          return;
+        }
+        window.uetq = window.uetq || [];
+        window.uetq.push({
+          ec: 'bing',
+          ea: 'click',
+          el: 'connecttobing',
+          ev: 1,
+        });
+      };
+
+      /**
        * Invokes GTAG for conversion tracking.
        */
       var invokeGtag = function invokeGtag() {
-        if (window.location.hostname != 'dashboard.razorpay.com') {
+        if (window.location.hostname !== 'dashboard.razorpay.com') {
           return;
         }
         gtag('event', 'conversion', {

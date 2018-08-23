@@ -70,8 +70,8 @@ export default function UploadReconciliationFile() {
       </SelectField>
       <FileField multiple label="Attach Multiple Files" name="files" />
       <TextAreaField
-        label="Force Authorization"
-        name="force_authorization"
+        label="Force Authorize"
+        name="force_authorize"
         placeholder="Enter comma separated ids"
       />
       <AsyncButton
@@ -89,9 +89,9 @@ export default function UploadReconciliationFile() {
             'attachment-count': files.length || 0,
             gateway: data.gateway,
           };
-          if (data.force_authorization) {
-            form.force_authorization = splitAndFilter(
-              data.force_authorization,
+          if (data.force_authorize) {
+            form.force_authorize = splitAndFilter(
+              data.force_authorize,
               ','
             );
           }
