@@ -307,6 +307,12 @@ class ApiRequestAny
         $response = null;
         $method = $method ?? Request::method();
 
+        // In some cases (for instance dashboard merchant searches)
+        // $path ends up having URLs which triggers `cURL error 6: Could not resolve host`
+        // because Guzzle doesn't attach $path to the base_url set above
+        // if it contains `://`
+        $path = str_replace('://', '', $path);
+
         try
         {
             $response = $this->client
