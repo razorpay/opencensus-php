@@ -14,7 +14,7 @@ class RefundReconciliate extends Base\RefundReconciliate
 {
     public function getRefundId(array $row)
     {
-        return $row[ReconcilationFields::MERCHANT_TRACK_ID] ?? null;
+        return $row[ReconciliationFields::MERCHANT_TRACK_ID] ?? null;
     }
 
     protected function getGatewayRefund(string $refundId)
@@ -26,10 +26,10 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getGatewaySettledAt(array $row)
     {
-        if (empty($row[ReconcilationFields::PAYMENT_DATE]) === false)
+        if (empty($row[ReconciliationFields::PAYMENT_DATE]) === false)
         {
             $date = Carbon::createFromFormat('d-m-Y',
-                                             $row[ReconcilationFields::PAYMENT_DATE],
+                $row[ReconciliationFields::PAYMENT_DATE],
                                              Timezone::IST)->timestamp;
             return $date;
         }
@@ -37,24 +37,24 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getArn(array $row)
     {
-        $onusIndicator = $row[ReconcilationFields::ONUS_INDICATOR];
+        $onusIndicator = $row[ReconciliationFields::ONUS_INDICATOR];
 
         if ($onusIndicator === 'YES')
         {
 
         }
 
-        return $row[ReconcilationFields::RRN] ?? null;
+        return $row[ReconciliationFields::RRN] ?? null;
     }
 
     protected function getReconRefundAmount(array $row)
     {
-        if (isset($row[ReconcilationFields::TRANSACTION_AMOUNT]) === false)
+        if (isset($row[ReconciliationFields::TRANSACTION_AMOUNT]) === false)
         {
             return null;
         }
 
-        $refundAmount = Base\Helper::getIntegerFormattedAmount($row[ReconcilationFields::TRANSACTION_AMOUNT]);
+        $refundAmount = Base\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
 
         return abs($refundAmount);
     }
@@ -87,7 +87,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      * The card_fss entity ref column should be updated with arn
      * It should be set as ref setReferenceNumberInGateway
      * in the gateway entity.
-     * @param string       $referenceNumber
+     * @param string $arn
      * @param PublicEntity $gatewayPayment CardFss Entity
      * */
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
@@ -97,14 +97,14 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getReconCurrencyCode($row)
     {
-        if (empty(ReconcilationFields::TRANSACTION_CURRENCY_CODE) === true)
+        if (empty(ReconciliationFields::TRANSACTION_CURRENCY_CODE) === true)
         {
-            $this->reportMissingColumn($row, ReconcilationFields::TRANSACTION_CURRENCY_CODE);
+            $this->reportMissingColumn($row, ReconciliationFields::TRANSACTION_CURRENCY_CODE);
 
             return null;
         }
 
-        return $row[ReconcilationFields::TRANSACTION_CURRENCY_CODE];
+        return $row[ReconciliationFields::TRANSACTION_CURRENCY_CODE];
     }
 
     protected function validateRefundCurrencyEqualsReconCurrency(array $row) : bool

@@ -17,7 +17,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 {
     public function getPaymentId(array $row)
     {
-        return $row[ReconcilationFields::MERCHANT_TRACK_ID] ?? null;
+        return $row[ReconciliationFields::MERCHANT_TRACK_ID] ?? null;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
@@ -46,7 +46,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReconPaymentAmount($row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[ReconcilationFields::TRANSACTION_AMOUNT]);
+        return Base\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
     }
 
     protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
@@ -75,7 +75,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReconCurrencyCode($row)
     {
-        return $row[ReconcilationFields::TRANSACTION_CURRENCY_CODE];
+        return $row[ReconciliationFields::TRANSACTION_CURRENCY_CODE];
     }
 
     /**
@@ -85,9 +85,19 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @param $row
      * @return string
      */
+    public function getArn($row)
+    {
+        $onusIndicator = $row[ReconciliationFields::ONUS_INDICATOR];
+
+        if ($onusIndicator === 'YES')
+        {
+            return $row[ReconciliationFields::RRN] ?? null;
+        }
+    }
+
     public function getReferenceNumber($row)
     {
-        return $row[ReconcilationFields::RRN] ?? null;
+        return $row[ReconciliationFields::RRN] ?? null;
     }
 
     /**
@@ -109,7 +119,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayPaymentDate($row)
     {
-        return $row[ReconcilationFields::TRANSACTION_DATE];
+        return $row[ReconciliationFields::TRANSACTION_DATE];
     }
 
     protected function getCardDetails($row)
@@ -129,7 +139,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getCardType($row)
     {
-        $cardType = explode(' ', strtolower($row[ReconcilationFields::PAYMENT_METHOD]))[0];
+        $cardType = explode(' ', strtolower($row[ReconciliationFields::PAYMENT_METHOD]))[0];
 
         if (in_array($cardType, [BaseReconciliate::DEBIT, BaseReconciliate::CREDIT]) === false)
         {
@@ -155,7 +165,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getCardLocale($row)
     {
-      $cardLocale = strtolower($row[ReconcilationFields::DESTINATION]);
+      $cardLocale = strtolower($row[ReconciliationFields::DESTINATION]);
 
         if (in_array($cardLocale, [BaseReconciliate::DOMESTIC, BaseReconciliate::INTERNATIONAL]) === false)
         {
@@ -182,7 +192,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getIssuer($row)
     {
-        $onusIndicator = $row[ReconcilationFields::ONUS_INDICATOR];
+        $onusIndicator = $row[ReconciliationFields::ONUS_INDICATOR];
 
         if ($onusIndicator === 'YES')
         {
@@ -199,7 +209,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getCardTrivia($row)
     {
-        return $row[ReconcilationFields::INTERCHANGE_CATEGORY] ?? null;
+        return $row[ReconciliationFields::INTERCHANGE_CATEGORY] ?? null;
     }
 
     /**
@@ -209,18 +219,18 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getGatewayServiceTax($row)
     {
-        $tax = abs($row[ReconcilationFields::GST]) + abs($row[ReconcilationFields::CSF_TAX]);
+        $tax = abs($row[ReconciliationFields::GST]) + abs($row[ReconciliationFields::CSF_TAX]);
 
         return Base\Helper::getIntegerFormattedAmount($tax);
     }
 
     protected function getGatewayFee($row)
     {
-        $lateSettelementFee = $row[ReconcilationFields::LATE_SETTLEMENT_FEE_AMOUNT];
+        $lateSettelementFee = $row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT];
 
-        $rrfAmount = $row[ReconcilationFields::RRF_AMOUNT];
+        $rrfAmount = $row[ReconciliationFields::RRF_AMOUNT];
 
-        $msfAmount = abs($row[ReconcilationFields::MSF_AMOUNT]);
+        $msfAmount = abs($row[ReconciliationFields::MSF_AMOUNT]);
 
         $tax = $this->getGatewayServiceTax($row);
 
@@ -236,27 +246,44 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getGatewayTransactionId(array $row)
     {
-        return $row[ReconcilationFields::PG_TRANSACTION_ID] ?? null;
+        return $row[ReconciliationFields::PG_TRANSACTION_ID] ?? null;
     }
 
     protected function getGatewaySettledAt(array $row)
     {
-        if(empty($row[ReconcilationFields::PAYMENT_DATE]) === false)
+        if(empty($row[ReconciliationFields::PAYMENT_DATE]) === false)
         {
-            return Carbon::createFromFormat('d-m-Y', $row[ReconcilationFields::PAYMENT_DATE], Timezone::IST)->timestamp;
+            return Carbon::createFromFormat('d-m-Y', $row[ReconciliationFields::PAYMENT_DATE], Timezone::IST)->timestamp;
         }
     }
 
     protected function getAuthCode($row)
     {
-        if (empty($row[ReconcilationFields::AUTH_CODE]) === true)
+        if (empty($row[ReconciliationFields::AUTH_CODE]) === true)
         {
-            $this->reportMissingColumn($row, ReconcilationFields::AUTH_CODE);
+            $this->reportMissingColumn($row, ReconciliationFields::AUTH_CODE);
 
             return null;
         }
 
-        return $row[ReconcilationFields::AUTH_CODE];
+        return $row[ReconciliationFields::AUTH_CODE];
+    }
+
+    /**
+     * In MIS file, we are not receiving ARN hence storing RRN in reference1 field of payment entity.
+     * This is done because for reporting purposes, we need reference number in payment entity.
+     * @param $rowDetails
+     */
+    protected function setPaymentAcquirerData($rowDetails)
+    {
+        if (empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false)
+        {
+            $this->setPaymentReference1($rowDetails[BaseReconciliate::REFERENCE_NUMBER]);
+        }
+        if (empty($rowDetails[BaseReconciliate::AUTH_CODE]) === false)
+        {
+            $this->setPaymentReference2($rowDetails[BaseReconciliate::AUTH_CODE]);
+        }
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace RZP\Reconciliator\Bob;
 
-class ReconcilationFields
+class ReconciliationFields
 {
     const TRANSACTION_DATE           = 'transaction_date';
 
