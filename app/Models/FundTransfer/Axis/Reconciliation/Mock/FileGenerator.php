@@ -109,6 +109,11 @@ class FileGenerator extends Generator
             $data[Headings::RETURN_REASON]  = array_random($errorMessages);
         }
 
+        if ($this->generateReturnSettledReconciliation == true)
+        {
+            $data[Headings::STATUS]  = Status::RETURNSETTLED;
+        }
+
         return $data;
     }
 }
