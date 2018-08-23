@@ -106,7 +106,6 @@ class Server extends Base\Mock\Server
                 'status'       => 'downloaded',
                 'last_updated' => "2017-11-13 13:44:46"
             ]
-
         ];
 
         return $data;

@@ -1316,9 +1316,9 @@ class EnachRblGatewayTest extends TestCase
 
     protected function mockPaymentRequestTimeout()
     {
-        $this->mockServerContentFunction(function (& $content, $action = null)
+        $this->mockServerContentFunction(function(& $content, $action = null)
         {
-            if($action == 'callback')
+            if($action === 'callback')
             {
                 throw new Exception\GatewayTimeoutException('Gateway timed out');
             }
