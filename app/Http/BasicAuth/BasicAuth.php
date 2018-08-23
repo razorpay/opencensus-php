@@ -687,6 +687,8 @@ class BasicAuth
             return $this->publicAuth();
         }
 
+        $this->authCreds = new KeyAuthCreds($this->app);
+
         $this->setType(Type::DIRECT_AUTH);
     }
 
