@@ -62,6 +62,7 @@ final class Route
         'payment_refund'                           => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
+        'payment_get_flows_private'                => ['post',     'payment/flows',                                  'PaymentController@getPaymentFlowsPrivate'                          ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_create_admin'                       => ['post',     'admin/batches',                                  'AdminController@createAdminBatch'                                  ],
@@ -816,6 +817,7 @@ final class Route
         // TODO: Should change to just /signed_url (No 'get' and underscore)
         'ufh_get_file_signed_url'                  => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
 
+        'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -1072,6 +1074,7 @@ final class Route
         'account_features_get',
         'payment_acknowledge',
         'bharat_qr_pay_test',
+        'payment_get_flows_private',
     ];
 
     // Only routes defined in internalApps go here
@@ -1607,6 +1610,7 @@ final class Route
         'shield_rules_delete',
         'shield_rules_evaluate',
 
+        'razorx_route',
         'user_fetch_admin',
         'merchant_requests_list',
         'merchant_requests_update',
@@ -1957,6 +1961,7 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
+        'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'invoice_issue_by_batch'                   => '*',
         'invoice_notify_by_batch'                  => '*',
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
@@ -2312,13 +2317,12 @@ final class Route
 
     const SUBSCRIPTION_PROXY_ROUTES = [
         'plan_create',
-        'plan_create',
         'plan_fetch',
         'plan_fetch_multiple',
         'subscription_create',
         'subscription_fetch',
         'subscription_fetch_multiple',
-        'subscription_cancel',
+        // 'subscription_cancel',
         'addon_fetch',
         'addon_fetch_multiple',
         'addon_delete',
@@ -2548,6 +2552,12 @@ final class Route
         $methods = explode(',', $info[0]);
         $uri     = $info[1];
         $action  = $info[2];
+
+        // For any we have to register all the methods their is no specific called any in HTTP methods.
+        if ($methods === ['any'])
+        {
+            $methods = Router::$verbs;
+        }
 
         $router = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
 

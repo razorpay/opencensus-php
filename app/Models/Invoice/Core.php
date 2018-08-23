@@ -79,9 +79,13 @@ class Core extends Base\Core
 
         $this->modifyInputToHandleRenamedAttributes($input);
 
+        $shouldFailOnDuplicateInternalRef = boolval($input['fail_existing'] ?? true);
+        unset($input['fail_existing']);
+
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
                         ->setBatch($batch)
+                        ->setShouldFailOnDuplicateInternalRef($shouldFailOnDuplicateInternalRef)
                         ->generate($input);
 
         $this->trace->info(TraceCode::INVOICE_CREATED, $invoice->toArrayPublic());

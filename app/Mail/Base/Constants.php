@@ -27,6 +27,7 @@ class Constants
     const SETTLEMENT_ALERTS = 'settlement_alert';
     const PRODUCT_OAUTH     = 'product_oauth';
     const BEAM_FAILURE      = 'beam_failure';
+    const CREDITS_ALERTS    = 'credit_alerts';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT           => 'support@razorpay.com',
@@ -50,7 +51,8 @@ class Constants
         self::NOREPLY           => 'no-reply@razorpay.com',
         self::RECON             => 'pgrecon@razorpay.com',
         self::SETTLEMENT_ALERTS => 'settlement.alerts@razorpay.com',
-        self::PRODUCT_OAUTH     => 'product.oauth@razorpay.com'
+        self::PRODUCT_OAUTH     => 'product.oauth@razorpay.com',
+        self::CREDITS_ALERTS    => 'credit.alerts@razorpay.com',
     ];
 
     const HEADERS = [

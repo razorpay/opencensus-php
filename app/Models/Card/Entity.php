@@ -528,16 +528,12 @@ class Entity extends Base\PublicEntity
 
         $auth = $app['basicauth'];
 
-        $allowedMerchantIds = [
-            Merchant\Preferences::MID_ICICI_LOMBARD
-        ];
-
-        $allowedMerchantIds = array_merge($allowedMerchantIds, Merchant\Preferences::MID_ENDURANCE);
-
         // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
         // https://razorpay.slack.com/archives/C3GF5LWJK/p1525965476000128
-        $allowed = (($auth->isPrivilegeAuth() === false) and
-                    (in_array($cardMerchant, $allowedMerchantIds, true) === true));
+        $allowed = (($auth->isAdminAuth() === true) or
+                    (($auth->isPrivilegeAuth() === false) and
+                     (($auth->getMerchant() !== null) and
+                      ($auth->getMerchant()->isExposeCardExpiryEnabled() === true))));
 
         return $allowed;
     }

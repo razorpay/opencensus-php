@@ -35,7 +35,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
 use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Payment\TwoFactorAuth;
+use RZP\Models\Payment\RecurringType;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action as BaseAction;
 use App;
@@ -79,6 +79,8 @@ class Gateway extends Base\Gateway
     const TIMEOUT = 60;
 
     const VERIFY_TIMEOUT = 60;
+
+    protected $secondDebitRecurringFlag = null;
 
     /**
      * Parameters required to construct request
@@ -628,11 +630,16 @@ class Gateway extends Base\Gateway
 
         if ($this->shouldMigrateToIpay() === true)
         {
-            $domain = ($this->mode === Mode::LIVE) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN;
+            $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN;
+
+            if ($this->secondDebitRecurringFlag === true)
+            {
+                $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN_V2;
+            }
         }
         else
         {
-            $domain = ($this->mode === Mode::LIVE) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
+            $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
         }
 
         $request['url'] = $domain . $request['url'];
@@ -958,6 +965,22 @@ class Gateway extends Base\Gateway
         $this->checkForErrorInPares($PaRes, $input);
 
         $this->checkValidParesStatus($PaRes);
+    }
+
+    protected function setDebitSecondRecurringPayment(array $input)
+    {
+        $payment = $input['payment'];
+        
+        $this->secondDebitRecurringFlag = false;
+
+        // For second recurring payment, recurring type has to be auto
+        if ((isset($payment[PaymentEntity::RECURRING_TYPE]) === true) and
+            ($payment[PaymentEntity::RECURRING_TYPE] === RecurringType::AUTO) and
+            ($payment['method'] === 'card') and
+            ($input['card']['type'] === Card\Type::DEBIT))
+        {
+            $this->secondDebitRecurringFlag = true;
+        }
     }
 
     protected function checkForErrorInPares(array $PaRes, array $input)

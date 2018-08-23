@@ -10,7 +10,8 @@ RUN apk add --allow-untrusted --no-cache \
     update-ca-certificates 2>/dev/null && \
     cd /tmp && git clone https://github.com/razorpay/docker-alpine-wkhtmltopdf.git && \
     mv docker-alpine-wkhtmltopdf/wkhtmltopdf /usr/bin/wkhtmltopdf && \
-    rm -rf docker-alpine-wkhtmltopdf
+    rm -rf docker-alpine-wkhtmltopdf && \
+    mkdir /var/www/.gnupg && chown -R apache:www-data /var/www/.gnupg
 
 ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 

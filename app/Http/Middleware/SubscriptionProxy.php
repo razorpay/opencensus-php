@@ -102,6 +102,8 @@ class SubscriptionProxy
 
         $method = $request->method();
 
+        $body = $this->getRequestBody($request);
+
         $response = $this->sendRequestAndParseResponse($url, $method, $body, $headers);
 
         return $response;
@@ -181,6 +183,46 @@ class SubscriptionProxy
             'connection timed out',
             'aborted due to timeout',
         ]);
+    }
+
+    protected function getRequestBody(Request $request)
+    {
+        if ($request->post() === null)
+        {
+            return [];
+        }
+
+        $queryStringArray = $this->getQueryStringAsArray($request->getQueryString());
+
+        return array_diff_assoc($request->post(), $queryStringArray);
+    }
+
+    protected function getQueryStringAsArray(string $queryString = null): array
+    {
+        $queryStringArray = [];
+
+        if ($queryString === null)
+        {
+            return $queryStringArray;
+        }
+
+        $queryStringChunks = explode('&', $queryString);
+
+        foreach ($queryStringChunks as $queryChunk)
+        {
+            $queryChunk = urldecode($queryChunk);
+
+            if (str_contains($queryChunk, '=') === true)
+            {
+                $queryStringArray[str_before($queryChunk, '=')] = str_after($queryChunk, '=');
+            }
+            else
+            {
+                $queryStringArray[$queryChunk] = '';
+            }
+        }
+
+        return $queryStringArray;
     }
 
     protected function shouldProxyToSubscriptionService(): bool

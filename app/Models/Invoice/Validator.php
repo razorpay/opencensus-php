@@ -67,6 +67,7 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
+        Entity::INTERNAL_REF        => 'filled|string|min:1|max:64',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::VIEW_LESS           => 'filled|in:1',
         Entity::SOURCE              => 'filled|string|max:32|custom',

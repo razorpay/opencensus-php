@@ -695,7 +695,7 @@ class ApiEventSubscriber extends Base\Core
     {
         $appConnections = $this->repo
                                ->merchant_access_map
-                               ->fetchMerchantAccessMapsOnEntity($merchantId, WebhookEntity::APPLICATION);
+                               ->fetchMerchantAccessMapsOnEntityType($merchantId, WebhookEntity::APPLICATION);
 
         if (count($appConnections) === 0)
         {

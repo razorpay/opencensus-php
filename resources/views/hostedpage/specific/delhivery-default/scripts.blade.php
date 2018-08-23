@@ -22,7 +22,7 @@
             var parentEle = document.querySelector('[data-schemapath="root.payment_type"]').getElementsByClassName('form-group')[0];
             parentEle.append(p);
 
-            editor.watch('root.service_type', function () {
+            editor.watch('root.payment_type', function () {
                 evalPaymentType();
             });
         }
@@ -148,7 +148,7 @@
             return editor;
         }
 
-        function submitForm() {
+        function submitForm(e) {
             var errors = editor.validate();
             console.log(errors);
             var hasError;
@@ -203,6 +203,8 @@
                 }
 
             }, 10); // If blur happens directly through click on submit btn, so 'has-error' class won't be put until delayed.
+
+            e.preventDefault();
         }
 
         function addListeners_Validators() {

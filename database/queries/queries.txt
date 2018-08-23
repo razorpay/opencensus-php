@@ -4170,3 +4170,11 @@ ALTER TABLE transactions
 
 ALTER TABLE bank_transfers
     ADD COLUMN gateway VARCHAR(255) DEFAULT NULL AFTER virtual_account_id;
+
+ALTER TABLE invoices
+    ADD COLUMN internal_ref VARCHAR(64) DEFAULT NULL AFTER CALLBACK_METHOD,
+    ADD INDEX invoices_internal_ref_merchant_id_index (internal_ref, merchant_id);
+
+ALTER TABLE refunds
+    ADD INDEX `refunds_gateway_index` (`gateway`);
+
