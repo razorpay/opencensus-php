@@ -35,28 +35,17 @@ class RawApiRequest
      * @param array $auth of auth (proxy|admin)
      * @param string $path relative path of the request
      */
-    function __construct($input, $path, $autoBuildQuery = true)
+    function __construct($input, $path, $headers = [],$autoBuildQuery = true)
     {
         // Increase the time limit
         set_time_limit(600);
-
-        $allRequestHeaders = Request::header();
-        $headersToBeAppended = [];
-
-        foreach($allRequestHeaders as $headerKey => $headerValue) {
-            if (stripos($headerKey, 'X-') !== false) {
-                // $headerValue is an array
-                // with first value being the value sent from client
-                $headersToBeAppended[$headerKey] = $headerValue[0];
-            }
-        }
 
         $options = [
             'base_url' => ApiUrl::getApiBaseUrl(),
             // We already have a few headers initialized for this class
             // including the X-Dashboard and Razorpay-API Header
             'defaults' => [
-                'headers'   =>  ApiRequest::getHeaders() + $headersToBeAppended + [
+                'headers'   =>  ApiRequest::getHeaders() + $headers + [
                     'X-Dashboard'   => 'true',
                     'X-User-Agent'  => Request::header('User-Agent'),
                     'X-IP-Address'  => Request::ip(),

@@ -12,8 +12,10 @@ use Queue;
 use Crypt;
 use Input;
 use Config;
+use Request;
 use Session;
 use Requests;
+
 use App\Base;
 use App\User;
 use Exception;
@@ -866,7 +868,18 @@ class Service extends Base\Service
             return [$error, []];
         }
 
-        $request = new RawApiRequest($input, $path);
+        $allRequestHeaders = Request::header();
+        $headersToBeAppended = [];
+
+        foreach($allRequestHeaders as $headerKey => $headerValue) {
+            if (stripos($headerKey, 'X-') !== false) {
+                // $headerValue is an array
+                // with first value being the value sent from client
+                $headersToBeAppended[$headerKey] = $headerValue[0];
+            }
+        }
+
+        $request = new RawApiRequest($input, $path, $headersToBeAppended);
         return $request->send();
     }
 
