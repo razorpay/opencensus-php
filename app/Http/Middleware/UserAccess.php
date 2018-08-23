@@ -65,7 +65,8 @@ class UserAccess
     public function handle($request, Closure $next)
     {
         if (($this->ba->isAdminAuth() === false) and
-            ($this->ba->isStrictPrivateAuth() === false))
+            ($this->ba->isStrictPrivateAuth() === false) and
+            ($this->ba->isDashboardApp() === true))
         {
             $route = $this->router->currentRouteName();
 

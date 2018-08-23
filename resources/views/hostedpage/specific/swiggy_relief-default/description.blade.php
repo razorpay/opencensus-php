@@ -11,7 +11,7 @@
     @if($fund_type === 'kerala')
         <p>Kerala has been hit by relentless rain for the last two weeks. Rains, floods and landslides have resulted in loss of life and extensive damage in the state.</p>
         <p>Your contribution can go a long way in rebuilding the lives of flood-affected people in Kerala.</p>
-        <p>Donations made will not be refunded. You contribution will be tax exempt under section 80G. The Govt of Kerala will be issuing tax receipts directly to all patrons in due course of time.</p>
+        <p>Donations made will not be refunded. Your contribution will be tax exempt under section 80G. The Govt of Kerala will be issuing tax receipts directly to all patrons in due course of time.</p>
         <p>Wish to contribute to the Karnataka Relief Fund instead? <a href="https://pages.razorpay.com/SwiggyReliefKarnataka">Click here</a></p>
     @else
         <p>Kodagu in Karnataka has been hit by relentless rain for the last two weeks. Rains, floods and landslides have resulted in loss of life and extensive damage in the state.</p>

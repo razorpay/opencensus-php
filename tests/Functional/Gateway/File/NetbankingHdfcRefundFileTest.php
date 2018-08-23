@@ -76,6 +76,13 @@ class NetbankingHdfcRefundFileTest extends TestCase
 
             $this->assertNotEmpty($mail->attachments);
 
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
+
             return ($mail->hasFrom('refunds@razorpay.com') and
                     ($mail->hasTo(RefundFileMailConstants::RECIPIENT_EMAILS_MAP[Gateway::NETBANKING_HDFC])));
         });

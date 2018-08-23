@@ -82,6 +82,13 @@ class NetbankingIciciRefundFileTest extends TestCase
             $this->assertCount(10, $sheet[0]);
             $this->assertEquals($sheet[0]['refund_amount'], 500);
 
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
+
             return ($mail->hasFrom('refunds@razorpay.com') and
                     ($mail->hasTo(RefundFileMailConstants::RECIPIENT_EMAILS_MAP[Gateway::NETBANKING_ICICI])));
         });

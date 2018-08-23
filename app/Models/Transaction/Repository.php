@@ -545,6 +545,23 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * Updated reconciled_at to current time for given entities
+     *
+     * @param $entityIds
+     * @return mixed
+     */
+    public function bulkReconciliationUpdate($entityIds)
+    {
+        $time = time();
+
+        $attributes = [Entity::RECONCILED_AT => $time];
+
+        return $this->newQuery()
+                    ->whereIn(Entity::ENTITY_ID, $entityIds)
+                    ->update($attributes);
+    }
+
     public function getCancelledBilldeskTransactions()
     {
         $billdeskPaymentId = Billdesk\Entity::dbColumn(Billdesk\Entity::PAYMENT_ID);

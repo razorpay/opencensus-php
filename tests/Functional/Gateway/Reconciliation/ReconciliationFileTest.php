@@ -343,6 +343,40 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testCardFssForceAuthorizePayment()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment1 =$this->doAuthAndGetPayment($payment);
+
+        $this->fixtures->payment->edit($payment1['id'],
+            [
+                'status' => 'failed',
+                'error_code' => 'BAD_REQUEST_ERROR',
+            ]);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('card_fss');
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideCardFssPayment($gatewayPayment, [], 'card_fss');
+
+        $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'payment');
+        $this->runForFiles([$file], 'CardFss', [], ['pay_'. $payment['id']]);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+    }
+
     public function testVirtualAccYesBankReconFile()
     {
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);

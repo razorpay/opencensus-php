@@ -70,7 +70,7 @@ return [
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
                 'method'         => 'netbanking',
-                'bank'           => 'SBIN',
+                'bank'           => 'CBIN',
                 'account_number' => '04030403040304',
             ],
             'method'    => 'POST',
@@ -136,7 +136,7 @@ return [
     'testPaymentNetbankingEntity' => [
         'bank_payment_id' => '99999999',
         'received'        => true,
-        'bank_name'       => 'SBIN',
+        'bank_name'       => 'CBIN',
         'status'          => 'Ok',
     ],
 

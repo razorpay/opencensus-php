@@ -58,11 +58,10 @@ class Core extends Base\Core
     {
         try
         {
-            $func = 'logPaymentFor' . studly_case($source);
-
-            if (method_exists($this, $func) === true)
+            if (Source::isValidSource($source) === true)
             {
-                return $this->{$func}($payment, $data);
+                $data[Entity::SOURCE] = $source;
+                return $this->create($payment, $data);
             }
 
             throw new Exception\LogicException(
@@ -84,52 +83,5 @@ class Core extends Base\Core
 
             return null;
         }
-    }
-
-    protected function logPaymentForGateway(
-        Payment\Entity $payment, array $data)
-    {
-        // Source is present as part of the data
-
-        return $this->create($payment, $data);
-    }
-
-    protected function logPaymentForBank(
-        Payment\Entity $payment, array $data)
-    {
-        // Source is present as part of the data
-
-        return $this->create($payment, $data);
-    }
-
-    protected function logPaymentForManual(
-        Payment\Entity $payment, array $data)
-    {
-        $data[Entity::SOURCE] = Source::MANUAL;
-
-        return $this->create($payment, $data);
-    }
-
-    protected function logPaymentForMaxmind(
-        Payment\Entity $payment, array $data)
-    {
-        $data[Entity::SOURCE] = Source::MAXMIND;
-
-        return $this->create($payment, $data);
-    }
-
-    protected function logPaymentForInternal(
-        Payment\Entity $payment, array $data)
-    {
-        $data[Entity::SOURCE] = Source::INTERNAL;
-
-        return $this->create($payment, $data);
-    }
-
-    protected function logPaymentForShield(Payment\Entity $payment, array $data): Entity
-    {
-        $data[Entity::SOURCE] = Source::SHIELD;
-
-        return $this->create($payment, $data);
     }
 }

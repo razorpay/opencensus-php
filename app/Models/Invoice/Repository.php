@@ -52,6 +52,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID       => 'sometimes|alpha_num',
         Entity::ORDER_ID          => 'sometimes|string|max:20',
+        Entity::INTERNAL_REF      => 'sometimes|alpha_num|max:64',
     ];
 
     protected $signedIds = [
@@ -177,10 +178,10 @@ class Repository extends Base\Repository
                          ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
                          ->where(Entity::STATUS, '=', Status::ISSUED)
                          ->where(function($query)
-                           {
+                         {
                                 $query->where(Entity::SUBSCRIPTION_STATUS, '!=', Status::HALTED)
                                       ->orWhereNull(Entity::SUBSCRIPTION_STATUS);
-                           })
+                         })
                          ->with(Entity::ORDER)
                          ->get();
 
@@ -420,6 +421,15 @@ class Repository extends Base\Repository
                     ->whereNotIn(Entity::STATUS, [Status::CANCELLED, Status::EXPIRED])
                     ->where(Entity::ID, '!=', $invoice->getId())
                     ->count() > 0;
+    }
+
+    public function findDuplicateInvoiceByInternalRefForMerchant(Entity $invoice, string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::INTERNAL_REF, $invoice->getInternalRef())
+                    ->merchantId($merchantId)
+                    ->where(Entity::ID, '!=', $invoice->getId())
+                    ->first();
     }
 
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)

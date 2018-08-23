@@ -39,6 +39,7 @@ class PublicController extends Controller
             'sc'     => $this->getCacheStatus('secure'),
             // Elastic search
             's'      => $this->getEsStatus(),
+            'gnupg'  => $this->getGnupgStatus(),
         ];
 
         foreach ($okStatusRequired as $field)
@@ -52,6 +53,13 @@ class PublicController extends Controller
         }
 
         return ApiResponse::json($status, $statusCode);
+    }
+
+    public function getGnupgStatus()
+    {
+        $user = posix_getpwuid(posix_getuid());
+
+        return is_writable($user['dir']  . "/.gnupg");
     }
 
     public function getCatchAllRoute(string $uri = null)

@@ -51,6 +51,7 @@ class Generator extends Base\Core
      * @var Subscription\Entity
      */
     protected $subscription;
+    protected $subscriptionId;
 
     /**
      * The batch entity using which invoice was created.
@@ -58,6 +59,13 @@ class Generator extends Base\Core
      * @var Batch\Entity
      */
     protected $batch;
+
+    /**
+     * Flag to check if duplicate invoice creation with same internal_ref is allowed
+     *
+     * @var boolean
+     */
+    protected $shouldFailOnDuplicateInternalRef;
 
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
@@ -79,13 +87,23 @@ class Generator extends Base\Core
     }
 
     /**
-     * @param null|Subscription\Entity $subscription
+     * Argument can be subscription object (for internal API usage) or
+     * a signed subcription id (in case of a request from SubServ)
+     *
+     * @param null|Subscription\Entity|string $subscription
      *
      * @return Generator
      */
-    public function setSubscription(Subscription\Entity $subscription = null)
+    public function setSubscription($subscription = null)
     {
-        $this->subscription = $subscription;
+        if (($subscription instanceof Subscription\Entity) === true)
+        {
+            $this->subscription = $subscription;
+        }
+        else if (is_string($subscription) === true)
+        {
+            $this->subscriptionId = Subscription\Entity::verifyIdAndStripSign($subscription);
+        }
 
         return $this;
     }
@@ -102,9 +120,23 @@ class Generator extends Base\Core
         return $this;
     }
 
+    public function setShouldFailOnDuplicateInternalRef(bool $shouldFailOnDuplicateInternalRef)
+    {
+        $this->shouldFailOnDuplicateInternalRef = $shouldFailOnDuplicateInternalRef;
+
+        return $this;
+    }
+
     public function generate(array $input): Entity
     {
         $this->generateInvoiceSkeleton($input);
+
+        $this->checkDuplicateInternalRef($input);
+
+        if ($this->invoice->exists === true)
+        {
+            return $this->invoice;
+        }
 
         $this->repo->transaction(
             function() use ($input)
@@ -144,6 +176,10 @@ class Generator extends Base\Core
             {
                 $this->invoice->setSubscriptionStatus(Status::HALTED);
             }
+        }
+        else if ($this->subscriptionId !== null)
+        {
+            $this->invoice->setSubscriptionId($this->subscriptionId);
         }
 
         if ($this->batch !== null)
@@ -271,6 +307,38 @@ class Generator extends Base\Core
         $invoice->setMerchantLabel($this->merchant->getLabelForInvoice());
 
         $this->invoice = $invoice;
+    }
+
+    protected function checkDuplicateInternalRef(array $input)
+    {
+        if ($this->invoice->getInternalRef() === null)
+        {
+            return;
+        }
+
+        $existingInvoiceWithInternalRef = $this->repo
+                                               ->invoice
+                                               ->findDuplicateInvoiceByInternalRefForMerchant(
+                                                    $this->invoice,
+                                                    $this->invoice->getMerchantId());
+
+        if ($existingInvoiceWithInternalRef === null)
+        {
+            return;
+        }
+
+        if ($this->shouldFailOnDuplicateInternalRef === true)
+        {
+            throw new LogicException('internal_ref must be unique for each invoice',
+                ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+                [
+                    'invoice_id'          => $this->invoice->getId(),
+                    'existing_invoice_id' => $existingInvoiceWithInternalRef->getId(),
+                    'internal_ref'        => $this->invoice->getInternalRef()
+                ]);
+        }
+
+        $this->invoice = $existingInvoiceWithInternalRef;
     }
 
     /**

@@ -230,30 +230,24 @@ class Netbanking
     ];
 
     protected static $atomTPV = [
-        IFSC::UTIB,
-        IFSC::BKID,
+        IFSC::SBIN,
+        IFSC::YESB,
         IFSC::MAHB,
-        IFSC::CSBK,
-        IFSC::CIUB,
-        IFSC::DCBL,
         IFSC::DEUT,
+        IFSC::CSBK,
+        IFSC::CBIN,
+        IFSC::DCBL,
         IFSC::DLXB,
-        // IFSC::FDRL,
-        IFSC::HDFC,
-        IFSC::ICIC,
+        IFSC::FDRL,
         IFSC::IBKL,
         IFSC::IDIB,
         IFSC::INDB,
         IFSC::JAKA,
-        IFSC::KARB,
         IFSC::KVBL,
-        IFSC::KKBK,
-        IFSC::LAVB,
+        Netbanking::LAVB_R,
+        IFSC::ORBC,
         IFSC::SRCB,
-        IFSC::SIBL,
-        IFSC::SBIN,
         IFSC::TMBL,
-        IFSC::YESB,
     ];
 
     protected static $ebs = [
@@ -443,7 +437,7 @@ class Netbanking
 
     public static function getSupportedBanksForTPV()
     {
-        return array_values(array_unique(array_merge(self::$billdeskTPV, self::$selfTPV)));
+        return array_values(array_unique(array_merge(self::$billdeskTPV, self::$selfTPV, self::$atomTPV)));
     }
 
     public static function isBankSupportedByGateway($bank, $gateway, $isTPV = false)
