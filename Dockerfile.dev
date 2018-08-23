@@ -10,8 +10,7 @@ RUN apk add --allow-untrusted --no-cache \
     update-ca-certificates 2>/dev/null && \
     cd /tmp && git clone https://github.com/razorpay/docker-alpine-wkhtmltopdf.git && \
     mv docker-alpine-wkhtmltopdf/wkhtmltopdf /usr/bin/wkhtmltopdf && \
-    rm -rf docker-alpine-wkhtmltopdf && \
-    mkdir /var/www/.gnupg && chown -R apache:www-data /var/www/.gnupg
+    rm -rf docker-alpine-wkhtmltopdf
 
 ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 
@@ -19,7 +18,8 @@ VOLUME ['/app']
 WORKDIR /app
 RUN apk add --no-cache apache2 apache2-ctl php7-apache2 musl php7-mysqlnd && \
     sed -i 's#PidFile "/run/.*#Pidfile /tmp/run/httpd.pid"#g' /etc/apache2/conf.d/mpm.conf && \
-    sed -i 's/#LoadModule rewrite_module*/LoadModule rewrite_module/' /etc/apache2/httpd.conf
+    sed -i 's/#LoadModule rewrite_module*/LoadModule rewrite_module/' /etc/apache2/httpd.conf && \
+    mkdir /var/www/.gnupg && chown -R apache:www-data /var/www/.gnupg
 
 EXPOSE 80
 
