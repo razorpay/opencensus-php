@@ -68,35 +68,31 @@ class Isg extends Base
         {
             $refundFileData = $this->formatDataForRefundFile($data);
 
-            $refundFileName = $this->getRefundFileToWriteNameWithoutExt();
+            $refundFileName = $this->getFileToWriteNameWithoutExtension(self::FILE_NAME_REFUND);
 
             $creator = new FileStore\Creator;
 
             $creator->extension(self::EXTENSION_REFUND)
-                ->content($refundFileData)
-                ->name($refundFileName)
-                ->store(FileStore\Store::S3)
-                ->type(self::FILE_TYPE_REFUND)
-                ->entity($this->gatewayFile)
-                ->save();
-
-            $file = $creator->getFileInstance();
-
-            $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
+                    ->content($refundFileData)
+                    ->name($refundFileName)
+                    ->store(FileStore\Store::S3)
+                    ->type(self::FILE_TYPE_REFUND)
+                    ->entity($this->gatewayFile)
+                    ->save();
 
             $summaryFileData = $this->formatDataForSummaryFile(count($data));
 
-            $summaryFileName = $this->getSummaryFileToWriteNameWithoutExt();
+            $summaryFileName = $this->getFileToWriteNameWithoutExtension(self::FILE_NAME_SUMMARY);
 
             $creator = new FileStore\Creator;
 
             $creator->extension(self::EXTENSION_SUMMARY)
-                ->content($summaryFileData)
-                ->name($summaryFileName)
-                ->store(FileStore\Store::S3)
-                ->type(self::FILE_TYPE_SUMMARY)
-                ->entity($this->gatewayFile)
-                ->save();
+                    ->content($summaryFileData)
+                    ->name($summaryFileName)
+                    ->store(FileStore\Store::S3)
+                    ->type(self::FILE_TYPE_SUMMARY)
+                    ->entity($this->gatewayFile)
+                    ->save();
 
             $file = $creator->getFileInstance();
 
@@ -152,53 +148,38 @@ class Isg extends Base
 
     protected function formatDataForMail(array $data)
     {
-        $refundFile = $this->gatewayFile
-                    ->files()
-                    ->where(FileStore\Entity::TYPE, static::FILE_TYPE_REFUND)
-                    ->first();
-
-        $summaryFile = $this->gatewayFile
-                    ->files()
-                    ->where(FileStore\Entity::TYPE, static::FILE_TYPE_SUMMARY)
-                    ->first();
-
-        $signedUrlRefund = (new FileStore\Accessor)->getSignedUrlOfFile($refundFile);
-
-        $signedUrlSummary = (new FileStore\Accessor)->getSignedUrlOfFile($summaryFile);
-
-        $today = Carbon::now(Timezone::IST)->format('jS F Y');
-
         $mailData = [
             'count'      => count($data),
         ];
 
-        $mailData[] = [
-            'file_name'  => $refundFile->getLocation(),
-            'signed_url' => $signedUrlRefund,
-            'date'       => $today
+        $fileTypeArray = [
+            self::FILE_TYPE_REFUND,
+            self::FILE_TYPE_SUMMARY,
         ];
 
-        $mailData[] = [
-            'file_name'  => $summaryFile->getLocation(),
-            'signed_url' => $signedUrlSummary,
-            'date'       => $today
-        ];
+        foreach ($fileTypeArray as $fileType)
+        {
+            $file = $this->gatewayFile
+                         ->files()
+                         ->where(FileStore\Entity::TYPE, $fileType)
+                         ->first();
+
+            $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+
+            $mailData[] = [
+                'file_name'  => $file->getLocation(),
+                'signed_url' => $signedUrl,
+            ];
+        }
 
         return $mailData;
     }
 
-    protected function getRefundFileToWriteNameWithoutExt()
+    protected function getFileToWriteNameWithoutExtension($name)
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        return self::FILE_NAME_REFUND . '_' . $date;
-    }
-
-    protected function getSummaryFileToWriteNameWithoutExt()
-    {
-        $date = Carbon::now(Timezone::IST)->format('dmY');
-
-        return self::FILE_NAME_SUMMARY . '_' . $date;
+        return $name . '_' . $date;
     }
 
     protected function formatAmount($amount)

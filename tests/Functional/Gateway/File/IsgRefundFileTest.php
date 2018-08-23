@@ -63,7 +63,7 @@ class IsgRefundFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $time = Carbon::now(Timezone::IST)->format('dmY');
+        $today = Carbon::now(Timezone::IST)->format('dmY');
 
         $expectedFilesContent = [
             'entity' => 'collection',
@@ -71,11 +71,11 @@ class IsgRefundFileTest extends TestCase
             'items' => [
                 [
                     'type' => 'isg_summary',
-                    'location' => 'Summary' . '_' . $time . '.txt',
+                    'location' => 'Summary' . '_' . $today . '.txt',
                 ],
                 [
                     'type' => 'isg_refund',
-                    'location' => 'Refund' . '_' . $time . '.csv',
+                    'location' => 'Refund' . '_' . $today . '.csv',
                 ],
             ],
         ];
@@ -144,9 +144,11 @@ class IsgRefundFileTest extends TestCase
 
     protected function checkSummaryFile($filePath)
     {
-        $fileContents = \file($filePath);
+        $fileContent = \file($filePath);
 
-        $this->assertNotNull($fileContents);
+        $expectedFileContent = 'Total Refunds Records : 2';
+
+        $this->assertEquals($expectedFileContent, $fileContent[0]);
     }
 
     public function formatAmount($amount)
