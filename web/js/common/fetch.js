@@ -91,3 +91,25 @@ const createFormData2 = (form = {}) => {
   });
   return formData;
 };
+
+// File upload helper with only array support - not objects
+export function adminFormUpload3(form, url) {
+  let fData = createFormData3(form);
+
+  return axios.post(url, fData);
+}
+
+const createFormData3 = (form = {}) => {
+  let formData = new FormData();
+
+  Object.keys(form).map(key => {
+    if (form[key] instanceof Array) {
+      form[key].forEach((item, index) => {
+        formData.append(key + '[' + index + ']', item); // Array, eg= id:[12,14] will be sent as id[0] = 12, id[1] = 14 separately
+      });
+    } else {
+      formData.append(key, form[key]);
+    }
+  });
+  return formData;
+};

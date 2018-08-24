@@ -5,8 +5,8 @@ import { Link, withRouter } from 'react-router-dom';
 import ProfileDropdown from 'merchantLA/containers/Header/ProfileDropdown';
 import { toggleMobileMenu } from 'merchantLA/modules/app';
 
-import NavFragment from './NavFragment';
-import ModesDropdown from './SwitchMode';
+import NavFragment from 'merchant/components/HeaderNav/NavFragment';
+import ModesDropdown from 'merchant/components/HeaderNav/SwitchMode';
 
 const analytics = action => {
   window.rzpAnalytics({

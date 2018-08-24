@@ -1,4 +1,4 @@
-import { groupBy } from 'rzp/utils/pokedex';
+import { groupBy } from 'rzp/utils/rzp-utils';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
 import {

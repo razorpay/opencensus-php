@@ -79,39 +79,32 @@ export default class InvoiceLabelStep extends Component {
             <small class="help-block">STEP 1/2</small>
             <div class="section-title">Invoice Label:</div>
             <p>Invoices will be issued under this name.</p>
+            <Field
+              name="invoice_label_field"
+              component={RadioButton}
+              htmlValue="business_name"
+              onChange={this.billingLabelChange}
+              label={() => (
+                <span>
+                  <span class="title">{`${businessName} | `}</span>
+                  <span class="description">Registered Name</span>
+                </span>
+              )}
+            />
             {showBillingLabelSection ? (
-              <Fragment>
-                <Field
-                  name="invoice_label_field"
-                  component={RadioButton}
-                  htmlValue="business_name"
-                  onChange={this.billingLabelChange}
-                  label={() => (
-                    <span>
-                      <span class="title">{`${businessName} | `}</span>
-                      <span class="description">Registered Name</span>
-                    </span>
-                  )}
-                />
-                <Field
-                  name="invoice_label_field"
-                  htmlValue="business_dba"
-                  component={RadioButton}
-                  onChange={this.billingLabelChange}
-                  label={() => (
-                    <span>
-                      <span class="title">{`${businessDba} | `}</span>
-                      <span class="description">Billing Label</span>
-                    </span>
-                  )}
-                />
-              </Fragment>
-            ) : (
-              <Fragment>
-                <span class="title">{`${merchantName} | `}</span>
-                <span class="description">Registered Name</span>
-              </Fragment>
-            )}
+              <Field
+                name="invoice_label_field"
+                htmlValue="business_dba"
+                component={RadioButton}
+                onChange={this.billingLabelChange}
+                label={() => (
+                  <span>
+                    <span class="title">{`${businessDba} | `}</span>
+                    <span class="description">Billing Label</span>
+                  </span>
+                )}
+              />
+            ) : null}
           </div>
         </div>
         <div class="row">

@@ -14,21 +14,21 @@ import {
 
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
-const INDIVIDUAL = 2;
+export const INDIVIDUAL = 2;
 const PARTNERSHIP = 3;
 const PRIVATE = 4; // 'Private Limited',
 const PUBLIC = 5; // 'Public Limited',
 const LLP = 6; // 'LLP'
 const NGO = 7; // 'NGO'
-//const Educational_Institute = 8 // Removed now
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
-const NOT_REGISTERED = 11; // 'Society'
-//const Others = 12 // Removed now
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
+
+const individualMsg =
+  'We are not supporting individuals (unregistered businesses) at the moment. We shall inform you when we start supporting individuals.';
 
 const stateOptions = ['--Select--'].concat(
   Object.keys(states).map(c => {
@@ -80,38 +80,25 @@ const businessModel = [
       { label: 'Proprietorship', name: PROPRIETORSHIP },
       { label: 'Partnership', name: PARTNERSHIP },
       { label: 'Individual', name: INDIVIDUAL },
-      { label: 'Not yet registered', name: NOT_REGISTERED },
       { label: 'Public Limited', name: PUBLIC },
       { label: 'LLP', name: LLP },
       { label: 'Trust', name: TRUST },
       { label: 'Society', name: SOCIETY },
       { label: 'NGO', name: NGO },
     ],
-    description: function() {
+    description: activation => {
       // Changing description of self
       const currentBusinessType =
-        this.state.dirty.business_type || this.props.data.business_type;
+        activation.state.dirty.business_type ||
+        activation.props.data.business_type;
 
-      // if user has selected individual/not yet registered business type
-      if (currentBusinessType && !this.props.accountId) {
+      // if user has selected individual business type
+      if (currentBusinessType && !activation.props.accountId) {
         if (currentBusinessType == INDIVIDUAL) {
           return (
-            <div class="warning-svg">
+            <div class="warning-svg red">
               {WarningSvg()}
-              <span>
-                Review of activation form for individuals takes longer. We may
-                not be able to support a few business models at this moment.
-              </span>
-            </div>
-          );
-        } else if (currentBusinessType == NOT_REGISTERED) {
-          return (
-            <div class="warning-svg">
-              {WarningSvg()}
-              <span>
-                Review of activation form for your case may take longer. We may
-                not be able to support unregistered businesses at this moment.
-              </span>
+              <span>{individualMsg}</span>
             </div>
           );
         }
@@ -191,7 +178,7 @@ const businessModel = [
     required: false,
     description:
       'Approval for international payments takes extra time to process. We will reach out to you as we may require some additional information.',
-    _when: excludeFor_Indiv_NotReg,
+    _when: excludeFor_Indiv,
   },
   [
     {
@@ -303,7 +290,7 @@ const registrationDetails = [
     info:
       'Mandatory for Companies. PAN details should be of the mentioned business only.',
     validator: validatePANCard,
-    _when: excludeFor_Indiv_NotReg,
+    _when: excludeFor_Indiv,
   },
   [
     {
@@ -399,9 +386,9 @@ const registrationDetails = [
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
       className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
-      _when: excludeFor_Indiv_NotReg,
-      description: function() {
-        if (this.state.has_gstin == '1') {
+      _when: excludeFor_Indiv,
+      description: activation => {
+        if (activation.state.has_gstin == '1') {
           return 'You can add your GST details later once you are registered';
         }
       },
@@ -416,8 +403,7 @@ const registrationDetails = [
       name: 'gstin',
       _when: activation => {
         return (
-          excludeFor_Indiv_NotReg(activation) &&
-          activation.state.has_gstin === '0'
+          excludeFor_Indiv(activation) && activation.state.has_gstin === '0'
         );
       },
       _autoRenderImpure: true, // Re-render to show the error
@@ -531,11 +517,11 @@ const uploadFields = [
     name: 'business_proof_url',
     label: 'Business Registration Proof',
     _autoRenderImpure: true, // Here, Description on other field while render.
-    description: function() {
+    description: activation => {
       const currentBusinessType =
-        this.state.dirty.business_type != null
-          ? this.state.dirty.business_type
-          : this.props.data.business_type;
+        activation.state.dirty.business_type != null
+          ? activation.state.dirty.business_type
+          : activation.props.data.business_type;
 
       const li1 =
         'GST Certificate / Shop Establishment Act Certificate / Registration Certificate';
@@ -583,13 +569,13 @@ const uploadFields = [
 
       return description;
     },
-    _when: excludeFor_Indiv_NotReg,
+    _when: excludeFor_Indiv,
   },
   {
     name: 'business_pan_url',
     label: 'Company PAN',
     description: 'PAN details should be of the mentioned business only.',
-    _when: excludeFor_Indiv_NotReg,
+    _when: excludeFor_Indiv,
   },
   {
     name: 'address_proof_url',
@@ -631,13 +617,11 @@ function differentAddress(activation) {
 }
 
 /* Return true IF NOT 'Individual/Not registered' business type */
-function excludeFor_Indiv_NotReg(activation) {
+function excludeFor_Indiv(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
 
-  return (
-    [NOT_REGISTERED, INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1
-  );
+  return [INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1;
 }
 
 function requiredForNGO(activation) {

@@ -21,6 +21,7 @@ export const ModalAsideNav = _ => {
     tabClickHandler,
     activeTab,
     activeTabContdition,
+    disableTabCondition,
   } = _;
 
   return (
@@ -37,14 +38,21 @@ export const ModalAsideNav = _ => {
             isActiveClass = activeTabContdition && isActiveClass;
           }
 
+          const isDisabled = disableTabCondition(i);
+
           return (
             <li
-              class={classList(isActiveClass, isTabValid && 'text-success')}
+              class={classList(
+                isActiveClass,
+                isTabValid && 'text-success',
+                isDisabled && 'disabled'
+              )}
               key={i}
               data-index={i}
-              onClick={tabClickHandler}
+              onClick={isDisabled ? undefined : tabClickHandler}
             >
-              {isTabValid && <i class={'i-check text-success'} />}
+              {!isDisabled &&
+                isTabValid && <i class={'i-check text-success'} />}
               {do {
                 if (typeof t === 'object') {
                   <span class="li--broad">
