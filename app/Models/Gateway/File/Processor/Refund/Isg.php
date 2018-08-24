@@ -154,8 +154,6 @@ class Isg extends Base
 
         $files = $this->gatewayFile
                       ->files()
-                      ->where(FileStore\Entity::TYPE, self::FILE_TYPE_SUMMARY)
-                      ->orWhere(FileStore\Entity::TYPE, self::FILE_TYPE_REFUND)
                       ->get();
 
         foreach ($files as $file)
