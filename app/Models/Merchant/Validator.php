@@ -83,6 +83,10 @@ class Validator extends Base\Validator
         Entity::WEBSITE                     => 'sometimes|active_url|max:255|nullable',
     ];
 
+    protected static $editNameRules = [
+        Entity::NAME                        => 'required|min:4|string|max:200',
+    ];
+
     protected static $editConfigRules = [
         Entity::BRAND_COLOR              => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Entity::TRANSACTION_REPORT_EMAIL => 'sometimes|array',
