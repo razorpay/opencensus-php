@@ -147,13 +147,17 @@ export default class Content extends Component {
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
-          <Redirect from="/" exact to="/dashboard" />
+          <Redirect
+            to={user.isPartner() ? 'submerchants' : '/dashboard'}
+            from="/"
+            exact
+          />
 
-          {!!user.partner_type ? (
-            <Route path="/submerchants" component={PartnerDashboard} />
-          ) : (
-            <Redirect exact from="/submerchants" to="/dashboard" />
-          )}
+          <ShowWhenRoute
+            path="/submerchants"
+            component={PartnerDashboard}
+            additionalCondition={user => user.isPartner()}
+          />
 
           <Route path="/payments" component={Transactions} />
           <Route path="/refunds" component={Transactions} />
@@ -282,7 +286,7 @@ export default class Content extends Component {
   }
 }
 
-const ShowWhenRoute = ({ component: Component, ...rest }) => (
+export const ShowWhenRoute = ({ component: Component, ...rest }) => (
   <Route
     {...rest}
     render={props =>

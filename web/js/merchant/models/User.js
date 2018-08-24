@@ -125,4 +125,16 @@ export default class User {
   findTag(tag) {
     return !!this.tags.find(t => t.toLowerCase() === tag.toLowerCase());
   }
+
+  /**
+   * Detects whether user is partner or not.
+   * If check has to be made for specific type of partners,
+   * then send the types for which check has to be done in arguments
+   */
+  isPartner(...args) {
+    const partnerTypes = [...args];
+    return !!partnerTypes.length
+      ? partnerTypes.indexOf(this.partner_type) > -1
+      : !!this.partner_type;
+  }
 }

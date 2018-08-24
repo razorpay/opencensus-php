@@ -70,6 +70,7 @@ export default class MainNavLink extends Component {
       notMyRole,
       featureEnabled,
       apiFeatureEnabled,
+      additionalCondition,
       icon,
       label,
       isNew,
@@ -103,6 +104,7 @@ export default class MainNavLink extends Component {
         myRole={myRole}
         featureEnabled={featureEnabled}
         apiFeatureEnabled={apiFeatureEnabled}
+        additionalCondition={additionalCondition}
       >
         <NavLink
           {...linkProps}
