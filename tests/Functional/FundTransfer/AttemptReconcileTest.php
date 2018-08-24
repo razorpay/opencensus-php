@@ -9,6 +9,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Settlement\CriticalFailure;
+use RZP\Models\FundTransfer\Axis\Reconciliation\Status;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationMail;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
@@ -504,5 +505,45 @@ class AttemptReconcileTest extends TestCase
     protected function getReconStatusClass(string $channel)
     {
         return 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\Status';
+    }
+
+    public function testSettlementReconcileEntitiesFailureForAxis()
+    {
+        $this->verifySettlementReconForAxisReturnSettled();
+    }
+
+    protected function verifySettlementReconForAxisReturnSettled()
+    {
+        $channel = Channel::AXIS;
+
+        $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $setlReconciliationFile = $this->generateReconciliationFileForChannel(
+            $setlFile, $channel, false, null, true);
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt', $fta['id'],
+            [
+                'status'           => Attempt\Status::PROCESSED,
+                'bank_status_code' => Status::EXECUTED
+            ]
+        );
+
+        $this->reconcileSettlements($setlReconciliationFile, $channel);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Status::RETURNSETTLED, $fta['bank_status_code']);
+
+        $this->assertEquals(Attempt\Status::INITIATED, $fta['status']);
+
+        $this->reconcileEntitiesForChannel(Channel::AXIS);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Attempt\Status::FAILED, $fta['status']);
     }
 }

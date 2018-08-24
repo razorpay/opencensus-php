@@ -1229,6 +1229,8 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
+        $this->setAuthenticationGateway($payment, $gatewayInput);
+
         $this->setAuthTypeInPayment($payment);
 
         $this->repo->saveOrFail($payment);
@@ -1261,6 +1263,32 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
+    }
+
+    protected function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
+    {
+        if (($payment->isMethodCardOrEmi() === true) and
+            (Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true))
+        {
+            //
+            // Payments where authentication is required
+            //
+            if (($payment->isRecurring() === false) or
+                ($payment->isRecurringTypeInitial() === true))
+            {
+                if ($payment->getGateway() === Payment\Gateway::HITACHI)
+                {
+                    $authGateway = Payment\Gateway::MPI_BLADE;
+
+                    if ($this->canRunAxisExpressPay($payment) === true)
+                    {
+                        $authGateway = Payment\Gateway::MPI_ENSTAGE;
+                    }
+
+                    $gatewayInput['authenticate']['gateway'] = $authGateway;
+                }
+            }
+        }
     }
 
     protected function setAuthTypeInPayment(Payment\Entity $payment)
@@ -3734,10 +3762,7 @@ trait Authorize
                 // condition covers a superset.
                 //
                 if (($payment->getGateway() === Payment\Gateway::HITACHI) and
-                    ($this->isAuthTypeOtp($payment) === true) and
-                    ($payment->merchant->isAxisExpressPayEnabled() === true) and
-                    ($payment->card->iinRelation->supports(IIN\Flow::OTP) === true) and
-                    ($payment->card->iinRelation->getIssuer() === IFSC::UTIB))
+                    ($this->canRunAxisExpressPay($payment) === true))
                 {
                     return true;
                 }
@@ -3780,6 +3805,19 @@ trait Authorize
         // TODO: Figure out a way to do this for other power wallets
 
         return true;
+    }
+
+    protected function canRunAxisExpressPay(Payment\Entity $payment)
+    {
+        if (($payment->merchant->isAxisExpressPayEnabled() === true) and
+            ($payment->card->iinRelation !== null) and
+            ($payment->card->iinRelation->getIssuer() === IFSC::UTIB) and
+            ($payment->card->iinRelation->supports(IIN\Flow::OTP) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

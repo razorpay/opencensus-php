@@ -33,6 +33,7 @@ use RZP\Models\Plan\Subscription;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Gateway\File as GatewayFile;
+use RZP\Services\Beam\Service as BeamService;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -190,7 +191,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('beam', function($app)
         {
-            return new BeamClient($app);
+            return new BeamService($app);
         });
 
         $this->registerShield();

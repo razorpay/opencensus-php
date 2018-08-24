@@ -492,7 +492,7 @@ class HitachiGatewayTest extends TestCase
         $this->paymentRefundReverseTestHelper($payment);
     }
 
-     public function testReverseFailureDuetoFormatError()
+    public function testReverseFailureDuetoFormatError()
     {
         $this->doAuthPayment($this->payment);
 
