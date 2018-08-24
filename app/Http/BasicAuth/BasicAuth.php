@@ -687,6 +687,8 @@ class BasicAuth
             return $this->publicAuth();
         }
 
+        $this->authCreds = new KeyAuthCreds($this->app);
+
         $this->setType(Type::DIRECT_AUTH);
     }
 
@@ -1244,6 +1246,13 @@ class BasicAuth
     public function isDashboardApp()
     {
         return ($this->getInternalApp() === 'dashboard');
+    }
+
+    public function isDebugApp()
+    {
+        $app = $this->getInternalApp();
+
+        return Route::isDebugApp($app);
     }
 
     public function isCron()

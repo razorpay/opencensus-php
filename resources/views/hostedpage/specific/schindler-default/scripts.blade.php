@@ -177,7 +177,7 @@
             return editor;
         }
 
-        function submitForm() {
+        function submitForm(e) {
             var errors = editor.validate();
             console.log(errors);
             var hasError;
@@ -234,6 +234,8 @@
                 }
 
             }, 10); // If blur happens directly through click on submit btn, so 'has-error' class won't be put until delayed.
+
+            e.preventDefault();
         }
 
         function addListeners_Validators() {

@@ -62,6 +62,7 @@ final class Route
         'payment_refund'                           => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
+        'payment_get_flows_private'                => ['post',     'payment/flows',                                  'PaymentController@getPaymentFlowsPrivate'                          ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_create_admin'                       => ['post',     'admin/batches',                                  'AdminController@createAdminBatch'                                  ],
@@ -814,6 +815,7 @@ final class Route
         // TODO: Should change to just /signed_url (No 'get' and underscore)
         'ufh_get_file_signed_url'                  => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
 
+        'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -852,6 +854,9 @@ final class Route
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
         'admin_mdr_update'                         => ['put',      'mdr_update',                               'AdminController@updateMdr'                                         ],
+
+        // Webhook Api Wrapper
+        'webhook_fire'                             => ['post',     'webhook/{event}/fire',                            'WebhookController@processWebhook'                                  ],
     ];
 
     public static $public = [
@@ -1070,6 +1075,7 @@ final class Route
         'account_features_get',
         'payment_acknowledge',
         'bharat_qr_pay_test',
+        'payment_get_flows_private',
     ];
 
     // Only routes defined in internalApps go here
@@ -1331,6 +1337,7 @@ final class Route
         'payment_link_activate',
         'submerchants_fetch',
         'submerchants_fetch_multiple',
+        'webhook_fire',
     ];
 
     // These will run on internal auth with the assurance
@@ -1605,6 +1612,7 @@ final class Route
         'shield_rules_delete',
         'shield_rules_evaluate',
 
+        'razorx_route',
         'user_fetch_admin',
         'merchant_requests_list',
         'merchant_requests_update',
@@ -1955,6 +1963,7 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
+        'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'invoice_issue_by_batch'                   => '*',
         'invoice_notify_by_batch'                  => '*',
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
@@ -2139,6 +2148,8 @@ final class Route
         'subscriptions' => [
             'invoice_create',
             'customer_fetch_by_id',
+            'webhook_fire',
+            'merchant_fetch_config',
         ],
 
         'kotak' => [
@@ -2183,6 +2194,15 @@ final class Route
             'merchant_create_app_access_mapping',
             'merchant_delete_app_access_mapping',
         ],
+    ];
+
+    //
+    // Apps that receive a debug error response by default. We do
+    // this because the receiving app may required extra information
+    // like internal_error_code to correctly handle exceptions
+    //
+    const DEBUG_APPS = [
+        'subscriptions',
     ];
 
     protected static $jsonpRoutes = [
@@ -2387,13 +2407,17 @@ final class Route
 
     public function getUrlWithPublicAuth($routeName, array $parameters = [], $key = '')
     {
-        // If current request was on keyless public auth, append the x_entity_id query for public urls.
+        // If current request was on keyless public auth, append the x_entity_id query for public urls
+        // only if the same is not required in route parameters in which case it will be there in $parameters already.
         if (($key === '') and ($this->ba->isKeylessPublicAuth() === true))
         {
-            $parameters['x_entity_id'] = $this->ba->getKeylessXEntityId();
+            if (str_contains(self::$apiRoutes[$routeName][1], '{x_entity_id}') === false)
+            {
+                $parameters['x_entity_id'] = $this->ba->getKeylessXEntityId();
+            }
         }
         // For a partner token authenticated route, keep the token in the public URL
-        if (($key === '') and ($this->ba->isPartnerAuth() === true))
+        else if (($key === '') and ($this->ba->isPartnerAuth() === true))
         {
             $parts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $this->ba->getPublicKey());
 
@@ -2545,6 +2569,12 @@ final class Route
         $uri     = $info[1];
         $action  = $info[2];
 
+        // For any we have to register all the methods their is no specific called any in HTTP methods.
+        if ($methods === ['any'])
+        {
+            $methods = Router::$verbs;
+        }
+
         $router = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
 
         //
@@ -2654,6 +2684,11 @@ final class Route
         $currentRoute = $this->getCurrentRouteName();
 
         return (in_array($currentRoute, self::SUBSCRIPTION_PROXY_ROUTES, true) === true);
+    }
+
+    public static function isDebugApp(string $app = null): bool
+    {
+        return (in_array($app, self::DEBUG_APPS, true) === true);
     }
 
     public function getHashOf(string $string): string

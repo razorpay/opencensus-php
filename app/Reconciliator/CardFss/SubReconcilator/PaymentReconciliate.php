@@ -202,6 +202,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     );
     }
 
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            BaseReconciliate::REFERENCE_NUMBER => $this->getReferenceNumber($row)
+        ];
+    }
+
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
         $gatewayPayment->setRef($referenceNumber);

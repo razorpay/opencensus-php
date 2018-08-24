@@ -3109,6 +3109,21 @@ return [
         ],
     ],
 
+    'testCreateSubmerchantLoginByAdmin' => [
+        'request'  => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Dashboard-User-Role' => 'manager',
+            ]
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCreateSubmerchantLoginPartnerAppMissing' => [
         'request'   => [
             'url'     => '/submerchant/user/10000000000040',

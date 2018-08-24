@@ -93,29 +93,27 @@ class DirectDebitTest extends TestCase
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
-        try
-        {
-            $this->startTest();
-        }
-        catch (\Throwable $ex)
-        {
-            $this->assertContains('Type error: Argument 2 passed to RZP\Models\Batch\Core::storeAndValidateInputFile() must be an instance of RZP\Models\Merchant\Entity, null given', $ex->getMessage());
-        }
+        $this->startTest();
     }
 
 
     protected function setUpConsumeTokenCacheMock()
     {
+        $store = Cache::store();
+
         Cache::shouldReceive('pull')
-        ->once()
-        ->with('ott')
-        ->andReturnUsing(function()
-        {
-           return [
-                'merchantId' => '10000000000000',
-                'mode' => 'test',
-            ];
-        });
+                ->once()
+                ->with('ott')
+                ->andReturnUsing(function()
+                {
+                   return [
+                        'merchantId' => '10000000000000',
+                        'mode' => 'test',
+                    ];
+                })
+                ->shouldReceive('store')
+                ->withAnyArgs()
+                ->andReturn($store);
     }
 
     public function getDefaultFileEntries()

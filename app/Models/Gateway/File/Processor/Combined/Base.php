@@ -116,6 +116,8 @@ class Base extends BaseProcessor
             $this->gatewayFile->setFileSentAt(time());
 
             $this->gatewayFile->setStatus(Status::FILE_SENT);
+
+            $this->reconcileNetbankingRefunds($data['refunds'] ?? []);
         }
         catch (\Throwable $e)
         {

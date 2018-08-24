@@ -90,6 +90,9 @@ class Constants
     // Payment authentication
     const ATM_PIN_AUTH                  = 'atm_pin_auth';
 
+    // Pre-Auth Shield Integration
+    const PRE_AUTH_SHIELD_INTG          = 'pre_auth_shield_intg';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -185,6 +188,7 @@ class Constants
         self::ALLOW_SUBMERCHANT_WITHOUT_EMAIL => true,
         self::HDFC_DEBIT_SI                   => true,
         self::AXIS_EXPRESS_PAY                => true,
+        self::PRE_AUTH_SHIELD_INTG            => true,
         self::BANK_TRANSFER_REFUND            => true,
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
