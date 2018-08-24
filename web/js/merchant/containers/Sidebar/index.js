@@ -183,8 +183,6 @@ export default class Sidebar extends Component {
                     label="Partner Dashboard"
                     icon="i i-partner text-success"
                     to="/submerchants"
-                    /* temporary false feature */
-                    featureEnabled="partner_tmp"
                     notMyRole="sellerapp"
                     additionalCondition={user =>
                       !user.isPartner('pure_platform')
