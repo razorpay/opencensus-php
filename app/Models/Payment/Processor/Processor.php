@@ -6,7 +6,6 @@ use App;
 use Route;
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
-use RZP\Constants\Metric;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
 use RZP\Error\Error;
@@ -23,6 +22,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Metric;
 use RZP\Models\PaymentLink;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Methods;
@@ -1109,6 +1109,8 @@ class Processor
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
+
+        (new Payment\Metric)->pushFailedMetrics($payment);
 
         $this->eventPaymentFailed();
 
