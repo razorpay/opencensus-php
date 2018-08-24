@@ -2892,6 +2892,8 @@ trait Authorize
             return;
         }
 
+        (new Payment\Metric)->pushAuthMetrics($this->payment);
+
         $this->eventPaymentAuthorized();
 
         $this->notifyIfCardSaved();

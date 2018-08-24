@@ -4,7 +4,6 @@ namespace RZP\Models\Payment;
 
 use App;
 use Cache;
-use RZP\Constants\Metric;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -17,7 +16,7 @@ class Observer extends BaseObserver
     {
         $this->saveRelatedEntitiesFromMetaData($payment);
 
-        $this->pushCreatedMetrics($payment);
+        (new Metric)->pushCreateMetrics($payment);
     }
 
     /**
@@ -52,9 +51,10 @@ class Observer extends BaseObserver
     {
         if (($entity instanceof Entity) === false)
         {
-            throw new Exception\RuntimeException('Entity should be instance of PaymentEntity', [
-                'entity' => $entity
-            ]);
+            throw new Exception\RuntimeException('Entity should be instance of Payment Entity',
+                [
+                    'entity' => $entity
+                ]);
         }
     }
 
@@ -76,51 +76,5 @@ class Observer extends BaseObserver
 
             (new RiskCore)->logPaymentForSource($payment, $source, $riskData);
         }
-    }
-
-    protected function pushCreatedMetrics(Entity $payment)
-    {
-        $metricData = [
-            Metric::LABEL_PAYMENT_METHOD           => $payment->getMethod(),
-            Metric::LABEL_PAYMENT_CURRENCY         => $payment->getCurrency(),
-            Metric::LABEL_PAYMENT_INTERNATIONAL    => $payment->isInternational(),
-            Metric::LABEL_PAYMENT_TRANSACTION_TYPE => $payment->getTransactionType(),
-            Metric::LABEL_PAYMENT_STATUS           => $payment->getStatus().'_'.$payment->getInternalErrorCode(),
-        ];
-
-        if ($payment->hasCard() === true)
-        {
-            $card = $payment->card;
-
-            $cardType = $card->getType();
-
-            $issuer = $card->getIssuer();
-
-            $network = $card->getNetwork();
-
-            $iin = $card->getIin();
-        }
-        else if (($payment->isNetbanking() === true) or
-                ($payment->isEmandate() === true))
-        {
-            $issuer = $payment->getBank();
-        }
-        else if ($payment->isWallet() == true)
-        {
-            $issuer = $payment->getWallet();
-        }
-        else if ($payment->isUpi() === true)
-        {
-            $issuer = $payment->getPspFromVpa();
-        }
-
-        $metricData += [
-            Metric::LABEL_PAYMENT_ISSUER        => $issuer ?? null ,
-            Metric::LABEL_CARD_NETWORK          => $network ?? null,
-            Metric::LABEL_CARD_IIN              => $iin ?? null,
-            Metric::LABEL_CARD_TYPE             => $cardType ?? null,
-        ];
-
-        $this->trace->count(Metric::PAYMENT_CREATED, $metricData);
     }
 }
