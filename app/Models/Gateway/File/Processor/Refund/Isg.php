@@ -152,18 +152,14 @@ class Isg extends Base
             'count'      => count($data),
         ];
 
-        $fileTypeArray = [
-            self::FILE_TYPE_REFUND,
-            self::FILE_TYPE_SUMMARY,
-        ];
+        $files = $this->gatewayFile
+                      ->files()
+                      ->where(FileStore\Entity::TYPE, self::FILE_TYPE_SUMMARY)
+                      ->orWhere(FileStore\Entity::TYPE, self::FILE_TYPE_REFUND)
+                      ->get();
 
-        foreach ($fileTypeArray as $fileType)
+        foreach ($files as $file)
         {
-            $file = $this->gatewayFile
-                         ->files()
-                         ->where(FileStore\Entity::TYPE, $fileType)
-                         ->first();
-
             $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
             $mailData[] = [
