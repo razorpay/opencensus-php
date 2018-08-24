@@ -103,15 +103,8 @@ export default class AddMerchant extends Component {
 }
 
 function isEmailMandatory(user) {
-  if (user.partner_type === 'aggregator') {
+  if (user.isPartner('aggregator')) {
     return !showWhenUtil({ featureEnabled: 'allow_sub_without_email' });
   }
-  return emailMandatoryMap[user.partner_type];
+  return user.isPartner('fully_managed');
 }
-
-const emailMandatoryMap = {
-  bank: true,
-  reseller: true,
-  pure_platform: true,
-  fully_managed: false,
-};

@@ -21,7 +21,6 @@ const fullDetailsAccessMap = {
 @withRouter
 @connect(
   state => ({
-    userPartnerType: state.session.user.partner_type,
     ...state.submerchant,
   }),
   { fetchSubmerchant, switchMerchant, openModal, showNotification }
@@ -45,23 +44,15 @@ export default class SubmerchantEntityContainer extends Component {
   };
 
   render() {
-    const {
-      item: submerchant,
-      loading,
-      error,
-      userPartnerType,
-      switchMerchant,
-    } = this.props;
+    const { item: submerchant, loading, error, switchMerchant } = this.props;
     return (
       <div>
         <Entity
           isLoading={loading}
           submerchant={submerchant}
           error={error}
-          showFullDetails={fullDetailsAccessMap[userPartnerType]}
           switchMerchant={switchMerchant}
           onInviteMerchant={this.handleInviteClick}
-          userPartnerType={userPartnerType}
         />
       </div>
     );
