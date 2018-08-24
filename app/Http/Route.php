@@ -2149,6 +2149,7 @@ final class Route
             'invoice_create',
             'customer_fetch_by_id',
             'webhook_fire',
+            'merchant_fetch_config',
         ],
 
         'kotak' => [
