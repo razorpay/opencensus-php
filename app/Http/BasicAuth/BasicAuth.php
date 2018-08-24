@@ -1245,7 +1245,7 @@ class BasicAuth
 
     public function isDashboardApp()
     {
-        return ($this->getInternalApp() === 'dashboard');
+        return (in_array($this->getInternalApp(), ['dashboard', 'dashboard_guest'], true) === true);
     }
 
     public function isDebugApp()
