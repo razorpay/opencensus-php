@@ -1031,7 +1031,11 @@ class Gateway
         $request = [
             'url' => $input['otpSubmitUrl'],
             'method' => 'post',
-            'content' => []
+            'content' => [
+                'next' => [
+                    'resend_otp'
+                ]
+            ]
         ];
 
         return $request;

@@ -1071,6 +1071,10 @@ class Gateway
         ],
     ];
 
+    public static $onlyAuthorizationGateway = [
+        Gateway::HITACHI,
+    ];
+
     public static $subscriptionOverOneYearGateways = [
         Gateway::AXIS_MIGS
     ];
@@ -1119,6 +1123,11 @@ class Gateway
     public static function isRecurringGateway($gateway): bool
     {
         return in_array($gateway, self::$recurringGateways, true);
+    }
+
+    public static function isOnlyAuthorizationGateway($gateway): bool
+    {
+        return in_array($gateway, self::$onlyAuthorizationGateway, true);
     }
 
     public static function isZeroRupeeFlowSupported($bank): bool
