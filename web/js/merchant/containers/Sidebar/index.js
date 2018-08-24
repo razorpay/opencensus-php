@@ -185,7 +185,7 @@ export default class Sidebar extends Component {
                     to="/submerchants"
                     notMyRole="sellerapp"
                     additionalCondition={user =>
-                      !user.isPartner('pure_platform')
+                      user.isPartner() && !user.isPartner('pure_platform')
                     }
                     exact
                   />
