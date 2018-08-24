@@ -162,7 +162,7 @@ class Cycle
         // The total count given would be inclusive of the
         // charge made on start date also.
         //
-        foreach (range(1, $totalCount - 1) as $i)
+        for ($i = 1; $i <= $totalCount - 1; $i++)
         {
             $nextRun = Library::computeFutureRun($schedule, $start);
 
