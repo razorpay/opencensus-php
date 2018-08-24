@@ -38,8 +38,9 @@ class Repository extends Base\Repository
         Entity::BATCH_ID        => 'sometimes|alpha_dash|min:14|max:20',
         Entity::NOTES           => 'sometimes|notes_fetch',
         Entity::STATUS          => 'sometimes|string|max:30',
-        Payment\Entity::GATEWAY => 'sometimes|string|max:30',
+        Entity::GATEWAY         => 'sometimes|string|max:30',
         Payment\Entity::METHOD  => 'sometimes|string|max:30',
+        'payment_gateway'       => 'sometimes|string|max:30',
     );
 
     protected $signedIds = [
@@ -75,11 +76,20 @@ class Repository extends Base\Repository
 
         Payment\Gateway::validateGateway($gateway);
 
+        $query->where($refundGateway, '=', $gateway);
+    }
+
+    protected function addQueryParamPaymentGateway($query, $params)
+    {
+        $gateway = $params['payment_gateway'];
+
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        Payment\Gateway::validateGateway($gateway);
+
         $this->joinQueryPayment($query);
 
-        $query->where($refundGateway, '=', $gateway);
-
-        $query->select($query->getModel()->getTable().'.*');
+        $query->where($paymentGateway, '=', $gateway);
     }
 
     protected function addQueryParamMethod($query, $params)
