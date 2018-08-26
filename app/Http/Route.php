@@ -736,6 +736,8 @@ final class Route
         'dispute_reason_create'                    => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
         'dispute_fetch_multiple'                   => ['get',      'disputes',                                       'DisputeController@fetchMultiple'                                   ],
         'dispute_fetch'                            => ['get',      'disputes/{id}',                                  'DisputeController@get'                                             ],
+        'dispute_file_delete'                      => ['delete',   'disputes/{id}/files/{fileId}',                   'DisputeController@deleteFile'                                      ],
+        'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
 
         'merchant_payout'                          => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
@@ -1309,6 +1311,8 @@ final class Route
         'ufh_get_file_signed_url',
         'pincode_get',
         'dispute_edit',
+        'dispute_file_delete',
+        'dispute_files_fetch',
         'merchant_get_tags',
         'merchant_edit_email_la',
         'account_fetch',
@@ -1769,6 +1773,7 @@ final class Route
         'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,
         'payment_dispute_create'                   => Permission::CREATE_DISPUTE,
         'dispute_edit'                             => Permission::EDIT_DISPUTE,
+        'dispute_files_fetch'                      => Permission::FETCH_DISPUTE_FILES,
         'settings_fetch'                           => Permission::VIEW_WALLET_CONFIG,
         'settings_fetch_defined'                   => Permission::VIEW_WALLET_CONFIG,
         'settings_upsert'                          => Permission::EDIT_WALLET_CONFIG,

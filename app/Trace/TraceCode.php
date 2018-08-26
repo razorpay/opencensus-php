@@ -764,6 +764,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_S3_LOGO_UPLOADED                      = 'AWS_S3_LOGO_UPLOADED';
     const AWS_FILE_UPLOAD                           = 'AWS_FILE_UPLOAD';
     const AWS_FILE_UPLOADED                         = 'AWS_FILE_UPLOADED';
+    const AWS_FILES_FETCH                           = 'AWS_FILES_FETCH';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
     const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
     const LOGO_IMAGE_DETAILS                        = 'LOGO_IMAGE_DETAILS';
