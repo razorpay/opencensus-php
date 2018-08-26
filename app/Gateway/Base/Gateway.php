@@ -624,6 +624,47 @@ class Gateway
         return $response;
     }
 
+    /**
+     * @param array $objFunc -- this contains the class object and the function name as indexed array
+     * @param array $funcParams -- this contains the function params to be passed to the function name passed
+     * in $objFunc
+     * @param array $exceptionClassList -- list of exceptions to catch and retry on
+     * @param int $maxRetryCount -- max number of retries we want and then throw exception after $maxRetryCount attempts
+     * @return $response -- return the response of the closure $objFunc
+     * @throws Exception\GatewayRequestException
+     */
+    protected function retryHandler(callable $callable, array $arguments, array $exceptionClasses = [],
+                                    int $retryCount = 1)
+    {
+        $currentRetryCount = 1;
+
+        while (true)
+        {
+            try
+            {
+                $response = call_user_func_array($callable, $arguments);
+
+                return $response;
+            }
+            catch (\Exception $exc)
+            {
+                if (in_array(get_class($exc), $exceptionClasses, true) === true)
+                {
+                    if ($currentRetryCount < $retryCount)
+                    {
+                        $currentRetryCount++;
+
+                        $this->trace->traceException($exc);
+
+                        continue;
+                    }
+                }
+
+                throw $exc;
+            }
+        }
+    }
+
     protected function validateResponse(\Requests_Response $response)
     {
         if (in_array($response->status_code, [503, 504], true) === true)
@@ -990,7 +1031,11 @@ class Gateway
         $request = [
             'url' => $input['otpSubmitUrl'],
             'method' => 'post',
-            'content' => []
+            'content' => [
+                'next' => [
+                    'resend_otp'
+                ]
+            ]
         ];
 
         return $request;

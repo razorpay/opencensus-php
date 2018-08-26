@@ -55,6 +55,7 @@ class Bank
         IFSC::SBMY         => 1014,
         IFSC::STBP         => 1014,
         IFSC::SBTR         => 1014,
+        IFSC::YESB         => 1005,
     ];
 
     public static function getCode(string $ifsc)

@@ -91,6 +91,13 @@ class Authorization
         $this->addAppAuthHeaders($hostName);
     }
 
+    public function subscriptionsAuth()
+    {
+        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.subscriptions')['secret']);
+
+        $this->proxy = true;
+    }
+
     public function addAppAuthHeaders($hostName)
     {
         if ($hostName === null)

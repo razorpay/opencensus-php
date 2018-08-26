@@ -16,7 +16,7 @@ use RZP\Models\Settlement\SlackNotification;
 
 class Initiator extends Base\Core
 {
-    const MUTEX_RESOURCE        = 'FUND_TRANSFER_PROCESSING';
+    const MUTEX_RESOURCE        = 'FUND_TRANSFER_PROCESSING_%s';
     const MUTEX_LOCK_TIMEOUT    = 900;
 
     protected $mutex;
@@ -50,8 +50,10 @@ class Initiator extends Base\Core
             ];
         }
 
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $channel);
+
         return $this->mutex->acquireAndRelease(
-            self::MUTEX_RESOURCE,
+            $mutexResource,
             function() use ($input, $channel)
             {
                 RuntimeManager::setMemoryLimit('1024M');

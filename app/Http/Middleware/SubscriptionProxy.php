@@ -227,11 +227,18 @@ class SubscriptionProxy
 
     protected function shouldProxyToSubscriptionService(): bool
     {
+        if (($this->app->environment('testing') === true) or
+            ($this->route->isSubscriptionProxyRoute() === false))
+        {
+            return false;
+        }
+
+        //
+        // Doing this check separately so we don't end up
+        // fetching merchant features for every single request
+        //
         $isFeatureEnabled = optional($this->ba->getMerchant())->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_V2);
 
-        return (($this->app->environment('testing') === false) and
-                ($this->ba->getMode() === Mode::TEST) and
-                ($this->route->isSubscriptionProxyRoute() === true) and
-                ($isFeatureEnabled === true));
+        return ($isFeatureEnabled === true);
     }
 }

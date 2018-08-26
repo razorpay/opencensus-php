@@ -116,6 +116,25 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditWebhookByNonOwnerUser()
+    {
+        $webhook = $this->createWebhook();
+
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user->id,
+            'merchant_id' => '10000000000000',
+            'role'        => 'support',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->toArrayPublic(), 'support');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
+
+        $this->startTest();
+    }
+
     public function testEditDisableWebhookOnPrivateAuth()
     {
         $webhook = $this->createWebhook();
