@@ -387,7 +387,8 @@ class Verify extends Base\Core
         string $filter,
         array $bucketFilter,
         int $verifiableCount,
-        int $verifyFetchTime)
+        int $verifyFetchTime,
+        string $gateway = null)
     {
         $resultSet = [
             Result::AUTHORIZED    => 0,
@@ -410,6 +411,8 @@ class Verify extends Base\Core
             if ($this->isGatewayBlocked($payment->getGateway()) === true)
             {
                 $notApplicable++;
+
+                $this->releasePaymentAfterVerify($payment);
 
                 continue;
             }
@@ -446,10 +449,9 @@ class Verify extends Base\Core
 
         $this->addDataToVerifySummary($summary, $lockedPayments, $notApplicable);
 
-        $this->trace->info(
-            TraceCode::VERIFY_PROCESSED_SUMMARY,
-            $summary
-        );
+        $this->trace->gauge(Metric::PAYMENTS_VERIFIABLE_COUNT, $verifiableCount, ['gateway' => $gateway]);
+
+        $this->trace->info(TraceCode::VERIFY_PROCESSED_SUMMARY, $summary);
 
         $this->notifyInSlack($resultSet, $summary);
 

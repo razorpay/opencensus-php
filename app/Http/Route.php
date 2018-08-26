@@ -856,6 +856,9 @@ final class Route
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
         'admin_mdr_update'                         => ['put',      'mdr_update',                               'AdminController@updateMdr'                                         ],
+
+        // Webhook Api Wrapper
+        'webhook_fire'                             => ['post',     'webhook/{event}/fire',                            'WebhookController@processWebhook'                                  ],
     ];
 
     public static $public = [
@@ -1336,6 +1339,7 @@ final class Route
         'payment_link_activate',
         'submerchants_fetch',
         'submerchants_fetch_multiple',
+        'webhook_fire',
     ];
 
     // These will run on internal auth with the assurance
@@ -2147,6 +2151,8 @@ final class Route
         'subscriptions' => [
             'invoice_create',
             'customer_fetch_by_id',
+            'webhook_fire',
+            'merchant_fetch_config',
         ],
 
         'kotak' => [
@@ -2191,6 +2197,15 @@ final class Route
             'merchant_create_app_access_mapping',
             'merchant_delete_app_access_mapping',
         ],
+    ];
+
+    //
+    // Apps that receive a debug error response by default. We do
+    // this because the receiving app may required extra information
+    // like internal_error_code to correctly handle exceptions
+    //
+    const DEBUG_APPS = [
+        'subscriptions',
     ];
 
     protected static $jsonpRoutes = [
@@ -2672,6 +2687,11 @@ final class Route
         $currentRoute = $this->getCurrentRouteName();
 
         return (in_array($currentRoute, self::SUBSCRIPTION_PROXY_ROUTES, true) === true);
+    }
+
+    public static function isDebugApp(string $app = null): bool
+    {
+        return (in_array($app, self::DEBUG_APPS, true) === true);
     }
 
     public function getHashOf(string $string): string
