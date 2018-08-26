@@ -101,7 +101,7 @@ class Server extends Base\Mock\Server
     {
         $mandateId = $this->generateRandomNumber(15);
 
-        return [
+        $response = [
             ResponseFields::STATUS              => 'success',
             ResponseFields::API_RESPONSE_ID     => '5b6c51139788dd40bd25ded6',
             ResponseFields::REFERENCE_ID        => '987654321',
@@ -111,6 +111,10 @@ class Server extends Base\Mock\Server
             ResponseFields::RESPONSE_TIME_STAMP => '2018-08-09T20:04:59',
             ResponseFields::QUICK_INVITE_URL    => $this->getMockPaymentGatewayUrl($mandateId)
         ];
+
+        $this->content($response, 'mandate_create');
+
+        return $response;
     }
 
     protected function getXmlFetchResponse($input)
