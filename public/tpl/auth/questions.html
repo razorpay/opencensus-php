@@ -148,7 +148,7 @@
             Finish
           </button>
         </form>
-        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+        <alert class="pre_signup_alert" ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
     </div>
     <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>

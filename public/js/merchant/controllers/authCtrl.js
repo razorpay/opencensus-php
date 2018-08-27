@@ -382,6 +382,18 @@ app
           } else {
             angular.forEach(data.errors, function(value) {
               $scope.alerts.addAlert('danger', value);
+
+              setTimeout(function() {
+                var alertEle = $('.pre_signup_alert');
+
+                alertEle[0] &&
+                  $('.auth-substep.name-substep').animate(
+                    {
+                      scrollTop: alertEle.offset().top,
+                    },
+                    500
+                  );
+              }, 100);
             });
           }
         });
