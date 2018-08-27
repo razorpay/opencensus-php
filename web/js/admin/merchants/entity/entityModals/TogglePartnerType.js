@@ -10,9 +10,10 @@ import { adminPost } from 'common/fetch';
 import { snakeToTitleCase } from 'common/util';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
-const RequestExistenceMessage = ({ requestName }) => (
+const RequestExistenceMessage = ({ requestLabel }) => (
   <div>
-    Request for Partner {requestName} is already pending
+    Request for <strong>{requestLabel} as Partner</strong> is already pending
+    for this merchant
     <div>
       <button class="btn" onClick={closeModal}>
         Ok
@@ -25,6 +26,7 @@ export default ({ props, merchantId }) => {
   const partnerRequests = props.merchant.partnerRequests;
   const isPartner = !!props.merchant.details.partner_type;
   const requestName = isPartner ? 'deactivation' : 'activation';
+  const requestLabel = isPartner ? 'Remove' : 'Mark';
 
   const handleSubmit = ({ type: partner_type }) => {
     return adminPost({
@@ -41,7 +43,7 @@ export default ({ props, merchantId }) => {
             [requestName + 'Pending']: true,
           });
           notifySuccess(
-            `Request for partner ${requestName} submitted successfully`
+            `Request for ${requestLabel} as Partner submitted successfully`
           );
           closeModal();
         }
@@ -53,10 +55,10 @@ export default ({ props, merchantId }) => {
 
   const renderPartnerDeactivation = () =>
     partnerRequests.deactivationPending ? (
-      <RequestExistenceMessage requestName={requestName} />
+      <RequestExistenceMessage requestLabel={requestLabel} />
     ) : (
       <div>
-        Are you sure you want to unmark merchant as partner?
+        Are you sure you want to <strong>Remove merchant as partner</strong> ?
         <div class="action-buttons">
           <AsyncButton
             text="Yes"
@@ -73,7 +75,7 @@ export default ({ props, merchantId }) => {
 
   const renderPartnerActivation = () =>
     partnerRequests.activationPending ? (
-      <RequestExistenceMessage requestName={requestName} />
+      <RequestExistenceMessage requestLabel={requestLabel} />
     ) : (
       <Form class="full-span full-elements" style={{ width: '350px' }}>
         <SelectField label="Partner Type" name="type" defaultValue="">
@@ -94,7 +96,7 @@ export default ({ props, merchantId }) => {
     );
 
   return (
-    <ModalContent header={(isPartner ? 'Unmark' : 'Mark') + ' as Partner'}>
+    <ModalContent header={requestLabel + ' as Partner'}>
       {isPartner ? renderPartnerDeactivation() : renderPartnerActivation()}
     </ModalContent>
   );
