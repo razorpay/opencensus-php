@@ -15,7 +15,7 @@ import Field, { SelectField, TextAreaField, FileField } from 'ui/Field';
 import Table from 'ui/Table';
 import { statusPill, publicFeature } from 'common/data';
 import { isWorkflow, prevent } from 'common/util';
-import { snakeToTitleCase, formatDate } from 'common/util';
+import { snakeToTitleCase, formatDate, titleCase } from 'common/util';
 
 import { adminFetch, adminPatch } from 'common/fetch';
 
@@ -219,6 +219,14 @@ export default class EditPublicFeatures extends Component {
                 <label>Request</label>
                 <code>{publicFeature.featuresAkaMap[type][name]}</code>
               </div>
+
+              {submissions.partner_type && (
+                <div class="field">
+                  <label>Partner Type</label>
+                  <code>{titleCase(submissions.partner_type)}</code>
+                </div>
+              )}
+
               <SelectField
                 label="Status"
                 name="status"
