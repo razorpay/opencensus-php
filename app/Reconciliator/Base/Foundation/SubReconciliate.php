@@ -138,10 +138,16 @@ class SubReconciliate extends Base\Core
         {
             foreach ($fileContents as $row)
             {
-                $this->repo->transactionOnLiveAndTest(function() use ($row)
+                try
                 {
-                    $this->runReconciliate($row);
-                });
+                    $this->repo->transactionOnLiveAndTest(function () use ($row) {
+                        $this->runReconciliate($row);
+                    });
+                }
+                finally
+                {
+                    $batch->incrementProcessedCount();
+                }
             }
         }
         finally
@@ -375,8 +381,6 @@ class SubReconciliate extends Base\Core
      * depending on the specific gateway's reconciliator.
      *
      * @param  array $row
-     *
-     * @throws LogicException
      */
     protected function handleUnprocessedRow(array $row)
     {
@@ -398,9 +402,11 @@ class SubReconciliate extends Base\Core
 
         if ($this->failUnprocessedRow === true)
         {
-            return $this->setSummaryCount(self::FAILURES_SUMMARY, $identifier);
+            $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
         }
-
-        return $this->setSummaryCount(self::SUCCESSES_SUMMARY, $identifier);
+        else
+        {
+            $this->setSummaryCount(self::SUCCESSES_SUMMARY, head($row));
+        }
     }
 }
