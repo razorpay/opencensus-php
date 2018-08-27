@@ -125,9 +125,12 @@ export default class MakeAPICall extends Component {
             onSubmit={body => {
               let url = body.url;
               delete body.url;
+              let headers;
 
-              let headers = convertToJson(body.headers);
-              delete body.headers;
+              if (body.headers) {
+                headers = convertToJson(body.headers);
+                delete body.headers;
+              }
 
               if (!body.file) {
                 body.file = null;
