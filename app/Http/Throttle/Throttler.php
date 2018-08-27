@@ -127,14 +127,14 @@ class Throttler
             throw new BlockException(null, ['key' => $this->getThrottleKey()]);
         }
 
-        $this->blockIfApplicableByIp();
-        $this->blockIfApplicableByUserAgent();
+        $this->blockByIpIfApplicable();
+        $this->blockByUserAgentIfApplicable();
     }
 
     /**
      * Blocks current request if IP exclusion rule exists for the same in redis config.
      */
-    protected function blockIfApplicableByIp()
+    protected function blockByIpIfApplicable()
     {
         $ip         = $this->reqCtx->getRequest()->ip();
         $blockedIPs = $this->getBlockedIPs();
@@ -158,7 +158,7 @@ class Throttler
     /**
      * Blocks current request if UA exclusion rule exists for the same in redis config.
      */
-    protected function blockIfApplicableByUserAgent()
+    protected function blockByUserAgentIfApplicable()
     {
         $userAgent = $this->reqCtx->getRequest()->userAgent();
         $blockedUserAgents = $this->getBlockedUserAgents();
