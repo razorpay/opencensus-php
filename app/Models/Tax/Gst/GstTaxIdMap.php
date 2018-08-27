@@ -53,9 +53,9 @@ class GstTaxIdMap
 
     // IGST
     const IGST_0       = '9nDpYboKAK9j7t';
-    const IGST_1000    = '9nDEUuY6bMVa65';
-    const IGST_2500    = '9nDyMRwQQmzKmn';
-    const IGST_30000   = '9nDz0oSwuCqct2';
+    const IGST_1000    = 'AqSY0bpgK3J3L4';
+    const IGST_2500    = 'AqSY17pgWiMndv';
+    const IGST_30000   = 'AqSY1bGQyRH8du';
     const IGST_50000   = '9nDpYciCWeNBzE';
     const IGST_120000  = '9nDpYdbYNqD4Rw';
     const IGST_180000  = '9nDpYf1tTUs2Vh';
@@ -63,11 +63,11 @@ class GstTaxIdMap
 
     // CGST
     const CGST_0       = '9nDpYglSpU58lc';
-    const CGST_500     = '9nDS50aqhA7TdV';
-    const CGST_1000    = '9nDSOMffy02J6l';
-    const CGST_1250    = '9ndzIuY66e4Z7w';
-    const CGST_2500    = '9nDongIFqOHM7p';
-    const CGST_15000   = '9ndzUuWKXMvGIo';
+    const CGST_500     = 'AqSY27zssKqQYv';
+    const CGST_1000    = 'AqSY2gRw8rXidu';
+    const CGST_1250    = 'AqSY3I36snGvG5';
+    const CGST_2500    = 'AqSY3sZX9uhEoh';
+    const CGST_15000   = 'AqSY4M0KynG1zy';
     const CGST_25000   = '9nDpYhZ0d60X7V';
     const CGST_30000   = '9nDzjuY7cmkaSC';
     const CGST_50000   = '9nDpYiArP6j0qT';
@@ -80,13 +80,13 @@ class GstTaxIdMap
 
     // SGST
     const SGST_0       = '9nDpYnvgiGXrZh';
-    const SGST_500     = '9nDT1zZV64hp0L';
-    const SGST_1000    = '9nDTKJ3gMSfjhe';
-    const SGST_1250    = '9nD00MK9Km0l2u';
-    const SGST_2500    = '9nDpcJrq9e3pHO';
-    const SGST_15000   = '9nD0DxxkA0UwrU';
+    const SGST_500     = 'AqSY58G31xXO33';
+    const SGST_1000    = 'AqSY5lJRF4XvKe';
+    const SGST_1250    = 'AqSY6EtkXIwsOv';
+    const SGST_2500    = 'AqSY6wibitLtWR';
+    const SGST_15000   = 'AqSY7SThuRH1yb';
     const SGST_25000   = '9nDpYoeYBsXRvC';
-    const SGST_30000   = '9nD0SGKzqwxJJK';
+    const SGST_30000   = 'AqSY7zvl5MzoD3';
     const SGST_50000   = '9nDpYpMRZgJEgU';
     const SGST_60000   = '9nDpYpuN72gdfY';
     const SGST_90000   = '9nDpYqgYcqpr8q';
@@ -97,13 +97,13 @@ class GstTaxIdMap
 
     // UTGST
     const UTGST_0      = '9nDpYuFVNQcVaU';
-    const UTGST_500    = '9nDTh4wpU0YDCU';
-    const UTGST_1000   = '9nDUYqZko0Jrxj';
-    const UTGST_1250   = '9nD0ea41MeQhwQ';
-    const UTGST_2500   = '9nDq6h2an6eK6G';
-    const UTGST_15000  = '9nD0tKICPabvSI';
+    const UTGST_500    = 'AqSY8YT5PVIuFN';
+    const UTGST_1000   = 'AqSY8yMeDrsbR7';
+    const UTGST_1250   = 'AqSY9SeixpidMS';
+    const UTGST_2500   = 'AqSY9uhngUqPOO';
+    const UTGST_15000  = 'AqSYAPBxtHYPaH';
     const UTGST_25000  = '9nDpYv53mqSsip';
-    const UTGST_30000  = '9nD1422wiGxC81';
+    const UTGST_30000  = 'AqSYAumyWQVE5H';
     const UTGST_50000  = '9nDpYvgwu0p8WP';
     const UTGST_60000  = '9nDpYwRScK0Mz2';
     const UTGST_90000  = '9nDpYxMkO0LLhz';

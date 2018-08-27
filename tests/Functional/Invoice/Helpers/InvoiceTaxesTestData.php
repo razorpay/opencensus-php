@@ -737,7 +737,9 @@ return [
                         'name'          => 'Item #2',
                         'amount'        => 500,
                         'quantity'      => 2,
-                        'tax_ids'       => [T::getIdPrefix() . GstTaxIdMap::IGST_2500],
+                        'tax_ids'       => [
+                            T::getIdPrefix() . GstTaxIdMap::IGST_2500,
+                        ],
                         'tax_inclusive' => false,
                     ],
                 ],
@@ -769,8 +771,8 @@ return [
                         'quantity'      => 1,
                         'taxes'         => [
                             [
-                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::SGST_1250,
-                                'name'       => 'SGST 0.125%',
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::CGST_1250,
+                                'name'       => 'CGST 0.125%',
                                 'rate'       => 1250,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
@@ -778,8 +780,8 @@ return [
                                 'tax_amount' => 1,
                             ],
                             [
-                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::CGST_1250,
-                                'name'       => 'CGST 0.125%',
+                                'tax_id'     => T::getIdPrefix() . GstTaxIdMap::SGST_1250,
+                                'name'       => 'SGST 0.125%',
                                 'rate'       => 1250,
                                 'rate_type'  => 'percentage',
                                 'group_id'   => null,
