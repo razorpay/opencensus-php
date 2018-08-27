@@ -131,52 +131,58 @@ class CombinedReconciliate extends Foundation\SubReconciliate
             {
                 $entityType = $this->getReconciliationTypeForRow($row);
 
-                if ($entityType === self::NA)
+                try
                 {
-                    //
-                    // This row probably doesn't have a payment and hence is not applicable for
-                    // reconciliation. We mark it as a success row, as we are not doing any
-                    // processing on the row here
-                    //
-                    $this->successes[] = $row;
+                    if ($entityType === self::NA)
+                    {
+                        //
+                        // This row probably doesn't have a payment and hence is not applicable for
+                        // reconciliation. We mark it as a success row, as we are not doing any
+                        // processing on the row here
+                        //
+                        $this->successes[] = $row;
 
-                    continue;
+                        continue;
+                    }
+
+                    if ($entityType === null)
+                    {
+                        $message = 'Did not get the reconciliation type for the row in combined reconciliation.';
+
+                        $this->messenger->raiseReconAlert(
+                            [
+                                'trace_code' => TraceCode::RECON_PARSE_ERROR,
+                                'message' => $message,
+                                'row_details' => $row,
+                                'extra_details' => $extraDetails,
+                                'gateway' => $this->gateway
+                            ]);
+
+                        //
+                        // We add the invalid row to list of failures, so that batch entity
+                        // failure_count is updated accordingly
+                        //
+                        $this->failures[] = $row;
+
+                        throw new ReconciliationException(
+                            'Did not get the reconciliation type for the row in combined reconciliation.',
+                            [
+                                'row' => $row,
+                            ]);
+                    }
+
+                    $subReconciliatorObject = $this->getSubReconciliatorObject($entityType);
+
+                    $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
+                    {
+                        $subReconciliatorObject->setExtraDetails($extraDetails);
+                        $subReconciliatorObject->runReconciliate($row);
+                    });
                 }
-
-                if ($entityType === null)
+                finally
                 {
-                    $message = 'Did not get the reconciliation type for the row in combined reconciliation.';
-
-                    $this->messenger->raiseReconAlert(
-                        [
-                            'trace_code'    => TraceCode::RECON_PARSE_ERROR,
-                            'message'       => $message,
-                            'row_details'   => $row,
-                            'extra_details' => $extraDetails,
-                            'gateway'       => $this->gateway
-                        ]);
-
-                    //
-                    // We add the invalid row to list of failures, so that batch entity
-                    // failure_count is updated accordingly
-                    //
-                    $this->failures[] = $row;
-
-                    throw new ReconciliationException(
-                        'Did not get the reconciliation type for the row in combined reconciliation.',
-                        [
-                            'row' => $row,
-                        ]
-                    );
+                    $batch->incrementProcessedCount();
                 }
-
-                $subReconciliatorObject = $this->getSubReconciliatorObject($entityType);
-
-                $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
-                {
-                    $subReconciliatorObject->setExtraDetails($extraDetails);
-                    $subReconciliatorObject->runReconciliate($row);
-                });
             }
         }
         finally
