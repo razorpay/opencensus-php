@@ -465,6 +465,14 @@ class Reporting implements ExternalService
     {
         try
         {
+            $request['headers']['Content-Type'] = 'application/json';
+
+            // json encode if data is must, else ignore.
+            if (in_array($request['method'], [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
+            {
+                $request['content'] = json_encode($request['content'], JSON_FORCE_OBJECT);
+            }
+
             $response = Requests::request(
                             $request['url'],
                             $request['headers'],
