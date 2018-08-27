@@ -61,7 +61,7 @@ class Transfer extends Base
 
         $amount = ($source->getAmount() / 100);
 
-        $amount = floatval(number_format($amount, 2, '.', ''));
+        $amount = round($amount, 2);
 
         return json_encode([
             Constants::TRANSFER_REQUEST_IDENTIFIER => [
