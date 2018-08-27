@@ -127,44 +127,56 @@ class Throttler
             throw new BlockException(null, ['key' => $this->getThrottleKey()]);
         }
 
-        $this->blockIfApplicableByIpAndUserAgent();
+        $this->blockIfApplicableByIp();
+        $this->blockIfApplicableByUserAgent();
     }
 
     /**
-     * Blocks current request if rule exists for the same in redis config.
+     * Blocks current request if IP exclusion rule exists for the same in redis config.
      */
-    protected function blockIfApplicableByIpAndUserAgent()
+    protected function blockIfApplicableByIp()
     {
-        $ip        = $this->reqCtx->getRequest()->ip();
-        $userAgent = $this->reqCtx->getRequest()->userAgent();
-
+        $ip         = $this->reqCtx->getRequest()->ip();
         $blockedIPs = $this->getBlockedIPs();
 
-        if (empty($blockedIPs) === false)
+        if (empty($blockedIPs) === true)
         {
-            // For IP, do exact match
-            $wrappedIp  = str_wrap($ip, K::LIST_DELIMITER);
-            $blockedIPs = str_wrap($blockedIPs, K::LIST_DELIMITER);
-
-            if (str_contains($blockedIPs, $wrappedIp) === true)
-            {
-                throw new BlockException(null, ['key' => $this->getThrottleKey()]);
-            }
+            return;
         }
 
+        // For IP, do exact match
+        $wrappedIp  = str_wrap($ip, K::LIST_DELIMITER);
+        $blockedIPs = str_wrap($blockedIPs, K::LIST_DELIMITER);
+
+        if (str_contains($blockedIPs, $wrappedIp) === true)
+        {
+            throw new BlockException(null, ['key' => $this->getThrottleKey()]);
+        }
+
+    }
+
+    /**
+     * Blocks current request if UA exclusion rule exists for the same in redis config.
+     */
+    protected function blockIfApplicableByUserAgent()
+    {
+        $userAgent = $this->reqCtx->getRequest()->userAgent();
         $blockedUserAgents = $this->getBlockedUserAgents();
 
-        if(empty($blockedUserAgents) === false)
+        if (empty($blockedUserAgents) === true)
         {
-            // For user agents, match just the beginning
-            $wrappedUserAgent  = str_start($userAgent, K::LIST_DELIMITER);
-            $blockedUserAgents = str_wrap($blockedUserAgents, K::LIST_DELIMITER);
-
-            if(str_contains($blockedUserAgents, $wrappedUserAgent) === true)
-            {
-                throw new BlockException(null, ['key' => $this->getThrottleKey()]);
-            }
+           return;
         }
+
+        // For user agents, match just the beginning
+        $wrappedUserAgent  = str_start($userAgent, K::LIST_DELIMITER);
+        $blockedUserAgents = str_wrap($blockedUserAgents, K::LIST_DELIMITER);
+
+        if (str_contains($blockedUserAgents, $wrappedUserAgent) === true)
+        {
+            throw new BlockException(null, ['key' => $this->getThrottleKey()]);
+        }
+
     }
 
     protected function attemptThrottleIfApplicable()
