@@ -1936,6 +1936,31 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function getIssuer()
+    {
+        $issuer = null;
+
+        if ($this->hasCard() === true)
+        {
+            $issuer = $this->card->getIssuer();
+        }
+        else if (($this->isNetbanking() === true) or
+                ($this->isEmandate() === true))
+        {
+            $issuer = $this->getBank();
+        }
+        else if ($this->isWallet() == true)
+        {
+            $issuer = $this->getWallet();
+        }
+        else if ($this->isUpi() === true)
+        {
+            $issuer = $this->getPspFromVpa();
+        }
+
+        return $issuer;
+    }
+
     public function getErrorDetails()
     {
         return [

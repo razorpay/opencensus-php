@@ -582,6 +582,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_WEBHOOK                  = 'GATEWAY_DOWNTIME_WEBHOOK';
     const GATEWAY_ONBOARD_REQUEST                   = 'GATEWAY_ONBOARD_REQUEST';
     const GATEWAY_ONBOARD_RESPONSE                  = 'GATEWAY_ONBOARD_RESPONSE';
+    const GATEWAY_PAYMENT_OTP_RESEND_REQUEST        = 'GATEWAY_PAYMENT_OTP_RESEND_REQUEST';
+    const GATEWAY_PAYMENT_OTP_RESEND_RESPONSE       = 'GATEWAY_PAYMENT_OTP_RESEND_RESPONSE';
 
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
     const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
@@ -715,6 +717,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
     const MERCHANT_CREATE                           = 'MERCHANT_CREATE';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
+    const MERCHANT_BULK_EDIT_INPUT                  = 'MERCHANT_BULK_EDIT_INPUT';
     const MERCHANT_EDIT_ACTION                      = 'MERCHANT_EDIT_ACTION';
     const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
     const MERCHANT_SAVE_ACTIVATION_DETAILS          = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
@@ -763,6 +766,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_S3_LOGO_UPLOADED                      = 'AWS_S3_LOGO_UPLOADED';
     const AWS_FILE_UPLOAD                           = 'AWS_FILE_UPLOAD';
     const AWS_FILE_UPLOADED                         = 'AWS_FILE_UPLOADED';
+    const AWS_FILES_FETCH                           = 'AWS_FILES_FETCH';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
     const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
     const LOGO_IMAGE_DETAILS                        = 'LOGO_IMAGE_DETAILS';
@@ -883,6 +887,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHIELD_JOB_RECEIVED                           = 'SHIELD_JOB_RECEIVED';
     const SHIELD_JOB_ERROR                              = 'SHIELD_JOB_ERROR';
     const SHIELD_JOB_DISPATCH_ERROR                     = 'SHIELD_JOB_DISPATCH_ERROR';
+    const FRAUD_DETECTION_STARTED                       = 'FRAUD_DETECTION_STARTED';
+    const FRAUD_DETECTION_DONE                          = 'FRAUD_DETECTION_DONE';
+    const FRAUD_DETECTION_FAILED                        = 'FRAUD_DETECTION_FAILED';
+    const FRAUD_DETECTION_SKIPPED                       = 'FRAUD_DETECTION_SKIPPED';
 
     const BATCH_FILE_DELETE_ERROR                       = 'BATCH_FILE_DELETE_ERROR';
 

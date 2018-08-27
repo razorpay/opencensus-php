@@ -1,7 +1,6 @@
 <?php
 namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
-use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
@@ -10,9 +9,9 @@ use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Exception\GatewayRequestException;
+use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 use RZP\Reconciliator\HDFC\RefundReconciliate as HdfcRefundRecon;
@@ -201,6 +200,39 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testAxisMigsForceAuthorizePayment()
+    {
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getNewPaymentEntity(true, false);
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'status' => 'failed',
+                'error_code' => 'BAD_REQUEST_ERROR',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description' => 'Payment was not completed on time.',
+                'verify_bucket' => 0,
+                'verified' => null
+            ]);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('axis_migs');
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideAxisPayment($gatewayPayment, [], 'migs');
+
+        $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement', 'Sale');
+        $this->runForFiles([$file], 'Axis', [], ['pay_'. $payment['id']]);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+    }
+
     public function testAxisMigsReconPaymentFile()
     {
         $this->fixtures->create('terminal:shared_migs_recurring_terminals');
@@ -309,6 +341,40 @@ class ReconciliationFileTest extends TestCase
         $this->assertNotNull($updatedTransaction['reconciled_at']);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testCardFssForceAuthorizePayment()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment1 =$this->doAuthAndGetPayment($payment);
+
+        $this->fixtures->payment->edit($payment1['id'],
+            [
+                'status' => 'failed',
+                'error_code' => 'BAD_REQUEST_ERROR',
+            ]);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('card_fss');
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideCardFssPayment($gatewayPayment, [], 'card_fss');
+
+        $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'payment');
+        $this->runForFiles([$file], 'CardFss', [], ['pay_'. $payment['id']]);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
     }
 
     public function testVirtualAccYesBankReconFile()
@@ -860,7 +926,7 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
-    protected function runForFiles(array $files, string $gateway, array $forceUpdate = [])
+    protected function runForFiles(array $files, string $gateway, array $forceUpdate = [],  array $forceAuthorizePayments = [])
     {
         $this->ba->appAuth();
 
@@ -868,6 +934,7 @@ class ReconciliationFileTest extends TestCase
 
         $testData['request']['content']['gateway'] = $gateway;
         $testData['request']['content']['attachment-count'] = count($files);
+
         foreach ($files as $index => $file)
         {
             $testData['request']['files']['attachment-' . ($index + 1)] = $this->createUploadedFile($file);
@@ -878,6 +945,14 @@ class ReconciliationFileTest extends TestCase
             foreach ($forceUpdate as $forceUpdateColumn)
             {
                 $testData['request']['content']['force_update'][] = $forceUpdateColumn;
+            }
+        }
+
+        if (empty($forceAuthorizePayments) === false)
+        {
+            foreach ($forceAuthorizePayments as $forceAuthorizePayment)
+            {
+                $testData['request']['content'][Base::FORCE_AUTHORIZE][] = $forceAuthorizePayment;
             }
         }
 

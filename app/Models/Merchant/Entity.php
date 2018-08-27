@@ -219,6 +219,8 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+        self::BILLING_LABEL,
+        self::WEBSITE,
     ];
 
     protected $public = [

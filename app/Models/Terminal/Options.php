@@ -36,6 +36,7 @@ class Options
         'billdesk_education_filter',
         'maestro_filter',
         'currency_filter',
+        'debit_recurring_filter'
     ];
 
     public function __construct()

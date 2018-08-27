@@ -373,6 +373,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY_REFUNDED, $gatewayRefunded);
     }
 
+    public function setGateway($gateway)
+    {
+        $this->setAttribute(self::GATEWAY, $gateway);
+    }
+
     public function setStatus($status)
     {
         $this->pushStatusChangeMetrics($status);
@@ -526,7 +531,14 @@ class Entity extends Base\PublicEntity
 
     public function getGateway()
     {
-        return $this->relations['payment']->getGateway();
+        $gateway = $this->getAttribute(self::GATEWAY);
+
+        if ($gateway === null)
+        {
+            return $this->relations['payment']->getGateway();
+        }
+
+        return $gateway;
     }
 
     public function getBatchId()

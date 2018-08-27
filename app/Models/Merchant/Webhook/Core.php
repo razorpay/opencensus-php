@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
+use RZP\Jobs;
+use RZP\Models;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -56,5 +58,59 @@ class Core extends Base\Core
     public function getWebhooksWithEntityId(Merchant\Entity $merchant, string $entityId = null)
     {
         return $this->repo->webhook->findMultipleByMerchantAndEntityId($merchant, $entityId);
+    }
+
+    public function prepareAndDispatchWebhook(
+        Merchant\Entity $merchant,
+        String $event,
+        array $input,
+        Webhook\Entity $webhook)
+    {
+        $payload = $input['payload'];
+
+        $data = $this->prepareData($payload, $merchant, $event, $webhook);
+
+        $this->dispatchWebhook($data,$event);
+    }
+
+    protected function prepareData(
+        Array $payload,
+        Merchant\Entity $merchant,
+        String $event,
+        Webhook\Entity $webhook) : Array
+    {
+        $attributes = [
+            Models\Event\Entity::EVENT      => $event,
+            Models\Event\Entity::ACCOUNT_ID => $merchant->getId(),
+            Models\Event\Entity::CONTAINS   => array_keys($payload),
+        ];
+        $event = new Models\Event\Entity($attributes);
+
+        $event->setPayload($payload);
+
+        $event->merchant()->associate($merchant);
+
+        $data = [
+            'mode'       => $this->app['rzp.mode'],
+            'event'      => json_encode($event->toArrayPublic()),
+            'webhook_id' => $webhook->getId()
+        ];
+
+        return $data;
+    }
+
+    protected function dispatchWebhook(array $data, String $event)
+    {
+        Jobs\WebHook::dispatch($data)->using([$event]);
+    }
+
+    /*
+    * Check if the merchant has an active webhook for the event
+    */
+    public function isWebhookActiveAndEnabled(Webhook\Entity $webhook, String $event): bool
+    {
+        return (($webhook !== null) and
+            ($webhook->isActive() === true) and
+            ($webhook->isEventEnabled($event)));
     }
 }

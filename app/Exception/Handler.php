@@ -42,6 +42,8 @@ class Handler extends ExceptionHandler
         $this->throwExceptionInTesting = $this->app['config']->get('app.throw_exception_in_testing');
 
         $this->route = $this->app['api.route'];
+
+        $this->ba = $this->app['basicauth'];
     }
 
     /**
@@ -426,8 +428,14 @@ class Handler extends ExceptionHandler
         return ($this->app->runningUnitTests());
     }
 
+    //
+    // Returns true if env debug is set to true, or if the client
+    // app is a debug app. Such apps may required extra information
+    // like internal_error_code to correctly handle exceptions
+    //
     protected function isDebug()
     {
-        return config('app.debug');
+        return ((config('app.debug') === true) or
+                ($this->ba->isDebugApp() === true));
     }
 }

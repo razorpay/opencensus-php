@@ -22,6 +22,9 @@ class Validator extends Base\Validator
     const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
     const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
 
+    // Constant representing operations for which Validation rules exists
+    const BULK_EDIT                                     = 'bulkEdit';
+
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255',
@@ -181,6 +184,10 @@ class Validator extends Base\Validator
         Entity::ACTIVATION_STATUS               => 'required|string|max:30',
         Entity::CLARIFICATION_MODE              => 'filled|string|max:15',
         Entity::REJECTION_REASONS               => 'filled|array',
+    ];
+
+    protected  static $bulkEditRules = [
+        Entity::FILE                            => 'required|file|max:1024|mime_types:text/csv,text/plain|mimes:csv,txt',
     ];
 
     protected static $activationStatusValidators = [
