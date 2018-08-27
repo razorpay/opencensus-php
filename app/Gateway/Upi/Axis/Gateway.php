@@ -567,8 +567,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'],
-            Action::AUTHORIZE
-        );
+            Action::AUTHORIZE);
 
         $refund = $input['refund'];
 
@@ -596,8 +595,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_REQUEST,
             [
-                'array content' => $data,
-                'json content'         => $content,
+                'content'           => $content,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $input['payment']['id'],
                 'refund_id'         => $input['refund']['id'],
@@ -633,7 +631,7 @@ class Gateway extends Base\Gateway
 
     protected function createCryptoIfNotCreated()
     {
-            $this->aesCrypto = new AESCrypto(AES::MODE_ECB,'b0wgtwlM8iEsq63z');
+        $this->aesCrypto = new AESCrypto(AES::MODE_ECB,'b0wgtwlM8iEsq63z');
     }
 
     public function encryptAes(string $stringToEncrypt)

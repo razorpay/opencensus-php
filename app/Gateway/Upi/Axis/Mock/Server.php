@@ -29,7 +29,7 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
-       $arr =  explode('/',parse_url($this->mockRequest['url'])['query']);
+       $arr =  explode('/', parse_url($this->mockRequest['url'])['query']);
        $token = $arr[count($arr) - 1];
         parent::authorize($input);
 
@@ -105,7 +105,7 @@ class Server extends Base\Mock\Server
 
         $response = parent::makeResponse($content);
 
-        $response->headers->set('Content-Type', 'text/plain;charset=ISO-8859-1');
+        $response->headers->set('Content-Type', 'application/json');
         $response->headers->set('Expires', 'Thu, 01 Jan 1970 00:00:00 GMT');
         $response->headers->set('x-frame-options', 'SAMEORIGIN');
 
