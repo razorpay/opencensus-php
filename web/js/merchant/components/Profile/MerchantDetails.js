@@ -38,7 +38,7 @@ export default connect(null, { openModal, closeModal })(
             )}
             value={() => (
               <span>
-                {user.display_name}
+                {user.display_name || user.name}
                 <a
                   class="p-l"
                   title="Edit Display Name"
@@ -51,10 +51,7 @@ export default connect(null, { openModal, closeModal })(
           />
         )}
 
-        <DetailRow
-          label="Merchant Email"
-          value={() => <a href={`mailto:${user.email}`}>{user.email}</a>}
-        />
+        <DetailRow label="Merchant Email" value={() => user.email} />
 
         <DetailRow
           label="Registration Date"
