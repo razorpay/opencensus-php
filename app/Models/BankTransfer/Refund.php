@@ -5,6 +5,8 @@ namespace RZP\Models\BankTransfer;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Settlement\Channel;
 use RZP\Trace\TraceCode;
@@ -25,6 +27,15 @@ class Refund extends Base\Core
     public function process(array $input)
     {
         $bankTransfer = $this->getBankTransfer($input['payment']);
+
+        $haystack = ['A0DbFSFMubDEAy', 'AEYsLhL8DAQAeh', 'AFG1ItI8zwijGP', 'AGsXWuKUv6XiVU', 'AMqpPrSMsxKKPc', 'AQNG7kHM5tfk4G', 'ATCKgAcp7cswbo'];
+
+        if (in_array($input['payment'], $haystack) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                $input);
+        }
 
         $bankAccount = $this->createOrUpdateBankAccount($input, $bankTransfer);
 
