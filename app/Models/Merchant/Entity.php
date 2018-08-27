@@ -211,6 +211,7 @@ class Entity extends Base\PublicEntity
 
     const CONFIG_LIST = [
         self::ID,
+        self::NAME,
         self::BRAND_COLOR,
         self::HANDLE,
         self::TRANSACTION_REPORT_EMAIL,

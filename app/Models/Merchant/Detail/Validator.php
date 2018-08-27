@@ -174,6 +174,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_NAME                   => 'sometimes|max:255',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
+        Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
     ];
 
     protected static $archiveFormRules = [

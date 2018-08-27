@@ -122,5 +122,6 @@ final class Constants
         Detail\Entity::CONTACT_NAME,
         Detail\Entity::BUSINESS_NAME,
         Detail\Entity::CONTACT_MOBILE,
+        Detail\Entity::BUSINESS_WEBSITE,
     ];
 }
