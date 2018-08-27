@@ -78,6 +78,11 @@ class Validator extends Base\Validator
         Entity::EMAIL                       => 'required|email|unique:merchants'
     ];
 
+    protected static $editPreSignupRules = [
+        Entity::NAME                        => 'required|min:4|string|max:200',
+        Entity::WEBSITE                     => 'sometimes|active_url|max:255|nullable',
+    ];
+
     protected static $editNameRules = [
         Entity::NAME                        => 'required|min:4|string|max:200',
     ];
