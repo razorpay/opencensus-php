@@ -855,10 +855,11 @@ final class Route
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
-        'admin_mdr_update'                         => ['put',      'mdr_update',                               'AdminController@updateMdr'                                         ],
 
         // Webhook Api Wrapper
-        'webhook_fire'                             => ['post',     'webhook/{event}/fire',                            'WebhookController@processWebhook'                                  ],
+        'webhook_fire'                             => ['post',     'webhook/{event}/fire',                           'WebhookController@processWebhook'                                  ],
+        'admin_mdr_update'                         => ['put',      'mdr_update',                                     'AdminController@updateMdr'                                         ],
+        'merchant_bulk_edit_attributes'            => ['post',     'merchants/bulk/attributes',                      'MerchantController@bulkEditMerchantAttributes'                     ],
     ];
 
     public static $public = [
@@ -1625,6 +1626,7 @@ final class Route
         'merchant_requests_bulk_update',
         'merchant_activation_bulk_assign_reviewer',
         'merchant_activation_reviewers',
+        'merchant_bulk_edit_attributes',
 
         // Partners
         'merchants_access_map_create',
@@ -1961,6 +1963,7 @@ final class Route
         'merchant_requests_get'                    => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_requests_update'                 => Permission::EDIT_MERCHANT_REQUESTS,
         'merchant_requests_bulk_update'            => Permission::EDIT_MERCHANT_REQUESTS,
+        'merchant_bulk_edit_attributes'            => Permission::EDIT_MERCHANT_REQUESTS,
         'merchant_requests_status_log'             => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_requests_get_feature'            => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_bank_account_change_status'      => '*',
