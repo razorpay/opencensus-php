@@ -8,8 +8,8 @@ use Carbon\Carbon;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
-use RZP\Models\Payment;
 use RZP\Models\Risk;
+use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Account;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -41,8 +41,8 @@ trait PaymentTrait
     use PaymentAxisGeniusTrait;
     use PaymentNetbankingTrait;
     use PaymentFreechargeTrait;
-    use PaymentCybersourceTrait;
     use PaymentTraitMpiEnstage;
+    use PaymentCybersourceTrait;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
 

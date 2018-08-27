@@ -26,6 +26,7 @@ class Constants
     const HDFC_FSS         = 'hdfc_fss';
     const ENACH_RBL        = 'enach_rbl';
     const OBC              = 'obc';
+    const ISG              = 'isg';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -35,6 +36,7 @@ class Constants
             self::HDFC,
             self::ICICI,
             self::CSB,
+            self::ISG
         ],
         Type::CLAIM => [
         ],
@@ -91,6 +93,7 @@ class Constants
         Type::REFUND => [
             self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::ISG   => ['settlements@razorpay.com'],
         ],
 
         Type::COMBINED => [
