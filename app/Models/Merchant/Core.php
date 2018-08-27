@@ -826,6 +826,26 @@ class Core extends Base\Core
         return $app;
     }
 
+    public function getConnectedApplicationIds(Entity $merchant): array
+    {
+        (new Validator)->validateIsPartner($merchant);
+
+        if ($merchant->isNonPurePlatformPartner() === true)
+        {
+            $partnerAppId = $this->getPartnerApp($merchant)->getId();
+
+            $appIds = [$partnerAppId];
+        }
+        else
+        {
+            $apps = (new OAuthApp\Repository)->findActiveApplicationsByMerchantIdAndType($merchant->getId());
+
+            $appIds = $apps->getIds();
+        }
+
+        return $appIds;
+    }
+
     /**
      * @param Entity $merchant
      * @param string $partnerType
@@ -1088,18 +1108,25 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Entity $partner
-     * @param string $submerchantId
+     * @param Entity      $partner
+     * @param string      $submerchantId
+     * @param string|null $appId
      *
      * @return Entity
      */
-    public function getSubmerchant(Entity $partner, string $submerchantId): Entity
+    public function getSubmerchant(Entity $partner, string $submerchantId, string $appId = null): Entity
     {
-        $partnerApp = $this->getPartnerApp($partner);
+        $appIds = $this->getConnectedApplicationIds($partner);
+
+        if (in_array($appId, $appIds, true) === true)
+        {
+            // @todo add a comment here
+            $appIds = [$appId];
+        }
 
         $merchant = $this->repo
                          ->merchant
-                         ->findSubmerchantByIdAndPartnerAppId($submerchantId, $partnerApp->getId());
+                         ->findSubmerchantByIdAndConnectedAppIds($submerchantId, $appIds);
 
         $partnerUser = $partner->primaryOwner();
 
@@ -1116,11 +1143,11 @@ class Core extends Base\Core
      */
     public function listSubmerchants(Entity $partner, array $params): Base\PublicCollection
     {
-        $partnerApp = $this->getPartnerApp($partner);
+        $appIds = $this->getConnectedApplicationIds($partner);
 
         $merchants = $this->repo
                           ->merchant
-                          ->fetchSubmerchantsByPartnerAppId($partnerApp->getId(), $params);
+                          ->fetchSubmerchantsByAppIds($appIds, $params);
 
         $partnerUser = $partner->primaryOwner();
 
@@ -1192,7 +1219,19 @@ class Core extends Base\Core
 
         $submerchant[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($submerchant);
 
+        $submerchant[Entity::APPLICATION] = $this->getApplicationDetails($submerchant);
+
         return $submerchant;
+    }
+
+    protected function getApplicationDetails(Entity $merchant): array
+    {
+        $appData = [
+            OAuthApp\Entity::ID   => $merchant->getAttribute('app_' . OAuthApp\Entity::ID),
+            OAuthApp\Entity::NAME => $merchant->getAttribute('app_' . OAuthApp\Entity::NAME),
+        ];
+
+        return $appData;
     }
 
     /**

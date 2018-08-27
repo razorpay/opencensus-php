@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant;
 
 use Closure;
+use Razorpay\OAuth\Application as OAuthApp;
+use Razorpay\OAuth\Base\Table as OAuthTable;
 
 use RZP\Exception;
 use RZP\Base\Common;
@@ -489,33 +491,26 @@ class Repository extends Base\Repository
                     ->orgId($orgId)
                     ->findOrFailPublic($id);
     }
-
     /**
      * @param string $submerchantId
-     * @param string $applicationId
+     * @param array  $appIds
      *
      * @return Entity
      */
-    public function findSubmerchantByIdAndPartnerAppId(string $submerchantId, string $applicationId): Entity
+    public function findSubmerchantByIdAndConnectedAppIds(string $submerchantId, array $appIds): Entity
     {
         $accessMapsMerchantId = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::MERCHANT_ID);
 
-        $query = $this->buildQueryToFetchSubmerchants($applicationId)
+        $query = $this->buildQueryToFetchSubmerchantsByAppIds($appIds)
                       ->where($accessMapsMerchantId, $submerchantId)
                       ->firstOrFail();
 
         return $query;
     }
 
-    /**
-     * @param string $applicationId
-     * @param array  $params
-     *
-     * @return Base\PublicCollection
-     */
-    public function fetchSubmerchantsByPartnerAppId(string $applicationId, array $params = []): Base\PublicCollection
+    public function fetchSubmerchantsByAppIds(array $appIds, array $params = []): Base\PublicCollection
     {
-        $query = $this->buildQueryToFetchSubmerchants($applicationId);
+        $query = $this->buildQueryToFetchSubmerchantsByAppIds($appIds);
 
         $this->buildQueryWithParams($query, $params);
 
@@ -541,31 +536,38 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param string $applicationId
+     * @param array $applicationIds
      *
      * @return Base\BuilderEx
      */
-    protected function buildQueryToFetchSubmerchants(string $applicationId)
+    protected function buildQueryToFetchSubmerchantsByAppIds(array $applicationIds)
     {
-        $accessMapRepo = $this->repo->merchant_access_map;
-
-        $merchantsMerchantId = $this->dbColumn(Entity::ID);
-
-        $accessMapsEntityType = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_TYPE);
-
-        $accessMapsEntityId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_ID);
-
-        $accessMapsMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
-
-        $accessMapsDeletedAt = $accessMapRepo->dbColumn(AccessMap\Entity::DELETED_AT);
-
+        $accessMapRepo       = $this->repo->merchant_access_map;
         $merchantDetailsRepo = $this->repo->merchant_detail;
 
+        $merchantsMerchantId  = $this->dbColumn(Entity::ID);
+
+        $accessMapsEntityId   = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_ID);
+        $accessMapsDeletedAt  = $accessMapRepo->dbColumn(AccessMap\Entity::DELETED_AT);
+        $accessMapsEntityType = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_TYPE);
+        $accessMapsMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+
+        $merchantDetailsColumns    = $merchantDetailsRepo->dbColumn('*');
         $merchantDetailsMerchantId = $merchantDetailsRepo->dbColumn(Detail\Entity::MERCHANT_ID);
 
-        $merchantDetailsColumns = $merchantDetailsRepo->dbColumn('*');
+        // Fetch the auth db name
+        $authDb            = $this->app['config']["database.connections.auth.database"];
+        $applicationsTable = $authDb . '.' . OAuthTable::APPLICATIONS;
 
-        $attributes = [$merchantDetailsColumns, $this->dbColumn('*')];
+        $oauthApplicationId   = $this->getOAuthAppColumn(OAuthApp\Entity::ID);
+        $oauthApplicationName = $this->getOAuthAppColumn(OAuthApp\Entity::NAME);
+
+        $attributes = [
+            $merchantDetailsColumns,
+            $this->dbColumn('*'),
+            $oauthApplicationId . ' as app_id',
+            $oauthApplicationName . ' as app_name',
+        ];
 
         // merchantDetail is not fetched as a relation because a filter has to be added for that in the query
         $query = $this->newQuery()
@@ -573,10 +575,16 @@ class Repository extends Base\Repository
                       ->select($attributes)
                       ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
                       ->leftJoin(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
+                      ->leftJoin($applicationsTable, $accessMapsEntityId, $oauthApplicationId)
                       ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
-                      ->where($accessMapsEntityId, $applicationId)
+                      ->whereIn($accessMapsEntityId, $applicationIds)
                       ->whereNull($accessMapsDeletedAt);
 
         return $query;
+    }
+
+    protected function getOAuthAppColumn(string $attribute)
+    {
+        return OAuthTable::APPLICATIONS . '.' . $attribute;
     }
 }

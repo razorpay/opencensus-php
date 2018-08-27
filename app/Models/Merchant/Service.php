@@ -2079,7 +2079,7 @@ class Service extends Base\Service
 
         try
         {
-            $app = (new Core)->getPartnerApp($merchant);
+            $app = $this->core()->getPartnerApp($merchant);
         }
         catch (\Exception $e)
         {
@@ -2174,13 +2174,15 @@ class Service extends Base\Service
         return $accessMap;
     }
 
-    public function getSubmerchant(string $submerchantId): array
+    public function getSubmerchant(string $submerchantId, array $input): array
     {
         Account\Entity::verifyIdAndSilentlyStripSign($submerchantId);
 
+        $appId = $input[Merchant\AccessMap\Entity::APPLICATION_ID] ?? null;
+
         $partner = $this->fetchPartner();
 
-        $submerchant = $this->core()->getSubmerchant($partner, $submerchantId);
+        $submerchant = $this->core()->getSubmerchant($partner, $submerchantId, $appId);
 
         return $submerchant->toArrayPartner();
     }
