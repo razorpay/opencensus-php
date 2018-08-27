@@ -46,4 +46,42 @@ class UfhService extends BaseUfhClient
             self::RELATIVE_LOCATION => $storageFileName,
         ];
     }
+
+    public function fetchFiles(array $queryParams): array
+    {
+        return [
+            'entity'  => 'collection',
+            'count'   => 2,
+            'items'   => [
+                [
+                    'id'            => 'file_1234',
+                    'type'          => 'explanation_letter',
+                    'entity_type'   => $queryParams['entity_type'],
+                    'entity_id'     => $queryParams['entity_id'],
+                    'name'          => 'myfile1.png',
+                    'location'      => 'dispute/10000000000000/'. $queryParams['entity_id'] .'/myfile1.png',
+                    'bucket'        => 'test_bucket',
+                    'mime'          => 'text/csv',
+                    'extension'     => 'csv',
+                    'merchant_id'   => '10000000000000',
+                    'store'         => 's3',
+                ],
+                [
+                    'id'            => 'file_12345',
+                    'type'          => 'delivery_proof',
+                    'entity_type'   => $queryParams['entity_type'],
+                    'entity_id'     => $queryParams['entity_id'],
+                    'name'          => 'myfile2.pdf',
+                    'location'      => 'dispute/10000000000000/'. $queryParams['entity_id'] .'/myfile2.pdf',
+                    'bucket'        => 'test_bucket',
+                    'mime'          => 'text/csv',
+                    'extension'     => 'csv',
+                    'merchant_id'   => '10000000000000',
+                    'store'         => 's3',
+                ],
+            ],
+        ];
+    }
+
+    public function deletefile(string $fileId) {}
 }

@@ -51,10 +51,13 @@ class NetbankingIciciRefundFileTest extends TestCase
 
         $file = $this->getLastEntity('file_store', true);
 
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
         $expectedFileContent = [
             'type'        => 'icici_netbanking_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
+            'name'        => "Icici_Netbanking_Refunds_test_$today",
             'extension'   => 'xlsx',
         ];
 
@@ -70,7 +73,6 @@ class NetbankingIciciRefundFileTest extends TestCase
 
             $testData = [
                 'body'      => RefundFileMailConstants::BODY_MAP[Gateway::NETBANKING_ICICI],
-                'file_name' => "Icici_Netbanking_Refunds_test_$today.xlsx",
             ];
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);

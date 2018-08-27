@@ -452,6 +452,8 @@ class Header
                 self::REFERENCE_ID,
                 self::STATUS,
                 self::ACCOUNT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 

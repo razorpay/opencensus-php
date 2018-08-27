@@ -11,9 +11,30 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class UfhService
 {
-    const FILE_ID       = 'file_id';
+    const ID                = 'id';
 
-    const RELATIVE_LOCATION    = 'relative_location';
+    const FILE_ID           = 'file_id';
+
+    const RELATIVE_LOCATION = 'relative_location';
+
+    const LOCATION          = 'location';
+
+    const QUERY_PARAMS      = 'query_params';
+
+    const FILE              = 'file';
+
+    const NAME              = 'name';
+
+    const TYPE              = 'type';
+
+    const ENTITY_ID         = 'entity_id';
+
+    const ENTITY_TYPE       = 'entity_type';
+
+    const STORE             = 'store';
+
+    const DISPLAY_NAME      = 'display_name';
+
 
     protected $config;
 
@@ -67,17 +88,18 @@ class UfhService
         $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
 
         $requestData = [
-            'file'          => fopen($movedFile->getPathname(), 'r'),
-            'name'          => $storageFileName,
-            'type'          => $type,
-            'entity_id'     => $entity->getPublicId(),
-            'entity_type'   => $entity->getEntityName(),
-            'store'         => $this->getStoreForEnv(),
+            self::FILE          => fopen($movedFile->getPathname(), 'r'),
+            self::NAME          => $storageFileName,
+            self::TYPE          => $type,
+            self::ENTITY_ID     => $entity->getPublicId(),
+            self::ENTITY_TYPE   => $entity->getEntityName(),
+            self::STORE         => $this->getStoreForEnv(),
+            self::DISPLAY_NAME  => $file->getClientOriginalName(),
         ];
 
         $this->trace->info(
             TraceCode::AWS_FILE_UPLOAD,
-            array_except($requestData, ['file']));
+            array_except($requestData, [self::FILE]));
 
         try
         {
@@ -96,14 +118,60 @@ class UfhService
         $this->validateResponse($response);
 
         return [
-            self::FILE_ID           => $response['id'],
-            self::RELATIVE_LOCATION => $response['location'],
+            self::FILE_ID           => $response[self::ID],
+            self::RELATIVE_LOCATION => $response[self::LOCATION],
         ];
+    }
+
+    public function fetchFiles(array $queryParams): array
+    {
+        $this->trace->info(
+            TraceCode::AWS_FILES_FETCH,
+            [
+                self::QUERY_PARAMS => $queryParams,
+            ]);
+
+        try
+        {
+            return $this->ufhClient->all($queryParams);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\ServerErrorException(
+                'Error completing the request',
+                ErrorCode::SERVER_ERROR_UFH_FETCH_SERVICE_FAILURE
+            );
+        }
+    }
+
+    public function deleteFile(string $fileId)
+    {
+        $this->trace->info(
+            TraceCode::AWS_FILE_DELETE,
+            [
+                self::FILE_ID => $fileId,
+            ]);
+
+        try
+        {
+            $this->ufhClient->delete($fileId);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\ServerErrorException(
+                'Error completing the request',
+                ErrorCode::SERVER_ERROR_UFH_DELETE_SERVICE_FAILURE
+            );
+        }
     }
 
     protected function validateResponse(array $res = null)
     {
-        if ((empty($res['id']) === true) or (empty($res['location']) === true))
+        if ((empty($res[self::ID]) === true) or (empty($res[self::LOCATION]) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Response not valid',

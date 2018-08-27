@@ -554,7 +554,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "Datadog",
+                    "name": "DataDog",
                     "email": "dev@datadoghq.com",
                     "role": "Developer"
                 }
@@ -6153,12 +6153,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/ufh-sdk-php.git",
-                "reference": "14550e3374dc62017187070254d1a62480ff0746"
+                "reference": "17c1f3015d87844906a5aa1a321f4669b6028ed9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/14550e3374dc62017187070254d1a62480ff0746",
-                "reference": "14550e3374dc62017187070254d1a62480ff0746",
+                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/17c1f3015d87844906a5aa1a321f4669b6028ed9",
+                "reference": "17c1f3015d87844906a5aa1a321f4669b6028ed9",
                 "shasum": ""
             },
             "require": {
@@ -6186,11 +6186,7 @@
                 "sdk",
                 "ufh"
             ],
-            "support": {
-                "source": "https://github.com/razorpay/ufh-sdk-php/tree/master",
-                "issues": "https://github.com/razorpay/ufh-sdk-php/issues"
-            },
-            "time": "2018-01-30T07:21:27+00:00"
+            "time": "2018-08-22T08:02:28+00:00"
         },
         {
             "name": "razorpay/upi-clients",
