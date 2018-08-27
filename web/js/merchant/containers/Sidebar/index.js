@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 
 import ProgressBar from 'rzp/ui/ProgressBar';
+import { classList } from 'common/util';
 
 import { toggleMobileMenu } from 'merchant/modules/app';
 import MainNavLink from 'merchant/components/MainNavLink';
@@ -107,8 +108,7 @@ export default class Sidebar extends Component {
     let { user, config, logoURL, showMobileMenu } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
-    const isNonPurePlatformPartner =
-      !!user.partner_type && user.partner_type !== 'pure_platform';
+
     return (
       <React.Fragment>
         <div class={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
@@ -137,7 +137,10 @@ export default class Sidebar extends Component {
                 }
 
                 <div class="nav">
-                  <ShowWhen myRole="owner manager admin">
+                  <ShowWhen
+                    myRole="owner manager admin"
+                    additionalCondition={user => !user.isPartner()}
+                  >
                     {(!user.isSubmitted || !config.hasPersonalised) && (
                       <Link
                         className="activation-status-link"
@@ -145,11 +148,12 @@ export default class Sidebar extends Component {
                         onClick={this.onSidebarBannerClick}
                       >
                         <div
-                          className={`activation-status${
+                          className={classList(
+                            'activation-status',
                             user.isSubmitted && !config.hasPersonalised
-                              ? ' not-personalised'
+                              ? 'not-personalised'
                               : ''
-                          }`}
+                          )}
                         >
                           <div className="clearfix">
                             <div className="pull-left">{actionCopy}</div>
@@ -179,19 +183,20 @@ export default class Sidebar extends Component {
                       </Link>
                     )}
                   </ShowWhen>
-                  {isNonPurePlatformPartner && (
-                    <ShowWhen notMyRole="sellerapp">
-                      <MainNavLink
-                        label="Partner Dashboard"
-                        icon="i i-partner text-success"
-                        to="/submerchants"
-                        /* temporary false feature */
-                        featureEnabled="partner_tmp"
-                        exact
-                      />
-                      <div class="divider" />
-                    </ShowWhen>
-                  )}
+
+                  <MainNavLink
+                    label="Partner Dashboard"
+                    icon="i i-partner text-success"
+                    to="/submerchants"
+                    notMyRole="sellerapp"
+                    additionalCondition={user =>
+                      user.isPartner() && !user.isPartner('pure_platform')
+                    }
+                    exact
+                  />
+
+                  <div class="divider" />
+
                   <MainNavLink
                     label="Home"
                     icon="i i-chart text-info"

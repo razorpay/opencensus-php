@@ -12,7 +12,7 @@ import Group, { GroupItem } from 'rzp/ui/Group';
 
 import { logout, showOrHideTour } from 'merchantLA/modules/session';
 import SubmitFeedback from 'merchantLA/containers/Header/SubmitFeedback';
-import { SwitchMerchantTypeahead } from 'merchantLA/components/HeaderNav/SwitchMerchant';
+import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
 
 @withRouter
 @connect(

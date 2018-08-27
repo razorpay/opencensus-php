@@ -56,7 +56,9 @@ export default class ViewCredentials extends Component {
           <div class="Modal__Actions clearfix">
             <a
               class="btn btn-primary btn-block"
-              href={`/keys/csv/?id=rzp_live_cN6iQyowfqwWF4&secret=rzp_live_cN6iQyowfqwWF4`}
+              href={`/keys/csv/?id=${credentials.id}&secret=${
+                credentials.secret
+              }`}
             >
               Download Token
             </a>

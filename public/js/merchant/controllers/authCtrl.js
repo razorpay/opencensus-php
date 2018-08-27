@@ -86,10 +86,6 @@ app
               name: 'Individual',
               value: 2,
             },
-            5: {
-              name: 'Not yet registered',
-              value: 11,
-            },
             6: {
               name: 'Public Limited',
               value: 5,

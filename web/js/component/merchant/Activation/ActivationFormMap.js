@@ -20,11 +20,8 @@ const PRIVATE = 4; // 'Private Limited',
 const PUBLIC = 5; // 'Public Limited',
 const LLP = 6; // 'LLP'
 const NGO = 7; // 'NGO'
-//const Educational_Institute = 8 // Removed now
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
-const NOT_REGISTERED = 11; // 'Society'
-//const Others = 12 // Removed now
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
@@ -83,7 +80,6 @@ const businessModel = [
       { label: 'Proprietorship', name: PROPRIETORSHIP },
       { label: 'Partnership', name: PARTNERSHIP },
       { label: 'Individual', name: INDIVIDUAL },
-      { label: 'Not yet registered', name: NOT_REGISTERED },
       { label: 'Public Limited', name: PUBLIC },
       { label: 'LLP', name: LLP },
       { label: 'Trust', name: TRUST },
@@ -96,23 +92,13 @@ const businessModel = [
         activation.state.dirty.business_type ||
         activation.props.data.business_type;
 
-      // if user has selected individual/not yet registered business type
+      // if user has selected individual business type
       if (currentBusinessType && !activation.props.accountId) {
         if (currentBusinessType == INDIVIDUAL) {
           return (
             <div class="warning-svg red">
               {WarningSvg()}
               <span>{individualMsg}</span>
-            </div>
-          );
-        } else if (currentBusinessType == NOT_REGISTERED) {
-          return (
-            <div class="warning-svg">
-              {WarningSvg()}
-              <span>
-                Review of activation form for your case may take longer. We may
-                not be able to support unregistered businesses at this moment.
-              </span>
             </div>
           );
         }
@@ -192,7 +178,7 @@ const businessModel = [
     required: false,
     description:
       'Approval for international payments takes extra time to process. We will reach out to you as we may require some additional information.',
-    _when: excludeFor_Indiv_NotReg,
+    _when: excludeFor_Indiv,
   },
   [
     {
@@ -304,7 +290,7 @@ const registrationDetails = [
     info:
       'Mandatory for Companies. PAN details should be of the mentioned business only.',
     validator: validatePANCard,
-    _when: excludeFor_Indiv_NotReg,
+    _when: excludeFor_Indiv,
   },
   [
     {
@@ -400,7 +386,7 @@ const registrationDetails = [
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
       className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
-      _when: excludeFor_Indiv_NotReg,
+      _when: excludeFor_Indiv,
       description: activation => {
         if (activation.state.has_gstin == '1') {
           return 'You can add your GST details later once you are registered';
@@ -417,8 +403,7 @@ const registrationDetails = [
       name: 'gstin',
       _when: activation => {
         return (
-          excludeFor_Indiv_NotReg(activation) &&
-          activation.state.has_gstin === '0'
+          excludeFor_Indiv(activation) && activation.state.has_gstin === '0'
         );
       },
       _autoRenderImpure: true, // Re-render to show the error
@@ -584,13 +569,13 @@ const uploadFields = [
 
       return description;
     },
-    _when: excludeFor_Indiv_NotReg,
+    _when: excludeFor_Indiv,
   },
   {
     name: 'business_pan_url',
     label: 'Company PAN',
     description: 'PAN details should be of the mentioned business only.',
-    _when: excludeFor_Indiv_NotReg,
+    _when: excludeFor_Indiv,
   },
   {
     name: 'address_proof_url',
@@ -632,13 +617,11 @@ function differentAddress(activation) {
 }
 
 /* Return true IF NOT 'Individual/Not registered' business type */
-function excludeFor_Indiv_NotReg(activation) {
+function excludeFor_Indiv(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
 
-  return (
-    [NOT_REGISTERED, INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1
-  );
+  return [INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1;
 }
 
 function requiredForNGO(activation) {

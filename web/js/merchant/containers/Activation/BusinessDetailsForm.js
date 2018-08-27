@@ -182,7 +182,6 @@ export default class BusinessDetailsForm extends Component {
                 <option value="8">Educational Institutes</option>
                 <option value="9">Trust</option>
                 <option value="10">Society</option>
-                <option value="11">Not yet registered</option>
                 <option value="12">Other</option>
               </Field>
             </div>

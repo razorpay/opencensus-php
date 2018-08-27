@@ -64,17 +64,9 @@ const switchMerchantActionBtn = handleSwitchMerchant => ({
     ),
 });
 
-const switchMerchantAccessMap = {
-  fully_managed: true,
-  aggregator: true,
-  reseller: false,
-  bank: false,
-  pure_platform: false,
-};
-
 @connect(
   state => ({
-    userPartnerType: state.session.user.partner_type,
+    user: state.session.user,
     ...state.submerchants,
   }),
   {
@@ -111,7 +103,10 @@ export default class SubMerchantsList extends ListContainer {
 
   search = () => {};
   render() {
-    const { userPartnerType } = this.props;
+    const user = this.props.user;
+    const switchMerchantColumn = user.isPartner('aggregator', 'fully_managed')
+      ? [switchMerchantActionBtn(this.handleSwitchMerchant)]
+      : [];
     return (
       <div class="sub-merchants-list">
         <div>
@@ -157,9 +152,7 @@ export default class SubMerchantsList extends ListContainer {
               email,
               addedOn,
               activationStatus,
-              ...(switchMerchantAccessMap[userPartnerType]
-                ? [switchMerchantActionBtn(this.handleSwitchMerchant)]
-                : []),
+              ...switchMerchantColumn,
             ]}
             {...this.props}
           />
