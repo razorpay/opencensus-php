@@ -87,4 +87,30 @@ class ThrottleTest extends TestCase
         $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:block' => 1]);
         $this->startTest($this->testData[__FUNCTION__.'2']);
     }
+
+    public function testGetOrderWhenIPBlocked()
+    {
+        // Case 1: Test request ip is 10.0.123.123 and following request should NOT be blocked
+        $this->setRedisGlobalSettings([K::BLOCKED_IPS => '10.0.123.124' . K::LIST_DELIMITER . '10.0.123.125']);
+        $this->startTest($this->testData[__FUNCTION__ . 'Success']);
+
+        // Case 2: Test request ip is 10.0.123.123 and following request should be blocked
+        $this->setRedisGlobalSettings([K::BLOCKED_IPS => '10.0.123.123' . K::LIST_DELIMITER . '10.0.123.124']);
+        $this->startTest($this->testData[__FUNCTION__ . 'Failure']);
+    }
+
+    public function testGetOrderWhenUABlocked()
+    {
+        // Case 1: User agent does not exists in blocked list, so should not be blocked
+        $this->setRedisGlobalSettings([K::BLOCKED_USER_AGENTS => 'Razorpay UA' . K::LIST_DELIMITER . 'CurlBOT']);
+        $this->startTest($this->testData[__FUNCTION__ . 'Success']);
+
+        // Case 2: User agent does exists in blocked list, so should be blocked
+        $this->setRedisGlobalSettings([K::BLOCKED_USER_AGENTS => 'Razorpay UA' . K::LIST_DELIMITER . 'CurlBOT']);
+        $this->startTest($this->testData[__FUNCTION__ .  'Failure1']);
+
+        // Case 2: User agent does exists in blocked list with partial prefixed match, so should be blocked
+        $this->setRedisGlobalSettings([K::BLOCKED_USER_AGENTS => 'Razorpay UA' . K::LIST_DELIMITER . 'CurlBOT']);
+        $this->startTest($this->testData[__FUNCTION__ .  'Failure2']);
+    }
 }

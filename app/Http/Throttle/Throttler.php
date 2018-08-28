@@ -126,6 +126,57 @@ class Throttler
         {
             throw new BlockException(null, ['key' => $this->getThrottleKey()]);
         }
+
+        $this->blockByIpIfApplicable();
+        $this->blockByUserAgentIfApplicable();
+    }
+
+    /**
+     * Blocks current request if IP exclusion rule exists for the same in redis config.
+     */
+    protected function blockByIpIfApplicable()
+    {
+        $ip         = $this->reqCtx->getRequest()->ip();
+        $blockedIPs = $this->getBlockedIPs();
+
+        if (empty($blockedIPs) === true)
+        {
+            return;
+        }
+
+        // For IP, do exact match
+        $wrappedIp  = str_wrap($ip, K::LIST_DELIMITER);
+        $blockedIPs = str_wrap($blockedIPs, K::LIST_DELIMITER);
+
+        if (str_contains($blockedIPs, $wrappedIp) === true)
+        {
+            throw new BlockException(null, ['key' => $this->getThrottleKey()]);
+        }
+
+    }
+
+    /**
+     * Blocks current request if UA exclusion rule exists for the same in redis config.
+     */
+    protected function blockByUserAgentIfApplicable()
+    {
+        $userAgent = $this->reqCtx->getRequest()->userAgent();
+        $blockedUserAgents = $this->getBlockedUserAgents();
+
+        if (empty($blockedUserAgents) === true)
+        {
+           return;
+        }
+
+        // For user agents, match just the beginning
+        $wrappedUserAgent  = str_start($userAgent, K::LIST_DELIMITER);
+        $blockedUserAgents = str_wrap($blockedUserAgents, K::LIST_DELIMITER);
+
+        if (str_contains($blockedUserAgents, $wrappedUserAgent) === true)
+        {
+            throw new BlockException(null, ['key' => $this->getThrottleKey()]);
+        }
+
     }
 
     protected function attemptThrottleIfApplicable()
@@ -204,35 +255,61 @@ class Throttler
 
     protected function isBlocked(): bool
     {
-        return $this->getThrottleValue(K::BLOCK, K::DEFAULT_BLOCK);
+        return $this->getThrottleValueAsInt(K::BLOCK, K::DEFAULT_BLOCK);
     }
 
     protected function isThrottleSkipped(): bool
     {
-        return $this->getThrottleValue(K::SKIP, K::DEFAULT_SKIP);
+        return $this->getThrottleValueAsInt(K::SKIP, K::DEFAULT_SKIP);
     }
 
     protected function isThrottleMocked(): bool
     {
-        return $this->getThrottleValue(K::MOCK, K::DEFAULT_MOCK);
+        return $this->getThrottleValueAsInt(K::MOCK, K::DEFAULT_MOCK);
     }
 
     protected function getThrottleLeakRateValue(): int
     {
-        return $this->getThrottleValue(K::LEAK_RATE_VALUE, K::DEFAULT_LEAK_RATE_VALUE);
+        return $this->getThrottleValueAsInt(K::LEAK_RATE_VALUE, K::DEFAULT_LEAK_RATE_VALUE);
     }
 
     protected function getThrottleLeakRateDuration(): int
     {
-        return $this->getThrottleValue(K::LEAK_RATE_DURATION, K::DEFAULT_LEAK_RATE_DURATION);
+        return $this->getThrottleValueAsInt(K::LEAK_RATE_DURATION, K::DEFAULT_LEAK_RATE_DURATION);
     }
 
     protected function getThrottleMaxBucketSize(): int
     {
-        return $this->getThrottleValue(K::MAX_BUCKET_SIZE, K::DEFAULT_MAX_BUCKET_SIZE);
+        return $this->getThrottleValueAsInt(K::MAX_BUCKET_SIZE, K::DEFAULT_MAX_BUCKET_SIZE);
     }
 
-    protected function getThrottleValue(string $key, int $default): int
+    protected function getBlockedIPs(): string
+    {
+        return $this->getThrottleValueAsString(K::BLOCKED_IPS, K::DEFAULT_BLOCKED_IPS);
+    }
+
+    protected function getBlockedUserAgents(): string
+    {
+        return $this->getThrottleValueAsString(K::BLOCKED_USER_AGENTS, K::DEFAULT_BLOCKED_USER_AGENTS);
+    }
+
+    protected function getThrottleValueAsInt(string $key, int $default): int
+    {
+        return $this->getThrottleValue($key, $default);
+    }
+
+    protected function getThrottleValueAsString(string $key, string $default): string
+    {
+        return $this->getThrottleValue($key, $default);
+    }
+
+    /**
+     * Gets configuration value for given key from redis config cascadingly.
+     * @param  string     $key
+     * @param  int|string $default
+     * @return int|string
+     */
+    protected function getThrottleValue(string $key, $default)
     {
         //
         // Redis data structures which is used in cascading fashion to get
@@ -261,6 +338,9 @@ class Throttler
         //      <mode>:<auth>:<proxy>:lrv:           2
         //      <mode>:<auth>:<proxy>:lrd:           1
         //      <mode>:<auth>:<proxy>:mbs:           30
+        //
+        //      <mode>:<auth>:<proxy>:blocked_ips:         ip1||ip2||ip3
+        //      <mode>:<auth>:<proxy>:blocked_user_agents: ua1||ua2||ua3
         //
         //      // Per auth, per route
         //      <mode>:<auth>:<proxy>:<route>:skip:  0
