@@ -82,6 +82,12 @@ class EnachRbl extends Base
         Config::set('excel.import.heading', 'original');
         Config::set('excel.import.startRow', 2);
 
+        $this->app['excel.reader']->setSelectedSheets([]);
+
+        $this->app['excel.reader']->setSelectedSheetIndices([]);
+
+        $this->traceExcelReaderConfig();
+
         $sheets = $this->parseExcelFile($filePath);
 
         //

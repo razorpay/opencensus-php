@@ -28,7 +28,7 @@ class EnstageGatewayTest extends TestCase
         $this->mockTokenex();
     }
 
-    public function testSuccessful1yEnrolledCard()
+    public function testSuccessfullyEnrolledCard()
     {
         $response = $this->authorizePayment();
 

@@ -13,10 +13,11 @@ use RZP\Trace\TraceCode;
 
 class Base extends Core
 {
-    const GATEWAY                 = 'gateway';
-    const ATTACHMENT_COUNT        = 'attachment_count';
-    const ATTACHMENT_HYPHEN_COUNT = 'attachment-count';
-    const FORCE_UPDATE            = 'force_update';
+    const GATEWAY                   = 'gateway';
+    const ATTACHMENT_COUNT          = 'attachment_count';
+    const ATTACHMENT_HYPHEN_COUNT   = 'attachment-count';
+    const FORCE_UPDATE              = 'force_update';
+    const FORCE_AUTHORIZE           = 'force_authorize';
 
     const FILE_DETAILS            = 'file_details';
     const INPUT_DETAILS           = 'input_details';
@@ -112,7 +113,8 @@ class Base extends Core
      * and can be optionally passed in the request.
      */
     const CONFIG_PARAMS = [
-        self::FORCE_UPDATE
+        self::FORCE_UPDATE,
+        self::FORCE_AUTHORIZE
     ];
 
     protected $validator;

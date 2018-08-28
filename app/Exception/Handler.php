@@ -42,6 +42,8 @@ class Handler extends ExceptionHandler
         $this->throwExceptionInTesting = $this->app['config']->get('app.throw_exception_in_testing');
 
         $this->route = $this->app['api.route'];
+
+        $this->ba = $this->app['basicauth'];
     }
 
     /**
@@ -186,9 +188,18 @@ class Handler extends ExceptionHandler
 
     protected function throttleExceptionHandler(ThrottleException $exception)
     {
-        $this->traceException($exception, Trace::ALERT, TraceCode::THROTTLE_REQUEST_THROTTLED);
+        if ($exception instanceof BlockException)
+        {
+            $this->traceException($exception, Trace::ALERT, TraceCode::THROTTLE_REQUEST_BLOCKED);
 
-        return ApiResponse::rateLimitExceeded();
+            return ApiResponse::requestBlocked();
+        }
+        else
+        {
+            $this->traceException($exception, Trace::ALERT, TraceCode::THROTTLE_REQUEST_THROTTLED);
+
+            return ApiResponse::rateLimitExceeded();
+        }
     }
 
     protected function baseExceptionHandler(BaseException $exception)
@@ -417,8 +428,14 @@ class Handler extends ExceptionHandler
         return ($this->app->runningUnitTests());
     }
 
+    //
+    // Returns true if env debug is set to true, or if the client
+    // app is a debug app. Such apps may required extra information
+    // like internal_error_code to correctly handle exceptions
+    //
     protected function isDebug()
     {
-        return config('app.debug');
+        return ((config('app.debug') === true) or
+                ($this->ba->isDebugApp() === true));
     }
 }

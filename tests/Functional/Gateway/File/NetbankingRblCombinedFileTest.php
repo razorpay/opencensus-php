@@ -97,6 +97,13 @@ class NetbankingRblCombinedFileTest extends TestCase
 
             $this->assertCount(2, $mail->attachments);
 
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
+
             return true;
         });
     }

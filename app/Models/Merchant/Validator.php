@@ -78,6 +78,11 @@ class Validator extends Base\Validator
         Entity::EMAIL                       => 'required|email|unique:merchants'
     ];
 
+    protected static $editPreSignupRules = [
+        Entity::NAME                        => 'required|min:4|string|max:200',
+        Entity::WEBSITE                     => 'sometimes|active_url|max:255|nullable',
+    ];
+
     protected static $editNameRules = [
         Entity::NAME                        => 'required|min:4|string|max:200',
     ];
@@ -175,10 +180,6 @@ class Validator extends Base\Validator
         'uneditable_features',
     ];
 
-    protected static $createSubMerchantUserValidators = [
-        'sub_merchant_owner',
-    ];
-
     protected static $editEmailValidators = [
         'is_test_account',
     ];
@@ -210,26 +211,6 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT);
         }
 
-    }
-
-    /**
-     * validates if the user who is attempting to create a submerchant user is the owner  or not.
-     *
-     * @param array $input
-     *
-     * @throws Exception\BadRequestException
-     */
-    protected function validateSubMerchantOwner(array $input)
-    {
-        $app = App::getFacadeRoot();
-
-        $dashboardHeaders = $app['basicauth']->getDashboardHeaders();
-
-        if ($dashboardHeaders['user_role'] !== 'owner')
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBUSER_CREATION_NOT_ALLOWED);
-        }
     }
 
     /**

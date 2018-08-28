@@ -2,10 +2,10 @@
 
 namespace RZP\Reconciliator\NetbankingObc;
 
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
-use RZP\Gateway\Netbanking\Obc\Status;
 use RZP\Gateway\Netbanking\Obc\ReconciliationFields;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
@@ -66,8 +66,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     /**
      * We are force authorizing this because their verify API depends on bank reference number.
+     *
+     * @param Payment\Entity $payment
      */
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
         $this->allowForceAuthorization = true;
     }

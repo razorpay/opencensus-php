@@ -55,7 +55,7 @@ class Hdfc extends Base
 
         $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
-        $mailData = [
+        $mailData[] = [
             'file_name' => $file->getLocation(),
             'signed_url' => $signedUrl
         ];

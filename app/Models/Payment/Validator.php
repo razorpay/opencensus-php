@@ -353,7 +353,9 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
                 $attribute,
-                $vpa);
+                [
+                    'vpa' => $vpa
+                ]);
         }
     }
 

@@ -126,7 +126,6 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::PHASE,
         self::COMMENTS,
-        self::FILES,
         self::CREATED_AT,
     ];
 
@@ -168,10 +167,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::AMOUNT_REVERSED,
         self::AMOUNT_DEDUCTED,
-    ];
-
-    protected $with = [
-        self::FILES,
     ];
 
     // ----------------------- Setters -----------------------------------------
@@ -326,11 +321,6 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
-    }
-
-    public function files()
-    {
-        return $this->hasMany(File\Entity::class);
     }
 
     public function parent()

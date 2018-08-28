@@ -94,6 +94,11 @@ class Response
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED);
     }
 
+    public function requestBlocked()
+    {
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_FORBIDDEN);
+    }
+
     public function onlyHttpsAllowed()
     {
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);

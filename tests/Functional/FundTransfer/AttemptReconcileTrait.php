@@ -14,7 +14,8 @@ trait AttemptReconcileTrait
         $setlFile,
         string $channel,
         $generateFailedReconciliations = false,
-        $prevAttemptId = null)
+        $prevAttemptId = null,
+        $generateReturnSettledReconciliation = false)
     {
         $uploadedFile = $this->createUploadedFile($setlFile);
 
@@ -26,6 +27,7 @@ trait AttemptReconcileTrait
             'content' => [
                 'failed_recons'     => $generateFailedReconciliations,
                 'prev_attempt_id'   => $prevAttemptId,
+                'return_settled'    => $generateReturnSettledReconciliation,
             ]
         ];
 

@@ -50,10 +50,13 @@ class NetbankingHdfcRefundFileTest extends TestCase
 
         $file = $this->getLastEntity('file_store', true);
 
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
         $expectedFileContent = [
             'type'        => 'hdfc_netbanking_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
+            'name'        => "HDFC_Netbanking_Refunds_test_$today",
             'extension'   => 'xlsx',
         ];
 
@@ -69,12 +72,18 @@ class NetbankingHdfcRefundFileTest extends TestCase
 
             $testData = [
                 'body' => RefundFileMailConstants::BODY_MAP[Gateway::NETBANKING_HDFC],
-                'file_name' => "HDFC_Netbanking_Refunds_test_$today.xlsx",
             ];
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
             $this->assertNotEmpty($mail->attachments);
+
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
 
             return ($mail->hasFrom('refunds@razorpay.com') and
                     ($mail->hasTo(RefundFileMailConstants::RECIPIENT_EMAILS_MAP[Gateway::NETBANKING_HDFC])));

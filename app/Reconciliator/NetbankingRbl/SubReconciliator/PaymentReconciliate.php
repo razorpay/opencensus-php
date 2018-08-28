@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\NetbankingRbl;
 
+use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Rbl\Status;
@@ -92,7 +93,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return null;
     }
 
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
         $this->allowForceAuthorization = true;
     }

@@ -1,6 +1,6 @@
 <?php
     $light_color        = '#fff';
-    $merchant_display_image = 'https://cdn.razorpay.com/static/assets/schindler-display-image.png';
+    $merchant_display_image = 'https://cdn.razorpay.com/static/assets/schindler-display-image.jpg';
 ?>
 
 <style>

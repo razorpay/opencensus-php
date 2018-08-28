@@ -146,6 +146,14 @@ class NetbankingReconciliationTest extends TestCase
         $gatewayEntity = $this->getLastEntity('netbanking', true);
 
         $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEntity['account_number']);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
     }
 
     public function testPnbManualReconciliation()
@@ -170,6 +178,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->assertEquals($netbankingentity['bank_payment_id'], 99999);
 
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
     }
 
     public function testPnbFailedPaymentReconciliation()
@@ -191,6 +202,14 @@ class NetbankingReconciliationTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity['status'], 'authorized');
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
     }
 
     public function testObcManualReconcilation()

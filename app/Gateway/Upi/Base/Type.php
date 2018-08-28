@@ -6,4 +6,5 @@ class Type
 {
     const PAY     = 'pay';
     const COLLECT = 'collect';
+    const INTENT  = 'intent';
 }
