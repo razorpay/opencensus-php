@@ -28,6 +28,9 @@ final class Constants
     const FULLY_MANAGED                           = 'fully_managed';
     const PURE_PLATFORM                           = 'pure_platform';
 
+    // Used in partners flows
+    const APPLICATION_ID                          = 'application_id';
+
     public static $partnerTypes = [
         self::BANK,
         self::RESELLER,

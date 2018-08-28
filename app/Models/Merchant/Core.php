@@ -23,6 +23,7 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Action;
+use RZP\Services\AuthService;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
@@ -1130,7 +1131,7 @@ class Core extends Base\Core
 
         $partnerUser = $partner->primaryOwner();
 
-        $merchant = $this->getPartnerSubmerchantData($merchant, $partnerUser);
+        $merchant = $this->getPartnerSubmerchantData($partner, $merchant, $partnerUser, true);
 
         return $merchant;
     }
@@ -1151,9 +1152,9 @@ class Core extends Base\Core
 
         $partnerUser = $partner->primaryOwner();
 
-        $merchants = $merchants->map(function($merchant) use ($partnerUser)
+        $merchants = $merchants->map(function($submerchant) use ($partner, $partnerUser)
         {
-            return $this->getPartnerSubmerchantData($merchant, $partnerUser);
+            return $this->getPartnerSubmerchantData($partner, $submerchant, $partnerUser);
         });
 
         return $merchants;
@@ -1202,12 +1203,18 @@ class Core extends Base\Core
     /**
      * Sets the partner attributes in the instance of Merchant\Entity so that toArrayPartner() can be used later.
      *
+     * @param Entity      $partner
      * @param Entity      $submerchant
      * @param User\Entity $partnerUser
+     * @param bool|false  $fetchAppDetails
      *
      * @return Entity
      */
-    protected function getPartnerSubmerchantData(Entity $submerchant, User\Entity $partnerUser): Entity
+    protected function getPartnerSubmerchantData(
+        Entity $partner,
+        Entity $submerchant,
+        User\Entity $partnerUser,
+        bool $fetchAppDetails = false): Entity
     {
         $submerchant[Entity::DETAILS] = [
             Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS),
@@ -1219,17 +1226,38 @@ class Core extends Base\Core
 
         $submerchant[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($submerchant);
 
-        $submerchant[Entity::APPLICATION] = $this->getApplicationDetails($submerchant);
+        $submerchant[Entity::APPLICATION] = $this->getApplicationDetails($partner, $submerchant, $fetchAppDetails);
 
         return $submerchant;
     }
 
-    protected function getApplicationDetails(Entity $merchant): array
+    /**
+     * @param Entity     $partner
+     * @param Entity     $submerchant
+     * @param bool|false $fetchAppDetails
+     *
+     * @return array
+     */
+    protected function getApplicationDetails(Entity $partner, Entity $submerchant, $fetchAppDetails = false): array
     {
+        $applicationId = $submerchant->getAttribute(Constants::APPLICATION_ID);
+
         $appData = [
-            OAuthApp\Entity::ID   => $merchant->getAttribute('app_' . OAuthApp\Entity::ID),
-            OAuthApp\Entity::NAME => $merchant->getAttribute('app_' . OAuthApp\Entity::NAME),
+            OAuthApp\Entity::ID => $applicationId,
         ];
+
+        // Call the auth service to fetch details about the application
+        if ($fetchAppDetails === true)
+        {
+            $app = app('authservice')->getApplication($applicationId, $partner->getId());
+
+            $partnerVisibleColumns = [
+                OAuthApp\Entity::ID,
+                OAuthApp\Entity::NAME,
+            ];
+
+            $appData = array_only($app, $partnerVisibleColumns);
+        }
 
         return $appData;
     }

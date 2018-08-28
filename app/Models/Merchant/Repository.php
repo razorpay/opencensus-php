@@ -555,18 +555,10 @@ class Repository extends Base\Repository
         $merchantDetailsColumns    = $merchantDetailsRepo->dbColumn('*');
         $merchantDetailsMerchantId = $merchantDetailsRepo->dbColumn(Detail\Entity::MERCHANT_ID);
 
-        // Fetch the auth db name
-        $authDb            = $this->app['config']["database.connections.auth.database"];
-        $applicationsTable = $authDb . '.' . OAuthTable::APPLICATIONS;
-
-        $oauthApplicationId   = $this->getOAuthAppColumn(OAuthApp\Entity::ID);
-        $oauthApplicationName = $this->getOAuthAppColumn(OAuthApp\Entity::NAME);
-
         $attributes = [
             $merchantDetailsColumns,
             $this->dbColumn('*'),
-            $oauthApplicationId . ' as app_id',
-            $oauthApplicationName . ' as app_name',
+            $accessMapsEntityId . ' as ' . Constants::APPLICATION_ID,
         ];
 
         // merchantDetail is not fetched as a relation because a filter has to be added for that in the query
@@ -575,16 +567,10 @@ class Repository extends Base\Repository
                       ->select($attributes)
                       ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
                       ->leftJoin(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
-                      ->leftJoin($applicationsTable, $accessMapsEntityId, $oauthApplicationId)
                       ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
                       ->whereIn($accessMapsEntityId, $applicationIds)
                       ->whereNull($accessMapsDeletedAt);
 
         return $query;
-    }
-
-    protected function getOAuthAppColumn(string $attribute)
-    {
-        return OAuthTable::APPLICATIONS . '.' . $attribute;
     }
 }
