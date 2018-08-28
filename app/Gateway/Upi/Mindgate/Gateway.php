@@ -234,6 +234,8 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($encryptedResponse, Action::CALLBACK);
 
+        $response[ResponseFields::CALLBACK_RESPONSE_PGMID] = $input[ResponseFields::CALLBACK_RESPONSE_PGMID];
+
         $bankDetails = $this->parseBankAccountDetails($response[ResponseFields::BANK_REFERENCE]);
 
         return array_merge($response, $bankDetails);
@@ -882,5 +884,65 @@ class Gateway extends Base\Gateway
     public function getPaymentIdFromServerCallback(array $response)
     {
         return $response[ResponseFields::PAYMENT_ID];
+    }
+
+    protected function isDuplicateUnexpectedPayment($callbackData)
+    {
+        $npciReferenceId = $callbackData[ResponseFields::NPCI_UPI_TXN_ID];
+
+        $merchantReference = $callbackData[ResponseFields::PAYMENT_ID];
+
+        $gatewayPayment = $this->repo->fetchByNpciReferenceIdAndMerchantReference(
+            $npciReferenceId, $merchantReference);
+
+        return (is_null($gatewayPayment) === false);
+    }
+
+    protected function isValidUnexpectedPayment($callbackData)
+    {
+        /*
+            Verifies if the payload specified in the server callback is valid.
+        */
+
+        $paymentId = $callbackData[ResponseFields::PAYMENT_ID];
+
+        $input = [
+            "payment" => [
+                "id" => $paymentId,
+            ],
+        ];
+
+        $request = $this->getPaymentVerifyRequestArray($callbackData);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->parseGatewayResponse($response->body, Action::VERIFY);
+
+        return $this->checkResponseStatus($content[ResponseFields::STATUS]);
+    }
+
+    public function getPaymentAndMerchantDetailsFromCallback($callbackData)
+    {
+        $paymentDetails = [
+            "method"   => 'upi',
+            "amount"   => $callbackData[ResponseFields::AMOUNT],
+            "currency" => "INR",
+            "vpa"      => $callbackData[ResponseFields::PAYER_VPA],
+        ];
+
+        $gatewayMerchantId = $callbackData[ResponseFields::CALLBACK_RESPONSE_PGMID];
+
+        $masterTransactionId = $callbackData[ResponseFields::NPCI_UPI_TXN_ID];
+
+        return [
+            "payment_details"       => $paymentDetails,
+            "gateway_merchant_id"   => $gatewayMerchantId,
+            "master_transaction_id" => $master_transaction_id,
+        ];
+    }
+
+    public function callbackEx($callbackData)
+    {
+
     }
 }

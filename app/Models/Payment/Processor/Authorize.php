@@ -100,7 +100,7 @@ trait Authorize
         //
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, $gatewayInput);
 
-        if ($this->shouldHitGatewayForPayment($payment) === false)
+        if ($this->shouldHitGatewayForPayment($payment, $gatewayInput) === false)
         {
             $this->repo->saveOrFail($payment);
 
@@ -316,8 +316,14 @@ trait Authorize
         return ['razorpay_payment_id' => $payment->getPublicId()];
     }
 
-    protected function processPaymentFinal(Payment\Entity $payment): array
+    protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput): array
     {
+        if (array_key_exists("skip_gateway_call", $gatewayInput) &&
+            ($gatewayInput["skip_gateway_call"] === true))
+        {
+            return $this->processCreated($payment);
+        }
+
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
             return $this->processCreated($payment);

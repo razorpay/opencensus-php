@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Mode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
@@ -41,13 +42,25 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-            throw new Exception\LogicException(
-                'Payment id not found in either database',
-                null,
-                [
-                    'gateway'    => $gatewayDriver,
-                    'payment_id' => $paymentId
-                ]);
+            try
+            {
+                \Database\DefaultConnection::set(Mode::LIVE);
+
+                $this->app['basicauth']->setMode(Mode::LIVE);
+
+                return (new Payment\Service)->createPaymentFromS2SCallback($input, $gatewayDriver);
+            }
+            catch (\Exception $ex)
+            {
+                // handle
+                throw new Exception\LogicException(
+                    'Payment id not found in either database',
+                    null,
+                    [
+                        'gateway'    => $gatewayDriver,
+                        'payment_id' => $paymentId
+                    ]);
+            }
         }
 
         \Database\DefaultConnection::set($mode);

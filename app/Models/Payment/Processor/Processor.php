@@ -2168,8 +2168,14 @@ class Processor
         return true;
     }
 
-    protected function shouldHitGatewayForPayment(Payment\Entity $payment): bool
+    protected function shouldHitGatewayForPayment(Payment\Entity $payment, array $gatewayInput = []): bool
     {
+        if (array_key_exists("skip_gateway_call", $gatewayInput) &&
+            ($gatewayInput["skip_gateway_call"] === true))
+        {
+            return false;
+        }
+
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
             //

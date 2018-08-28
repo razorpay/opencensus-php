@@ -1374,4 +1374,88 @@ class Service extends Base\Service
             return true;
         });
     }
+
+    public function createPaymentFromS2SCallback($callbackData, $gatewayIdentifier)
+    {   
+        $gateway = $this->app['gateway']->gateway($gatewayIdentifier);
+
+        $details = $gateway->getPaymentAndMerchantDetailsFromCallback($callbackData);
+
+        $paymentInput = $details['payment_details'];
+
+        $gatewayMerchantId = $details['gateway_merchant_id'];
+
+        $masterTransactionId = $details['master_transaction_id'];
+
+        $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gatewayIdentifier);
+
+        $gateway->setMode(Mode::LIVE);
+
+        $gateway->setTerminal($terminal);
+
+        $uniquePaymentIdentifier = $gatewayIdentifier . $masterTransactionId;
+
+        $gatewayInput = $this->app['api.mutex']->acquireAndRelease(
+            $uniquePaymentIdentifier,
+            function() use ($paymentInput, $callbackData)
+        {
+            if ($gateway->isUnexpectedPayment($callbackData) === false)
+            {
+                throw new Exception\LogicException('Not an unexpected payment');
+            }
+
+            $gatewayInput = [
+                'terminal_id'       => $terminal->getId(),
+                'skip_gateway_call' => true,
+            ];
+
+            $demoMerchant = $this->app['repo']->merchant->findByIdAndOrgId('2aTeFCKTYWwfrF', '100000razorpay');
+
+            $rv = $this->getNewProcessor($demoMerchant)->process($paymentInput, $gatewayInput);
+
+            $paymentPublicId = $rv["razorpay_payment_id"];
+
+            $payment = $this->repo->payment->findByPublicId($paymentPublicId);
+            $paymentId = $payment->getId();
+
+            try
+            {
+                $this->repo->transaction(function() use ($paymentId, $callbackData)
+                {
+                    $gateway->callbackEx($paymentId, $callbackData);
+
+                    $payment->setStatus(Payment\Status::AUTHORIZED);
+
+                    $this->repo->saveOrFail($payment);
+                });
+            }
+            catch (\Exception $e)
+            {
+                $payment->setStatus(Payment\Status::FAILED);
+
+                $this->repo->saveOrFail($payment);
+            }
+/*
+            $gatewayInput = [
+                "payment" => [
+                    "id"  => $paymentId,
+                ],
+                "upi"     => [
+                    "expiry_time" => 1, // dummy value
+                ]
+            ];
+
+            $attributes = $this->getGatewayEntityAttributes($gatewayInput);
+
+            $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
+
+            $callbackData[Entity::RECEIVED] = 1;
+
+            $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $callbackData);
+*/
+            return $gatewayPayment;
+        });
+
+        return $gatewayPayment;
+    }
 }
