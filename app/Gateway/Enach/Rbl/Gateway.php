@@ -212,6 +212,30 @@ class Gateway extends Base\Gateway
         return hash(HashAlgo::SHA256, $string);
     }
 
+    public function getMerchantId()
+    {
+        $mid = $this->getLiveMerchantId();
+
+        if ($this->mode === Mode::TEST)
+        {
+            $mid = $this->getTestMerchantId();
+        }
+
+        return $mid;
+    }
+
+    protected function addHeadersForNpciRequest($request)
+    {
+        //TODO add appropriate values here below
+        $headers = [
+            'Content-Type'  => 'application/x-www-form-urlencoded'
+        ];
+
+        $request['headers'] = $headers;
+
+        return $request;
+    }
+
     protected function callAuthenticationGateway(array $input)
     {
         return $this->app['gateway']->call(
