@@ -76,6 +76,20 @@ export default class MakeAPICall extends Component {
             <option value="internal">Internal</option>
           </SelectField>
 
+          <TextAreaField
+            label="Request Headers"
+            name="headers"
+            placeholder={'X-Key-1: Value-1\nX-Key-2: Value-2'}
+            helpMsg={
+              <span>
+                Each new line will be consider a new header entry separated by
+                colon(:), <em>example given below</em>
+                <div>X-Key-1: Value-1</div>
+                <div>X-Key-2: Value-2</div>
+              </span>
+            }
+          />
+
           {this.state.auth === 'proxy' ? (
             <Field label="Merchant ID" name="merchant_id" />
           ) : null}
@@ -103,21 +117,7 @@ export default class MakeAPICall extends Component {
             file.length > 0 ? (
               <Field label="File Name" name="file_name" key="file_name" />
             ) : null,
-            <TextAreaField
-              label="Request Headers"
-              name="headers"
-              placeholder={'X-Key: Value\nX-Key-2: Value-2'}
-              helpMsg={
-                <span>
-                  Each new line will be consider a new header entry separated by
-                  colon(:), <em>example given below</em>
-                  <div>x-key-1:value</div>
-                  <div>x-key-2:value</div>
-                </span>
-              }
-            />,
           ]}
-
           <AsyncButton
             text="OK"
             class="btn"
