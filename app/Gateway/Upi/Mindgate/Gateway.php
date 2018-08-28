@@ -62,6 +62,7 @@ class Gateway extends Base\Gateway
         ResponseFields::NPCI_UPI_TXN_ID   => Entity::NPCI_REFERENCE_ID,
         ResponseFields::ACCOUNT_NUMBER    => Entity::ACCOUNT_NUMBER,
         ResponseFields::IFSC_CODE         => Entity::IFSC,
+        Entity::MERCHANT_REFERENCE        => Entity::MERCHANT_REFERENCE,
     ];
 
     /**
@@ -733,9 +734,22 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestArray($input)
     {
+        $merchantReference = NULL;
+
+        if (isset($input['payment']['merchant_reference']) === false)
+        {
+            $gatewayPayment = $htis->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'], Action::AUTHORIZE);
+
+            $merchantReference = $gatewayPayment['merchant_reference'];
+        } else
+        {
+            $merchantReference = $input['payment']['merchant_reference'];
+        }
+
         $data = [
             $this->getMerchantId(),
-            $input['payment']['id'],
+            $merchantReference ?: $input['payment']['id'],
             '',
             // This is the Reference ID field
             // which is supposed to be empty for now
@@ -908,11 +922,12 @@ class Gateway extends Base\Gateway
 
         $input = [
             "payment" => [
-                "id" => $paymentId,
+                "id"                 => $paymentId, // dummy entry
+                "merchant_reference" => $paymentId,
             ],
         ];
 
-        $request = $this->getPaymentVerifyRequestArray($callbackData);
+        $request = $this->getPaymentVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -941,8 +956,38 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    public function callbackEx($callbackData)
+    public function callbackEx($paymentId, $callbackData)
     {
+        $gatewayInput = [
+            "payment" => [
+                "id"  => $paymentId,
+            ],
+            "upi"     => [
+                "expiry_time" => 1, // dummy value
+            ]
+        ];
 
+        parent::action($input, Action::AUTHORIZE);
+
+        $attributes = $this->getGatewayEntityAttributes($gatewayInput);
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
+
+        $callbackData[Entity::RECEIVED] = 1;
+
+        // Update merchant reference and payment_id
+        $merchantReference = $callbackData[ResponseFields::PAYMENT_ID];
+
+        $callbackData[ResponseFields::PAYMENT_ID] = $paymentId;
+
+        $callbackData[Entity::MERCHANT_REFERENCE] = $merchantReference;
+
+        $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $callbackData);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA => $gatewayPayment->getVpa()
+            ]
+        ];
     }
 }

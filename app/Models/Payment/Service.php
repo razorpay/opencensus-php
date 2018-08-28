@@ -1395,7 +1395,7 @@ class Service extends Base\Service
 
         $uniquePaymentIdentifier = $gatewayIdentifier . $masterTransactionId;
 
-        $gatewayInput = $this->app['api.mutex']->acquireAndRelease(
+        $rv = $this->app['api.mutex']->acquireAndRelease(
             $uniquePaymentIdentifier,
             function() use ($paymentInput, $callbackData)
         {
@@ -1422,11 +1422,13 @@ class Service extends Base\Service
             {
                 $this->repo->transaction(function() use ($paymentId, $callbackData)
                 {
-                    $gateway->callbackEx($paymentId, $callbackData);
+                    $rv = $gateway->callbackEx($paymentId, $callbackData);
 
                     $payment->setStatus(Payment\Status::AUTHORIZED);
 
                     $this->repo->saveOrFail($payment);
+
+                    return $rv;
                 });
             }
             catch (\Exception $e)
@@ -1435,27 +1437,10 @@ class Service extends Base\Service
 
                 $this->repo->saveOrFail($payment);
             }
-/*
-            $gatewayInput = [
-                "payment" => [
-                    "id"  => $paymentId,
-                ],
-                "upi"     => [
-                    "expiry_time" => 1, // dummy value
-                ]
-            ];
 
-            $attributes = $this->getGatewayEntityAttributes($gatewayInput);
-
-            $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
-
-            $callbackData[Entity::RECEIVED] = 1;
-
-            $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $callbackData);
-*/
-            return $gatewayPayment;
+            return [];
         });
 
-        return $gatewayPayment;
+        return $rv;
     }
 }
