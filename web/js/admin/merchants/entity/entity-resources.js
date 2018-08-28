@@ -61,7 +61,11 @@ function _getAdminsFields(adminsMap) {
 function _getSubmerchantFields() {
   return [
     ['Merchant Id', item => item.id],
-    ['Merchant Name', item => item.name],
+    [
+      'Merchant Name',
+      item =>
+        item.name || <em class="info-block">To view name please refresh</em>,
+    ],
   ];
 }
 

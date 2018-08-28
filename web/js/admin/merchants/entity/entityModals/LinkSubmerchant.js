@@ -1,7 +1,7 @@
 import { Component } from 'react';
 
-import { adminPost } from 'common/fetch';
-import { notifySuccess, closeModal } from 'common/modal';
+import { adminPost, adminDelete } from 'common/fetch';
+import { notifySuccess } from 'common/modal';
 
 import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
@@ -11,7 +11,11 @@ import AsyncButton from 'ui/AsyncButton';
 
 const getSubmerchantFields = unlinkSubmerchant => [
   ['Merchant Id', item => item.id],
-  ['Merchant Name', item => item.name],
+  [
+    'Merchant Name',
+    item =>
+      item.name || <em class="info-block">To view name please refresh</em>,
+  ],
   [
     'Actions',
     item => (
@@ -38,27 +42,50 @@ export default class LinkSbmerchant extends Component {
     }).then(response => {
       if (response) {
         notifySuccess('Sub merchant added successfully');
-        closeModal();
+        this.setState(
+          {
+            submerchants: [...this.state.submerchants].concat({
+              id: 'acc_' + response.merchant_id,
+            }),
+          },
+          this.updateModelWithCurrentState
+        );
       }
     });
   };
 
   unlinkSubmerchant = submerchantId => {
-    this.props.props.unlinkSubmerchant(submerchantId).then(response => {
+    const { merchantId } = this.props;
+    adminDelete({
+      url: `live_${merchantId}/merchants/${submerchantId.replace(
+        'acc_',
+        ''
+      )}/access_maps`,
+      headers: { ['X-Razorpay-Account']: merchantId },
+    }).then(response => {
       if (response) {
-        this.setState({
-          submerchants: this.state.submerchants.filter(
-            ({ id }) => id !== submerchantId
-          ),
-        });
+        notifySuccess('Submerchant unlinked successfully');
+        this.setState(
+          {
+            submerchants: this.state.submerchants.filter(
+              ({ id }) => id !== submerchantId
+            ),
+          },
+          this.updateModelWithCurrentState
+        );
       }
     });
+  };
+
+  updateModelWithCurrentState = () => {
+    const { props: model } = this.props;
+    model.updateSubmerchants(this.state.submerchants);
   };
 
   render() {
     return (
       <ModalContent header="Link Sub-Merchant">
-        <Form class="full-span full-elements" style={{ width: '350px' }}>
+        <Form class="full-span full-elements">
           <Field label="Merchant Id" name="submerchantId" />
 
           <AsyncButton
