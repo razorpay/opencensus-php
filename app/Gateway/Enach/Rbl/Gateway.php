@@ -201,6 +201,16 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function getStringToHash($content, $glue = '|')
+    {
+        return implode($glue, $content);
+    }
+
+    protected function getHashOfString($string)
+    {
+        return hash(HashAlgo::SHA256, $string);
+    }
+
     protected function callAuthenticationGateway(array $input)
     {
         return $this->app['gateway']->call(
