@@ -23,6 +23,12 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if (($input['method'] === 'emandate') and
+            ($input['auth_type'] === 'netbanking'))
+        {
+            $this->emandateNpciAuth($input);
+        }
+
         $input['gateway'] = $this->getGatewayInput($input);
 
         $content = [
@@ -92,6 +98,19 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    protected function emandateNpciAuth($input)
+    {
+        $attributes = $this->getGatewayAttributes($input);
+
+        $this->createGatewayPaymentEntity($attributes, 'authorize');
+
+        $request = $this->getRequest($input);
+
+        $this->traceGatewayPaymentRequest($request, $input);
+
+        return $request;
+    }
+
     protected function getRecurringData()
     {
         $recurringData = [
@@ -139,6 +158,32 @@ class Gateway extends Base\Gateway
     {
         throw new Exception\RuntimeException(
             'Verify is not implemented');
+    }
+
+    protected function getRequest($input)
+    {
+        $secureData = $this->getSecureData($input);
+
+        $checksum = $this->generateHash($secureData);
+
+        $xml = $this->getXmlForNpci($input, $secureData);
+
+        $mid = $this->getMerchantId();
+
+        $bank = $input['bank'];
+
+        $content = [
+            'MerchantID' => $mid,
+            'MandateReqDoc' => $xml,
+            'CheckSumVal' => $checksum,
+            'BankID' => $bank,
+        ];
+
+        $request = $this->getStandardRequestArray($content, 'post', 'npciauth');
+
+        $request = $this->addHeadersForNpciRequest($request);
+
+        return $request;
     }
 
     protected function callAuthenticationGateway(array $input)
