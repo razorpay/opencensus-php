@@ -17,6 +17,22 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $row[ReconciliationFields::MERCHANT_TRACK_ID] ?? null;
     }
 
+    protected function getPaymentId(array $row)
+    {
+        $refundId = $this->getRefundId($row);
+
+        $gatewayEntity = $this->getGatewayRefund($refundId);
+
+        if ($gatewayEntity === null)
+        {
+            return null;
+        }
+
+        $paymentId = $gatewayEntity->getPaymentId();
+
+        return $paymentId;
+    }
+
     protected function getGatewayRefund(string $refundId)
     {
         return $this->repo
@@ -28,9 +44,8 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         if (empty($row[ReconciliationFields::PAYMENT_DATE]) === false)
         {
-            $date = Carbon::createFromFormat('d-m-Y',
-                $row[ReconciliationFields::PAYMENT_DATE],
-                                             Timezone::IST)->timestamp;
+            $date = Carbon::createFromFormat('d-m-Y', $row[ReconciliationFields::PAYMENT_DATE], Timezone::IST)->timestamp;
+
             return $date;
         }
     }
@@ -38,6 +53,14 @@ class RefundReconciliate extends Base\RefundReconciliate
     protected function getArn(array $row)
     {
         $onusIndicator = $row[ReconciliationFields::ONUS_INDICATOR];
+
+        $rrn = $this->getReferenceNumber($row);
+
+        if ((empty($rrn) === true) and
+            ($onusIndicator === 'YES'))
+        {
+            $this->reportMissingColumn($row, $row[ReconciliationFields::RRN]);
+        }
 
         if ($onusIndicator === 'YES')
         {
@@ -87,7 +110,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      * It should be set as ref setReferenceNumberInGateway
      * in the gateway entity.
      * @param string $arn
-     * @param PublicEntity $gatewayPayment CardFss Entity
+     * @param PublicEntity $gatewayRefund CardFss Entity
      * */
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {

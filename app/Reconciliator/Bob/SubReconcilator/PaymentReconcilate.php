@@ -56,7 +56,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $expectedCurrency = ($convertCurrency === true) ? Currency::INR : $this->payment->getCurrency();
 
-        $reconCurrency = $this->getReconCurrencyCode($row);
+        $reconCurrency = $this->getReconCurrency($row);
 
         if ($expectedCurrency !== $reconCurrency)
         {
@@ -76,9 +76,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return true;
     }
 
-    protected function getReconCurrencyCode($row)
+    protected function getReconCurrency($row)
     {
-        return $row[ReconciliationFields::TRANSACTION_CURRENCY_CODE];
+        return $row[ReconciliationFields::TRANSACTION_CURRENCY_CODE] ?? null;
     }
 
     public function getReferenceNumber($row)
@@ -102,7 +102,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         if ((empty($rrn) === true) and
             ($onusIndicator === 'YES'))
         {
-            $this->reportMissingColumn($row[ReconciliationFields::RRN]);
+            $this->reportMissingColumn($row, $row[ReconciliationFields::RRN]);
         }
 
         if ($onusIndicator === 'YES')
@@ -111,26 +111,21 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
     }
 
-    /**
-     * Since we need to update rrn we would need gatewayPayment
-     * @param $row
-     * @return string
-     */
     protected function getGatewayPayment($paymentId)
     {
         $status = Status::$successStates;
 
         return $this->repo
-                   ->card_fss
-                   ->findByPaymentIdActionAndStatus(
-                       $paymentId,
-                       Action::AUTHORIZE,
-                       $status);
+                    ->card_fss
+                    ->findByPaymentIdActionAndStatus(
+                        $paymentId,
+                        Action::AUTHORIZE,
+                        $status);
     }
 
     protected function getGatewayPaymentDate($row)
     {
-        return $row[ReconciliationFields::TRANSACTION_DATE];
+        return $row[ReconciliationFields::TRANSACTION_DATE] ?? null;
     }
 
     /**
@@ -229,7 +224,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $this->reportMissingColumn($row, ReconciliationFields::GST);
         }
 
-        $tax = abs($row[ReconciliationFields::GST]) + abs($row[ReconciliationFields::CSF_TAX]);
+        $csfTax = (isset($row[ReconciliationFields::MSF_AMOUNT]) === true) ? abs($row[ReconciliationFields::CSF_TAX]) : 0;
+
+        $tax = $gstTax + $csfTax;
 
         return Base\Helper::getIntegerFormattedAmount($tax);
     }
@@ -246,9 +243,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $this->reportMissingColumn($row, ReconciliationFields::MSF_AMOUNT);
         }
 
-        $lateSettlementFee = $row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT];
+        $lateSettlementFee = (isset($row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT]) === true) ? abs($row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT]) : 0;
 
-        $rrfAmount = $row[ReconciliationFields::RRF_AMOUNT];
+        $rrfAmount = (isset($row[ReconciliationFields::RRF_AMOUNT]) === true) ? abs($row[ReconciliationFields::RRF_AMOUNT]) : 0;
 
         $msfAmount = abs($row[ReconciliationFields::MSF_AMOUNT]);
 

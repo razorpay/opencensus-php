@@ -1191,7 +1191,6 @@ class ReconciliationFileTest extends TestCase
         $refund = $this->getDbLastEntity('refund');
 
         $this->assertEquals('175309', $refund['reference1']);
-        $this->assertEquals('175309', $refund['reference2']);
 
         $transactionEntity = $this->getLastEntity('transaction', true);
 
