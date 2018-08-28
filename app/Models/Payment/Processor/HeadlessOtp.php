@@ -188,8 +188,7 @@ trait HeadlessOtp
 
         $response = $this->app['card.otpelf']->otpResend($data);
 
-        if (($response['success'] === true) and
-            ($response['data']['action'] === 'page_resolved'))
+        if ($response['success'] === true)
         {
             $content = $response['data']['data'];
 
