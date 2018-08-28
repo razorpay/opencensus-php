@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use phpseclib\Crypt\AES;
 use RZP\Constants\Timezone;
+use RZP\Constants\HashAlgo;
 use RZP\Gateway\Enach\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
