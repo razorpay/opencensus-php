@@ -14,6 +14,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Payment\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
@@ -217,6 +218,8 @@ class EnachRblGatewayTest extends TestCase
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
 
         $verify = $this->verifyPayment($payment['id']);
+
+        $this->assertEquals(Status::FAILED, $payment['status']);
 
         $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
 
