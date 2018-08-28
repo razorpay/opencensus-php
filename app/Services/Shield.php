@@ -174,7 +174,7 @@ class Shield
                 $card = $payment->card;
 
                 $payloadDetails[ShieldConstants::CARD_IIN]          = $card->getIin();
-                $payloadDetails[ShieldConstants::CARD_NETWORK]      = $card->getNetwork();
+                $payloadDetails[ShieldConstants::CARD_NETWORK]      = $card->getNetworkCode();
                 $payloadDetails[ShieldConstants::CARD_TYPE]         = $card->getType();
                 $payloadDetails[ShieldConstants::CARD_COUNTRY]      = $card->getCountry();
                 $payloadDetails[ShieldConstants::CARD_ISSUER]       = $card->getIssuer();

@@ -852,6 +852,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
     const RECON_FILE_LINK                           = 'RECON_FILE_LINK';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
+    const IIN_FLOW_DISABLE                          = 'IIN_FLOW_DISABLE';
     const RECON_BEGIN_FILE_PARSING                  = 'RECON_BEGIN_FILE_PARSING';
     const RECON_END_FILE_PARSING                    = 'RECON_END_FILE_PARSING';
     const RECON_BATCH_CREATION_FAILED               = 'RECON_BATCH_CREATION_FAILED';
@@ -1189,6 +1190,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED   = 'SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED';
 
+    //headless otp elf failures
+    const HEADLESS_OTP_ELF_FAILURE                      = 'HEADLESS_OTP_ELF_FAILURE';
+    const HEADLESS_OTP_ELF_UNKNOWN_FAILURE              = 'HEADLESS_OTP_ELF_UNKNOWN_FAILURE';
+    const HEADLESS_OTP_ELF_UNKNOWN_RESPONSE             = 'HEADLESS_OTP_ELF_UNKNOWN_RESPONSE';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
