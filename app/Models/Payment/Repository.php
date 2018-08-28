@@ -1494,10 +1494,10 @@ class Repository extends Base\Repository
         return $query;
     }
 
-    public function getLastCreatedPaymentByGateway($gateway)
+    public function getLastCreatedEmandatePaymentByGateway($gateway)
     {
         return $this->newQuery()
-                     ->where(Entity::METHOD, 'emandate')
+                     ->where(Entity::METHOD, Method::EMANDATE)
                      ->where(Entity::GATEWAY, $gateway)
                      ->first();
     }

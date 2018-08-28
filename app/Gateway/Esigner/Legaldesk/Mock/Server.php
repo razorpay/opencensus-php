@@ -58,11 +58,11 @@ class Server extends Base\Mock\Server
 
         // In tests we create a payment with the gateway Legaldesk, however when testing it via mocks
         // out of the tests, the payment would be having the gateway Enach RBL
-        $payment = $this->app['repo']->payment->getLastCreatedPaymentByGateway(Payment\Gateway::ESIGNER_LEGALDESK);
+        $payment = $this->app['repo']->payment->getLastCreatedEmandatePaymentByGateway(Payment\Gateway::ESIGNER_LEGALDESK);
 
         if ($payment === null)
         {
-            $payment = $this->app['repo']->payment->getLastCreatedPaymentByGateway(Payment\Gateway::ENACH_RBL);
+            $payment = $this->app['repo']->payment->getLastCreatedEmandatePaymentByGateway(Payment\Gateway::ENACH_RBL);
         }
 
         $callbackUrl = $this->route->getPublicCallbackUrlWithHash($payment[Payment\Entity::PUBLIC_ID]);
