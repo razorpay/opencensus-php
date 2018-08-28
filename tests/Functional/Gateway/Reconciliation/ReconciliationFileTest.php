@@ -589,12 +589,13 @@ class ReconciliationFileTest extends TestCase
 
         $batch = $this->getDbLastEntityToArray('batch');
 
-        $this->assertEquals($batch['total_count'], 3);
-        $this->assertEquals($batch['success_count'], 2);
-        $this->assertEquals($batch['failure_count'], 1);
+        $this->assertEquals(3, $batch['total_count']);
+        $this->assertEquals(2, $batch['success_count']);
+        $this->assertEquals(1, $batch['failure_count']);
+        $this->assertEquals(3, $batch['processed_count']);
 
         // One failure, status will be partially_processed
-        $this->assertEquals($batch['status'], Status::PARTIALLY_PROCESSED);
+        $this->assertEquals(Status::PARTIALLY_PROCESSED, $batch['status']);
     }
 
     /**
@@ -1135,8 +1136,14 @@ class ReconciliationFileTest extends TestCase
         // Retrying failed batch.
         $this->retryFailedBatch('batch_' . $batch['id']);
 
-        // Asserting status of batch as 'Processed'.
-        $this->assertBatchStatus(Status::PROCESSED);
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        // Asserting status of batch as 'Processed' and counts.
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
+        $this->assertEquals(1, $batch['total_count']);
+        $this->assertEquals(1, $batch['success_count']);
+        $this->assertEquals(0, $batch['failure_count']);
+        $this->assertEquals(1, $batch['processed_count']);
     }
 
     public function testOlamoneyReconPaymentFile()

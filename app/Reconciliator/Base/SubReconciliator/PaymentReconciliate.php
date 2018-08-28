@@ -102,7 +102,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if (empty($rowDetails) === true)
         {
-            return $this->handleUnprocessedRow($row);
+            $this->handleUnprocessedRow($row);
+
+            return;
         }
 
         $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];

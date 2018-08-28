@@ -163,6 +163,7 @@ class Name
     const VIEW_MERCHANT_PRICING               = 'view_merchant_pricing';
     const CREATE_DISPUTE                      = 'create_dispute';
     const EDIT_DISPUTE                        = 'edit_dispute';
+    const FETCH_DISPUTE_FILES                 = 'fetch_dispute_files';
     const VIEW_WALLET_CONFIG                  = 'view_wallet_config';
     const CREATE_WALLET_CONFIG                = 'create_wallet_config';
     const EDIT_WALLET_CONFIG                  = 'edit_wallet_config';

@@ -571,3 +571,17 @@ if (! function_exists('stringify'))
         return json_encode($value);
     }
 }
+
+if (! function_exists('str_wrap'))
+{
+    /**
+     * Wraps string with given value: Adds the value as prefix and suffix if not already exists
+     * @param  string $value
+     * @param  string $wrap
+     * @return string
+     */
+    function str_wrap(string $value, string $wrap): string
+    {
+        return str_finish(str_start($value, $wrap), $wrap);
+    }
+}

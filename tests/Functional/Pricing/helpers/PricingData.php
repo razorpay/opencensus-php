@@ -293,7 +293,7 @@ return [
             'content' => [
                 'payment_method' => 'card',
                 'payment_method_type'  => 'credit',
-                'payment_network' => 'MAES',
+                'payment_network' => 'DICL',
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000,
                 'international' => 0,
@@ -309,7 +309,7 @@ return [
                 'plan_name' => 'TestPlan1',
                 'payment_method' => 'card',
                 'payment_method_type' => 'credit',
-                'payment_network' => 'MAES',
+                'payment_network' => 'DICL',
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000,
                 'international' => false,
@@ -320,6 +320,39 @@ return [
             ],
         ],
     ],
+
+
+    'testDuplicateReceiverRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => 'credit',
+                'payment_network' => 'DICL',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => 0,
+                'receiver_type' => 'qr_code',
+                'amount_range_active' => '0',
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ]
+    ],
+
+
 
     'testAddPricingPlanNBRule' => [
         'request' => [

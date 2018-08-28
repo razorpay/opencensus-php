@@ -46,6 +46,8 @@ class Gateway extends Base\Gateway
 
         $request = $this->makeRequestAndGetFormData($request);
 
+        $this->traceGatewayPaymentRequest($request, $input);
+
         return $request;
     }
 
@@ -137,11 +139,6 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [$response->body]);
-
-        if ($response->status_code === 421)
-        {
-            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL);
-        }
 
         $crawler = new Crawler($response->body, $request['url']);
 

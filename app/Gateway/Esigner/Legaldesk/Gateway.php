@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -36,9 +37,10 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_MANDATE_REQUEST,
             [
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-                'request'    => $request
+                'gateway'     => $this->gateway,
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+                'request'     => $request,
             ]
         );
 
@@ -49,9 +51,10 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_MANDATE_RESPONSE,
             [
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-                'response'   => $response
+                'gateway'     => $this->gateway,
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+                'response'    => $response,
             ]
         );
 
@@ -101,7 +104,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->getMandateStatusAndSignedXml($input['gateway']['emandate_id'], $input);
 
-        if ($response[ResponseFields::STATUS] != Status::SUCCESS)
+        if ($response[ResponseFields::STATUS] !== Status::SUCCESS)
         {
             throw new Exception\GatewayErrorException(
                 Error\ErrorCode::GATEWAY_ERROR_MANDATE_CREATION_FAILED,
