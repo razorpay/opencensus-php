@@ -528,7 +528,9 @@ class Service extends Base\Service
 
         if (empty($input[Entity::BUSINESS_NAME]) === false)
         {
-            $inputDetails = ['name' => $input[Entity::BUSINESS_NAME], 'website' => $input[Entity::BUSINESS_WEBSITE]];
+            $businessWebsite = $input[Entity::BUSINESS_WEBSITE] ?? null;
+
+            $inputDetails = ['name' => $input[Entity::BUSINESS_NAME], 'website' => $businessWebsite];
 
             // Validate Input Name for merchant
             (new Merchant\Validator)->validateInput('edit_pre_signup', $inputDetails);
