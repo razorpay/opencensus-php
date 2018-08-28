@@ -58,22 +58,10 @@ function _getAdminsFields(adminsMap) {
   ];
 }
 
-function _getSubmerchantFields(unlinkSubmerchant) {
+function _getSubmerchantFields() {
   return [
     ['Merchant Id', item => item.id],
     ['Merchant Name', item => item.name],
-    [
-      'Actions',
-      item => (
-        <AsyncButton
-          class="link danger"
-          onClick={() => unlinkSubmerchant(item.id)}
-          confirm="Are you sure you want to unlink this submerchant"
-        >
-          Unlink
-        </AsyncButton>
-      ),
-    ],
   ];
 }
 
@@ -387,10 +375,7 @@ export function getDetailsViewMap(model) {
       permission: 'view_partners',
       children: () => (
         <div>
-          <Table
-            items={submerchants}
-            fields={_getSubmerchantFields(model.unlinkSubmerchant)}
-          />
+          <Table items={submerchants} fields={_getSubmerchantFields()} />
         </div>
       ),
     },
