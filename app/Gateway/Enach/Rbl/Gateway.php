@@ -186,6 +186,21 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getSecureData($input)
+    {
+        $nextWorkingDt = $this->getNextWorkingDate($input);
+
+        $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST);
+
+        return [
+            'Debtor Account Number' => $input['token']->getAccountNumber(),
+            'First Collection Date' => $nextWorkingDt->toIso8601String(), //TODO check if this format is correct
+            'Final Collection Date' => $finalCollection->toIso8601String(),
+            'Collection Amount' => '',
+            'Max Amount' => $input['token']->getMaxAmount() / 100,
+        ];
+    }
+
     protected function callAuthenticationGateway(array $input)
     {
         return $this->app['gateway']->call(
