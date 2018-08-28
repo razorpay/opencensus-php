@@ -81,6 +81,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $row[ReconciliationFields::TRANSACTION_CURRENCY_CODE];
     }
 
+    public function getReferenceNumber($row)
+    {
+        return $row[ReconciliationFields::RRN] ?? null;
+    }
+
     /**
      * It is present as Retrieval Reference Number in recon file
      * It should be set as ref setReference Number In Gateway
@@ -92,15 +97,18 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $onusIndicator = $row[ReconciliationFields::ONUS_INDICATOR];
 
+        $rrn = $this->getReferenceNumber($row);
+
+        if ((empty($rrn) === true) and
+            ($onusIndicator === 'YES'))
+        {
+            $this->reportMissingColumn($row[ReconciliationFields::RRN]);
+        }
+
         if ($onusIndicator === 'YES')
         {
             return $row[ReconciliationFields::RRN] ?? null;
         }
-    }
-
-    public function getReferenceNumber($row)
-    {
-        return $row[ReconciliationFields::RRN] ?? null;
     }
 
     /**
@@ -125,13 +133,17 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $row[ReconciliationFields::TRANSACTION_DATE];
     }
 
+    /**
+     * Gets the card details from settlement file. Not updating trivia since it is inconsistent
+     * @param $row
+     * @return array
+     */
     protected function getCardDetails($row)
     {
         return [
-            BaseReconciliate::CARD_TYPE  => $this->getCardType($row),
+            BaseReconciliate::CARD_TYPE   => $this->getCardType($row),
             BaseReconciliate::CARD_LOCALE => $this->getCardLocale($row),
             BaseReconciliate::ISSUER      => $this->getIssuer($row),
-            BaseReconciliate::CARD_TRIVIA => $this->getCardTrivia($row),
         ];
     }
 
@@ -148,8 +160,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
-                    'message'         => Base\InfoCode::CARD_TYPE_ABSENT,
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'message'         => Base\InfoCode::UNKNOWN_CARD_TYPE,
                     'recon_card_type' => $cardType,
                     'row'             => $row,
                     'gateway'         => $this->gateway
@@ -168,14 +180,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getCardLocale($row)
     {
-      $cardLocale = strtolower($row[ReconciliationFields::DESTINATION]);
+        $cardLocale = strtolower($row[ReconciliationFields::DESTINATION]);
 
         if (in_array($cardLocale, [BaseReconciliate::DOMESTIC, BaseReconciliate::INTERNATIONAL]) === false)
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
-                    'message'         => Base\InfoCode::CARD_LOCALE_MISSING,
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'message'         => 'unable to figure out card locale',
                     'recon_card_type' => $cardLocale,
                     'row'             => $row,
                     'gateway'         => $this->gateway
@@ -203,16 +215,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return null;
-    }
-
-    /**
-     * Returns the interchange type eg Visa Traditional
-     * @param $row
-     * @return string|null
-     */
-    protected function getCardTrivia($row)
-    {
-        return $row[ReconciliationFields::INTERCHANGE_CATEGORY] ?? null;
     }
 
     /**
@@ -244,7 +246,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $this->reportMissingColumn($row, ReconciliationFields::MSF_AMOUNT);
         }
 
-        $lateSettelementFee = $row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT];
+        $lateSettlementFee = $row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT];
 
         $rrfAmount = $row[ReconciliationFields::RRF_AMOUNT];
 
@@ -252,7 +254,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $tax = $this->getGatewayServiceTax($row);
 
-        $fee = $lateSettelementFee + $rrfAmount + $msfAmount + $tax;
+        $fee = $lateSettlementFee + $rrfAmount + $msfAmount + $tax;
 
         return Base\Helper::getIntegerFormattedAmount($fee);
     }

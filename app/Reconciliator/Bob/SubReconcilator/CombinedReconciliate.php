@@ -4,6 +4,10 @@ namespace RZP\Reconciliator\Bob;
 
 use RZP\Reconciliator\Base;
 
+/**
+ * Class CombinedReconciliate
+ * @see https://docs.google.com/spreadsheets/d/1T8SHup7_Jgzk2jYYS_D3x--zcU8nrGwyq_0M7UGi3ro/edit?usp=sharing
+ */
 class CombinedReconciliate extends Base\CombinedReconciliate
 {
     const PURCHASE_TXN = 'purchase';
