@@ -144,39 +144,39 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $bankTransfer;
     }
 
-    protected function persistAccountDetails(array $rowDetails, PublicEntity $bankTransfer)
+    /**
+     * Saving customer Name as beneficiary into the Bank Account
+     * that is associated with the bank transfer.
+     *
+     * @param array        $customerDetails
+     * @param PublicEntity $bankTransfer
+     */
+    protected function persistCustomerName(array $customerDetails, PublicEntity $bankTransfer)
     {
-        if ((empty($rowDetails[BaseReconciliate::ACCOUNT_DETAILS]) === true) or
-            (IFSC::validate($rowDetails[BaseReconciliate::ACCOUNT_DETAILS][self::COLUMN_PAYER_IFSC]) === false))
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'    => TraceCode::RECON_ALERT,
-                    'message'       => 'IFSC given in the recon file is either empty or invalid',
-                    'row'           => $rowDetails,
-                    'gateway'       => $this->gateway
-                ]);
-
-            return null;
-        }
-
-        $ifsc = $rowDetails[BaseReconciliate::ACCOUNT_DETAILS][self::COLUMN_PAYER_IFSC];
+        $customerName = $customerDetails[BaseReconciliate::CUSTOMER_NAME];
 
         $payerBankAccount = $bankTransfer->payerBankAccount;
 
-        if ($payerBankAccount->getIfscCode() !== $ifsc)
-        {
-            $bankTransfer->setPayerIfsc($ifsc);
+        $payerBankAccount->setBeneficiaryName($customerName);
 
-            $this->repo->saveOrFail($bankTransfer);
-
-            $payerBankAccount->setIfsc($ifsc);
-
-            $this->repo->saveOrFail($payerBankAccount);
-        }
+        $this->repo->saveOrFail($payerBankAccount);
     }
 
     /**
+     * Customer info is just the name associated with the account
+     *
+     * @param  array $row
+     * @return array
+     */
+    protected function getCustomerDetails($row)
+    {
+        return [
+            Base\Reconciliate::CUSTOMER_NAME => $this->getCustomerName($row),
+        ];
+    }
+
+    /**
+     * Customer name is not present in case of Yesbank-to-Yesbank IFT
      *
      * @param  array $row
      * @return string
@@ -189,12 +189,5 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return null;
-    }
-
-    protected function getAccountDetails($row)
-    {
-        return [
-            self::COLUMN_PAYER_IFSC => $row[self::COLUMN_PAYER_IFSC],
-        ];
     }
 }

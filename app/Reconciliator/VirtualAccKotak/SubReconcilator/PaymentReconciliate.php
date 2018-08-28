@@ -109,24 +109,24 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         //  Disabling slack alerts for now, for a single large VA recon file
         //
 
-        // // Don't alert for recent payments
-        // if (($this->isRecentBankTransfer($row) === false) and
-        //     ($this->isAlreadyAlerted($row) === false))
-        // {
-        //     $this->app['slack']->queue(
-        //         TraceCode::BANK_TRANSFER_UNEXPECTED,
-        //         $row,
-        //         [
-        //             'channel'  => Config::get('slack.channels.virtual_accounts_log'),
-        //             'username' => 'Scrooge',
-        //             'icon'     => ':x:'
-        //         ]
-        //     );
+        // Don't alert for recent payments
+        /*if (($this->isRecentBankTransfer($row) === false) and
+            ($this->isAlreadyAlerted($row) === false))
+        {
+            $this->app['slack']->queue(
+                TraceCode::BANK_TRANSFER_UNEXPECTED,
+                $row,
+                [
+                    'channel'  => Config::get('slack.channels.virtual_accounts_log'),
+                    'username' => 'Scrooge',
+                    'icon'     => ':x:'
+                ]
+            );
 
-        //     $cacheKey = $this->getCacheKey($row);
+            $cacheKey = $this->getCacheKey($row);
 
-        //     Cache::put($cacheKey, $row[self::COLUMN_UTR], 360);
-        // }
+            Cache::put($cacheKey, $row[self::COLUMN_UTR], 360);
+        }*/
     }
 
     /**
