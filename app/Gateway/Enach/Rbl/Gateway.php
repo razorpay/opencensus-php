@@ -24,8 +24,8 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if (($input['method'] === 'emandate') and
-            ($input['auth_type'] === 'netbanking'))
+        if (($input['payment']['method'] === 'emandate') and
+            ($input['payment']['auth_type'] === 'netbanking'))
         {
             $this->emandateNpciAuth($input);
         }
@@ -200,6 +200,20 @@ class Gateway extends Base\Gateway
             'Collection Amount' => '',
             'Max Amount' => $input['token']->getMaxAmount() / 100,
         ];
+    }
+
+    protected function getXmlForNpci($input, $secureData)
+    {
+        $encryptedData = $this->getEncryptedData($secureData);
+
+        $content = [
+
+        ];
+    }
+
+    protected function getEncryptedData($secureData)
+    {
+
     }
 
     protected function getStringToHash($content, $glue = '|')
