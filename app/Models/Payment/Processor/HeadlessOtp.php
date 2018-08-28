@@ -10,7 +10,9 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Card\IIN;
+use RZP\Services\OtpElf;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Analytics\Metadata;
 
 trait HeadlessOtp
@@ -94,6 +96,31 @@ trait HeadlessOtp
             return ['url' => $this->getOtpSubmitUrl(), 'content' => $content, 'method' => 'POST'];
         }
 
+        $traceInput = [
+            'elf_response' => $response,
+            'payment_id'   => $payment->getId(),
+            'iin'          => $payment->card->getIin(),
+        ];
+
+        $traceCode = TraceCode::HEADLESS_OTP_ELF_UNKNOWN_RESPONSE;
+
+        if ((empty($response) === false) and
+            ($response['success'] === false) and
+            (isset($response['error']['reason']) === true))
+        {
+            $traceCode = TraceCode::HEADLESS_OTP_ELF_UNKNOWN_FAILURE;
+
+            if (in_array($response['error']['reason'], OtpElf::$otpElfErrors, true) === true)
+            {
+                $this->disableHeadlessFlow($payment);
+
+                $traceInput['disable_iin'] = true;
+                $traceCode = TraceCode::HEADLESS_OTP_ELF_FAILURE;
+            }
+        }
+
+        $this->trace->critical($traceCode, $traceInput);
+
         if ($payment->getAuthType() === Payment\AuthType::OTP)
         {
             throw new Exception\GatewayRequestException(
@@ -121,18 +148,35 @@ trait HeadlessOtp
                 case 'submit_otp':
                     return $response['data']['data'];
                     break;
+
                 case 'page_resolved':
-                    if ($response['data']['data']['type'] === 'otp')
+
+                    if ($response['error']['reason'] === OtpElf::ERROR_INVALID_OTP)
                     {
-                        throw new Exception\GatewayErrorException(
-                            ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
+                        $data = [];
+
+                        if (isset($response['data']['data']['next']) === true)
+                        {
+                            $data = [
+                                'next' => $this->getNextOtpAction($response['data']['data']['next'])
+                            ];
+                        }
+
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+                            null,
+                            $data
+                        );
                     }
                     break;
             }
+
+            return [];
         }
 
-        // Handle error codes
-        return [];
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+        );
     }
 
     protected function resendHeadlessOtp($payment, $gatewayInput)
@@ -160,5 +204,17 @@ trait HeadlessOtp
     protected function setHeadlessDummyCallbackUrl(&$content)
     {
         $content['TermUrl'] = 'https://api.razorpay.com';
+    }
+
+    protected function disableHeadlessFlow($payment)
+    {
+        $iin = $payment->card->getIin();
+
+        $this->trace->info(TraceCode::IIN_FLOW_DISABLE, [
+            'iin' => $iin,
+            'flow'  => 'headless_otp',
+        ]);
+
+        (new IIN\Service)->disableIinFlow($iin, 'headless_otp');
     }
 }

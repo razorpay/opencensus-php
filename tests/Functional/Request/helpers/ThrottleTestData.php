@@ -115,10 +115,93 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Request failed. Please try after sometime.',
+                    'description' => 'Access forbidden for requested resource',
                 ],
             ],
-            'status_code' => 429,
+            'status_code' => 403,
+        ],
+    ],
+
+    'testGetOrderWhenIPBlockedSuccess' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
+                'items' => [],
+            ],
+        ],
+    ],
+
+    'testGetOrderWhenIPBlockedFailure' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access forbidden for requested resource',
+                ],
+            ],
+            'status_code' => 403,
+        ],
+    ],
+
+    'testGetOrderWhenUABlockedSuccess' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+            'server' => [
+                'HTTP_USER_AGENT' => 'WhiteList UA'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
+                'items' => [],
+            ],
+        ],
+    ],
+
+    'testGetOrderWhenUABlockedFailure1' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+            'server' => [
+                'HTTP_USER_AGENT' => 'Razorpay UA'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access forbidden for requested resource',
+                ],
+            ],
+            'status_code' => 403,
+        ],
+    ],
+
+    'testGetOrderWhenUABlockedFailure2' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+            'server' => [
+                'HTTP_USER_AGENT' => 'Razorpay'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access forbidden for requested resource',
+                ],
+            ],
+            'status_code' => 403,
         ],
     ],
 ];
