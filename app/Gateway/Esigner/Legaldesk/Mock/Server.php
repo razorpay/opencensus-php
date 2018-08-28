@@ -54,6 +54,8 @@ class Server extends Base\Mock\Server
             'emandate_id' => $input['mandate_id'],
         ];
 
+        $this->content($content, 'mandate_sign');
+
         // In tests we create a payment with the gateway Legaldesk, however when testing it via mocks
         // out of the tests, the payment would be having the gateway Enach RBL
         $payment = $this->app['repo']->payment->getLastCreatedPaymentByGateway(Payment\Gateway::ESIGNER_LEGALDESK);

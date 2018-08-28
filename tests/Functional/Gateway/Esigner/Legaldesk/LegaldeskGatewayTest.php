@@ -3,7 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\Esigner\Legaldesk;
 
 use RZP\Constants\Entity;
+use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Feature\Constants;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Esigner\Legaldesk;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -13,6 +15,7 @@ class LegaldeskGatewayTest extends TestCase
 {
     use PaymentTrait;
     use TransactionTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -42,6 +45,9 @@ class LegaldeskGatewayTest extends TestCase
         $payment['order_id'] = $order->getPublicId();
 
         $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntity('payment')->toArray();
+        $this->assertEquals('captured', $payment['status']);
     }
 
     // Mandate fails at the S2S request before we redirect the user to Legaldesk page
@@ -72,6 +78,73 @@ class LegaldeskGatewayTest extends TestCase
         $this->runRequestResponseFlow($testData, function() use ($payment) {
             $this->doAuthPayment($payment);
         });
+
+        $payment = $this->getDbLastEntity('payment')->toArray();
+        $this->assertEquals('failed', $payment['status']);
+    }
+
+    public function testMandateSigningFailure()
+    {
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment['bank_account'] = [
+            'account_number'    => '914010009305862',
+            'ifsc'              => 'UTIB0000123',
+            'name'              => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'mandate_sign')
+            {
+                $content[Legaldesk\ResponseFields::STATUS] = 'failed';
+                $content[Legaldesk\ResponseFields::MESSAGE] = 'Signing failed';
+                unset($content['emandate_id']);
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getDbLastEntity('payment')->toArray();
+        $this->assertEquals('failed', $payment['status']);
+    }
+
+    public function testMandateSigningTimeout()
+    {
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment['bank_account'] = [
+            'account_number'    => '914010009305862',
+            'ifsc'              => 'UTIB0000123',
+            'name'              => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'mandate_sign')
+            {
+                throw new GatewayTimeoutException("Timed out");
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('created', $payment['status']);
+
+        return $payment;
     }
 
     protected function runPaymentCallbackFlowEsignerLegaldesk($response, &$callback = null)
