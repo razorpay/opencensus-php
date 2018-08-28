@@ -6,5 +6,5 @@ class Status
 {
     const SUCCESS   = 'success';
     const SIGNED    = 'signed';
-    const UNSIGNED = 'unsigned';
+    const UNSIGNED  = 'unsigned';
 }
