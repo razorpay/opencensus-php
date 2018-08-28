@@ -5,16 +5,16 @@ import {
   isDefined,
   paiseToRupees,
   arrayToCsvDataUrl,
+  groupBy,
 } from 'rzp/utils/rzp-utils';
 import colors from 'rzp/utils/chart/colors.js';
 import {
   globalGroupTitleMap,
-  groupBy,
   groupByPlatform,
   getDefaultFilter,
   getDefaultPaymentFilter,
+  platformGroupingVals,
 } from 'rzp/utils/pokedex';
-import { platformGroupingVals } from 'rzp/utils/pokedex';
 
 const dateFormat = 'Do MMM YYYY';
 
@@ -22,7 +22,6 @@ const TRANSACTION_VOLUME = 'transactionVolume',
   NUM_TRANSACTIONS = 'numTransactions',
   REFUNDS = 'refunds',
   SAVED_CARDS = 'savedCards',
-  SUCCESS_RATE = 'successRate',
   PLATFORM = 'platform',
   CUMULATIVE = 'Total',
   METHOD = 'method',
