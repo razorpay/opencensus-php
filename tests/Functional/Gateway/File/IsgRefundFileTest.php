@@ -38,6 +38,8 @@ class IsgRefundFileTest extends TestCase
 
     public function testIsgRefundFile()
     {
+        $this->markTestSkipped();
+
         Mail::fake();
 
         $this->createBharatQrPayment($this->getPaymentContentData());
