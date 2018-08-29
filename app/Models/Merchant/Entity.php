@@ -1682,6 +1682,15 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * @return bool
+     */
+    public function isPartnerWithWebhooksAccess(): bool
+    {
+        return (($this->isPartner() === true) and
+            (in_array($this->getPartnerType(), Constants::$webhooksAccessPartnerTypes, true) === true));
+    }
+
+    /**
      * Appends the merchant id with the Account entity's sign
      *
      * @param array $array

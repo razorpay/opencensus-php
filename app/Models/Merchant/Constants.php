@@ -38,13 +38,24 @@ final class Constants
 
     /**
      * Partner types that are allowed to view and manage
-     * partner settings like client creds and webhooks.
+     * partner settings like client creds.
      *
      * @var array
      */
     public static $settingsAccessPartnerTypes = [
         self::FULLY_MANAGED,
         self::AGGREGATOR,
+    ];
+
+    /**
+     * Partner types that are allowed to view and manage webhooks.
+     *
+     * @var array
+     */
+    public static $webhooksAccessPartnerTypes = [
+        self::FULLY_MANAGED,
+        self::AGGREGATOR,
+        self::PURE_PLATFORM,
     ];
 
     /**
