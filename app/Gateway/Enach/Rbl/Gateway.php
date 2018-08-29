@@ -5,8 +5,10 @@ namespace RZP\Gateway\Enach\Rbl;
 use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Gateway\Netbanking\Icici\RefundFileFields;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use phpseclib\Crypt\AES;
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
@@ -14,7 +16,7 @@ use RZP\Gateway\Enach\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
-use RZP\Trace\TraceCode;
+use RZP\Gateway\Enach\Base\CategoryCode;
 
 class Gateway extends Base\Gateway
 {
@@ -194,11 +196,11 @@ class Gateway extends Base\Gateway
         $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST);
 
         return [
-            'Debtor Account Number' => $input['token']->getAccountNumber(),
-            'First Collection Date' => $nextWorkingDt->toIso8601String(), //TODO check if this format is correct
-            'Final Collection Date' => $finalCollection->toIso8601String(),
-            'Collection Amount' => '',
-            'Max Amount' => $input['token']->getMaxAmount() / 100,
+            RequestNpciTags::DEBTOR_ACCOUNT => $input['token']->getAccountNumber(),
+            RequestNpciTags::FIRST_COLLECTION_DATE => $nextWorkingDt->toIso8601String(), //TODO check if this format is correct
+            RequestNpciTags::FINAL_COLLECTION_DATE => $finalCollection->toIso8601String(),
+            RequestNpciTags::COLLECTION_AMOUNT => '',
+            RequestNpciTags::MAX_AMOUNT => $input['token']->getMaxAmount() / 100,
         ];
     }
 
@@ -206,8 +208,30 @@ class Gateway extends Base\Gateway
     {
         $encryptedData = $this->getEncryptedData($secureData);
 
-        $content = [
+        $mid = $this->getMerchantId();
 
+        $mcc = $input['terminal']['category'];
+
+        $content = [
+            RequestNpciTags::MESSAGE_ID => $this->getMsgId(),
+            RequestNpciTags::CREATION_DATE_TIME => Carbon::now()->toIso8601String(),
+            RequestNpciTags::MID => $mid,
+            RequestNpciTags::CATEGORY_CODE => CategoryCode::getCategoryCodeFromMcc($mcc), //Todo Check if Cat code is this
+            RequestNpciTags::UTILITY_CODE => $mid,
+            RequestNpciTags::CATEGORY_DESCRIPTION => '', //Todo what to add here?
+            RequestNpciTags::NAME => '', //Todo find this value
+            RequestNpciTags::MANDATE_ID => $this->getMandateId(),
+            RequestNpciTags::SEQUENCE_TYPE => '',
+            RequestNpciTags::FREQUENCY => Frequency::ADHOC,
+            RequestNpciTags::FIRST_COLLECTION_DATE => $encryptedData[RequestNpciTags::FIRST_COLLECTION_DATE],
+            RequestNpciTags::FINAL_COLLECTION_DATE => $encryptedData[RequestNpciTags::FINAL_COLLECTION_DATE],
+            RequestNpciTags::COLLECTION_AMOUNT => $encryptedData[RequestNpciTags::COLLECTION_AMOUNT],
+            RequestNpciTags::MAX_AMOUNT => $encryptedData[RequestNpciTags::MAX_AMOUNT],
+            RequestNpciTags::DEBTOR_NAME => $input['token']->getBeneficiaryName(),
+            RequestNpciTags::DEBTOR_ACCOUNT => $encryptedData[RequestNpciTags::DEBTOR_ACCOUNT],
+            RequestNpciTags::CREDITOR_NAME => '', //TODO
+            RequestNpciTags::CREDITOR_ACCOUNT => '', //TODO
+            RequestNpciTags::IFSC_SPONSOR => '' // TODO : is this similar to how its done in digio
         ];
     }
 
