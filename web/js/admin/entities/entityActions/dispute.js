@@ -76,7 +76,7 @@ export default ({ entity, mode, updateEntity }) => {
 };
 
 class DisputeFiles extends Component {
-  state = { files: [] };
+  state = {};
 
   componentWillMount() {
     adminFetch(
@@ -107,7 +107,7 @@ class DisputeFiles extends Component {
     return (
       <ModalContent header="Dispute Files">
         <Table
-          pending={!this.state.files.length}
+          pending={!this.state.files}
           items={this.state.files}
           fields={this.fields}
         />
