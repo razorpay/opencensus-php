@@ -549,6 +549,7 @@ class MerchantCreateTest extends TestCase
 
         $account = $account->toArrayPublic();
 
+        unset($account['created_at']);
         unset($account['updated_at']);
 
         $this->testData[__FUNCTION__]['response']['content'] = $account;
@@ -602,6 +603,7 @@ class MerchantCreateTest extends TestCase
 
         $account = $account->toArrayPublic();
 
+        unset($account['created_at']);
         unset($account['updated_at']);
 
         $this->testData[__FUNCTION__]['response']['content'] = $account;
