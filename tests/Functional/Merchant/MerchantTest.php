@@ -2040,6 +2040,8 @@ class MerchantTest extends TestCase
 
     public function testPutEmiMethod()
     {
+        $this->fixtures->create('pricing:emi_pricing_plan');
+
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $admin = $this->ba->getAdmin();

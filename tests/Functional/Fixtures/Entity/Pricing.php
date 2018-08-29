@@ -155,18 +155,6 @@ class Pricing extends Base
                 'international'       => 0,
             ],
             [
-                'id'                  => '1zE3CYqf1zbyaE',
-                'plan_id'             => $pricingPlanId,
-                'plan_name'           => 'testDefaultPlan',
-                'feature'             => 'payment',
-                'payment_method'      => 'emi',
-                'payment_method_type' => null,
-                'payment_network'     => null,
-                'payment_issuer'      => null,
-                'percent_rate'        => 250,
-                'fixed_rate'          => 0,
-            ],
-            [
                 'id'                  => '1zE3CYqf1zbyaF',
                 'plan_id'             => $pricingPlanId,
                 'plan_name'           => 'testDefaultPlan',
@@ -240,6 +228,19 @@ class Pricing extends Base
                 'fixed_rate'          => 0,
                 'max_fee'             => 5000,
                 'receiver_type'       => 'qr_code',
+            ],
+            [
+                'id'                  => '1zE31zbybabab2',
+                'plan_id'             => 'ArGUUem5z3UADv',
+                'plan_name'           => 'testDefaultEmiPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'emi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 100,
+                'fixed_rate'          => 0,
+                'max_fee'             => 5000,
             ],
             [
                 'id'                  => '1zE31zbybacab2',
@@ -425,6 +426,26 @@ class Pricing extends Base
         ];
 
         $this->addPricingRulesToDb($rows);
+    }
+
+    public function createEmiPricingPlan()
+    {
+        $pricingPlanId = '1hDYlICobzOCYt';
+
+        $row = [
+            'id'                  => '1zE3CYqf1zbyaE',
+            'plan_id'             => $pricingPlanId,
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'payment',
+            'payment_method'      => 'emi',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 250,
+            'fixed_rate'          => 0,
+        ];
+
+        $this->addPricingRulesToDb([$row]);
     }
 
     protected function addPricingRulesToDb($rows)
