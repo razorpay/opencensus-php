@@ -38,6 +38,8 @@ class Server extends Base\Mock\Server
 
         $response = $this->getAuthorizeResponse($request);
 
+        $this->content($input, 'amazonpay_change_callback');
+
         $url = urldecode($input[RequestFields::REDIRECT_URL]) . '?' . http_build_query($response);
 
         return \Redirect::away($url);
