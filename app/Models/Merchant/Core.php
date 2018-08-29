@@ -800,12 +800,14 @@ class Core extends Base\Core
     }
 
     /**
+     * Pure platform type partners cannot access this feature as no internal app is created for them.
+     *
      * @param Entity $merchant
      *
      * @return mixed
      * @throws BadRequestException
      */
-    public function getPartnerApp(Entity $merchant)
+    public function getInternalPartnerApp(Entity $merchant)
     {
         // For pure platforms, no internal partner app is created
         (new Validator)->validateIsNonPurePlatformPartner($merchant);
@@ -827,21 +829,27 @@ class Core extends Base\Core
         return $app;
     }
 
-    public function getConnectedApplicationIds(Entity $merchant): array
+    /**
+     * @param Entity $merchant
+     *
+     * @return array
+     */
+    public function getPartnerApplicationIds(Entity $merchant): array
     {
         (new Validator)->validateIsPartner($merchant);
 
-        if ($merchant->isNonPurePlatformPartner() === true)
+        if ($merchant->isPurePlatformPartner() === true)
         {
-            $partnerAppId = $this->getPartnerApp($merchant)->getId();
-
-            $appIds = [$partnerAppId];
-        }
-        else
-        {
+            // Fetch all the active applications that the pure platform has created
             $apps = (new OAuthApp\Repository)->findActiveApplicationsByMerchantIdAndType($merchant->getId());
 
             $appIds = $apps->getIds();
+        }
+        else
+        {
+            $partnerAppId = $this->getInternalPartnerApp($merchant)->getId();
+
+            $appIds = [$partnerAppId];
         }
 
         return $appIds;
@@ -925,7 +933,7 @@ class Core extends Base\Core
 
         $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
-            $partnerApp = $this->getPartnerApp($partner);
+            $partnerApp = $this->getInternalPartnerApp($partner);
 
             // Maintained for backward compatibility
             $this->addSubMerchantReferral($partner, $submerchant);
@@ -960,7 +968,7 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
-            $partnerApp = $this->getPartnerApp($partner);
+            $partnerApp = $this->getInternalPartnerApp($partner);
 
             (new AccessMap\Core)->deleteMappingForOAuthApp($submerchant, $partnerApp->getId());
 
@@ -1011,11 +1019,11 @@ class Core extends Base\Core
     {
         if ($merchant->isPurePlatformPartner() === true)
         {
-            // A dummy application for pure platforms does not exist
+            // A dummy internal application for pure platforms does not exist
             return;
         }
 
-        $app = $this->getPartnerApp($merchant);
+        $app = $this->getInternalPartnerApp($merchant);
 
         $app = app('authservice')->deleteApplication($app->getId(), $merchant->getId());
 
@@ -1117,7 +1125,7 @@ class Core extends Base\Core
      */
     public function getSubmerchant(Entity $partner, string $submerchantId, string $appId = null): Entity
     {
-        $appIds = $this->getConnectedApplicationIds($partner);
+        $appIds = $this->getPartnerApplicationIds($partner);
 
         if (in_array($appId, $appIds, true) === true)
         {
@@ -1144,7 +1152,7 @@ class Core extends Base\Core
      */
     public function listSubmerchants(Entity $partner, array $params): Base\PublicCollection
     {
-        $appIds = $this->getConnectedApplicationIds($partner);
+        $appIds = $this->getPartnerApplicationIds($partner);
 
         $merchants = $this->repo
                           ->merchant
@@ -1322,12 +1330,12 @@ class Core extends Base\Core
     {
         if ($partner->isPurePlatformPartner() === true)
         {
-            // A dummy application for pure platforms does not exist
+            // A dummy internal application for pure platforms does not exist
             return;
         }
 
         // Fetch partner app and then access maps
-        $partnerApp = $this->getPartnerApp($partner);
+        $partnerApp = $this->getInternalPartnerApp($partner);
         $accessMaps = $this->repo
                            ->merchant_access_map
                            ->fetchMerchantAccessMapOnEntity(AccessMap\Entity::APPLICATION, $partnerApp->getId());

@@ -2079,7 +2079,7 @@ class Service extends Base\Service
 
         try
         {
-            $app = $this->core()->getPartnerApp($merchant);
+            $app = $this->core()->getInternalPartnerApp($merchant);
         }
         catch (\Exception $e)
         {

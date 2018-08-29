@@ -3,8 +3,6 @@
 namespace RZP\Models\Merchant;
 
 use Closure;
-use Razorpay\OAuth\Application as OAuthApp;
-use Razorpay\OAuth\Base\Table as OAuthTable;
 
 use RZP\Exception;
 use RZP\Base\Common;
@@ -508,9 +506,15 @@ class Repository extends Base\Repository
         return $query;
     }
 
-    public function fetchSubmerchantsByAppIds(array $appIds, array $params = []): Base\PublicCollection
+    /**
+     * @param array $applicationIds
+     * @param array $params
+     *
+     * @return Base\PublicCollection
+     */
+    public function fetchSubmerchantsByAppIds(array $applicationIds, array $params = []): Base\PublicCollection
     {
-        $query = $this->buildQueryToFetchSubmerchantsByAppIds($appIds);
+        $query = $this->buildQueryToFetchSubmerchantsByAppIds($applicationIds);
 
         $this->buildQueryWithParams($query, $params);
 
@@ -545,7 +549,7 @@ class Repository extends Base\Repository
         $accessMapRepo       = $this->repo->merchant_access_map;
         $merchantDetailsRepo = $this->repo->merchant_detail;
 
-        $merchantsMerchantId  = $this->dbColumn(Entity::ID);
+        $merchantsMerchantId = $this->dbColumn(Entity::ID);
 
         $accessMapsEntityId   = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_ID);
         $accessMapsDeletedAt  = $accessMapRepo->dbColumn(AccessMap\Entity::DELETED_AT);
@@ -561,7 +565,10 @@ class Repository extends Base\Repository
             $accessMapsEntityId . ' as ' . Constants::APPLICATION_ID,
         ];
 
-        // merchantDetail is not fetched as a relation because a filter has to be added for that in the query
+        //
+        // merchantDetail is not fetched as a relation below because
+        // a filter has to be added for merchantDetail.activation_status in the query
+        //
         $query = $this->newQuery()
                       ->with(['users', 'owners'])
                       ->select($attributes)
