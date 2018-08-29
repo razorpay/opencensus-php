@@ -1756,12 +1756,11 @@ class Service extends Base\Service
      * @param Entity             $merchant
      * @param OAuthClient\Entity $client
      */
-    protected function sendCompetitorAppAuthorizedEmail(
-        Merchant\Entity $merchant,
-        OAuthClient\Entity $client)
+    protected function sendCompetitorAppAuthorizedEmail(Merchant\Entity $merchant, OAuthClient\Entity $client)
     {
-        // Do not send the email if the application is not a competitor to us
-        if (in_array($client->application->getId(), Feature\Type::S2S_APPLICATION_IDS) === false)
+        $application = $client->application;
+
+        if ($this->shouldSendCompetitorAppAuthorizedEmail($merchant, $application) === false)
         {
             return;
         }
@@ -1778,11 +1777,42 @@ class Service extends Base\Service
                 Entity::BILLING_LABEL => $merchant->getBillingLabel(),
             ],
             'application' => [
-                OAuthApplication\Entity::NAME => $client->application->getName(),
+                OAuthApplication\Entity::NAME => $application->getName(),
             ]
         ];
 
         Mail::queue((new $mailer($data)));
+    }
+
+    /**
+     * @param Entity                  $merchant
+     * @param OAuthApplication\Entity $app
+     *
+     * @return bool
+     */
+    protected function shouldSendCompetitorAppAuthorizedEmail(
+        Merchant\Entity $merchant,
+        OAuthApplication\Entity $app): bool
+    {
+        // Do not send the email if the application is not a competitor to us
+        if (in_array($app->getId(), Feature\Type::S2S_APPLICATION_IDS) === false)
+        {
+            return false;
+        }
+
+        // Do not send the email if the merchant has already authorized the app before
+        $appAuthorized = $this->repo
+                              ->merchant_access_map
+                              ->findMerchantAccessMapOnEntityId($merchant->getId(),
+                                                                $app->getId(),
+                                                                AccessMap\Entity::APPLICATION);
+
+        if ($appAuthorized !== null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**
