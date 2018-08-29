@@ -1195,6 +1195,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HEADLESS_OTP_ELF_UNKNOWN_FAILURE              = 'HEADLESS_OTP_ELF_UNKNOWN_FAILURE';
     const HEADLESS_OTP_ELF_UNKNOWN_RESPONSE             = 'HEADLESS_OTP_ELF_UNKNOWN_RESPONSE';
 
+    const YESBANK_SOURCE_AMOUNT                         = 'YESBANK_SOURCE_AMOUNT';
+    const YESBANK_TRANSFER_AMOUNT                       = 'YESBANK_TRANSFER_AMOUNT';
+    const YESBANK_CONVERTED_AMOUNT                      = 'YESBANK_CONVERTED_AMOUNT';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
