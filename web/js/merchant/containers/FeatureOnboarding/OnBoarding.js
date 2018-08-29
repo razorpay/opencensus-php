@@ -230,8 +230,9 @@ export default class OnBoarding extends Component {
                         </span>
                       ) : (
                         <span>
-                          <b> Please note </b> that your request will be
-                          processed in 1 working day.
+                          <b>Please note </b> that your application is under
+                          review. We will reach out on your contact email for
+                          all updates.
                         </span>
                       )}
                     </div>
