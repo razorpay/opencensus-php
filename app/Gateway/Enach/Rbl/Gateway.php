@@ -5,7 +5,6 @@ namespace RZP\Gateway\Enach\Rbl;
 use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Gateway\Netbanking\Icici\RefundFileFields;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
