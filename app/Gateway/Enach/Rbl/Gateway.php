@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
+use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Enach\Base;
@@ -211,28 +212,24 @@ class Gateway extends Base\Gateway
     {
         $encryptedData = $this->getEncryptedData($secureData);
 
-        //$encryptedData = $secureData;
-
-        //$mid = $this->getMerchantId();
+        $mid = $this->getMerchantId();
 
         $mcc = $input['terminal']['category'];
 
-        //$bankCode = $this->getTerminalAccessCode($input);
-
-        $something = [
-            NpciXmlHeaderTags::GROUP_HEADER => [
+        $data = [
+            NpciXmlHeaderTags::GROUP_HEADER      => [
                     RequestNpciTags::MESSAGE_ID            => $this->getMsgId(),
                     RequestNpciTags::CREATION_DATE_TIME    => Carbon::now()->toIso8601String(),
                 ],
-            NpciXmlHeaderTags::INFO => [
-                    RequestNpciTags::MID                   => '',
-                    RequestNpciTags::CATEGORY_CODE         => CategoryCode::getCategoryCodeFromMcc($mcc), //Todo Check if Cat code is this
-                    RequestNpciTags::UTILITY_CODE          => '',
-                    RequestNpciTags::CATEGORY_DESCRIPTION  => 'API mandate', //Todo what to add here?
-                    RequestNpciTags::NAME                  => '', //Todo find this value
+            NpciXmlHeaderTags::INFO              => [
+                    RequestNpciTags::MID                   => $mid,
+                    RequestNpciTags::CATEGORY_CODE         => CategoryCode::getCategoryCodeFromMcc($mcc),
+                    RequestNpciTags::UTILITY_CODE          => $mid,
+                    RequestNpciTags::CATEGORY_DESCRIPTION  => 'Api Mandate', //Todo have to add mapping for this
+                    RequestNpciTags::NAME                  => 'Razorpay software pvt ltd', //Todo find this value
                 ],
-            RequestNpciTags::MANDATE_ID                => $this->getMandateId(),
-            NpciXmlHeaderTags::OCCURENCE => [
+            RequestNpciTags::MANDATE_ID                    => $this->getMandateId(),
+            NpciXmlHeaderTags::OCCURENCE          => [
                     RequestNpciTags::SEQUENCE_TYPE         => 'RCUR', //todo confirm this
                     RequestNpciTags::FREQUENCY             => Frequency::ADHOC, // todo confirm this
                     RequestNpciTags::FIRST_COLLECTION_DATE => $encryptedData[RequestNpciTags::FIRST_COLLECTION_DATE],
@@ -240,18 +237,18 @@ class Gateway extends Base\Gateway
                 ],
             RequestNpciTags::COLLECTION_AMOUNT     => $encryptedData[RequestNpciTags::COLLECTION_AMOUNT],
             RequestNpciTags::MAX_AMOUNT            => $encryptedData[RequestNpciTags::MAX_AMOUNT],
-            NpciXmlHeaderTags::DEBTOR => [
+            NpciXmlHeaderTags::DEBTOR              => [
                     RequestNpciTags::DEBTOR_NAME           => $input['token']->getBeneficiaryName(),
                     RequestNpciTags::DEBTOR_ACCOUNT        => $encryptedData[RequestNpciTags::DEBTOR_ACCOUNT],
             ],
-            NpciXmlHeaderTags::CREDITOR => [
+            NpciXmlHeaderTags::CREDITOR            => [
                     RequestNpciTags::CREDITOR_NAME         => 'Razorpay software pvt ltd', //TODO
                     RequestNpciTags::CREDITOR_ACCOUNT      => '', //TODO
-                    RequestNpciTags::IFSC_SPONSOR          => '', // TODO : is this similar to how its done in digio
+                    RequestNpciTags::IFSC_SPONSOR          => IFSC::RATN, // TODO check this
                 ]
         ];
 
-        return $something;
+        return $data;
     }
 
     protected function getXml($data)
@@ -284,7 +281,6 @@ class Gateway extends Base\Gateway
 
         $occurence = $mandate->addChild(NpciXmlHeaderTags::OCCURENCE);
 
-        sd($data[NpciXmlHeaderTags::OCCURENCE]);
         $content = array_flip($data[NpciXmlHeaderTags::OCCURENCE]);
 
         array_walk_recursive($content, array ($occurence, 'addChild'));
@@ -305,8 +301,6 @@ class Gateway extends Base\Gateway
 
         array_walk_recursive($content, array ($creditor, 'addChild'));
 
-        sd($xml->asXML());
-
         return $xml->asXML();
     }
 
@@ -321,9 +315,12 @@ class Gateway extends Base\Gateway
         {
             //$encryptedData[$key] = $rsa->encrypt($value);
             openssl_public_encrypt($value, $encrypted, $publicKey, OPENSSL_PKCS1_OAEP_PADDING);
-            $encryptedData[$key] = $encrypted;
+
+            $encoded = base64_encode($encrypted);
+
+            $encryptedData[$key] = $encoded;
         }
-        sd($encryptedData);
+        return $encryptedData;
     }
 
     protected function getRsaInstance($mode)

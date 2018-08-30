@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Gateway\Enach\Rbl;
+
 class NpciXmlHeaderTags
 {
     const MANDATE_ROOT_HEADER = 'MndtAuthReq';

@@ -235,8 +235,6 @@ return [
         'test_terminal_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_TERMINAL_ID')
     ],
 
-    'enach_rbl' => [],
-
     'card_fss' => [
         'barb' => [
             'test_hash_secret'  => env('FSS_BOB_GATEWAY_TEST_HASH_SECRET', 'secret'),
@@ -400,6 +398,10 @@ return [
         'test_merchant_id'       => env('NETBANKING_CORPORATION_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_CORPORATION_GATEWAY_TEST_HASH_SECRET'),
         'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
+    ],
+
+    'enach_rbl' => [
+        'test_merchant_id'       => env('NPCI_EMANDATE_TEST_MERCHANT_ID'),
     ],
 
     'netbanking_obc' => [
