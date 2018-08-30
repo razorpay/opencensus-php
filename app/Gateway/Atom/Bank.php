@@ -53,6 +53,7 @@ class Bank
         IFSC::SBBJ         => 1014,
         IFSC::SBHY         => 1014,
         IFSC::SBMY         => 1014,
+        IFSC::SCBL         => 1051,
         IFSC::STBP         => 1014,
         IFSC::SBTR         => 1014,
         IFSC::YESB         => 1005,
