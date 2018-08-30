@@ -2,8 +2,6 @@
 
 namespace RZP\Listeners;
 
-use Illuminate\Events\Dispatcher;
-
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Jobs\WebHook;
@@ -21,6 +19,7 @@ use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Jobs\SubscriptionPaymentHandler;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
+use RZP\Models\Merchant\Webhook\Metric as WebhookMetric;
 use RZP\Models\Merchant\AccessMap\Entity as AccessMapEntity;
 
 class ApiEventSubscriber extends Base\Core
@@ -100,6 +99,10 @@ class ApiEventSubscriber extends Base\Core
     public function onEvent($event, $params)
     {
         $event = $this->getFiringEvent($event);
+
+        app('trace')->count(
+            WebhookMetric::WEBHOOK_EVENTS_TRIGGERED_TOTAL,
+            WebhookMetric::getMetricDimensions($event, $this->getMode()));
 
         //
         // sequential_array check is present here only

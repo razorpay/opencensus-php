@@ -52,7 +52,7 @@ class Metric
     const LABEL_DEFAULT_VALUE                   = 'other';
     const LABEL_NONE_VALUE                      = 'none';
 
-    //metric types
+    // Metric types
     const TYPE_QUERY_CACHE                      = 'query_cache';
     const TYPE_UPI_POLLING                      = 'upi_polling';
 }

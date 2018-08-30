@@ -75,6 +75,10 @@ class Inferno
 
         $this->event = $data['event'];
 
+        $this->trace->count(
+            Metric::WEBHOOK_EVENTS_CONSUMED_TOTAL,
+            Metric::getMetricDimensions($this->event, $this->mode));
+
         $webhook = $this->getActiveWebhook($data);
 
         if ($webhook === null)
@@ -252,7 +256,7 @@ class Inferno
             return $clientError;
         }
 
-        $timeOfRequest = microtime(true);
+        $requestStartTime = millitime();
 
         try
         {
@@ -308,6 +312,8 @@ class Inferno
 
         if ($this->isSuccesssfulStatusCode($statusCode) === true)
         {
+            $requestDuration = millitime() - $requestStartTime;
+
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRED,
                 [
@@ -315,13 +321,23 @@ class Inferno
                     'merchant_id'       => $webhook->merchant->getId(),
                     'response_code'     => $statusCode,
                     'response_headers'  => $response->getHeaders(),
-                    'response_time'     => (microtime(true) - $timeOfRequest),
+                    'response_time'     => $requestDuration,
                 ]);
+
+            $this->trace->count(Metric::WEBHOOK_REQUEST_SUCCESSFUL_TOTAL, ['mode' => $this->mode]);
+            $this->trace->histogram(Metric::WEBHOOK_REQUEST_DURATION_MILLISECONDS, $requestDuration);
 
             $clientError = false;
         }
         else
         {
+            $this->trace->count(
+                Metric::WEBHOOK_REQUEST_FAILED_TOTAL,
+                [
+                    'mode'           => $this->mode,
+                    'attempt_number' => $this->job->attempts(),
+                ]);
+
             $msgPrefix = '';
 
             $this->traceWebhookResponse($webhook, $msgPrefix, $response);
@@ -407,7 +423,7 @@ class Inferno
         return $request;
     }
 
-    protected function webhookSuccessfullyFired($webhook)
+    protected function webhookSuccessfullyFired(Entity $webhook)
     {
         $webhook->setLastSuccessfulAt();
 
@@ -425,9 +441,9 @@ class Inferno
      *
      * In every other case, we send a failure email.
      *
-     * @param $webhook
+     * @param Entity $webhook
      */
-    protected function webhookFailure($webhook)
+    protected function webhookFailure(Entity $webhook)
     {
         $deleteJobFlag = false;
 
@@ -454,6 +470,8 @@ class Inferno
                     'merchant_id' => $webhook->merchant->getId(),
                 ]
             );
+
+            $this->trace->count(Metric::WEBHOOK_DEACTIVATED_TOTAL, ['mode' => $this->mode]);
 
             $this->disableWebhook($webhook);
 

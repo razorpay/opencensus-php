@@ -14,4 +14,12 @@ final class Metric
 
     // Histograms
     const WEBHOOK_REQUEST_DURATION_MILLISECONDS = 'webhook_request_duration_milliseconds.histogram';
+
+    public static function getMetricDimensions(string $eventName, string $mode = null): array
+    {
+        return [
+            'event' => $eventName,
+            'mode'  => $mode,
+        ];
+    }
 }
