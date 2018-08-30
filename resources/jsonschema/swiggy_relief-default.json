@@ -1,0 +1,27 @@
+{
+  "title": " ",
+  "type": "object",
+  "required": [
+    "customer_name",
+    "customer_contact",
+    "customer_email"
+  ],
+  "properties": {
+    "customer_name": {
+      "type": "string",
+      "title": "Name",
+      "maxLength": 255
+    },
+    "customer_contact": {
+      "type": "string",
+      "title": "Contact Number",
+      "maxLength": 20,
+      "minLength": 10
+    },
+    "customer_email": {
+      "type": "string",
+      "title": "Email",
+      "maxLength": 150
+    }
+  }
+}

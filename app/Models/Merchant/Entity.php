@@ -211,6 +211,7 @@ class Entity extends Base\PublicEntity
 
     const CONFIG_LIST = [
         self::ID,
+        self::NAME,
         self::BRAND_COLOR,
         self::HANDLE,
         self::TRANSACTION_REPORT_EMAIL,
@@ -219,6 +220,8 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+        self::BILLING_LABEL,
+        self::WEBSITE,
     ];
 
     protected $public = [
@@ -501,6 +504,21 @@ class Entity extends Base\PublicEntity
     public function isDebitRecurringEnabled(): bool
     {
         return ($this->isAtLeastOneFeatureEnabled(Feature\Constants::$debitRecurringFeatures) === true);
+    }
+
+    public function isExposeARNRefundEnabled(): bool
+    {
+       return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_REFUND) === true);
+    }
+
+    public function isExposeARNPaymentEnabled(): bool
+    {
+       return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_PAYMENT) === true);
+    }
+
+    public function isExposeCardExpiryEnabled(): bool
+    {
+       return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_EXPIRY) === true);
     }
 
     /**
@@ -995,20 +1013,6 @@ class Entity extends Base\PublicEntity
     public function getRefundSource()
     {
         return $this->getAttribute(self::REFUND_SOURCE);
-    }
-
-    public function getDisplayName()
-    {
-        $displayName = $this->getAttribute(self::DISPLAY_NAME);
-
-        $merchantName = $this->getAttribute(self::NAME);
-
-        if (empty($displayName) === false)
-        {
-            return $displayName . " - ". $merchantName;
-        }
-
-        return $merchantName;
     }
 
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
@@ -1610,7 +1614,7 @@ class Entity extends Base\PublicEntity
             self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
             self::LOGO_URL       => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
-            self::DISPLAY_NAME   => $this->getDisplayName(),
+            self::DISPLAY_NAME   => $this->getAttribute(self::DISPLAY_NAME),
             self::PARTNER_TYPE   => $this->getAttribute(self::PARTNER_TYPE),
             self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
@@ -1675,6 +1679,15 @@ class Entity extends Base\PublicEntity
     {
         return (($this->isPartner() === true) and
                 (in_array($this->getPartnerType(), Constants::$settingsAccessPartnerTypes, true) === true));
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPartnerWithWebhooksAccess(): bool
+    {
+        return (($this->isPartner() === true) and
+            (in_array($this->getPartnerType(), Constants::$webhooksAccessPartnerTypes, true) === true));
     }
 
     /**

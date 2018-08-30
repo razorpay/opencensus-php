@@ -154,6 +154,127 @@ return [
         ],
     ],
 
+    'testCreateAppWebhookInvalidPartnerType' => [
+        'request'   => [
+            'url'     => '/oauth/applications/10000000000Appp/webhooks',
+            'content' => [
+                'url'    => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testCreateAppWebhookPurePlatform' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'url'            => 'http://webhook.com',
+                'events'         => [
+                    'payment.authorized' => true,
+                ],
+                'active'         => true,
+                'application_id' => '10000000000App'
+            ]
+        ],
+    ],
+
+    'testCreateAppWebhookOAuthTag' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'url'            => 'http://webhook.com',
+                'events'         => [
+                    'payment.authorized' => true,
+                ],
+                'active'         => true,
+                'application_id' => '10000000000App'
+            ]
+        ],
+    ],
+
+    'testCreateAppWebhookBankWithOAuthTag' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testCreateAppWebhookFullyManagedWithOAuthTag' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'url'            => 'http://webhook.com',
+                'events'         => [
+                    'payment.authorized' => true,
+                ],
+                'active'         => true,
+                'application_id' => '10000000000App'
+            ]
+        ],
+    ],
+
     'testCreateWebhookWithDisallowedPort' => [
         'request' => [
             'url' => '/webhooks',
@@ -394,6 +515,28 @@ return [
                 'active' => false,
             ],
         ]
+    ],
+
+    'testEditWebhookByNonOwnerUser' => [
+        'request' => [
+            'content' => [
+                'url' => 'https://example.com',
+                'events' => [
+                    'payment.authorized' => '0',
+                ],
+                'active' => '0',
+            ],
+            'method' => 'put',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED
+                ],
+            ],
+            'status_code' => 400,
+        ],
     ],
 
     'testCreateWebhookWrongUrl' => [

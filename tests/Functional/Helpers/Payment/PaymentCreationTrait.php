@@ -54,6 +54,11 @@ trait PaymentCreationTrait
 
         $response = $this->makeRequestParent($request);
 
+        if ($this->isResponseInstanceType($response, 'json') === true)
+        {
+            return $response;
+        }
+
         $content = $response->getContent();
 
         if ($this->isResponseInstanceType($response, 'http'))

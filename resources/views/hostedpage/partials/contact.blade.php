@@ -13,7 +13,7 @@
 @endsection
 
 <div id="contact-details">
-    @if($view === 'form')
+    @if($view === 'form' and isset($contact) === true)
         <div class="mobile-el">
             <div class="heading" style="line-height: 32px;">Contact Us</div>
             <div>
@@ -30,7 +30,7 @@
     @endif
 
 
-    @if($view === 'header')
+    @if($view === 'header' and isset($contact) === true)
         <div class="desktop-el">
             <div>
                 <a href="tel:{{$contact['phone']}}">{{$contact['phone']}}

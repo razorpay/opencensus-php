@@ -607,7 +607,7 @@ class Gateway extends Base\Gateway
 
         $data = [
             'merchantId'        => $this->getMerchantId(),
-            'merchantTranId'    => $gatewayPayment['merchant_reference'] ?? $input['payment']['id'],
+            'merchantTranId'    => $gatewayPayment['merchant_reference'] ?: $input['payment']['id'],
             'subMerchantId'     => $this->getSubMerchantId($input),
             'terminalId'        => '1234',
         ];

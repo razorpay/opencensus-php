@@ -54,4 +54,14 @@ class Repository extends Base\Repository
                     ->where($refundMerchantId, $merchantId)
                     ->get();
     }
+
+    public function fetchReversalsList($skip = 0, $take = 100, $entityType = Entity::TRANSFER)
+    {
+        return $this->newQuery()
+                    ->where(Reversal\Entity::ENTITY_TYPE, $entityType)
+                    ->orderBy(Reversal\Entity::ID, 'desc')
+                    ->skip($skip)
+                    ->take($take)
+                    ->get();
+    }
 }

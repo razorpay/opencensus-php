@@ -297,7 +297,7 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
-    public function callbackAmazonpay()
+    public function callbackAmazonpay($responseFormat = 'html')
     {
         $input = Request::all();
 
@@ -344,7 +344,18 @@ class GatewayController extends Controller
         $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
         $publicKey = $keys->first()->getPublicKey($mode);
 
-        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+        switch ($responseFormat)
+        {
+            case 'ajax':
+                $route = 'payment_callback_ajax_with_key_get';
+                break;
+
+            default:
+                $route = 'payment_callback_with_key_get';
+                break;
+        }
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey, $route);
 
         $query = http_build_query($input);
 

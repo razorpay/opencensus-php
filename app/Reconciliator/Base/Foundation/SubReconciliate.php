@@ -8,7 +8,6 @@ use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Reconciliator\Metrics\Metric;
 use RZP\Reconciliator\Metrics\Dimensions;
-use RZP\Tests\Functional\Assertion\Validator\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
@@ -82,7 +81,7 @@ class SubReconciliate extends Base\Core
 
     /**
      * Contains details for files, email or manual details
-     * Manual details is being used to check for force_update
+     * Manual details is being used to check for force_update and force_authorize payments
      *
      * @var array
      */
@@ -139,10 +138,16 @@ class SubReconciliate extends Base\Core
         {
             foreach ($fileContents as $row)
             {
-                $this->repo->transactionOnLiveAndTest(function() use ($row)
+                try
                 {
-                    $this->runReconciliate($row);
-                });
+                    $this->repo->transactionOnLiveAndTest(function () use ($row) {
+                        $this->runReconciliate($row);
+                    });
+                }
+                finally
+                {
+                    $batch->incrementProcessedCount();
+                }
             }
         }
         finally
@@ -376,8 +381,6 @@ class SubReconciliate extends Base\Core
      * depending on the specific gateway's reconciliator.
      *
      * @param  array $row
-     *
-     * @throws LogicException
      */
     protected function handleUnprocessedRow(array $row)
     {
@@ -399,9 +402,11 @@ class SubReconciliate extends Base\Core
 
         if ($this->failUnprocessedRow === true)
         {
-            return $this->setSummaryCount(self::FAILURES_SUMMARY, $identifier);
+            $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
         }
-
-        return $this->setSummaryCount(self::SUCCESSES_SUMMARY, $identifier);
+        else
+        {
+            $this->setSummaryCount(self::SUCCESSES_SUMMARY, head($row));
+        }
     }
 }

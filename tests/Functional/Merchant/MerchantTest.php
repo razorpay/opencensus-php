@@ -1211,7 +1211,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(21, $banks);
+        $this->assertCount(32, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -2040,6 +2040,8 @@ class MerchantTest extends TestCase
 
     public function testPutEmiMethod()
     {
+        $this->fixtures->create('pricing:emi_pricing_plan');
+
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $admin = $this->ba->getAdmin();
@@ -2793,6 +2795,39 @@ class MerchantTest extends TestCase
         $merchant->reTag(["ref-10000000000000"]);
 
         $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertNotEmpty($mailData['token']);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertTrue($mailable->hasTo('test1@razorpay.com'));
+
+            return true;
+        });
+
+        Mail::assertNotQueued(MappedToAccount::class);
+    }
+
+    public function testCreateSubmerchantLoginByAdmin()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'     => '10000000000040',
+            'email'  => 'test1@razorpay.com',
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+
+        $merchant->reTag(["ref-10000000000000"]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', null, 'manager');
 
         $this->startTest();
 

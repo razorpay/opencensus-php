@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\NetbankingIndusind;
 
+use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Indusind\Constants;
@@ -54,7 +55,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return null;
     }
 
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
         $this->allowForceAuthorization = true;
     }
