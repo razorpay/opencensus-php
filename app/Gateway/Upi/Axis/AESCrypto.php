@@ -6,15 +6,10 @@ use RZP\Gateway\Base;
 
 class AESCrypto extends Base\AESCrypto
 {
-    public function __construct(int $mode, string $masterKey, string $initializationVector = '')
-    {
-        parent::__construct($mode, $masterKey);
-    }
-
-    public function encryptString(string $string)
-    {
-        return base64_encode(parent::encryptString($string));
-    }
+    /*
+     * Disabled padding because bank sends encrypted message using AES PKCS5 MODE ECB - not available in PHP,
+     * this is a fix
+     */
 
     public function decryptString(string $string)
     {

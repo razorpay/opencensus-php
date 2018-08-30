@@ -10,7 +10,6 @@ use phpseclib\Crypt\AES;
 use RZP\Gateway\Upi\Axis\Fields;
 use RZP\Gateway\Upi\Axis\Status;
 use RZP\Gateway\Upi\Axis\Action;
-use RZP\Gateway\Upi\Axis\AESCrypto;
 
 class Server extends Base\Mock\Server
 {
@@ -64,34 +63,6 @@ class Server extends Base\Mock\Server
         $input = json_decode($input, true);
 
         return $input;
-    }
-
-    public function decrypt($data)
-    {
-        return $this->getCipherInstance()
-            ->decrypt(hex2bin($data));
-    }
-
-    protected function encrypt($plaintext)
-    {
-        return $this->getCipherInstance()
-            ->encrypt($plaintext);
-    }
-
-    protected function getCipherInstance()
-    {
-        $cipher = new AES(AES::MODE_ECB);
-
-        $cipher->setKey($this->getEncryptionKey());
-
-        return $cipher;
-    }
-
-    protected function getEncryptionKey()
-    {
-        $key = config('gateway.upi_mindgate.gateway_encryption_key');
-
-        return hex2bin($key);
     }
 
     /**

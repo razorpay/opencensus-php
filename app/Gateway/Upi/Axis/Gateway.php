@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use phpseclib\Crypt\RSA;
 use RZP\Trace\TraceCode;
+use RZP\Error;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
@@ -100,12 +101,23 @@ class Gateway extends Base\Gateway
                 'tokenResponse'     => $tokenResponse,
                 'collectResponse'   => $collectResponse,
                 'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+                'terminal_id'       => $input['terminal']['id'],
             ]);
         }
 
         else
         {
-            throw new Exception\GatewayErrorException($tokenResponse);
+            $this->trace->info(TraceCode::GATEWAY_AUTH_REQUEST, [
+                'tokenResponse'     => $tokenResponse,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+                'terminal_id'       => $input['terminal']['id'],
+            ]);
+
+            throw new Exception\GatewayErrorException(Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $tokenResponse[Fields::CODE],
+                $tokenResponse[Fields::RESULT]);
         }
 
         $vpa = self::DEFAULT_PAYEE_VPA;
@@ -190,7 +202,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
             'body'              => $responseBody,
             'gateway'           => $this->gateway,
-            'type'              => $type
+            'type'              => $type,
         ]);
 
         return $this->jsonToArray($responseBody);
@@ -240,10 +252,10 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'content array' => $data,
-                'json content'         => $content,
+                'content'      => $content,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $payment['id'],
+                'terminal_id'       => $input['terminal']['id'],
             ]);
         return $request;
     }
@@ -291,8 +303,8 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($input): array
     {
-        $removenewlines = str_replace('\n','',$input[Fields::DATA]);
-        $aesdecrypted = $this->decryptAes($removenewlines);
+        $encryptedmessage = str_replace('\n','',$input[Fields::DATA]);
+        $aesdecrypted = $this->decryptAes($encryptedmessage);
         /**
          * Being done to avoid control character error in json_decode which is got when - UTF string from AES
          * decryption is being passed.
@@ -385,9 +397,10 @@ class Gateway extends Base\Gateway
             $this->trace->warning(
                 TraceCode::GATEWAY_PAYMENT_VERIFY,
                 [
-                    'payment_id' => $verify->input['payment']['id'],
-                    'message'    => 'payment id not found in the gateway database',
-                    'gateway'    => $this->gateway
+                    'payment_id'  => $verify->input['payment']['id'],
+                    'message'     => 'payment id not found in the gateway database',
+                    'terminal_id' => $verify->input['terminal']['id'],
+                    'gateway'     => $this->gateway,
                 ]
             );
 
@@ -404,8 +417,9 @@ class Gateway extends Base\Gateway
             throw new Exception\RuntimeException(
                 'Payment amount verification failed.',
                 [
-                    'payment_id' => $this->input['payment']['id'],
-                    'gateway'    => $this->gateway
+                    'payment_id'    => $this->input['payment']['id'],
+                    'gateway'       => $this->gateway,
+                    'terminal_id'   => $this->input['terminal']['id'],
                 ]
             );
         }
@@ -449,8 +463,11 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'request' => $request,
-                'content' => $data
+                'request'       => $request,
+                'content'       => $data,
+                'payment_id'    => $input['payment']['id'],
+                'terminal_id'   => $input['terminal']['id'],
+                'gateway'       => $this->gateway,
             ]);
 
         return $request;
@@ -520,7 +537,6 @@ class Gateway extends Base\Gateway
 
     protected function getCipherInstance(): RSA
     {
-
         $rsa = new RSA();
 
         $rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
@@ -564,11 +580,6 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestArray(array $input): array
     {
-
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'],
-            Action::AUTHORIZE);
-
         $refund = $input['refund'];
 
         $data = [
@@ -599,6 +610,7 @@ class Gateway extends Base\Gateway
                 'gateway'           => $this->gateway,
                 'payment_id'        => $input['payment']['id'],
                 'refund_id'         => $input['refund']['id'],
+                'terminal_id'       => $input['terminal']['id'],
             ]);
         return $request;
     }
