@@ -99,6 +99,8 @@ class Gateway extends Base\Gateway
 
         $verify = new Verify($this->gateway, $input);
 
+        $verify->throwExceptionOnMismatch = false;
+
         $dataToTrace = $this->runPaymentVerifyFlow($verify);
 
         $content = [];
@@ -403,8 +405,6 @@ class Gateway extends Base\Gateway
         $verify->status = $this->getVerifyStatus($verify);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
-
-        $verify->throwExceptionOnMismatch = false;
     }
 
     protected function getVerifyStatus(Verify $verify): string
