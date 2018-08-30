@@ -237,8 +237,6 @@ class Inferno
      */
     public function sendRequest(array $request, Entity $webhook)
     {
-        $clientError = true;
-
         $response = null;
 
         $this->trace->info(
@@ -250,10 +248,11 @@ class Inferno
                 'attempt'     => $this->job->attempts(),
             ]);
 
-        // Ensure that we are not hitting a private IP address
-        if ($this->validatePublicIpAddress($request, $webhook) === false)
+        $clientError = $this->validateWebhookRequest($request, $webhook);
+
+        if ($clientError === true)
         {
-            return $clientError;
+            return true;
         }
 
         $requestStartTime = millitime();
@@ -324,8 +323,10 @@ class Inferno
                     'response_time'     => $requestDuration,
                 ]);
 
-            $this->trace->count(Metric::WEBHOOK_REQUEST_SUCCESSFUL_TOTAL, ['mode' => $this->mode]);
-            $this->trace->histogram(Metric::WEBHOOK_REQUEST_DURATION_MILLISECONDS, $requestDuration);
+            $metricDimensions = ['mode' => $this->mode];
+
+            $this->trace->count(Metric::WEBHOOK_REQUEST_SUCCESSFUL_TOTAL, $metricDimensions);
+            $this->trace->histogram(Metric::WEBHOOK_REQUEST_DURATION_MILLISECONDS, $requestDuration, $metricDimensions);
 
             $clientError = false;
         }
@@ -421,6 +422,32 @@ class Inferno
         ];
 
         return $request;
+    }
+
+    /**
+     * Validate the request before triggering
+     *
+     * @param array  $request
+     * @param Entity $webhook
+     *
+     * @return bool
+     */
+    protected function validateWebhookRequest(array $request, Entity $webhook): bool
+    {
+        $clientError = false;
+
+        // Ensure that we are not hitting a private IP address
+        if ($this->validatePublicIpAddress($request, $webhook) === false)
+        {
+            $clientError = true;
+        }
+
+        if ($clientError === true)
+        {
+            $this->trace->count(Metric::WEBHOOK_VALIDATION_FAILURES_TOTAL, ['mode' => $this->mode]);
+        }
+
+        return $clientError;
     }
 
     protected function webhookSuccessfullyFired(Entity $webhook)

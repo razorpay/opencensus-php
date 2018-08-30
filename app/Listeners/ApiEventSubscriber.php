@@ -663,12 +663,15 @@ class ApiEventSubscriber extends Base\Core
         $entity     = $this->mainEntity;
         $merchant   = $this->getMerchantFromEntity($entity);
 
+        //
         // Send the signed account id of the merchant associated with the entity, along with the payload
         // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
+        //
         $signedAccountId = Merchant\Account\Entity::getSignedId($entity->merchant->getId());
 
         $attributes = array(
             Event\Entity::EVENT      => $eventFired,
+
             //
             // The same event may or may not contain some entities, based on the state.
             // For example, if subscription.pending is fired on an auth failure,
@@ -720,9 +723,7 @@ class ApiEventSubscriber extends Base\Core
 
         $webhook = $this->repo->webhook->findByMerchant($merchant);
 
-        //
         // Check if the merchant has an active webhook for the event
-        //
         $enabledForMerchant = $this->isWebhookActiveAndEnabled($webhook);
 
         if ($enabledForMerchant === true)
@@ -731,9 +732,9 @@ class ApiEventSubscriber extends Base\Core
         }
 
         //
-        // Check if any of the apps used by the merchant have an active webhook
-        // for the event. This means that the app needs notification of events on
-        // the merchants using the app.
+        // Check if any of the Partner applications connected to the merchant have an
+        // active webhook for the event. If defined, we will eventually send the
+        // webhook request to all of these active application webhooks.
         //
         $enabledForApps = $this->checkAndSetWebhooksEnabledForEventForAnyApp();
 
@@ -774,6 +775,7 @@ class ApiEventSubscriber extends Base\Core
      */
     protected function getActiveWebhooksForConnectedApps(string $merchantId)
     {
+        // Fetch all applications connected to the current merchant ID
         $appConnections = $this->repo
                                ->merchant_access_map
                                ->fetchMerchantAccessMapsOnEntityType($merchantId, WebhookEntity::APPLICATION);
@@ -783,11 +785,17 @@ class ApiEventSubscriber extends Base\Core
             return [];
         }
 
+        //
+        // If one or more applications are connected, fetch all webhooks that are
+        // defined by the applications.
+        //
         $appIds = $appConnections->pluck(AccessMapEntity::ENTITY_ID)->all();
 
         $appWebhooks = $this->repo->webhook->findMultipleByApplicationIds($appIds);
 
-        $activeEnabledAppWebhooks = $appWebhooks->filter(function($webhook, $key) {
+        // Filter and return the list of active application webhooks
+        $activeEnabledAppWebhooks = $appWebhooks->filter(function($webhook, $key)
+        {
             return ($this->isWebhookActiveAndEnabled($webhook) === true);
         });
 
