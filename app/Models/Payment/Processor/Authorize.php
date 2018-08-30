@@ -3755,7 +3755,12 @@ trait Authorize
 
     protected function callGatewayAuthorize(array $data)
     {
-        return $this->callGatewayFunction(Action::AUTHORIZE, $data);
+
+            $d = $this->callGatewayFunction(Action::AUTHORIZE, $data);
+
+            s($d);
+
+            return $d;
     }
 
     /**

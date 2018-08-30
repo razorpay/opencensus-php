@@ -81,6 +81,13 @@ class Gateway extends Base\Gateway
 
         $tokenResponse = $this->fetchToken($input);
 
+        $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST, [
+            'tokenResponse'     => $tokenResponse,
+            'gateway'           => $this->gateway,
+            'payment_id'        => $input['payment']['id'],
+            'terminal_id'       => $input['terminal']['id'],
+        ]);
+
         if($tokenResponse[Fields::CODE] == Status::SUCCESS)
         {
             parent::action($input, Action::AUTHORIZE);
@@ -97,24 +104,13 @@ class Gateway extends Base\Gateway
 
             $this->updateGatewayPaymentEntity($gatewayPayment, $collectResponse);
 
-            $this->trace->info(TraceCode::GATEWAY_AUTH_REQUEST, [
-                'tokenResponse'     => $tokenResponse,
+            $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, [
                 'collectResponse'   => $collectResponse,
-                'gateway'           => $this->gateway,
-                'payment_id'        => $input['payment']['id'],
-                'terminal_id'       => $input['terminal']['id'],
             ]);
         }
 
         else
         {
-            $this->trace->info(TraceCode::GATEWAY_AUTH_REQUEST, [
-                'tokenResponse'     => $tokenResponse,
-                'gateway'           => $this->gateway,
-                'payment_id'        => $input['payment']['id'],
-                'terminal_id'       => $input['terminal']['id'],
-            ]);
-
             throw new Exception\GatewayErrorException(Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 $tokenResponse[Fields::CODE],
                 $tokenResponse[Fields::RESULT]);
