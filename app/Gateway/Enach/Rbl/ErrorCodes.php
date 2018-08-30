@@ -323,6 +323,6 @@ class ErrorCodes
     {
         $error = new Error($code);
 
-        return $error->getPublicErrorCode();
+        return $error->getDescription();
     }
 }
