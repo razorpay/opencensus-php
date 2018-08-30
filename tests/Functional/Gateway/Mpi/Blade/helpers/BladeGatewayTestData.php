@@ -63,14 +63,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'Payment processing failed due to invalid response returned by gateway.',
+                    'description'   => 'Payment processing failed because of card authentication failure',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => RZP\Exception\BadRequestException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR,
         ],
     ],
 
@@ -86,7 +86,7 @@ return [
         ],
         'exception' => [
             'class'                 => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_PARES_XML,
         ],
     ],
 
@@ -150,7 +150,7 @@ return [
         ],
         'exception' => [
             'class'                 => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_PARES_XML,
         ],
     ],
 ];

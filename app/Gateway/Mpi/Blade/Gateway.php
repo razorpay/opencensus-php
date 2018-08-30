@@ -317,29 +317,33 @@ class Gateway extends Base\Gateway
 
     protected function validatePares(array $input, array $paresArray)
     {
-       if (isset($paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR]) === true)
-       {
-           $error = $paresArray[PARes::MESSAGE][PARes::PARES][PARes::ERROR];
-
-           throw new Exception\GatewayErrorException(
-               ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-               $error[PARes::ERROR_CODE] ?? null,
-               $error[PARes::ERROR_MESSAGE] ?? null,
-               [
-                   'PaRes'   => $paresArray,
-                   'payment' => $input['payment'],
-                   'network' => $input['card']['network'],
-               ]
-           );
-       }
-
         if (empty($paresArray[PARes::MESSAGE]) === true)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                'Message element not found',
+                ErrorCode::GATEWAY_ERROR_INVALID_PARES_XML,
                 null,
+                'Message element not found',
                 [],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
+        }
+
+        if (isset($paresArray[PARes::MESSAGE][PARes::ERROR]) === true)
+        {
+            $error = $paresArray[PARes::MESSAGE][PARes::ERROR];
+            $errorCode = $error[PARes::ERROR_CODE] ?? null;
+
+            $internalCode = InvalidRequestCode::map($errorCode) ?: ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE;
+
+            throw new Exception\GatewayErrorException(
+                $internalCode,
+                $errorCode,
+                $error[PARes::ERROR_MESSAGE] ?? null,
+                [
+                   'PaRes'   => $paresArray,
+                   'payment' => $input['payment'],
+                   'network' => $input['card']['network'],
+                ],
                 null,
                 BaseGateway\Action::AUTHENTICATE);
         }
@@ -382,6 +386,7 @@ class Gateway extends Base\Gateway
         }
     }
 
+    // @codingStandardsIgnoreLine
     protected function validateVERes(array $input, array $response)
     {
         $this->trace->info(TraceCode::VERIFY_ENROLLMENT_RESPONSE, $response);
@@ -424,8 +429,6 @@ class Gateway extends Base\Gateway
                 [],
                 null,
                 BaseGateway\Action::AUTHENTICATE);
-
-            //TODO check if we need to trace response
         }
 
         $ch = $VERes[VERes::CH];
@@ -654,6 +657,7 @@ class Gateway extends Base\Gateway
         return $year . $month;
     }
 
+    // @codingStandardsIgnoreLine
     protected function getVEReqContent(array $input)
     {
         $accept = substr($this->app['request']->header('Accept'), 0, 2048);
@@ -777,13 +781,15 @@ class Gateway extends Base\Gateway
         try
         {
             $dom->loadXML($xml);
-
         }
         catch (\Exception $e)
         {
             $error = $e->getMessage();
 
-            switch (true) {
+            $internalCode = ErrorCode::GATEWAY_ERROR_INVALID_PARES_XML;
+
+            switch (true)
+            {
                 case strpos($error, 'CanonicalizationMethod') !== false:
                 case strpos($error, 'SignedInfo') !== false:
                 case strpos($error, 'Signature') !== false:
@@ -792,18 +798,16 @@ class Gateway extends Base\Gateway
                 case strpos($error, 'SignatureMethod') !== false:
                 case strpos($error, 'SignatureValue') !== false:
                 case strpos($error, 'KeyInfo') !== false:
-
-                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
-                                                            null,
-                                                            ['error_message' => $error]);
+                    $internalCode = ErrorCode::BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR;
             }
 
-            // Throw Critical for now
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                'Invalid XML',
+                $internalCode,
+                null,
                 $error,
-                [],
+                [
+                    'pares' => $xml,
+                ],
                 $e,
                 BaseGateway\Action::AUTHENTICATE);
         }
