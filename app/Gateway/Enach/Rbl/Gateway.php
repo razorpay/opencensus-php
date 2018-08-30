@@ -8,13 +8,14 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
-use phpseclib\Crypt\AES;
+use phpseclib\Crypt\RSA;
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Enach\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Gateway\Enach\Base\CategoryCode;
 
 class Gateway extends Base\Gateway
@@ -102,9 +103,9 @@ class Gateway extends Base\Gateway
 
     protected function emandateNpciAuth($input)
     {
-        $attributes = $this->getGatewayAttributes($input);
+        //$attributes = $this->getGatewayAttributes($input);
 
-        $this->createGatewayPaymentEntity($attributes, 'authorize');
+        //$this->createGatewayPaymentEntity($attributes, 'authorize');
 
         $request = $this->getRequest($input);
 
@@ -168,11 +169,13 @@ class Gateway extends Base\Gateway
 
         $checksum = $this->generateHash($secureData);
 
-        $xml = $this->getXmlForNpci($input, $secureData);
+        $data = $this->getDataForXml($input, $secureData);
+
+        $xml = $this->getXml($data);
 
         $mid = $this->getMerchantId();
 
-        $bank = $input['bank'];
+        $bank = $input['payment']['bank'];
 
         $content = [
             'MerchantID' => $mid,
@@ -184,6 +187,7 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray($content, 'post', 'npciauth');
 
         $request = $this->addHeadersForNpciRequest($request);
+        sd($request);
 
         return $request;
     }
@@ -203,40 +207,151 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getXmlForNpci($input, $secureData)
+    protected function getDataForXml($input, $secureData)
     {
         $encryptedData = $this->getEncryptedData($secureData);
 
-        $mid = $this->getMerchantId();
+        //$encryptedData = $secureData;
+
+        //$mid = $this->getMerchantId();
 
         $mcc = $input['terminal']['category'];
 
-        $content = [
-            RequestNpciTags::MESSAGE_ID => $this->getMsgId(),
-            RequestNpciTags::CREATION_DATE_TIME => Carbon::now()->toIso8601String(),
-            RequestNpciTags::MID => $mid,
-            RequestNpciTags::CATEGORY_CODE => CategoryCode::getCategoryCodeFromMcc($mcc), //Todo Check if Cat code is this
-            RequestNpciTags::UTILITY_CODE => $mid,
-            RequestNpciTags::CATEGORY_DESCRIPTION => '', //Todo what to add here?
-            RequestNpciTags::NAME => '', //Todo find this value
-            RequestNpciTags::MANDATE_ID => $this->getMandateId(),
-            RequestNpciTags::SEQUENCE_TYPE => '',
-            RequestNpciTags::FREQUENCY => Frequency::ADHOC,
-            RequestNpciTags::FIRST_COLLECTION_DATE => $encryptedData[RequestNpciTags::FIRST_COLLECTION_DATE],
-            RequestNpciTags::FINAL_COLLECTION_DATE => $encryptedData[RequestNpciTags::FINAL_COLLECTION_DATE],
-            RequestNpciTags::COLLECTION_AMOUNT => $encryptedData[RequestNpciTags::COLLECTION_AMOUNT],
-            RequestNpciTags::MAX_AMOUNT => $encryptedData[RequestNpciTags::MAX_AMOUNT],
-            RequestNpciTags::DEBTOR_NAME => $input['token']->getBeneficiaryName(),
-            RequestNpciTags::DEBTOR_ACCOUNT => $encryptedData[RequestNpciTags::DEBTOR_ACCOUNT],
-            RequestNpciTags::CREDITOR_NAME => '', //TODO
-            RequestNpciTags::CREDITOR_ACCOUNT => '', //TODO
-            RequestNpciTags::IFSC_SPONSOR => '' // TODO : is this similar to how its done in digio
+        //$bankCode = $this->getTerminalAccessCode($input);
+
+        $something = [
+            NpciXmlHeaderTags::GROUP_HEADER => [
+                    RequestNpciTags::MESSAGE_ID            => $this->getMsgId(),
+                    RequestNpciTags::CREATION_DATE_TIME    => Carbon::now()->toIso8601String(),
+                ],
+            NpciXmlHeaderTags::INFO => [
+                    RequestNpciTags::MID                   => '',
+                    RequestNpciTags::CATEGORY_CODE         => CategoryCode::getCategoryCodeFromMcc($mcc), //Todo Check if Cat code is this
+                    RequestNpciTags::UTILITY_CODE          => '',
+                    RequestNpciTags::CATEGORY_DESCRIPTION  => 'API mandate', //Todo what to add here?
+                    RequestNpciTags::NAME                  => '', //Todo find this value
+                ],
+            RequestNpciTags::MANDATE_ID                => $this->getMandateId(),
+            NpciXmlHeaderTags::OCCURENCE => [
+                    RequestNpciTags::SEQUENCE_TYPE         => 'RCUR', //todo confirm this
+                    RequestNpciTags::FREQUENCY             => Frequency::ADHOC, // todo confirm this
+                    RequestNpciTags::FIRST_COLLECTION_DATE => $encryptedData[RequestNpciTags::FIRST_COLLECTION_DATE],
+                    RequestNpciTags::FINAL_COLLECTION_DATE => $encryptedData[RequestNpciTags::FINAL_COLLECTION_DATE],
+                ],
+            RequestNpciTags::COLLECTION_AMOUNT     => $encryptedData[RequestNpciTags::COLLECTION_AMOUNT],
+            RequestNpciTags::MAX_AMOUNT            => $encryptedData[RequestNpciTags::MAX_AMOUNT],
+            NpciXmlHeaderTags::DEBTOR => [
+                    RequestNpciTags::DEBTOR_NAME           => $input['token']->getBeneficiaryName(),
+                    RequestNpciTags::DEBTOR_ACCOUNT        => $encryptedData[RequestNpciTags::DEBTOR_ACCOUNT],
+            ],
+            NpciXmlHeaderTags::CREDITOR => [
+                    RequestNpciTags::CREDITOR_NAME         => 'Razorpay software pvt ltd', //TODO
+                    RequestNpciTags::CREDITOR_ACCOUNT      => '', //TODO
+                    RequestNpciTags::IFSC_SPONSOR          => '', // TODO : is this similar to how its done in digio
+                ]
         ];
+
+        return $something;
+    }
+
+    protected function getXml($data)
+    {
+        $xml = new \SimpleXMLElement('<xml version="1.0" encoding="UTF-8"/>');
+
+        $document = $xml->addChild('Document');
+
+        $document->addAttribute('xmlns', 'http://npci.org/onmags/schema');
+
+        $mandateroot = $document->addChild(NpciXmlHeaderTags::MANDATE_ROOT_HEADER);
+
+        $grp = $mandateroot->addChild(NpciXmlHeaderTags::GROUP_HEADER);
+
+        $content = array_flip($data[NpciXmlHeaderTags::GROUP_HEADER]);
+
+        array_walk_recursive($content, array ($grp, 'addChild'));
+
+        $req = $grp->addChild(NpciXmlHeaderTags::REQUEST_INITIATING_PARTY);
+
+        $info = $req->addChild(NpciXmlHeaderTags::INFO);
+
+        $content = array_flip($data[NpciXmlHeaderTags::INFO]);
+
+        array_walk_recursive($content, array ($info, 'addChild'));
+
+        $mandate = $mandateroot->addChild(NpciXmlHeaderTags::MANDATE);
+
+        $mandate->addChild(RequestNpciTags::MANDATE_ID, $data[RequestNpciTags::MANDATE_ID]);
+
+        $occurence = $mandate->addChild(NpciXmlHeaderTags::OCCURENCE);
+
+        sd($data[NpciXmlHeaderTags::OCCURENCE]);
+        $content = array_flip($data[NpciXmlHeaderTags::OCCURENCE]);
+
+        array_walk_recursive($content, array ($occurence, 'addChild'));
+
+        $mandate->addChild(RequestNpciTags::COLLECTION_AMOUNT, $data[RequestNpciTags::COLLECTION_AMOUNT]);
+
+        $mandate->addChild(RequestNpciTags::MAX_AMOUNT, $data[RequestNpciTags::MAX_AMOUNT]);
+
+        $debtor = $mandate->addChild(NpciXmlHeaderTags::DEBTOR);
+
+        $content = array_flip($data[NpciXmlHeaderTags::DEBTOR]);
+
+        array_walk_recursive($content, array ($debtor, 'addChild'));
+
+        $creditor = $mandate->addChild(NpciXmlHeaderTags::CREDITOR);
+
+        $content = array_flip($data[NpciXmlHeaderTags::CREDITOR]);
+
+        array_walk_recursive($content, array ($creditor, 'addChild'));
+
+        sd($xml->asXML());
+
+        return $xml->asXML();
     }
 
     protected function getEncryptedData($secureData)
     {
+        $encryptedData = [];
 
+        //$rsa = $this->getRsaInstance('request');
+        $publicKey = file_get_contents(__DIR__ . '/keys/NpciMms.cer');
+
+        foreach ($secureData as $key => $value)
+        {
+            //$encryptedData[$key] = $rsa->encrypt($value);
+            openssl_public_encrypt($value, $encrypted, $publicKey, OPENSSL_PKCS1_OAEP_PADDING);
+            $encryptedData[$key] = $encrypted;
+        }
+        sd($encryptedData);
+    }
+
+    protected function getRsaInstance($mode)
+    {
+        $rsa = new RSA();
+
+        switch ($mode)
+        {
+
+            case 'response':
+                break;
+
+            case 'request':
+
+                $rsa->loadKey($this->getPublicKey());
+                break;
+        }
+
+        $rsa->setEncryptionMode(RSA::ENCRYPTION_OAEP);
+        $rsa->setHash('sha256');
+        $rsa->setMGFHash('sha256');
+
+        return $rsa;
+    }
+
+    protected function getPublicKey()
+    {
+        return (file_get_contents(__DIR__ . '/keys/NpciMms.cer'));
     }
 
     protected function getStringToHash($content, $glue = '|')
@@ -271,6 +386,26 @@ class Gateway extends Base\Gateway
         $request['headers'] = $headers;
 
         return $request;
+    }
+
+    protected function getMsgId()
+    {
+        return 'msg_' . UniqueIdEntity::generateUniqueId();
+    }
+
+    protected function getMandateId()
+    {
+        return 'mandate_' . UniqueIdEntity::generateUniqueId();
+    }
+
+    protected function getTerminalAccessCode(array $input)
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $input['terminal']['gateway_access_code'];
+        }
+
+        return $this->getTestAccessCode();
     }
 
     protected function callAuthenticationGateway(array $input)
