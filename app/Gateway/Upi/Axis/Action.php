@@ -8,7 +8,5 @@ class Action extends Base\Action
 {
     const COLLECT     = 'collect';
 
-    const TOKEN       = 'token';
-
     const FETCH_TOKEN = 'fetch_token';
 }
