@@ -307,6 +307,15 @@ class PaymentCreateController extends Controller
         return $this->returnCallbackResponse($data);
     }
 
+    public function postAJAXCallback($id, $hash)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::PAYMENT)->callback($id, $hash, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postOtpSubmitPrivate($id)
     {
         $hash = $this->route->getHashOf($id);

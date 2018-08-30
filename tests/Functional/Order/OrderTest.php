@@ -1342,6 +1342,58 @@ class OrderTest extends TestCase
         $this->assertEquals(-30000, $order['amount_due']);
     }
 
+    public function testPartialPaymentExcessAmountManualCaptureFailure()
+    {
+        $order = $this->fixtures->create(
+            'order',
+            [
+                'payment_capture' => false,
+                'partial_payment' => true,
+                'amount'          => 50000,
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment2 = $this->getDefaultPaymentArray();
+        $payment3 = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment2['order_id'] = $order->getPublicId();
+        $payment3['order_id'] = $order->getPublicId();
+
+        $payment['amount']   = 30000;
+        $payment2['amount']   = 30000;
+        $payment3['amount']   = 30000;
+
+        $expectedPaymentResponse = [
+            'status'   => 'authorized',
+            'order_id' => $order->getPublicId(),
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+        $payment2 = $this->doAuthAndGetPayment($payment2, $expectedPaymentResponse);
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment2)
+        {
+            $this->capturePayment($payment2['id'], $payment2['amount']);
+        });
+
+        $this->fixtures->merchant->addFeatures(['excess_order_amount']);
+
+        $payment3 = $this->doAuthAndGetPayment($payment3, $expectedPaymentResponse);
+
+        $this->capturePayment($payment3['id'], $payment3['amount']);
+
+        $order = $this->getLastEntity('order');
+
+        $this->assertEquals('paid', $order['status']);
+        $this->assertEquals(60000, $order['amount_paid']);
+        $this->assertEquals(-10000, $order['amount_due']);
+    }
+
     protected function setUpTerminals()
     {
         $this->fixtures->create('terminal:all_shared_terminals');

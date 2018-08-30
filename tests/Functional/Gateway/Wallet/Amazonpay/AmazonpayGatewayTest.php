@@ -23,6 +23,8 @@ class AmazonpayGatewayTest extends TestCase
 
     private $payment;
 
+    private $route;
+
     private $sharedTerminal;
 
     public function setUp()
@@ -34,6 +36,8 @@ class AmazonpayGatewayTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_amazonpay_terminal');
 
         $this->gateway = Payment\Gateway::WALLET_AMAZONPAY;
+
+        $this->route = $this->app['api.route'];
 
         $this->fixtures->merchant->enableWallet(Account::TEST_ACCOUNT, Wallet::AMAZONPAY);
 
@@ -70,6 +74,33 @@ class AmazonpayGatewayTest extends TestCase
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
         $this->assertTestResponse($wallet);
+
+        $this->assertNotNull($wallet[WalletEntity::DATE]);
+    }
+
+    public function testAjaxRoutePayment()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'amazonpay_change_callback')
+                {
+                    $callbackUrl = $this->route->getUrl(
+                                                    'gateway_payment_callback_amazonpay',
+                                                    ['ajax' => 'ajax']);
+
+                    $content[RequestFields::REDIRECT_URL] = $callbackUrl;
+                }
+            });
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(Wallet::AMAZONPAY, $payment[Payment\Entity::WALLET]);
+
+        $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
+
+        $this->assertTestResponse($wallet, 'testPayment');
 
         $this->assertNotNull($wallet[WalletEntity::DATE]);
     }

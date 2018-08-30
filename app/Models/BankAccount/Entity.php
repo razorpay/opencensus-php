@@ -303,6 +303,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::IFSC_CODE, $ifsc);
     }
 
+    public function setBeneficiaryName(string $name)
+    {
+        $this->setAttribute(self::BENEFICIARY_NAME, $name);
+    }
+
     protected function setIfscCodeAttribute($code)
     {
         if ($code !== null)

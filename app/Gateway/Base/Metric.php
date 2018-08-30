@@ -236,7 +236,7 @@ class Metric
 
     protected function isRecurringPayment($input)
     {
-        return $input[Entity::PAYMENT][Payment\Entity::RECURRING] ? '1' : '0';
+        return $input[Entity::PAYMENT][Payment\Entity::RECURRING] ?? '0';
     }
 
     protected function getAuthType($input)
@@ -306,8 +306,7 @@ class Metric
             $this->trace->traceException(
                 $exc,
                 Trace::ERROR,
-                TraceCode::GATEWAY_ERROR_METRIC_DIMENSION_FETCH,
-                $input,
+                TraceCode::GATEWAY_METRIC_DIMENSION_PUSH_FAILED,
                 [$action]);
         }
     }

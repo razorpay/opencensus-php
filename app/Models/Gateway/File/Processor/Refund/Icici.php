@@ -62,7 +62,7 @@ class Icici extends Base
 
         $today = Carbon::now(Timezone::IST)->format('jS F Y');
 
-        $mailData[] = [
+        $mailData = [
             'file_name'  => $file->getLocation(),
             'signed_url' => $signedUrl,
             'count'      => count($data),

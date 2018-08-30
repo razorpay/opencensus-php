@@ -220,6 +220,7 @@ class Netbanking
         IFSC::SBBJ,
         IFSC::SBHY,
         IFSC::SBMY,
+        IFSC::SCBL,
         IFSC::STBP,
         IFSC::SBTR,
         IFSC::TMBL,

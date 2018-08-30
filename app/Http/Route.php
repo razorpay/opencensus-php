@@ -47,6 +47,7 @@ final class Route
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                       => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_create_openwallet'                => ['post',     'payments/create/openwallet',                     'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_callback_ajax_with_key_get'       => ['get',      'payments/{id}/callback/ajax/{hash}/{key}',       'PaymentCreateController@postAJAXCallback'                          ],
         'payment_callback_post'                    => ['post',     'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                     => ['get',      'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'           => ['post',     'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
@@ -368,8 +369,8 @@ final class Route
         'gateway_payment_callback_kotak'           => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel'    => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
         'gateway_payment_callback_corporation'     => ['get',      'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
-        'gateway_payment_callback_amazonpay'       => ['get',      'gateway/wallet_amazonpay/callback',              'GatewayController@callbackAmazonpay'                               ],
-
+        'gateway_payment_callback_amazonpay'       => ['get',      'gateway/wallet_amazonpay/callback/{ajax?}',      'GatewayController@callbackAmazonpay'                               ],
+        'gateway_payment_callback_amazonpay_post'  => ['post',     'gateway/wallet_amazonpay/callback/{ajax?}',      'GatewayController@callbackAmazonpay'                               ],
         'geoip_update'                             => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
 
         // File-based Emandate Routes
@@ -953,6 +954,7 @@ final class Route
     public static $publicCallback = [
         'payment_callback_with_key_post',
         'payment_callback_with_key_get',
+        'payment_callback_ajax_with_key_get',
     ];
 
     /**
@@ -2014,6 +2016,7 @@ final class Route
         'gateway_payment_callback_kotak_cancel',
         'gateway_payment_callback_corporation',
         'gateway_payment_callback_amazonpay',
+        'gateway_payment_callback_amazonpay_post',
         'mailgun_webhook',
         'gateway_downtime_source_webhook',
         'checkout_onyx',
@@ -2471,19 +2474,13 @@ final class Route
         return $url;
     }
 
-    public function getPublicCallbackUrlWithHash($pid, $key = '')
+    public function getPublicCallbackUrlWithHash($pid, $key = '', $route = 'payment_callback_with_key_post')
     {
-        // @todo: $key is not used here and should be remove
-        if ($key === '')
-        {
-            $key = $this->ba->getPublicKey();
-        }
-
         $hash = $this->getHashOf($pid);
 
         $parameters = ['id' => $pid, 'hash' => $hash];
 
-        return $this->getUrlWithPublicCallbackAuth($parameters);
+        return $this->getUrlWithPublicCallbackAuth($parameters, $key, $route);
     }
 
     public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')

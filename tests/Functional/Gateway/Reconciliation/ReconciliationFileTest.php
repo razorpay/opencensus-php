@@ -335,7 +335,7 @@ class ReconciliationFileTest extends TestCase
         $updatedTransaction = $this->getLastEntity('transaction', true);
 
         $updatedRefund = $this->getLastEntity('refund', true);
-        
+
         $this->assertEquals($entries[0]['Reference Tran Id'], $updatedRefund['arn']);
 
         $this->assertNotNull($updatedTransaction['reconciled_at']);
@@ -385,7 +385,8 @@ class ReconciliationFileTest extends TestCase
 
         $account = $this->createVirtualAccount();
 
-        $payment = $this->payVirtualAccount($account['id']);
+        // Intentionally changing the IFSC to validate IFSC is not updated from recon file anymore.
+        $payment = $this->payVirtualAccount($account['id'], ['payer_ifsc' => 'PYTM0000001']);
 
         $transaction = $this->getLastEntity('transaction', true);
 
@@ -397,12 +398,82 @@ class ReconciliationFileTest extends TestCase
 
         $this->runForFiles([$file], 'VirtualAccYesBank');
 
+        $this->assertBatchStatus(Status::PROCESSED);
+
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertNotEquals($entries[0]['rmtr_account_ifsc'], $bankTransfer['payer_ifsc']);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
 
-        $this->assertEquals($entries[0]['rmtr_account_ifsc'], $bankTransfer['payer_ifsc']);
-        $this->assertEquals($entries[0]['rmtr_account_ifsc'], $bankAccount['ifsc']);
+        $this->assertNotEquals($entries[0]['rmtr_account_ifsc'], $bankAccount['ifsc_code']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        // Beneficiary name should be overridden by the one in the file.
+        $this->assertEquals($entries[0]['rmtr_full_name'], $bankAccount['beneficiary_name']);
+    }
+
+    public function testVirtualAccYesBankReconFileWithWrongValues()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $account = $this->createVirtualAccount();
+
+        $payment = $this->payVirtualAccount($account['id']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(null, $transaction['reconciled_at']);
+
+        $entries[] = $this->overrideVirtualAccYesBankPayment($account, $payment);
+
+        // With wrong amount, batch should be marked partially processed and reconciled at should not be present.
+        $entries[0]['amount'] = 1000;
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccYesBank');
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(null, $transaction['reconciled_at']);
+
+        $utr = $entries[0]['transaction_ref_no'];
+
+        // If UTR is not present, batch should be marked partially processed and reconciled at should not be present.
+        $entries[0]['transaction_ref_no'] = strtoupper(random_alphanum_string(22));
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccYesBank');
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(null, $transaction['reconciled_at']);
+
+        // With correct values of utr, batch should be marked processed with reconciled at timestamp.
+        $entries[0]['transaction_ref_no'] = $utr;
+
+        $entries[0]['amount'] = 100;
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccYesBank');
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
 
     }
 
