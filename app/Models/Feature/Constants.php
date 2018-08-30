@@ -82,6 +82,7 @@ class Constants
     const EXPOSE_ARN_PAYMENT              = 'expose_arn_payment';
     const EXPOSE_ARN_REFUND               = 'expose_arn_refund';
     const OFFERS                          = 'offers';
+    const OTP_AUTH_DEFAULT                = 'otp_auth_default';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -196,6 +197,7 @@ class Constants
         self::EXPOSE_ARN_PAYMENT              => true,
         self::EXPOSE_ARN_REFUND               => true,
         self::OFFERS                          => true,
+        self::OTP_AUTH_DEFAULT                => true,
     ];
 
     // Entity type constants

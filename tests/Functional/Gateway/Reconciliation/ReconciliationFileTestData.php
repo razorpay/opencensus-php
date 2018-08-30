@@ -9,7 +9,7 @@ return [
             'invoice_no'         => null,
             'bene_account_no'    => '11122200123',
             'amount'             => 100,
-            'rmtr_account_no'    => null,
+            'rmtr_account_no'    => '182311100001671',
             'rmtr_account_ifsc'  => 'HDFC0000240',
             'transaction_ref_no' => '81231231232',
             'trans_received_at'  => '1/25/2018 7:16:25 PM',
@@ -111,7 +111,7 @@ return [
             'custom_data'          => null,
             'se_no'                => null,
         ],
-        
+
         'hdfc' => [
             'merchant_code'    => 'T69801',
             'terminal_number'  => 70011863,

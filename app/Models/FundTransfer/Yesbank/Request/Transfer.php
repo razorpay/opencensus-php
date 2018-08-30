@@ -59,9 +59,18 @@ class Transfer extends Base
     {
         $source = $this->entity->source;
 
+        $this->trace->info(
+            TraceCode::YESBANK_SOURCE_AMOUNT, ['sourceAmount' => $source->getAmount() ]);
+
         $amount = ($source->getAmount() / 100);
 
+        $this->trace->info(
+            TraceCode::YESBANK_CONVERTED_AMOUNT, ['convertedAmount' => $amount ]);
+
         $amount = round($amount, 2);
+
+        $this->trace->info(
+            TraceCode::YESBANK_TRANSFER_AMOUNT, ['transferAmount' => $amount ]);
 
         return json_encode([
             Constants::TRANSFER_REQUEST_IDENTIFIER => [

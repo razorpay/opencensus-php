@@ -15,6 +15,11 @@ class Core extends Base\Core
     {
         $entityId = isset($input[Entity::ENTITY_ID]) ? $input[Entity::ENTITY_ID] : null;
 
+        if ((isset($input[Entity::ENTITY_TYPE]) === true) and  ($input[Entity::ENTITY_TYPE] === Entity::APPLICATION))
+        {
+            (new Validator)->validatePartnerWithWebhooksAccess($merchant);
+        }
+
         $webhooks = $this->getWebhooksWithEntityId($merchant, $entityId);
 
         if ($webhooks->count() !== 0)
@@ -23,7 +28,7 @@ class Core extends Base\Core
                 'Webhook already created.');
         }
 
-        $webhook = (new Webhook\Entity)->build($input);
+        $webhook = (new Entity)->build($input);
 
         $webhook->merchant()->associate($merchant);
 

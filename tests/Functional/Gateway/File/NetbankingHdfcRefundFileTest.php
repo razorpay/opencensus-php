@@ -56,7 +56,6 @@ class NetbankingHdfcRefundFileTest extends TestCase
             'type'        => 'hdfc_netbanking_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
-            'name'        => "HDFC_Netbanking_Refunds_test_$today",
             'extension'   => 'xlsx',
         ];
 
@@ -71,7 +70,8 @@ class NetbankingHdfcRefundFileTest extends TestCase
             $this->assertEquals($expectedSubject, $mail->subject);
 
             $testData = [
-                'body' => RefundFileMailConstants::BODY_MAP[Gateway::NETBANKING_HDFC],
+                'body'        => RefundFileMailConstants::BODY_MAP[Gateway::NETBANKING_HDFC],
+                'file_name'   => "HDFC_Netbanking_Refunds_test_$today.xlsx",
             ];
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
