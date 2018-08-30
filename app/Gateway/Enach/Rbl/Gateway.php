@@ -98,12 +98,15 @@ class Gateway extends Base\Gateway
 
         list($content, $dataToTrace) = $this->callAuthenticationGateway($input);
 
-        $enach = $this->repo->findByPaymentIdAndAction(
-            $input['payment']['id'],
-            Action::AUTHORIZE
-        );
+        if(empty($content) === false)
+        {
+            $enach = $this->repo->findByPaymentIdAndAction(
+                $input['payment']['id'],
+                Action::AUTHORIZE
+            );
 
-        $this->updateGatewayPaymentEntity($enach, $content, false);
+            $this->updateGatewayPaymentEntity($enach, $content, false);
+        }
 
         return $dataToTrace;
     }

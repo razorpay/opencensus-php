@@ -18,6 +18,8 @@ use RZP\Models\Merchant\Webhook;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Entity as Payment;
@@ -172,7 +174,7 @@ class EnachRblGatewayTest extends TestCase
             'name'           => 'Test account',
         ];
 
-        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
 
         $payment['order_id'] = $order->getPublicId();
 
@@ -181,6 +183,8 @@ class EnachRblGatewayTest extends TestCase
         $verify = $this->verifyPayment($response['razorpay_payment_id']);
 
         $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
+
+        $this->assertEquals(VerifyResult::STATUS_MATCH, $verify['gateway']['status']);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -223,6 +227,8 @@ class EnachRblGatewayTest extends TestCase
         $verify = $this->verifyPayment($payment['id']);
 
         $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
+
+        $this->assertEquals(VerifyResult::STATUS_MISMATCH, $verify['gateway']['status']);
 
         $payment = $this->getLastEntity('payment', true);
 

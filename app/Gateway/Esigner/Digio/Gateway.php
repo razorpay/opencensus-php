@@ -101,21 +101,26 @@ class Gateway extends Base\Gateway
 
         $dataToTrace = $this->runPaymentVerifyFlow($verify);
 
-        $gatewayPayment = $verify->payment;
+        $content = [];
 
-        $content = [
-            'mandate_id' => $gatewayPayment->getGatewayReferenceId()
-        ];
+        if ($verify->gatewaySuccess === true)
+        {
+            $gatewayPayment = $verify->payment;
 
-        $request = $this->getStandardRequestArray($content, 'GET', 'fetch', false);
+            $content = [
+                'mandate_id' => $gatewayPayment->getGatewayReferenceId()
+            ];
 
-        $response = $this->sendGatewayRequest($request);
+            $request = $this->getStandardRequestArray($content, 'GET', 'fetch', false);
 
-        $mandateXml = $response->body;
+            $response = $this->sendGatewayRequest($request);
 
-        $content = [
-            'signed_xml' => $mandateXml
-        ];
+            $mandateXml = $response->body;
+
+            $content = [
+                'signed_xml' => $mandateXml
+            ];
+        }
 
         return [$content, $dataToTrace];
     }
@@ -398,15 +403,19 @@ class Gateway extends Base\Gateway
         $verify->status = $this->getVerifyStatus($verify);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $verify->throwExceptionOnMismatch = false;
     }
 
     protected function getVerifyStatus(Verify $verify): string
     {
         $status = VerifyResult::STATUS_MATCH;
 
+        $this->checkApiSuccess($verify);
+
         $this->checkGatewaySuccess($verify);
 
-        if ($verify->gatewaySuccess === false)
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
