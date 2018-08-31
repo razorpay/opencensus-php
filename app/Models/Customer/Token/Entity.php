@@ -466,12 +466,17 @@ class Entity extends Base\PublicEntity
      * It needs to be in fillable because
      * merchant can send its value too.
      *
+     * In case of aadhaar auth type, we will have to keep
+     * the expiry as null.
+     *
      * @param $expiredAt
      */
     protected function setExpiredAtAttribute($expiredAt)
     {
         if ((empty($expiredAt) === true) and
-            ($this->getMethod() === Payment\Method::EMANDATE))
+            ($this->getMethod() === Payment\Method::EMANDATE) and
+            ($this->getAuthType() !== Payment\AuthType::AADHAAR)
+        )
         {
             $expiredAt = Carbon::now(Timezone::IST)
                                ->addYears(self::DEFAULT_EXPIRY_YEARS)
