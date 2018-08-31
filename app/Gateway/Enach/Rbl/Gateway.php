@@ -30,7 +30,7 @@ class Gateway extends Base\Gateway
         if (($input['payment']['method'] === 'emandate') and
             ($input['payment']['auth_type'] === 'netbanking'))
         {
-            $this->emandateNpciAuth($input);
+            $this->netbankingAuthorize($input);
         }
 
         $input['gateway'] = $this->getGatewayInput($input);
@@ -102,11 +102,9 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function emandateNpciAuth($input)
+    protected function netbankingAuthorize($input)
     {
-        //$attributes = $this->getGatewayAttributes($input);
-
-        //$this->createGatewayPaymentEntity($attributes, 'authorize');
+        $this->createGatewayPaymentEntity([], 'authorize');
 
         $request = $this->getRequest($input);
 
@@ -164,6 +162,14 @@ class Gateway extends Base\Gateway
             'Verify is not implemented');
     }
 
+    protected function getGatewayAttributes($input)
+    {
+        return [
+            Base\Entity::PAYMENT_ID => $input['payment']['id'],
+            Base\Entity::BANK       => $input['payment']['bank'],
+        ];
+    }
+
     protected function getRequest($input)
     {
         $secureData = $this->getSecureData($input);
@@ -188,7 +194,6 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray($content, 'post', 'npciauth');
 
         $request = $this->addHeadersForNpciRequest($request);
-        sd($request);
 
         return $request;
     }
@@ -203,7 +208,6 @@ class Gateway extends Base\Gateway
             RequestNpciTags::DEBTOR_ACCOUNT => $input['token']->getAccountNumber(),
             RequestNpciTags::FIRST_COLLECTION_DATE => $nextWorkingDt->toIso8601String(), //TODO check if this format is correct
             RequestNpciTags::FINAL_COLLECTION_DATE => $finalCollection->toIso8601String(),
-            RequestNpciTags::COLLECTION_AMOUNT => '',
             RequestNpciTags::MAX_AMOUNT => $input['token']->getMaxAmount() / 100,
         ];
     }
@@ -221,29 +225,34 @@ class Gateway extends Base\Gateway
                     RequestNpciTags::MESSAGE_ID            => $this->getMsgId(),
                     RequestNpciTags::CREATION_DATE_TIME    => Carbon::now()->toIso8601String(),
                 ],
+
             NpciXmlHeaderTags::INFO              => [
                     RequestNpciTags::MID                   => $mid,
                     RequestNpciTags::CATEGORY_CODE         => CategoryCode::getCategoryCodeFromMcc($mcc),
                     RequestNpciTags::UTILITY_CODE          => $mid,
                     RequestNpciTags::CATEGORY_DESCRIPTION  => 'Api Mandate', //Todo have to add mapping for this
-                    RequestNpciTags::NAME                  => 'Razorpay software pvt ltd', //Todo find this value
+                    RequestNpciTags::NAME                  => 'Razorpay software pvt ltd', //Todo check if this ok
                 ],
+
             RequestNpciTags::MANDATE_ID                    => $this->getMandateId(),
+
             NpciXmlHeaderTags::OCCURENCE          => [
-                    RequestNpciTags::SEQUENCE_TYPE         => 'RCUR', //todo confirm this
-                    RequestNpciTags::FREQUENCY             => Frequency::ADHOC, // todo confirm this
+                    RequestNpciTags::SEQUENCE_TYPE         => 'RCUR',
+                    RequestNpciTags::FREQUENCY             => Frequency::ADHOC,
                     RequestNpciTags::FIRST_COLLECTION_DATE => $encryptedData[RequestNpciTags::FIRST_COLLECTION_DATE],
                     RequestNpciTags::FINAL_COLLECTION_DATE => $encryptedData[RequestNpciTags::FINAL_COLLECTION_DATE],
                 ],
-            RequestNpciTags::COLLECTION_AMOUNT     => $encryptedData[RequestNpciTags::COLLECTION_AMOUNT],
+
             RequestNpciTags::MAX_AMOUNT            => $encryptedData[RequestNpciTags::MAX_AMOUNT],
+
             NpciXmlHeaderTags::DEBTOR              => [
                     RequestNpciTags::DEBTOR_NAME           => $input['token']->getBeneficiaryName(),
                     RequestNpciTags::DEBTOR_ACCOUNT        => $encryptedData[RequestNpciTags::DEBTOR_ACCOUNT],
             ],
+
             NpciXmlHeaderTags::CREDITOR            => [
-                    RequestNpciTags::CREDITOR_NAME         => 'Razorpay software pvt ltd', //TODO
-                    RequestNpciTags::CREDITOR_ACCOUNT      => '', //TODO
+                    RequestNpciTags::CREDITOR_NAME         => 'Razorpay software pvt ltd',
+                    RequestNpciTags::CREDITOR_ACCOUNT      => '', //TODO find this value
                     RequestNpciTags::IFSC_SPONSOR          => IFSC::RATN, // TODO check this
                 ]
         ];
@@ -284,8 +293,6 @@ class Gateway extends Base\Gateway
         $content = array_flip($data[NpciXmlHeaderTags::OCCURENCE]);
 
         array_walk_recursive($content, array ($occurence, 'addChild'));
-
-        $mandate->addChild(RequestNpciTags::COLLECTION_AMOUNT, $data[RequestNpciTags::COLLECTION_AMOUNT]);
 
         $mandate->addChild(RequestNpciTags::MAX_AMOUNT, $data[RequestNpciTags::MAX_AMOUNT]);
 
@@ -349,6 +356,13 @@ class Gateway extends Base\Gateway
     protected function getPublicKey()
     {
         return (file_get_contents(__DIR__ . '/keys/NpciMms.cer'));
+    }
+
+    public function generateHash($content)
+    {
+        $hashString = $this->getStringToHash($content);
+
+        return $this->getHashOfString($hashString);
     }
 
     protected function getStringToHash($content, $glue = '|')
