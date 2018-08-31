@@ -141,6 +141,19 @@ export default class Content extends Component {
     }
   };
 
+  openRaiseTicketModal = ({ location = {} }) => {
+    const onModalClose = function() {
+      this.props.history.push(this.props.location.pathname);
+      window.rzpTicketSystem.removeEventListener('modal-close', onModalClose);
+    }.bind(this); //so that this.props is available inside onModalClose
+
+    if (location.hash === '#raise_a_request') {
+      window.rzpTicketSystem &&
+        window.rzpTicketSystem.addEventListener('modal-close', onModalClose);
+      window.rzpTicketSystem && window.rzpTicketSystem.openModal('#ticket');
+    }
+  };
+
   getBaseView = () => {
     const { user } = this.props;
     return (
@@ -216,11 +229,13 @@ export default class Content extends Component {
 
   componentWillMount() {
     this.setBaseLocation(this.props.location);
+    this.openRaiseTicketModal(this.props);
   }
 
   componentWillReceiveProps(props) {
     this.setBaseLocation(props.location);
     this.showSliderView();
+    this.openRaiseTicketModal(props);
   }
 
   showSliderView() {
