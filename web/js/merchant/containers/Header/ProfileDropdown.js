@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 
 import LocalStorageService from 'rzp/utils/localStorage';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
@@ -165,8 +165,10 @@ export default class ProfileDropdown extends Component {
               </React.Fragment>
             )}
 
-            <div className="media media-action" onClick={this.openTicketModal}>
-              <div className="media-body">Raise a request</div>
+            <div className="media media-action">
+              <Link to="#request" className="media-body">
+                Raise a request
+              </Link>
             </div>
 
             <div className="media media-action" onClick={this.submitFeedback}>
