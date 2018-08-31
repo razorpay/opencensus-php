@@ -141,15 +141,23 @@ export default class Content extends Component {
     }
   };
 
-  openRaiseTicketModal = ({ location = {} }) => {
+  toggleRasieTicketModal = ({ location = {} }) => {
     const onModalClose = function() {
       this.props.history.push(location.pathname);
       window.rzpTicketSystem.removeEventListener('modal-close', onModalClose);
     }.bind(this); //so that this.props is available inside onModalClose
 
-    if (window.rzpTicketSystem && location.hash === '#request') {
-      window.rzpTicketSystem.addEventListener('modal-close', onModalClose);
-      window.rzpTicketSystem.openModal('#ticket');
+    if (window.rzpTicketSystem) {
+      if (
+        location.hash === '#request' &&
+        !!location.pathname &&
+        location.pathname !== '/'
+      ) {
+        window.rzpTicketSystem.addEventListener('modal-close', onModalClose);
+        window.rzpTicketSystem.openModal('#ticket');
+      } else if (window.rzpTicketSystem.$el.classList.contains('open')) {
+        window.rzpTicketSystem.closeModal();
+      }
     }
   };
 
@@ -228,13 +236,15 @@ export default class Content extends Component {
 
   componentWillMount() {
     this.setBaseLocation(this.props.location);
-    this.openRaiseTicketModal(this.props);
+    this.toggleRasieTicketModal(this.props);
   }
 
-  componentWillReceiveProps(props) {
-    this.setBaseLocation(props.location);
+  componentWillReceiveProps(nextProps) {
+    this.setBaseLocation(nextProps.location);
     this.showSliderView();
-    this.openRaiseTicketModal(props);
+    if (nextProps.location.hash !== this.props.location.hash) {
+      this.toggleRasieTicketModal(nextProps);
+    }
   }
 
   showSliderView() {
