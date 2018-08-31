@@ -143,14 +143,13 @@ export default class Content extends Component {
 
   openRaiseTicketModal = ({ location = {} }) => {
     const onModalClose = function() {
-      this.props.history.push(this.props.location.pathname);
+      this.props.history.push(location.pathname);
       window.rzpTicketSystem.removeEventListener('modal-close', onModalClose);
     }.bind(this); //so that this.props is available inside onModalClose
 
-    if (location.hash === '#raise_a_request') {
-      window.rzpTicketSystem &&
-        window.rzpTicketSystem.addEventListener('modal-close', onModalClose);
-      window.rzpTicketSystem && window.rzpTicketSystem.openModal('#ticket');
+    if (window.rzpTicketSystem && location.hash === '#request') {
+      window.rzpTicketSystem.addEventListener('modal-close', onModalClose);
+      window.rzpTicketSystem.openModal('#ticket');
     }
   };
 

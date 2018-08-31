@@ -36,7 +36,7 @@ export default () => {
       </u>{' '}
       ·{' '}
       <u>
-        <Link to="#raise_a_request" onClick={trackLinkClick}>
+        <Link to="#request" onClick={trackLinkClick}>
           Contact Us
         </Link>
       </u>

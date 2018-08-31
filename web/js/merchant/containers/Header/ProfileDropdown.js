@@ -166,7 +166,7 @@ export default class ProfileDropdown extends Component {
             )}
 
             <div className="media media-action">
-              <Link to="#raise_a_request" className="media-body">
+              <Link to="#request" className="media-body">
                 Raise a request
               </Link>
             </div>
