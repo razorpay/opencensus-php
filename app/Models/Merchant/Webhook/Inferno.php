@@ -35,6 +35,8 @@ class Inferno
 
     protected $event;
 
+    protected $eventName;
+
     protected $client = null;
 
     const HASH_ALGO = 'sha256';
@@ -75,9 +77,11 @@ class Inferno
 
         $this->event = $data['event'];
 
+        $this->eventName = $data['event_name'];
+
         $this->trace->count(
             Metric::WEBHOOK_EVENTS_CONSUMED_TOTAL,
-            Metric::getMetricDimensions($this->event, $this->mode));
+            Metric::getMetricDimensions($this->eventName, $this->mode));
 
         $webhook = $this->getActiveWebhook($data);
 
@@ -151,7 +155,7 @@ class Inferno
 
     public static function generateHMAC($payload, $secret)
     {
-        // hmac doesn't throw up an exception for NULL values.
+        // HMAC doesn't throw up an exception for NULL values.
         if (($secret === null) or ($payload === null))
         {
             return null;
@@ -243,6 +247,7 @@ class Inferno
             TraceCode::WEBHOOK_FIRING,
             [
                 'webhook_id'  => $webhook->getId(),
+                'event_name'  => $this->eventName,
                 'merchant_id' => $webhook->merchant->getId(),
                 'request'     => $request,
                 'attempt'     => $this->job->attempts(),
@@ -317,6 +322,7 @@ class Inferno
                 TraceCode::WEBHOOK_FIRED,
                 [
                     'webhook_id'        => $webhook->getId(),
+                    'event_name'        => $this->eventName,
                     'merchant_id'       => $webhook->merchant->getId(),
                     'response_code'     => $statusCode,
                     'response_headers'  => $response->getHeaders(),

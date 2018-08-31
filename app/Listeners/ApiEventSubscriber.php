@@ -693,6 +693,7 @@ class ApiEventSubscriber extends Base\Core
         $data = [
             'mode'       => $this->getMode(),
             'event'      => json_encode($event->toArrayPublic()),
+            'event_name' => $eventFired,
             'webhook_id' => $webhook->getId()
         ];
 
