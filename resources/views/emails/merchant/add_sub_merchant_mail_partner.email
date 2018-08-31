@@ -169,9 +169,7 @@
               <td class="center">
                 <center>
                   This message was sent to <a href="mailto:{{$merchant['email']}}">
-                  {{{$merchant['email']}}}</a>. Reach out to us by replying
-                  to this email or at <a href="mailto:support@razorpay.com">
-                  support@razorpay.com</a>
+                  {{{$merchant['email']}}}</a>. @include('emails.partials.support')
                 </center>
               </td>
               <td class="expander"></td>
