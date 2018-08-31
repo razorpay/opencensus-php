@@ -11,16 +11,20 @@ use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
 use RZP\Constants\Mode as BaseMode;
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Gateway\Enach\Base\Entity;
 use RZP\Models\Bank\Name as BankName;
 use RZP\Gateway\Enach\Base\CategoryCode;
 
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'esigner_digio';
+
+    protected $accountTypeMapping = [
+        Token\Entity::ACCOUNT_TYPE_SAVINGS => 'Savings',
+        Token\Entity::ACCOUNT_TYPE_CURRENT => 'Current',
+    ];
 
     public function authorize(array $input)
     {
@@ -199,7 +203,7 @@ class Gateway extends Base\Gateway
             'service_provider_utility_code' => $this->getGatewayMerchantId(),
             'login_id'                      => $this->getGatewayTerminalId(),
             'customer_account_number'       => $input['token']->getAccountNumber(),
-            'customer_account_type'         => 'SAVINGS',
+            'customer_account_type'         => $this->getAccountType($input['token']->getAccountType()),
             'instrument_type'               => Instrument::DEBIT,
             'customer_name'                 => $input['token']->getBeneficiaryName(),
             'maximum_amount'                => $input['token']->getMaxAmount() / 100,
@@ -230,6 +234,16 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_MANDATE_CONTENT, $traceContent);
 
         return json_encode($content);
+    }
+
+    protected function getAccountType($accountType)
+    {
+        if (isset($this->accountTypeMapping[$accountType]) === true)
+        {
+            return $this->accountTypeMapping[$accountType];
+        }
+
+        return 'Savings';
     }
 
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null, $json = true)
