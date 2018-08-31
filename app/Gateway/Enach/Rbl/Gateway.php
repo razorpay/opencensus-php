@@ -162,14 +162,6 @@ class Gateway extends Base\Gateway
             'Verify is not implemented');
     }
 
-    protected function getGatewayAttributes($input)
-    {
-        return [
-            Base\Entity::PAYMENT_ID => $input['payment']['id'],
-            Base\Entity::BANK       => $input['payment']['bank'],
-        ];
-    }
-
     protected function getRequest($input)
     {
         $secureData = $this->getSecureData($input);
@@ -407,16 +399,6 @@ class Gateway extends Base\Gateway
     protected function getMandateId()
     {
         return 'mandate_' . UniqueIdEntity::generateUniqueId();
-    }
-
-    protected function getTerminalAccessCode(array $input)
-    {
-        if ($this->mode === Mode::LIVE)
-        {
-            return $input['terminal']['gateway_access_code'];
-        }
-
-        return $this->getTestAccessCode();
     }
 
     protected function callAuthenticationGateway(array $input)
