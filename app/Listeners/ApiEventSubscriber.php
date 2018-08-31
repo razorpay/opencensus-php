@@ -100,9 +100,7 @@ class ApiEventSubscriber extends Base\Core
     {
         $event = $this->getFiringEvent($event);
 
-        app('trace')->count(
-            WebhookMetric::WEBHOOK_EVENTS_TRIGGERED_TOTAL,
-            WebhookMetric::getMetricDimensions($event, $this->getMode()));
+        app('trace')->count(WebhookMetric::WEBHOOK_EVENTS_TRIGGERED_TOTAL, ['event' => $event]);
 
         //
         // sequential_array check is present here only
