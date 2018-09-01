@@ -147,9 +147,14 @@ export default class Content extends Component {
       window.rzpTicketSystem.removeEventListener('modal-close', onModalClose);
     }.bind(this); //so that this.props is available inside onModalClose
 
+    // For handling where url is encoded, so hash becomes part of pathname instead of hash (In gmail redirection).
+    const urlWithHash = decodeURIComponent(location.pathname);
+    const hashInUrl = urlWithHash.substring(urlWithHash.indexOf('#') + 1);
+
+    const hash = location.hash || '#' + hashInUrl;
     if (window.rzpTicketSystem) {
       if (
-        location.hash === '#request' &&
+        hash === '#request' &&
         !!location.pathname &&
         location.pathname !== '/'
       ) {
@@ -242,6 +247,7 @@ export default class Content extends Component {
   componentWillReceiveProps(nextProps) {
     this.setBaseLocation(nextProps.location);
     this.showSliderView();
+
     if (nextProps.location.hash !== this.props.location.hash) {
       this.toggleRasieTicketModal(nextProps);
     }
