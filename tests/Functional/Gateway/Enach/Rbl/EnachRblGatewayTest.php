@@ -1371,7 +1371,7 @@ class EnachRblGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
-            if($action === 'callback')
+            if ($action === 'callback')
             {
                 throw new Exception\GatewayTimeoutException('Gateway timed out');
             }
@@ -1382,7 +1382,7 @@ class EnachRblGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(& $request, $action = null)
         {
-            if($action === 'sign')
+            if ($action === 'sign')
             {
                 unset($request['content']['status']);
             }
