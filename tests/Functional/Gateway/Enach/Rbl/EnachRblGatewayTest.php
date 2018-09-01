@@ -195,6 +195,50 @@ class EnachRblGatewayTest extends TestCase
         $this->assertNotNull($gateway['signed_xml']);
     }
 
+    public function testDigioAuthFailedVerifySuccess()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->mockAuthFailed();
+
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(Status::FAILED, $payment['status']);
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
+
+        $this->assertEquals(VerifyResult::STATUS_MISMATCH, $verify['gateway']['status']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(1, $payment[Payment::VERIFIED]);
+
+        $gateway = $this->getLastEntity('enach', true);
+
+        $this->assertNotNull($gateway['signed_xml']);
+    }
+
     public function testDigioCallbackFailedVerifySuccess()
     {
         $this->setMockGatewayTrue();
@@ -1331,6 +1375,17 @@ class EnachRblGatewayTest extends TestCase
             if($action === 'callback')
             {
                 throw new Exception\GatewayTimeoutException('Gateway timed out');
+            }
+        }, 'esigner_digio');
+    }
+
+    protected function mockAuthFailed()
+    {
+        $this->mockServerContentFunction(function(& $request, $action = null)
+        {
+            if($action === 'sign')
+            {
+                unset($request['content']['status']);
             }
         }, 'esigner_digio');
     }

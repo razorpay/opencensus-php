@@ -77,6 +77,8 @@ class Server extends Base\Mock\Server
             ]
         ];
 
+        $this->content($request, 'sign');
+
         return $this->makePostResponse($request);
     }
 
