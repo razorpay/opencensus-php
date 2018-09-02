@@ -62,6 +62,7 @@ class EnachRblGatewayTest extends TestCase
             'account_number' => '914010009305862',
             'ifsc'           => 'utib0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -77,6 +78,11 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals(0, $enach['amount']);
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertNotNull($enach['signed_xml']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('current', $token['account_type']);
+        $this->assertEquals('initiated', $token['recurring_status']);
     }
 
     public function testSuccessfulEsignGenerationWithVid()
@@ -373,6 +379,7 @@ class EnachRblGatewayTest extends TestCase
 
         $token = $this->getDbLastEntityToArray('token');
 
+        $this->assertNull($token['expired_at']);
         $this->assertNotNull($token['gateway_token']);
         $this->assertEquals('confirmed', $token['recurring_status']);
 
