@@ -6,6 +6,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\PaymentVerificationException;
 
 return [
     'testAuthenticationFailed' => [
@@ -189,6 +190,22 @@ return [
         'exception' => [
             'class'                 => \RZP\Exception\GatewayErrorException::class,
             'internal_error_code'   => 'GATEWAY_ERROR_MANDATE_CREATION_FAILED',
+        ],
+    ],
+
+    'testVerifyMismatch' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => PaymentVerificationException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
 ];

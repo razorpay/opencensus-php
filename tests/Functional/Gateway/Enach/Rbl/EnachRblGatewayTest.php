@@ -219,19 +219,18 @@ class EnachRblGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
-        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(Status::FAILED, $payment['status']);
 
-        $verify = $this->verifyPayment($payment['id']);
+        $data = $this->testData['testVerifyMismatch'];
 
-        $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
-
-        $this->assertEquals(VerifyResult::STATUS_MISMATCH, $verify['gateway']['status']);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals(1, $payment[Payment::VERIFIED]);
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
 
         $gateway = $this->getLastEntity('enach', true);
 
@@ -263,19 +262,56 @@ class EnachRblGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
-        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(Status::FAILED, $payment['status']);
 
-        $verify = $this->verifyPayment($payment['id']);
+        $data = $this->testData['testVerifyMismatch'];
 
-        $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
 
-        $this->assertEquals(VerifyResult::STATUS_MISMATCH, $verify['gateway']['status']);
+        $gateway = $this->getLastEntity('enach', true);
+
+        $this->assertNotNull($gateway['signed_xml']);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->mockPaymentRequestTimeout();
+
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $testData = $this->testData['testDigioCallbackFailedVerifySuccess'];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals(1, $payment[Payment::VERIFIED]);
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Status::AUTHORIZED, $payment['status']);
 
         $gateway = $this->getLastEntity('enach', true);
 
