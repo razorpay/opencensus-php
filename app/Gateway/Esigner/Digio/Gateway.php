@@ -99,32 +99,7 @@ class Gateway extends Base\Gateway
 
         $verify = new Verify($this->gateway, $input);
 
-        $verify->throwExceptionOnMismatch = false;
-
-        $dataToTrace = $this->runPaymentVerifyFlow($verify);
-
-        $content = [];
-
-        if ($verify->gatewaySuccess === true)
-        {
-            $gatewayPayment = $verify->payment;
-
-            $content = [
-                'mandate_id' => $gatewayPayment->getGatewayReferenceId()
-            ];
-
-            $request = $this->getStandardRequestArray($content, 'GET', 'fetch', false);
-
-            $response = $this->sendGatewayRequest($request);
-
-            $mandateXml = $response->body;
-
-            $content = [
-                'signed_xml' => $mandateXml
-            ];
-        }
-
-        return [$content, $dataToTrace];
+        return $this->runPaymentVerifyFlow($verify);
     }
 
     protected function getRedirectRequestArray(array $input, $response)
@@ -405,6 +380,8 @@ class Gateway extends Base\Gateway
         $verify->status = $this->getVerifyStatus($verify);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $verify->payment = $this->saveSignedXml($verify);
     }
 
     protected function getVerifyStatus(Verify $verify): string
@@ -439,6 +416,34 @@ class Gateway extends Base\Gateway
         if ($status === Status::SIGNED)
         {
             $verify->gatewaySuccess = true;
+        }
+    }
+
+    protected function saveSignedXml(Verify $verify)
+    {
+        if ($verify->gatewaySuccess === true)
+        {
+            $gatewayPayment = $verify->payment;
+
+            $content = [
+                'mandate_id' => $gatewayPayment->getGatewayReferenceId()
+            ];
+
+            $request = $this->getStandardRequestArray($content, 'GET', 'fetch', false);
+
+            $response = $this->sendGatewayRequest($request);
+
+            $mandateXml = $response->body;
+
+            $content = [
+                'signed_xml' => $mandateXml
+            ];
+
+            $gatewayPayment->fill($content);
+
+            $this->app['repo']->enach->saveOrFail($gatewayPayment);
+
+            return $gatewayPayment;
         }
     }
 

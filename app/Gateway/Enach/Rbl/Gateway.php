@@ -99,19 +99,7 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        list($content, $dataToTrace) = $this->callAuthenticationGateway($input);
-
-        if(empty($content) === false)
-        {
-            $enach = $this->repo->findByPaymentIdAndAction(
-                $input['payment']['id'],
-                Action::AUTHORIZE
-            );
-
-            $this->updateGatewayPaymentEntity($enach, $content, false);
-        }
-
-        return $dataToTrace;
+        return $this->callAuthenticationGateway($input);
     }
 
     protected function getRecurringData()
