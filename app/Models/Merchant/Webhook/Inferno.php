@@ -322,6 +322,7 @@ class Inferno
         $metricDimensions = [
             'status_code' => $statusCode,
             'event'       => $this->eventName,
+            'attempt'     => $this->job->attempts(),
         ];
 
         if ($this->isSuccesssfulStatusCode($statusCode) === true)
@@ -351,6 +352,8 @@ class Inferno
             $msgPrefix = '';
 
             $this->traceWebhookResponse($webhook, $msgPrefix, $response);
+
+            $clientError = true;
         }
 
         return $clientError;
@@ -515,7 +518,7 @@ class Inferno
                 ]
             );
 
-            $this->trace->count(Metric::WEBHOOK_DEACTIVATED_TOTAL, ['mode' => $this->mode]);
+            $this->trace->count(Metric::WEBHOOK_DEACTIVATED_TOTAL);
 
             $this->disableWebhook($webhook);
 
