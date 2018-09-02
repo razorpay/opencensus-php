@@ -14,9 +14,12 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'enach_rbl';
 
     public function authorize(array $input)
