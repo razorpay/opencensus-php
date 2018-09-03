@@ -4194,3 +4194,6 @@ ALTER TABLE nodal_beneficiaries
     ADD INDEX nodal_beneficiaries_merchant_id_index(merchant_id),
     ADD INDEX nodal_beneficiaries_registration_status_index(registration_status),
     ADD UNIQUE nodal_beneficiaries_bank_account_id_channel_unique(bank_account_id, channel);
+
+ALTER TABLE tokens
+    ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number;
