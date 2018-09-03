@@ -30,7 +30,7 @@ class Gateway extends Base\Gateway
         if (($input['payment']['method'] === 'emandate') and
             ($input['payment']['auth_type'] === 'netbanking'))
         {
-            $this->netbankingAuthorize($input);
+            return $this->netbankingAuthorize($input);
         }
 
         $input['gateway'] = $this->getGatewayInput($input);
@@ -214,39 +214,39 @@ class Gateway extends Base\Gateway
 
         $data = [
             NpciXmlHeaderTags::GROUP_HEADER      => [
-                    RequestNpciTags::MESSAGE_ID            => $this->getMsgId(),
-                    RequestNpciTags::CREATION_DATE_TIME    => Carbon::now()->toIso8601String(),
-                ],
+                RequestNpciTags::MESSAGE_ID            => $this->getMsgId(),
+                RequestNpciTags::CREATION_DATE_TIME    => Carbon::now()->toIso8601String(),
+            ],
 
             NpciXmlHeaderTags::INFO              => [
-                    RequestNpciTags::MID                   => $mid,
-                    RequestNpciTags::CATEGORY_CODE         => CategoryCode::getCategoryCodeFromMcc($mcc),
-                    RequestNpciTags::UTILITY_CODE          => $mid,
-                    RequestNpciTags::CATEGORY_DESCRIPTION  => 'Api Mandate', //Todo have to add mapping for this
-                    RequestNpciTags::NAME                  => 'Razorpay software pvt ltd', //Todo check if this ok
-                ],
+                RequestNpciTags::MID                   => $mid,
+                RequestNpciTags::CATEGORY_CODE         => CategoryCode::getCategoryCodeFromMcc($mcc),
+                RequestNpciTags::UTILITY_CODE          => $mid,
+                RequestNpciTags::CATEGORY_DESCRIPTION  => 'Api Mandate', //Todo have to add mapping for this
+                RequestNpciTags::NAME                  => 'Razorpay software pvt ltd', //Todo check if this ok
+            ],
 
             RequestNpciTags::MANDATE_ID                    => $this->getMandateId(),
 
             NpciXmlHeaderTags::OCCURENCE          => [
-                    RequestNpciTags::SEQUENCE_TYPE         => 'RCUR',
-                    RequestNpciTags::FREQUENCY             => Frequency::ADHOC,
-                    RequestNpciTags::FIRST_COLLECTION_DATE => $encryptedData[RequestNpciTags::FIRST_COLLECTION_DATE],
-                    RequestNpciTags::FINAL_COLLECTION_DATE => $encryptedData[RequestNpciTags::FINAL_COLLECTION_DATE],
-                ],
+                RequestNpciTags::SEQUENCE_TYPE         => 'RCUR',
+                RequestNpciTags::FREQUENCY             => Frequency::ADHOC,
+                RequestNpciTags::FIRST_COLLECTION_DATE => $encryptedData[RequestNpciTags::FIRST_COLLECTION_DATE],
+                RequestNpciTags::FINAL_COLLECTION_DATE => $encryptedData[RequestNpciTags::FINAL_COLLECTION_DATE],
+            ],
 
             RequestNpciTags::MAX_AMOUNT            => $encryptedData[RequestNpciTags::MAX_AMOUNT],
 
             NpciXmlHeaderTags::DEBTOR              => [
-                    RequestNpciTags::DEBTOR_NAME           => $input['token']->getBeneficiaryName(),
-                    RequestNpciTags::DEBTOR_ACCOUNT        => $encryptedData[RequestNpciTags::DEBTOR_ACCOUNT],
+                RequestNpciTags::DEBTOR_NAME           => $input['token']->getBeneficiaryName(),
+                RequestNpciTags::DEBTOR_ACCOUNT        => $encryptedData[RequestNpciTags::DEBTOR_ACCOUNT],
             ],
 
             NpciXmlHeaderTags::CREDITOR            => [
-                    RequestNpciTags::CREDITOR_NAME         => 'Razorpay software pvt ltd',
-                    RequestNpciTags::CREDITOR_ACCOUNT      => '', //TODO find this value
-                    RequestNpciTags::IFSC_SPONSOR          => IFSC::RATN, // TODO check this
-                ]
+                RequestNpciTags::CREDITOR_NAME         => 'Razorpay software pvt ltd',
+                RequestNpciTags::CREDITOR_ACCOUNT      => '', //TODO find this value
+                RequestNpciTags::IFSC_SPONSOR          => IFSC::RATN, // TODO check this
+            ]
         ];
 
         return $data;
