@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\NodalBeneficiaries\Entity as NodalBeneficiaries;
+use RZP\Models\NodalBeneficiary\Entity as NodalBeneficiaries;
 
 class CreateNodalBeneficiaries extends Migration
 {
@@ -25,29 +25,37 @@ class CreateNodalBeneficiaries extends Migration
 
             $table->char(NodalBeneficiaries::BANK_ACCOUNT_ID, NodalBeneficiaries::ID_LENGTH);
 
-            $table->string(NodalBeneficiaries::NODAL_BANK, 8);
+            $table->string(NodalBeneficiaries::CHANNEL, 8);
 
             $table->string(NodalBeneficiaries::BENEFICIARY_CODE, 30)
                   ->nullable()
                   ->unique();
 
-            $table->string(NodalBeneficiaries::STATUS, 40)
-                  ->nullable();
-
-            $table->integer(NodalBeneficiaries::DELETED_AT)
+            $table->string(NodalBeneficiaries::REGISTRATION_STATUS, 40)
                   ->nullable();
 
             $table->integer(NodalBeneficiaries::CREATED_AT);
 
             $table->integer(NodalBeneficiaries::UPDATED_AT);
 
-            $table->index(NodalBeneficiaries::STATUS);
+            $table->integer(NodalBeneficiaries::DELETED_AT)
+                  ->nullable();
+
+            $table->index(NodalBeneficiaries::CHANNEL);
 
             $table->index(NodalBeneficiaries::DELETED_AT);
 
             $table->index(NodalBeneficiaries::CREATED_AT);
 
             $table->index(NodalBeneficiaries::UPDATED_AT);
+
+            $table->index(NodalBeneficiaries::MERCHANT_ID);
+
+            $table->index(NodalBeneficiaries::BANK_ACCOUNT_ID);
+
+            $table->index(NodalBeneficiaries::REGISTRATION_STATUS);
+
+            $table->unique([NodalBeneficiaries::BANK_ACCOUNT_ID, NodalBeneficiaries::CHANNEL]);
 
         });
     }

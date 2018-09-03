@@ -413,10 +413,6 @@ return [
                 'invoice.paid',
                 'invoice.partially_paid',
                 'invoice.expired',
-                'vpa.edited',
-                'p2p.created',
-                'p2p.rejected',
-                'p2p.transferred',
             ]
         ]
     ],

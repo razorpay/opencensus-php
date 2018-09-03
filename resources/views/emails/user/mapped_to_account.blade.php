@@ -149,9 +149,7 @@
               <td class="center" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: center; color: #aaa; font-size: 12px; line-height: 18px; padding: 0px 0px 10px;">
                 <center style="width: 100%; min-width: 330px;">
                   This message was sent to <a href="mailto:{{$user['email']}}" style="display: inline-block; color: #aaa !important; text-decoration: none;">
-                  {{{$user['email']}}}</a>. Reach out to us by replying
-                  to this email or at <a href="mailto:support@razorpay.com" style="display: inline-block; color: #aaa !important; text-decoration: none;">
-                  support@razorpay.com</a>
+                  {{{$user['email']}}}</a>. @include('emails.partials.support')
                 </center>
               </td>
               <td class="expander" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; visibility: hidden; width: 0px; padding: 0 !important; color: #aaa; font-size: 12px; line-height: 18px;"></td>

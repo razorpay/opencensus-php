@@ -547,7 +547,7 @@ class EnachRblGatewayTest extends TestCase
 
         $fileStatuses = [
             'status'     => 'bounce',
-            'error_code' => '1',
+            'error_code' => '01',
             'error_desc' => 'Account closed or transferred',
         ];
 

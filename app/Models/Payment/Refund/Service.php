@@ -883,6 +883,11 @@ class Service extends Base\Service
 
         $refund->edit($input, 'editStatus');
 
+        if ($refund->isProcessed() === true)
+        {
+            $refund->setErrorNull();
+        }
+
         $this->repo->saveOrFail($refund);
 
         return [

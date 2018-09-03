@@ -53,6 +53,10 @@ class Transfer extends Base
     }
 
     /**
+     * 'serialize_precision' is set to -1 due to issue in json_encode while handling floating point numbers in php 7.1.
+     * Refer following links.
+     * https://bugs.php.net/bug.php?id=72567
+     * https://stackoverflow.com/questions/42981409/php7-1-json-encode-float-issue
      * {@inheritdoc}
      */
     public function requestBody(): string
@@ -69,11 +73,13 @@ class Transfer extends Base
 
         $amount = round($amount, 2);
 
+        ini_set('serialize_precision', -1);
+
         $this->trace->info(
             TraceCode::YESBANK_TRANSFER_AMOUNT, ['transferAmount' => $amount ]);
 
-        return json_encode([
-            Constants::TRANSFER_REQUEST_IDENTIFIER => [
+        $jsonRequest  = json_encode([
+                Constants::TRANSFER_REQUEST_IDENTIFIER => [
                 Constants::VERSION                      => self::VERSION,
                 Constants::UNIQUE_REQUEST_NO            => $this->entity->getId(),
                 Constants::APP_ID                       => $this->appId,
@@ -87,6 +93,10 @@ class Transfer extends Base
                 Constants::REMITTER_TO_BENEFICIARY_INFO => 'FUND TRANSFER',
             ],
         ]);
+
+        ini_restore('serialize_precision');
+
+        return $jsonRequest;
     }
 
 

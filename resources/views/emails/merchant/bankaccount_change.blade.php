@@ -67,9 +67,7 @@ Team Razorpay
           <table class="seven columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 330px;"><tr style="padding: 0; text-align: left; vertical-align: top;"><td class="center" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: center; vertical-align: top; color: #aaa; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 18px; margin: 0; font-size: 12px;">
                 <center style="min-width: 330px; width: 100%;">
                   This message was sent to <a href="mailto:{{$email}}" style="color: #aaa !important; text-decoration: none; display: inline-block;">
-                  {{{$email}}}</a>. Reach out to us by replying
-                  to this email or at <a href="mailto:support@razorpay.com" style="color: #aaa !important; text-decoration: none; display: inline-block;">
-                  support@razorpay.com</a>
+                  {{{$email}}}</a>. @include('emails.partials.support')
                 </center>
               </td>
               <td class="expander" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #aaa; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 18px; margin: 0; font-size: 12px; visibility: hidden; width: 0px;"></td>

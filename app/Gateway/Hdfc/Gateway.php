@@ -341,7 +341,18 @@ class Gateway extends Base\Gateway
 
         $shouldRetry = function ($e)
         {
-            return ($e->getError()->getGatewayErrorCode() === ErrorCode::CM90000);
+            $errorCodes =[
+                ErrorCode::CM00030,
+                ErrorCode::CM90000,
+                ErrorCode::CM90001,
+                ErrorCode::CM90002,
+                ErrorCode::CM90003,
+                ErrorCode::CM90004,
+                ErrorCode::CM90005,
+                ErrorCode::CM900000,
+            ];
+
+            return in_array($e->getError()->getGatewayErrorCode(), $errorCodes, true);
         };
 
         $this->retryHandler(

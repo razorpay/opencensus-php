@@ -7,13 +7,18 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
-use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Gateway\Base\Action;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Netbanking\Kotak\Fields;
+use RZP\Gateway\Netbanking\Kotak\Status;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class NetbankingKotakGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -196,6 +201,67 @@ class NetbankingKotakGatewayTest extends TestCase
         }
 
         $this->setUpMailMock();
+    }
+
+    public function testVerifyCallback()
+    {
+        $payment = $this->doNetbankingKotakAuthAndCapturePayment();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testVerifyCallbackFailed()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === Action::VERIFY)
+            {
+                $content[Fields::AUTHORIZATION_STATUS] = Status::FAIL;
+            }
+        });
+
+        $payment = $this->getDefaultNetbankingPaymentArray('KKBK');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
+    public function testFailedPaymentVerifyCallback()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === Action::CALLBACK)
+            {
+                $content[Fields::AUTHORIZATION_STATUS] = Status::FAIL;
+            }
+            else if ($action === Action::VERIFY)
+            {
+                $content[Fields::AUTHORIZATION_STATUS] = Status::FAIL;
+            }
+        });
+
+        $payment = $this->getDefaultNetbankingPaymentArray('KKBK');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+           $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('failed', $payment['status']);
     }
 
     protected function setUpMailMock()
