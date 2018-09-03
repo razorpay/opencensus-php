@@ -18,7 +18,7 @@ export default function RegisterBeneficiaries() {
       let merchantIds = splitAndFilter(body.merchant_ids, ',');
 
       if (merchantIds.length > 1000) {
-        notifyError('Number of Merchant Ids is more than 1000.');
+        notifyError('Number of merchant ids should not be more than 1000.');
         return;
       }
 
