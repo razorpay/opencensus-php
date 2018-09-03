@@ -33,7 +33,7 @@ class Base extends Mailable
 
     protected function addReplyTo()
     {
-        $email = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+        $email = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
 
         $this->replyTo($email);
 
