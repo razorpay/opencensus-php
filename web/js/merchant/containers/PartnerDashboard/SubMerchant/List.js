@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
@@ -16,7 +17,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { getTime } from 'rzp/ui/item';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 import {
-  submerchant as name,
+  submerchant as submerchantColumn,
   submerchantId as id,
   email as emailColumn,
 } from 'rzp/ui/item/pair';
@@ -24,6 +25,17 @@ import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
 
 import AddMerchant from './AddMerchant';
 import ListFilter from './ListFilter';
+
+const name = isPurePlatform => ({
+  ...submerchantColumn,
+  ...(isPurePlatform && {
+    value: item => (
+      <Link to={`/submerchants/${item.id}/${item.application.id}`}>
+        {item.name}
+      </Link>
+    ),
+  }),
+});
 
 const email = {
   title: 'Registered Email',
@@ -63,6 +75,11 @@ const switchMerchantActionBtn = handleSwitchMerchant => ({
       'No Access'
     ),
 });
+
+const appId = {
+  title: 'App Id',
+  value: item => item.application.id,
+};
 
 @connect(
   state => ({
@@ -107,10 +124,18 @@ export default class SubMerchantsList extends ListContainer {
     const switchMerchantColumn = user.isPartner('aggregator', 'fully_managed')
       ? [switchMerchantActionBtn(this.handleSwitchMerchant)]
       : [];
+
+    const appIdColumn = user.isPartner('pure_platform') ? [appId] : [];
+
     return (
       <div class="sub-merchants-list">
         <div>
-          <ShowWhen myRole="owner manager admin">
+          <ShowWhen
+            myRole="owner manager admin"
+            additionalCondition={user =>
+              user.isPartner() && !user.isPartner('pure_platform')
+            }
+          >
             <HeaderAction>
               <button
                 class="btn btn-primary pull-right"
@@ -147,9 +172,10 @@ export default class SubMerchantsList extends ListContainer {
             skip={this.state.skip}
             paginate={this.paginate}
             columns={[
-              name,
+              name(user.isPartner('pure_platform')),
               id,
               email,
+              ...appIdColumn,
               addedOn,
               activationStatus,
               ...switchMerchantColumn,
