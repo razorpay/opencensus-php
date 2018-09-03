@@ -261,7 +261,6 @@ class UpiMindgateGatewayTest extends TestCase
             {
                 $this->doAuthPaymentViaAjaxRoute($payment);
             });
-
     }
 
     public function testFailedVpaValidation()
