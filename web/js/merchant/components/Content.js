@@ -141,6 +141,31 @@ export default class Content extends Component {
     }
   };
 
+  toggleRasieTicketModal = ({ location = {} }) => {
+    const onModalClose = function() {
+      this.props.history.push(location.pathname);
+      window.rzpTicketSystem.removeEventListener('modal-close', onModalClose);
+    }.bind(this); //so that this.props is available inside onModalClose
+
+    // For handling where url is encoded, so hash becomes part of pathname instead of hash (In gmail redirection).
+    const urlWithHash = decodeURIComponent(location.pathname);
+    const hashInUrl = urlWithHash.substring(urlWithHash.indexOf('#') + 1);
+
+    const hash = location.hash || '#' + hashInUrl;
+    if (window.rzpTicketSystem) {
+      if (
+        hash === '#request' &&
+        !!location.pathname &&
+        location.pathname !== '/'
+      ) {
+        window.rzpTicketSystem.addEventListener('modal-close', onModalClose);
+        window.rzpTicketSystem.openModal('#ticket');
+      } else if (window.rzpTicketSystem.$el.classList.contains('open')) {
+        window.rzpTicketSystem.closeModal();
+      }
+    }
+  };
+
   getBaseView = () => {
     const { user } = this.props;
     return (
@@ -216,11 +241,16 @@ export default class Content extends Component {
 
   componentWillMount() {
     this.setBaseLocation(this.props.location);
+    this.toggleRasieTicketModal(this.props);
   }
 
-  componentWillReceiveProps(props) {
-    this.setBaseLocation(props.location);
+  componentWillReceiveProps(nextProps) {
+    this.setBaseLocation(nextProps.location);
     this.showSliderView();
+
+    if (nextProps.location.hash !== this.props.location.hash) {
+      this.toggleRasieTicketModal(nextProps);
+    }
   }
 
   showSliderView() {

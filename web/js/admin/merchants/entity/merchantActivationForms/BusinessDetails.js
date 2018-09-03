@@ -161,6 +161,9 @@ export default class BusinessDetails extends Component {
                 <option value="8">Educational Institutes</option>
                 <option value="9">Trust</option>
                 <option value="10">Society</option>
+                <option value="11">
+                  Not yet Registered (Business Type is not supported any longer)
+                </option>
                 <option value="12">Other</option>
               </SelectField>
               <CheckField

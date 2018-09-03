@@ -179,7 +179,11 @@ class Rule extends CollectionItem {
     extendObservable(this, props);
     this['originalRule'] = {};
     this['originalRule'] = deepClone(this);
-    editableFields.forEach(elem => (this[elem] /= 100));
+    editableFields.forEach(elem => {
+      if (this[elem]) {
+        this[elem] /= 100;
+      }
+    });
   }
 
   serialize() {
@@ -201,7 +205,11 @@ class Rule extends CollectionItem {
     data.percent_rate = Math.round(data.percent_rate * 100);
     data.fixed_rate = Math.round(data.fixed_rate * 100);
     data.min_fee = Math.round(data.min_fee * 100);
-    data.max_fee = Math.round(data.max_fee * 100);
+    data.max_fee =
+      data.max_fee || parseInt(data.max_fee) === 0
+        ? Math.round(data.max_fee * 100)
+        : undefined;
+
     return data;
   }
 

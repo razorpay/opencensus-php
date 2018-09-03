@@ -337,6 +337,9 @@ app
           );
         }
 
+        window.ga && ga('send', 'event', 'sign-up-form-success');
+        window.ga && ga('old.send', 'event', 'sign-up-form-success');
+
         pushToDrip();
         invokeAdroll();
         invokeGtag();
