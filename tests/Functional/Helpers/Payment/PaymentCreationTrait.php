@@ -105,7 +105,9 @@ trait PaymentCreationTrait
     protected function handlePaymentCreationFlow($response, $request, &$callback = null)
     {
         $content = $response->getContent();
+
         $gateway = null;
+
         if ($request['url'] === '/payments/create/checkout')
         {
             $this->assertTrue($this->isResponseInstanceType($response, 'http'));
@@ -136,6 +138,7 @@ trait PaymentCreationTrait
             }
 
             $gateway = $content['gateway'];
+
             if (isset($content['type']) === 'return')
             {
                 // @note: This case isn't happening right now but it can in future
@@ -237,6 +240,7 @@ trait PaymentCreationTrait
                 }
             }
         }
+
         return $this->runPaymentCallbackFlowForGateway($response, $gateway, $callback);
     }
 
