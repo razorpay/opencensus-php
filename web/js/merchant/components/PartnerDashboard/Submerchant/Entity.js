@@ -65,6 +65,18 @@ export default props => {
                   )}
                 </EntityDetailRow>
 
+                {/* application details for pure platform partners */}
+                <ShowWhen
+                  additionalCondition={user => user.isPartner('pure_platform')}
+                >
+                  <EntityDetailRow
+                    label="Application"
+                    value={
+                      submerchant.application && submerchant.application.name
+                    }
+                  />
+                </ShowWhen>
+
                 <ShowWhen
                   myRole="owner admin manager"
                   additionalCondition={user => user.isPartner('aggregator')}
