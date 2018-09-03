@@ -141,13 +141,12 @@ class Base extends Mailable
 
         // Default text
         $supportTextPlain = "We are a payment gateway and only facilitate merchants with on-line payments. We request you to contact the merchant for any service related queries. "
-                            . "If you want to dispute a payment, please visit out website https://razorpay.com and follow the instructions on the chat window.";
+                            . "If you want to dispute a payment, please contact us at https://razorpay.com/contact/";
         $supportTextHtml = "We are a payment gateway and only facilitate merchants with on-line payments."
                             . "<br style=\"font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important;\">"
                             . "We request you to contact the merchant for any service related queries."
                             . "<br style=\"font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important;\">"
-                            . "If you want to dispute a payment, please visit our <a title=\"Razorpay\" href=\"https://razorpay.com\" style=\"font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: #2ba6cb; text-decoration: none;\">website</a> "
-                            . "and follow the instructions on the chat window.";
+                            . "If you want to dispute a payment, please contact us <a href=\"https://razorpay.com/contact/\">here</a>";
 
         // Zebpay
         if ($merchantId === '8iMbVsEnv1HCo0')

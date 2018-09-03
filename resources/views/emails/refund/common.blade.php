@@ -134,10 +134,13 @@ depends on your payment cycle with your bank.
                         <table class="twelve columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 580px;"><tr style="padding: 0; text-align: left; vertical-align: top;"><td class="center lighttext" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: center; vertical-align: top; color: #B2B2B2; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 12px; text-decoration: none;">
                               <hr class="wide" style="background-color: #d9d9d9; border: none; color: #E5E5E5; height: 2px; width: 490px;">
                                 <center style="width: 100%; min-width: 580px; font-size: 10px;">
+                                    @if ((isset($type) === true) and ($type === 'customer'))
                                     If you do not receive a credit in your account
-                                    after 10 working days, please visit our <a title="Razorpay" href="https://razorpay.com" style="color: #2ba6cb; text-decoration: none;">website</a>
-                                    <br>
-                                    and follow the instructions on the chat window.
+                                    after 10 working days, please reach out to us <a href="https://razorpay.com/contact/">here</a>.
+                                    @else
+                                    If the money is not credited after 10 working days,
+                                    please reach out to us <a href="https://dashboard.razorpay.com/#/app/dashboard#request">here</a>.
+                                    @endif
                                 </center>
                             </td>
                             <td class="expander" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
@@ -145,6 +148,6 @@ depends on your payment cycle with your bank.
                     </tr></table></center>
               </td>
               </tr></table>
-          @include('emails.partials.footer', ['message'=>$message, 'showContact' => false])
+          @include('emails.partials.footer', ['message'=>$message, 'showContact' => false, 'type' => 'customer'])
         </td>
       </tr></table></body></html>

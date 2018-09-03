@@ -92,7 +92,7 @@
               </td>
             </tr>
           </table>
-          @include('emails.partials.footer', ['message'=>$message, 'type'=>'customer'])
+          @include('emails.partials.footer', ['message'=>$message])
         </td>
       </tr>
     </table>

@@ -112,6 +112,6 @@
                     </tr></table></center>
               </td>
             </tr></table>
-          @include('emails.partials.footer', ['message'=>$message])
+          @include('emails.partials.footer', ['message'=>$message, 'type'=>'customer'])
         </td>
       </tr></table></body></html>
