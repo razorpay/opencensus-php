@@ -7,20 +7,41 @@ use RZP\Error\ErrorCode;
 class ErrorCodeMap
 {
     const CODES = [
-        Status::VPA_NOT_AVAILABLE => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
-        Status::FAILURE           => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        Status::FAILED            => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        Status::PENDING           => ErrorCode::BAD_REQUEST_PAYMENT_PENDING,
-        Status::TIMEOUT           => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+        Status::TOKEN_CHECKSUM_FAILED   => ErrorCode::GATEWAY_ERROR_CHECKSUM_NOT_GENERATED_PROPERLY,
+        Status::TOKEN_CHECKSUM_MISMATCH => ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
+        Status::TOKEN_INCOMPLETE        => ErrorCode::GATEWAY_ERROR_TOKEN_INCOMPLETE,
+        Status::TOKEN_VALIDATION_ERROR  => ErrorCode::GATEWAY_ERROR_TOKEN_VALIDATION_FAILED,
+        Status::TOKEN_DUPLICATE         => ErrorCode::GATEWAY_ERROR_DUPLICATE_TOKEN,
+        Status::COLLECT_DUPLICATE       => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
+        Status::COLLECT_TOKEN_NOT_FOUND => ErrorCode::GATEWAY_ERROR_TOKEN_NOT_FOUND,
+        Status::COLLECT_INVALID_VPA     => ErrorCode::BAD_REQUEST_VPA_DOESNT_EXIST,
+        Status::VERIFY_FAILED           => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        Status::VERIFY_DEEMED           => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+        Status::VERIFY_PENDING          => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+        Status::VERIFY_EXPIRED          => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+        Status::VERIFY_REJECT           => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+        Status::CALLBACK_FAILED         => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
+        Status::CALLBACK_REJECTED       => ErrorCode::GATEWAY_ERROR_PAYMENT_REJECTED,
     ];
 
-    const CODESMAP = [
-        Status::FAILURE           => 'Payment Failed because of Gateway Error',
-        Status::FAILED            => 'Payment Failed because of Gateway Error',
-        Status::VPA_NOT_AVAILABLE => 'Vpa not available',
-        Status::PENDING           => 'Transaction pending',
-        Status::TIMEOUT           => 'Transaction timed out',
+    const CODEMAP = [
+        Status::TOKEN_CHECKSUM_FAILED   => 'Internal Server Error - checksum not generated properly',
+        Status::TOKEN_CHECKSUM_MISMATCH => 'Checksum does not match',
+        Status::TOKEN_INCOMPLETE        => 'Missing or empty parameter',
+        Status::TOKEN_VALIDATION_ERROR  => 'Validation error - invalid special characters in txn id',
+        Status::TOKEN_DUPLICATE         => 'Duplicate transaction ID',
+        Status::COLLECT_DUPLICATE       => 'Duplicate collect request',
+        Status::COLLECT_TOKEN_NOT_FOUND => 'Token not found',
+        Status::COLLECT_INVALID_VPA     => 'Invalid VPA',
+        Status::VERIFY_FAILED           => 'Failed transaction',
+        Status::VERIFY_DEEMED           => 'Deemed transaction',
+        Status::VERIFY_PENDING          => 'Transaction is pending',
+        Status::VERIFY_EXPIRED          => 'Transaction expired',
+        Status::VERIFY_REJECT           => 'Transaction rejected',
+        Status::CALLBACK_FAILED         => 'Payment failed',
+        Status::CALLBACK_REJECTED       => 'Payment rejected',
     ];
+
 
 
     public static function getApiErrorCode($code)
@@ -36,6 +57,6 @@ class ErrorCodeMap
 
     public static function getResponseMessage($code)
     {
-        return self::CODES[$code] ?? 'Unknown Gateway Response Code';
+        return self::CODEMAP[$code] ?? 'Unknown Gateway Response Code';
     }
 }
