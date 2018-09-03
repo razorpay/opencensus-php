@@ -851,6 +851,8 @@ final class Route
         // Generic Lambda handler
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
 
+        'nodal_beneficiary_update'                 => ['patch',    'nodal_beneficiaries',                            'NodalBeneficiaryController@update'                                 ],
+
         // Partner routes
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
@@ -1628,6 +1630,7 @@ final class Route
         'merchant_requests_bulk_update',
         'merchant_activation_bulk_assign_reviewer',
         'merchant_activation_reviewers',
+
         'merchant_bulk_edit_attributes',
 
         // Partners
@@ -1642,6 +1645,8 @@ final class Route
         'reporting_log_list_admin',
         'reporting_schedule_get_admin',
         'reporting_schedule_list_admin',
+
+        'nodal_beneficiary_update',
     ];
 
     public static $routePermission = [
@@ -1973,6 +1978,7 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
+        'nodal_beneficiary_update'                 => Permission::SETTLEMENT_BULK_UPDATE,
         'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'invoice_issue_by_batch'                   => '*',
         'invoice_notify_by_batch'                  => '*',

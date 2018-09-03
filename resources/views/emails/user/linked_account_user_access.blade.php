@@ -24,7 +24,7 @@
     <p>
         --<br/>
         {{$org['display_name']}} <br/>
-        <a href="mailto:support@razorpay.com">support@razorpay.com</a>
+        For queries, contact <a href="https://dashboard.razorpay.com/#/app/dashboard#request">here</a>
     </p>
     <div>
         <img style="width:200px; height:auto;" src="{{$org['login_logo_url']}}">

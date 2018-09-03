@@ -1761,6 +1761,28 @@ trait Authorize
         $this->setRecurringType($payment, $input);
 
         $this->setAutoRefundTimestamp($payment);
+
+        $this->setPreferredAuthIfApplicable($payment);
+    }
+
+    protected function setPreferredAuthIfApplicable(Payment\Entity $payment)
+    {
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return;
+        }
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::OTP_AUTH_DEFAULT) === true)
+        {
+            $preferredAuth = $payment->getMetadata(Payment\Entity::PREFERRED_AUTH, []);
+
+            if (in_array(Payment\AuthType::PIN, $preferredAuth, true) === true)
+            {
+                return;
+            }
+
+            $payment->setMetadataKey(Payment\Entity::PREFERRED_AUTH, [Payment\AuthType::OTP, Payment\AuthType::_3DS]);
+        }
     }
 
     protected function updateGatewayInputForInvoice(& $gatewayInput, Payment\Entity $payment)

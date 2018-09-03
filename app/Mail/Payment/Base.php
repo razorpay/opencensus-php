@@ -127,16 +127,12 @@ class Base extends Mailable
 
     protected function getSenderEmail(): string
     {
-        return ($this->isMerchantEmail() === true) ?
-                    Constants::MAIL_ADDRESSES[Constants::CARE] :
-                    Constants::MAIL_ADDRESSES[Constants::REPORTS];
+        return Constants::MAIL_ADDRESSES[Constants::NOREPLY];
     }
 
     protected function getSenderHeader(): string
     {
-        return ($this->isMerchantEmail() === true) ?
-                    Constants::HEADERS[Constants::CARE] :
-                    Constants::HEADERS[Constants::REPORTS];
+        return Constants::HEADERS[Constants::NOREPLY];
     }
 
     protected function getCustomerSupportText()
