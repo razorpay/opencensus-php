@@ -108,7 +108,6 @@ class Gateway extends Base\Gateway
                 'collectResponse'   => $collectResponse,
             ]);
         }
-
         else
         {
             throw new Exception\GatewayErrorException(Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,

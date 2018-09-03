@@ -2,9 +2,10 @@
 
 namespace RZP\Gateway\Upi\Axis\Mock;
 
-use RZP\Gateway\Base;
+use RZP\Gateway\Upi\Axis;
 
-class AESCrypto extends Base\AESCrypto
+
+class AESCrypto extends Axis\AESCrypto
 {
     public function encryptString(string $string)
     {
