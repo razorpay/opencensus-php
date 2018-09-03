@@ -419,7 +419,7 @@ class HulkGatewayTest extends TestCase
     {
         $terminal = $this->fixtures->create('terminal:shared_upi_hulk_tpv_terminal');
 
-        $this->fixtures->merchant->enableTPV();
+        $merchant = $this->fixtures->merchant->enableTPV();
 
         $this->createOrder([
             'amount'         => 50000,
@@ -440,12 +440,13 @@ class HulkGatewayTest extends TestCase
         $this->payment['bank'] = $order->getBank();
 
         $this->mockServerRequestFunction(
-            function($content, $action) use ($order)
+            function($content, $action) use ($order, $merchant)
             {
                 if ($action === 'authorize')
                 {
                     $this->assertSame('expected_push', $content['type']);
                     $this->assertSame($order->getAccountNumber(), $content['caller_account_number']);
+                    $this->assertSame($merchant['category_code'], $content['category_code']);
                 }
             });
 
