@@ -302,7 +302,7 @@ class Validator extends Base\Validator
 
     protected static $upiAxisEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:upi_axis',
-        Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::UPI                        => 'required|boolean|in:1',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
     ];
 
@@ -398,7 +398,7 @@ class Validator extends Base\Validator
     protected static $upiAxisTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_axis',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::UPI                        => 'required|boolean|in:1',
     ];
 
     protected static $upiHulkTerminalRules = [
