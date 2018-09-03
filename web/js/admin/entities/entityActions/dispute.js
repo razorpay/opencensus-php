@@ -3,6 +3,7 @@ import { Component, Fragment } from 'react';
 import { openModal, closeModal, confirm } from 'common/modal';
 import fetch, { adminFetch } from 'common/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
+import { snakeToTitleCase } from 'common/util';
 
 import ShowWhen from 'admin/components/ShowWhen';
 import AsyncButton from 'ui/AsyncButton';
@@ -76,7 +77,9 @@ export default ({ entity, mode, updateEntity }) => {
 };
 
 class DisputeFiles extends Component {
-  state = {};
+  state = {
+    downloading: [],
+  };
 
   componentWillMount() {
     adminFetch(
@@ -88,20 +91,49 @@ class DisputeFiles extends Component {
     });
   }
 
-  fields = [
-    ['File Name', item => item.display_name],
-    ['File Id', item => <code>{item.id}</code>],
-    [
-      'Download',
-      item => (
-        <DownloadFile
-          mode={this.props.mode}
-          merchantId={this.props.merchant_id}
-          fileId={item.id}
-        />
-      ),
-    ],
-  ];
+  onDownload = doc => {
+    this.setState({
+      downloading: [...this.state.downloading, doc.id],
+    });
+    adminFetch(
+      `${this.props.mode}_${this.props.merchant_id}/ufh/file/${
+        doc.id
+      }/get-signed-url`
+    ).then(data => {
+      if (data) {
+        this.setState({
+          downloading: this.state.downloading.filter(id => id !== doc.id),
+        });
+        window.open(data.signed_url, '_blank');
+      }
+    });
+  };
+
+  getFields() {
+    return [
+      ['File Name', item => item.display_name],
+      ['File Id', item => <code>{item.id}</code>],
+      ['Category', item => snakeToTitleCase(item.type)],
+      [
+        'Actions',
+        item =>
+          function() {
+            const isFileDownloading =
+              this.state.downloading.indexOf(item.id) > -1;
+            return (
+              <button
+                onClick={() => {
+                  this.onDownload(item);
+                }}
+                disabled={isFileDownloading}
+              >
+                {isFileDownloading ? 'Downloading...' : 'Download'}
+              </button>
+            );
+          }.bind(this)(),
+      ],
+    ];
+  }
 
   render() {
     return (
@@ -109,35 +141,9 @@ class DisputeFiles extends Component {
         <Table
           pending={!this.state.files}
           items={this.state.files}
-          fields={this.fields}
+          fields={this.getFields()}
         />
       </ModalContent>
-    );
-  }
-}
-
-class DownloadFile extends Component {
-  state = { signedUrl: '' };
-
-  componentWillMount() {
-    adminFetch(
-      `${this.props.mode}_${this.props.merchantId}/ufh/file/${
-        this.props.fileId
-      }/get-signed-url`
-    ).then(data => {
-      this.setState({
-        signedUrl: data.signed_url,
-      });
-    });
-  }
-
-  render() {
-    return !this.state.signedUrl ? (
-      <span class="spin-btn visible large" />
-    ) : (
-      <a target="blank" href={this.state.signedUrl} class="btn btn-normal">
-        View File
-      </a>
     );
   }
 }
