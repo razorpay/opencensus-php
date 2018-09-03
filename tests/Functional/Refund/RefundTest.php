@@ -180,7 +180,8 @@ class RefundTest extends TestCase
                 'notes'      => ['a' => 'b'],
                 'receipt'    => '2544325',
             ]);
-        $this->fixtures->base->editEntity('refund', $refund['id'], ['gateway_refunded' => false, 'status' => 'failed']);
+        $this->fixtures->base->editEntity('refund', $refund['id'], ['gateway_refunded' => false, 'status' => 'failed',
+            'error_code' => 'test', 'error_description' => 'test', 'internal_error_code' => 'test']);
 
         $refund = $this->getLastEntity('refund', true);
 
@@ -193,6 +194,9 @@ class RefundTest extends TestCase
 
         $this->assertEquals('abcdProcessed', $refund['reference1']);
         $this->assertEquals('processed', $refund['status']);
+        $this->assertNull($refund['error_code']);
+        $this->assertNull($refund['error_description']);
+        $this->assertNull($refund['internal_error_code']);
     }
 
     public function testRefundEditStatusWithoutReference()
