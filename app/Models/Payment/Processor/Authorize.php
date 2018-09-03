@@ -76,8 +76,6 @@ trait Authorize
         // cards used in payment is international
         $this->processCurrencyConversions($payment);
 
-        $this->setAnalyticsLog($payment);
-
         $this->runPaymentInputValidations($payment, $input);
 
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
@@ -108,6 +106,8 @@ trait Authorize
         }
 
         $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
+
+        $this->createAnalyticsLog($payment);
 
         $this->runShieldCheck($payment);
 
@@ -257,6 +257,8 @@ trait Authorize
     public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
+
+        $this->createAnalyticsLog($this->payment);
 
         $this->runShieldCheck($this->payment);
     }
@@ -1229,8 +1231,6 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
-        $this->setAuthenticationGateway($payment, $gatewayInput);
-
         $this->setAuthTypeInPayment($payment);
 
         $this->repo->saveOrFail($payment);
@@ -1263,32 +1263,6 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
-    }
-
-    protected function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
-    {
-        if (($payment->isMethodCardOrEmi() === true) and
-            (Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true))
-        {
-            //
-            // Payments where authentication is required
-            //
-            if (($payment->isRecurring() === false) or
-                ($payment->isRecurringTypeInitial() === true))
-            {
-                if ($payment->getGateway() === Payment\Gateway::HITACHI)
-                {
-                    $authGateway = Payment\Gateway::MPI_BLADE;
-
-                    if ($this->canRunAxisExpressPay($payment) === true)
-                    {
-                        $authGateway = Payment\Gateway::MPI_ENSTAGE;
-                    }
-
-                    $gatewayInput['authenticate']['gateway'] = $authGateway;
-                }
-            }
-        }
     }
 
     protected function setAuthTypeInPayment(Payment\Entity $payment)
@@ -1387,11 +1361,7 @@ trait Authorize
 
     protected function runFraudChecks(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true)
-        {
-            $this->validateFraudDetectionV2($payment);
-        }
-        else if ($payment->shouldRunFraudChecks() === true)
+        if ($payment->shouldRunFraudChecks() === true)
         {
             $this->validateEmailTld($payment);
 
@@ -1417,11 +1387,6 @@ trait Authorize
      */
     protected function runShieldCheck(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true)
-        {
-            return;
-        }
-
         // We do not want to call shield in case for Payments in Test mode
         if ($this->mode === Mode::TEST)
         {
@@ -1796,28 +1761,6 @@ trait Authorize
         $this->setRecurringType($payment, $input);
 
         $this->setAutoRefundTimestamp($payment);
-
-        $this->setPreferredAuthIfApplicable($payment);
-    }
-
-    protected function setPreferredAuthIfApplicable(Payment\Entity $payment)
-    {
-        if ($payment->isMethodCardOrEmi() === false)
-        {
-            return;
-        }
-
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::OTP_AUTH_DEFAULT) === true)
-        {
-            $preferredAuth = $payment->getMetadata(Payment\Entity::PREFERRED_AUTH, []);
-
-            if (in_array(Payment\AuthType::PIN, $preferredAuth, true) === true)
-            {
-                return;
-            }
-
-            $payment->setMetadataKey(Payment\Entity::PREFERRED_AUTH, [Payment\AuthType::OTP]);
-        }
     }
 
     protected function updateGatewayInputForInvoice(& $gatewayInput, Payment\Entity $payment)
@@ -2914,8 +2857,6 @@ trait Authorize
             return;
         }
 
-        (new Payment\Metric)->pushAuthMetrics($this->payment);
-
         $this->eventPaymentAuthorized();
 
         $this->notifyIfCardSaved();
@@ -3736,13 +3677,11 @@ trait Authorize
         }
     }
 
-    protected function setAnalyticsLog(Payment\Entity $payment)
+    protected function createAnalyticsLog(Payment\Entity $payment)
     {
         try
         {
-            $paymentAnalytics = (new Analytics\Core)->create($payment);
-
-            $payment->setMetadataKey('payment_analytics', $paymentAnalytics);
+            (new Analytics\Service)->createLog($payment);
         }
         catch (\Throwable $e)
         {
@@ -3755,12 +3694,7 @@ trait Authorize
 
     protected function callGatewayAuthorize(array $data)
     {
-
-            $d = $this->callGatewayFunction(Action::AUTHORIZE, $data);
-
-            s($d);
-
-            return $d;
+        return $this->callGatewayFunction(Action::AUTHORIZE, $data);
     }
 
     /**
@@ -3791,7 +3725,10 @@ trait Authorize
                 // condition covers a superset.
                 //
                 if (($payment->getGateway() === Payment\Gateway::HITACHI) and
-                    ($this->canRunAxisExpressPay($payment) === true))
+                    ($this->isAuthTypeOtp($payment) === true) and
+                    ($payment->merchant->isAxisExpressPayEnabled() === true) and
+                    ($payment->card->iinRelation->supports(IIN\Flow::OTP) === true) and
+                    ($payment->card->iinRelation->getIssuer() === IFSC::UTIB))
                 {
                     return true;
                 }
@@ -3834,20 +3771,6 @@ trait Authorize
         // TODO: Figure out a way to do this for other power wallets
 
         return true;
-    }
-
-    protected function canRunAxisExpressPay(Payment\Entity $payment)
-    {
-        if (($payment->merchant->isAxisExpressPayEnabled() === true) and
-            ($this->isAuthTypeOtp($payment) === true) and
-            ($payment->card->iinRelation !== null) and
-            ($payment->card->iinRelation->getIssuer() === IFSC::UTIB) and
-            ($payment->card->iinRelation->supports(IIN\Flow::OTP) === true))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     /**

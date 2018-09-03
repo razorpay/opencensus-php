@@ -83,23 +83,6 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    /**
-     * Private Key of the mock server
-     */
-    protected function getPrivateKey()
-    {
-        return file_get_contents(__DIR__ . '/keys/mockserver.key');
-    }
-
-    /**
-     * Public key of the client that is connecting
-     * to us, in this case, the Mock Gateway
-     */
-    protected function getPublicKey()
-    {
-        return file_get_contents(__DIR__ . '/keys/mockclient.pub');
-    }
-
     public function getAsyncCallbackContent(array $upiEntity, array $payment)
     {
         $this->action = Action::CALLBACK;

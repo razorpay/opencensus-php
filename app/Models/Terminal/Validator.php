@@ -304,8 +304,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'sometimes|in:upi_axis',
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
-        Entity::TYPE                       => 'sometimes|array',
-        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [

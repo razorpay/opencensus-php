@@ -1660,10 +1660,10 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'upi_axis',
-            'gateway_merchant_id'       => 'razorpay upi',
-            'gateway_terminal_id'       => 'nodal account upi axis',
-            'gateway_merchant_id2'      => 'razorpay@eazypay',
-            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_merchant_id'       => 'RAZAORPAY',
+            'gateway_terminal_id'       => 'RAZAORPAYAPP',
+            'gateway_merchant_id2'      => 'razaorpay@axis',
+            'gateway_terminal_password' => '1520',
             'upi'                       => true,
         ];
 

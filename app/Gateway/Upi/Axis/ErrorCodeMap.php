@@ -4,7 +4,7 @@ namespace RZP\Gateway\Upi\Axis;
 
 use RZP\Error\ErrorCode;
 
-class ResponseCodeMap
+class ErrorCodeMap
 {
     const CODES = [
         Status::VPA_NOT_AVAILABLE => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
@@ -13,6 +13,15 @@ class ResponseCodeMap
         Status::PENDING           => ErrorCode::BAD_REQUEST_PAYMENT_PENDING,
         Status::TIMEOUT           => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
     ];
+
+    const CODESMAP = [
+        Status::FAILURE           => 'Payment Failed because of Gateway Error',
+        Status::FAILED            => 'Payment Failed because of Gateway Error',
+        Status::VPA_NOT_AVAILABLE => 'Vpa not available',
+        Status::PENDING           => 'Transaction pending',
+        Status::TIMEOUT           => 'Transaction timed out',
+    ];
+
 
     public static function getApiErrorCode($code)
     {
@@ -23,5 +32,10 @@ class ResponseCodeMap
         }
 
         return self::CODES[$code];
+    }
+
+    public static function getResponseMessage($code)
+    {
+        return self::CODES[$code] ?? 'Unknown Gateway Response Code';
     }
 }

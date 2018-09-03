@@ -278,6 +278,7 @@ return [
         'merchant_channel_id'   => env('UPI_AXIS_GATEWAY_MERCHANT_CHANNEL_ID'),
         'public_key'            => env('UPI_AXIS_GATEWAY_PUBLIC_KEY'),
         'mobile_no'             => env('UPI_AXIS_GATEWAY_MOBILE_NUMBER'),
+        'aes_encryption_key'    => env('UPI_AXIS_GATEWAY_AES_KEY'),
     ],
 
     'aeps_icici' => [

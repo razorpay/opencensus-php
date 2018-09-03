@@ -88,7 +88,7 @@ class Gateway extends Base\Gateway
             'terminal_id'       => $input['terminal']['id'],
         ]);
 
-        if($tokenResponse[Fields::CODE] == Status::SUCCESS)
+        if($tokenResponse[Fields::CODE] == Status::TOKEN_SUCCESS)
         {
             parent::action($input, Action::AUTHORIZE);
 
@@ -100,7 +100,7 @@ class Gateway extends Base\Gateway
 
             $collectResponse = $this->sendGatewayRequest($request);
 
-            $collectResponse = $this->parseGatewayResponse($collectResponse->body);
+            $collectResponse = $this->parseGatewayResponse($collectResponse->body, $input);
 
             $this->updateGatewayPaymentEntity($gatewayPayment, $collectResponse);
 
@@ -137,7 +137,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $response = $this->parseGatewayResponse($response->body);
+        $response = $this->parseGatewayResponse($response->body, $input);
 
         return $response;
     }
@@ -190,30 +190,33 @@ class Gateway extends Base\Gateway
 
     /**
      * @param $responseBody
+     * @param $input
      * @param string $type
      * @return array
      */
-    protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
+    protected function parseGatewayResponse($responseBody, $input, $type = Action::COLLECT)
     {
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
             'body'              => $responseBody,
             'gateway'           => $this->gateway,
             'type'              => $type,
+            'payment_id'        => $input['payment']['id'],
+            'terminal_id'       => $input['terminal']['id'],
         ]);
 
         return $this->jsonToArray($responseBody);
     }
 
-    private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
+    private function checkResponseStatus(string $status, string $successStatus = Status::TOKEN_SUCCESS)
     {
         if ($status !== $successStatus)
         {
-            $errorCode = ResponseCodeMap::getApiErrorCode($status);
+            $errorCode = ErrorCodeMap::getApiErrorCode($status);
 
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
-                ResponseCode::getResponseMessage($status));
+                ErrorCodeMap::getResponseMessage($status));
         }
     }
 
@@ -248,7 +251,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'content'      => $content,
+                'content'           => $content,
                 'gateway'           => $this->gateway,
                 'payment_id'        => $payment['id'],
                 'terminal_id'       => $input['terminal']['id'],
@@ -460,7 +463,6 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
                 'request'       => $request,
-                'content'       => $data,
                 'payment_id'    => $input['payment']['id'],
                 'terminal_id'   => $input['terminal']['id'],
                 'gateway'       => $this->gateway,
@@ -479,7 +481,13 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
-        $content = $this->parseGatewayResponse($response->body, Action::VERIFY);
+        $content = $this->parseGatewayResponse($response->body, $input, Action::VERIFY);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'content'   => $content,
+            ]);
 
         $verify->verifyResponse = $this->response;
 
@@ -528,7 +536,7 @@ class Gateway extends Base\Gateway
     {
         $content = $verify->verifyResponseContent;
 
-        $verify->gatewaySuccess = ($content[Fields::DATA][Fields::RESULT] === Status::SUCCESSFUL);
+        $verify->gatewaySuccess = ($content[Fields::DATA][Fields::RESULT] === Status::VERIFY_SUCCESS);
     }
 
     protected function getCipherInstance(): RSA
@@ -564,9 +572,15 @@ class Gateway extends Base\Gateway
 
         $request =  $this->getRefundRequestArray($input);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'request'   => $request,
+            ]);
+
         $response = $this->sendGatewayRequest($request);
 
-        $response = $this->parseGatewayResponse($response->body, Action::REFUND);
+        $response = $this->parseGatewayResponse($response->body, $input, Action::REFUND);
 
         $response[Entity::RECEIVED] = 1;
 
@@ -576,8 +590,6 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestArray(array $input): array
     {
-        $refund = $input['refund'];
-
         $data = [
             Fields::MERCH_ID            => $this->getMerchantId(),
             Fields::MERCH_CHAN_ID       => $this->config['merchant_channel_id'],
@@ -639,7 +651,7 @@ class Gateway extends Base\Gateway
 
     protected function createCryptoIfNotCreated()
     {
-        $this->aesCrypto = new AESCrypto(AES::MODE_ECB,'b0wgtwlM8iEsq63z');
+        $this->aesCrypto = new AESCrypto(AES::MODE_ECB, $this->config['aes_encryption_key']);
     }
 
     public function encryptAes(string $stringToEncrypt)
@@ -660,5 +672,4 @@ class Gateway extends Base\Gateway
     {
         return $this->getCallbackResponseArray($input['input']);
     }
-
 }
