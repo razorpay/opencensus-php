@@ -565,6 +565,10 @@ class Reporting implements ExternalService
                 case Table::INVOICE:
                     return $hasPlTag;
 
+                // Keep transfer type only if one of marketplace or openwallet is enabled
+                case Table::TRANSFER:
+                    return $hasMarketplaceOrOpenwalletTag;
+
                 // Keep reversal type only if marketplace is enabled
                 case Table::REVERSAL:
                     return $hasMarketplaceTag;
