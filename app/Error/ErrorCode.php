@@ -828,6 +828,7 @@ class ErrorCode
     // Partners error codes
     const SERVER_ERROR_PARTNER_APP_NOT_FOUND                                        = 'SERVER_ERROR_PARTNER_APP_NOT_FOUND';
     const BAD_REQUEST_INVALID_PARTNER_ACTION                                        = 'BAD_REQUEST_INVALID_PARTNER_ACTION';
+    const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED                             = 'BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED';
 
     const SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT                                 = 'SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT';
     const SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE                                 = 'SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE';

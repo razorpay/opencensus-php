@@ -206,8 +206,6 @@ class OAuth
         //
         $this->ba->setMerchantById($response[OAuthToken::MERCHANT_ID]);
 
-
-
         try
         {
             $this->ba->authCreds->checkMerchantActivatedForLive();
