@@ -32,19 +32,7 @@ class InvalidRequestCode
         self::R_99 => 'Permanent system failure.',
     ];
 
-    protected static $mapping = [
-        self::R_50 => '',
-        self::R_51 => '',
-        self::R_52 => '',
-        self::R_53 => '',
-        self::R_54 => '',
-        self::R_55 => '',
-        self::R_56 => '',
-        self::R_57 => '',
-        self::R_58 => '',
-        self::R_98 => '',
-        self::R_99 => '',
-    ];
+    protected static $mapping = [];
 
     public static function map($errorCode)
     {
