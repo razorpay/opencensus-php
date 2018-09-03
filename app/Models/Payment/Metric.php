@@ -18,7 +18,6 @@ class Metric extends Base\Core
     const LABEL_PAYMENT_TRANSACTION_TYPE        = 'transaction_type';
     const LABEL_PAYMENT_STATUS                  = 'status';
     const LABEL_CARD_TYPE                       = 'card_type';
-    const LABEL_CARD_IIN                        = 'card_iin';
     const LABEL_CARD_NETWORK                    = 'card_network';
     const LABEL_PAYMENT_LATE_AUTHORIZED         = 'late_authorized';
     const LABEL_PAYMENT_AUTO_CAPTURED           = 'auto_captured';
@@ -105,7 +104,6 @@ class Metric extends Base\Core
 
         $dimensions += [
             self::LABEL_CARD_NETWORK => $network  ?? null,
-            self::LABEL_CARD_IIN     => $iin      ?? null,
             self::LABEL_CARD_TYPE    => $cardType ?? null,
         ];
 

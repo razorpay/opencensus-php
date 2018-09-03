@@ -1816,7 +1816,7 @@ trait Authorize
                 return;
             }
 
-            $payment->setMetadataKey(Payment\Entity::PREFERRED_AUTH, [Payment\AuthType::OTP]);
+            $payment->setMetadataKey(Payment\Entity::PREFERRED_AUTH, [Payment\AuthType::OTP, Payment\AuthType::_3DS]);
         }
     }
 

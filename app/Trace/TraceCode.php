@@ -1186,7 +1186,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_MDR_LAST_UPDATED_DATA                 = 'PAYMENT_MDR_LAST_UPDATED_DATA';
     const PAYMENT_MDR_UPDATE_SUCCESS                    = 'PAYMENT_MDR_UPDATE_SUCCESS';
 
-    const GATEWAY_ERROR_METRIC_DIMENSION_FETCH          = 'GATEWAY_ERROR_METRIC_DIMENSION_FETCH';
+    const GATEWAY_METRIC_DIMENSION_PUSH_FAILED          = 'GATEWAY_METRIC_DIMENSION_PUSH_FAILED';
 
     const SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED   = 'SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED';
 
@@ -1195,7 +1195,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HEADLESS_OTP_ELF_UNKNOWN_FAILURE              = 'HEADLESS_OTP_ELF_UNKNOWN_FAILURE';
     const HEADLESS_OTP_ELF_UNKNOWN_RESPONSE             = 'HEADLESS_OTP_ELF_UNKNOWN_RESPONSE';
 
-    protected static $messages = array(
+    const YESBANK_SOURCE_AMOUNT                         = 'YESBANK_SOURCE_AMOUNT';
+    const YESBANK_TRANSFER_AMOUNT                       = 'YESBANK_TRANSFER_AMOUNT';
+    const YESBANK_CONVERTED_AMOUNT                      = 'YESBANK_CONVERTED_AMOUNT';
+
+    const UPDATE_NODAL_BENEFICIARY                      = 'UPDATE_NODAL_BENEFICIARY';
+
+    protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
         self::PAYMENT_CREATE_FAILED                     => 'Payment creation failed',
@@ -1340,8 +1346,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::GRATIS_TO_POSTPAID_FAILED                 => 'Transaction conversion from gratis to postpaid failed',
         self::GRATIS_TO_POSTPAID_RESPONSE               => 'Gratis to postpaid response',
 
-        self::GATEWAY_ERROR_METRIC_DIMENSION_FETCH      => 'Exception fetching metric dimensions',
-    );
+        self::GATEWAY_METRIC_DIMENSION_PUSH_FAILED      => 'Exception fetching metric dimensions',
+    ];
 
     /**
      * Translate event code to message

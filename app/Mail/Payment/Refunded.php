@@ -50,6 +50,22 @@ class Refunded extends Base
             Constants::MAIL_ADDRESSES[Constants::REPORTS];
     }
 
+    protected function addMailData()
+    {
+        if ($this->isMerchantEmail() === true)
+        {
+            $this->data['type'] = 'merchant_transaction';
+        }
+        else
+        {
+            $this->data['type'] = 'customer';
+        }
+
+        $this->with($this->data);
+
+        return $this;
+    }
+
     protected function getSenderHeader(): string
     {
         return ($this->isMerchantEmail() === true) ?

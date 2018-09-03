@@ -89,4 +89,36 @@ return [
             'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
         ],
     ],
+
+    'testVerifyCallbackFailed' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+
+    'testFailedPaymentVerifyCallback' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        ],
+    ],
 ];
