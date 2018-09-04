@@ -322,14 +322,13 @@ class Rule extends CollectionItem {
   }
 
   field(Component, name, props = {}) {
-    let value,
-      isDisabled = false;
+    let value;
 
     if (name === 'amount_range') {
       if (this['amount_range_min']) {
         value = this['amount_range_min'] + '-' + this['amount_range_max'];
-        if (!options.amount_range[value]) {
-          value = this.isEditing || !this.id ? 'custom' : value;
+        if (!options.amount_range[value] && !this.id) {
+          value = 'custom';
         }
       } else {
         value = this[name];
@@ -347,7 +346,7 @@ class Rule extends CollectionItem {
     }
 
     if (this.isEditing && editableFields.indexOf(name) === -1) {
-      isDisabled = true;
+      return value;
     }
 
     return (
@@ -355,10 +354,17 @@ class Rule extends CollectionItem {
         name={name}
         value={value}
         onChange={this.onPropChange}
-        disabled={isDisabled}
         {...props}
       />
     );
+  }
+
+  onPropChange(e) {
+    this[e.target.name] = e.target.value;
+    if (e.target.name === 'amount_range' && e.target.value !== 'custom') {
+      this.amount_range_min = '';
+      this.amount_range_max = '';
+    }
   }
 
   selectField(name, values = options[name]) {
@@ -460,14 +466,12 @@ class Rule extends CollectionItem {
       var minField = this.numberField('amount_range_min');
       var maxField = this.numberField('amount_range_max');
 
-      if (minField && maxField) {
-        return (
-          <div class="custom-range-cnt">
-            {' '}
-            Min {minField} Max {maxField}
-          </div>
-        );
-      }
+      return (
+        <div class="custom-range-cnt">
+          <div>Min {minField}</div>
+          <div>Max {maxField}</div>
+        </div>
+      );
     }
   }
 }
