@@ -14,6 +14,7 @@ use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
+use RZP\Models\Feature\Constants;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;

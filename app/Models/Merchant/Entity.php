@@ -1132,6 +1132,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EMAIL] =  $formattedEmail;
     }
 
+    public function setChannel(string $channel)
+    {
+        $this->attributes[self::CHANNEL] = $channel;
+    }
+
     public function setWebsiteAttribute($website)
     {
         $this->attributes[self::WEBSITE] = $website;
