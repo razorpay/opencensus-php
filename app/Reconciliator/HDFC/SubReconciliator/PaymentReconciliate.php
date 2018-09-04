@@ -246,7 +246,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getUtgst($row)
     {
         $columnUtgst = null;
-        
+
         //
         // This should be isset only and not empty
         // because utgst can be 0 also.
@@ -489,7 +489,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $columnAuthCode = $row[self::COLUMN_AUTH_CODE];
         }
 
-        if ((empty($columnAuthCode) === true))
+        if (empty($columnAuthCode) === true)
         {
             return null;
         }

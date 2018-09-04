@@ -14,8 +14,6 @@ use RZP\Gateway\Mpi\Blade\XmlseclibsAdapter;
 use RZP\Gateway\Mpi\Blade\Gateway as BladeGateway;
 use RZP\Gateway\Mpi\Blade\Mock\Gateway as BladeMockGateway;
 use RZP\Tests\TestCase;
-//use Gateway\Blade\XmlseclibsAdapter;
-
 
 class BladeSignatureTest extends TestCase
 {
@@ -133,13 +131,17 @@ class BladeSignatureTest extends TestCase
 
         $pares = file_get_contents(__DIR__. '/MockData/' . $file);
 
+        $decodePares = base64_decode($pares);
+
+        $paresXml = gzinflate(substr($decodePares, 2));
+
         $blade = new BladeGateway;
 
         $e = null;
 
         try
         {
-            $this->invokeMethod($blade, 'validateSignatureAndInflatePares', [base64_decode($pares)]);
+            $this->invokeMethod($blade, 'validateParesSignature', [$paresXml]);
         }
         catch (Exception $e)
         {

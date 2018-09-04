@@ -1132,6 +1132,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EMAIL] =  $formattedEmail;
     }
 
+    public function setChannel(string $channel)
+    {
+        $this->attributes[self::CHANNEL] = $channel;
+    }
+
     public function setWebsiteAttribute($website)
     {
         $this->attributes[self::WEBSITE] = $website;
@@ -1713,5 +1718,35 @@ class Entity extends Base\PublicEntity
         $this->setSignedId($array);
 
         return $array;
+    }
+
+    /**
+     * Checks if the merchant has 24/7 settlement enabled
+     *
+     * @return bool
+     */
+    public function isMerchantWith24x7SettlementFeature(): bool
+    {
+        $channelWith24x7Settlement =  Settlement\Channel::get24x7Channels();
+
+        $merchantChannel = $this->getChannel();
+
+        if (in_array($merchantChannel, $channelWith24x7Settlement, true) === false)
+        {
+            return false;
+        }
+
+        if ($this->isFeatureEnabled(Feature\Constants::SETTLEMENT_24X7) === true)
+        {
+            return true;
+        }
+        else if ($this->isLinkedAccount() === true)
+        {
+            $parentHas24x7Feature = $this->parent->isFeatureEnabled(Feature\Constants::SETTLEMENT_24X7);
+
+            return $parentHas24x7Feature;
+        }
+
+        return false;
     }
 }

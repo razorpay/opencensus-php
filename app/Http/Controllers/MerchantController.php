@@ -1058,4 +1058,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postMerchantBeneficiaryThroughApi($channel)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->registerBeneficiaryThroughApi($input, $channel);
+
+        return ApiResponse::json($data);
+    }
 }

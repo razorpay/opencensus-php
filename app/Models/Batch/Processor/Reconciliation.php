@@ -209,6 +209,7 @@ class Reconciliation extends Base
         $fileContents = [];
 
         $totalCount = 0;
+
         //
         // Gets the sheet names which need to be collected for the given gateway.
         // Returns empty if there is no restriction on which sheets to collect.
@@ -219,7 +220,9 @@ class Reconciliation extends Base
 
         $startRow = $this->gatewayReconciliator->getStartRow($inputFileDetails);
 
-        $excelArray = $this->converter->convertExcelToArray($inputFileDetails, $sheetNames, $startRow);
+        $keyColumnNames = $this->gatewayReconciliator->getKeyColumnNames($inputFileDetails);
+
+        $excelArray = $this->converter->convertExcelToArray($inputFileDetails, $sheetNames, $startRow, $keyColumnNames);
 
         $sheetCount = count(array_keys($excelArray));
 

@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\Settlement\Holidays;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Batch\Entity;
@@ -50,9 +51,23 @@ abstract class NodalAccount extends Base\Core
 
     protected $transferStatus = [];
 
+    protected $isWorkingDay;
+
+    protected $bankingStartTime;
+
+    protected $bankingEndTime;
+
     public function __construct(string $purpose = null)
     {
         $this->purpose = $purpose;
+
+        $currentTime = Carbon::now(Timezone::IST);
+
+        $this->isWorkingDay = Holidays::isWorkingDay($currentTime);
+
+        $this->bankingStartTime = Carbon::today(Timezone::IST)->hour(8)->getTimestamp();
+
+        $this->bankingEndTime = Carbon::today(Timezone::IST)->hour(18)->minute(15)->getTimestamp();
 
         $this->initSummary();
 
