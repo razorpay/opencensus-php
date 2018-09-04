@@ -14,8 +14,11 @@ use RZP\Models\FileStore;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
+use RZP\Mail\Base\Constants;
+use RZP\Services\Beam\Service;
 use RZP\Encryption\AESEncryption;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Mail\Settlement\Settlement as SettlementMail;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 
@@ -29,6 +32,8 @@ class NodalAccount extends NodalBase\FileProcessor
         Mode::IMPS    => 'M',
         Mode::IFT     => 'I',
     ];
+
+    const BEAM_FILE_TYPE = 'settlement';
 
     protected $secret = null;
 
@@ -68,6 +73,13 @@ class NodalAccount extends NodalBase\FileProcessor
         $fileData = $this->getFileData($rzpFile);
 
         $this->sendAxisTransferMail($fileData);
+
+        //
+        // Pushing to Beam after sending the email
+        // such that current settlement processing
+        // doesn't get affected by Beam errors.
+        //
+        $this->sendFile($excelFile);
 
         $this->trace->info(TraceCode::FTA_FILE_EMAIL_SENT);
 
@@ -234,5 +246,32 @@ class NodalAccount extends NodalBase\FileProcessor
         $settlementMail = new SettlementMail($data);
 
         Mail::queue($settlementMail);
+    }
+
+    /**
+     * @param FileStore\Creator $file
+     * Send file to bank through Beam
+     */
+    protected function sendFile(FileStore\Creator $file)
+    {
+        $fileInfo = [$file->getFullFileName()];
+
+        $data =  [
+            Service::BEAM_PUSH_FILES   => $fileInfo,
+            Service::BEAM_PUSH_JOBNAME => BeamConstants::AXIS_SETTLEMENT_JOB_NAME
+        ];
+
+        // In seconds
+        $timelines = [15, 30, 45, 60, 90, 120, 150, 180];
+
+        $mailInfo = [
+            'fileInfo'  => $fileInfo,
+            'channel'   => $this->channel,
+            'filetype'  => self::BEAM_FILE_TYPE,
+            'subject'   => 'Axis Settlement File Send Failure',
+            'recipient' => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS]
+        ];
+
+        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
     }
 }

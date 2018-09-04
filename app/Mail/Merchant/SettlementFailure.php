@@ -28,7 +28,7 @@ class SettlementFailure extends Mailable
 
     protected function addSender()
     {
-        $this->from(Constants::MAIL_ADDRESSES[Constants::CARE], 'Razorpay Settlement Support');
+        $this->from(Constants::MAIL_ADDRESSES[Constants::NOREPLY], 'Razorpay Settlement Support');
 
         return $this;
     }

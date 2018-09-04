@@ -57,7 +57,7 @@ class Gateway extends Base\Gateway
 
     public function otpResend(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Base\Action::OTP_RESEND);
 
         $mpiEntity = $this->app['repo']
                           ->mpi
@@ -70,7 +70,7 @@ class Gateway extends Base\Gateway
             throw new Exception\LogicException(
                 'Gateway does not support OTP resend',
                 null,
-                ['payment_id' => $id]);
+                ['payment_id' => $input['payment']['id']]);
         }
 
         $authenticationGateway = $mpiEntity->getGateway();

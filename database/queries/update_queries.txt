@@ -1988,3 +1988,7 @@ WHERE i.batch_id IN ('AYhD3yazCd4XsG',
   AND i.merchant_id = '9mOxXWuS2uIw5j'
   AND i.status = 'issued'
   AND p.status = 'failed'
+
+# Fixes Billdesk gateway entities not having RefundId due to timeout
+UPDATE billdesk SET RefundId = 'NSCB66303666851' WHERE id = 6739873;
+UPDATE billdesk SET RefundId = 'NALB66415013781' WHERE id = 6757314;

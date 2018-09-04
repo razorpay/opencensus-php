@@ -14,9 +14,11 @@ abstract class Base extends ApiProcessor
     const TIMEOUT = 30;
 
     //Beneficiary default name,min and max length
-    const BENE_MIN_LEN      = 5;
-    const BENE_MAX_LEN      = 35;
-    const BENE_DEFAULT_NAME = 'Not Available';
+    const BENE_MIN_LEN           = 5;
+    const BENE_MAX_LEN           = 35;
+    const BENE_BANK_MAX_LEN      = 128;
+    const BENE_DEFAULT_NAME      = 'Not Available';
+    const BENE_DEFAULT_BANK_NAME = 'bank';
 
     // Identifiers used store the response data
     const PAYMENT_REF_NO        = 'payment_ref_no';
@@ -299,4 +301,24 @@ abstract class Base extends ApiProcessor
 
         return $normalizedString;
     }
+
+    /**
+     * Normalizes beneficiary bank name should have max length between 128
+     *
+     * @param $string
+     *
+     * @return string
+     */
+    protected function normalizeBeneficiaryBankName($string): string
+    {
+         if (empty($string) === true)
+        {
+            return self::BENE_DEFAULT_BANK_NAME;
+        }
+
+        $normalizedString =  preg_replace("/[^a-zA-Z]/", ' ', $string);
+
+        return substr($normalizedString, 0, self::BENE_BANK_MAX_LEN);
+    }
+
 }

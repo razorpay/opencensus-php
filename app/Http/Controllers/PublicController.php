@@ -151,11 +151,11 @@ class PublicController extends Controller
         $this->validateHostedParams($params);
 
         // place flashcheckout check here
-        $savedCardsDisabled = $params['checkout']['key'] === 'rzp_live_iCSx3q87a2XrU0';
+        $showEmbeddedUi = false;
         $options     = json_encode($params['checkout'], JSON_FORCE_OBJECT);
         $urls        = json_encode($params['url'], JSON_FORCE_OBJECT);
 
-        if ($savedCardsDisabled) {
+        if ($showEmbeddedUi) {
             $key         = $params['checkout']['key'];
             $embeddedJsUrl = $this->config->get('url.cdn.production') . '/static/hosted/embedded.js';
             $data = [

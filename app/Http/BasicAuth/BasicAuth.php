@@ -8,7 +8,6 @@ use ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Razorpay\OAuth\Client as OAuthClient;
-use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Exception;
 use RZP\Http\Route;
@@ -20,6 +19,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Http\RequestHeader;
 use RZP\Base\RepositoryManager;
+use RZP\Exception\LogicException;
 use RZP\Models\User\Entity as User;
 use RZP\Models\Merchant\Account\Entity as Account;
 
@@ -1526,7 +1526,15 @@ class BasicAuth
 
         $this->setPartnerMerchantId($this->authCreds->getMerchant()->getId());
 
-        $this->authCreds->setAndCheckMerchantActivatedForLive($account);
+        try
+        {
+            $this->authCreds->setAndCheckMerchantActivatedForLive($account);
+        }
+        catch (LogicException $e)
+        {
+            return ApiResponse::generateErrorResponse(
+                ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED);
+        }
 
         $merchantId = $this->authCreds->getMerchant()->getId();
 

@@ -187,9 +187,6 @@
                                 We are a payment gateway and only facilitate merchants with on-line payments.
                                 <br>
                                 We request you to contact the merchant for any service related queries.
-                                <br>
-                                If you want to dispute a payment, please visit our <a title="Razorpay" href="https://razorpay.com">website</a>
-                                and follow the instructions on the chat window.
                               </center>
                             </td>
                             <td class="expander"></td>
@@ -202,7 +199,7 @@
               </td>
             </tr>
           </table>
-          @include('emails.partials.footer', ['message'=>$message])
+          @include('emails.partials.footer', ['message'=>$message, 'type'=>'customer'])
         </td>
       </tr>
     </table>

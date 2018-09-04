@@ -185,6 +185,7 @@ final class Route
         'merchant_patch_beneficiary_code'          => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
         'merchant_beneficiary_file'                => ['post',     'merchants/beneficiary/file/{channel}',           'MerchantController@getMerchantBeneficiary'                         ],
         'merchant_post_beneficiary_file'           => ['post',     'merchants/beneficiary/file/bank/{channel}',      'MerchantController@postMerchantBeneficiary'                        ],
+        'merchant_post_beneficiary_api'            => ['post',     'merchants/beneficiary/api/{channel}',            'MerchantController@postMerchantBeneficiaryThroughApi'                  ],
         'merchant_notify_holiday'                  => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
         'merchant_invoice_update_gstin'            => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
         'merchant_create_invoice_entities'         => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
@@ -851,6 +852,8 @@ final class Route
         // Generic Lambda handler
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
 
+        'nodal_beneficiary_update'                 => ['patch',    'nodal_beneficiaries',                            'NodalBeneficiaryController@update'                                 ],
+
         // Partner routes
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
@@ -861,6 +864,7 @@ final class Route
         'webhook_fire'                             => ['post',     'webhook/{event}/fire',                           'WebhookController@processWebhook'                                  ],
         'admin_mdr_update'                         => ['put',      'mdr_update',                                     'AdminController@updateMdr'                                         ],
         'merchant_bulk_edit_attributes'            => ['post',     'merchants/bulk/attributes',                      'MerchantController@bulkEditMerchantAttributes'                     ],
+
     ];
 
     public static $public = [
@@ -1175,6 +1179,7 @@ final class Route
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
         'admin_mdr_update',
+        'merchant_post_beneficiary_api',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1628,6 +1633,7 @@ final class Route
         'merchant_requests_bulk_update',
         'merchant_activation_bulk_assign_reviewer',
         'merchant_activation_reviewers',
+
         'merchant_bulk_edit_attributes',
 
         // Partners
@@ -1642,6 +1648,8 @@ final class Route
         'reporting_log_list_admin',
         'reporting_schedule_get_admin',
         'reporting_schedule_list_admin',
+
+        'nodal_beneficiary_update',
     ];
 
     public static $routePermission = [
@@ -1973,6 +1981,7 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
+        'nodal_beneficiary_update'                 => Permission::SETTLEMENT_BULK_UPDATE,
         'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'invoice_issue_by_batch'                   => '*',
         'invoice_notify_by_batch'                  => '*',
@@ -2154,6 +2163,7 @@ final class Route
             // so the cron app has access to the route.
             'setcronjob_webhook',
             'admin_mdr_update',
+            'merchant_post_beneficiary_api',
         ],
 
         'subscriptions' => [
@@ -2234,8 +2244,8 @@ final class Route
         'customer_delete'                      => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_delete_token'                => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_fetch_tokens'                => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
-        'payment_create_wallet'                => [Feature::S2SWALLET],
-        'payment_create_upi'                   => [Feature::S2SUPI],
+        'payment_create_wallet'                => [Feature::S2SWALLET, Feature::S2S],
+        'payment_create_upi'                   => [Feature::S2SUPI, Feature::S2S],
         'payment_create_openwallet'            => [Feature::OPENWALLET],
         'payment_create_recurring'             => [Feature::CHARGE_AT_WILL],
         'payment_create_private_old'           => [Feature::S2S],

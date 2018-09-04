@@ -11,6 +11,7 @@ use Razorpay\OAuth\Application\Entity as OAuthApp;
 use RZP\Constants;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\User\Role;
 use RZP\Models\Batch\Header;
 use RZP\Mail\User\MappedToAccount;
@@ -20,6 +21,7 @@ use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerMail;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMail;
@@ -184,6 +186,36 @@ class MerchantCreateTest extends TestCase
         {
             return $mail->hasTo('test@razorpay.com', 'Submerchant');
         });
+
+        list($testMapping, $liveMapping) = $this->getLastMappingForBothModes();
+
+        $this->assertNull($testMapping);
+
+        $this->assertNull($liveMapping);
+    }
+
+    public function testCreateSubMerchantFor24x7Settlement()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures([
+            FeatureConstants::AGGREGATOR,
+            FeatureConstants::SETTLEMENT_24X7]);
+
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@razorpay.com', 'Submerchant');
+        });
+
+        $subMerchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals($subMerchant['channel'], Channel::YESBANK);
 
         list($testMapping, $liveMapping) = $this->getLastMappingForBothModes();
 
