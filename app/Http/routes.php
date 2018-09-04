@@ -148,7 +148,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/{mode}/reports/invoice/{merchant_id}', 'TransactionController@getInvoiceReport')->name('reports_invoice');
         Route::get('/admin/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
 
-        Route::get('/admin/reports/{log_id}', 'MerchantController@downloadReport');
+        Route::get('/admin/admin_reports/{log_id}', 'MerchantController@downloadReport');
 
         Route::any('/admin/api/{mode}/{path}', 'GenericController@handleAny')
             ->where(['path' => '.*'])
