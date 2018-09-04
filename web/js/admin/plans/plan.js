@@ -463,8 +463,11 @@ class Rule extends CollectionItem {
 
   customRangeField() {
     if (this.amount_range === 'custom') {
-      var minField = this.numberField('amount_range_min');
-      var maxField = this.numberField('amount_range_max');
+      let props = {
+        placeholder: 'Paisa',
+      };
+      var minField = this.numberField('amount_range_min', props);
+      var maxField = this.numberField('amount_range_max', props);
 
       return (
         <div class="custom-range-cnt">

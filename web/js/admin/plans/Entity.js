@@ -101,7 +101,7 @@ const fields = [
   ],
   ['Issuer', item => item.issuerField() || 'Any'],
   [
-    'Amount Range',
+    'Amount Range (Paisa)',
     item => (
       <div>
         {item.selectField('amount_range') || 'None'}
