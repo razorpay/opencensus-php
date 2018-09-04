@@ -149,6 +149,10 @@ class Gateway
         self::NETBANKING_OBC,
         self::NETBANKING_ICICI,
         self::WALLET_OPENWALLET,
+
+        // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
+        //If you are seeing this after Sep'18, Please report to gateway payments team
+        self::UPI_HULK,
     ];
 
     /**
