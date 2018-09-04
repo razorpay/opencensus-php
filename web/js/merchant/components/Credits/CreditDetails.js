@@ -11,9 +11,16 @@ export default class CreditDetails extends Component {
   };
 
   toggleCollapsible = () => {
-    this.setState({
-      showCollapsible: !this.state.showCollapsible,
-    });
+    const showCollapsible = this.state.showCollapsible;
+
+    this.setState(
+      {
+        showCollapsible: !showCollapsible,
+      },
+      () => {
+        this.props.trackToggleHistory(this.props.title)(!showCollapsible);
+      }
+    );
   };
 
   render() {
