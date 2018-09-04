@@ -101,7 +101,7 @@ class Processor extends Base\Core
     {
         $this->preSettlementProcessing($input);
 
-        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
+        list($shouldProcess, $data) = $this->shouldProcessSettlements($input, $channel);
 
         if ($shouldProcess === true)
         {
@@ -493,11 +493,18 @@ class Processor extends Base\Core
         $this->input = $input;
     }
 
-    protected function shouldProcessSettlements($input)
+    protected function shouldProcessSettlements($input, string $channel = null)
     {
         $isTestMode = $this->isTestMode();
 
         if ($isTestMode === true)
+        {
+            return [true, null];
+        }
+
+        $channelWith24x7Settlement = Channel::get24x7Channels();
+
+        if (in_array($channel, $channelWith24x7Settlement, true) === true)
         {
             return [true, null];
         }
