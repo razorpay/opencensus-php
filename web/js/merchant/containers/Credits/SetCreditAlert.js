@@ -82,6 +82,7 @@ export default class SetCreditAlert extends Component {
                 class="form-control"
                 validate={[required(), amount()]}
                 required
+                maxlength={10}
               />
               <small class="help-block">
                 <i class="i i-info-circle" />&nbsp;
