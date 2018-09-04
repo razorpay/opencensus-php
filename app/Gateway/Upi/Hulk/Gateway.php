@@ -332,6 +332,7 @@ class Gateway extends Base\Gateway
                 'razorpay_payment_id' => $payment['id']
             ],
             Fields::MERCHANT_REFERENCE_ID   => $payment['id'],
+            Fields::CATEGORY_CODE           => (string) ($input['merchant']['category'] ?? 5411),
         ];
 
         if ($input['merchant']->isTPVRequired() === true)
