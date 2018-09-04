@@ -39,6 +39,8 @@ class ErrorCode
     const GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH';
     const GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED                                      = 'GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED';
     const GATEWAY_ERROR_PARES_NOT_SUCCESSFUL                                        = 'GATEWAY_ERROR_PARES_NOT_SUCCESSFUL';
+    const GATEWAY_ERROR_INVALID_PARES_XML                                           = 'GATEWAY_ERROR_INVALID_PARES_XML';
+    const GATEWAY_ERROR_PARES_DATA_MISMATCH                                         = 'GATEWAY_ERROR_PARES_DATA_MISMATCH';
     const GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR                                        = 'GATEWAY_ERROR_NOT_UNDERSTOOD_ERROR';
     const GATEWAY_ERROR_CHECKSUM_MATCH_FAILED                                       = 'GATEWAY_ERROR_CHECKSUM_MATCH_FAILED';
     const GATEWAY_ERROR_CHECKSUM_NOT_GENERATED_PROPERLY                             = 'GATEWAY_ERROR_CHECKSUM_NOT_GENERATED_PROPERLY';
@@ -358,7 +360,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                     = 'BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                               = 'BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                    = 'BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID';
-    const BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR                                   = 'BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR';
+    const BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR                             = 'BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR';
     const BAD_REQUEST_INVALID_XML_SCHEMA                                            = 'BAD_REQUEST_INVALID_XML_SCHEMA';
     const BAD_REQUEST_PAYMENT_ABORTED                                               = 'BAD_REQUEST_PAYMENT_ABORTED';
     const BAD_REQUEST_PAYMENT_MISSING_DATA                                          = 'BAD_REQUEST_PAYMENT_MISSING_DATA';

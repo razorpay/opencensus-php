@@ -3127,4 +3127,31 @@ class MerchantTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testBeneficiaryRegisterYesbankBetweenTimestamps()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('bank_account');
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/api/yesbank',
+            'method'    => 'post',
+            'content'   => [
+                'duration' => 15
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('merchants_count', $content);
+
+        $this->assertEquals(1, $content['merchants_count']);
+
+        $this->assertEquals(Channel::YESBANK, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class);
+    }
 }

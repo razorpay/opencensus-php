@@ -1201,6 +1201,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const UPDATE_NODAL_BENEFICIARY                      = 'UPDATE_NODAL_BENEFICIARY';
 
+    const BENEFICIARY_REGISTER_API_INIT                 = 'BENEFICIARY_REGISTER_API_INIT';
+    const BENEFICIARY_REGISTER_API_FETCH                = 'BENEFICIARY_REGISTER_API_FETCH';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
