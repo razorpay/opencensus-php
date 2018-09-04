@@ -56,6 +56,12 @@ class Gateway extends Base\Gateway
         Fields::CALLER_IFSC_CODE          => Entity::IFSC,
     ];
 
+    protected $forceFillable = [
+        Entity::VPA                       => Entity::VPA,
+        Fields::CALLER_IFSC_CODE          => Entity::IFSC,
+        Fields::CALLER_ACCOUNT_NUMBER     => Entity::ACCOUNT_NUMBER,
+    ];
+
     /**
      * Authorizes a payment using UPI Gateway
      * @param  array  $input
@@ -506,6 +512,30 @@ class Gateway extends Base\Gateway
         $verify->verifyResponseContent = $this->getMappedAttributes($content);
 
         return $status;
+    }
+
+    public function forceAuthorizeFailed(array $input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'],
+                                                                      Action::AUTHORIZE);
+
+        if (($gatewayPayment[Entity::STATUS_CODE] === Status::COMPLETED) and
+            ($gatewayPayment[Entity::RECEIVED]) === true)
+        {
+            return true;
+        }
+
+        $attr = array_only($input['gateway'], $this->forceFillable);
+
+        $attr[Entity::STATUS_CODE] = Status::COMPLETED;
+
+        $gatewayPayment->fill($attr);
+
+        $gatewayPayment->generatePspData($attr);
+
+        $gatewayPayment->saveOrFail();
+
+        return true;
     }
 
     public function verifyRefund(array $input)
