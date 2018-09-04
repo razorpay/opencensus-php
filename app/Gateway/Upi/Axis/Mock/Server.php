@@ -28,9 +28,10 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
-       $arr =  explode('/', parse_url($this->mockRequest['url'])['query']);
-       $token = $arr[count($arr) - 1];
         parent::authorize($input);
+
+        $arr =  explode('/', parse_url($this->mockRequest['url'])['query']);
+        $token = $arr[count($arr) - 1];
 
         $content = [
             Fields::CODE    => '00',
@@ -42,6 +43,7 @@ class Server extends Base\Mock\Server
         ];
 
         $this->content($content);
+
         return $this->makeResponse($content);
     }
 
@@ -199,11 +201,6 @@ class Server extends Base\Mock\Server
         $payment = $app['repo']->payment->find($paymentId);
 
         $response = $this->getDefaultRefundResponse($input, $payment);
-
-        if ($payment['vpa'] === 'failedrefund@hdfcbank')
-        {
-            $response[4] = Status::FAILED;
-        }
 
         $this->content($response, 'refund');
 

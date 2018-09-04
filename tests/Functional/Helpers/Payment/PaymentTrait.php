@@ -475,6 +475,7 @@ trait PaymentTrait
         {
             $payment = $this->getDefaultPaymentArray();
         }
+
         $request = [
             'content' => $payment,
             'url'     => '/payments/create/ajax',
@@ -1258,12 +1259,14 @@ trait PaymentTrait
         $this->checkAndSetUrl($request);
 
         $response = $this->makeRequestParent($request);
+
         $url = $request['url'];
 
         if ($this->isPaymentCreationUrl($url))
         {
             $response = $this->handlePaymentCreationFlow($response, $request, $callback);
         }
+
         return $response;
     }
 

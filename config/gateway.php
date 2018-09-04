@@ -279,6 +279,7 @@ return [
         'public_key'            => env('UPI_AXIS_GATEWAY_PUBLIC_KEY'),
         'mobile_no'             => env('UPI_AXIS_GATEWAY_MOBILE_NUMBER'),
         'aes_encryption_key'    => env('UPI_AXIS_GATEWAY_AES_KEY'),
+        'default_payee_vpa'     => env('UPI_AXIS_GATEWAY_PAYEE_VPA'),
     ],
 
     'aeps_icici' => [

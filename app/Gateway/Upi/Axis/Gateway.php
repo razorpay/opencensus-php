@@ -36,12 +36,6 @@ class Gateway extends Base\Gateway
 
     protected $gateway  = Payment\Gateway::UPI_AXIS;
 
-    /**
-     * This is what shows up as the payee
-     * on the notification to the customer
-     */
-    const DEFAULT_PAYEE_VPA = 'razaorpay@axis';
-
     const FIELD_LENGTH = [
         Action::AUTHORIZE  => 17,
         Action::REFUND     => 20,
@@ -115,7 +109,7 @@ class Gateway extends Base\Gateway
                 $tokenResponse[Fields::RESULT]);
         }
 
-        $vpa = self::DEFAULT_PAYEE_VPA;
+        $vpa = $this->getDefaultPayeeVpa();
 
         return [
             'data'   => [
@@ -185,6 +179,20 @@ class Gateway extends Base\Gateway
         }
 
         return $this->config['merchant_id'];
+    }
+
+    /**
+     * This is what shows up as the payee
+     * on the notification to the customer
+     */
+    protected function getDefaultPayeeVpa()
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $this->terminal->getGatewayMerchantId();
+        }
+
+        return $this->config['default_payee_vpa'];
     }
 
     /**
