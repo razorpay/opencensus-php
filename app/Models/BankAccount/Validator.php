@@ -82,6 +82,10 @@ class Validator extends Base\Validator
         Entity::RECIPIENT_EMAILS . '*'  => 'sometimes|email',
     ];
 
+    protected static $beneficiaryRegisterApiRules = [
+        Entity::DURATION                => 'required|integer',
+    ];
+
     protected function validateBeneficiaryState($input)
     {
         if ((isset($input[Entity::BENEFICIARY_STATE]) === true) and
