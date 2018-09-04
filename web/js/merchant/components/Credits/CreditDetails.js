@@ -35,17 +35,17 @@ export default class CreditDetails extends Component {
             </button>
           )}
 
-          <h3>{title}</h3>
+          <strong class="big-font">{title}</strong>
 
-          <p class="sub-title">{description}</p>
+          <p class="puck">{description}</p>
 
-          <strong>
+          <strong class="big-font">
             <Amount value={totalCredits} />
           </strong>
 
           {!!creditItems.length && (
             <button
-              class="btn-link pull-right"
+              class="btn-link pull-right toggle-history"
               onClick={this.toggleCollapsible}
             >
               {!!showCollapsible ? 'Hide' : 'View'} History
@@ -56,6 +56,7 @@ export default class CreditDetails extends Component {
           {showCollapsible && (
             <div class="collapsible">
               <Table
+                className="history"
                 rows={creditItems}
                 columns={[
                   creditId,

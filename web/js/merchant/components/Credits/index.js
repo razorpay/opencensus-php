@@ -52,6 +52,7 @@ export default props => {
                 <CreditDetails
                   totalCredits={balanceData.credits}
                   title="Amount Credits"
+                  description="Get your amounts settled in full. Transaction amount gets deducted from amount credits."
                   creditItems={creditItems.amount}
                 />
               )}
