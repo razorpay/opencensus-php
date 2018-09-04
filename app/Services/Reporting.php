@@ -642,11 +642,11 @@ class Reporting implements ExternalService
 
         $parentId = null;
 
-        if ($merchant->isMarketplace() === true)
+        if ((empty($merchant) === false) and ($merchant->isMarketplace() === true))
         {
             $parentId = $merchant->getId();
         }
-        else if ($merchant->isLinkedAccount() === true)
+        else if ((empty($merchant) === false) and ($merchant->isLinkedAccount() === true))
         {
             $parentId = $merchant->parent->getId();
         }
