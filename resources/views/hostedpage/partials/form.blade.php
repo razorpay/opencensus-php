@@ -26,7 +26,7 @@
                 <p class="help-block errormsg"></p>
             </div>
 
-            <button type="button" class="btn" id="udf_submit_btn">
+            <button type="submit" class="btn" id="udf_submit_btn">
                 Pay Securely <span>→</span>
             </button>
         </div>

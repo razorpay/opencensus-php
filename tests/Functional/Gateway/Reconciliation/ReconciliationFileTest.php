@@ -1,7 +1,6 @@
 <?php
 namespace RZP\Tests\Functional\Gateway\Reconciliation;
 
-use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
@@ -10,9 +9,9 @@ use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Exception\GatewayRequestException;
+use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 use RZP\Reconciliator\HDFC\RefundReconciliate as HdfcRefundRecon;
@@ -201,6 +200,39 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testAxisMigsForceAuthorizePayment()
+    {
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getNewPaymentEntity(true, false);
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'status' => 'failed',
+                'error_code' => 'BAD_REQUEST_ERROR',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description' => 'Payment was not completed on time.',
+                'verify_bucket' => 0,
+                'verified' => null
+            ]);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('axis_migs');
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideAxisPayment($gatewayPayment, [], 'migs');
+
+        $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement', 'Sale');
+        $this->runForFiles([$file], 'Axis', [], ['pay_'. $payment['id']]);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+    }
+
     public function testAxisMigsReconPaymentFile()
     {
         $this->fixtures->create('terminal:shared_migs_recurring_terminals');
@@ -303,7 +335,7 @@ class ReconciliationFileTest extends TestCase
         $updatedTransaction = $this->getLastEntity('transaction', true);
 
         $updatedRefund = $this->getLastEntity('refund', true);
-        
+
         $this->assertEquals($entries[0]['Reference Tran Id'], $updatedRefund['arn']);
 
         $this->assertNotNull($updatedTransaction['reconciled_at']);
@@ -311,7 +343,80 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testCardFssForceAuthorizePayment()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment1 =$this->doAuthAndGetPayment($payment);
+
+        $this->fixtures->payment->edit($payment1['id'],
+            [
+                'status' => 'failed',
+                'error_code' => 'BAD_REQUEST_ERROR',
+            ]);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('card_fss');
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $entries[] = $this->overrideCardFssPayment($gatewayPayment, [], 'card_fss');
+
+        $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'payment');
+        $this->runForFiles([$file], 'CardFss', [], ['pay_'. $payment['id']]);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+    }
+
     public function testVirtualAccYesBankReconFile()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $account = $this->createVirtualAccount();
+
+        // Intentionally changing the IFSC to validate IFSC is not updated from recon file anymore.
+        $payment = $this->payVirtualAccount($account['id'], ['payer_ifsc' => 'PYTM0000001']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(null, $transaction['reconciled_at']);
+
+        $entries[] = $this->overrideVirtualAccYesBankPayment($account, $payment);
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccYesBank');
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertNotEquals($entries[0]['rmtr_account_ifsc'], $bankTransfer['payer_ifsc']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertNotEquals($entries[0]['rmtr_account_ifsc'], $bankAccount['ifsc_code']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        // Beneficiary name should be overridden by the one in the file.
+        $this->assertEquals($entries[0]['rmtr_full_name'], $bankAccount['beneficiary_name']);
+    }
+
+    public function testVirtualAccYesBankReconFileWithWrongValues()
     {
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
@@ -327,16 +432,48 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $this->overrideVirtualAccYesBankPayment($account, $payment);
 
+        // With wrong amount, batch should be marked partially processed and reconciled at should not be present.
+        $entries[0]['amount'] = 1000;
+
         $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
 
         $this->runForFiles([$file], 'VirtualAccYesBank');
 
-        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
 
-        $bankAccount = $this->getLastEntity('bank_account', true);
+        $transaction = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals($entries[0]['rmtr_account_ifsc'], $bankTransfer['payer_ifsc']);
-        $this->assertEquals($entries[0]['rmtr_account_ifsc'], $bankAccount['ifsc']);
+        $this->assertEquals(null, $transaction['reconciled_at']);
+
+        $utr = $entries[0]['transaction_ref_no'];
+
+        // If UTR is not present, batch should be marked partially processed and reconciled at should not be present.
+        $entries[0]['transaction_ref_no'] = strtoupper(random_alphanum_string(22));
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccYesBank');
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(null, $transaction['reconciled_at']);
+
+        // With correct values of utr, batch should be marked processed with reconciled at timestamp.
+        $entries[0]['transaction_ref_no'] = $utr;
+
+        $entries[0]['amount'] = 100;
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccYesBank');
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
 
     }
 
@@ -523,12 +660,13 @@ class ReconciliationFileTest extends TestCase
 
         $batch = $this->getDbLastEntityToArray('batch');
 
-        $this->assertEquals($batch['total_count'], 3);
-        $this->assertEquals($batch['success_count'], 2);
-        $this->assertEquals($batch['failure_count'], 1);
+        $this->assertEquals(3, $batch['total_count']);
+        $this->assertEquals(2, $batch['success_count']);
+        $this->assertEquals(1, $batch['failure_count']);
+        $this->assertEquals(3, $batch['processed_count']);
 
         // One failure, status will be partially_processed
-        $this->assertEquals($batch['status'], Status::PARTIALLY_PROCESSED);
+        $this->assertEquals(Status::PARTIALLY_PROCESSED, $batch['status']);
     }
 
     /**
@@ -860,7 +998,7 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
-    protected function runForFiles(array $files, string $gateway, array $forceUpdate = [])
+    protected function runForFiles(array $files, string $gateway, array $forceUpdate = [],  array $forceAuthorizePayments = [])
     {
         $this->ba->appAuth();
 
@@ -868,6 +1006,7 @@ class ReconciliationFileTest extends TestCase
 
         $testData['request']['content']['gateway'] = $gateway;
         $testData['request']['content']['attachment-count'] = count($files);
+
         foreach ($files as $index => $file)
         {
             $testData['request']['files']['attachment-' . ($index + 1)] = $this->createUploadedFile($file);
@@ -878,6 +1017,14 @@ class ReconciliationFileTest extends TestCase
             foreach ($forceUpdate as $forceUpdateColumn)
             {
                 $testData['request']['content']['force_update'][] = $forceUpdateColumn;
+            }
+        }
+
+        if (empty($forceAuthorizePayments) === false)
+        {
+            foreach ($forceAuthorizePayments as $forceAuthorizePayment)
+            {
+                $testData['request']['content'][Base::FORCE_AUTHORIZE][] = $forceAuthorizePayment;
             }
         }
 
@@ -1060,8 +1207,14 @@ class ReconciliationFileTest extends TestCase
         // Retrying failed batch.
         $this->retryFailedBatch('batch_' . $batch['id']);
 
-        // Asserting status of batch as 'Processed'.
-        $this->assertBatchStatus(Status::PROCESSED);
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        // Asserting status of batch as 'Processed' and counts.
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
+        $this->assertEquals(1, $batch['total_count']);
+        $this->assertEquals(1, $batch['success_count']);
+        $this->assertEquals(0, $batch['failure_count']);
+        $this->assertEquals(1, $batch['processed_count']);
     }
 
     public function testOlamoneyReconPaymentFile()

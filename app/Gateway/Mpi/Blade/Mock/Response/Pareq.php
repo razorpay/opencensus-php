@@ -161,4 +161,17 @@ class Pareq
             'protocol' => 'ThreeDSecure'
         ];
     }
+
+    public function paresWithErrorCode()
+    {
+        return [
+            'Error' =>[
+                'version'   => null,
+                'errorCode' => '98',
+                'errorMessage' => 'Transient system failure',
+                'errorDetail' => null,
+                'vendorCode' => 'TEMPORARY SYSTEM FAILURE HAS OCCURED',
+            ],
+        ];
+    }
 }

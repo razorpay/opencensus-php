@@ -16,8 +16,6 @@ class Core extends Base\Core
         // parse, and set data in $paymentAnalytics object
         $parser->recordPaymentRequestData($pa, $payment);
 
-        $this->repo->saveOrFail($pa);
-
         $paArray = $pa->toArrayPublic();
 
         $parser->traceInconsistentData($paArray);

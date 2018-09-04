@@ -41,8 +41,8 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|in:1,2,3',
-        Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::TPV                         => 'sometimes|in:0,1,2',
+        Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::CORPORATE                   => 'sometimes_if:netbanking,1|in:0,1,2',
         Entity::EXPECTED                    => 'sometimes|boolean',
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
@@ -126,6 +126,19 @@ class Validator extends Base\Validator
         Entity::VISA_MPAN                  => 'required_if:type.bharat_qr,1|string|size:16',
         Entity::RUPAY_MPAN                 => 'required_if:type.bharat_qr,1|string|size:16',
         Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
+    ];
+
+    protected static $isgTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:isg',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string|max:15',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|string|size:8',
+        Entity::TYPE                       => 'required|array',
+        Entity::TYPE . '.bharat_qr'        => 'required|in:1',
+        Entity::TYPE . '.non_recurring'    => 'required|in:1',
+        Entity::MC_MPAN                    => 'required|string|size:16',
+        Entity::VISA_MPAN                  => 'required|string|size:16',
+        Entity::RUPAY_MPAN                 => 'required|string|size:16',
+        Entity::EXPECTED                   => 'sometimes|boolean',
     ];
 
     protected static $aepsIciciTerminalRules = [

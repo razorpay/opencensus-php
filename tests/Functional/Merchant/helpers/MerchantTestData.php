@@ -1900,7 +1900,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 15,
+                'count' => 14,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1962,13 +1962,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'SCBL',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'SVCB',
                         ],
                     ],
@@ -2020,7 +2013,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 16,
+                'count' => 15,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -2083,13 +2076,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SCBL',
                         ],
                     ],
                     [
@@ -2335,7 +2321,6 @@ return [
                                 'IDFB',
                                 'JSBP',
                                 'NKGS',
-                                'SCBL',
                                 'SVCB',
                                 'SYNB',
                                 'TNSC',
@@ -3102,6 +3087,21 @@ return [
             'url'     => '/submerchant/user/10000000000040',
             'method'  => 'POST',
             'content' => []
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateSubmerchantLoginByAdmin' => [
+        'request'  => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Dashboard-User-Role' => 'manager',
+            ]
         ],
         'response' => [
             'content'     => [],

@@ -7,6 +7,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Currency\Currency;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card;
 use Razorpay\Trace\Logger as Trace;
 
 trait Authorize
@@ -432,6 +433,29 @@ trait Authorize
             'action'       => Action::AUTHORIZE,
         ];
 
+        $this->setDebitSecondRecurringPayment($input);
+
+        if ($this->secondDebitRecurringFlag === true)
+        {
+            $data['expmonth'] = $card['expiry_month'];
+
+            $data['expyear'] = $card['expiry_year'];
+
+            $data['cavv'] = Hdfc\Constants::DEBIT_SECOND_RECURRING_PAYMENT_CAVV;
+
+            $data['xid'] = Hdfc\Constants::DEBIT_SECOND_RECURRING_PAYMENT_XID;
+
+            $data['enrollmentflag'] = Hdfc\Constants::DEBIT_SECOND_RECURRING_PAYMENT_ENROLLMENT_FLAG;
+
+            $data['authenticationflag'] = Hdfc\Constants::DEBIT_SECOND_RECURRING_PAYMENT_AUTHENTICATION_FLAG;
+
+            $data['eci'] = $this->getEci($input);
+
+            $data['type'] = Hdfc\Constants::DEBIT_SECOND_RECURRING_PAYMENT_TYPE;
+
+            $this->authSecondRecurringRequest['url'] = Hdfc\Urls::AUTH_NOT_ENROLLED_URL_DEBIT_SI;
+        }
+
         // Collect udf fields
         // Only visa/master are supported for recurring
         $this->populateRiskUdfIfApplicable($data, $input);
@@ -451,6 +475,14 @@ trait Authorize
         unset($this->authSecondRecurringRequest['data']['cvv2']);
     }
 
+    protected function getEci($input)
+    {
+        $network = $input['card']['network_code'];
+
+        $eci = ($network === Card\Network::VISA) ? '05' : '02';
+
+        return $eci;
+    }
 
     protected function authorizeRecurring($input)
     {
@@ -464,7 +496,7 @@ trait Authorize
         $this->runRequestResponseFlow(
             $this->authSecondRecurringRequest,
             $this->authSecondRecurringResponse);
-
+       
         // Check for auth success.
         if ($this->isAuthSuccess($this->authSecondRecurringResponse) === true)
         {

@@ -20,7 +20,7 @@
     <p>
         --<br/>
         {{$org['display_name']}} <br/>
-        <a href="mailto:contact@razorpay.com">contact@razorpay.com</a>
+        For queries, contact us <a href="https://dashboard.razorpay.com/#/app/dashboard#request">here</a>
     </p>
     <div>
         <img style="width:200px; height:auto;" src="{{$org['login_logo_url']}}">

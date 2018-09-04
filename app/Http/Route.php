@@ -47,6 +47,7 @@ final class Route
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                       => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_create_openwallet'                => ['post',     'payments/create/openwallet',                     'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_callback_ajax_with_key_get'       => ['get',      'payments/{id}/callback/ajax/{hash}/{key}',       'PaymentCreateController@postAJAXCallback'                          ],
         'payment_callback_post'                    => ['post',     'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                     => ['get',      'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'           => ['post',     'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
@@ -62,6 +63,7 @@ final class Route
         'payment_refund'                           => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
+        'payment_get_flows_private'                => ['post',     'payment/flows',                                  'PaymentController@getPaymentFlowsPrivate'                          ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                             => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
         'batch_create_admin'                       => ['post',     'admin/batches',                                  'AdminController@createAdminBatch'                                  ],
@@ -183,6 +185,7 @@ final class Route
         'merchant_patch_beneficiary_code'          => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
         'merchant_beneficiary_file'                => ['post',     'merchants/beneficiary/file/{channel}',           'MerchantController@getMerchantBeneficiary'                         ],
         'merchant_post_beneficiary_file'           => ['post',     'merchants/beneficiary/file/bank/{channel}',      'MerchantController@postMerchantBeneficiary'                        ],
+        'merchant_post_beneficiary_api'            => ['post',     'merchants/beneficiary/api/{channel}',            'MerchantController@postMerchantBeneficiaryThroughApi'                  ],
         'merchant_notify_holiday'                  => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
         'merchant_invoice_update_gstin'            => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
         'merchant_create_invoice_entities'         => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
@@ -365,8 +368,8 @@ final class Route
         'gateway_payment_callback_kotak'           => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel'    => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
         'gateway_payment_callback_corporation'     => ['get',      'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
-        'gateway_payment_callback_amazonpay'       => ['get',      'gateway/wallet_amazonpay/callback',              'GatewayController@callbackAmazonpay'                               ],
-
+        'gateway_payment_callback_amazonpay'       => ['get',      'gateway/wallet_amazonpay/callback/{ajax?}',      'GatewayController@callbackAmazonpay'                               ],
+        'gateway_payment_callback_amazonpay_post'  => ['post',     'gateway/wallet_amazonpay/callback/{ajax?}',      'GatewayController@callbackAmazonpay'                               ],
         'geoip_update'                             => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
 
         // File-based Emandate Routes
@@ -735,6 +738,8 @@ final class Route
         'dispute_reason_create'                    => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
         'dispute_fetch_multiple'                   => ['get',      'disputes',                                       'DisputeController@fetchMultiple'                                   ],
         'dispute_fetch'                            => ['get',      'disputes/{id}',                                  'DisputeController@get'                                             ],
+        'dispute_file_delete'                      => ['delete',   'disputes/{id}/files/{fileId}',                   'DisputeController@deleteFile'                                      ],
+        'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
 
         'merchant_payout'                          => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
@@ -814,6 +819,7 @@ final class Route
         // TODO: Should change to just /signed_url (No 'get' and underscore)
         'ufh_get_file_signed_url'                  => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
 
+        'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -846,12 +852,19 @@ final class Route
         // Generic Lambda handler
         'lambda_post_h2h'                          => ['post',     'lambda/{type}',                                  'LambdaController@processLambda'                                    ],
 
+        'nodal_beneficiary_update'                 => ['patch',    'nodal_beneficiaries',                            'NodalBeneficiaryController@update'                                 ],
+
         // Partner routes
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
-        'admin_mdr_update'                         => ['put',      'mdr_update',                               'AdminController@updateMdr'                                         ],
+
+        // Webhook Api Wrapper
+        'webhook_fire'                             => ['post',     'webhook/{event}/fire',                           'WebhookController@processWebhook'                                  ],
+        'admin_mdr_update'                         => ['put',      'mdr_update',                                     'AdminController@updateMdr'                                         ],
+        'merchant_bulk_edit_attributes'            => ['post',     'merchants/bulk/attributes',                      'MerchantController@bulkEditMerchantAttributes'                     ],
+
     ];
 
     public static $public = [
@@ -943,6 +956,7 @@ final class Route
     public static $publicCallback = [
         'payment_callback_with_key_post',
         'payment_callback_with_key_get',
+        'payment_callback_ajax_with_key_get',
     ];
 
     /**
@@ -1070,6 +1084,7 @@ final class Route
         'account_features_get',
         'payment_acknowledge',
         'bharat_qr_pay_test',
+        'payment_get_flows_private',
     ];
 
     // Only routes defined in internalApps go here
@@ -1164,6 +1179,7 @@ final class Route
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
         'admin_mdr_update',
+        'merchant_post_beneficiary_api',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1303,6 +1319,8 @@ final class Route
         'ufh_get_file_signed_url',
         'pincode_get',
         'dispute_edit',
+        'dispute_file_delete',
+        'dispute_files_fetch',
         'merchant_get_tags',
         'merchant_edit_email_la',
         'account_fetch',
@@ -1331,6 +1349,7 @@ final class Route
         'payment_link_activate',
         'submerchants_fetch',
         'submerchants_fetch_multiple',
+        'webhook_fire',
     ];
 
     // These will run on internal auth with the assurance
@@ -1605,6 +1624,7 @@ final class Route
         'shield_rules_delete',
         'shield_rules_evaluate',
 
+        'razorx_route',
         'user_fetch_admin',
         'merchant_requests_list',
         'merchant_requests_update',
@@ -1613,6 +1633,8 @@ final class Route
         'merchant_requests_bulk_update',
         'merchant_activation_bulk_assign_reviewer',
         'merchant_activation_reviewers',
+
+        'merchant_bulk_edit_attributes',
 
         // Partners
         'merchants_access_map_create',
@@ -1626,6 +1648,8 @@ final class Route
         'reporting_log_list_admin',
         'reporting_schedule_get_admin',
         'reporting_schedule_list_admin',
+
+        'nodal_beneficiary_update',
     ];
 
     public static $routePermission = [
@@ -1761,6 +1785,7 @@ final class Route
         'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,
         'payment_dispute_create'                   => Permission::CREATE_DISPUTE,
         'dispute_edit'                             => Permission::EDIT_DISPUTE,
+        'dispute_files_fetch'                      => Permission::FETCH_DISPUTE_FILES,
         'settings_fetch'                           => Permission::VIEW_WALLET_CONFIG,
         'settings_fetch_defined'                   => Permission::VIEW_WALLET_CONFIG,
         'settings_upsert'                          => Permission::EDIT_WALLET_CONFIG,
@@ -1948,6 +1973,7 @@ final class Route
         'merchant_requests_get'                    => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_requests_update'                 => Permission::EDIT_MERCHANT_REQUESTS,
         'merchant_requests_bulk_update'            => Permission::EDIT_MERCHANT_REQUESTS,
+        'merchant_bulk_edit_attributes'            => Permission::EDIT_MERCHANT_REQUESTS,
         'merchant_requests_status_log'             => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_requests_get_feature'            => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_bank_account_change_status'      => '*',
@@ -1955,6 +1981,8 @@ final class Route
         'merchant_activation_bulk_assign_reviewer' => Permission::ASSIGN_MERCHANT_ACTIVATION_REVIEWER,
         'db_meta_query'                            => Permission::DB_META_QUERY,
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
+        'nodal_beneficiary_update'                 => Permission::SETTLEMENT_BULK_UPDATE,
+        'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'invoice_issue_by_batch'                   => '*',
         'invoice_notify_by_batch'                  => '*',
         'merchants_access_map_create'              => Permission::EDIT_PARTNERS,
@@ -1994,6 +2022,7 @@ final class Route
         'gateway_payment_callback_kotak_cancel',
         'gateway_payment_callback_corporation',
         'gateway_payment_callback_amazonpay',
+        'gateway_payment_callback_amazonpay_post',
         'mailgun_webhook',
         'gateway_downtime_source_webhook',
         'checkout_onyx',
@@ -2134,11 +2163,14 @@ final class Route
             // so the cron app has access to the route.
             'setcronjob_webhook',
             'admin_mdr_update',
+            'merchant_post_beneficiary_api',
         ],
 
         'subscriptions' => [
             'invoice_create',
             'customer_fetch_by_id',
+            'webhook_fire',
+            'merchant_fetch_config',
         ],
 
         'kotak' => [
@@ -2185,6 +2217,15 @@ final class Route
         ],
     ];
 
+    //
+    // Apps that receive a debug error response by default. We do
+    // this because the receiving app may required extra information
+    // like internal_error_code to correctly handle exceptions
+    //
+    const DEBUG_APPS = [
+        'subscriptions',
+    ];
+
     protected static $jsonpRoutes = [
         'checkout',
         'payment_create_jsonp',
@@ -2203,8 +2244,8 @@ final class Route
         'customer_delete'                      => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_delete_token'                => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
         'customer_fetch_tokens'                => [Feature::TOKENS, Feature::CHARGE_AT_WILL],
-        'payment_create_wallet'                => [Feature::S2SWALLET],
-        'payment_create_upi'                   => [Feature::S2SUPI],
+        'payment_create_wallet'                => [Feature::S2SWALLET, Feature::S2S],
+        'payment_create_upi'                   => [Feature::S2SUPI, Feature::S2S],
         'payment_create_openwallet'            => [Feature::OPENWALLET],
         'payment_create_recurring'             => [Feature::CHARGE_AT_WILL],
         'payment_create_private_old'           => [Feature::S2S],
@@ -2309,13 +2350,12 @@ final class Route
 
     const SUBSCRIPTION_PROXY_ROUTES = [
         'plan_create',
-        'plan_create',
         'plan_fetch',
         'plan_fetch_multiple',
         'subscription_create',
         'subscription_fetch',
         'subscription_fetch_multiple',
-        'subscription_cancel',
+        // 'subscription_cancel',
         'addon_fetch',
         'addon_fetch_multiple',
         'addon_delete',
@@ -2388,13 +2428,17 @@ final class Route
 
     public function getUrlWithPublicAuth($routeName, array $parameters = [], $key = '')
     {
-        // If current request was on keyless public auth, append the x_entity_id query for public urls.
+        // If current request was on keyless public auth, append the x_entity_id query for public urls
+        // only if the same is not required in route parameters in which case it will be there in $parameters already.
         if (($key === '') and ($this->ba->isKeylessPublicAuth() === true))
         {
-            $parameters['x_entity_id'] = $this->ba->getKeylessXEntityId();
+            if (str_contains(self::$apiRoutes[$routeName][1], '{x_entity_id}') === false)
+            {
+                $parameters['x_entity_id'] = $this->ba->getKeylessXEntityId();
+            }
         }
         // For a partner token authenticated route, keep the token in the public URL
-        if (($key === '') and ($this->ba->isPartnerAuth() === true))
+        else if (($key === '') and ($this->ba->isPartnerAuth() === true))
         {
             $parts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $this->ba->getPublicKey());
 
@@ -2437,19 +2481,13 @@ final class Route
         return $url;
     }
 
-    public function getPublicCallbackUrlWithHash($pid, $key = '')
+    public function getPublicCallbackUrlWithHash($pid, $key = '', $route = 'payment_callback_with_key_post')
     {
-        // @todo: $key is not used here and should be remove
-        if ($key === '')
-        {
-            $key = $this->ba->getPublicKey();
-        }
-
         $hash = $this->getHashOf($pid);
 
         $parameters = ['id' => $pid, 'hash' => $hash];
 
-        return $this->getUrlWithPublicCallbackAuth($parameters);
+        return $this->getUrlWithPublicCallbackAuth($parameters, $key, $route);
     }
 
     public function getUrlWithAuth($relativeUrl, $key = '', $secret = '')
@@ -2545,6 +2583,12 @@ final class Route
         $methods = explode(',', $info[0]);
         $uri     = $info[1];
         $action  = $info[2];
+
+        // For any we have to register all the methods their is no specific called any in HTTP methods.
+        if ($methods === ['any'])
+        {
+            $methods = Router::$verbs;
+        }
 
         $router = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
 
@@ -2655,6 +2699,11 @@ final class Route
         $currentRoute = $this->getCurrentRouteName();
 
         return (in_array($currentRoute, self::SUBSCRIPTION_PROXY_ROUTES, true) === true);
+    }
+
+    public static function isDebugApp(string $app = null): bool
+    {
+        return (in_array($app, self::DEBUG_APPS, true) === true);
     }
 
     public function getHashOf(string $string): string

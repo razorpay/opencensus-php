@@ -14,6 +14,7 @@ use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
+use RZP\Models\Feature\Constants;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -1211,7 +1212,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(21, $banks);
+        $this->assertCount(32, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -2040,6 +2041,8 @@ class MerchantTest extends TestCase
 
     public function testPutEmiMethod()
     {
+        $this->fixtures->create('pricing:emi_pricing_plan');
+
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $admin = $this->ba->getAdmin();
@@ -2812,6 +2815,39 @@ class MerchantTest extends TestCase
         Mail::assertNotQueued(MappedToAccount::class);
     }
 
+    public function testCreateSubmerchantLoginByAdmin()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'     => '10000000000040',
+            'email'  => 'test1@razorpay.com',
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+
+        $merchant->reTag(["ref-10000000000000"]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', null, 'manager');
+
+        $this->startTest();
+
+        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertNotEmpty($mailData['token']);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertTrue($mailable->hasTo('test1@razorpay.com'));
+
+            return true;
+        });
+
+        Mail::assertNotQueued(MappedToAccount::class);
+    }
+
     public function testCreateSubmerchantLoginPartnerAppMissing()
     {
         $this->fixtures->create('merchant', [
@@ -3091,5 +3127,32 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testBeneficiaryRegisterYesbankBetweenTimestamps()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('bank_account');
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/api/yesbank',
+            'method'    => 'post',
+            'content'   => [
+                'duration' => 15
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('merchants_count', $content);
+
+        $this->assertEquals(1, $content['merchants_count']);
+
+        $this->assertEquals(Channel::YESBANK, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class);
     }
 }

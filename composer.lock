@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
     "content-hash": "294b9c8874bfef47fd7e1b2905cff070",
@@ -132,7 +132,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2017-07-26T22:05:53+00:00"
+            "time": "2017-08-11T21:16:28+00:00"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -1077,7 +1077,7 @@
                 "singularize",
                 "string"
             ],
-            "time": "2017-07-22T12:18:28+00:00"
+            "time": "2015-11-06T14:35:42+00:00"
         },
         {
             "name": "doctrine/instantiator",
@@ -1565,16 +1565,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.9.11",
+            "version": "8.9.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "2a6b6661f42644941e4c8e895518f27c99587a68"
+                "reference": "b906325b1bcf99309bc10bff7cbdc1ed8fbcf774"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/2a6b6661f42644941e4c8e895518f27c99587a68",
-                "reference": "2a6b6661f42644941e4c8e895518f27c99587a68",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/b906325b1bcf99309bc10bff7cbdc1ed8fbcf774",
+                "reference": "b906325b1bcf99309bc10bff7cbdc1ed8fbcf774",
                 "shasum": ""
             },
             "require": {
@@ -1629,7 +1629,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2018-07-26T10:50:48+00:00"
+            "time": "2018-08-23T10:23:25+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -2152,7 +2152,7 @@
                 "crawlerdetect",
                 "php crawler detect"
             ],
-            "time": "2017-07-03T20:56:40+00:00"
+            "time": "2017-08-07T18:48:00+00:00"
         },
         {
             "name": "jenssegers/agent",
@@ -2933,7 +2933,7 @@
                 "sftp",
                 "storage"
             ],
-            "time": "2017-04-28T10:15:08+00:00"
+            "time": "2017-08-06T17:41:04+00:00"
         },
         {
             "name": "league/oauth2-server",
@@ -4023,7 +4023,7 @@
                 "parser",
                 "php"
             ],
-            "time": "2017-06-28T20:53:48+00:00"
+            "time": "2017-07-28T14:45:09+00:00"
         },
         {
             "name": "nojacko/email-data-disposable",
@@ -4339,7 +4339,7 @@
                 "message",
                 "psr7"
             ],
-            "time": "2017-03-02T06:56:00+00:00"
+            "time": "2017-08-03T10:12:53+00:00"
         },
         {
             "name": "php-http/guzzle6-adapter",
@@ -5107,7 +5107,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "Hans-J?rgen Petrich",
+                    "name": "Hans-Jürgen Petrich",
                     "email": "petrich@tronic-media.com",
                     "role": "Developer"
                 },
@@ -5564,7 +5564,7 @@
                 "interactive",
                 "shell"
             ],
-            "time": "2017-07-22T15:14:19+00:00"
+            "time": "2017-07-29T19:30:02+00:00"
         },
         {
             "name": "ramsey/uuid",
@@ -5646,7 +5646,7 @@
                 "identifier",
                 "uuid"
             ],
-            "time": "2017-03-26T20:37:53+00:00"
+            "time": "2017-08-04T13:39:04+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",
@@ -5726,16 +5726,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.1.8",
+            "version": "1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "d13ded5a93afeb56861206d47ae548e264f477e9"
+                "reference": "1a5075e4fc6971164334785e94dcf80293870e01"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/d13ded5a93afeb56861206d47ae548e264f477e9",
-                "reference": "d13ded5a93afeb56861206d47ae548e264f477e9",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/1a5075e4fc6971164334785e94dcf80293870e01",
+                "reference": "1a5075e4fc6971164334785e94dcf80293870e01",
                 "shasum": ""
             },
             "require": {
@@ -5769,7 +5769,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2018-07-19T18:40:09+00:00"
+            "time": "2018-08-28T11:39:48+00:00"
         },
         {
             "name": "razorpay/metrics-php",
@@ -5916,7 +5916,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2017-07-17T20:11:53+00:00"
+            "time": "2017-08-03T11:25:15+00:00"
         },
         {
             "name": "razorpay/slack",
@@ -6153,12 +6153,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/ufh-sdk-php.git",
-                "reference": "14550e3374dc62017187070254d1a62480ff0746"
+                "reference": "17c1f3015d87844906a5aa1a321f4669b6028ed9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/14550e3374dc62017187070254d1a62480ff0746",
-                "reference": "14550e3374dc62017187070254d1a62480ff0746",
+                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/17c1f3015d87844906a5aa1a321f4669b6028ed9",
+                "reference": "17c1f3015d87844906a5aa1a321f4669b6028ed9",
                 "shasum": ""
             },
             "require": {
@@ -6186,11 +6186,7 @@
                 "sdk",
                 "ufh"
             ],
-            "support": {
-                "source": "https://github.com/razorpay/ufh-sdk-php/tree/master",
-                "issues": "https://github.com/razorpay/ufh-sdk-php/issues"
-            },
-            "time": "2018-01-30T07:21:27+00:00"
+            "time": "2018-08-22T08:02:28+00:00"
         },
         {
             "name": "razorpay/upi-clients",
@@ -6664,7 +6660,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2017-07-03T13:19:36+00:00"
+            "time": "2017-07-29T21:27:59+00:00"
         },
         {
             "name": "symfony/css-selector",
@@ -7597,7 +7593,7 @@
                 "uri",
                 "url"
             ],
-            "time": "2017-06-24T09:29:48+00:00"
+            "time": "2017-07-21T17:43:13+00:00"
         },
         {
             "name": "symfony/translation",
@@ -7730,7 +7726,7 @@
                 "debug",
                 "dump"
             ],
-            "time": "2017-07-10T14:18:27+00:00"
+            "time": "2017-07-28T06:06:09+00:00"
         },
         {
             "name": "symfony/yaml",
@@ -8147,7 +8143,7 @@
             ],
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
-            "time": "2017-04-05T13:51:33+00:00"
+            "time": "2017-08-09T14:23:33+00:00"
         },
         {
             "name": "codedungeon/phpunit-result-printer",

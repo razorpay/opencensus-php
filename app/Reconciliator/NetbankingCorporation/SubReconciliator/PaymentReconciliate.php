@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\NetbankingCorporation;
 
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
@@ -62,7 +63,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $row[ReconcilationFields::TXN_EXECUTED_DATE] ?? null;
     }
 
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
         return true;
     }

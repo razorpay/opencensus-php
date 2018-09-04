@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\Axis;
 
 use Carbon\Carbon;
 
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
@@ -446,7 +447,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return false;
     }
 
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
         $this->allowForceAuthorization = true;
     }

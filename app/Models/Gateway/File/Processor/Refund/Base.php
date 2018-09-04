@@ -4,10 +4,8 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Mail;
 use Carbon\Carbon;
-use Razorpay\Trace\Logger as Trace;
 
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
@@ -145,6 +143,8 @@ class Base extends BaseProcessor
             $this->gatewayFile->setFileSentAt(time());
 
             $this->gatewayFile->setStatus(Status::FILE_SENT);
+
+            $this->reconcileNetbankingRefunds($data);
         }
         catch (\Throwable $e)
         {

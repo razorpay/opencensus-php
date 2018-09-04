@@ -369,6 +369,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TERMS);
     }
 
+    public function getCheckoutDisplay()
+    {
+        return $this->getAttribute(self::CHECKOUT_DISPLAY);
+    }
+
 // --------------------- Calculator --------------------------------------------
 
     public function getDiscountedAmountForPayment(int $amount, $payment): int

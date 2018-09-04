@@ -10,6 +10,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\User;
 use RZP\Models\Batch;
 use RZP\Models\Pricing;
@@ -30,6 +31,7 @@ use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Merchant\Request as MerchantRequest;
@@ -109,6 +111,14 @@ class Core extends Base\Core
         }
 
         $subMerchant = $entity->build($input);
+
+        $has24x7SettlementFeature = $aggregatorMerchant->isFeatureEnabled(Feature::SETTLEMENT_24X7);
+
+        if (($has24x7SettlementFeature === true) and
+            ($linkedAccount === true))
+        {
+            $subMerchant->setChannel(Channel::YESBANK);
+        }
 
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
@@ -867,12 +877,13 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant)
         {
+            $this->deleteSupportingEntities($merchant);
+
             $this->deletePartnerApp($merchant);
 
             $merchant->setPartnerType();
 
             $this->repo->saveOrFail($merchant);
-
         });
 
         return $merchant;
@@ -1240,6 +1251,91 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    /**
+     * Cleans up all the supporting entities that were created when the merchant was a partner. This includes -
+     * 1. All the mappings (merchant_access_maps) that link the submerchants to the partner.
+     * 2. All the ref tags that indicate that the merchant is a referral to a partner.
+     * 3. All the mappings (merchant_users) that is currently allowing the partner user to access a submerchant.
+     *
+     * @param Entity $partner
+     */
+    protected function deleteSupportingEntities(Entity $partner)
+    {
+        if ($partner->isPurePlatformPartner() === true)
+        {
+            // A dummy application for pure platforms does not exist
+            return;
+        }
+
+        // Fetch partner app and then access maps
+        $partnerApp = $this->getPartnerApp($partner);
+        $accessMaps = $this->repo
+                           ->merchant_access_map
+                           ->fetchMerchantAccessMapOnEntity(AccessMap\Entity::APPLICATION, $partnerApp->getId());
+
+        // Fetch submerchants
+        $submerchantIds = $accessMaps->pluck(AccessMap\Entity::MERCHANT_ID)->toArray();
+        $submerchants   = $this->repo->merchant->findMany($submerchantIds);
+
+        $this->deleteAllPartnerSubmerchantAccessMaps($accessMaps);
+
+        $this->deleteAllSubmerchantRefTags($submerchants, $partner);
+
+        $this->deletePartnerDashboardAccessOnSubmerchants($partner, $submerchants);
+    }
+
+    /**
+     * @param PublicCollection $accessMaps
+     */
+    protected function deleteAllPartnerSubmerchantAccessMaps(Base\PublicCollection $accessMaps)
+    {
+        $accessMapIds = $accessMaps->pluck(AccessMap\Entity::ID)->toArray();
+
+        $this->trace->info(
+            TraceCode::PARTNER_ACCESS_MAPS_DELETE,
+            [
+                'ids' => $accessMapIds,
+            ]);
+
+        $this->repo->merchant_access_map->deleteMerchantAccessMapsByEntityIds($accessMapIds);
+    }
+
+    /**
+     * @param PublicCollection $submerchants
+     * @param Entity           $partner
+     */
+    protected function deleteAllSubmerchantRefTags(Base\PublicCollection $submerchants, Entity $partner)
+    {
+        $tagName = 'ref-' . $partner->getId();
+
+        foreach ($submerchants as $merchant)
+        {
+            $merchant->untag($tagName);
+
+            $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+        }
+    }
+
+    /**
+     * @param Entity           $partner
+     * @param PublicCollection $submerchants
+     */
+    protected function deletePartnerDashboardAccessOnSubmerchants(Entity $partner, Base\PublicCollection $submerchants)
+    {
+        $partnerUsers = $partner->users()->get();
+
+        $submerchantIds = $submerchants->pluck(Entity::ID)->toArray();
+
+        foreach ($partnerUsers as $partnerUser)
+        {
+            $merchantIdsAccessible = $partnerUser->merchants()->get()->pluck(Entity::ID)->toArray();
+
+            $submerchantIdsAccessible = array_intersect($merchantIdsAccessible, $submerchantIds);
+
+            $partnerUser->merchants()->detach($submerchantIdsAccessible);
+        }
     }
 
     /**

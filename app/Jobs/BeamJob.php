@@ -7,6 +7,7 @@ use Requests;
 use Requests_Response;
 
 use RZP\Trace\TraceCode;
+use RZP\Services\Beam\Service;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Beam\BeamRequestFailure;
 
@@ -173,8 +174,38 @@ class BeamJob extends Job
      */
     public function sendEmail()
     {
-        $mailObj = new BeamRequestFailure($this->mailInfo);
+        $mailData = $this->setMailInfo();
+
+        $mailObj = new BeamRequestFailure($mailData);
 
         Mail::send($mailObj);
+    }
+
+    /**
+     * Construct beam mail data
+     * @return array
+     */
+    protected function setMailInfo(): array
+    {
+        $fileList = [];
+
+        foreach ($this->mailInfo['fileInfo'] as $file)
+        {
+            $fileParam = explode('/', $file);
+
+            array_push($fileList, $fileParam[count($fileParam) - 1]);
+        }
+
+        $fileList = implode(",", $fileList);
+
+        $body = 'Hi,\n'. $this->mailInfo['filetype'] .' file send failed through Beam.\n'.
+            'Channel  :: ' . $this->mailInfo['channel'] . '\n'.
+            'Filename :: ' . $fileList . '\n';
+
+        return [
+            'body'      => $body,
+            'subject'   => $this->mailInfo['subject'],
+            'recipient' => $this->mailInfo['recipient'],
+        ];
     }
 }

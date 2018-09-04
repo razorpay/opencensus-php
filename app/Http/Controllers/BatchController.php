@@ -2,10 +2,11 @@
 
 namespace RZP\Http\Controllers;
 
+use View;
 use ApiResponse;
 use Illuminate\Http\Request;
+
 use RZP\Exception\BadRequestException;
-use View;
 
 class BatchController extends Controller
 {

@@ -55,6 +55,7 @@ class Entity extends Base\PublicEntity
     //
     const ON                = 'on';
     const RECIPIENT_EMAILS  = 'recipient_emails';
+    const DURATION          = 'duration';
 
     protected static $sign      = 'ba';
 
@@ -301,6 +302,11 @@ class Entity extends Base\PublicEntity
     public function setIfsc($ifsc)
     {
         return $this->setAttribute(self::IFSC_CODE, $ifsc);
+    }
+
+    public function setBeneficiaryName(string $name)
+    {
+        $this->setAttribute(self::BENEFICIARY_NAME, $name);
     }
 
     protected function setIfscCodeAttribute($code)

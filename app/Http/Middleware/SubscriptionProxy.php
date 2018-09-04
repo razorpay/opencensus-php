@@ -102,6 +102,8 @@ class SubscriptionProxy
 
         $method = $request->method();
 
+        $body = $this->getRequestBody($request);
+
         $response = $this->sendRequestAndParseResponse($url, $method, $body, $headers);
 
         return $response;
@@ -183,13 +185,60 @@ class SubscriptionProxy
         ]);
     }
 
+    protected function getRequestBody(Request $request)
+    {
+        if ($request->post() === null)
+        {
+            return [];
+        }
+
+        $queryStringArray = $this->getQueryStringAsArray($request->getQueryString());
+
+        return array_diff_assoc($request->post(), $queryStringArray);
+    }
+
+    protected function getQueryStringAsArray(string $queryString = null): array
+    {
+        $queryStringArray = [];
+
+        if ($queryString === null)
+        {
+            return $queryStringArray;
+        }
+
+        $queryStringChunks = explode('&', $queryString);
+
+        foreach ($queryStringChunks as $queryChunk)
+        {
+            $queryChunk = urldecode($queryChunk);
+
+            if (str_contains($queryChunk, '=') === true)
+            {
+                $queryStringArray[str_before($queryChunk, '=')] = str_after($queryChunk, '=');
+            }
+            else
+            {
+                $queryStringArray[$queryChunk] = '';
+            }
+        }
+
+        return $queryStringArray;
+    }
+
     protected function shouldProxyToSubscriptionService(): bool
     {
+        if (($this->app->environment('testing') === true) or
+            ($this->route->isSubscriptionProxyRoute() === false))
+        {
+            return false;
+        }
+
+        //
+        // Doing this check separately so we don't end up
+        // fetching merchant features for every single request
+        //
         $isFeatureEnabled = optional($this->ba->getMerchant())->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_V2);
 
-        return (($this->app->environment('testing') === false) and
-                ($this->ba->getMode() === Mode::TEST) and
-                ($this->route->isSubscriptionProxyRoute() === true) and
-                ($isFeatureEnabled === true));
+        return ($isFeatureEnabled === true);
     }
 }

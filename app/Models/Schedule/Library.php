@@ -10,14 +10,14 @@ use RZP\Constants\Timezone;
 
 class Library
 {
-    public static function getNextApplicableTime(int $currentTime, Entity $schedule, $nextRunAt) : int
+    public static function getNextApplicableTime(int $currentTime, Entity $schedule, $nextRunAt, bool $ignoreBankHolidays = false) : int
     {
         //
         // Minimum delay before the settlement of any payment. In case of hourly
         // schedules, this is set to zero, but settlement time is pushed forward
         // by an hour anyway to avoid race conditions.
         //
-        $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);
+        $settledAt = self::getMinimumDelayedTime($currentTime, $schedule, $ignoreBankHolidays);
 
         $nextRun = Carbon::createFromTimestamp($nextRunAt, Timezone::IST);
 
@@ -402,7 +402,7 @@ class Library
         }
     }
 
-    protected static function getMinimumDelayedTime(int $current, Entity $schedule): Carbon
+    protected static function getMinimumDelayedTime(int $current, Entity $schedule, bool $ignoreBankHolidays = false): Carbon
     {
         $currentTime = Carbon::createFromTimestamp($current, Timezone::IST);
 
@@ -421,13 +421,17 @@ class Library
             // Adding a few hours resulted in a holiday.
             // Now jump forward in days instead of hours.
             //
-            if (Holidays::isWorkingDay($minimumDelayedTime) === false)
+            if (($ignoreBankHolidays === false) and
+                (Holidays::isWorkingDay($minimumDelayedTime) === false))
             {
                 $minimumDelayedTime = Holidays::getNextWorkingDay($minimumDelayedTime);
             }
         }
         else
         {
+            // Will be having 24x7 only for hourly schedules for now.
+            // Will see about non-hourly schedules later.
+
             // Delay of N days means N working days.
             $minimumDelayedTime = Holidays::getNthWorkingDayFrom($minimumDelayedTime, $minimumDelay);
 

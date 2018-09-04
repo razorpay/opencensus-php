@@ -44,6 +44,16 @@ class Flow
         return false;
     }
 
+    public static function isValidFlow($flow)
+    {
+        if (isset(self::$flows[$flow]) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public static function getValid()
     {
         return array_keys(self::$flows);
@@ -74,6 +84,11 @@ class Flow
      */
     public static function getHexValue($flows)
     {
+        if (is_array($flows) === false)
+        {
+            return $flows;
+        }
+
         $hex = 0;
 
         foreach ($flows as $flow => $value)
@@ -85,6 +100,23 @@ class Flow
         }
 
         return $hex;
+    }
+
+    public static function disableFlow($bitmap, $flow)
+    {
+        if (self::isValidFlow($flow) === false)
+        {
+            return $bitmap;
+        }
+
+        $flowbit = self::$flows[$flow];
+
+        if (($bitmap & $flowbit) === $flowbit)
+        {
+            $bitmap = ($bitmap & (~$flowbit));
+        }
+
+        return $bitmap;
     }
 }
 

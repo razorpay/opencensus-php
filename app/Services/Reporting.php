@@ -465,6 +465,14 @@ class Reporting implements ExternalService
     {
         try
         {
+            $request['headers']['Content-Type'] = 'application/json';
+
+            // json encode if data is must, else ignore.
+            if (in_array($request['method'], [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
+            {
+                $request['content'] = json_encode($request['content'], JSON_FORCE_OBJECT);
+            }
+
             $response = Requests::request(
                             $request['url'],
                             $request['headers'],
@@ -536,6 +544,7 @@ class Reporting implements ExternalService
         $hasMarketplaceTag             = in_array(Feature::MARKETPLACE, $features, true);
         $hasOpenwalletTag              = in_array(Feature::OPENWALLET, $features, true);
         $hasMarketplaceOrOpenwalletTag = ($hasMarketplaceTag or $hasOpenwalletTag);
+        $hasOfferTag                   = in_array(Feature::OFFERS, $features, true);
 
         $items = $items->filter(function ($value, $key) use (
             $hasPlTag,
@@ -559,6 +568,13 @@ class Reporting implements ExternalService
                 default:
                     return true;
             }
+        });
+
+        $items = $items->filter(function ($value) use ($hasOfferTag)
+        {
+            return (($value['name'] === 'Offer Payments') and
+                ($value['type'] === Table::PAYMENT) and
+                ($value['consumer'] === Account::SHARED_ACCOUNT)) ? $hasOfferTag : true;
         });
 
         $configs['items'] = $items->values()->all();

@@ -42,7 +42,7 @@ class Server extends Base\Mock\Server
             Field::MERCHANT_TXN_ID      => $content[Field::MERCHANT_TXN_ID],
             Field::ACS_TXN_ID           => 'TVBJWElENXdYN3ZVOGlQMm1FM2Y',
             Field::RESPONSE_CODE        => '000',
-            Field::RES_DESC            => 'Success',
+            Field::RES_DESC             => 'Success',
             Field::ACS_VERIFICATION_URL => Url::LIVE_DOMAIN . Url::OTP_SUBMIT,
             Field::ADDITIONAL_DATA_REQ  => [
             ],
@@ -52,6 +52,35 @@ class Server extends Base\Mock\Server
         $this->content($response, Action::OTP_GENERATE);
 
         $response[Field::MESSAGE_HASH] = $this->getOtpSentResponseMessageHash($response);
+
+        unset($response[Field::SECRET]);
+
+        $jsonResponse = $this->makeJsonResponse($response);
+
+        return $jsonResponse;
+    }
+
+    public function otpResend($input)
+    {
+        $content = json_decode($input, true);
+
+        $this->setAction(ACTION::OTP_RESEND);
+
+        $this->validateActionInput($content, $this->action);
+
+        $response = [
+            Field::VERSION                  => Constant::VERSION,
+            Field::MERCHANT_TXN_ID          => $content[Field::MERCHANT_TXN_ID],
+            Field::ACS_TXN_ID               => $content[Field::ACS_TXN_ID],
+            Field::RESPONSE_CODE            => '000',
+            Field::RES_DESC                 => 'Success',
+            Field::OTP_RESEND_COUNT_LEFT    => 2,
+            Field::SECRET                   => 'random_secret_id',
+        ];
+
+        $this->content($response, Action::OTP_RESEND);
+
+        $response[Field::MESSAGE_HASH] = $this->getOtpResendResponseMessageHash($response);
 
         unset($response[Field::SECRET]);
 
@@ -75,8 +104,8 @@ class Server extends Base\Mock\Server
             Field::MERCHANT_TXN_ID      => $content[Field::MERCHANT_TXN_ID],
             Field::ACS_TXN_ID           => 'TVBJWElENXdYN3ZVOGlQMm1FM2Y',
             Field::RESPONSE_CODE        => '000',
-            Field::RES_DESC            => 'Success',
-            Field::ACC_STATUS           => 'Y',
+            Field::RES_DESC             => 'Success',
+            Field::ACS_STATUS           => 'Y',
             Field::ACC_ID               => '201611181642092180hE7iE9oZ',
             Field::CAVV                 => 'AAABA5IAAGmTFAYTlAAAAAAAAAA',
             Field::ECI                  => '05',
@@ -125,6 +154,18 @@ class Server extends Base\Mock\Server
             Field::ACC_ID          => $content[Field::ACC_ID],
             Field::CAVV            => $content[Field::CAVV],
             Field::ECI             => $content[Field::ECI],
+            Field::SECRET          => $content[Field::SECRET],
+        ];
+
+        return $this->gateway->generateHash($hash);
+    }
+
+    protected function getOtpResendResponseMessageHash($content)
+    {
+        $hash = [
+            Field::MERCHANT_TXN_ID => $content[Field::MERCHANT_TXN_ID],
+            Field::ACS_TXN_ID      => $content[Field::ACS_TXN_ID],
+            Field::RESPONSE_CODE   => $content[Field::RESPONSE_CODE],
             Field::SECRET          => $content[Field::SECRET],
         ];
 

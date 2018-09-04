@@ -5,16 +5,12 @@ namespace RZP\Http;
 use Lcobucci\JWT\Parser;
 use Illuminate\Http\Request;
 
-use RZP\Http\OAuth;
-use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Http\RequestHeader;
 use RZP\Http\BasicAuth\Type;
 use RZP\Foundation\Application;
 use RZP\Base\RepositoryManager;
-use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\BasicAuth\AuthCreds;
 use RZP\Exception\BadRequestException;
 

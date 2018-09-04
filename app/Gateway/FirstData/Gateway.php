@@ -204,7 +204,16 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $requestContent);
 
-        $response = $this->getSoapResponse($requestContent);
+        $shouldRetry = function ($e)
+        {
+            (in_array(get_class($e), [Exception\GatewayRequestException::class], true));
+        };
+
+        $response = $this->retryHandler(
+            [$this, 'getSoapResponse'],
+            [$requestContent],
+            $shouldRetry,
+            2);
 
         $this->trace->info(
             TraceCode::GATEWAY_CAPTURE_RESPONSE,

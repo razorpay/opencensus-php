@@ -15,33 +15,14 @@ use RZP\Reconciliator\RequestProcessor;
 class Service extends Base\Service
 {
     /**
-     * List of gateways where we are doing recon processing via batch.
+     * List of gateways where we are doing recon processing via non-batch.
      */
-    const BATCH_RECON_GATEWAYS = [
-        RequestProcessor\Base::AXIS,
-        RequestProcessor\Base::HDFC,
-        RequestProcessor\Base::ATOM,
-        RequestProcessor\Base::KOTAK,
-        RequestProcessor\Base::HITACHI,
-        RequestProcessor\Base::CARD_FSS,
-        RequestProcessor\Base::JIOMONEY,
-        RequestProcessor\Base::BILLDESK,
-        RequestProcessor\Base::UPI_ICICI,
-        RequestProcessor\Base::OLAMONEY,
-        RequestProcessor\Base::MOBIKWIK,
-        RequestProcessor\Base::FIRST_DATA,
-        RequestProcessor\Base::FREECHARGE,
-        RequestProcessor\Base::NETBANKING_CSB,
-        RequestProcessor\Base::NETBANKING_BOB,
-        RequestProcessor\Base::NETBANKING_OBC,
-        RequestProcessor\Base::NETBANKING_RBL,
-        RequestProcessor\Base::NETBANKING_AXIS,
-        RequestProcessor\Base::NETBANKING_ICICI,
-        RequestProcessor\Base::NETBANKING_FEDERAL,
-        RequestProcessor\Base::NETBANKING_HDFC,
-        RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
-        RequestProcessor\Base::NETBANKING_CORPORATION,
+    const NON_BATCH_RECON_GATEWAYS = [
+        RequestProcessor\Base::ADMIN,
+        RequestProcessor\Base::EBS,
+        RequestProcessor\Base::PAYTM,
+        RequestProcessor\Base::PAYUMONEY,
+        RequestProcessor\Base::PAYZAPP,
     ];
 
     /**
@@ -168,12 +149,12 @@ class Service extends Base\Service
         // This is a temporary logic. Plan is to move all gateway reconciliation
         // to batch once it is stable
         //
-        if (in_array($gateway, self::BATCH_RECON_GATEWAYS, true) === true)
+        if (in_array($gateway, self::NON_BATCH_RECON_GATEWAYS, true) === true)
         {
-            return $orchestrator->orchestrateV2($reconDetails);
+            return $orchestrator->orchestrate($reconDetails);
         }
 
-        return $orchestrator->orchestrate($reconDetails);
+        return $orchestrator->orchestrateV2($reconDetails);
     }
 
     /**
