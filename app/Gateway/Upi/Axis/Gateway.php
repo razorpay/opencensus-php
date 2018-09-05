@@ -689,14 +689,7 @@ class Gateway extends Base\Gateway
 
     protected function createCryptoIfNotCreated()
     {
-        $this->aesCrypto = new AESCrypto(AES::MODE_ECB, $this->config['aes_encryption_key']);
-    }
-
-    public function encryptAes(string $stringToEncrypt)
-    {
-        $this->createCryptoIfNotCreated();
-
-        return $this->aesCrypto->encryptString($stringToEncrypt);
+        $this->aesCrypto = new AESCrypto(AES::MODE_ECB, $this->getSecret());
     }
 
     public function decryptAes(string $stringToDecrypt)
@@ -715,5 +708,10 @@ class Gateway extends Base\Gateway
         ];
 
         return $request;
+    }
+
+    public function getSecret()
+    {
+        return $this->config['aes_encryption_key'];
     }
 }

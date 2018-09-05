@@ -201,7 +201,8 @@ class Server extends Base\Mock\Server
 
     protected function createCryptoIfNotCreated()
     {
-        $this->aesCrypto = new AESCrypto(AES::MODE_ECB,'b0wgtwlM8iEsq63z');
+
+        $this->aesCrypto = new AESCrypto(AES::MODE_ECB, $this->getGatewayInstance()->getSecret());
     }
 
     public function encryptAes(string $stringToEncrypt)
@@ -216,5 +217,14 @@ class Server extends Base\Mock\Server
         $this->createCryptoIfNotCreated();
 
         return $this->aesCrypto->decryptString($stringToDecrypt);
+    }
+
+    protected function getGatewayInstance($bankingType = null)
+    {
+        $class = 'RZP\Gateway\Upi\Axis\Gateway';
+
+        $gateway = new $class;
+
+        return $gateway;
     }
 }
