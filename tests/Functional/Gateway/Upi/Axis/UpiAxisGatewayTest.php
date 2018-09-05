@@ -70,6 +70,8 @@ class UpiAxisGatewayTest extends TestCase
 
         $upi = $this->getDbLastEntity('upi');
 
+        $this->assertNotNull($upi['status_code']);
+
         $this->assertNotNull($upi['npci_reference_id']);
         $this->assertNotNull($upi['gateway_payment_id']);
 
@@ -86,6 +88,8 @@ class UpiAxisGatewayTest extends TestCase
         $payment = $this->getDbLastPayment();
         $upi = $this->getDBLastEntity('upi');
 
+        $this->assertNotNull($upi['status_code']);
+
         $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
 
         $this->makeS2SCallbackAndGetContent($content);
@@ -99,6 +103,8 @@ class UpiAxisGatewayTest extends TestCase
         $payment->reload();
 
         $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNotNull($upi['status_code']);
 
         $this->assertEquals($upi['vpa'], 'vishnu@icici');
 
@@ -141,6 +147,9 @@ class UpiAxisGatewayTest extends TestCase
 
         $this->assertSame(true, $upi1['received']);
         $this->assertSame(true, $upi2['received']);
+
+        $this->assertNotNull($upi1['status_code']);
+        $this->assertNotNull($upi2['status_code']);
     }
 
     public function testUpiAmountCap()
@@ -175,6 +184,8 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertSame('created', $payment->getStatus());
 
         $upi = $this->getDbLastEntity('upi');
+
+        $this->assertNotNull($upi['status_code']);
 
         $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
 

@@ -50,6 +50,8 @@ class Gateway extends Base\Gateway
         Fields::TXN_REFUND_ID           => Entity::REFUND_ID,
         Fields::RRN                     => Entity::NPCI_REFERENCE_ID,
         Fields::GATEWAY_TRANSACTION_ID  => Entity::GATEWAY_PAYMENT_ID,
+        Fields::CODE                    => Entity::STATUS_CODE,
+        Fields::GATEWAY_RESPONSE_CODE   => Entity::STATUS_CODE
     ];
 
     /**
