@@ -1578,4 +1578,21 @@ return [
             ],
         ],
     ],
+
+    'testFetchConfigInternalForSubcriptionsService' => [
+        'request' => [
+            'url'       => '/internal/account/config',
+            'method'    => 'get',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'                       => '10000000000000',
+                'transaction_report_email' => ['test@razorpay.com'],
+                'billing_label'            => 'Test Merchant',
+                'receipt_email_enabled'    => true,
+                'parent_id'                => null,
+            ],
+        ],
+    ],
 ];
