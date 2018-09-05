@@ -153,6 +153,7 @@ final class Route
         'merchant_pre_signup_details'              => ['get',      'pre_signup',                                     'MerchantController@getPreSignupDetails'                            ],
         'merchant_edit_pre_signup_details'         => ['put',      'pre_signup',                                     'MerchantController@putPreSignupDetails'                            ],
         'merchant_fetch_config'                    => ['get',      'account/config',                                 'MerchantController@getAccountConfig'                               ],
+        'merchant_fetch_config_internal'           => ['get',      'internal/account/config',                        'MerchantController@getAccountConfigInternal'                       ],
         'merchant_edit_email'                      => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
         'merchant_edit_email_la'                   => ['put',      'la-merchants/email',                             'MerchantController@updateLinkedAccountMerchantEmail'               ],
         'merchant_fetch_multiple'                  => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
@@ -1231,6 +1232,7 @@ final class Route
         'merchant_edit_config_logo',
         'merchant_delete_config_logo',
         'merchant_fetch_config',
+        'merchant_fetch_config_internal',
         'merchant_sub_create',
         'merchant_fetch_referrals',
         'webhook_fetch_events',
@@ -2170,7 +2172,7 @@ final class Route
             'invoice_create',
             'customer_fetch_by_id',
             'webhook_fire',
-            'merchant_fetch_config',
+            'merchant_fetch_config_internal',
         ],
 
         'kotak' => [
