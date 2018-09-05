@@ -338,11 +338,11 @@ trait Capture
 
         $payment->getValidator()->captureValidate($payment, $captureAmount, $currency);
 
-        $data = array(
+        $data = [
             'payment'   => $payment->toArrayGateway(),
             'amount'    => $captureAmount,
             'currency'  => $payment->getCurrency()
-        );
+        ];
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -390,7 +390,6 @@ trait Capture
      * and push it into a queue. We continue with the normal flow afterwards.
      *
      * @param $data
-     * @throws Exception\BaseException
      */
     protected function captureOnGateway($data)
     {

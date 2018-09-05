@@ -3,9 +3,6 @@
 namespace RZP\Services;
 
 use Requests;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class Exchange
@@ -119,8 +116,6 @@ class Exchange
     protected function sendExchangeRequest($request)
     {
         $this->trace->info(TraceCode::EXCHANGE_REQUEST, $request);
-
-        $method = $request['method'];
 
         try
         {
