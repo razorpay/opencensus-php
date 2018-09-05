@@ -56,7 +56,7 @@ class CreateTokens extends Migration
                   ->nullable();
 
             $table->string(Token::ACCOUNT_TYPE, 255)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Token::BENEFICIARY_NAME, 120)
                   ->nullable();

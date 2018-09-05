@@ -83,6 +83,7 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertEquals('current', $token['account_type']);
         $this->assertEquals('initiated', $token['recurring_status']);
+        $this->assertNull($token['expired_at']);
     }
 
     public function testSuccessfulEsignGenerationWithVid()
@@ -380,6 +381,7 @@ class EnachRblGatewayTest extends TestCase
         $token = $this->getDbLastEntityToArray('token');
 
         $this->assertNull($token['expired_at']);
+        $this->assertNull($token['account_type']);
         $this->assertNotNull($token['gateway_token']);
         $this->assertEquals('confirmed', $token['recurring_status']);
 
