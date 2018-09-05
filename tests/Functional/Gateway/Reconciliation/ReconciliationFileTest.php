@@ -967,6 +967,7 @@ class ReconciliationFileTest extends TestCase
         $facade['MSF Amount']                             = $facade['transaction amount'] * 0.009 * (-1);
         $facade['GST On MSF']                             = $facade['MSF Amount'] / 5.6;
         $facade['settlement amount']                      = $facade['transaction amount'] - $facade['MSF Amount'] - $facade['GST On MSF'];
+        $facade['Action Code']                            = 'Random String';
 
         return $facade;
     }
@@ -984,6 +985,7 @@ class ReconciliationFileTest extends TestCase
         $facade['aggregator_request_sent_time']    = $facade['Transaction Date'];
         $facade['merchant_response_sent_time']     = $facade['Transaction Date'];
         $facade['Reference Tran Id']               = $gatewayRefund[CardFssEntity::REF];
+        $facade['Transaction Type']                = 'Random';
 
         return $facade;
     }
