@@ -57,7 +57,7 @@ class Gateway extends Base\Gateway
 
     public function otpResend(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Base\Action::OTP_RESEND);
 
         $mpiEntity = $this->app['repo']
                           ->mpi
@@ -70,7 +70,7 @@ class Gateway extends Base\Gateway
             throw new Exception\LogicException(
                 'Gateway does not support OTP resend',
                 null,
-                ['payment_id' => $id]);
+                ['payment_id' => $input['payment']['id']]);
         }
 
         $authenticationGateway = $mpiEntity->getGateway();
@@ -545,9 +545,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
-                'request'    => $traceRequest,
-                'gateway'    => 'hitachi',
-                'payment_id' => $input['payment']['id'],
+                'request'     => $traceRequest,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
             ]);
 
         return $request;
@@ -582,9 +583,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_RECURRING_AUTH_REQUEST,
             [
-                'request'    => $traceRequest,
-                'gateway'    => 'hitachi',
-                'payment_id' => $input['payment']['id'],
+                'request'     => $traceRequest,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
             ]);
 
         return $request;
@@ -610,9 +612,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_MOTO_AUTH_REQUEST,
             [
-                'request'    => $traceRequest,
-                'gateway'    => 'hitachi',
-                'payment_id' => $input['payment']['id'],
+                'request'     => $traceRequest,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
             ]);
 
         return $request;
@@ -642,12 +645,27 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
-                'request'    => $traceRequest,
-                'gateway'    => 'hitachi',
-                'payment_id' => $input['payment']['id'],
+                'request'     => $traceRequest,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
             ]);
 
         return $request;
+    }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
+    {
+        $this->trace->info($traceCode,
+            [
+                'request'     => $request,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
     }
 
     protected function traceGatewayPaymentResponse(
@@ -659,9 +677,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info($traceCode,
             [
-                'response'   => $response,
-                'gateway'    => 'hitachi',
-                'payment_id' => $input['payment']['id'],
+                'response'    => $response,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
             ]);
     }
 

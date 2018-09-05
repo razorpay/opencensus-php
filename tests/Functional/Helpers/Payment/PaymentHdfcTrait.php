@@ -111,12 +111,36 @@ trait PaymentHdfcTrait
                         {
                             $content = array(
                                 'error_code_tag' => 'GW00176',
-                                'error_text' =>   '',
+                                'error_text' => '',
                                 'result' => '!ERROR!-GW00176-Failed Previous Captures check.',
                             );
 
                             return $content;
                         })->mock();
+
+        $this->setMockServer($server);
+    }
+
+    // @codingStandardsIgnoreLine
+    protected function captureErrorReturnCM90000()
+    {
+        $this->i = true;
+
+        $server = $this->mockServer()
+            ->shouldReceive('content')
+            ->andReturnUsing(function (&$content)
+            {
+                if ($this->i === true)
+                {
+                    $content = array(
+                        'error_code_tag' => 'CM90000',
+                        'error_text' => '',
+                        'result' => '!ERROR!-CM90000-Problem occured while updating payment log ip details.',
+                    );
+                    $this->i = false;
+                }
+                return $content;
+            })->mock();
 
         $this->setMockServer($server);
     }

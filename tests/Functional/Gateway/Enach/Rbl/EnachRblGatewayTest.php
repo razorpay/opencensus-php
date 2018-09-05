@@ -6,30 +6,26 @@ use Mail;
 use Excel;
 use Closure;
 use Mockery;
-use RZP\Exception;
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
-use RZP\Error\PublicErrorCode;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
-use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Mail\Gateway\EMandate\Base as Email;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use Illuminate\Http\Testing\File as TestingFile;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
-use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 
 /**
  * @group dns-sensitive
@@ -333,7 +329,7 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertEquals('rejected', $token['recurring_status']);
 
-        $this->assertEquals('GATEWAY_ERROR', $token['recurring_failure_reason']);
+        $this->assertEquals(PublicErrorDescription::GATEWAY_ERROR, $token['recurring_failure_reason']);
 
         $payment = $this->getDbLastEntityToArray('payment');
 
@@ -399,7 +395,7 @@ class EnachRblGatewayTest extends TestCase
     {
         $payment = $this->createAcknowledgedEnachPayment(false);
 
-        $batchFile = $this->getBatchFileToUpload($payment, 'Rejected', 'M025', 'Desc from bank');
+        $batchFile = $this->getBatchFileToUpload($payment, 'Rejected', 'M037', 'Account closed');
 
         $url = '/admin/batches';
         $this->ba->adminAuth();
@@ -411,8 +407,8 @@ class EnachRblGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             [
                 'registration_status' => 'Rejected',
-                'error_message'       => 'Desc from bank',
-                'error_code'          => 'M025',
+                'error_message'       => 'Account closed',
+                'error_code'          => 'M037',
             ],
             $enach
         );
@@ -422,7 +418,7 @@ class EnachRblGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             [
                 'recurring_status'         => 'rejected',
-                'recurring_failure_reason' => 'GATEWAY_ERROR',
+                'recurring_failure_reason' => PublicErrorDescription::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
             ],
             $token
         );
@@ -551,7 +547,7 @@ class EnachRblGatewayTest extends TestCase
 
         $fileStatuses = [
             'status'     => 'bounce',
-            'error_code' => '1',
+            'error_code' => '01',
             'error_desc' => 'Account closed or transferred',
         ];
 

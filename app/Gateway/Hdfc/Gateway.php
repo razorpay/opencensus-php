@@ -339,7 +339,27 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $this->supportPayment($input, 'capture');
+        $shouldRetry = function ($e)
+        {
+            $errorCodes =[
+                ErrorCode::CM00030,
+                ErrorCode::CM90000,
+                ErrorCode::CM90001,
+                ErrorCode::CM90002,
+                ErrorCode::CM90003,
+                ErrorCode::CM90004,
+                ErrorCode::CM90005,
+                ErrorCode::CM900000,
+            ];
+
+            return in_array($e->getError()->getGatewayErrorCode(), $errorCodes, true);
+        };
+
+        $this->retryHandler(
+            [$this, 'supportPayment'],
+            [$input,'capture'],
+            $shouldRetry,
+            2);
     }
 
     /**
@@ -970,7 +990,7 @@ class Gateway extends Base\Gateway
     protected function setDebitSecondRecurringPayment(array $input)
     {
         $payment = $input['payment'];
-        
+
         $this->secondDebitRecurringFlag = false;
 
         // For second recurring payment, recurring type has to be auto

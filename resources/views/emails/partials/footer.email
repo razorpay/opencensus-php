@@ -32,11 +32,7 @@
         <table class="seven columns">
           <tr>
             <td class="center">
-              <center>
-                Reach out to us by replying
-                to this email or at <a href="mailto:support@razorpay.com">
-                support@razorpay.com</a>
-              </center>
+              @include('emails.partials.support')
             </td>
             <td class="expander"></td>
           </tr>

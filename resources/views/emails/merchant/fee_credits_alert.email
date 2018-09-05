@@ -61,7 +61,7 @@
                       </p>
 
 <p>
-  Update your Fee Credits Alerts limit <a href="https://{{ $org_hostname . '/#/app/credits' }}" target="_blank">here</a> or reach out to <a href="mailto:support@razorpay.com">support@razorpay.com</a> for further information on setting up alert limit for Fee Credits.
+  Update your Fee Credits Alerts limit <a href="https://{{ $org_hostname . '/#/app/credits' }}" target="_blank">here</a> or reach out to us <a href="https://dashboard.razorpay.com/#/app/dashboard#request">here</a> for further information on setting up alert limit for Fee Credits.
 </p>
 
 
@@ -140,9 +140,7 @@
             <tr>
               <td class="center">
                 <center>
-                  Reach out to us by replying
-                  to this email or at <a href="mailto:support@razorpay.com">
-                  support@razorpay.com</a>
+                  @include('emails.partials.support')
                 </center>
               </td>
               <td class="expander"></td>

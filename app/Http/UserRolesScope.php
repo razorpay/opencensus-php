@@ -85,15 +85,17 @@ class UserRolesScope
             'setl_fetch_multiple' => array_merge(Role::READER_ROLES, Role::LINKED_ACCOUNT_ROLES),
             'setl_fetch_by_id'    => array_merge(Role::READER_ROLES, Role::LINKED_ACCOUNT_ROLES),
 
-            // invoice routes
-            'invoice_create'         => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
-            'invoice_delete'         => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
-            'invoice_edit'           => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
-            'invoice_fetch'          => Role::ALL_ROLES,
-            'invoice_fetch_multiple' => Role::ALL_ROLES,
-            'invoice_issue_by_batch' => Role::WRITER_ROLES,
+            // Invoice routes
+            'invoice_create'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
+            'invoice_delete'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
+            'invoice_update'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
+            'invoice_issue'                     => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
+            'invoice_send_notification_private' => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
+            'invoice_fetch'                     => Role::ALL_ROLES,
+            'invoice_fetch_multiple'            => Role::ALL_ROLES,
+            'invoice_issue_by_batch'            => Role::WRITER_ROLES,
 
-            // payment link routes
+            // Payment link routes
             'payment_link_get'        => Role::WRITER_ROLES,
             'payment_link_list'       => Role::WRITER_ROLES,
             'payment_link_create'     => Role::WRITER_ROLES,

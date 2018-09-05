@@ -98,12 +98,14 @@ class ErrorCode
     const GV00103   = 'GV00103';
     const GV00104   = 'GV00104';
 
+    const CM00030   = 'CM00030';
     const CM90000   = 'CM90000';
     const CM90001   = 'CM90001';
     const CM90002   = 'CM90002';
     const CM90003   = 'CM90003';
     const CM90004   = 'CM90004';
     const CM90005   = 'CM90005';
+    const CM900000  = 'CM900000';
 
     const PY20001   = 'PY20001';
     const PY20002   = 'PY20002';
@@ -304,12 +306,14 @@ class ErrorCode
         self::PY20007     => 'Invalid Order status',
         self::PY20085     => 'Invalid payment status',
 
+        self::CM00030     => '(HDFC internal error) Problem occured while getting external connection details',
         self::CM90000     => 'Database error',
         self::CM90001     => 'Database configuration error',
         self::CM90002     => 'Data format error',
         self::CM90003     => 'No records found',
         self::CM90004     => 'Duplicate records found',
         self::CM90005     => 'Timestamp mismatch error',
+        self::CM900000    => '(HDFC internal error) Problem occurred while getting terminal.',
 
         self::RP00001     => 'Invalid Error Code. The error code returned is not recognized',
         self::RP00002     => 'Invalid Result Code. The result code returned is not recognized',
@@ -407,12 +411,14 @@ class ErrorCode
         self::PY20007     => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         self::PY20085     => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
 
+        self::CM00030     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90000     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90001     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90002     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90003     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90004     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90005     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        self::CM900000    => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
 
         self::RP00001     => Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         self::RP00002     => Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,

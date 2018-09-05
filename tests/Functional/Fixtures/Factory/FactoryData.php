@@ -915,5 +915,8 @@ final class FactoryData
             'short_url'   => 'abc.com',
             'qr_string'   => 'kdsfjsfndsmndjksnfsdnsmdns',
         ]);
+
+        $factory(\RZP\Gateway\Mpi\Base\Entity::class, [
+        ]);
     }
 }

@@ -3,12 +3,13 @@
 namespace RZP\Tests\Functional\BasicAuth;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factory;
+
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
-use Illuminate\Database\Eloquent\Factory;
 
 class BasicAuthTest extends TestCase
 {

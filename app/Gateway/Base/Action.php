@@ -13,6 +13,8 @@ class Action
     const VERIFY       = 'verify';
     const CALLBACK     = 'callback';
     const REVERSE      = 'reverse';
+    const OTP_RESEND   = 'otp_resend';
+    const OTP_GENERATE = 'otp_generate';
 
     public static $nonVerifiableActions = [
         self::AUTHENTICATE

@@ -302,7 +302,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED             = 'Payment processing failed because OTP validation attempts limit exceeded';
     const BAD_REQUEST_PAYMENT_OTP_INCORRECT                                     = 'Payment processing failed because of incorrect OTP';
     const BAD_REQUEST_PAYMENT_OTP_EXPIRED                                       = 'Payment processing failed because of expired OTP';
-    const BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR                               = 'Payment processing failed due to invalid response returned by gateway.';
+    const BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR                         = 'Payment processing failed because of card authentication failure';
     const BAD_REQUEST_PAYMENT_ABORTED                                           = 'Payment processing aborted';
     const BAD_REQUEST_PAYMENT_MISSING_DATA                                      = 'One or more required fields are missing';
     const BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_REFUNDED                      = 'Total amount passed is more than the Return/Void amount.';
@@ -646,4 +646,5 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
+    const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED                         = 'The sub-merchant accessed has not been activated. Please use test credentials for testing.';
 }

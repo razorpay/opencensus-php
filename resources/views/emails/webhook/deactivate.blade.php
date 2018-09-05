@@ -30,7 +30,7 @@ To help you debug this further, here are a few more details about the failure ev
 <br>
 
 Note that this is the <b>final</b> failed attempt and we will not be attempting any more retries at this url.<br>
-If you have any further queries, just reply to this mail or reach out to us at support@razorpay.com.<br><br>
+@include('emails.partials.support')<br><br>
 
 Thanks,<br>
 Team Razorpay

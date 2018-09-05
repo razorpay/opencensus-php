@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
@@ -687,6 +688,15 @@ trait Capture
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Corresponding order already has a captured payment.');
+            }
+
+            $amount = $payment->getAdjustedAmountWrtCustFeeBearer();
+
+            if (($amount > $order->getAmountDue()) and
+                ($this->merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE);
             }
         }
     }

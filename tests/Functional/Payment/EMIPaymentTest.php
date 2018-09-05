@@ -51,6 +51,10 @@ class EMIPaymentTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $feeBreakup = $this->getEntities('fee_breakup',[], true);
+
+        $this->assertEquals($feeBreakup['items'][1]['pricing_rule_id'], '1zE31zbybabab2');
+
         $this->assertEquals($payment['emi_plan_id'], $emiPlan[0]['id']);
         $this->assertEquals($payment['method'], 'emi');
         $this->assertEquals($payment['status'], 'captured');

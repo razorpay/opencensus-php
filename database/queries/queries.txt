@@ -4183,3 +4183,14 @@ ALTER TABLE subscriptions
     ADD COLUMN current_invoice_id CHAR(14) DEFAULT NULL AFTER current_payment_id,
     ADD COLUMN current_invoice_amount INTEGER UNSIGNED DEFAULT NULL AFTER current_invoice_id,
     ADD COLUMN issued_invoices_count INTEGER DEFAULT 0 AFTER paid_count;
+
+# Nodal beneficiary schema changes
+ALTER TABLE nodal_beneficiaries
+    DROP COLUMN status,
+    DROP COLUMN nodal_bank,
+    ADD COLUMN channel VARCHAR(8) NOT NULL AFTER bank_account_id,
+    ADD COLUMN registration_status VARCHAR(40) NULL AFTER channel,
+    ADD INDEX nodal_beneficiaries_channel_index(channel),
+    ADD INDEX nodal_beneficiaries_merchant_id_index(merchant_id),
+    ADD INDEX nodal_beneficiaries_registration_status_index(registration_status),
+    ADD UNIQUE nodal_beneficiaries_bank_account_id_channel_unique(bank_account_id, channel);

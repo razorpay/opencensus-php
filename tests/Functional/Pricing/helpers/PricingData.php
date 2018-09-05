@@ -700,9 +700,17 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 5,
+                'count' => 6,
                 'entity' => 'collection',
                 'items' => [
+                    [
+                        'name' => 'testDefaultEmiPlan',
+                        'entity' => 'pricing',
+                        'count' => 1,
+                        'rules' => [
+                            [],
+                        ],
+                    ],
                     [
                         'name' => 'testDefaultQrPlan',
                         'entity' => 'pricing',
@@ -781,7 +789,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 17,
+                        'count' => 16,
                         'rules' => [
                             [],
                         ],
@@ -799,6 +807,10 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'testDefaultEmiPlan',
+                    'rules_count' => 1,
+                ],
+                [
                     'plan_name'   => 'testDefaultQrPlan',
                     'rules_count' => 2,
                 ],
@@ -812,7 +824,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 17,
+                    'rules_count' => 16,
                 ],
             ],
         ],

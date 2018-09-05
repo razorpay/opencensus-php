@@ -802,11 +802,9 @@ trait FileHandlerTrait
         $reader = app('excel.reader');
 
         $config = [
-            'heading'                 => config('excel.import.heading'),
-            'startRow'                => config('excel.import.startRow'),
-            'force_sheets_collection' => config('excel.import.force_sheets_collection'),
-            'sheetsSelected'          => $reader->selectedSheets,
-            'selectedSheetIndices'    => $reader->selectedSheetIndices,
+            'import_configs'       => config('excel.import'),
+            'sheetsSelected'       => $reader->selectedSheets,
+            'selectedSheetIndices' => $reader->selectedSheetIndices,
         ];
 
         $this->trace()->debug(TraceCode::EXCEL_READER_IMPORT_CONFIG, $config);

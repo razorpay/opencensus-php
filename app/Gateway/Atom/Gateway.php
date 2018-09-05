@@ -27,6 +27,8 @@ class Gateway extends Base\Gateway
 
     const CHECKSUM_ATTRIBUTE = AuthResponseFields::SIGNATURE;
 
+    const TIME_WINDOW = 600;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -180,6 +182,33 @@ class Gateway extends Base\Gateway
         $request['content'] = [];
 
         $response = $this->sendGatewayRequest($request);
+
+        $responseArray = $this->verifyResponseXmlToArray($response->body);
+
+        $paymentCreatedAt = $verify->input['payment'][Payment\Entity::CREATED_AT];
+
+        if (($responseArray[VerifyResponseFields::STATUS] === Constants::NODATA) and
+            ($this->isEarlyDayTransaction($paymentCreatedAt) === true))
+        {
+            $originalDate = $content[VerifyRequestFields::TRANSACTION_DATE];
+
+            $content[VerifyRequestFields::TRANSACTION_DATE] = $this->getPreviousDate($originalDate);
+
+            $request = $this->getStandardRequestArray($content, 'get');
+
+            $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+                [
+                    'request'    => $request,
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $verify->input['payment']['id'],
+                ]);
+
+            $request['url'] = $this->createRedirectUrl($request['content']);
+
+            $request['content'] = [];
+
+            $response = $this->sendGatewayRequest($request);
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -714,5 +743,17 @@ class Gateway extends Base\Gateway
                 $responseCode,
                 $desc);
         }
+    }
+
+    protected function isEarlyDayTransaction($paymentCreatedAt) : bool
+    {
+        $paymentTime = Carbon::createFromTimestamp($paymentCreatedAt, Timezone::IST);
+
+        return ($paymentTime->secondsSinceMidnight() <= self::TIME_WINDOW);
+    }
+
+    protected function getPreviousDate($date)
+    {
+      return date('Y-m-d', strtotime('-1 day', strtotime($date)));
     }
 }

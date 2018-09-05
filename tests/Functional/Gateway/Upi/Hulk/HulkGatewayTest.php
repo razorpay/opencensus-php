@@ -373,17 +373,21 @@ class HulkGatewayTest extends TestCase
     {
         $this->fixtures->create('terminal:shared_upi_hulk_intent_terminal');
 
+        $merchant = $this->getDbLastEntity('merchant', 'test');
+
         unset($this->payment['description']);
         unset($this->payment['vpa']);
 
         $this->payment['_']['flow'] = 'intent';
 
         $this->mockServerRequestFunction(
-            function($content, $action)
+            function($content, $action) use ($merchant)
             {
                 if ($action === 'authorize')
                 {
                     $this->assertSame('expected_push', $content['type']);
+                    $this->assertSame((string) $merchant['category'], $content['category_code']);
+
                 }
             });
 
@@ -421,6 +425,8 @@ class HulkGatewayTest extends TestCase
 
         $this->fixtures->merchant->enableTPV();
 
+        $merchant = $this->getDbLastEntity('merchant', 'test');
+
         $this->createOrder([
             'amount'         => 50000,
             'currency'       => 'INR',
@@ -440,12 +446,13 @@ class HulkGatewayTest extends TestCase
         $this->payment['bank'] = $order->getBank();
 
         $this->mockServerRequestFunction(
-            function($content, $action) use ($order)
+            function($content, $action) use ($order, $merchant)
             {
                 if ($action === 'authorize')
                 {
                     $this->assertSame('expected_push', $content['type']);
                     $this->assertSame($order->getAccountNumber(), $content['caller_account_number']);
+                    $this->assertSame((string) $merchant['category'], $content['category_code']);
                 }
             });
 
