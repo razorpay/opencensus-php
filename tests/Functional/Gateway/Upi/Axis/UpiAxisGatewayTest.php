@@ -60,7 +60,7 @@ class UpiAxisGatewayTest extends TestCase
 
         // We should have gotten a successful response
         $this->assertEquals([
-            'callBackstatusCode' => '000',
+            'callBackstatusCode' => '00',
             'callBackstatusDescription' => 'Success',
             'callBacktxnId' => 'AXIS00090439839'
         ],$response);

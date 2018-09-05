@@ -108,7 +108,7 @@ class Server extends Base\Mock\Server
             Fields::TRANSACTION_TIMESTAMP       => date('j-F-Y'),
             Fields::TRANSACTION_AMOUNT          => $this->formatAmount($upiEntity['amount']),
             Fields::GATEWAY_TRANSACTION_ID      => 'AXIS00090439839',
-            Fields::GATEWAY_RESPONSE_CODE       => '000',
+            Fields::GATEWAY_RESPONSE_CODE       => '00',
             Fields::GATEWAY_RESPONSE_MESSAGE    => 'Success',
             Fields::RRN                         => '714513318376',
             Fields::CHECKSUM                    => 'CHECKSUM NOT REQUIRED'
