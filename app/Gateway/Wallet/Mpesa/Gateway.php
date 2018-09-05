@@ -59,7 +59,7 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $content);
+        $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_PAYMENT_CALLBACK);
 
         $this->assertPaymentId($input['payment']['id'],
                                $content[ResponseFields::TRANSACTION_REFERENCE]);
@@ -133,10 +133,11 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
-                'gateway'    => $this->gateway,
-                'response'   => $response,
-                'payment_id' => $input['payment']['id'],
-                'refund_id'  => $input['refund']['id']
+                'gateway'     => $this->gateway,
+                'response'    => $response,
+                'payment_id'  => $input['payment']['id'],
+                'refund_id'   => $input['refund']['id'],
+                'terminal_id' => $input['terminal']['id']
             ]);
 
         $content = $response[ResponseFields::UCF_RESPONSE];
@@ -181,6 +182,8 @@ class Gateway extends Base\Gateway
     {
         $data = $this->getVerifyRequestData($verify);
 
+        $input = $verify->input;
+
         try
         {
             $verify->verifyResponse = $this->sendSoapRequest($data,
@@ -194,8 +197,9 @@ class Gateway extends Base\Gateway
             //
 
             $data = [
-                'payment_id' => $verify->input['payment']['id'],
-                'gateway'    => $this->gateway,
+                'payment_id'  => $input['payment']['id'],
+                'gateway'     => $this->gateway,
+                'terminal_id' => $input['terminal']['id'],
             ];
 
             $this->trace->traceException($e, Logger::INFO, TraceCode::GATEWAY_VERIFY_ERROR, $data);
@@ -205,13 +209,7 @@ class Gateway extends Base\Gateway
             throw new Exception\PaymentVerificationException($data, $verify, VerifyAction::RETRY);
         }
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'gateway'    => $this->gateway,
-                'response'   => $verify->verifyResponse,
-                'payment_id' => $verify->input['payment']['id'],
-            ]);
+        $this->traceGatewayPaymentResponse($verify->verifyResponse, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
 
         $verify->verifyResponseContent = $verify->verifyResponse[ResponseFields::UCF_RESPONSE];
     }
@@ -268,13 +266,7 @@ class Gateway extends Base\Gateway
                                            SoapAction::CUSTOMER_API,
                                            SoapMethod::VALIDATE_CUSTOMER);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_VALIDATE_CUSTOMER_RESPONSE,
-            [
-                'gateway'    => $this->gateway,
-                'response'   => $response,
-                'payment_id' => $input['payment']['id'],
-            ]);
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_VALIDATE_CUSTOMER_RESPONSE);
 
         $content = $response[ResponseFields::VALIDATE_CUSTOMER];
 
@@ -470,9 +462,7 @@ class Gateway extends Base\Gateway
             ],
         ];
 
-        $this->trace->info(
-            TraceCode::GATEWAY_SOAP_REQUEST,
-            $context);
+        $this->traceGatewayPaymentRequest($context, $this->input, TraceCode::GATEWAY_SOAP_REQUEST);
 
         try
         {
@@ -499,7 +489,7 @@ class Gateway extends Base\Gateway
         catch (\Exception $e)
         {
             $context['error_message'] = $e->getMessage();
-
+            $context['terminal_id'] = $this->input['terminal']['id'];
             //
             // Non SoapFaults can be handled differently
             // We simply trace this at a warning level
@@ -579,6 +569,34 @@ class Gateway extends Base\Gateway
         }
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
+    }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
+    {
+        $this->trace->info($traceCode,
+            [
+                'request'     => $request,
+                'gateway'     => $this->gateway,
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
+    }
+
+    protected function traceGatewayPaymentResponse(
+        $response,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_RESPONSE)
+    {
+        $this->trace->info($traceCode,
+            [
+                'response'    => $response,
+                'gateway'     => $this->gateway,
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
     }
 
     protected function getSoapClientObject()

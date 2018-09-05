@@ -28,6 +28,7 @@ class Mailgun extends Base
         self::KOTAK,
         self::HITACHI,
         self::OLAMONEY,
+        self::UPI_HDFC,
         self::UPI_ICICI,
         self::FREECHARGE,
         self::FIRST_DATA,

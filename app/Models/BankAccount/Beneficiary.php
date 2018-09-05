@@ -92,4 +92,66 @@ class Beneficiary extends Base\Core
 
         return $response;
     }
+
+    /**
+     * Used to register beneficiary added in last n minutes.
+     * Here, 'n' is the value obtained from key 'duration'
+     *
+     * @param array $input
+     * @param string $channel
+     * @return array
+     */
+    public function registerBeneficiaryThroughApi(array $input, string $channel): array
+    {
+        $this->trace->info(
+            TraceCode::BENEFICIARY_REGISTER_API_INIT,
+            [
+                'input'   => $input,
+                'channel' => $channel
+            ]
+        );
+
+        (new Validator)->validateInput('beneficiary_register_api', $input);
+
+        $timeNow = Carbon::now(Timezone::IST);
+
+        $endTime   = $timeNow->getTimestamp();
+
+        $startTime = $timeNow->subSeconds($input['duration'])->getTimestamp();
+
+        $this->trace->info(
+            TraceCode::BENEFICIARY_REGISTER_API_FETCH,
+            [
+                'from' => $startTime,
+                'to'   => $endTime
+            ]
+        );
+
+        $bankAccounts = $this->repo->bank_account->getMerchantBankAccountsBetweenTimestamp(
+            $startTime,
+            $endTime);
+
+        if ($bankAccounts->count() === 0)
+        {
+            return ['message' => 'No Beneficiary added since last report.'];
+        }
+
+        $result = $this->registerBeneficiary($bankAccounts, $channel, $input);
+
+        $beneficiaryCount = $bankAccounts->count();
+
+        $message = "Merchant Beneficiary api executed. Beneficiary added since ".
+                   "last report is ". $beneficiaryCount; ;
+
+        $this->app['slack']->queue(
+            $message,
+            [
+                'channel' => $channel
+            ],
+            [
+                'channel' => Config::get('slack.channels.settlements')
+            ]);
+
+        return $result;
+    }
 }

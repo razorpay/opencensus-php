@@ -6,7 +6,7 @@
 #
 # see the README
 
-PHPCS_BIN=/usr/bin/phpcs
+PHPCS_BIN=phpcs
 PHPCS_CODING_STANDARD=Generic
 PHPCS_IGNORE=
 TMP_STAGING=".tmp_staging"

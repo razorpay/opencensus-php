@@ -261,6 +261,59 @@ function is_sequential_array(array $input)
     return array_keys($input) === range(0, count($input) - 1);
 }
 
+/**
+ * This function does array_combine after making both array to the
+ * same size, by slicing the bigger length array to the smaller one
+ *
+ * @param array $headers
+ * @param array $columns
+ * @return array
+ */
+function array_combine_slice(array $headers, array $columns)
+{
+    $headersCount = count($headers);
+    $columnsCount = count($columns);
+
+    $size = ($headersCount > $columnsCount) ? $columnsCount : $headersCount;
+
+    $headers = array_slice($headers, 0, $size);
+    $columns = array_slice($columns, 0, $size);
+
+    return array_combine($headers, $columns);
+}
+
+function array_combine_pad(array $headers, array $columns)
+{
+    $headersCount = count($headers);
+    $columnsCount = count($columns);
+
+    if ($headersCount > $columnsCount)
+    {
+        $extra = $headersCount - $columnsCount;
+
+        for ($i = 0; $i < $extra; $i++)
+        {
+            $columns[] = null;
+        }
+    }
+    // more fields than headers
+    else if ($headersCount < $columnsCount)
+    {
+        $extra = $columnsCount - $headersCount;
+
+        // Needs to start from 1 so that the first
+        // extra field is named as extra_field_1
+        for($i = 1; $i <= $extra; $i++)
+        {
+            $key = 'extra_field_' . $i;
+
+            $headers[] = $key;
+        }
+    }
+
+    return array_combine($headers, $columns);
+}
+
 function upi_uuid($prefix = true)
 {
     $uuid = strtoupper(gen_uuid());

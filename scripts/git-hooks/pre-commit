@@ -5,7 +5,7 @@ EXIT_CODE=0
 BRANCH=`git rev-parse --abbrev-ref HEAD`
 
 if [[ $BRANCH == "master" ]]; then
-  echo "You appear to be trying to commit to master."\"
+  echo "You appear to be trying to commit to master."\
        "You probably don't want to do that."
   exec < /dev/tty
   read -p "Enter new branch name: " branch_name
