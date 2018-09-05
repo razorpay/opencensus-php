@@ -819,6 +819,7 @@ final class Route
         // UFH Service
         // TODO: Should change to just /signed_url (No 'get' and underscore)
         'ufh_get_file_signed_url'                  => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
+        'ufh_get_file_signed_url_admin'            => ['get',      'admin-ufh/file/{fileId}/get-signed-url',         'UfhController@getSignedUrl'                                        ],
 
         'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         // Account API routes
@@ -1651,6 +1652,8 @@ final class Route
         'reporting_schedule_get_admin',
         'reporting_schedule_list_admin',
 
+        // UFH
+        'ufh_get_file_signed_url_admin',
         'nodal_beneficiary_update',
     ];
 
@@ -1970,6 +1973,7 @@ final class Route
         'reporting_schedule_get_admin'             => '*',
         'reporting_schedule_list_admin'            => '*',
         'ufh_get_file_signed_url'                  => '*',
+        'ufh_get_file_signed_url_admin'            => '*',
         'merchant_requests_create'                 => '*',
         'merchant_requests_list'                   => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_requests_get'                    => Permission::VIEW_MERCHANT_REQUESTS,
