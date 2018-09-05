@@ -38,11 +38,11 @@ class Server extends Base\Mock\Server
             Fields::RESULT  => 'Accepted Collect Request',
             Fields::DATA    => [
                 Fields::MERCHANT_TRANSACTION_ID => 'TESTMERCHANTID:'.$token,
-                Fields::W_COLLECT_TXN_ID        => $this->generateRandomString(10),
+                Fields::W_COLLECT_TXN_ID        => str_random(10),
             ]
         ];
 
-        $this->content($content);
+        $this->content($content, $this->action);
 
         return $this->makeResponse($content);
     }
@@ -52,7 +52,7 @@ class Server extends Base\Mock\Server
         $content = [
             Fields::CODE    => '000',
             Fields::RESULT  => 'SUCCESS',
-            Fields::DATA    => $this->generateRandomString(30),
+            Fields::DATA    => str_random(30),
         ];
 
         $this->content($content);
@@ -127,23 +127,6 @@ class Server extends Base\Mock\Server
     protected function formatAmount(int $amount): string
     {
         return number_format($amount / 100 ,2, '.', '');
-    }
-
-
-    public function generateRandomString($length = 10)
-    {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-        $charactersLength = strlen($characters);
-
-        $randomString = '';
-
-        for ($i = 0; $i < $length; $i++)
-        {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
-        }
-
-        return $randomString;
     }
 
     public function verify($input)

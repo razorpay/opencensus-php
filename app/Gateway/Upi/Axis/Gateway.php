@@ -36,12 +36,6 @@ class Gateway extends Base\Gateway
 
     protected $gateway  = Payment\Gateway::UPI_AXIS;
 
-    const FIELD_LENGTH = [
-        Action::AUTHORIZE  => 17,
-        Action::REFUND     => 20,
-        Action::VERIFY     => 14,
-    ];
-
     protected $map = [
         Entity::VPA                     => Entity::VPA,
         Entity::RECEIVED                => Entity::RECEIVED,
@@ -317,7 +311,14 @@ class Gateway extends Base\Gateway
          */
         $aesdecrypted = preg_replace('/[[:cntrl:]]/', '', $aesdecrypted);
 
-        return json_decode($aesdecrypted,true);
+        try
+        {
+            return $this->jsonToArray($aesdecrypted);
+        }
+        catch(\Exception $e)
+        {
+            throw new \Exception('The JSON message could not be converted to an array');
+        }
     }
 
     public function getPaymentIdFromServerCallback($input)

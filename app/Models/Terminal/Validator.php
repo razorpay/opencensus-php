@@ -300,12 +300,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
     ];
 
-    protected static $upiAxisEditTerminalRules = [
-        Entity::GATEWAY                    => 'sometimes|in:upi_axis',
-        Entity::UPI                        => 'required|boolean|in:1',
-        Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
-    ];
-
     protected static $netbankingIciciEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
@@ -399,6 +393,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:upi_axis',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::UPI                        => 'required|boolean|in:1',
+    ];
+
+    protected static $upiAxisEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:upi_axis',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
     ];
 
     protected static $upiHulkTerminalRules = [
