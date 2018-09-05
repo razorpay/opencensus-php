@@ -129,7 +129,18 @@ class UpiAxisGatewayTest extends TestCase
 
         $upi2 = $this->getDbLastEntity('upi');
 
-        // TODO: Add assertions
+        $this->assertNotNull($upi1['refund_id']);
+        $this->assertNotNull($upi2['refund_id']);
+
+        $this->assertSame($upi1['payment_id'], $upi2['payment_id']);
+
+        $this->assertNotSame($upi1['refund_id'], $upi2['refund_id']);
+
+        $this->assertSame('refund', $upi1['action']);
+        $this->assertSame('refund', $upi2['action']);
+
+        $this->assertSame(true, $upi1['received']);
+        $this->assertSame(true, $upi2['received']);
     }
 
     public function testUpiAmountCap()
@@ -172,7 +183,7 @@ class UpiAxisGatewayTest extends TestCase
         // We should have gotten a successful response
         $this->assertEquals(
             [
-                'callBackstatusCode'        => '000',
+                'callBackstatusCode'        => '00',
                 'callBackstatusDescription' => 'Success',
                 'callBacktxnId'             => 'AXIS00090439839'
             ],

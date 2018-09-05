@@ -179,7 +179,7 @@ class Server extends Base\Mock\Server
 
         $input = $this->parseInput($input, Action::REFUND);
 
-        $paymentId = $input[2];
+        $paymentId = $input['unqTxnId'];
 
         $app = App::getFacadeRoot();
 

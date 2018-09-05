@@ -602,6 +602,7 @@ class Gateway extends Base\Gateway
 
     public function refund(array $input)
     {
+
         parent::refund($input);
 
         $attributes = $this->getGatewayEntityAttributes($input, Action::REFUND);
@@ -623,7 +624,6 @@ class Gateway extends Base\Gateway
         $response[Entity::RECEIVED] = 1;
 
         $this->updateGatewayPaymentEntity($refund, $response);
-
     }
 
     protected function getRefundRequestArray(array $input): array
@@ -631,7 +631,7 @@ class Gateway extends Base\Gateway
         $data = [
             Fields::MERCH_ID            => $this->getMerchantId(),
             Fields::MERCH_CHAN_ID       => $this->config['merchant_channel_id'],
-            Fields::TXN_REFUND_ID       => $this->getRefundId($refund),
+            Fields::TXN_REFUND_ID       => $this->getRefundId($input['refund']),
             Fields::MOB_NO              => $this->config['mobile_no'],
             Fields::TXN_REFUND_AMOUNT   => $this->formatAmount($input['refund']['amount']),
             Fields::UNQ_TXN_ID          => $input['payment']['id'],
