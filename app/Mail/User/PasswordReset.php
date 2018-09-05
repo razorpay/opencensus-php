@@ -16,15 +16,16 @@ class PasswordReset extends Base\Mailable
 
     protected $token;
 
-    protected $expiryTime;
-
     public function __construct(User\Entity $user, $org)
     {
         parent::__construct();
 
         $this->user = $user->toArrayPublic();
 
-        list($this->token, $this->expiryTime) = (new User\Service)->getTokenAndExpiry($this->user['id']);
+        $this->token = (new User\Service)->getTokenWithExpiry(
+                            $this->user['id'],
+                            User\Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME
+                        );
 
         $this->org = $org;
     }
@@ -63,7 +64,6 @@ class PasswordReset extends Base\Mailable
         $data = [
             'token'      => $this->token,
             'org'        => $this->org,
-            'expiryTime' => $this->expiryTime,
             'email'      => urlencode($this->user['email']),
         ];
 

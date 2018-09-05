@@ -247,4 +247,83 @@ return [
             ],
         ],
     ],
+
+    'testPasswordResetMail' => [
+        'request' => [
+            'url'     => '/users/reset-password',
+            'method'  => 'post',
+            'content' => [
+                'email' => 'resetpass@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success" => true,
+            ],
+        ],
+    ],
+
+    'testPasswordResetByToken' => [
+        'request'  => [
+            'url'     => '/users/reset-password-token',
+            'method'  => 'post',
+            'content' => [
+                'password'              => '123456xx',
+                'password_confirmation' => '123456xx',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success" => true,
+            ],
+        ],
+    ],
+
+    'testPasswordResetByExpiredToken' => [
+        'request'   => [
+            'url'     => '/users/reset-password-token',
+            'method'  => 'post',
+            'content' => [
+                'password'              => '123456xx',
+                'password_confirmation' => '123456xx',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID,
+        ],
+    ],
+
+    'testPasswordResetByUsedToken' => [
+        'request'   => [
+            'url'     => '/users/reset-password-token',
+            'method'  => 'post',
+            'content' => [
+                'password'              => '123456xx',
+                'password_confirmation' => '123456xx',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID,
+        ],
+    ],
 ];

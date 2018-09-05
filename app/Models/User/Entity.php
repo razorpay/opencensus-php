@@ -19,6 +19,8 @@ class Entity extends Base\PublicEntity
     const CONTACT_MOBILE        = 'contact_mobile';
     const REMEMBER_TOKEN        = 'remember_token';
     const CONFIRM_TOKEN         = 'confirm_token';
+    const PASSWORD_RESET_TOKEN  = 'password_reset_token';
+    const PASSWORD_RESET_EXPIRY = 'password_reset_expiry';
     const CAPTCHA               = 'captcha';
     const CAPTCHA_DISABLE       = 'captcha_disable';
 
@@ -35,6 +37,8 @@ class Entity extends Base\PublicEntity
     const CONFIRMED             = 'confirmed';
     const INVITATIONS           = 'invitations';
 
+    const PASSWORD_TOKEN_LENGTH = 50;
+
     protected $entity = 'user';
 
     protected $fillable = [
@@ -44,7 +48,9 @@ class Entity extends Base\PublicEntity
         self::PASSWORD,
         self::CONTACT_MOBILE,
         self::REMEMBER_TOKEN,
-        self::CONFIRM_TOKEN
+        self::CONFIRM_TOKEN,
+        self::PASSWORD_RESET_TOKEN,
+        self::PASSWORD_RESET_EXPIRY,
     ];
 
     protected $public = [
@@ -60,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::PASSWORD,
         self::REMEMBER_TOKEN,
         self::CONFIRM_TOKEN,
+        self::PASSWORD_RESET_TOKEN,
     ];
 
     protected static $generators = [
@@ -134,6 +141,26 @@ class Entity extends Base\PublicEntity
     public function setConfirmTokenNull()
     {
         $this->setAttribute(self::CONFIRM_TOKEN, null);
+    }
+
+    public function setPasswordResetToken(string $token = null)
+    {
+        $this->setAttribute(self::PASSWORD_RESET_TOKEN, $token);
+    }
+
+    public function setPasswordResetExpiry(int $expiry)
+    {
+        $this->setAttribute(self::PASSWORD_RESET_EXPIRY, $expiry);
+    }
+
+    public function getPasswordResetToken()
+    {
+        return $this->getAttribute(self::PASSWORD_RESET_TOKEN);
+    }
+
+    public function getPasswordResetExpiry()
+    {
+        return $this->getAttribute(self::PASSWORD_RESET_EXPIRY);
     }
 
     protected function setPasswordAttribute($password)
