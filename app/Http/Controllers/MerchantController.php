@@ -252,7 +252,7 @@ class MerchantController extends Controller
 
             if (empty($adminUser) === false)
             {
-                $ufhFileUrl = "ufh/file/$fileId/get-signed-url-admin";
+                $ufhFileUrl = "admin-ufh/file/$fileId/get-signed-url";
             }
 
             // Re-create to avoid any GC-related bugs
