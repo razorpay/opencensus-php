@@ -375,6 +375,39 @@ return [
         ]
     ],
 
+    'testFetchRefundsProxyAuth' => [
+        'request' => [],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateRefundProxyAuth' => [
+        'request'   => [],
+        'response'  => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 1000000,
+                'currency' => 'INR',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateRefundProxyAuthInvalidRole' => [
+        'request'   => [],
+        'response'  => [
+            'content' => [
+                'error'       => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testRefundValidationOnWrongGateway' => [
         'request' => [
             'url'       => '/refunds/wallet_airtelmoney/validate',
