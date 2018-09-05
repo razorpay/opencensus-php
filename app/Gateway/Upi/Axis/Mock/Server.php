@@ -133,6 +133,8 @@ class Server extends Base\Mock\Server
     {
         $input = $this->parseInput($input, Action::VERIFY);
 
+        $this->request($input, $this->action);
+
         parent::verify($input);
 
         $this->validateActionInput($input);

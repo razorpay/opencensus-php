@@ -34,76 +34,75 @@ class UpiAxisGatewayTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
         $this->payment = $this->getDefaultUpiPaymentArray();
+
+        unset($this->payment['description']);
     }
 
     public function testPayment($status = 'created')
     {
-
-        unset($this->payment['description']);
-
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
-
-        $paymentId = $response['payment_id'];
 
         // Co Proto must be working
         $this->assertEquals('async', $response['type']);
 
-        $this->checkPaymentStatus($paymentId, $status);
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame('created', $payment->getStatus());
 
         $upi = $this->getDBLastEntity('upi');
-
-        $payment = $this->getDbEntityById('payment', $paymentId);
 
         $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 
         // We should have gotten a successful response
-        $this->assertEquals([
-            'callBackstatusCode' => '00',
-            'callBackstatusDescription' => 'Success',
-            'callBacktxnId' => 'AXIS00090439839'
-        ],$response);
+        $this->assertEquals(
+            [
+                'callBackstatusCode'        => '00',
+                'callBackstatusDescription' => 'Success',
+                'callBacktxnId'             => 'AXIS00090439839'
+            ],
+            $response);
 
-        $payment = $this->getEntityById('payment', $paymentId, true);
+        $payment->reload();
 
         $this->assertEquals('authorized', $payment['status']);
 
-        $upi = $this->getLastEntity('upi', true);
+        $upi = $this->getDbLastEntity('upi');
 
         $this->assertNotNull($upi['npci_reference_id']);
         $this->assertNotNull($upi['gateway_payment_id']);
 
         // Add a capture as well, just for completeness sake
-        $this->capturePayment($paymentId, $payment['amount']);
+        $this->capturePayment($payment->getPublicId(), $payment['amount']);
 
         return $payment;
     }
 
-    protected function checkPaymentStatus($id, $expectedStatus)
-    {
-        $response = $this->getPaymentStatus($id);
-
-        $status = $response['status'];
-
-        $this->assertEquals($expectedStatus, $status);
-    }
-
     public function testVerifyPayment()
     {
-        // First we test that verification works
-        // for a captured payment
-        $payment = $this->testPayment();
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
-        $paymentId = $payment['id'];
+        $payment = $this->getDbLastPayment();
+        $upi = $this->getDBLastEntity('upi');
 
-        $this->payment = $this->verifyPayment($paymentId);
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
 
-        $upi = $this->getLastEntity('upi', true);
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $payment->reload();
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $response = $this->verifyPayment($payment->getPublicId());
+
+        $payment->reload();
+
+        $upi = $this->getDbLastEntity('upi');
 
         $this->assertEquals($upi['vpa'], 'vishnu@icici');
 
-        $this->assertSame($this->payment['payment']['verified'], 1);
+        $this->assertSame(1, $payment['verified']);
     }
 
     protected function getDefaultUpiPaymentArray()
@@ -121,10 +120,16 @@ class UpiAxisGatewayTest extends TestCase
     {
         $payment = $this->testPayment();
 
-        $paymentId = $payment['id'];
-
         // Attempt a partial refund
-        $this->refundPayment($paymentId, 100);
+        $this->refundPayment($payment->getPublicId(), 100);
+
+        $upi1 = $this->getDbLastEntity('upi');
+
+        $this->refundPayment($payment->getPublicId(), 100);
+
+        $upi2 = $this->getDbLastEntity('upi');
+
+        // TODO: Add assertions
     }
 
     public function testUpiAmountCap()
@@ -151,29 +156,29 @@ class UpiAxisGatewayTest extends TestCase
 
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
-        $paymentId = $response['payment_id'];
-
         // Co Proto must be working
         $this->assertEquals('async', $response['type']);
 
-        $this->checkPaymentStatus($paymentId, $status);
+        $payment = $this->getDbLastPayment();
 
-        $upiEntity = $this->getLastEntity('upi', true);
+        $this->assertSame('created', $payment->getStatus());
 
-        $payment = $this->getEntityById('payment', $paymentId, true);
+        $upi = $this->getDbLastEntity('upi');
 
-        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 
         // We should have gotten a successful response
-        $this->assertEquals([
+        $this->assertEquals(
+            [
                 'callBackstatusCode'        => '000',
                 'callBackstatusDescription' => 'Success',
                 'callBacktxnId'             => 'AXIS00090439839'
-            ], $response);
+            ],
+            $response);
 
-        $this->assertEquals('vishnu@icici', $upiEntity[Entity::VPA]);
+        $this->assertEquals('vishnu@icici', $upi[Entity::VPA]);
     }
 
     public function testVpaWithoutPspValidation()
@@ -199,14 +204,28 @@ class UpiAxisGatewayTest extends TestCase
 
         $response = $this->doAuthPayment($this->payment);
 
-        $paymentId = $response['payment_id'];
+        $payment = $this->getDbLastPayment();
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($paymentId)
+        $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $this->verifyPayment($paymentId);
+            $this->verifyPayment($payment->getPublicId());
         });
+
+        $payment->reload();
+
+        $this->assertSame(0, $payment->verified);
+        $this->assertNotNull($payment->getVerifyAt());
+    }
+
+    protected function checkPaymentStatus($id, $expectedStatus)
+    {
+        $response = $this->getPaymentStatus($id);
+
+        $status = $response['status'];
+
+        $this->assertEquals($expectedStatus, $status);
     }
 
 }
