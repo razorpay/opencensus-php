@@ -48,6 +48,7 @@ class Reporting implements ExternalService
     const CONSUMER_HEADER       = 'X-Consumer';
     const REPORT_TYPE_HEADER    = 'X-Report-Type';
     const ADMIN_TOKEN_HEADER    = 'X-Admin-Token';
+    const LINKED_ACCOUNT_HEADER = 'X-Linked-Account-Parent';
 
     /**
      * @var array
@@ -92,6 +93,8 @@ class Reporting implements ExternalService
         // Proxy Auth
         $merchantId = $this->ba->getMerchantId();
 
+        $linkedAccountParentId = $this->getLinkedAccountParentId();
+
         // Auth w/ Admin Token
         $adminToken = $this->ba->getAdminToken();
 
@@ -113,6 +116,11 @@ class Reporting implements ExternalService
                 // Proxy Auth used here
                 $headers[self::REPORT_TYPE_HEADER] = self::MERCHANT;
                 $headers[self::CONSUMER_HEADER] = $merchantId;
+            }
+
+            if (empty($linkedAccountParentId) === false)
+            {
+                $headers[self::LINKED_ACCOUNT_HEADER] = $linkedAccountParentId;
             }
         }
         else if (empty($reportType) === false)
@@ -623,5 +631,26 @@ class Reporting implements ExternalService
     protected function getTraceableRequest(array $request): array
     {
         return array_only($request, ['url', 'method', 'content', 'headers']);
+    }
+
+    /**
+     * Fetches linked account parent id from exisiting ba account context.
+     */
+    protected function getLinkedAccountParentId()
+    {
+        $merchant = $this->ba->getMerchant();
+
+        $parentId = null;
+
+        if ((empty($merchant) === false) and ($merchant->isMarketplace() === true))
+        {
+            $parentId = $merchant->getId();
+        }
+        else if ((empty($merchant) === false) and ($merchant->isLinkedAccount() === true))
+        {
+            $parentId = $merchant->parent->getId();
+        }
+
+        return $parentId;
     }
 }
