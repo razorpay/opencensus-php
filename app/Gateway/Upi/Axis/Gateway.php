@@ -67,52 +67,38 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-        $tokenResponse = $this->fetchToken($input);
+        $token = $this->fetchToken($input, Action::COLLECT);
+
+        // Putting token to input as we want to maintain consistency in collect request
+        $input['gateway']['token'] = $token;
 
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST, [
-            'tokenResponse'     => $tokenResponse,
             'gateway'           => $this->gateway,
             'payment_id'        => $input['payment']['id'],
             'terminal_id'       => $input['terminal']['id'],
+            'token'             => $token,
         ]);
 
-        if($tokenResponse[Fields::CODE] == Status::TOKEN_SUCCESS)
-        {
-            parent::action($input, Action::AUTHORIZE);
+        parent::action($input, Action::AUTHORIZE);
 
-            $request =  $this->getCollectRequestArray($tokenResponse);
+        $request = $this->getCollectRequestArray($input);
 
-            $request['headers'] = [
-                'Content-Type' => 'application/json',
-            ];
+        $response = $this->sendGatewayRequest($request);
 
-            $collectResponse = $this->sendGatewayRequest($request);
+        $collectResponse = $this->parseGatewayResponse($response->body, $input);
 
-            $collectResponse = $this->parseGatewayResponse($collectResponse->body, $input);
+        $this->checkResponseStatus($collectResponse[Fields::CODE], Status::COLLECT_SUCCESS);
 
-            $this->updateGatewayPaymentEntity($gatewayPayment, $collectResponse);
-
-            $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, [
-                'collectResponse'   => $collectResponse,
-            ]);
-        }
-        else
-        {
-            throw new Exception\GatewayErrorException(Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $tokenResponse[Fields::CODE],
-                $tokenResponse[Fields::RESULT]);
-        }
-
-        $vpa = $this->getDefaultPayeeVpa();
+        $this->updateGatewayPaymentEntity($gatewayPayment, $collectResponse);
 
         return [
             'data'   => [
-                'vpa'   => $vpa
+                'vpa'   => $this->getDefaultPayeeVpa()
             ]
         ];
     }
 
-    protected function fetchToken($input)
+    protected function fetchToken($input, string $action)
     {
         parent::action($input, Action::FETCH_TOKEN);
 
@@ -126,7 +112,18 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body, $input);
 
-        return $response;
+        if ((isset($response[Fields::CODE])) and
+            (isset($response[Fields::DATA])) and
+            ($response[Fields::CODE] == Status::TOKEN_SUCCESS))
+        {
+            return $response[Fields::DATA];
+        }
+
+        throw new Exception\GatewayErrorException(
+            Error\ErrorCode::GATEWAY_ERROR_TOKEN_NOT_FOUND,
+            null,
+            null,
+            ['response' => $response]);
     }
 
     /**
@@ -195,20 +192,35 @@ class Gateway extends Base\Gateway
      * @param string $type
      * @return array
      */
-    protected function parseGatewayResponse($responseBody, $input, $type = Action::COLLECT)
+    protected function parseGatewayResponse($responseBody, $input)
     {
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-            'body'              => $responseBody,
+        $trace = [
             'gateway'           => $this->gateway,
-            'type'              => $type,
+            'action'            => $this->action,
             'payment_id'        => $input['payment']['id'],
             'terminal_id'       => $input['terminal']['id'],
-        ]);
+            'body'              => $responseBody,
+        ];
 
-        return $this->jsonToArray($responseBody);
+        try
+        {
+            $content = $this->jsonToArray($responseBody);
+
+            $trace['content'] = $content;
+
+            $this->trace->info(TraceCode::GATEWAY_RESPONSE, $trace);
+
+            return $content;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::GATEWAY_RESPONSE, $trace);
+
+            throw $exception;
+        }
     }
 
-    private function checkResponseStatus(string $status, string $successStatus = Status::TOKEN_SUCCESS)
+    private function checkResponseStatus($status, string $successStatus)
     {
         if ($status !== $successStatus)
         {
@@ -257,16 +269,18 @@ class Gateway extends Base\Gateway
                 'payment_id'        => $payment['id'],
                 'terminal_id'       => $input['terminal']['id'],
             ]);
+
         return $request;
     }
 
     protected function getCollectRequestArray($input, $content = [], $method = 'post', $type = null)
     {
-        $request = array(
-            'url'       => $this->getUrl($type).$input[Fields::DATA],
-            'method'    => $method,
-            'content'   => $content,
-        );
+        $request = $this->getStandardRequestArray($content, $method, $type);
+
+        // Token is created on runtime which can not be hardcoded
+        // And it goes as the path param so we are appending
+        $request['url'] .= $input['gateway']['token'];
+
         return $request;
     }
 
@@ -301,6 +315,8 @@ class Gateway extends Base\Gateway
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
 
+    // ************************* CALLBACK *********************/
+
     public function preProcessServerCallback($input): array
     {
         $encryptedmessage = str_replace('\n','',$input[Fields::DATA]);
@@ -323,7 +339,16 @@ class Gateway extends Base\Gateway
 
     public function getPaymentIdFromServerCallback($input)
     {
-        return $input[Fields::MERCHANT_TRANSACTION_ID];
+        if (isset($input[Fields::MERCHANT_TRANSACTION_ID]) === true)
+        {
+            return $input[Fields::MERCHANT_TRANSACTION_ID];
+        }
+
+        throw new Exception\GatewayErrorException(
+            Error\ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT,
+            null,
+            null,
+            ['input' => $input]);
     }
 
     /**
@@ -347,7 +372,7 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
-        $this->checkResponseStatus($content[Fields::GATEWAY_RESPONSE_CODE]);
+        $this->checkResponseStatus($content[Fields::GATEWAY_RESPONSE_CODE], Status::CALLBACK_SUCCESS);
 
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
@@ -357,6 +382,11 @@ class Gateway extends Base\Gateway
             ]
         ];
 
+    }
+
+    public function postProcessServerCallback($input)
+    {
+        return $this->getCallbackResponseArray($input['gateway']);
     }
 
     protected function getCallbackResponseArray($content)
@@ -676,8 +706,14 @@ class Gateway extends Base\Gateway
         return $this->aesCrypto->decryptString($stringToDecrypt);
     }
 
-    public function postProcessServerCallback($input)
+    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
     {
-        return $this->getCallbackResponseArray($input['input']);
+        $request = parent::getStandardRequestArray($content, $method, $type);
+
+        $request['headers'] = [
+            'Content-Type' => 'application/json',
+        ];
+
+        return $request;
     }
 }

@@ -86,20 +86,19 @@ class GatewayController extends Controller
 
         $paymentId = Payment\Entity::getSignedId($paymentId);
 
+        $postInput = [
+            'gateway'   => $input,
+        ];
+
         try
         {
             $data = (new Payment\Service)->s2sCallback($paymentId, $input);
 
-            $response = $gateway->postProcessServerCallback([
-                'payment_id' => $paymentId,
-                'mode'       => $mode,
-                'callback'   => $data,
-                'input'      => $input,
-            ]);
+            $response = $gateway->postProcessServerCallback($postInput);
         }
         catch (\Exception $exception)
         {
-            $response = $gateway->postProcessServerCallback(null, $exception);
+            $response = $gateway->postProcessServerCallback($postInput, $exception);
         }
 
         return $response;
