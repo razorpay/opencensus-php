@@ -1371,7 +1371,7 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToCsvFile($headers, 'MerchantSettlementTransactionListing');
 
-        $entries[] = $this->overideFssBobRecon($gatewayPayment1, $gatewayPayment1['payment_id']);
+        $entries[] = $this->overrideFssBobRecon($gatewayPayment1, $gatewayPayment1['payment_id']);
 
         $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing', $file);
 
@@ -1420,7 +1420,7 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToCsvFile($headers, 'MerchantSettlementTransactionListing');
 
-        $entries[] = $this->overideFssBobRecon($gatewayRefund, $refund['id'], 'Refund');
+        $entries[] = $this->overrideFssBobRecon($gatewayRefund, $refund['id'], 'Refund');
 
         $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing', $file);
 
@@ -1438,7 +1438,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
-    private function overideFssBobRecon(array $gatewayPayment, string $entityId, $transactionType ='Purchase')
+    private function overrideFssBobRecon(array $gatewayPayment, string $entityId, $transactionType ='Purchase')
     {
         $facade = $this->testData['facades']['testFssBobRecon'];
 

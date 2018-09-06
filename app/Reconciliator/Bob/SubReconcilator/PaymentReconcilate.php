@@ -33,7 +33,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
-                    'message'           => 'Payment amount mismatch',
                     'expected_amount'   => $paymentAmount,
                     'currency'          => $this->payment->getCurrency(),
                     'row'               => $row,
@@ -47,7 +46,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReconPaymentAmount($row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
+        return Base\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null);
     }
 
     protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
