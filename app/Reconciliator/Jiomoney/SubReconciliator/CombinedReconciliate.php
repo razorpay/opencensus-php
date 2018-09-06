@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Reconciliator\Jiomoney;
+namespace RZP\Reconciliator\Jiomoney\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class CombinedReconciliate extends Base\CombinedReconciliate
+class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {
     /*******************
      * Row Header Names

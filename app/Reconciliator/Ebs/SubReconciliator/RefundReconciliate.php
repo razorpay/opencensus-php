@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Reconciliator\Ebs;
+namespace RZP\Reconciliator\Ebs\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 use RZP\Exception\ReconciliationException;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     /*******************
      * Row Header Names

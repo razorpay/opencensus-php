@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Reconciliator\CardFss;
+namespace RZP\Reconciliator\CardFss\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\CardFss\Reconciliate as CardFssReconciliate;
 
-class CombinedReconciliate extends Base\CombinedReconciliate
+class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {
     //
     // This is needed to identify if the row is payment or refund.
