@@ -11,7 +11,6 @@ use RZP\Dashboard\Dashboard;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Http;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\PublicCollection;
@@ -153,6 +152,8 @@ class Processor
      * @var \RZP\Http\BasicAuth\BasicAuth
      */
     protected $ba;
+
+    protected $cache;
 
     public function __construct(Merchant\Entity $merchant)
     {

@@ -913,6 +913,56 @@ return [
         ]
     ],
 
+    'testGetGstin' => [
+        'request'  => [
+            'url'    => '/merchant/gst',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'gstin'   => '29AAGCR4375J1ZU',
+                'p_gstin' => null
+            ],
+        ],
+    ],
+
+    'testEditGstin' => [
+        'request'  => [
+            'url'     => '/merchant/gst',
+            'method'  => 'PATCH',
+            'content' => [
+                'gstin'   => '29AAGCR4375J1ZP',
+                'p_gstin' => '29AAGCR4375J1ZU'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'gstin'   => '29AAGCR4375J1ZP',
+                'p_gstin' => '29AAGCR4375J1ZU'
+            ],
+        ],
+    ],
+
+    'testEditGstinInvalidRole' => [
+        'request'  => [
+            'url'     => '/merchant/gst',
+            'method'  => 'PATCH',
+            'content' => [
+                'gstin'   => '29AAGCR4375J1ZP',
+                'p_gstin' => '29AAGCR4375J1ZU'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testDeleteLogoUrl' => [
         'request' => [
             'content' => [],

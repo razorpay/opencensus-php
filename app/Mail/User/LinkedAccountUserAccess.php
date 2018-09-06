@@ -2,7 +2,6 @@
 
 namespace RZP\Mail\User;
 
-use Carbon\Carbon;
 use RZP\Mail\Base;
 use RZP\Models\User;
 use RZP\Models\Merchant;
@@ -21,8 +20,6 @@ class LinkedAccountUserAccess extends Base\Mailable
 
     protected $token;
 
-    protected $expiryTime;
-
     public function __construct(User\Entity $user, array $org, Merchant\Entity $submerchant)
     {
         parent::__construct();
@@ -33,7 +30,10 @@ class LinkedAccountUserAccess extends Base\Mailable
 
         $this->routeMerchantName = $submerchant->parent->getName();
 
-        list($this->token, $this->expiryTime) = (new User\Service)->getTokenAndExpiry($this->user['id']);
+        $this->token = (new User\Service)->getTokenWithExpiry(
+                            $this->user['id'],
+                            User\Constants::LINKED_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME
+                        );
     }
 
     protected function addRecipients()
@@ -45,15 +45,6 @@ class LinkedAccountUserAccess extends Base\Mailable
         $this->to($email, $name);
 
         return $this;
-    }
-
-    public function getTokenAndExpiry(): array
-    {
-        $expiryTime = Carbon::now()->timestamp + User\Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME;
-
-        $token = (new User\Core)->generateToken($this->user['id'], $expiryTime);
-
-        return [$token, $expiryTime];
     }
 
     protected function addSender()
@@ -80,7 +71,6 @@ class LinkedAccountUserAccess extends Base\Mailable
             'org'               => $this->org,
             'routeMerchantName' => $this->routeMerchantName,
             'token'             => $this->token,
-            'expiryTime'        => $this->expiryTime,
             'email'             => urlencode($this->user['email']),
         ];
 

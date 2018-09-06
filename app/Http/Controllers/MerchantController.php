@@ -343,6 +343,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getAccountConfigInternal()
+    {
+        $data = $this->service()->fetchConfig($isInternal = true);
+
+        return ApiResponse::json($data);
+    }
+
     public function postAmountCredits($id)
     {
         $input = Request::all();
