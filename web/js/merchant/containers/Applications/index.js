@@ -124,6 +124,7 @@ export default class ApplicationContainer extends Component {
                 data={data}
                 key={data.id}
                 onBtnClick={this.deleteApp}
+                entityDetailLink={`${pathname}/${data.id}`}
               />
             ))}
             {createdAppsloading && <AppDetailsLoader />}

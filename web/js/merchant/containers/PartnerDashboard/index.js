@@ -53,7 +53,7 @@ export default class PartnerDashboard extends Component {
             />
 
             <ShowWhenRoute
-              additionalCondition={user => user.isPartner('pure_application')}
+              additionalCondition={user => user.isPartner('pure_platform')}
               path="/submerchants/applications/:id"
               component={ApplicationEntity}
             />
