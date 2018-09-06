@@ -312,6 +312,7 @@ class EnachRblGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(Status::AUTHORIZED, $payment['status']);
+        $this->assertEquals(true, $payment['late_authorized']);
 
         $gateway = $this->getLastEntity('enach', true);
 
