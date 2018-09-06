@@ -80,49 +80,53 @@ export default class ApplicationContainer extends Component {
     });
   };
 
+  renderConnectedApplications = () => {
+    const { connectedAppsloading, tokens } = this.props.applications;
+    return (
+      <div class="content-box">
+        <div class="content-header">
+          <strong>Connected Applications</strong>
+        </div>
+        {connectedAppsloading ? (
+          <LoadingConnectedApps />
+        ) : tokens.length ? (
+          tokens.map(data => (
+            <AppDetails
+              data={data}
+              key={data.id}
+              type={'connected'}
+              onBtnClick={this.revokeAccess}
+            />
+          ))
+        ) : (
+          <NoConnectedApps />
+        )}
+        <div class="clearfix" />
+      </div>
+    );
+  };
+
   render() {
-    // let { config, features, loading } = this.props.configState;
-    let createdApps = this.props.applications.items;
-    let isCreatedAppsLoading = this.props.applications.createdAppsloading;
-    let isConnectedAppsLoading = this.props.applications.connectedAppsloading;
-    let tokens = this.props.applications.tokens;
+    const { items, createdAppsloading } = this.props.applications;
+    const pathname = this.props.location.pathname;
 
     return (
       <div class="application-index-page">
-        <div class="content-box">
-          <div class="content-header">
-            <strong>Connected Applications</strong>
-          </div>
-          {isConnectedAppsLoading ? (
-            <LoadingConnectedApps />
-          ) : tokens.length ? (
-            tokens.map(data => (
-              <AppDetails
-                data={data}
-                key={data.id}
-                type={'connected'}
-                onBtnClick={this.revokeAccess}
-              />
-            ))
-          ) : (
-            <NoConnectedApps />
-          )}
-          <div class="clearfix" />
-        </div>
+        {pathname === '/applications' && this.renderConnectedApplications()}
         <div class="content-box">
           <div class="content-header">
             <strong>Created Applications</strong>
           </div>
           <div class="text-center content-body">
-            <NewAppLink />
-            {createdApps.map(data => (
+            <NewAppLink toNewApplication={`${pathname}/new`} />
+            {items.map(data => (
               <AppDetails
                 data={data}
                 key={data.id}
                 onBtnClick={this.deleteApp}
               />
             ))}
-            {isCreatedAppsLoading && <AppDetailsLoader />}
+            {createdAppsloading && <AppDetailsLoader />}
             <div class="clearfix" />
           </div>
         </div>
