@@ -179,6 +179,10 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS                                 = 'Your account does not have enough credits to carry out the refund operation.';
     const BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS                      = 'Cannot issue refund since payment date is older than 6 months';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
+    const BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED                         = 'Refund in an invalid state to be marked as processed';
+    const BAD_REQUEST_REFUND_NOT_SCROOGE                                        = 'Gateway refund cannot be called for non-scrooge gateway';
+    const BAD_REQUEST_REFUND_ALREADY_PROCESSED                                  = 'Refund has already been processed';
+    const BAD_REQUEST_REFUND_NOT_IN_CREATED                                     = 'Refund is not in created state';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_ON_HOLD                            = 'The merchant funds are already on hold';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_RELEASED                           = 'The merchant funds are already released';
@@ -527,7 +531,7 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_NOT_AUTHENTICATED                                    = 'The user is not authenticated';
     const BAD_REQUEST_USER_NOT_FOUND                                            = 'User not found with the given input';
     const BAD_REQUEST_USER_ROLE_INVALID                                         = 'The given role is not supported';
-    const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                   = 'Token Expired or Not a valid token';
+    const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                   = 'Token Expired or Not a valid token.';
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                     = 'Old Password mismatch';
     const BAD_REQUEST_CAPTCHA_FAILED                                            = 'Captcha Failed';
     const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';

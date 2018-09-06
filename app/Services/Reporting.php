@@ -440,8 +440,10 @@ class Reporting implements ExternalService
         array $input = [],
         array $headers = []): array
     {
-        // In case reporting is to be mocked, don't make any external call
-        // and just return empty array.
+        //
+        // In case reporting is to be mocked, don't make
+        // any external call and just return empty array.
+        //
         if ($this->config['mock'] === true)
         {
             return [];
@@ -502,7 +504,7 @@ class Reporting implements ExternalService
                 $this->getTraceableRequest($request));
 
             throw new Exception\IntegrationException('
-                Could not recieve proper response from reporting service');
+                Could not receive proper response from reporting service');
         }
     }
 

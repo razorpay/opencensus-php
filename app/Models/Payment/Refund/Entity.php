@@ -267,6 +267,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::GATEWAY_REFUNDED) === true);
     }
 
+    public function isCreated()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::CREATED);
+    }
+
     public function isBatch(): bool
     {
         return ($this->getBatchId() !== null);

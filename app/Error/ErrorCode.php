@@ -434,6 +434,10 @@ class ErrorCode
     const BAD_REQUEST_REFUND_FAILED                                                 = 'BAD_REQUEST_REFUND_FAILED';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS';
+    const BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED                             = 'BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED';
+    const BAD_REQUEST_REFUND_ALREADY_PROCESSED                                      = 'BAD_REQUEST_REFUND_ALREADY_PROCESSED';
+    const BAD_REQUEST_REFUND_NOT_IN_CREATED                                         = 'BAD_REQUEST_REFUND_NOT_IN_CREATED';
+    const BAD_REQUEST_REFUND_NOT_SCROOGE                                            = 'BAD_REQUEST_REFUND_NOT_SCROOGE';
     const BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS                          = 'BAD_REQUEST_REFUND_PAYMENT_OLDER_THAN_SIX_MONTHS';
 
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE';

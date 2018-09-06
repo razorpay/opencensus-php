@@ -991,6 +991,28 @@ class RefundTest extends TestCase
         $this->assertEquals($rfnd1->getPublicId(), $refunds['items'][0]['id']);
     }
 
+    public function testCreateRefundProxyAuth()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000');
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'operations');
+        $this->startTest($payment->getPublicId(), $payment->getAmount());
+
+        $payment = $this->getLastEntity('payment', true);
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($payment['amount_refunded'], 1000000);
+        $this->assertEquals($payment['amount'], $refund['amount']);
+    }
+
+    public function testCreateRefundProxyAuthInvalidRole()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000');
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'finance');
+        $this->startTest($payment->getPublicId(), $payment->getAmount());
+    }
+
     public function testRefundValidationOnWrongGateway()
     {
         $this->ba->appAuth();

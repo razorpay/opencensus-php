@@ -34,6 +34,10 @@ class CreateUsersTable extends Migration
 
             $table->string(User::CONFIRM_TOKEN)->nullable();
 
+            $table->string(User::PASSWORD_RESET_TOKEN)->nullable();
+
+            $table->integer(User::PASSWORD_RESET_EXPIRY)->nullable();
+
             $table->integer(User::CREATED_AT);
 
             $table->integer(User::UPDATED_AT);

@@ -2558,6 +2558,56 @@ class MerchantTest extends TestCase
         $this->assertStringStartsWith('http', $response['logo_url']);
     }
 
+    public function testGetGstin()
+    {
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'gstin' => '29AAGCR4375J1ZU'
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditGstin()
+    {
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditGstinInvalidRole()
+    {
+        $this->fixtures->create('user');
+
+        $user = $this->getLastEntity('user', true);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => 'operations'
+        ]);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+            ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user, 'operations');
+
+        $this->startTest();
+    }
+
     public function testDeleteLogoUrl()
     {
         // Check: Need to ensure logo exists. So create it first and then delete it
