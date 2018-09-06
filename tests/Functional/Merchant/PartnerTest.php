@@ -686,6 +686,7 @@ class PartnerTest extends OAuthTestCase
 
     /**
      * This test asserts the following things:
+     * - application_id as a query param
      * - API call to Auth service
      * - presence of application key in the response for /submerchants/{id}
      * - presence of connected_applications key in the response for /submerchants/{id}

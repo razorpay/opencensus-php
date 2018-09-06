@@ -696,7 +696,9 @@ return [
         'request'  => [
             'url'     => '/submerchants/acc_10000000000009',
             'method'  => 'GET',
-            'content' => [],
+            'content' => [
+                'application_id' => '10000RandomApp',
+            ],
         ],
         'response' => [
             'content' => [
@@ -708,13 +710,13 @@ return [
                 ],
                 'dashboard_access'       => false,
                 'application'            => [
-                    'id'   => '8ckeirnw84ifke',
-                    'name' => 'App 1',
+                    'id'   => '10000RandomApp',
+                    'name' => 'App 2',
                 ],
                 'connected_applications' => [
                     [
-                        'id'   => '10000RandomApp',
-                        'name' => 'App 2',
+                        'id'   => '8ckeirnw84ifke',
+                        'name' => 'App 1',
                     ],
                 ],
             ],
