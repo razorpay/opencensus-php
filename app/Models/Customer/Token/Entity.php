@@ -488,6 +488,7 @@ class Entity extends Base\PublicEntity
      */
     protected function setExpiredAtAttribute($expiredAt)
     {
+        // todo: Change token's expired_at value based on response from gateway
         if ((empty($expiredAt) === true) and
             ($this->getMethod() === Payment\Method::EMANDATE) and
             ($this->getAuthType() !== Payment\AuthType::AADHAAR)
