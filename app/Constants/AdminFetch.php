@@ -105,7 +105,53 @@ class AdminFetch
                     Fetch::LABEL        => 'rule_id',
                     Fetch::TYPE         => Fetch::TYPE_STRING
                 ]
-            ]
+            ],
+            Entity::SHIELD_LISTS => [
+                'reference'         => [
+                    Fetch::LABEL        => 'reference',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'type'            => [
+                    Fetch::LABEL        => 'type',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'string',
+                        'contact',
+                        'email',
+                        'country',
+                        'iin',
+                        'domain',
+                        'ip'
+                    ]
+                ]
+            ],
+            Entity::SHIELD_LIST_ITEMS => [
+                'list_id'         => [
+                    Fetch::LABEL        => 'list_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'reference'         => [
+                    Fetch::LABEL        => 'reference',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'type'            => [
+                    Fetch::LABEL        => 'type',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'string',
+                        'contact',
+                        'email',
+                        'country',
+                        'iin',
+                        'domain',
+                        'ip'
+                    ]
+                ],
+                'value'         => [
+                    Fetch::LABEL        => 'value',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
         ];
     }
 

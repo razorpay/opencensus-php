@@ -21,11 +21,19 @@ class ShieldClient implements ExternalService
 
     const ANALYTICS_PATH    = '/rules/analytics';
 
+    const LISTS_PATH        = '/merchants/{merchant_id}/lists';
+
+    const LIST_ITEMS_PATH   = '/merchants/{merchant_id}/lists/{list_id}/list_items';
+
     const CONTENT_TYPE      = 'content-type';
 
     const RULES             = 'rules';
 
     const RULE_ANALYTICS    = 'rule_analytics';
+
+    const LISTS             = 'lists';
+
+    const LIST_ITEMS        = 'list_items';
 
     protected $config;
 
@@ -68,6 +76,12 @@ class ShieldClient implements ExternalService
 
             case self::RULE_ANALYTICS:
                 return $this->getRuleAnalytics($input);
+
+            case self::LISTS:
+                return $this->getLists($input);
+
+            case self::LIST_ITEMS:
+                return $this->getListItems($input);
         }
 
         return [];
@@ -79,6 +93,9 @@ class ShieldClient implements ExternalService
         {
             case self::RULES:
                 return $this->getRuleById($id);
+
+            case self::LISTS:
+                return $this->getListById($id);
         }
 
         return [];
@@ -86,27 +103,27 @@ class ShieldClient implements ExternalService
 
     public function createRule(array $input)
     {
-        return $this->sendRequest($this->getRulesPath(), Requests::POST, $input);
+        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH), Requests::POST, $input);
     }
 
     public function getRules(array $input)
     {
-        return $this->sendRequest($this->getRulesPath(), Requests::GET, $input);
+        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH), Requests::GET, $input);
     }
 
     public function getRuleById(string $id): array
     {
-        return $this->sendRequest($this->getRulesPath() . '/' . $id, Requests::GET);
+        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH) . '/' . $id, Requests::GET);
     }
 
     public function deleteRuleById(string $id): array
     {
-        return $this->sendRequest($this->getRulesPath() . '/' . $id, Requests::DELETE);
+        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH) . '/' . $id, Requests::DELETE);
     }
 
     public function updateRuleById(string $id, array $input): array
     {
-        return $this->sendRequest($this->getRulesPath() . '/' . $id, Requests::PUT, $input);
+        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH) . '/' . $id, Requests::PUT, $input);
     }
 
     public function evaluateRules(array $input): array
@@ -124,6 +141,29 @@ class ShieldClient implements ExternalService
     public function getRuleAnalytics(array $input): array
     {
         return $this->sendRequest(self::ANALYTICS_PATH, Requests::GET, $input);
+    }
+
+    public function getLists(array $input): array
+    {
+        return $this->sendRequest($this->getMerchantPath(self::LISTS_PATH), Requests::GET, $input);
+    }
+
+    public function getListById(string $id): array
+    {
+        return $this->sendRequest($this->getMerchantPath(self::LISTS_PATH) . '/' . $id, Requests::GET);
+    }
+
+    public function getListItems(array $input): array
+    {
+        $listItemPath = $this->getMerchantPath(self::LIST_ITEMS_PATH);
+
+        $listId =  $input['list_id'] ?? 1; // by default use the first list
+
+        unset($input['list_id']);
+
+        $listItemPath = str_replace('{list_id}', $listId, $listItemPath);
+
+        return $this->sendRequest($listItemPath,Requests::GET, $input);
     }
 
     protected function getPaymentProperties(Payment\Entity $payment): array
@@ -339,13 +379,9 @@ class ShieldClient implements ExternalService
         ];
     }
 
-    /**
-     * Shield stores all global rules which are create by Admin under the Shared merchant account.
-     * This will be changed when we expose Shield entities to Merchants.
-     */
-    private function getRulesPath(): string
+    private function getMerchantPath(string $path, string $merchantId = Account::SHARED_ACCOUNT): string
     {
-        return str_replace('{merchant_id}', Account::SHARED_ACCOUNT, self::RULES_PATH);
+        return str_replace('{merchant_id}', $merchantId, $path);
     }
 
 }
