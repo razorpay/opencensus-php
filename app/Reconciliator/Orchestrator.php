@@ -380,14 +380,16 @@ class Orchestrator extends Base\Core
 
         $startRow = $this->gatewayReconciliator->getStartRow($fileDetails);
 
+        $keyColumnNames = $this->gatewayReconciliator->getKeyColumnNames($fileDetails);
+
         if ($fileDetails[FileProcessor::EXTENSION] === Format::XLSX)
         {
             // getting contents using spout library for xlsx
-            $sheetsContents = $this->converter->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames, $startRow);
+            $sheetsContents = $this->converter->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames, $startRow, $keyColumnNames);
         }
         else
         {
-            $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames, $startRow);
+            $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames, $startRow, $keyColumnNames);
         }
 
         foreach ($sheetsContents as $sheetName => $sheetData)

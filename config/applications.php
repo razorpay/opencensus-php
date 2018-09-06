@@ -10,10 +10,6 @@ return [
         'cloud'     => true,
     ],
 
-    'subscriptions' => [
-        'secret'    => env('APP_SUBSCRIPTIONS_SECRET'),
-    ],
-
     'dashboard_guest'   => [
         'secret'   => env('APP_DASHBOARD_GUEST_SECRET'),
     ],
@@ -78,6 +74,16 @@ return [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),
         'secret'    => env('RAVEN_SECRET'),
+    ],
+
+    'scrooge' => [
+        'mock'              => env('SCROOGE_MOCK', false),
+        'url'               => env('SCROOGE_URL'),
+        'secret'            => env('APP_SCROOGE_SECRET'),
+        // TODO: Rename the key!
+        // Key and secret through which api will call scrooge
+        'scrooge_key'       => env('SCROOGE_KEY'),
+        'scrooge_secret'    => env('SCROOGE_SECRET'),
     ],
 
     'maxmind' => [
@@ -217,5 +223,11 @@ return [
 
     'beam' => [
         'url' => env('BEAM_URL')
-    ]
+    ],
+
+    'subscriptions' => [
+        'url'      => env('APP_SUBSCRIPTIONS_URL'),
+        'username' => 'rzp',
+        'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
+    ],
 ];

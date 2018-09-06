@@ -3,22 +3,32 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
+use Illuminate\Http\UploadedFile;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
+/**
+ * @group dns-sensitive
+ */
 class MerchantDetailTest extends TestCase
 {
     use PaymentTrait;
     use HeimdallTrait;
+    use MocksDnsTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantDetailTestData.php';
 
         parent::setUp();
+
+        $this->setupMockDns();
     }
 
     public function testGetMerchantDetails()
@@ -513,5 +523,30 @@ class MerchantDetailTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testBulkEditMerchantAttributes()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        // Put CSV file as UploadedFile instance in request
+        $path = __DIR__ . '/helpers/bulk-edit-merchant-attributes.csv';
+        $file = new UploadedFile($path, 'file.csv', 'text/csv', filesize($path), null, true);
+        $this->testData[__FUNCTION__]['request']['files']['file'] = $file;
+
+        // Fire api request and assert response and entity state in both modes
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('live', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+
+        $testMerchant = $this->getDbEntityById('merchant', '10000000000000', 'test');
+        $this->assertSame('Kerala', $testMerchant->merchantDetail->getBusinessRegisteredState());
+        $this->assertSame('kerala@test.com', $testMerchant->merchantDetail->getContactEmail());
+
+        $liveMerchant = $this->getDbEntityById('merchant', '10000000000000', 'live');
+        $this->assertSame('Kerala', $liveMerchant->merchantDetail->getBusinessRegisteredState());
+        $this->assertSame('kerala@test.com', $liveMerchant->merchantDetail->getContactEmail());
     }
 }

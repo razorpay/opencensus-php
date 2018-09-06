@@ -14,12 +14,14 @@ use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
+use RZP\Models\Feature\Constants;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -34,6 +36,9 @@ use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
+/**
+ * @group dns-sensitive
+ */
 class MerchantTest extends TestCase
 {
     use PaymentTrait;
@@ -41,6 +46,7 @@ class MerchantTest extends TestCase
     use SettlementTrait;
     use InteractsWithSession;
     use HeimdallTrait;
+    use MocksDnsTrait;
     use DbEntityFetchTrait;
     use OAuthTrait;
 
@@ -53,6 +59,8 @@ class MerchantTest extends TestCase
         $this->ba->appAuth();
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->setupMockDns();
 
         $this->app->make(Factory::class)->load($factoryPath);
     }
@@ -1204,7 +1212,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(21, $banks);
+        $this->assertCount(32, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -2033,6 +2041,8 @@ class MerchantTest extends TestCase
 
     public function testPutEmiMethod()
     {
+        $this->fixtures->create('pricing:emi_pricing_plan');
+
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $admin = $this->ba->getAdmin();
@@ -2548,6 +2558,56 @@ class MerchantTest extends TestCase
         $this->assertStringStartsWith('http', $response['logo_url']);
     }
 
+    public function testGetGstin()
+    {
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'gstin' => '29AAGCR4375J1ZU'
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditGstin()
+    {
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditGstinInvalidRole()
+    {
+        $this->fixtures->create('user');
+
+        $user = $this->getLastEntity('user', true);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => 'operations'
+        ]);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+            ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user, 'operations');
+
+        $this->startTest();
+    }
+
     public function testDeleteLogoUrl()
     {
         // Check: Need to ensure logo exists. So create it first and then delete it
@@ -2786,6 +2846,39 @@ class MerchantTest extends TestCase
         $merchant->reTag(["ref-10000000000000"]);
 
         $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertNotEmpty($mailData['token']);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertTrue($mailable->hasTo('test1@razorpay.com'));
+
+            return true;
+        });
+
+        Mail::assertNotQueued(MappedToAccount::class);
+    }
+
+    public function testCreateSubmerchantLoginByAdmin()
+    {
+        Mail::fake();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id'     => '10000000000040',
+            'email'  => 'test1@razorpay.com',
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+
+        $merchant->reTag(["ref-10000000000000"]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', null, 'manager');
 
         $this->startTest();
 
@@ -3084,5 +3177,32 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testBeneficiaryRegisterYesbankBetweenTimestamps()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('bank_account');
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/api/yesbank',
+            'method'    => 'post',
+            'content'   => [
+                'duration' => 15
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('merchants_count', $content);
+
+        $this->assertEquals(1, $content['merchants_count']);
+
+        $this->assertEquals(Channel::YESBANK, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class);
     }
 }

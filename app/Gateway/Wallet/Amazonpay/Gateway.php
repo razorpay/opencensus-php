@@ -749,6 +749,8 @@ class Gateway extends Base\Gateway
         // The signature serves as an extra layer of authentication on Amazon's side.
         $relativeUrl = $this->getAmazonPaySdk()->getProcessPaymentUrl($content, $callbackUrl);
 
+        parse_str($relativeUrl, $content);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
@@ -759,8 +761,9 @@ class Gateway extends Base\Gateway
             ]);
 
         return [
-            'url'    => $this->getUrl() . '?' . $relativeUrl,
-            'method' => 'get'
+            'url'       => $this->getUrl() . '?' . $relativeUrl,
+            'method'    => 'get',
+            'content'   => $content,
         ];
     }
 

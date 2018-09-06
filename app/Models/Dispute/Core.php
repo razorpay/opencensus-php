@@ -19,7 +19,7 @@ use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Constants\{Entity as E, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
-use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
+use RZP\Models\Dispute\File\Core as DisputeFileCore;
 
 class Core extends Base\Core
 {
@@ -156,9 +156,9 @@ class Core extends Base\Core
      * @param Entity $dispute
      * @param array  $input
      *
-     * @return Entity
+     * @return array
      */
-    public function updateFilesAndInputForMerchant(Entity $dispute, array $input): Entity
+    public function updateFilesAndInputForMerchant(Entity $dispute, array $input): array
     {
         $this->trace->info(
             TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
@@ -170,16 +170,16 @@ class Core extends Base\Core
 
         $fileCore = new File\Core;
 
-        if (array_key_exists(DisputeFileEntity::FILES, $input) === true)
+        if (array_key_exists(DisputeFileCore::FILES, $input) === true)
         {
-            $files = $input[DisputeFileEntity::FILES];
+            $files = $input[DisputeFileCore::FILES];
 
             $files = $fileCore->checkFilesInput($files);
 
-            unset($input[DisputeFileEntity::FILES]);
+            unset($input[DisputeFileCore::FILES]);
         }
 
-        $dispute = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
+        $response = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
         {
             if (empty($input) === false)
             {
@@ -191,14 +191,12 @@ class Core extends Base\Core
                 $fileCore->uploadFiles($dispute, $files);
             }
 
-            return $dispute;
+            return $dispute->toArrayPublic();
         });
 
-        //
-        // Load the 'files' relation on the dispute entity
-        // before return
-        //
-        return $dispute->load(Entity::FILES);
+        $response[File\Core::ALL_FILES] = $fileCore->getFilesForEntity($dispute);
+
+        return $response;
     }
 
     /**

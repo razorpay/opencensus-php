@@ -278,6 +278,29 @@ class InvitationTest extends TestCase
         $this->assertEquals(count($response), 2);
     }
 
+    public function testGetPendingInvitationsByNonOwnerMember()
+    {
+        $this->fixtures->create('invitation', ['email' => 'pending1@razorpay.com']);
+
+        $this->fixtures->create('invitation',
+            [
+                'email'       => 'pending2@razorpay.com',
+                'role'        => 'finance',
+            ]);
+
+        $nonOwnerUser = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $nonOwnerUser->id,
+            'role'        => 'operations',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $nonOwnerUser->toArrayPublic(), 'operations');
+
+        $this->startTest();
+    }
+
     public function testGetInvitationByToken()
     {
         $invitation = $this->fixtures->create('invitation');

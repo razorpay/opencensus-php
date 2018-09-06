@@ -1506,6 +1506,8 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceWithPayments()
     {
+        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
+
         $this->createOrder();
 
         $invoice = $this->createIssuedInvoice();
@@ -1521,6 +1523,8 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceWithPaymentsCard()
     {
+        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
+
         $this->createOrder();
 
         $invoice = $this->createIssuedInvoice();

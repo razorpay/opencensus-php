@@ -28,6 +28,8 @@ class Service extends Base\Service
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct();
@@ -185,7 +187,7 @@ class Service extends Base\Service
             // TODO : Implement send email feature for other netbanking gateways.
             // Implemented for Daily file gateways.
             $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
-                                            $type, $gatewayCode, $from, $to, $gateway);
+                                                $type, $gatewayCode, $from, $to, $gateway);
 
             return $this->generateRefundFile($refunds, $email);
         }
@@ -318,6 +320,39 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    public function makeGatewayRefundCall(string $refundId, array $input)
+    {
+        $refund = $this->repo->refund->findOrFail($refundId);
+
+        $merchant = $refund->merchant;
+
+        $response = $this->getNewProcessor($merchant)->scroogeGatewayRefund($refund, $input);
+
+        return $response;
+    }
+
+    public function makeGatewayVerifyRefundCall(string $refundId)
+    {
+        $refund = $this->repo->refund->findOrFail($refundId);
+
+        $merchant = $refund->merchant;
+
+        $response = $this->getNewProcessor($merchant)->scroogeGatewayVerifyRefund($refund);
+
+        return $response;
+    }
+
+    public function createScroogeRefund(string $refundId)
+    {
+        $refund = $this->repo->refund->findOrFail($refundId);
+
+        $merchant = $refund->merchant;
+
+        $response = $this->getNewProcessor($merchant)->callRefundFunctionOnScrooge($refund);
+
+        return $response;
     }
 
     /**
@@ -883,11 +918,61 @@ class Service extends Base\Service
 
         $refund->edit($input, 'editStatus');
 
+        if ($refund->isProcessed() === true)
+        {
+            $refund->setErrorNull();
+        }
+
         $this->repo->saveOrFail($refund);
 
         return [
             'status' => $refund->getStatus(),
         ];
+    }
+
+    public function markRefundProcessed(string $refundId)
+    {
+        $refund = [];
+
+        try
+        {
+            $refund = $this->repo->refund->findOrFailPublic($refundId);
+
+            $this->trace->info(
+                TraceCode::REFUND_MARK_PROCESSED_REQUEST,
+                [
+                    'refund_id' => $refund->getId(),
+                ]);
+
+            $gateway = $refund->getGateway();
+            $merchantId = $refund->merchant->getId();
+
+            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === true)
+            {
+                $refund->getValidator()->validateMarkProcessed();
+
+                $refund->setStatusProcessed();
+                $refund->setGatewayRefunded(true);
+
+                $this->repo->saveOrFail($refund);
+
+                $refund = $refund->toArrayPublic();
+            }
+            else
+            {
+                $this->trace->error(
+                    TraceCode::REFUND_MARK_PROCESSED_NON_SCROOGE_GATEWAY,
+                    [
+                        'refund_id' => $refund->getId()
+                    ]);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, null, null, ['refund_id' => $refundId]);
+        }
+
+        return $refund;
     }
 
     public function markProcessedBulk(array $input)

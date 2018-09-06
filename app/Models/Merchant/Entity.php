@@ -211,6 +211,7 @@ class Entity extends Base\PublicEntity
 
     const CONFIG_LIST = [
         self::ID,
+        self::NAME,
         self::BRAND_COLOR,
         self::HANDLE,
         self::TRANSACTION_REPORT_EMAIL,
@@ -219,6 +220,13 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+    ];
+
+    const INTERNAL_CONFIG_LIST = [
+        self::BILLING_LABEL,
+        self::WEBSITE,
+        self::RECEIPT_EMAIL_ENABLED,
+        self::PARENT_ID
     ];
 
     protected $public = [
@@ -501,6 +509,21 @@ class Entity extends Base\PublicEntity
     public function isDebitRecurringEnabled(): bool
     {
         return ($this->isAtLeastOneFeatureEnabled(Feature\Constants::$debitRecurringFeatures) === true);
+    }
+
+    public function isExposeARNRefundEnabled(): bool
+    {
+       return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_REFUND) === true);
+    }
+
+    public function isExposeARNPaymentEnabled(): bool
+    {
+       return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_PAYMENT) === true);
+    }
+
+    public function isExposeCardExpiryEnabled(): bool
+    {
+       return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_EXPIRY) === true);
     }
 
     /**
@@ -997,20 +1020,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFUND_SOURCE);
     }
 
-    public function getDisplayName()
-    {
-        $displayName = $this->getAttribute(self::DISPLAY_NAME);
-
-        $merchantName = $this->getAttribute(self::NAME);
-
-        if (empty($displayName) === false)
-        {
-            return $displayName . " - ". $merchantName;
-        }
-
-        return $merchantName;
-    }
-
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
     {
         $relativeLogoUrl = $this->getLogoUrl();
@@ -1126,6 +1135,11 @@ class Entity extends Base\PublicEntity
         $formattedEmail = ($email === null) ? null : mb_strtolower(trim($email));
 
         $this->attributes[self::EMAIL] =  $formattedEmail;
+    }
+
+    public function setChannel(string $channel)
+    {
+        $this->attributes[self::CHANNEL] = $channel;
     }
 
     public function setWebsiteAttribute($website)
@@ -1610,7 +1624,7 @@ class Entity extends Base\PublicEntity
             self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
             self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
             self::LOGO_URL       => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
-            self::DISPLAY_NAME   => $this->getDisplayName(),
+            self::DISPLAY_NAME   => $this->getAttribute(self::DISPLAY_NAME),
             self::PARTNER_TYPE   => $this->getAttribute(self::PARTNER_TYPE),
             self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
@@ -1678,6 +1692,15 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * @return bool
+     */
+    public function isPartnerWithWebhooksAccess(): bool
+    {
+        return (($this->isPartner() === true) and
+            (in_array($this->getPartnerType(), Constants::$webhooksAccessPartnerTypes, true) === true));
+    }
+
+    /**
      * Appends the merchant id with the Account entity's sign
      *
      * @param array $array
@@ -1700,5 +1723,35 @@ class Entity extends Base\PublicEntity
         $this->setSignedId($array);
 
         return $array;
+    }
+
+    /**
+     * Checks if the merchant has 24/7 settlement enabled
+     *
+     * @return bool
+     */
+    public function isMerchantWith24x7SettlementFeature(): bool
+    {
+        $channelWith24x7Settlement =  Settlement\Channel::get24x7Channels();
+
+        $merchantChannel = $this->getChannel();
+
+        if (in_array($merchantChannel, $channelWith24x7Settlement, true) === false)
+        {
+            return false;
+        }
+
+        if ($this->isFeatureEnabled(Feature\Constants::SETTLEMENT_24X7) === true)
+        {
+            return true;
+        }
+        else if ($this->isLinkedAccount() === true)
+        {
+            $parentHas24x7Feature = $this->parent->isFeatureEnabled(Feature\Constants::SETTLEMENT_24X7);
+
+            return $parentHas24x7Feature;
+        }
+
+        return false;
     }
 }

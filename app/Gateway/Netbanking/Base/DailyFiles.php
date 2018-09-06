@@ -60,7 +60,7 @@ class DailyFiles
     protected function getRefundsData($from, $to)
     {
         $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
-                                Payment\Entity::BANK, $this->bankCode, $from, $to, $this->gateway);
+                                            Payment\Entity::BANK, $this->bankCode, $from, $to, $this->gateway);
 
         $count = $refunds->count();
 

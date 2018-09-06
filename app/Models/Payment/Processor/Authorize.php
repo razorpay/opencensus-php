@@ -76,6 +76,8 @@ trait Authorize
         // cards used in payment is international
         $this->processCurrencyConversions($payment);
 
+        $this->setAnalyticsLog($payment);
+
         $this->runPaymentInputValidations($payment, $input);
 
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
@@ -106,8 +108,6 @@ trait Authorize
         }
 
         $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
-
-        $this->createAnalyticsLog($payment);
 
         $this->runShieldCheck($payment);
 
@@ -257,8 +257,6 @@ trait Authorize
     public function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
-
-        $this->createAnalyticsLog($this->payment);
 
         $this->runShieldCheck($this->payment);
     }
@@ -1231,6 +1229,8 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
+        $this->setAuthenticationGateway($payment, $gatewayInput);
+
         $this->setAuthTypeInPayment($payment);
 
         $this->repo->saveOrFail($payment);
@@ -1263,6 +1263,32 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
+    }
+
+    protected function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
+    {
+        if (($payment->isMethodCardOrEmi() === true) and
+            (Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true))
+        {
+            //
+            // Payments where authentication is required
+            //
+            if (($payment->isRecurring() === false) or
+                ($payment->isRecurringTypeInitial() === true))
+            {
+                if ($payment->getGateway() === Payment\Gateway::HITACHI)
+                {
+                    $authGateway = Payment\Gateway::MPI_BLADE;
+
+                    if ($this->canRunAxisExpressPay($payment) === true)
+                    {
+                        $authGateway = Payment\Gateway::MPI_ENSTAGE;
+                    }
+
+                    $gatewayInput['authenticate']['gateway'] = $authGateway;
+                }
+            }
+        }
     }
 
     protected function setAuthTypeInPayment(Payment\Entity $payment)
@@ -1361,7 +1387,11 @@ trait Authorize
 
     protected function runFraudChecks(Payment\Entity $payment)
     {
-        if ($payment->shouldRunFraudChecks() === true)
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true)
+        {
+            $this->validateFraudDetectionV2($payment);
+        }
+        else if ($payment->shouldRunFraudChecks() === true)
         {
             $this->validateEmailTld($payment);
 
@@ -1387,6 +1417,11 @@ trait Authorize
      */
     protected function runShieldCheck(Payment\Entity $payment)
     {
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PRE_AUTH_SHIELD_INTG) === true)
+        {
+            return;
+        }
+
         // We do not want to call shield in case for Payments in Test mode
         if ($this->mode === Mode::TEST)
         {
@@ -1736,6 +1771,15 @@ trait Authorize
             }
             else
             {
+                try
+                {
+                    $this->updateGatewayInputForInvoice($gatewayInput, $payment);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException($e);
+                }
+
                 $this->validateIfIntentEnabled($payment);
             }
         }
@@ -1752,6 +1796,63 @@ trait Authorize
         $this->setRecurringType($payment, $input);
 
         $this->setAutoRefundTimestamp($payment);
+
+        $this->setPreferredAuthIfApplicable($payment);
+    }
+
+    protected function setPreferredAuthIfApplicable(Payment\Entity $payment)
+    {
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return;
+        }
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::OTP_AUTH_DEFAULT) === true)
+        {
+            $preferredAuth = $payment->getMetadata(Payment\Entity::PREFERRED_AUTH, []);
+
+            if (in_array(Payment\AuthType::PIN, $preferredAuth, true) === true)
+            {
+                return;
+            }
+
+            $payment->setMetadataKey(Payment\Entity::PREFERRED_AUTH, [Payment\AuthType::OTP, Payment\AuthType::_3DS]);
+        }
+    }
+
+    protected function updateGatewayInputForInvoice(& $gatewayInput, Payment\Entity $payment)
+    {
+        $config = Cache::getFacadeRoot()->get(ConfigKey::NPCI_UPI_DEMO, []);
+
+        $merchants = $config['merchants'] ?? [];
+
+        if (isset($merchants[$payment->getMerchantId()]) === false)
+        {
+            return;
+        }
+
+        $elfin = $this->app['elfin'];
+
+        $baseUrl = $merchants[$payment->getMerchantId()];
+
+        $query = [
+            'payment_id'    => $payment->getPublicId(),
+            'amount'        => $payment->getAmount(),
+            'contact'       => $payment->getContact(),
+            'email'         => $payment->getEmail(),
+            'description'   => $payment->getDescription(),
+        ];
+
+        $referenceUrl = $elfin->shorten($baseUrl . http_build_query($query));
+
+        $shouldEncode = $config['should_encode_invoice_url'] ?? false;
+
+        if ($shouldEncode === true)
+        {
+            $referenceUrl = urlencode($referenceUrl);
+        }
+
+        $gatewayInput['upi']['reference_url'] = $referenceUrl;
     }
 
     protected function validateRecurringAndPreferredRecurring(Payment\Entity $payment, array $input)
@@ -2813,6 +2914,8 @@ trait Authorize
             return;
         }
 
+        (new Payment\Metric)->pushAuthMetrics($this->payment);
+
         $this->eventPaymentAuthorized();
 
         $this->notifyIfCardSaved();
@@ -3633,11 +3736,13 @@ trait Authorize
         }
     }
 
-    protected function createAnalyticsLog(Payment\Entity $payment)
+    protected function setAnalyticsLog(Payment\Entity $payment)
     {
         try
         {
-            (new Analytics\Service)->createLog($payment);
+            $paymentAnalytics = (new Analytics\Core)->create($payment);
+
+            $payment->setMetadataKey('payment_analytics', $paymentAnalytics);
         }
         catch (\Throwable $e)
         {
@@ -3681,10 +3786,7 @@ trait Authorize
                 // condition covers a superset.
                 //
                 if (($payment->getGateway() === Payment\Gateway::HITACHI) and
-                    ($this->isAuthTypeOtp($payment) === true) and
-                    ($payment->merchant->isAxisExpressPayEnabled() === true) and
-                    ($payment->card->iinRelation->supports(IIN\Flow::OTP) === true) and
-                    ($payment->card->iinRelation->getIssuer() === IFSC::UTIB))
+                    ($this->canRunAxisExpressPay($payment) === true))
                 {
                     return true;
                 }
@@ -3727,6 +3829,20 @@ trait Authorize
         // TODO: Figure out a way to do this for other power wallets
 
         return true;
+    }
+
+    protected function canRunAxisExpressPay(Payment\Entity $payment)
+    {
+        if (($payment->merchant->isAxisExpressPayEnabled() === true) and
+            ($this->isAuthTypeOtp($payment) === true) and
+            ($payment->card->iinRelation !== null) and
+            ($payment->card->iinRelation->getIssuer() === IFSC::UTIB) and
+            ($payment->card->iinRelation->supports(IIN\Flow::OTP) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

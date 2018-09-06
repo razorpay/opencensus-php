@@ -343,6 +343,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getAccountConfigInternal()
+    {
+        $data = $this->service()->fetchConfig($isInternal = true);
+
+        return ApiResponse::json($data);
+    }
+
     public function postAmountCredits($id)
     {
         $input = Request::all();
@@ -892,6 +899,17 @@ class MerchantController extends Controller
     }
 
     /**
+     * Bulk updates merchant attributes against given CSV input(refer service method).
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function bulkEditMerchantAttributes()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->bulkEditMerchantAttributes($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * Sends OAuth notification mails. This route is called by auth service.
      *
      * @param string $type - Type of event, e.g. app_authorized (When merchant
@@ -1046,5 +1064,14 @@ class MerchantController extends Controller
         $response = $this->service()->listSubmerchants($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function postMerchantBeneficiaryThroughApi($channel)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->registerBeneficiaryThroughApi($input, $channel);
+
+        return ApiResponse::json($data);
     }
 }

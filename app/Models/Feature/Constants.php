@@ -42,6 +42,7 @@ class Constants
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
     const OLD_CREDITS_FLOW                = 'old_credits_flow';
     const CHARGE_AT_WILL                  = 'charge_at_will';
+    const SETTLEMENT_24X7                 = 'settlement_24x7';
     const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
     const FSS_RISK_UDF                    = 'fss_risk_udf';
     const RULE_FILTER                     = 'rule_filter';
@@ -78,6 +79,11 @@ class Constants
     const BANK_TRANSFER_REFUND            = 'bank_transfer_refund';
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
+    const SUBSCRIPTION_V2                 = 'subscription_v2';
+    const EXPOSE_ARN_PAYMENT              = 'expose_arn_payment';
+    const EXPOSE_ARN_REFUND               = 'expose_arn_refund';
+    const OFFERS                          = 'offers';
+    const OTP_AUTH_DEFAULT                = 'otp_auth_default';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -85,6 +91,9 @@ class Constants
 
     // Payment authentication
     const ATM_PIN_AUTH                  = 'atm_pin_auth';
+
+    // Pre-Auth Shield Integration
+    const PRE_AUTH_SHIELD_INTG          = 'pre_auth_shield_intg';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -181,9 +190,15 @@ class Constants
         self::ALLOW_SUBMERCHANT_WITHOUT_EMAIL => true,
         self::HDFC_DEBIT_SI                   => true,
         self::AXIS_EXPRESS_PAY                => true,
+        self::PRE_AUTH_SHIELD_INTG            => true,
         self::BANK_TRANSFER_REFUND            => true,
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
+        self::SUBSCRIPTION_V2                 => true,
+        self::EXPOSE_ARN_PAYMENT              => true,
+        self::EXPOSE_ARN_REFUND               => true,
+        self::OFFERS                          => true,
+        self::OTP_AUTH_DEFAULT                => true,
     ];
 
     // Entity type constants

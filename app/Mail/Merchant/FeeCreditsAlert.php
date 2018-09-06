@@ -42,9 +42,18 @@ class FeeCreditsAlert extends Mailable
         return $this;
     }
 
+    protected function addCc()
+    {
+        $email = Constants::MAIL_ADDRESSES[Constants::CREDITS_ALERTS];
+
+        $this->cc($email);
+
+        return $this;
+    }
+
     protected function addSubject()
     {
-        $subject = 'Razorpay | Fee Credits Alert';
+        $subject = '[Alert] Razorpay | Low Fee Credits Balance for '.$this->data['merchant_dba'];
 
         $this->subject($subject);
 

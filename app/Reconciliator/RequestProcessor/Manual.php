@@ -49,6 +49,7 @@ class Manual extends Base
             self::ATTACHMENT_COUNT => $input['attachment-count'],
             self::GATEWAY          => $input['gateway'],
             self::FORCE_UPDATE     => $input[self::FORCE_UPDATE] ?? [],
+            self::FORCE_AUTHORIZE  => $input[self::FORCE_AUTHORIZE] ?? [],
         ];
 
         $this->validator->validateManualInput($inputDetails);

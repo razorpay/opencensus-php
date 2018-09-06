@@ -75,6 +75,8 @@ class Status extends BaseStatus
 
     const INVALID_ACCOUNT_DETAILS       = 'INVALID_ACCOUNT_DETAILS';
 
+    const ACQUIRING_BANK_CBS_OFFLINE    = 'ACQUIRING_BANK_CBS_OFFLINE';
+
     // Map to the derived state
     const STATUS_MAP = [
         self::SENT_TO_BENEFICIARY => [
@@ -94,6 +96,7 @@ class Status extends BaseStatus
             'sfms:E70'   => self::BAD_GATEWAY,
             'sfms:E18'   => self::BAD_GATEWAY,
             'ns:E6001'   => self::BENE_NOT_REGISTERED,
+            'ns:E2005'   => self::BENE_NOT_REGISTERED,
 
             // Merchant Errors
             'ns:E406'    => self::BENEFICIARY_NOT_ACCEPTED,
@@ -102,7 +105,7 @@ class Status extends BaseStatus
             'flex:E9072' => self::INVALID_BENEFICIARY_DETAILS,
             'flex:E8087' => self::INVALID_BENEFICIARY_DETAILS,
             'npci:E449'  => self::BENEFICIARY_NOT_ACCEPTED,
-            'npci:E08'   => self::BENEFICIARY_NOT_ACCEPTED,
+            'npci:E08'   => self::ACQUIRING_BANK_CBS_OFFLINE,
             'npci:EM1'   => self::BENEFICIARY_NOT_ACCEPTED,
             'npci:EM2'   => self::BENEFICIARY_NOT_ACCEPTED,
             'npci:EM4'   => self::BENEFICIARY_NOT_ACCEPTED,
@@ -151,7 +154,8 @@ class Status extends BaseStatus
             self::BENE_NOT_REGISTERED,
             self::IMPS_NOT_ENABLED_FOR_REMITTER,
             self::INVALID_ACCOUNT_DETAILS,
-            self::BAD_GATEWAY
+            self::BAD_GATEWAY,
+            self::ACQUIRING_BANK_CBS_OFFLINE
         ];
     }
 
@@ -170,6 +174,7 @@ class Status extends BaseStatus
             self::BENE_NOT_REGISTERED,
             self::INVALID_ACCOUNT_DETAILS,
             self::IMPS_NOT_ENABLED_FOR_REMITTER,
+            self::ACQUIRING_BANK_CBS_OFFLINE
         ];
     }
 

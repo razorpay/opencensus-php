@@ -22,7 +22,7 @@
             var parentEle = document.querySelector('[data-schemapath="root.payment_type"]').getElementsByClassName('form-group')[0];
             parentEle.append(p);
 
-            editor.watch('root.service_type', function () {
+            editor.watch('root.payment_type', function () {
                 evalPaymentType();
             });
         }
@@ -80,10 +80,6 @@
                 }
             };
 
-            options.prefill = {
-                contact: udfData.customer_mobile
-            };
-
             options.name = data.merchant.name;
             options.theme.color = merchant.brand_color || '#168AFA';
             options.currency = 'INR';
@@ -112,9 +108,8 @@
 
                 // Default errors;
                 switch(path) {
-                    case 'root.waybill_number': defaultMsg = 'Please enter Waybill number'; break;
-                    case 'root.customer_name': defaultMsg = 'Please enter customer name'; break;
-                    case 'root.customer_mobile': defaultMsg = 'Please enter your mobile number'; break;
+                    case 'root.waybill_number': defaultMsg = 'Please enter the Waybill Number'; break;
+                    case 'root.customer_name': defaultMsg = 'Please enter the Customer Name'; break;
                     case 'root.payment_type': defaultMsg = 'Please select type of payment'; break;
                 }
 
@@ -153,7 +148,7 @@
             return editor;
         }
 
-        function submitForm() {
+        function submitForm(e) {
             var errors = editor.validate();
             console.log(errors);
             var hasError;
@@ -208,6 +203,8 @@
                 }
 
             }, 10); // If blur happens directly through click on submit btn, so 'has-error' class won't be put until delayed.
+
+            e.preventDefault();
         }
 
         function addListeners_Validators() {
@@ -215,7 +212,6 @@
 
             window.RZP.addAmountValidation();
             window.RZP.addAlphaFieldsValidation(['root.customer_name']);
-            window.RZP.addIntFieldsValidation(['root.customer_mobile']);
             window.RZP.addPaymentTypeValidation();
         }
 

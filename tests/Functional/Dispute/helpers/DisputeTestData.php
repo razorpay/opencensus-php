@@ -1147,14 +1147,30 @@ return [
                     'count'  => 2,
                     'items'  => [
                         [
-                            'file_id'  => 'rzp_file_mock_id_1000000_explanation_letter',
-                            'name'     => 'myfile1.png',
-                            'category' => 'explanation_letter',
+                            'id'            => 'file_1234',
+                            'type'          => 'explanation_letter',
+                            'entity_type'   => 'dispute',
+                            'entity_id'     => '1000000dispute',
+                            'name'          => 'myfile1.png',
+                            'location'      => 'dispute/10000000000000/1000000dispute/myfile1.png',
+                            'bucket'        => 'test_bucket',
+                            'mime'          => 'text/csv',
+                            'extension'     => 'csv',
+                            'merchant_id'   => '10000000000000',
+                            'store'         => 's3',
                         ],
                         [
-                            'file_id'  => 'rzp_file_mock_id_1000000_delivery_proof',
-                            'name'     => 'myfile2.pdf',
-                            'category' => 'delivery_proof',
+                            'id'            => 'file_12345',
+                            'type'          => 'delivery_proof',
+                            'entity_type'   => 'dispute',
+                            'entity_id'     => '1000000dispute',
+                            'name'          => 'myfile2.pdf',
+                            'location'      => 'dispute/10000000000000/1000000dispute/myfile2.pdf',
+                            'bucket'        => 'test_bucket',
+                            'mime'          => 'text/csv',
+                            'extension'     => 'csv',
+                            'merchant_id'   => '10000000000000',
+                            'store'         => 's3',
                         ],
                     ]
                 ],
@@ -1182,12 +1198,10 @@ return [
                             'count'  => 2,
                             'items'  => [
                                 [
-                                    'file_id'  => 'rzp_file_mock_id_1000000_explanation_letter',
                                     'name'     => 'myfile1.png',
                                     'category' => 'explanation_letter',
                                 ],
                                 [
-                                    'file_id'  => 'rzp_file_mock_id_1000000_delivery_proof',
                                     'name'     => 'myfile2.pdf',
                                     'category' => 'delivery_proof',
                                 ],
@@ -1288,6 +1302,68 @@ return [
                 'status'            => 'closed',
                 'phase'             => 'fraud',
             ],
+        ],
+    ],
+
+    'testDisputeFileInvalidDelete' => [
+        'request' => [
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Files can be deleted only when dispute is open',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchFiles' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/disputes/disp_1000000dispute/files'
+            ],
+        'response'  => [
+            'content'       => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'            => 'file_1234',
+                        'type'          => 'explanation_letter',
+                        'entity_type'   => 'dispute',
+                        'entity_id'     => '1000000dispute',
+                        'name'          => 'myfile1.png',
+                        'location'      => 'dispute/10000000000000/1000000dispute/myfile1.png',
+                        'bucket'        => 'test_bucket',
+                        'mime'          => 'text/csv',
+                        'extension'     => 'csv',
+                        'merchant_id'   => '10000000000000',
+                        'store'         => 's3',
+                    ],
+                    [
+                        'id'            => 'file_12345',
+                        'type'          => 'delivery_proof',
+                        'entity_type'   => 'dispute',
+                        'entity_id'     => '1000000dispute',
+                        'name'          => 'myfile2.pdf',
+                        'location'      => 'dispute/10000000000000/1000000dispute/myfile2.pdf',
+                        'bucket'        => 'test_bucket',
+                        'mime'          => 'text/csv',
+                        'extension'     => 'csv',
+                        'merchant_id'   => '10000000000000',
+                        'store'         => 's3',
+                    ],
+
+                ],
+            ],
+            'status_code'   => 200,
         ],
     ],
 ];

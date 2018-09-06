@@ -267,6 +267,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::GATEWAY_REFUNDED) === true);
     }
 
+    public function isCreated()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::CREATED);
+    }
+
     public function isBatch(): bool
     {
         return ($this->getBatchId() !== null);
@@ -373,6 +378,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY_REFUNDED, $gatewayRefunded);
     }
 
+    public function setGateway($gateway)
+    {
+        $this->setAttribute(self::GATEWAY, $gateway);
+    }
+
     public function setStatus($status)
     {
         $this->pushStatusChangeMetrics($status);
@@ -470,50 +480,15 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        //
-        // 'test merchant', 'ABOF', 'Nykaa',
-        // '1mg', 'Playo', 'Nestaway',
-        // 'RailYatri', 'Treebo', 'Goibibo',
-        // 'Goeventz', 'RentoMojo', 'Voonik',
-        // 'Zomato', 'Swiggy', 'Yatra'
-        // 'Mr Button', 'Zefo', 'Zefo',
-        // 'Goomo', 'Goomo', 'IRCTC Services'
-        // 'Irctc Web', 'IRCTC Mob', 'IRCTC ecatering'
-        // 'epaylater', 'Udacity', 'Accelerator',
-        // 'IRCTC FTR', 'KartRocket', '1mg',
-        // 'Ixigo', 'Akbar Travels', 'Akbar Travels',
-        // 'Royal Bison', 'Pizza Hut', 'Pizza Hut',
-        // 'Pizza Hut', 'Stark', 'Stark',
-        // 'Logicboxes', 'ResellerClub', 'BigRock',
-        // 'HostGator', 'Pay.pw', 'BlueHost',
-        // 'ConstantContact', 'Directi Web Technology', 'Kissht'
-        // 'Policy Bazaar', 'Zen Lefin',
+        $app = \App::getFacadeRoot();
 
-        $merchantIds = [
-            '10000000000000', '6gn7Xc2gqK40c9', '4uObL8AHBqFNnP',
-            '6e9vU1F6c16Wgy', '6LCgLZgRjTI8ws', '4IAipsLXQZ8HfL',
-            '5yvFZKqbBjEBsr', '3d2EGdZF6CAYVc', '6ZLE5BE57SExGF',
-            '6B94xSUfS76yht', '4bnk7yysqr5Wx5', '4zGGr9ZwCTH1gh',
-            '6H7N6hlcv29OMG', '8S0i1kWYyF2woQ', '87qTXzFTBLFN7i',
-            '5PKFA3s9dpIwPn', '6RGC8wjp5U2K2e', '3fiAig3CaxCxM3',
-            '8STmhcK1Gd1JVo', '7kBHljwok8Fsom', '8byazTDARv4Io0',
-            '8ST00QgEPT14cE', '8YPFnW5UOM91H7', '90xVmQJTCEJ6GH',
-            '6uli25q6xe9PPv', '4sW8jQ22JR4Bfi', '5wv2qnnBum6eXo',
-            '9m4CChGex4ENkR', '9pWQLj3B705mYh', '6e9vU1F6c16Wgy',
-            '8RerE9oY0d7rbC', '6o1ohA0HNz3B2S', '62UtF084z3H6RT',
-            'A85zyC8z78QJnt', '9Am5NzeJvtuBFy', '97hA1mKLFFI4Bi',
-            '9GhIX26dnSuWKM', '9mr3eFWa79LBay', '9yEM7JR6WzZUds',
-            '9Y9m9XscC6Kh4W', '8WRMdGzG1z5Eqw', '9naAGQdroegWIX',
-            '9okVtwZr5vLm4K', '9oklLp2FhXTolM', 'A0ERwPs8muf9YS',
-            'A0HuEfx39zhjr9', 'A5ONBRrNJ7dS1K', 'ATUwkTaTTae5B3',
-            '7LAuMvKMcy7s0f', '9ARetirTY8olre',
-        ];
-
-        $currentMerchantId = $this->getMerchantId();
+        $auth = $app['basicauth'];
 
         // We are hardcoding the merchant ids for now.
         // Will move this to feature flag.
-        if (in_array($currentMerchantId, $merchantIds, true) === true)
+        if (($auth->isAdminAuth() === true) or
+            (($auth->getMerchant() !== null) and
+             ($auth->getMerchant()->isExposeARNRefundEnabled() === true)))
         {
             $array[self::ACQUIRER_DATA] = $this->getAttribute(self::ACQUIRER_DATA);
         }
@@ -561,7 +536,14 @@ class Entity extends Base\PublicEntity
 
     public function getGateway()
     {
-        return $this->relations['payment']->getGateway();
+        $gateway = $this->getAttribute(self::GATEWAY);
+
+        if ($gateway === null)
+        {
+            return $this->relations['payment']->getGateway();
+        }
+
+        return $gateway;
     }
 
     public function getBatchId()

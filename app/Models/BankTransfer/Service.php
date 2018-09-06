@@ -57,7 +57,7 @@ class Service extends Base\Service
 
         $this->validateProvider();
 
-        $valid = $this->core->process($input);
+        $valid = $this->core->process($input, $this->provider);
 
         return [
             'valid'          => $valid,
@@ -83,7 +83,7 @@ class Service extends Base\Service
 
         $this->validateProvider();
 
-        $success = $this->core->notify($input);
+        $success = $this->core->notify($input, $this->provider);
 
         return [
             'success'        => $success,

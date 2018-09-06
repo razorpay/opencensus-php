@@ -273,14 +273,6 @@ class Receiver extends Base\Core
 
         $provider = Provider::YESBANK;
 
-        // The objective is to shift all new VAs to YesBank, but
-        // YesBank hasn't given us an alphanumeric prefix yet, so
-        // we can only do this when the request is for a numeric account.
-        if ($this->numeric === true)
-        {
-            $provider = Provider::YESBANK;
-        }
-
         if ($this->mode === Mode::TEST)
         {
             $provider = Provider::DASHBOARD;

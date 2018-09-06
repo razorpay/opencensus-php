@@ -48,6 +48,7 @@ class Reporting implements ExternalService
     const CONSUMER_HEADER       = 'X-Consumer';
     const REPORT_TYPE_HEADER    = 'X-Report-Type';
     const ADMIN_TOKEN_HEADER    = 'X-Admin-Token';
+    const LINKED_ACCOUNT_HEADER = 'X-Linked-Account-Parent';
 
     /**
      * @var array
@@ -92,6 +93,8 @@ class Reporting implements ExternalService
         // Proxy Auth
         $merchantId = $this->ba->getMerchantId();
 
+        $linkedAccountParentId = $this->getLinkedAccountParentId();
+
         // Auth w/ Admin Token
         $adminToken = $this->ba->getAdminToken();
 
@@ -113,6 +116,11 @@ class Reporting implements ExternalService
                 // Proxy Auth used here
                 $headers[self::REPORT_TYPE_HEADER] = self::MERCHANT;
                 $headers[self::CONSUMER_HEADER] = $merchantId;
+            }
+
+            if (empty($linkedAccountParentId) === false)
+            {
+                $headers[self::LINKED_ACCOUNT_HEADER] = $linkedAccountParentId;
             }
         }
         else if (empty($reportType) === false)
@@ -432,8 +440,10 @@ class Reporting implements ExternalService
         array $input = [],
         array $headers = []): array
     {
-        // In case reporting is to be mocked, don't make any external call
-        // and just return empty array.
+        //
+        // In case reporting is to be mocked, don't make
+        // any external call and just return empty array.
+        //
         if ($this->config['mock'] === true)
         {
             return [];
@@ -465,6 +475,14 @@ class Reporting implements ExternalService
     {
         try
         {
+            $request['headers']['Content-Type'] = 'application/json';
+
+            // json encode if data is must, else ignore.
+            if (in_array($request['method'], [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
+            {
+                $request['content'] = json_encode($request['content'], JSON_FORCE_OBJECT);
+            }
+
             $response = Requests::request(
                             $request['url'],
                             $request['headers'],
@@ -486,7 +504,7 @@ class Reporting implements ExternalService
                 $this->getTraceableRequest($request));
 
             throw new Exception\IntegrationException('
-                Could not recieve proper response from reporting service');
+                Could not receive proper response from reporting service');
         }
     }
 
@@ -536,6 +554,7 @@ class Reporting implements ExternalService
         $hasMarketplaceTag             = in_array(Feature::MARKETPLACE, $features, true);
         $hasOpenwalletTag              = in_array(Feature::OPENWALLET, $features, true);
         $hasMarketplaceOrOpenwalletTag = ($hasMarketplaceTag or $hasOpenwalletTag);
+        $hasOfferTag                   = in_array(Feature::OFFERS, $features, true);
 
         $items = $items->filter(function ($value, $key) use (
             $hasPlTag,
@@ -559,6 +578,13 @@ class Reporting implements ExternalService
                 default:
                     return true;
             }
+        });
+
+        $items = $items->filter(function ($value) use ($hasOfferTag)
+        {
+            return (($value['name'] === 'Offer Payments') and
+                ($value['type'] === Table::PAYMENT) and
+                ($value['consumer'] === Account::SHARED_ACCOUNT)) ? $hasOfferTag : true;
         });
 
         $configs['items'] = $items->values()->all();
@@ -607,5 +633,26 @@ class Reporting implements ExternalService
     protected function getTraceableRequest(array $request): array
     {
         return array_only($request, ['url', 'method', 'content', 'headers']);
+    }
+
+    /**
+     * Fetches linked account parent id from exisiting ba account context.
+     */
+    protected function getLinkedAccountParentId()
+    {
+        $merchant = $this->ba->getMerchant();
+
+        $parentId = null;
+
+        if ((empty($merchant) === false) and ($merchant->isMarketplace() === true))
+        {
+            $parentId = $merchant->getId();
+        }
+        else if ((empty($merchant) === false) and ($merchant->isLinkedAccount() === true))
+        {
+            $parentId = $merchant->parent->getId();
+        }
+
+        return $parentId;
     }
 }

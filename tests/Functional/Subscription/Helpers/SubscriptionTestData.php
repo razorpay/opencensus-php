@@ -1553,5 +1553,46 @@ return [
                 ]
             ]
         ]
-    ]
+    ],
+
+    'testCreateInvoiceForSubscription' => [
+        'request' => [
+            'url'       => '/invoices',
+            'method'    => 'post',
+            'content'   => [
+                // 'subscription_id' => 'sub_WhoaWhatASubId',
+                'currency'        => 'INR',
+                'sms_notify'      => 0,
+                'email_notify'    => 0,
+                'fail_existing'   => 0,
+                'line_items'      => [
+                    [
+                        'name'     => 'Abc Def',
+                        'amount'   => 1000,
+                        'currency' => 'INR',
+                        'type'     => 'plan',
+                        'quantity' => 1,
+                    ]
+                ],
+                'internal_ref'    => 'cd8a58d3fef88be7acwhyareyouevenreadingthisbcb3b7e90cd6454a50f2cd'
+            ],
+        ],
+    ],
+
+    'testFetchConfigInternalForSubcriptionsService' => [
+        'request' => [
+            'url'       => '/internal/account/config',
+            'method'    => 'get',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'                       => '10000000000000',
+                'transaction_report_email' => ['test@razorpay.com'],
+                'billing_label'            => 'Test Merchant',
+                'receipt_email_enabled'    => true,
+                'parent_id'                => null,
+            ],
+        ],
+    ],
 ];

@@ -2,12 +2,12 @@
 
 namespace RZP\Mail\Merchant;
 
+use RZP\Models\User;
 use RZP\Mail\Base\Common;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
-use RZP\Models\User\Entity as User;
-use RZP\Models\Merchant\Detail\Entity as Detail;
 use RZP\Models\User\Service as UserService;
+use RZP\Models\Merchant\Detail\Entity as Detail;
 
 class CreateSubMerchantAffiliate extends Mailable
 {
@@ -31,12 +31,7 @@ class CreateSubMerchantAffiliate extends Mailable
      */
     protected $token;
 
-    /**
-     * @var int
-     */
-    protected $expiryTime;
-
-    public function __construct(array $subMerchant, array $aggregator, array $org, User $user = null)
+    public function __construct(array $subMerchant, array $aggregator, array $org, User\Entity $user = null)
     {
         parent::__construct();
 
@@ -48,7 +43,10 @@ class CreateSubMerchantAffiliate extends Mailable
 
         if (empty($user) === false)
         {
-            list($this->token, $this->expiryTime) = (new UserService)->getTokenAndExpiry($user->getId());
+            $this->token = (new UserService)->getTokenWithExpiry(
+                                $user->getId(),
+                                User\Constants::SUBMERCHANT_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME
+                            );
         }
     }
 
@@ -76,7 +74,6 @@ class CreateSubMerchantAffiliate extends Mailable
             'merchant'           => $this->aggregator,
             'subMerchant'        => $this->subMerchant,
             'token'              => $this->token,
-            'expiryTime'         => $this->expiryTime,
             'org'                => $this->org,
             'activationDuration' => Detail::ACTIVATION_DURATION,
         ];

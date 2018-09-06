@@ -125,8 +125,7 @@
             <tr>
               <td class="center">
                 <center>
-                  Reach out to us by replying to this email or at <a href="mailto:support@razorpay.com">
-                  support@razorpay.com</a>
+                  @include('emails.partials.support')
                 </center>
               </td>
               <td class="expander"></td>

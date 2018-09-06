@@ -529,9 +529,7 @@ class Entity extends Base\PublicEntity
 
     public function incrementProcessedCount()
     {
-        $attempts = $this->getAttribute(self::PROCESSED_COUNT);
-
-        $this->setAttribute(self::PROCESSED_COUNT, $attempts + 1);
+        $this->increment(self::PROCESSED_COUNT);
     }
 
     public function unsetProcessedCount()

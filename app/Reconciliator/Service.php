@@ -15,7 +15,7 @@ use RZP\Reconciliator\RequestProcessor;
 class Service extends Base\Service
 {
     /**
-     * List of gateways where we are doing recon processing via batch.
+     * List of gateways where we are doing recon processing via non-batch.
      */
     const BATCH_RECON_GATEWAYS = [
         RequestProcessor\Base::AXIS,
@@ -43,6 +43,14 @@ class Service extends Base\Service
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
         RequestProcessor\Base::NETBANKING_CORPORATION,
+    ];
+
+    const NON_BATCH_RECON_GATEWAYS = [
+        RequestProcessor\Base::ADMIN,
+        RequestProcessor\Base::EBS,
+        RequestProcessor\Base::PAYTM,
+        RequestProcessor\Base::PAYUMONEY,
+        RequestProcessor\Base::PAYZAPP,
     ];
 
     /**
@@ -169,12 +177,12 @@ class Service extends Base\Service
         // This is a temporary logic. Plan is to move all gateway reconciliation
         // to batch once it is stable
         //
-        if (in_array($gateway, self::BATCH_RECON_GATEWAYS, true) === true)
+        if (in_array($gateway, self::NON_BATCH_RECON_GATEWAYS, true) === true)
         {
-            return $orchestrator->orchestrateV2($reconDetails);
+            return $orchestrator->orchestrate($reconDetails);
         }
 
-        return $orchestrator->orchestrate($reconDetails);
+        return $orchestrator->orchestrateV2($reconDetails);
     }
 
     /**

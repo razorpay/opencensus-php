@@ -339,6 +339,21 @@ return [
         ],
     ],
 
+    'testDeleteRelatedEntitiesOnUnmarkingPartner' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+    ],
+
     'testAddPartnerAccessMapSubmerchantAccessUnauthorized' => [
         'request'   => [
             'url'     => '/merchants/10000000000009/access_maps',

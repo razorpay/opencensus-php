@@ -309,6 +309,22 @@ return [
         ]
     ],
 
+    'testGetPendingInvitationsByNonOwnerMember' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testGetInvitationByToken' => [
         'request' => [
             'url'     => '/invitations/token',

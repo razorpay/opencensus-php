@@ -7,6 +7,7 @@ use App;
 use Razorpay\IFSC\IFSC;
 use RZP\Base;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Merchant\Detail;
 
@@ -81,6 +82,10 @@ class Validator extends Base\Validator
         Entity::RECIPIENT_EMAILS . '*'  => 'sometimes|email',
     ];
 
+    protected static $beneficiaryRegisterApiRules = [
+        Entity::DURATION                => 'required|integer',
+    ];
+
     protected function validateBeneficiaryState($input)
     {
         if ((isset($input[Entity::BENEFICIARY_STATE]) === true) and
@@ -134,5 +139,21 @@ class Validator extends Base\Validator
         return ((($mode === Mode::TEST) or ($mode === null)) and
                 (($ifsc === Entity::SPECIAL_IFSC_CODE) or
                  ($ifsc === 'RAZR0000001')));
+    }
+
+    public function validateRefundIsAllowed()
+    {
+        $bankAccount = $this->entity;
+
+        // If payer bank account exists, but without an IFSC, it means we
+        // did not have the bank-code-to-IFSC mapping for an IMPS payment.
+        $ifsc = $bankAccount->getIfscCode();
+
+        if ($ifsc === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                $bankAccount);
+        }
     }
 }

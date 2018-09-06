@@ -8,6 +8,8 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Admin;
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\FileStore;
@@ -52,7 +54,32 @@ class Service extends Base\Service
 
     public function saveMerchantDetails(array $input)
     {
-        return (new Core)->saveMerchantDetails($input, $this->merchant);
+        //
+        // When a linked account is created, mainly, 2 functions are executed -
+        // 1. createSubMerchant
+        // 2. saveMerchantDetails
+        //
+        // The first function creates a merchant entity and other supporting
+        // entities like MerchantDetail, ScheduleTask, Method, etc. It also creates
+        // a BankAccount entity in the Test database with dummy values so that the
+        // merchant can start the integration using the test mode immediately.
+        //
+        // The second function accepts the actual bank account details of the merchant
+        // and runs the createOrChangeBankAccount function call. This function creates
+        // or updates the bankAccount entity in the database corresponding to the mode
+        // that is extracted from the basic auth key used. Hence, if the key used
+        // corresponds to live mode, a BankAccount entity will be created in the live
+        // mode, but if it is used in the test mode, the entity that is already created
+        // with the dummy data will be updated with the actual data and no entity will
+        // be created in the Live mode,
+        //
+        // Hence, forcing the input mode to be live mode here, if not already.
+        //
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->core()->setModeAndDefaultConnection($liveMode);
+
+        return $this->core()->saveMerchantDetails($input, $this->merchant);
     }
 
     /**
@@ -68,6 +95,65 @@ class Service extends Base\Service
         $merchantDetails = (new Core)->patchMerchantDetails($merchantDetails, $input);
 
         return $merchantDetails->toArrayPublic();
+    }
+
+    /**
+     * Bulk edits merchant attributes against given CSV input.
+     * CSV file contains header as id, {attribute-name-1}, {attribute-name-2}, where attribute-name is name of attribute to be updated.
+     * Note: Specific error handling and strict validation is being SKIPPED here, This is internal route and should be run with supervision.
+     * @param  array $input
+     * @return array
+     */
+    public function bulkEditMerchantAttributes(array $input): array
+    {
+        (new Validator)->validateInput(Validator::BULK_EDIT, $input);
+
+        // Reads CSV content as associate array in $rows as [merchant id => <>, attribute-name => <>]
+        $file          = $input[Entity::FILE]->getRealPath();
+        $lines         = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $heading       = str_getcsv(array_shift($lines));
+        $rows          = [];
+
+        foreach ($lines as $line)
+        {
+            $rows[] = array_combine($heading, str_getcsv($line));
+        }
+
+        $total  = 0;
+        $failed = 0;
+        // Iteratively call core's edit method on each row
+        foreach ($rows as $row)
+        {
+            ++$total;
+
+            $tracePayload = compact('row');
+
+            $this->trace->info(TraceCode::MERCHANT_BULK_EDIT_INPUT, $tracePayload);
+
+            $merchantId = array_pull($row, 'id');
+
+            // Normalizes attribute values - if it is read as null, converts to php's null
+            foreach ($row as $k => & $v)
+            {
+                if (strtolower($v) === "null")
+                {
+                    $v = null;
+                }
+            }
+
+            try
+            {
+                $this->editMerchantDetails($merchantId, $row);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, null, null, $tracePayload);
+
+                ++$failed;
+            }
+        }
+
+        return compact('total', 'failed');
     }
 
     public function uploadActivationFileAdmin(string $merchantId, array $input)
@@ -442,12 +528,14 @@ class Service extends Base\Service
 
         if (empty($input[Entity::BUSINESS_NAME]) === false)
         {
-            $inputName = ['name' => $input[Entity::BUSINESS_NAME]];
+            $businessWebsite = $input[Entity::BUSINESS_WEBSITE] ?? null;
+
+            $inputDetails = ['name' => $input[Entity::BUSINESS_NAME], 'website' => $businessWebsite];
 
             // Validate Input Name for merchant
-            (new Merchant\Validator)->validateInput('edit_name', $inputName);
+            (new Merchant\Validator)->validateInput('edit_pre_signup', $inputDetails);
 
-            (new Merchant\Service)->edit($this->merchant->id, $inputName);
+            (new Merchant\Service)->edit($this->merchant->id, $inputDetails);
 
             // Save User Information of contact name nad contact Email.
 

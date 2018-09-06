@@ -52,24 +52,29 @@
 
                     if (!value) {
                         e.target.value = '';
+                        prettyVal = '';
 
                         return;
                     }
 
-                    var newValue = value
-                        .split('.')
-                        .slice(0, 2)
-                        .map(function(v, index) {
-                            v = v.replace(/\D/g, '');
-                            if (index) {
-                                v = v.slice(0, 2);
-                            }
-                            return v;
-                        })
-                        .join('.');
+                    if(amountValidator(value) && !prettyVal) {
+                        prettyVal = '';
+                    } else {
+                        var newValue = value
+                            .split('.')
+                            .slice(0, 2)
+                            .map(function(v, index) {
+                                v = v.replace(/\D/g, '');
+                                if (index) {
+                                    v = v.slice(0, 2);
+                                }
+                                return v;
+                            })
+                            .join('.');
 
-                    if (newValue) {
-                        prettyVal = newValue > 5000000000 ? 5000000000 : newValue;
+                        if (newValue) {
+                            prettyVal = newValue > 5000000000 ? 5000000000 : newValue;
+                        }
                     }
 
                     e.target.value = prettyVal;

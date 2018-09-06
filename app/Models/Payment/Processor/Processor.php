@@ -6,13 +6,11 @@ use App;
 use Route;
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
-use RZP\Constants\Metric;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Http;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\PublicCollection;
@@ -23,6 +21,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Metric;
 use RZP\Models\PaymentLink;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Methods;
@@ -153,6 +152,8 @@ class Processor
      * @var \RZP\Http\BasicAuth\BasicAuth
      */
     protected $ba;
+
+    protected $cache;
 
     public function __construct(Merchant\Entity $merchant)
     {
@@ -680,23 +681,32 @@ class Processor
         throw new Exception\LogicException('Auto selection of offer is not implemented yet.');
     }
 
-    protected function validateAndFetchOffer(Payment\Entity $payment, array $input): Offer\Entity
+    protected function validateAndFetchOffer(Payment\Entity $payment, array $input)
     {
         $offerId = $input[Payment\Entity::OFFER_ID];
 
         Offer\Entity::verifyIdAndStripSign($offerId);
+
+        // TODO: this needs to be checked for shared merchant offers also
+        // skipping for now because there aren't any
+        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
+
+        // if its just a checkout display offer, just return null so that further validations
+        // and associations don't happen.
+        if ($offer->getCheckoutDisplay() === true)
+        {
+            return null;
+        }
 
         // If offer is present in the payment request, we need to validate it against the order.
         if ($payment->order->offers->contains($offerId) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
             [
-                'offer_id' => $offer->getPublicId(),
-                'order_id' => $order->getPublicId(),
+                'offer_id' => Offer\Entity::getSignedId($offerId),
+                'order_id' => $payment->order->getPublicId(),
             ]);
         }
-
-        $offer = $this->repo->offer->findByIdAndMerchant($offerId, $this->merchant);
 
         return $offer;
     }
@@ -1100,6 +1110,8 @@ class Processor
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
+
+        (new Payment\Metric)->pushFailedMetrics($payment);
 
         $this->eventPaymentFailed();
 

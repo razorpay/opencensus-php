@@ -143,21 +143,7 @@ class Reconciliation extends Base
      */
     protected function processEntries(array & $entries)
     {
-        $this->resetReconBatchAttributes();
-
         $this->gatewayReconciliator->startReconciliationV2($entries, $this->batch);
-    }
-
-    /**
-     * We are setting existing success count and failure count to 0.
-     * This is important in case when a failed batch retried, batch will have non-zero success count
-     * and failure count. We are resetting because batch file gets processed again and
-     * success count and failure count will be set again.
-     */
-    protected function resetReconBatchAttributes()
-    {
-        $this->batch->setSuccessCount(0);
-        $this->batch->setFailureCount(0);
     }
 
     protected function postProcessEntries(array & $entries)
@@ -223,6 +209,7 @@ class Reconciliation extends Base
         $fileContents = [];
 
         $totalCount = 0;
+
         //
         // Gets the sheet names which need to be collected for the given gateway.
         // Returns empty if there is no restriction on which sheets to collect.
@@ -233,7 +220,9 @@ class Reconciliation extends Base
 
         $startRow = $this->gatewayReconciliator->getStartRow($inputFileDetails);
 
-        $excelArray = $this->converter->convertExcelToArray($inputFileDetails, $sheetNames, $startRow);
+        $keyColumnNames = $this->gatewayReconciliator->getKeyColumnNames($inputFileDetails);
+
+        $excelArray = $this->converter->convertExcelToArray($inputFileDetails, $sheetNames, $startRow, $keyColumnNames);
 
         $sheetCount = count(array_keys($excelArray));
 
@@ -304,12 +293,15 @@ class Reconciliation extends Base
 
         $forceUpdateFields = $this->settingsAccessor->get(RequestProcessor\Base::FORCE_UPDATE)->toArray();
 
+        $forceAuthorizePayments = $this->settingsAccessor->get(RequestProcessor\Base::FORCE_AUTHORIZE)->toArray();
+
         //
         // In some cases, like when batch is retried, there are no additional input_details
         // set, in the request. So we set input_details as an empty array.
         //
         $arrayContent[self::EXTRA_DETAILS][RequestProcessor\Base::INPUT_DETAILS] = [
-            RequestProcessor\Base::FORCE_UPDATE => $forceUpdateFields
+            RequestProcessor\Base::FORCE_UPDATE     => $forceUpdateFields,
+            RequestProcessor\Base::FORCE_AUTHORIZE  => $forceAuthorizePayments
         ];
     }
 

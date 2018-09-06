@@ -7,6 +7,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Entity as Merchant;
 
 class Validator extends Base\Validator
 {
@@ -78,11 +79,6 @@ class Validator extends Base\Validator
      */
     public function validatePublicIpAddress(string $url)
     {
-        if (App::getFacadeRoot()->environment('testing') === true)
-        {
-            return true;
-        }
-
         $components = parse_url($url);
 
         $host = $components['host'];
@@ -109,14 +105,39 @@ class Validator extends Base\Validator
 
             $trace->info(
                 TraceCode::WEBHOOK_PRIVATE_IP_FOUND, [
-                    'url'   =>  $url,
-                    'ip'    =>  $ip,
+                    'url'   => $url,
+                    'ip'    => $ip,
                 ]
             );
 
         }
 
         return $ret;
+    }
+
+    /**
+     * @param Merchant $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validatePartnerWithWebhooksAccess(Merchant $merchant)
+    {
+        //
+        // the `$nonPartnerOAuth` condition is for B/C, should be removed after
+        // all oauth merchants are moved to partner type pure_platform.
+        //
+        $nonPartnerOAuth = (($merchant->isPartner() === false) and ($merchant->isTagAdded('Oauth') === true));
+
+        if (($merchant->isPartnerWithWebhooksAccess() === false) and ($nonPartnerOAuth === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                Merchant::PARTNER_TYPE,
+                [
+                    Merchant::ID           => $merchant->getId(),
+                    Merchant::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]);
+        }
     }
 
     protected function validateUrl($input)

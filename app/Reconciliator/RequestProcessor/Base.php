@@ -13,10 +13,11 @@ use RZP\Trace\TraceCode;
 
 class Base extends Core
 {
-    const GATEWAY                 = 'gateway';
-    const ATTACHMENT_COUNT        = 'attachment_count';
-    const ATTACHMENT_HYPHEN_COUNT = 'attachment-count';
-    const FORCE_UPDATE            = 'force_update';
+    const GATEWAY                   = 'gateway';
+    const ATTACHMENT_COUNT          = 'attachment_count';
+    const ATTACHMENT_HYPHEN_COUNT   = 'attachment-count';
+    const FORCE_UPDATE              = 'force_update';
+    const FORCE_AUTHORIZE           = 'force_authorize';
 
     const FILE_DETAILS            = 'file_details';
     const INPUT_DETAILS           = 'input_details';
@@ -65,6 +66,7 @@ class Base extends Core
     const CARD_FSS               = 'CardFss';
     const BOB                    = 'Bob';
     const ATOM                   = 'Atom';
+    const UPI_HDFC               = 'UpiHdfc';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -104,9 +106,11 @@ class Base extends Core
         self::CARD_FSS               => [],
         self::ATOM                   => [],
         self::BOB                    => [],
+        self::UPI_HDFC               => ['upi@hdfcbank.net'],
+
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN               => ['saurav.chowdhury@razorpay.com'],
+        self::ADMIN                  => ['saurav.chowdhury@razorpay.com'],
     ];
 
     /**
@@ -114,7 +118,8 @@ class Base extends Core
      * and can be optionally passed in the request.
      */
     const CONFIG_PARAMS = [
-        self::FORCE_UPDATE
+        self::FORCE_UPDATE,
+        self::FORCE_AUTHORIZE
     ];
 
     protected $validator;

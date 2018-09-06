@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\BankTransfer;
 use RZP\Constants\Entity;
 use RZP\Models\Payment\Refund;
 use RZP\Models\BankTransfer\Entity as E;
+use RZP\Models\Payment\Status;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
@@ -81,11 +83,18 @@ class BankTransferTest extends TestCase
         $content = $this->initiateTransferViaFileAndAssertSuccess(
             $channel,
             Attempt\Purpose::REFUND,
-            1,
+            0,
             Attempt\Type::REFUND);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals('NEFT', $attempt['mode']);
+        $this->assertEquals(Attempt\Status::CREATED, $attempt[Attempt\Entity::STATUS]);
+
+        $channel = Channel::YESBANK;
+        $content = $this->initiateTransferAndAssertSuccess(
+            $channel,
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
     }
 
     public function testBankTransferRefundIcici()
@@ -97,25 +106,23 @@ class BankTransferTest extends TestCase
         $content = $this->initiateTransferViaFileAndAssertSuccess(
             $channel,
             Attempt\Purpose::REFUND,
-            1,
+            0,
             Attempt\Type::REFUND);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals('NEFT', $attempt['mode']);
+        $this->assertEquals(Attempt\Status::CREATED, $attempt[Attempt\Entity::STATUS]);
 
-        $setlFile = $content[$channel]['file']['local_file_path'];
-
-        $fileName = basename($setlFile);
-
-        $this->assertStringStartsWith('NRPSR_NRPSRUPLDNEW_', $fileName);
-
-        // Process file
-        $this->reconcileSettlementsForChannel($setlFile, $channel, false);
+        $channel = Channel::YESBANK;
+        $content = $this->initiateTransferAndAssertSuccess(
+            $channel,
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
+        $data = $this->reconcileOnlineSettlements($channel, false);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-
         $this->assertNotNull($attempt['utr']);
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
 
         // Process entities
         $this->reconcileEntitiesForChannel($channel);
@@ -135,16 +142,17 @@ class BankTransferTest extends TestCase
 
         $this->createRefund($channel);
 
-        $content = $this->initiateTransfer(
+        $content = $this->initiateTransferAndAssertSuccess(
             $channel,
-            Attempt\Purpose::REFUND);
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
 
         $data = $this->reconcileOnlineSettlements($channel, false);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertNotNull($attempt['utr']);
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
 
         // Process entities
         $this->reconcileEntitiesForChannel($channel);
@@ -164,16 +172,17 @@ class BankTransferTest extends TestCase
 
         $this->createTpvRefund();
 
-        $content = $this->initiateTransfer(
+        $content = $this->initiateTransferAndAssertSuccess(
             $channel,
-            Attempt\Purpose::REFUND);
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
 
         $data = $this->reconcileOnlineSettlements($channel, false);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertNotNull($attempt['utr']);
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
 
         // Process entities
         $this->reconcileEntitiesForChannel($channel);
@@ -218,7 +227,15 @@ class BankTransferTest extends TestCase
     public function testBankTransferImps()
     {
         $accountNumber = $this->bankAccount['account_number'];
-        $ifsc = $this->bankAccount['ifsc'];
+
+        $ifsc = Provider::IFSC[Provider::KOTAK];
+
+        $this->fixtures->base->editEntity(
+            'bank_account',
+            $this->bankAccount['id'],
+            [
+                'ifsc_code' => $ifsc
+            ]);
 
         $request = $this->testData[__FUNCTION__];
 
@@ -226,7 +243,11 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
-        $this->ba->appAuth();
+        $request['server']['REMOTE_ADDR'] = '14.141.97.12';
+
+        $this->cloud = false;
+
+        $this->ba->kotakAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -236,6 +257,8 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        // Testing if gateway is correct
+        $this->assertEquals('kotak', $bankTransfer['gateway']);
         $this->assertEquals('IMPS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
@@ -255,6 +278,78 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
 
         // IMPS refunds are permitted
+        $this->refundPayment($payment['id'], 4000000);
+        $refund =  $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(4000000, $refund['amount']);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('created', $attempt['status']);
+        $this->assertEquals($refund['id'], $attempt['source']);
+        $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertStringEndsWith($utr, $attempt['narration']);
+
+        // Payment is refunded
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000000, $payment['amount_refunded']);
+    }
+
+    public function testBankTransferImpsWithNbin()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $ifsc = Provider::IFSC[Provider::YESBANK];
+
+        $this->fixtures->base->editEntity(
+            'bank_account',
+            $this->bankAccount['id'],
+            [
+                'ifsc_code' => $ifsc
+            ]);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = $accountNumber;
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $this->cloud = false;
+
+        $this->ba->yesbankAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $utr = $response['transaction_id'];
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        // Testing if gateway is correct
+        $this->assertEquals('yesbank', $bankTransfer['gateway']);
+        $this->assertEquals('IMPS', $bankTransfer['mode']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        // Customer bank account created
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        // Set to mapped IFSC code for PAYTM Nbin
+        $this->assertEquals('PYTM0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        // IMPS refunds are permitted now
         $this->refundPayment($payment['id'], 4000000);
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
@@ -417,7 +512,14 @@ class BankTransferTest extends TestCase
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $this->initiateTransferViaFileAndAssertSuccess(
-            Channel::AXIS, Attempt\Purpose::REFUND, 1, Attempt\Type::REFUND);
+            Channel::AXIS, Attempt\Purpose::REFUND, 0, Attempt\Type::REFUND);
+
+        $channel = Channel::YESBANK;
+        $content = $this->initiateTransferAndAssertSuccess(
+            $channel,
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
     }
 
     public function testBankTransferRefundRetryManual()
@@ -466,10 +568,10 @@ class BankTransferTest extends TestCase
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
-            $channel, Attempt\Purpose::REFUND, 1, Attempt\Type::REFUND);
+            $channel, Attempt\Purpose::REFUND, 0, Attempt\Type::REFUND);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals('initiated', $attempt['status']);
+        $this->assertEquals(Status::CREATED, $attempt['status']);
 
         $this->ba->appAuth();
 
@@ -497,7 +599,7 @@ class BankTransferTest extends TestCase
         // Refund is now marked created again
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(Status::CREATED, $refund['status']);
 
         //  Another fund transfer attempt created for refund
         $oldAttempt = $attempt;
@@ -510,7 +612,15 @@ class BankTransferTest extends TestCase
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
-            $channel, Attempt\Purpose::REFUND, 1, Attempt\Type::REFUND);
+            $channel, Attempt\Purpose::REFUND, 0, Attempt\Type::REFUND);
+
+        $channel = Channel::YESBANK;
+
+        $content = $this->initiateTransferAndAssertSuccess(
+            $channel,
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
     }
 
     public function testBankTransferRefundRetryToDifferentAccount()
@@ -559,10 +669,14 @@ class BankTransferTest extends TestCase
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
-            $channel, Attempt\Purpose::REFUND, 1, Attempt\Type::REFUND);
+            $channel, Attempt\Purpose::REFUND, 0, Attempt\Type::REFUND);
 
-        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals('initiated', $attempt['status']);
+        $channel = Channel::YESBANK;
+        $content = $this->initiateTransferAndAssertSuccess(
+            $channel,
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
 
         // Only failed refunds can be retried
         $this->fixtures->refund->edit($refund['id'], ['status' => 'failed']);
@@ -596,8 +710,15 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
-        $content = $this->initiateTransferViaFileAndAssertSuccess(
-            $channel, Attempt\Purpose::REFUND, 1, Attempt\Type::REFUND);
+        $this->initiateTransferViaFileAndAssertSuccess(
+            Channel::AXIS, Attempt\Purpose::REFUND, 0, Attempt\Type::REFUND);
+
+        $channel = Channel::YESBANK;
+        $content = $this->initiateTransferAndAssertSuccess(
+            $channel,
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
     }
 
     public function testBankTransferRemoveSpaces()
@@ -725,7 +846,15 @@ class BankTransferTest extends TestCase
     public function testBankTransferImpsFromRogueBankStripAccount()
     {
         $accountNumber = $this->bankAccount['account_number'];
-        $ifsc = $this->bankAccount['ifsc'];
+
+        $ifsc = Provider::IFSC[Provider::KOTAK];
+
+        $this->fixtures->base->editEntity(
+            'bank_account',
+            $this->bankAccount['id'],
+            [
+                'ifsc_code' => $ifsc
+            ]);
 
         $request = $this->testData[__FUNCTION__];
 
@@ -733,7 +862,11 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
-        $this->ba->appAuth();
+        $request['server']['REMOTE_ADDR'] = '14.141.97.12';
+
+        $this->cloud = false;
+
+        $this->ba->kotakAuth();
 
         $this->makeRequestAndGetContent($request);
 
@@ -1122,7 +1255,7 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferYesBankRefundsNotAllowed()
     {
-        $this->markTestSkipped("Yesbank refunds temporarily allowed");
+        $this->markTestSkipped("Yesbank refunds are allowed now");
 
         $accountNumber = $this->bankAccount['account_number'];
 
@@ -1274,12 +1407,16 @@ class BankTransferTest extends TestCase
         $this->refundPayment($payment['id'], 4000000);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
-            $channel, Attempt\Purpose::REFUND, 1, Attempt\Type::REFUND);
+            $channel, Attempt\Purpose::REFUND, 0, Attempt\Type::REFUND);
 
-        $setlFile = $content[$channel]['file']['local_file_path'];
+        $channel = Channel::YESBANK;
+        $content = $this->initiateTransferAndAssertSuccess(
+            $channel,
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
 
-        // Process file
-        $this->reconcileSettlementsForChannel($setlFile, $channel, false);
+        $data = $this->reconcileOnlineSettlements($channel, false);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -1351,7 +1488,14 @@ class BankTransferTest extends TestCase
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $this->initiateTransferViaFileAndAssertSuccess(
-            Channel::AXIS, Attempt\Purpose::REFUND, 1, Attempt\Type::REFUND);
+            Channel::AXIS, Attempt\Purpose::REFUND, 0, Attempt\Type::REFUND);
+
+        $channel = Channel::YESBANK;
+        $content = $this->initiateTransferAndAssertSuccess(
+            $channel,
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
     }
 
     public function testBankTransferFloatingPointImprecision()

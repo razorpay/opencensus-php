@@ -226,6 +226,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $csfTax = (isset($row[ReconciliationFields::MSF_AMOUNT]) === true) ? abs($row[ReconciliationFields::CSF_TAX]) : 0;
 
+        $gstTax = abs($row[ReconciliationFields::GST]);
+
         $tax = $gstTax + $csfTax;
 
         return Base\Helper::getIntegerFormattedAmount($tax);

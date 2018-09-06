@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
@@ -337,11 +338,11 @@ trait Capture
 
         $payment->getValidator()->captureValidate($payment, $captureAmount, $currency);
 
-        $data = array(
+        $data = [
             'payment'   => $payment->toArrayGateway(),
             'amount'    => $captureAmount,
             'currency'  => $payment->getCurrency()
-        );
+        ];
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -389,7 +390,6 @@ trait Capture
      * and push it into a queue. We continue with the normal flow afterwards.
      *
      * @param $data
-     * @throws Exception\BaseException
      */
     protected function captureOnGateway($data)
     {
@@ -406,6 +406,10 @@ trait Capture
                 // after marking the payment as failed.
                 $this->recordCapture();
             });
+
+        $this->triggerPaymentCapturedEvents();
+
+        $this->notifyPaymentCaptured();
     }
 
     protected function callAndHandleCaptureOnGateway(array $data)
@@ -513,10 +517,6 @@ trait Capture
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
-
-        $this->triggerPaymentCapturedEvents();
-
-        $this->notifyPaymentCaptured();
     }
 
     /**
@@ -687,6 +687,15 @@ trait Capture
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Corresponding order already has a captured payment.');
+            }
+
+            $amount = $payment->getAdjustedAmountWrtCustFeeBearer();
+
+            if (($amount > $order->getAmountDue()) and
+                ($this->merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE);
             }
         }
     }

@@ -34,10 +34,11 @@ class Gateway extends Base\Gateway
     protected $sortRequestContent = false;
 
     protected $map = [
-        Field::MERCHANT_TXN_ID => 'merchantTxnId',
-        Field::ACS_TXN_ID      => 'acsTxnId',
-        Field::RESPONSE_CODE   => 'resDesc',
-        Field::MESSAGE_HASH    => 'messageHash',
+        Field::MERCHANT_TXN_ID          => 'merchantTxnId',
+        Field::ACS_TXN_ID               => 'acsTxnId',
+        Field::RESPONSE_CODE            => 'resDesc',
+        Field::MESSAGE_HASH             => 'messageHash',
+        Field::OTP_RESEND_COUNT_LEFT    => 'resendCountLeft',
     ];
 
     public function setGatewayParams($input, $mode, $terminal)
@@ -68,6 +69,11 @@ class Gateway extends Base\Gateway
      */
     public function otpGenerate(array $input)
     {
+        if ((isset($input['otp_resend']) === true) and ($input['otp_resend'] === true))
+        {
+            return $this->otpResend($input);
+        }
+
         $this->action($input, Action::OTP_GENERATE);
 
         $response = $this->sendOtpGenerateRequest($input);
@@ -117,15 +123,17 @@ class Gateway extends Base\Gateway
         $this->action($input, Action::OTP_RESEND);
 
         $gatewayPaymentEntity = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::OTP_GENERATE);
+            $input['payment']['id'], Action::AUTHORIZE);
 
         $this->setCardNumberAndCvv($input);
 
         $response = $this->sendOtpResendRequest($input, $gatewayPaymentEntity);
 
-        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_PAYMENT_OTP_RESENT_RESPONSE);
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_PAYMENT_OTP_RESEND_RESPONSE);
 
-        return $this->decideAuthStepAfterEnroll($gatewayPaymentEntity, $input, $response[field::RESPONSE_CODE]);
+        $this->handleError($response, $input['payment']['id']);
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     protected function sendOtpGenerateRequest(array $input)
@@ -245,7 +253,7 @@ class Gateway extends Base\Gateway
         return $enrollmentStatus;
     }
 
-    protected function decideAuthStepAfterEnroll($gatewayPayment, $input, $responseCode)
+    protected function decideAuthStepAfterEnroll($gatewayPayment, $input, $response)
     {
         $enrolled = $gatewayPayment->getEnrolled();
 
@@ -261,7 +269,7 @@ class Gateway extends Base\Gateway
                 return null;
         }
 
-        $this->handleError($responseCode, $input['payment']['id']);
+        $this->handleError($response, $input['payment']['id']);
     }
 
     protected function sendOtpValidateRequest(array $input, $gatewayPayment)
@@ -307,31 +315,33 @@ class Gateway extends Base\Gateway
 
     protected function sendOtpResendRequest(array $input, $gatewayPayment)
     {
-        $content = $this->getOtpResentRequestContent($input, $gatewayPayment);
+        $content = $this->getOtpResendRequestContent($input, $gatewayPayment);
 
         $traceRequest = $request = $this->getStandardRequestArray($content, 'POST');
 
         $traceRequest['content'] = $content;
 
-        $this->traceGatewayPaymentRequest($content, $input,TraceCode::GATEWAY_PAYMENT_OTP_RESENT_REQUEST);
+        $this->traceGatewayPaymentRequest($content, $input,TraceCode::GATEWAY_PAYMENT_OTP_RESEND_REQUEST);
 
         $response =  $this->sendGatewayRequest($request);
 
         $arrayResponse = $this->jsonToArray($response->body);
+
+        $this->traceGatewayPaymentResponse($arrayResponse, $input, TraceCode::GATEWAY_PAYMENT_OTP_RESEND_RESPONSE);
 
         $this->validateResponseContent($arrayResponse);
 
         return $arrayResponse;
     }
 
-    protected function getOtpResentRequestContent(array $input, $gatewayPayment)
+    protected function getOtpResendRequestContent(array $input, $gatewayPayment)
     {
         $gatewayPaymentId = $gatewayPayment->getGatewayPaymentId();
 
         $hash = [
-            Field::VERSION         => Constant::VERSION,
             Field::MERCHANT_TXN_ID => $input['payment']['id'],
             Field::ACS_TXN_ID      => $gatewayPaymentId,
+            Field::OTP_SENT_COUNT  => $input['payment']['otp_count'],
             Field::SECRET          => $this->getSecret(),
         ];
 
@@ -442,7 +452,7 @@ class Gateway extends Base\Gateway
 
     protected function validateResponseContent($response)
     {
-        if ((isset($response[Field::RESPONSE_CODE]) === true) or
+        if ((isset($response[Field::RESPONSE_CODE]) === true) and
             (in_array($response[Field::RESPONSE_CODE], ['000', '016'], true) === true))
         {
             $content = $this->getCheckSumArray($response);
@@ -455,14 +465,24 @@ class Gateway extends Base\Gateway
 
     protected function getCheckSumArray($response)
     {
+        if ($this->action === Action::OTP_RESEND)
+        {
+            return [
+                Field::MERCHANT_TXN_ID  => $response[Field::MERCHANT_TXN_ID],
+                Field::ACS_TXN_ID       => $response[Field::ACS_TXN_ID],
+                Field::RESPONSE_CODE    => $response[Field::RESPONSE_CODE],
+                Field::MESSAGE_HASH     => $response[Field::MESSAGE_HASH],
+            ];
+        }
+
         if ($this->action === Action::OTP_SUBMIT)
         {
             return [
-                Field::ACS_TXN_ID   => $response[Field::ACS_TXN_ID],
-                Field::ACC_ID       => $response[Field::ACC_ID],
-                Field::CAVV         => $response[Field::CAVV],
-                Field::ECI          => $response[Field::ECI],
-                Field::MESSAGE_HASH => $response[Field::MESSAGE_HASH],
+                Field::ACS_TXN_ID       => $response[Field::ACS_TXN_ID],
+                Field::ACC_ID           => $response[Field::ACC_ID],
+                Field::CAVV             => $response[Field::CAVV],
+                Field::ECI              => $response[Field::ECI],
+                Field::MESSAGE_HASH     => $response[Field::MESSAGE_HASH],
             ];
         }
 

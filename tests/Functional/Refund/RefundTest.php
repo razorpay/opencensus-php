@@ -180,7 +180,8 @@ class RefundTest extends TestCase
                 'notes'      => ['a' => 'b'],
                 'receipt'    => '2544325',
             ]);
-        $this->fixtures->base->editEntity('refund', $refund['id'], ['gateway_refunded' => false, 'status' => 'failed']);
+        $this->fixtures->base->editEntity('refund', $refund['id'], ['gateway_refunded' => false, 'status' => 'failed',
+            'error_code' => 'test', 'error_description' => 'test', 'internal_error_code' => 'test']);
 
         $refund = $this->getLastEntity('refund', true);
 
@@ -193,6 +194,9 @@ class RefundTest extends TestCase
 
         $this->assertEquals('abcdProcessed', $refund['reference1']);
         $this->assertEquals('processed', $refund['status']);
+        $this->assertNull($refund['error_code']);
+        $this->assertNull($refund['error_description']);
+        $this->assertNull($refund['internal_error_code']);
     }
 
     public function testRefundEditStatusWithoutReference()
@@ -929,11 +933,12 @@ class RefundTest extends TestCase
 
     public function testFetchRefundById()
     {
+        $this->fixtures->merchant->addFeatures(['expose_arn_refund']);
         $payment = $this->fixtures->create('payment:captured');
         $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
 
         $actual = $rfnd->toArrayPublic();
-        $actual['acquirer_data'] = $actual['acquirer_data']->toArray();
+        $actual['acquirer_data'] = $rfnd->getAcquirerData()->toArray();
 
         $refund = $this->getEntityById('refund', $rfnd['public_id']);
         $this->assertArraySelectiveEquals($actual, $refund);
@@ -984,6 +989,28 @@ class RefundTest extends TestCase
         $this->assertEquals(1, $refunds['count']);
 
         $this->assertEquals($rfnd1->getPublicId(), $refunds['items'][0]['id']);
+    }
+
+    public function testCreateRefundProxyAuth()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000');
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'operations');
+        $this->startTest($payment->getPublicId(), $payment->getAmount());
+
+        $payment = $this->getLastEntity('payment', true);
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($payment['amount_refunded'], 1000000);
+        $this->assertEquals($payment['amount'], $refund['amount']);
+    }
+
+    public function testCreateRefundProxyAuthInvalidRole()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000');
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'finance');
+        $this->startTest($payment->getPublicId(), $payment->getAmount());
     }
 
     public function testRefundValidationOnWrongGateway()

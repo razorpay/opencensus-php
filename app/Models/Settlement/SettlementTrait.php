@@ -455,9 +455,7 @@ trait SettlementTrait
      * time till beneficiary is updated in kotak
      *
      * @param Transaction\Entity $txn
-     *
      * @return bool
-     * @throws Exception\LogicException
      */
     protected function shouldSettle(Transaction\Entity $txn): bool
     {
@@ -489,10 +487,25 @@ trait SettlementTrait
 
         if ($bankAccount === null)
         {
-            throw new Exception\LogicException(
-                'No bank account mapped for merchant settlement',
-                null,
-                ['merchant_id' => $merchant->getId()]);
+            $this->trace->error(
+                TraceCode::SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED,
+                [
+                    'merchant_id'    => $merchant->getId(),
+                    'transaction_id' => $txn->getId()
+                ]
+            );
+
+            return false;
+        }
+
+        $channel = $txn->getChannel();
+
+        $allowedChannelFor24x7Settlement = Channel::get24x7Channels();
+
+        if (($this->env !== 'testing') and
+            (in_array($channel, $allowedChannelFor24x7Settlement, true) === true))
+        {
+            return true;
         }
 
         if (($this->env !== 'testing') and

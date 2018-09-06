@@ -15,4 +15,6 @@ class InfoCode
     const CURRENCY_MISMATCH   = 'CURRENCY_MISMATCH';
 
     const UNKNOWN_CARD_TYPE   = 'UNKNOWN_CARD_TYPE';
+
+    const UNKNOWN_RECON_TYPE    = 'UNKNOWN_RECON_TYPE';
 }
