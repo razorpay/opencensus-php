@@ -10,7 +10,6 @@ import { fetchSubmerchants as fetchAll } from 'merchant/modules/collection';
 import { switchMerchant } from 'merchant/modules/session';
 
 import DataTable from 'rzp/ui/Table/DataTable';
-import StatsCard from 'rzp/ui/StatsCard';
 import HeaderAction from 'rzp/ui/HeaderAction';
 
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -21,7 +20,6 @@ import {
   submerchantId as id,
   email as emailColumn,
 } from 'rzp/ui/item/pair';
-import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
 
 import AddMerchant from './AddMerchant';
 import ListFilter from './ListFilter';
@@ -95,8 +93,6 @@ const appId = {
   }
 )
 export default class SubMerchantsList extends ListContainer {
-  state = {};
-
   handleAddMerchant = () => {
     this.props.openModal({
       size: 'small',
@@ -118,14 +114,18 @@ export default class SubMerchantsList extends ListContainer {
       });
   };
 
-  search = () => {};
   render() {
-    const user = this.props.user;
-    const switchMerchantColumn = user.isPartner('aggregator', 'fully_managed')
-      ? [switchMerchantActionBtn(this.handleSwitchMerchant)]
-      : [];
+    const { user } = this.props;
+    let appIdColumn = [],
+      switchMerchantColumn = [];
 
-    const appIdColumn = user.isPartner('pure_platform') ? [appId] : [];
+    if (user.isPartner('pure_platform')) {
+      appIdColumn = [appId];
+    } else if (user.isPartner('aggregator', 'fully_managed')) {
+      switchMerchantColumn = [
+        switchMerchantActionBtn(this.handleSwitchMerchant),
+      ];
+    }
 
     return (
       <div class="sub-merchants-list">
