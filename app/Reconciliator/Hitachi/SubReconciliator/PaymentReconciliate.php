@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Reconciliator\Hitachi;
+namespace RZP\Reconciliator\Hitachi\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     use Base\BharatQrTrait;
 
@@ -235,7 +235,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return null;
         }
 
-        $paymentAmount = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
+        $paymentAmount = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
 
         return $paymentAmount;
     }

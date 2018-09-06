@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Reconciliator\Olamoney;
+namespace RZP\Reconciliator\Olamoney\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class CombinedReconciliate extends Base\CombinedReconciliate
+class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {
     /*******************
      * Row Header Names

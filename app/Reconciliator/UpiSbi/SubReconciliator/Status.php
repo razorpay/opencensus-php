@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\UpiSbi;
+namespace RZP\Reconciliator\UpiSbi\SubReconciliator;
 
 use RZP\Models\Payment;
 
