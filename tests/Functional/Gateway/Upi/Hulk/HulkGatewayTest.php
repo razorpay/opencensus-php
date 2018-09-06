@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Upi\Hulk;
 
 use Cache;
 use Mail;
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -373,17 +374,21 @@ class HulkGatewayTest extends TestCase
     {
         $this->fixtures->create('terminal:shared_upi_hulk_intent_terminal');
 
+        $merchant = $this->getDbLastEntity('merchant', 'test');
+
         unset($this->payment['description']);
         unset($this->payment['vpa']);
 
         $this->payment['_']['flow'] = 'intent';
 
         $this->mockServerRequestFunction(
-            function($content, $action)
+            function($content, $action) use ($merchant)
             {
                 if ($action === 'authorize')
                 {
                     $this->assertSame('expected_push', $content['type']);
+                    $this->assertSame((string) $merchant['category'], $content['category_code']);
+
                 }
             });
 
@@ -421,6 +426,8 @@ class HulkGatewayTest extends TestCase
 
         $this->fixtures->merchant->enableTPV();
 
+        $merchant = $this->getDbLastEntity('merchant', 'test');
+
         $this->createOrder([
             'amount'         => 50000,
             'currency'       => 'INR',
@@ -440,12 +447,13 @@ class HulkGatewayTest extends TestCase
         $this->payment['bank'] = $order->getBank();
 
         $this->mockServerRequestFunction(
-            function($content, $action) use ($order)
+            function($content, $action) use ($order, $merchant)
             {
                 if ($action === 'authorize')
                 {
                     $this->assertSame('expected_push', $content['type']);
                     $this->assertSame($order->getAccountNumber(), $content['caller_account_number']);
+                    $this->assertSame((string) $merchant['category'], $content['category_code']);
                 }
             });
 
@@ -460,5 +468,92 @@ class HulkGatewayTest extends TestCase
         $gatewayEntity = $this->getDbLastEntity('upi');
 
         $this->assertEquals('pay', $gatewayEntity['type']);
+    }
+
+    public function testCollectForceAuthorized()
+    {
+        $now  = Carbon::now();
+
+        Carbon::setTestNow(Carbon::parse('15 minutes ago'));
+
+        $this->doAuthPaymentViaAjaxRoute(array_except($this->payment, 'description'));
+
+        $payment = $this->getDbLastPayment();
+        $upi     = $this->getDbLastEntity('upi');
+
+        $this->assertSame('created', $payment->getStatus());
+        $this->assertSame('initiated', $upi->status_code);
+
+        Carbon::setTestNow($now);
+
+        $this->timeoutOldPayment();
+
+        $payment->reload();
+        $upi->reload();
+
+        $this->assertSame('failed', $payment->getStatus());
+        $this->assertSame('initiated', $upi->status_code);
+
+        $this->forceAuthorizeFailedPayment($payment->getPublicId(),
+            [
+                'ifsc'              => 'HDFC0000011',
+                'account_number'    => '110011001100',
+            ]);
+
+        $payment->reload();
+        $upi->reload();
+
+        $this->assertSame('authorized', $payment->getStatus());
+        $this->assertSame('completed', $upi->status_code);
+        $this->assertSame('HDFC0000011', $upi->ifsc);
+        $this->assertSame('110011001100', $upi->account_number);
+    }
+
+    public function testIntentForceAuthorized()
+    {
+        $now  = Carbon::now();
+
+        Carbon::setTestNow(Carbon::parse('15 minutes ago'));
+
+        $this->fixtures->create('terminal:shared_upi_hulk_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+        $upi     = $this->getDbLastEntity('upi');
+
+        $this->assertSame('created', $payment->getStatus());
+        $this->assertSame('created', $upi->status_code);
+
+        Carbon::setTestNow($now);
+
+        $this->timeoutOldPayment();
+
+        $payment->reload();
+        $upi->reload();
+
+        $this->assertSame('failed', $payment->getStatus());
+        $this->assertSame('created', $upi->status_code);
+
+        $this->forceAuthorizeFailedPayment($payment->getPublicId(),
+            [
+                'ifsc'              => 'HDFC0000011',
+                'account_number'    => '110011001100',
+                'vpa'               => 'vishnu@icici',
+            ]);
+
+        $payment->reload();
+        $upi->reload();
+
+        $this->assertSame('authorized', $payment->getStatus());
+        $this->assertSame('completed', $upi->status_code);
+        $this->assertSame('HDFC0000011', $upi->ifsc);
+        $this->assertSame('110011001100', $upi->account_number);
+        $this->assertSame('vishnu@icici', $upi->vpa);
+        $this->assertSame('icici', $upi->provider);
     }
 }

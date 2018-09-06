@@ -257,6 +257,92 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment1['gateway_captured']);
     }
 
+    public function testCardFssReconCombinedFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_fss_terminal', [
+            'gateway_acquirer' => 'barb',
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthAndCapturePayment($payment);
+
+        $payment_transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($payment_transaction['reconciled_at']);
+
+        $gatewayPayment = $this->getLastEntity('card_fss', true);
+
+        $paymentData = $this->overrideCardFssPayment($gatewayPayment);
+
+        $paymentHeader = array_keys($paymentData);
+
+        $blank_rows = array_combine($paymentHeader, array_fill(0,count($paymentHeader), null));
+
+        // Refund this newly created payment, and populate refund data
+        $this->refundPayment('pay_' . $gatewayPayment['payment_id']);
+
+        $refund_transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($refund_transaction['reconciled_at']);
+
+        $gatewayRefund = $this->getLastEntity('card_fss', true);
+
+        $refundData = $this->overrideCardFssRefund($gatewayRefund, $gatewayPayment);
+
+        $refundHeader = array_keys($refundData);
+
+        //
+        // add one payment data row, followed by two blank rows
+        //
+        $entries[] = $paymentData;
+        $entries[] = $blank_rows;
+        $entries[] = $blank_rows;
+
+        // add refund header and refund data row
+        $entries[] = array_combine($paymentHeader, array_pad($refundHeader, count($paymentHeader), null));
+        $entries[] = array_combine($paymentHeader, array_pad($refundData, count($paymentHeader), null));
+
+        $file = $this->writeToExcelFile($entries, 'combined', 'files/settlement');
+
+        $this->runForFiles([$file], 'CardFss');
+
+        // ======== verify refund reconciliation ========
+        $updatedTransaction = $this->getDbEntityById('transaction', $refund_transaction['id']);
+
+        $updatedRefund = $this->getDbEntityById('refund', $refund_transaction['entity_id']);
+
+        // here 'Reference Tran Id' of refund header is mapped to payment header column 'MSF Amount'
+        // in the test excel file, so we are using 'MSF Amount' in next line.
+        $this->assertEquals($entries[4]['MSF Amount'], $updatedRefund['reference1']);
+
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+
+        // ======== verify payment reconciliation =======
+        $updatedPayment = $this->getDbEntityById('payment', $response['id']);
+
+        $this->assertEquals($entries[0]['RRN'], $updatedPayment['reference1']);
+        $this->assertEquals($entries[0]['Auth/Approval Code'], $updatedPayment['reference2']);
+
+        $updatedTransaction = $this->getDbEntityById('transaction', $payment_transaction['id']);
+
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['gateway_settled_at']);
+        $this->assertNotNull($updatedTransaction['gateway_fee']);
+        $this->assertNotNull($updatedTransaction['gateway_service_tax']);
+
+        $updatedGatewayPayment = $this->getLastEntity('card_fss', true);
+
+        // Here in next line we wanted to check the refund column 'Aggregator Transaction ID', but
+        // this is mapped to 'transaction category' column of payment header in test excel file
+        $this->assertEquals($entries[4]['transaction category'], $updatedGatewayPayment['tranid']);
+
+        $this->assertBatchStatus();
+    }
+
+
     public function testCardFssReconPaymentFile()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -282,10 +368,6 @@ class ReconciliationFileTest extends TestCase
         $this->runForFiles([$file], 'CardFss');
 
         $updatedPayment = $this->getDbEntityById('payment', $response['id']);
-
-        $transaction = $this->getLastEntity('transaction', true);
-
-        $this->assertNotNull($transaction['reconciled_at']);
 
         $this->assertEquals($entries[0]['RRN'], $updatedPayment['reference1']);
         $this->assertEquals($entries[0]['Auth/Approval Code'], $updatedPayment['reference2']);
@@ -885,6 +967,7 @@ class ReconciliationFileTest extends TestCase
         $facade['MSF Amount']                             = $facade['transaction amount'] * 0.009 * (-1);
         $facade['GST On MSF']                             = $facade['MSF Amount'] / 5.6;
         $facade['settlement amount']                      = $facade['transaction amount'] - $facade['MSF Amount'] - $facade['GST On MSF'];
+        $facade['Action Code']                            = 'Random String';
 
         return $facade;
     }
@@ -902,6 +985,7 @@ class ReconciliationFileTest extends TestCase
         $facade['aggregator_request_sent_time']    = $facade['Transaction Date'];
         $facade['merchant_response_sent_time']     = $facade['Transaction Date'];
         $facade['Reference Tran Id']               = $gatewayRefund[CardFssEntity::REF];
+        $facade['Transaction Type']                = 'Random';
 
         return $facade;
     }

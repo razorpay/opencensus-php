@@ -498,6 +498,16 @@ trait SettlementTrait
             return false;
         }
 
+        $channel = $txn->getChannel();
+
+        $allowedChannelFor24x7Settlement = Channel::get24x7Channels();
+
+        if (($this->env !== 'testing') and
+            (in_array($channel, $allowedChannelFor24x7Settlement, true) === true))
+        {
+            return true;
+        }
+
         if (($this->env !== 'testing') and
             ($bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
         {

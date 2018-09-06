@@ -144,10 +144,8 @@ class Shield
         $payloadDetails[ShieldConstants::CONTACT]       = $payment->getContact();
         $payloadDetails[ShieldConstants::INTERNATIONAL] = $payment->isInternational();
 
-        if ($payment->isCustomerMailAbsent() === false)
-        {
-            $payloadDetails[ShieldConstants::EMAIL]  = $payment->getEmail();
-        }
+        $payloadDetails[ShieldConstants::EMAIL] =
+            (($payment->isCustomerMailAbsent() === false) ? $payment->getEmail() : ShieldConstants::DEFAULT_EMAIL);
 
         // add payment method details
         $payloadDetails[ShieldConstants::METHOD] = $payment->getMethod();

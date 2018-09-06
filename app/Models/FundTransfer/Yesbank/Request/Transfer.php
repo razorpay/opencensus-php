@@ -99,7 +99,6 @@ class Transfer extends Base
         return $jsonRequest;
     }
 
-
     protected function getPaymentType(BankAccount\Entity $ba, $amount)
     {
         $ifsc = $ba->getIfscCode();

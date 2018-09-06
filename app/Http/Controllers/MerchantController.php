@@ -343,6 +343,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getAccountConfigInternal()
+    {
+        $data = $this->service()->fetchConfig($isInternal = true);
+
+        return ApiResponse::json($data);
+    }
+
     public function postAmountCredits($id)
     {
         $input = Request::all();
@@ -1057,5 +1064,14 @@ class MerchantController extends Controller
         $response = $this->service()->listSubmerchants($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function postMerchantBeneficiaryThroughApi($channel)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->registerBeneficiaryThroughApi($input, $channel);
+
+        return ApiResponse::json($data);
     }
 }
