@@ -692,6 +692,35 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantPurePlatform' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'                     => 'acc_10000000000009',
+                'entity'                 => 'merchant',
+                'user'                   => [],
+                'details'                => [
+                    'activation_status' => 'under_review',
+                ],
+                'dashboard_access'       => false,
+                'application'            => [
+                    'id'   => '8ckeirnw84ifke',
+                    'name' => 'App 1',
+                ],
+                'connected_applications' => [
+                    [
+                        'id'   => '10000RandomApp',
+                        'name' => 'App 2',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchPartnerSubmerchantProxyAuth' => [
         'request'  => [
             'url'     => '/submerchants/acc_10000000000009',
