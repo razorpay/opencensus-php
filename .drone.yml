@@ -302,7 +302,7 @@ pipeline:
         exclude: [push]
         include: [deployment]
   deploy-stage-beta:
-    image: razorpay/drone-kubernetes
+    image: razorpay/drone-kubernetes:parallel
     pull: true
     secrets:
       - docker_username
