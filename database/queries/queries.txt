@@ -4198,3 +4198,6 @@ ALTER TABLE nodal_beneficiaries
 ALTER TABLE users
     ADD COLUMN password_reset_token VARCHAR(255) DEFAULT NULL AFTER confirm_token,
     ADD COLUMN password_reset_expiry INTEGER UNSIGNED DEFAULT NULL AFTER password_reset_token;
+
+ALTER TABLE tokens
+    ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number;
