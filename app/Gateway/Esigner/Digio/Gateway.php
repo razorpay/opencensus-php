@@ -27,7 +27,6 @@ class Gateway extends Base\Gateway
 
     public function authorize(array $input)
     {
-
         parent::authorize($input);
 
         $request = $this->getMandateCreationRequestArray($input);
@@ -343,18 +342,18 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $request = $this->getVerifyRequestData($verify);
+        $request = $this->getVerifyRequestArray($verify);
 
         $response = $this->sendGatewayRequest($request);
 
-        $content = $response->body;
+        $rawContent = $response->body;
 
-        $verify->verifyResponseContent = json_decode($content, true);
+        $verify->verifyResponseContent = $this->jsonToArray($rawContent);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'response_body' => $response->body,
+                'response_body' => $rawContent,
                 'content'       => $verify->verifyResponseContent,
                 'payment_id'    => $verify->input['payment']['id'],
                 'status_code'   => $response->status_code,
@@ -362,7 +361,7 @@ class Gateway extends Base\Gateway
             ]);
     }
 
-    protected function getVerifyRequestData($verify)
+    protected function getVerifyRequestArray($verify)
     {
         $request = $this->getStandardRequestArray([], 'get', null, false);
 
@@ -408,12 +407,7 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $status = Status::UNSIGNED;
-
-        if (isset($content['status']) === true)
-        {
-            $status = trim($content['status']);
-        }
+        $status = (isset($content['status']) === true) ? trim($content['status']) : Status::UNSIGNED;
 
         if ($status === Status::SIGNED)
         {
@@ -447,15 +441,5 @@ class Gateway extends Base\Gateway
 
             return $gatewayPayment;
         }
-    }
-
-    protected function getPaymentToVerify(Verify $verify)
-    {
-        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-            $verify->input['payment']['id'], Action::AUTHORIZE);
-
-        $verify->payment = $gatewayPayment;
-
-        return $gatewayPayment;
     }
 }
