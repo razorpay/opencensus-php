@@ -103,7 +103,7 @@ class CreateTokens extends Migration
             $table->integer(Token::USED_AT)
                   ->nullable();
 
-            $table->integer(Token::EXPIRED_AT)
+            $table->bigInteger(Token::EXPIRED_AT)
                   ->nullable();
 
             $table->integer(Token::CREATED_AT);
