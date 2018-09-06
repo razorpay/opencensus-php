@@ -1119,23 +1119,66 @@ class Core extends Base\Core
     /**
      * @param Entity      $partner
      * @param string      $submerchantId
-     * @param string|null $appId
+     * @param string|null $inputAppId
      *
      * @return Entity
      */
-    public function getSubmerchant(Entity $partner, string $submerchantId, string $appId = null): Entity
+    public function getSubmerchant(Entity $partner, string $submerchantId, string $inputAppId = null): Entity
     {
-        $appIds = $this->getPartnerApplicationIds($partner);
+        //
+        // If the partner is -
+        //      a non pure platform partner, $appIds will have just one element - id of the internal dummy app created.
+        //      a pure platform partner, the result will be the list of all the ids of the apps created by the partner.
+        //
+        $partnerAppIds = $this->getPartnerApplicationIds($partner);
 
-        if (in_array($appId, $appIds, true) === true)
+        //
+        // Apps not being present is only possible in case of pure platforms where the partner manually creates and
+        // deletes the oauth applications.
+        // If the partner tries to access the submerchant detail api without creating an app, throw an error.
+        //
+        if (count($partnerAppIds) > 0)
         {
-            // @todo add a comment here
-            $appIds = [$appId];
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_OAUTH_APP_NOT_FOUND,
+                null,
+                [
+                    Entity::ID                => $partner->getId(),
+                    Entity::PARTNER_TYPE      => $partner->getPartnerType(),
+                    Constants::APPLICATION_ID => $inputAppId,
+                ]);
+        }
+
+        // 0th index will always be accessible here
+        $appId = $partnerAppIds[0];
+
+        //
+        // If the partner is a pure platform and the application_id is provided in the input
+        // raise an exception if the application id does not belong to the partners's applications
+        //
+        if (($partner->isPurePlatformPartner() === true) and (empty($inputAppId) === false))
+        {
+            if (in_array($appId, $partnerAppIds, true) === false)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_APPLICATION_ID,
+                    Constants::APPLICATION_ID,
+                    [
+                        Entity::ID                => $partner->getId(),
+                        Entity::PARTNER_TYPE      => $partner->getPartnerType(),
+                        Constants::APPLICATION_ID => $appId,
+                    ]);
+            }
+            else
+            {
+                // Since the app id in the input is valid, update $appId and proceed for to query the db
+                $appId = $inputAppId;
+            }
         }
 
         $merchant = $this->repo
                          ->merchant
-                         ->findSubmerchantByIdAndConnectedAppIds($submerchantId, $appIds);
+                         ->findSubmerchantByIdAndConnectedAppId($submerchantId, $appId);
 
         $partnerUser = $partner->primaryOwner();
 
@@ -1258,7 +1301,7 @@ class Core extends Base\Core
             OAuthApp\Entity::ID => $currentAppId,
         ];
 
-        // Call the auth service to fetch details about the application
+        // Return from here if the auth service call to fetch details about the application is not required
         if ($fetchConnectedApps === false)
         {
             $connectedApps = [];

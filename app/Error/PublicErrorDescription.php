@@ -637,10 +637,12 @@ class PublicErrorDescription
     const BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT                             = 'The account provided is not a linked account';
 
     // Partners
+    const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                       = 'No oauth application could be found. Create an app to continue.';
     const BAD_REQUEST_PARTNER_TYPE_INVALID                                      = 'Partner type is invalid';
     const BAD_REQUEST_PARTNER_TYPE_REQUIRED                                     = 'Partner type is required';
     const SERVER_ERROR_PARTNER_APP_NOT_FOUND                                    = 'Partner app could not be found';
     const BAD_REQUEST_INVALID_PARTNER_ACTION                                    = 'Invalid partner action';
+    const BAD_REQUEST_INVALID_APPLICATION_ID                                    = 'Invalid application id';
     const BAD_REQUEST_PARTNER_CONTEXT_NOT_SET                                   = 'Partner context must be set';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';

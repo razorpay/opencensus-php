@@ -2039,7 +2039,10 @@ class Service extends Base\Service
     {
         if (($merchant->isPartner() === true) and ($subMerchant->isLinkedAccount() === false))
         {
+            //
             // This gets submerchant for a partner, with extra details required by partner dashboard.
+            // This does not get called for pure platform partners.
+            //
             $subMerchant = $this->core()->getSubmerchant($merchant, $subMerchant->getId());
 
             $subMerchant = $subMerchant->toArrayPartner();

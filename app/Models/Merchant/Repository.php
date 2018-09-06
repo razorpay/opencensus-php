@@ -491,12 +491,18 @@ class Repository extends Base\Repository
     }
     /**
      * @param string $submerchantId
-     * @param array  $appIds
+     * @param string $appId
      *
      * @return Entity
      */
-    public function findSubmerchantByIdAndConnectedAppIds(string $submerchantId, array $appIds): Entity
+    public function findSubmerchantByIdAndConnectedAppId(string $submerchantId, string $appId): Entity
     {
+        //
+        // To make use of existing function (buildQueryToFetchSubmerchantsByAppIds) which uses an array for appIds,
+        // we convert the only app id that we have to an array.
+        //
+        $appIds = [$appId];
+
         $accessMapsMerchantId = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::MERCHANT_ID);
 
         $query = $this->buildQueryToFetchSubmerchantsByAppIds($appIds)
