@@ -1234,7 +1234,11 @@ class Core extends Base\Core
 
         $submerchant[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($submerchant);
 
-        $submerchant[Entity::APPLICATION] = $this->getApplicationDetails($partner, $submerchant, $fetchAppDetails);
+        list($currentApp, $connectedApps) = $this->getConnectedOauthApps($partner, $submerchant, $fetchAppDetails);
+
+        $submerchant[Entity::APPLICATION] = $currentApp;
+
+        $submerchant[Entity::CONNECTED_APPLICATIONS] = $connectedApps;
 
         return $submerchant;
     }
@@ -1246,28 +1250,65 @@ class Core extends Base\Core
      *
      * @return array
      */
-    protected function getApplicationDetails(Entity $partner, Entity $submerchant, $fetchAppDetails = false): array
+    protected function getConnectedOauthApps(Entity $partner, Entity $submerchant, $fetchAppDetails = false): array
     {
         $applicationId = $submerchant->getAttribute(Constants::APPLICATION_ID);
 
-        $appData = [
+        $currentApp = [
             OAuthApp\Entity::ID => $applicationId,
         ];
 
         // Call the auth service to fetch details about the application
-        if ($fetchAppDetails === true)
+        if ($fetchAppDetails === false)
         {
-            $app = app('authservice')->getApplication($applicationId, $partner->getId());
+            $connectedApps = [];
 
-            $partnerVisibleColumns = [
-                OAuthApp\Entity::ID,
-                OAuthApp\Entity::NAME,
-            ];
-
-            $appData = array_only($app, $partnerVisibleColumns);
+            return [$currentApp, $connectedApps];
         }
 
-        return $appData;
+        $apps = app('authservice')->getMultipleApplications([], $partner->getId());
+
+        return $this->spliceCurrentAppFromAllApps($apps, $applicationId);
+    }
+
+    protected function spliceCurrentAppFromAllApps(array $apps, string $currentAppId): array
+    {
+        $partnerVisibleAppColumns = [
+            OAuthApp\Entity::ID,
+            OAuthApp\Entity::NAME,
+        ];
+
+        $appItems = $apps[PublicCollection::ITEMS] ?? [];
+
+        // converts the items to a collection
+        $apps = collect($appItems);
+
+        // Fetch where app id = $applicationId
+        $currentApp = (array) $apps->firstWhere(OAuthApp\Entity::ID, $currentAppId);
+
+        if (empty($currentApp) === false)
+        {
+            $currentApp = array_only($currentApp, $partnerVisibleAppColumns);
+        }
+
+        // Remove the above-fetched current app
+        $connectedApps = $apps->reject(function($value) use ($currentAppId)
+        {
+            return ($value[OAuthApp\Entity::ID] === $currentAppId);
+        });
+
+        //
+        // $connectedApps is a collection. calling reject over a collection will convert the indexes of
+        // the existing elements as keys. Hence, array_values must be used.
+        //
+        $connectedApps = array_values($connectedApps->toArray());
+
+        foreach ($connectedApps as & $connectedApp)
+        {
+            $connectedApp = array_only($connectedApp, $partnerVisibleAppColumns);
+        }
+
+        return [$currentApp, $connectedApps];
     }
 
     /**
