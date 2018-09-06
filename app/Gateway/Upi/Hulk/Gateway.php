@@ -60,6 +60,7 @@ class Gateway extends Base\Gateway
         Entity::VPA                       => Entity::VPA,
         Fields::CALLER_IFSC_CODE          => Entity::IFSC,
         Fields::CALLER_ACCOUNT_NUMBER     => Entity::ACCOUNT_NUMBER,
+        Fields::RRN                       => Entity::NPCI_REFERENCE_ID,
     ];
 
     /**
