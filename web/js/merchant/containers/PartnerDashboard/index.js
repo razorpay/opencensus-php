@@ -4,6 +4,8 @@ import { Route, Switch, NavLink } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import { ShowWhenRoute } from 'merchant/components/Content';
+import Applications from 'merchant/containers/Applications';
+import ApplicationEntity from 'merchant/containers/Applications/new';
 
 import SubMerchantList from './SubMerchant/List';
 import Settings from './Settings';
@@ -28,6 +30,11 @@ export default class PartnerDashboard extends Component {
           >
             <NavLink to="/submerchants/settings">Settings</NavLink>
           </ShowWhen>
+          <ShowWhen
+            additionalCondition={user => user.isPartner('pure_platform')}
+          >
+            <NavLink to="/submerchants/applications">Applications</NavLink>
+          </ShowWhen>
         </header>
         <content>
           <Switch>
@@ -38,6 +45,25 @@ export default class PartnerDashboard extends Component {
               path="/submerchants/settings"
               component={Settings}
             />
+
+            <ShowWhenRoute
+              additionalCondition={user => user.isPartner('pure_platform')}
+              path="/submerchants/applications/new"
+              component={ApplicationEntity}
+            />
+
+            <ShowWhenRoute
+              additionalCondition={user => user.isPartner('pure_application')}
+              path="/submerchants/applications/:id"
+              component={ApplicationEntity}
+            />
+
+            <ShowWhenRoute
+              additionalCondition={user => user.isPartner('pure_platform')}
+              path="/submerchants/applications"
+              component={Applications}
+            />
+
             <Route path="/submerchants" component={SubMerchantList} />
           </Switch>
         </content>
