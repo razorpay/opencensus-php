@@ -1246,55 +1246,76 @@ class Core extends Base\Core
     /**
      * @param Entity     $partner
      * @param Entity     $submerchant
-     * @param bool|false $fetchAppDetails
+     * @param bool|false $fetchConnectedApps
      *
      * @return array
      */
-    protected function getConnectedOauthApps(Entity $partner, Entity $submerchant, $fetchAppDetails = false): array
+    protected function getConnectedOauthApps(Entity $partner, Entity $submerchant, $fetchConnectedApps = false): array
     {
-        $applicationId = $submerchant->getAttribute(Constants::APPLICATION_ID);
+        $currentAppId = $submerchant->getAttribute(Constants::APPLICATION_ID);
 
         $currentApp = [
-            OAuthApp\Entity::ID => $applicationId,
+            OAuthApp\Entity::ID => $currentAppId,
         ];
 
         // Call the auth service to fetch details about the application
-        if ($fetchAppDetails === false)
+        if ($fetchConnectedApps === false)
         {
             $connectedApps = [];
 
             return [$currentApp, $connectedApps];
         }
 
-        $apps = app('authservice')->getMultipleApplications([], $partner->getId());
+        $connectedAppIds = $this->repo
+                                ->merchant_access_map
+                                ->fetchMerchantAccessMapsOnEntityType(
+                                    $submerchant->getId(),
+                                    AccessMap\Entity::APPLICATION)
+                                ->pluck(AccessMap\Entity::ENTITY_ID)
+                                ->toArray();
 
-        return $this->spliceCurrentAppFromAllApps($apps, $applicationId);
+        $partnerApps = app('authservice')->getMultipleApplications([], $partner->getId());
+
+        return $this->spliceCurrentAppFromAllApps($partnerApps, $currentAppId, $connectedAppIds);
     }
 
-    protected function spliceCurrentAppFromAllApps(array $apps, string $currentAppId): array
+    /**
+     * @param array  $partnerApps
+     * @param string $currentAppId
+     * @param array  $connectedAppIds
+     *
+     * @return array
+     */
+    protected function spliceCurrentAppFromAllApps(
+        array $partnerApps,
+        string $currentAppId,
+        array $connectedAppIds): array
     {
         $partnerVisibleAppColumns = [
             OAuthApp\Entity::ID,
             OAuthApp\Entity::NAME,
         ];
 
-        $appItems = $apps[PublicCollection::ITEMS] ?? [];
+        $partnerAppItems = $partnerApps[PublicCollection::ITEMS] ?? [];
 
         // converts the items to a collection
-        $apps = collect($appItems);
+        $partnerApps = collect($partnerAppItems);
 
         // Fetch where app id = $applicationId
-        $currentApp = (array) $apps->firstWhere(OAuthApp\Entity::ID, $currentAppId);
+        $currentApp = (array) $partnerApps->firstWhere(OAuthApp\Entity::ID, $currentAppId);
 
         if (empty($currentApp) === false)
         {
             $currentApp = array_only($currentApp, $partnerVisibleAppColumns);
         }
 
-        // Remove the above-fetched current app
-        $connectedApps = $apps->reject(function($value) use ($currentAppId)
+        // Remove current app id from the list of connected app ids
+        $connectedAppIds = array_values(array_diff($connectedAppIds, [$currentAppId]));
+
+        // Reject all those apps that are not connected to (authorized by) the submerchant
+        $connectedApps = $partnerApps->reject(function($value) use ($currentAppId, $connectedAppIds)
         {
-            return ($value[OAuthApp\Entity::ID] === $currentAppId);
+            return (in_array($value[OAuthApp\Entity::ID], $connectedAppIds, true) === false);
         });
 
         //
