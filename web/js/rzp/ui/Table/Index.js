@@ -32,13 +32,13 @@ export default ({
   } else if (rows.length) {
     let curRow = 0;
 
-    rows.forEach(item => {
+    rows.forEach((item, index) => {
       curRow++;
       if (curRow > limit) {
         return false;
       }
       rowItems.push(
-        <EntityItemRow key={item.id} id={item.id}>
+        <EntityItemRow key={index} id={item.id}>
           {columns.map((column, index) => (
             <td
               class={column.columnClass ? column.columnClass : ''}
