@@ -336,7 +336,9 @@ class Gateway extends Base\Gateway
 
     protected function getRepository()
     {
-        return;
+        $gateway = 'enach';
+
+        return $this->app['repo']->$gateway;
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -449,7 +451,7 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentToVerify(Verify $verify)
     {
-        $gatewayPayment = $this->app['repo']->enach->findByPaymentIdAndAction(
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $verify->input['payment']['id'], Action::AUTHORIZE);
 
         $verify->payment = $gatewayPayment;
