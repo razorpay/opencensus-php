@@ -206,7 +206,7 @@ class Gateway extends Base\Gateway
 
         $shouldRetry = function ($e)
         {
-            (in_array(get_class($e), [Exception\GatewayRequestException::class], true));
+            return (in_array(get_class($e), [Exception\GatewayRequestException::class], true));
         };
 
         $response = $this->retryHandler(
