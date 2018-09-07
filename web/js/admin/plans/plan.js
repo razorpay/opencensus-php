@@ -325,7 +325,7 @@ class Rule extends CollectionItem {
     let value;
 
     if (name === 'amount_range') {
-      if (this['amount_range_min']) {
+      if (this['amount_range_min'] || this['amount_range_min'] === 0) {
         value = this['amount_range_min'] + '-' + this['amount_range_max'];
         if (!options.amount_range[value] && !this.id) {
           value = 'custom';
