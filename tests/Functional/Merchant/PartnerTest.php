@@ -647,6 +647,8 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchant()
     {
+        $this->mockAuthServiceGetMultipleApps();
+
         $this->allowAdminToAccessPartnerMerchant();
 
         $submerchant = $this->allowAdminToAccessSubMerchant();
@@ -762,6 +764,35 @@ class PartnerTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    public function testFetchPartnerSubmerchantPurePlatformNoApps()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'pure_platform']);
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerSubmerchantPurePlatformInvalidAppId()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'pure_platform']);
+
+        $this->createDummyPartnerApp([
+            'id'          => self::DUMMY_APP_ID_1,
+            'type'        => null,
+            'name'        => 'App 1',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+        ]);
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchPartnerSubmerchants()
     {
         $this->createPartnerAndAddMultipleSubmerchants();
@@ -830,6 +861,8 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchantProxyAuth()
     {
+        $this->mockAuthServiceGetMultipleApps();
+
         $this->allowAdminToAccessPartnerMerchant();
 
         $submerchant = $this->allowAdminToAccessSubMerchant();
@@ -1182,7 +1215,7 @@ class PartnerTest extends OAuthTestCase
                 [
                     'id'          => self::DUMMY_APP_ID_3,
                     'merchant_id' => self::DEFAULT_MERCHANT_ID,
-                    'name'        => 'App 1',
+                    'name'        => 'App 3',
                 ],
                 [
                     'id'          => self::DUMMY_APP_ID_2,

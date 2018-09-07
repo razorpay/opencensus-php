@@ -723,6 +723,52 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantPurePlatformNoApps' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => '10000RandomApp',
+            ],
+        ],
+        'response'   => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OAUTH_APP_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OAUTH_APP_NOT_FOUND,
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantPurePlatformInvalidAppId' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => 'NotExistentApp',
+            ],
+        ],
+        'response'   => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_APPLICATION_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_APPLICATION_ID,
+        ],
+    ],
+
     'testFetchPartnerSubmerchantProxyAuth' => [
         'request'  => [
             'url'     => '/submerchants/acc_10000000000009',
