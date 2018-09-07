@@ -1,13 +1,14 @@
 <?php
 
-namespace RZP\Reconciliator\HDFC;
+namespace RZP\Reconciliator\HDFC\SubReconciliator;
 
 use RZP\Constants\Entity;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
+use RZP\Reconciliator\HDFC\Reconciliate;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     /*******************
      * Row Header Names

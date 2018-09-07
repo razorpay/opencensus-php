@@ -65,6 +65,7 @@ class EnachRblGatewayTest extends TestCase
             'account_number' => '914010009305862',
             'ifsc'           => 'utib0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -80,6 +81,12 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals(0, $enach['amount']);
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertNotNull($enach['signed_xml']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('current', $token['account_type']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+        $this->assertNull($token['expired_at']);
     }
 
     public function testSuccessfulEsignGenerationWithVid()
@@ -532,6 +539,8 @@ class EnachRblGatewayTest extends TestCase
 
         $token = $this->getDbLastEntityToArray('token');
 
+        $this->assertNull($token['expired_at']);
+        $this->assertNull($token['account_type']);
         $this->assertNotNull($token['gateway_token']);
         $this->assertEquals('confirmed', $token['recurring_status']);
 
@@ -1040,6 +1049,33 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
         $this->assertNotNull($attempt['utr']);
+    }
+
+    public function testTokenMaxExpire()
+    {
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'UTIB0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['recurring_token']['expire_by'] = '9223372036854775807';
+
+        $this->doAuthPayment($payment);
+
+        $tokenEntity = $this->getLastEntity('token', true);
+
+        $this->assertEquals('9223372036854775807', $tokenEntity['expired_at']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
     }
 
     protected function makeDebitPayment()

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingObc;
+namespace RZP\Reconciliator\NetbankingObc\SubReconciliator;
 
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -8,7 +8,7 @@ use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
 use RZP\Gateway\Netbanking\Obc\ReconciliationFields;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     protected function getPaymentId(array $row)
     {
@@ -50,7 +50,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if (empty($row[ReconciliationFields::TRANSACTION_AMOUNT]) === false)
         {
-            return Base\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
+            return Base\SubReconciliator\Helper ::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
         }
     }
 

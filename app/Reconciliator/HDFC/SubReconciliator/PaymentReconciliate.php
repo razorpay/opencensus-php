@@ -1,7 +1,8 @@
 <?php
 
-namespace RZP\Reconciliator\HDFC;
+namespace RZP\Reconciliator\HDFC\SubReconciliator;
 
+use RZP\Reconciliator\HDFC\Reconciliate;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
@@ -10,7 +11,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\ReconciliationException;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names

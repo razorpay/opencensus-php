@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\UpiHdfc;
+namespace RZP\Reconciliator\UpiHdfc\SubReconciliator;
 
 use Carbon\Carbon;
 
@@ -10,7 +10,7 @@ use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const ORDER_ID              = 'order_id';
 
@@ -109,7 +109,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     private function getReconPaymentAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT] ?? null);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT] ?? null);
     }
 
     /**

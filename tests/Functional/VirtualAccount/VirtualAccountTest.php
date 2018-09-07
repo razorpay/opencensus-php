@@ -4,12 +4,12 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Closure;
 use Mockery;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\VirtualAccount\Status;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 /**
@@ -19,10 +19,9 @@ class VirtualAccountTest extends TestCase
 {
     protected $t1;
     protected $t2;
+    use PaymentTrait;
     use MocksDnsTrait;
-    use EntityActionTrait;
     use VirtualAccountTrait;
-    use RequestResponseFlowTrait;
 
     public function setUp()
     {
@@ -80,7 +79,7 @@ class VirtualAccountTest extends TestCase
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals($order->getAmountDue(), $virtualAccount['amount_expected']);
-        $this->assertEquals('active', $virtualAccount['status']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
         $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
         $this->assertEquals('order', $virtualAccount['entity_type']);
 
@@ -578,7 +577,7 @@ class VirtualAccountTest extends TestCase
 
         $response = $this->closeVirtualAccount($virtualAccount['id']);
 
-        $this->assertEquals('closed', $response['status']);
+        $this->assertEquals(Status::CLOSED, $response['status']);
     }
 
     public function testVirtualAccountPay()
@@ -591,12 +590,12 @@ class VirtualAccountTest extends TestCase
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(5000, $virtualAccount['amount_paid']);
-        $this->assertEquals('active', $virtualAccount['status']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
 
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 50]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(10000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
@@ -611,7 +610,7 @@ class VirtualAccountTest extends TestCase
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10000]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(1000000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
@@ -635,7 +634,7 @@ class VirtualAccountTest extends TestCase
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10000]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(1000000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
@@ -661,7 +660,7 @@ class VirtualAccountTest extends TestCase
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 20000]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(2000000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
@@ -685,7 +684,7 @@ class VirtualAccountTest extends TestCase
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 5000]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(500000, $virtualAccount['amount_paid']);
-        $this->assertEquals('active', $virtualAccount['status']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
@@ -712,7 +711,7 @@ class VirtualAccountTest extends TestCase
         $virtualAccount = $this->getLastEntity('virtual_account', true);
 
         $this->assertEquals(500000, $virtualAccount['amount_paid']);
-        $this->assertEquals('active', $virtualAccount['status']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
@@ -733,7 +732,7 @@ class VirtualAccountTest extends TestCase
         $virtualAccount = $this->getLastEntity('virtual_account', true);
 
         $this->assertEquals(2500000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals('paid', $order['status']);
@@ -750,7 +749,7 @@ class VirtualAccountTest extends TestCase
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10059]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(1000000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals('paid', $order['status']);
@@ -774,7 +773,7 @@ class VirtualAccountTest extends TestCase
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 10059]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(1000000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals('paid', $order['status']);
@@ -799,7 +798,7 @@ class VirtualAccountTest extends TestCase
         $this->payVirtualAccount($virtualAccount['id'], ['amount' => 20059]);
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(2000000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals('paid', $order['status']);
@@ -826,7 +825,7 @@ class VirtualAccountTest extends TestCase
         $virtualAccount = $this->getLastEntity('virtual_account', true);
 
         $this->assertEquals(500000, $virtualAccount['amount_paid']);
-        $this->assertEquals('active', $virtualAccount['status']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
@@ -847,7 +846,7 @@ class VirtualAccountTest extends TestCase
         $virtualAccount = $this->getLastEntity('virtual_account', true);
 
         $this->assertEquals(2500000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals('paid', $order['status']);
@@ -866,7 +865,7 @@ class VirtualAccountTest extends TestCase
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         // Will see about this later
         // $this->assertEquals(0, $virtualAccount['amount_paid']);
-        $this->assertEquals('active', $virtualAccount['status']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
@@ -889,7 +888,7 @@ class VirtualAccountTest extends TestCase
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(1005000, $virtualAccount['amount_paid']);
 
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($virtualAccount['id'], $bankTransfer['virtual_account_id']);
@@ -915,7 +914,7 @@ class VirtualAccountTest extends TestCase
         // Account is paid in excess
         $virtualAccount = $this->getLastEntity('virtual_account', true);
         $this->assertEquals(11000, $virtualAccount['amount_paid']);
-        $this->assertEquals('paid', $virtualAccount['status']);
+        $this->assertEquals(Status::PAID, $virtualAccount['status']);
 
         $this->refundVirtualAccountExcessPayments();
 
@@ -1036,6 +1035,21 @@ class VirtualAccountTest extends TestCase
         });
 
         $this->payVirtualAccount($virtualAccount['id']);
+    }
+
+    public function testVirtualAccountMarkedClosed()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->createVirtualAccountForOrder($order);
+
+        $payment = $this->fixtures->create('payment:authorized', ['order_id' => $order->getId()]);
+
+        $this->capturePayment('pay_'. $payment->getId(), $payment->getAmount());
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals(Status::CLOSED, $virtualAccount['status']);
     }
 
     protected function mockInfernoFire(Closure $closure)

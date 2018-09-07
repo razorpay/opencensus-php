@@ -313,12 +313,6 @@ class Entity extends Base\PublicEntity
     public function incrementAmountPaid(int $amount)
     {
         $this->increment(self::AMOUNT_PAID, $amount);
-
-        if (($this->hasAmountExpected() === true) and
-            ($this->getAmountPaid() >= $this->getAmountExpected()))
-        {
-            $this->setStatus(Status::PAID);
-        }
     }
 
     public function incrementAmountReceived(int $amount)
