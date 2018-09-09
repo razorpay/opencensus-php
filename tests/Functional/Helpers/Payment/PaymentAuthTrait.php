@@ -30,21 +30,23 @@ trait PaymentAuthTrait
                                 'acctID' => 'NTU2NzYzMDAwMDAwMjAwNA==',
                             ],
                             'Purchase' => [
-                                'amount' => '500.00',
                                 'xid'    => base64_encode(str_pad($input['payment_id'], 20, '0', STR_PAD_LEFT)),
+                                'date'    => \Carbon\Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')->format('Ymd H:m:s'),
+                                'amount' => '500.00',
                                 'purchAmount' => '50000',
                                 'currency' => '356',
-                                'date'    => \Carbon\Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')->format('Ymd H:m:s'),
                                 'exponent' => 2,
                             ]
                         ]
-                    ]
+                    ],
                 ];
 
                 $content['Message']['@attributes']['id'] = $payment['public_id'];
                 $content['Message']['PARes'] = (new \RZP\Gateway\Mpi\Blade\Mock\Response\Pareq('route'))->enrolledValidResponse($req);
+                $content['Message']['Signature'] = (new \RZP\Gateway\Mpi\Blade\Mock\Server('route'))->getSignature();
 
-                $xml = base64_encode(\Lib\Formatters\Xml::create('ThreeDSecure', $content));
+
+                $xml = base64_encode(gzcompress(\Lib\Formatters\Xml::create('ThreeDSecure', $content)));
 
                 return [
                     'success' => true,

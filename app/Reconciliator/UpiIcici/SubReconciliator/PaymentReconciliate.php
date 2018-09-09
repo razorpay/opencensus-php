@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Reconciliator\UpiIcici;
+namespace RZP\Reconciliator\UpiIcici\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Status;
 use RZP\Gateway\Upi\Icici\Status as UpiStatus;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     use Base\BharatQrTrait;
 
@@ -87,7 +87,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     private function getReconPaymentAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
     }
 
     private final function isPaymentStatusFailed(string $status)

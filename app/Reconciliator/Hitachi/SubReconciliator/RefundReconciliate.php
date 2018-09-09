@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Reconciliator\Hitachi;
+namespace RZP\Reconciliator\Hitachi\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Currency\Currency;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     /*******************
      * Row Header Names
@@ -115,7 +115,7 @@ class RefundReconciliate extends Base\RefundReconciliate
             return null;
         }
 
-        $refundAmount = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_REFUND_AMOUNT]);
+        $refundAmount = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_REFUND_AMOUNT]);
 
         return abs($refundAmount);
     }

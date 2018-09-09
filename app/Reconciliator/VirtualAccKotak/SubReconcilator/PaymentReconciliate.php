@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\VirtualAccKotak;
+namespace RZP\Reconciliator\VirtualAccKotak\SubReconciliator;
 
 use Cache;
 use Config;
@@ -12,7 +12,7 @@ use RZP\Models\BankTransfer;
 use RZP\Constants\Timezone;
 use RZP\Models\VirtualAccount\Provider;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const COLUMN_UTR           = 'txn_ref_no';
     const COLUMN_AMOUNT        = 'amount';

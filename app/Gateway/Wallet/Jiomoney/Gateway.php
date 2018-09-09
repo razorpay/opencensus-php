@@ -106,7 +106,9 @@ class Gateway extends Base\Gateway
 
         $input['gateway'] = $this->parseResponseBody($input['gateway']);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+        $content = $input['gateway'];
+
+        $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_PAYMENT_CALLBACK);
 
         $this->verifySecureHash($input['gateway']);
 
@@ -138,13 +140,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRefundRequest($input);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
+        $this->traceGatewayPaymentRequest($request, $input,TraceCode::GATEWAY_REFUND_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->parseGatewayResponse($response);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
+        $this->traceGatewayPaymentResponse($content, $input,TraceCode::GATEWAY_REFUND_RESPONSE);
 
         $this->verifySecureHash($content);
 
@@ -242,8 +244,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
         [
-            'response'  => $response,
-            'refund_id' => $input['refund']['id'],
+            'response'   => $response,
+            'refund_id'  => $input['refund']['id'],
+            'payment_id' => $input['payment']['id'],
+            'gateway'    => $this->gateway,
         ]);
 
         $content = $this->jsonToArray($response->body);
@@ -543,9 +547,11 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'content'  => $content,
-                'api_type' => ApiName::STATUSQUERY,
-                'payment_id' => $input['payment']['id'],
+                'content'     => $content,
+                'api_type'    => ApiName::STATUSQUERY,
+                'payment_id'  => $input['payment']['id'],
+                'gateway'     => $this->gateway,
+                'terminal_id' => $input['terminal']['id'],
             ]);
 
         if ($this->validStatusQueryResponse($content) === true)
@@ -569,9 +575,11 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'content'  => $content,
-                'api_type' => ApiName::CHECKPAYMENTSTATUS,
-                'payment_id' => $input['payment']['id'],
+                'content'     => $content,
+                'api_type'    => ApiName::CHECKPAYMENTSTATUS,
+                'payment_id'  => $input['payment']['id'],
+                'gateway'     => $this->gateway,
+                'terminal_id' => $input['terminal']['id'],
             ]);
 
         $data = $content[ResponseFields::RESPONSE];
@@ -637,8 +645,10 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MATCH;
 
             $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,[
-                'msg'        => 'Jiomoney payment verification after 2 days',
-                'payment_id' => $input['payment']['id']
+                'msg'         => 'Jiomoney payment verification after 2 days',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+                'gateway'     => $this->gateway,
             ]);
         }
 
@@ -789,8 +799,11 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'request'  => $request,
-                'api_type' => ApiName::CHECKPAYMENTSTATUS
+                'request'     => $request,
+                'api_type'    => ApiName::CHECKPAYMENTSTATUS,
+                'gateway'     => $this->gateway,
+                'terminal_id' => $input['terminal']['id'],
+                'payment_id'  => $input['payment']['id'],
             ]);
 
         return $request;
@@ -832,8 +845,11 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'request'  => $request,
-                'api_type' => ApiName::STATUSQUERY
+                'request'     => $request,
+                'api_type'    => ApiName::STATUSQUERY,
+                'gateway'     => $this->gateway,
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
             ]);
 
         $this->action = Action::VERIFY;
@@ -850,9 +866,11 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
             [
-                'request'  => $request,
-                'api_type' => ApiName::GETREQUESTSTATUS,
-                'refund_id' => $input['refund']['id'],
+                'request'    => $request,
+                'api_type'   => ApiName::GETREQUESTSTATUS,
+                'refund_id'  => $input['refund']['id'],
+                'payment_id' => $input['payment']['id'],
+                'gateway'    => $this->gateway,
             ]);
 
         return $request;
@@ -1100,5 +1118,33 @@ class Gateway extends Base\Gateway
         $now = Carbon::now()->getTimestamp();
 
         return ($now - $input['payment']['created_at']);
+    }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
+    {
+        $this->trace->info($traceCode,
+            [
+                'request'     => $request,
+                'gateway'     => $this->gateway,
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
+    }
+
+    protected function traceGatewayPaymentResponse(
+        $response,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_RESPONSE)
+    {
+        $this->trace->info($traceCode,
+            [
+                'response'    => $response,
+                'gateway'     => $this->gateway,
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
     }
 }

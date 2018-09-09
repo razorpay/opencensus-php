@@ -31,9 +31,10 @@ class Reporting implements ExternalService
     /**
      * Path for various endpoints
      */
-    const CONFIG_PATH   = '/v1/configs';
-    const LOG_PATH      = '/v1/logs';
-    const SCHEDULE_PATH = '/v1/schedules';
+    const CONFIG_PATH           = '/v1/configs';
+    const LOG_PATH              = '/v1/logs';
+    const ADMIN_LOG_PATH        = '/v1/admin-logs';
+    const SCHEDULE_PATH         = '/v1/schedules';
 
     const SCHEDULE_PREFIX = 'sched_';
 
@@ -48,6 +49,7 @@ class Reporting implements ExternalService
     const CONSUMER_HEADER       = 'X-Consumer';
     const REPORT_TYPE_HEADER    = 'X-Report-Type';
     const ADMIN_TOKEN_HEADER    = 'X-Admin-Token';
+    const LINKED_ACCOUNT_HEADER = 'X-Linked-Account-Parent';
 
     /**
      * @var array
@@ -92,6 +94,8 @@ class Reporting implements ExternalService
         // Proxy Auth
         $merchantId = $this->ba->getMerchantId();
 
+        $linkedAccountParentId = $this->getLinkedAccountParentId();
+
         // Auth w/ Admin Token
         $adminToken = $this->ba->getAdminToken();
 
@@ -113,6 +117,11 @@ class Reporting implements ExternalService
                 // Proxy Auth used here
                 $headers[self::REPORT_TYPE_HEADER] = self::MERCHANT;
                 $headers[self::CONSUMER_HEADER] = $merchantId;
+            }
+
+            if (empty($linkedAccountParentId) === false)
+            {
+                $headers[self::LINKED_ACCOUNT_HEADER] = $linkedAccountParentId;
             }
         }
         else if (empty($reportType) === false)
@@ -231,6 +240,12 @@ class Reporting implements ExternalService
     public function fetchLogById(string $id): array
     {
         $path = self::LOG_PATH . '/' . $id;
+
+        if (($this->ba->isAppAuth() === true) and
+            ($this->ba->isAdminAuth() === true))
+        {
+            $path = self::ADMIN_LOG_PATH . '/' . $id;
+        }
 
         return $this->createAndSendRequest(Requests::GET, $path);
     }
@@ -432,8 +447,10 @@ class Reporting implements ExternalService
         array $input = [],
         array $headers = []): array
     {
-        // In case reporting is to be mocked, don't make any external call
-        // and just return empty array.
+        //
+        // In case reporting is to be mocked, don't make
+        // any external call and just return empty array.
+        //
         if ($this->config['mock'] === true)
         {
             return [];
@@ -494,7 +511,7 @@ class Reporting implements ExternalService
                 $this->getTraceableRequest($request));
 
             throw new Exception\IntegrationException('
-                Could not recieve proper response from reporting service');
+                Could not receive proper response from reporting service');
         }
     }
 
@@ -623,5 +640,26 @@ class Reporting implements ExternalService
     protected function getTraceableRequest(array $request): array
     {
         return array_only($request, ['url', 'method', 'content', 'headers']);
+    }
+
+    /**
+     * Fetches linked account parent id from exisiting ba account context.
+     */
+    protected function getLinkedAccountParentId()
+    {
+        $merchant = $this->ba->getMerchant();
+
+        $parentId = null;
+
+        if ((empty($merchant) === false) and ($merchant->isMarketplace() === true))
+        {
+            $parentId = $merchant->getId();
+        }
+        else if ((empty($merchant) === false) and ($merchant->isLinkedAccount() === true))
+        {
+            $parentId = $merchant->parent->getId();
+        }
+
+        return $parentId;
     }
 }

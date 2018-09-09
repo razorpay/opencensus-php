@@ -9,4 +9,5 @@ class Constants
     const PRODUCT_ID               = 'RAZORPAY';
     const NETBANKING_FUND_TRANSFER = 'NBFundTransfer';
     const SERVICE_CHARGE           = '0';
+    const NODATA                   = 'NODATA';
 }

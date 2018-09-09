@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Axis;
+namespace RZP\Reconciliator\Axis\SubReconciliator;
 
 use Carbon\Carbon;
 
@@ -13,7 +13,7 @@ use RZP\Gateway\Cybersource;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names

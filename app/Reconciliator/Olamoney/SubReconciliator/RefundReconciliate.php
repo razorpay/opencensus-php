@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Olamoney;
+namespace RZP\Reconciliator\Olamoney\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
@@ -8,7 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     /*******************
      * Row Header Names

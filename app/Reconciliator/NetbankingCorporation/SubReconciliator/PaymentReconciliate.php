@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingCorporation;
+namespace RZP\Reconciliator\NetbankingCorporation\SubReconciliator;
 
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -9,7 +9,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Status;
 use RZP\Gateway\Netbanking\Corporation\ReconcilationFields;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     public function __construct(string $gateway = null)
     {
@@ -55,7 +55,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReconPaymentAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[ReconcilationFields::TXN_ORG_AMOUNT]);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconcilationFields::TXN_ORG_AMOUNT]);
     }
 
     protected function getGatewayPaymentDate($row)
