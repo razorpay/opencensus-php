@@ -1795,18 +1795,7 @@ class InvoiceTest extends TestCase
 
         $this->fixtures->create('line_item', ['entity_id' => $invoice->getId()]);
 
-        $response = $this->startTest();
-
-        $this->assertEquals(1, count($response['items']));
-
-        //
-        // Asserts that the response contains 'taxable_amount' in line_items object
-        //
-
-        foreach ($response['items'][0]['line_items'] as $entity)
-        {
-            $this->assertArrayHasKey('taxable_amount', $entity);
-        }
+        $this->startTest();
     }
 
     public function testGetInvoicesAfterCreatingMultipleInvoicesAndPaying()

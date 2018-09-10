@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Models\LineItem;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Item;
@@ -1222,9 +1223,10 @@ class Entity extends Base\PublicEntity
         return $label ?: $this->merchant->getLabelForInvoice();
     }
 
-    public function  getTaxableAmountAttribute()
+    public function getTaxableAmountAttribute(): int
     {
-        $taxableAmount = $this->lineItems()->get()->pluck( \RZP\Models\LineItem\Entity::TAXABLE_AMOUNT )->sum();
+        $taxableAmount = $this->lineItems()->get()->pluck(LineItem\Entity::TAXABLE_AMOUNT)->sum();
+
         return $taxableAmount;
     }
 

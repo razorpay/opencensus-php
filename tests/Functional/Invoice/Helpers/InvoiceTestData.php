@@ -3398,6 +3398,7 @@ return [
                         'line_items' => [
                             [
                                 'id' => 'li_100000lineitem',
+                                'taxable_amount' => 100000,
                             ]
                         ]
                     ]

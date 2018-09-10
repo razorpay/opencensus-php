@@ -296,16 +296,14 @@ class Entity extends Base\PublicEntity
         $array[self::REF_ID] = $entity::getSignedId($array[self::REF_ID]);
     }
 
-    public function getTaxableAmountAttribute()
+    public function getTaxableAmountAttribute(): int
     {
         if ( $this->isTaxInclusive() === false )
         {
             return $this->getGrossAmount();
         }
-        else
-        {
-            return $this->getGrossAmount() - $this->getTaxAmount();
-        }
+
+        return $this->getGrossAmount() - $this->getTaxAmount();
     }
 
 
