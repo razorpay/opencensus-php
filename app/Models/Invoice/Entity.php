@@ -91,6 +91,7 @@ class Entity extends Base\PublicEntity
 
     const GROSS_AMOUNT             = 'gross_amount';
     const TAX_AMOUNT               = 'tax_amount';
+    const TAXABLE_AMOUNT           = 'taxable_amount';
     const AMOUNT                   = 'amount';
 
     /**
@@ -344,6 +345,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
+        self::TAXABLE_AMOUNT,
         self::USER_ID,
         self::INTERNAL_REF,
         self::CREATED_AT,
@@ -376,6 +378,7 @@ class Entity extends Base\PublicEntity
         self::PARTIAL_PAYMENT,
         self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
+        self::TAXABLE_AMOUNT,
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
@@ -421,6 +424,7 @@ class Entity extends Base\PublicEntity
         self::PARTIAL_PAYMENT,
         self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
+        self::TAXABLE_AMOUNT,
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
@@ -443,6 +447,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
         self::INVOICE_NUMBER,
+        self::TAXABLE_AMOUNT,
     ];
 
     protected $publicSetters = [
@@ -460,6 +465,7 @@ class Entity extends Base\PublicEntity
         self::PARTIAL_PAYMENT       => 'bool',
         self::GROSS_AMOUNT          => 'int',
         self::TAX_AMOUNT            => 'int',
+        self::TAXABLE_AMOUNT        => 'int',
         self::AMOUNT                => 'int',
         self::AMOUNT_PAID           => 'int',
         self::AMOUNT_DUE            => 'int',
@@ -490,6 +496,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
+        self::TAXABLE_AMOUNT,
         self::COMMENT,
         self::VIEW_LESS,
         self::BILLING_START,
@@ -1213,6 +1220,12 @@ class Entity extends Base\PublicEntity
     public function getMerchantLabelAttribute($label)
     {
         return $label ?: $this->merchant->getLabelForInvoice();
+    }
+
+    public function  getTaxableAmountAttribute()
+    {
+        $taxableAmount = $this->lineItems()->get()->pluck( \RZP\Models\LineItem\Entity::TAXABLE_AMOUNT )->sum();
+        return $taxableAmount;
     }
 
     // -------------------------------------- End Accessors ----------

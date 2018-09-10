@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const UNIT_AMOUNT      = 'unit_amount';
     const GROSS_AMOUNT     = 'gross_amount';
     const TAX_AMOUNT       = 'tax_amount';
+    const TAXABLE_AMOUNT   = 'taxable_amount';
     const NET_AMOUNT       = 'net_amount';
     const CURRENCY         = 'currency';
     const TYPE             = 'type';
@@ -87,6 +88,7 @@ class Entity extends Base\PublicEntity
         self::UNIT_AMOUNT,
         self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
+        self::TAXABLE_AMOUNT,
         self::NET_AMOUNT,
         self::CURRENCY,
         self::TYPE,
@@ -112,6 +114,7 @@ class Entity extends Base\PublicEntity
         self::UNIT_AMOUNT,
         self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
+        self::TAXABLE_AMOUNT,
         self::NET_AMOUNT,
         self::CURRENCY,
         self::TYPE,
@@ -143,6 +146,7 @@ class Entity extends Base\PublicEntity
         self::UNIT_AMOUNT   => 'int',
         self::GROSS_AMOUNT  => 'int',
         self::TAX_AMOUNT    => 'int',
+        self::TAXABLE_AMOUNT=> 'int',
         self::NET_AMOUNT    => 'int',
         self::TAX_INCLUSIVE => 'bool',
         self::QUANTITY      => 'int',
@@ -158,6 +162,7 @@ class Entity extends Base\PublicEntity
 
     protected $appends = [
         self::UNIT_AMOUNT,
+        self::TAXABLE_AMOUNT,
     ];
 
     //
@@ -290,6 +295,19 @@ class Entity extends Base\PublicEntity
 
         $array[self::REF_ID] = $entity::getSignedId($array[self::REF_ID]);
     }
+
+    public function getTaxableAmountAttribute()
+    {
+        if ( $this->isTaxInclusive() === false )
+        {
+            return $this->getGrossAmount();
+        }
+        else
+        {
+            return $this->getGrossAmount() - $this->getTaxAmount();
+        }
+    }
+
 
     // -------------------------- Public Setters Ends ----------------
 
