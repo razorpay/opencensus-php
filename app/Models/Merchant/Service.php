@@ -2024,7 +2024,7 @@ class Service extends Base\Service
             $ownerId
         )
         {
-            $enableDashboardAccess = $input['enable_dashboard_access'] ?? false;
+            $enableDashboardAccess = $input['dashboard_access'] ?? false;
 
             $merchantCore = new Merchant\Core;
 
