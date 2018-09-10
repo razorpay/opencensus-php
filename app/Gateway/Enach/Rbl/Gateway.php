@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Enach\Rbl;
 
 use RZP\Error;
+use DOMDocument;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -10,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
 use RZP\Models\Bank\IFSC;
+use RobRichards\XMLSecLibs;
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Enach\Base;
@@ -18,10 +20,17 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Gateway\Enach\Base\CategoryCode;
+use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'enach_rbl';
+
+    const ENVELOPED = 'http://www.w3.org/2000/09/xmldsig#enveloped-signature';
+
+    const TRANSFORMS = [
+        self::ENVELOPED
+    ];
 
     public function authorize(array $input)
     {
@@ -212,10 +221,12 @@ class Gateway extends Base\Gateway
 
         $mcc = $input['terminal']['category'];
 
+        $currentDate = Carbon::now()->setTimezone(Timezone::IST)->format('Y-m-d\TH:i:s');
+
         $data = [
             NpciXmlHeaderTags::GROUP_HEADER      => [
                 RequestNpciTags::MESSAGE_ID            => $this->getMsgId(),
-                RequestNpciTags::CREATION_DATE_TIME    => Carbon::now()->toIso8601String(),
+                RequestNpciTags::CREATION_DATE_TIME    => $currentDate,
             ],
 
             NpciXmlHeaderTags::INFO              => [
@@ -244,8 +255,8 @@ class Gateway extends Base\Gateway
 
             NpciXmlHeaderTags::CREDITOR            => [
                 RequestNpciTags::CREDITOR_NAME         => 'Razorpay software pvt ltd',
-                RequestNpciTags::CREDITOR_ACCOUNT      => '', //TODO find this value
-                RequestNpciTags::IFSC_SPONSOR          => IFSC::RATN, // TODO check this
+                RequestNpciTags::CREDITOR_ACCOUNT      => '123456789012345', //TODO find this value
+                RequestNpciTags::IFSC_SPONSOR          => 'RATN0000057', // TODO insert proper value
             ]
         ];
 
@@ -254,27 +265,28 @@ class Gateway extends Base\Gateway
 
     protected function getXml($data)
     {
-        $xml = new \SimpleXMLElement('<xml version="1.0" encoding="UTF-8"/>');
-
-        $document = $xml->addChild('Document');
-
-        $document->addAttribute('xmlns', 'http://npci.org/onmags/schema');
+        $document = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>'
+                                                .'<Document xmlns="http://npci.org/onmags/schema"/>');
 
         $mandateroot = $document->addChild(NpciXmlHeaderTags::MANDATE_ROOT_HEADER);
 
         $grp = $mandateroot->addChild(NpciXmlHeaderTags::GROUP_HEADER);
 
-        $content = array_flip($data[NpciXmlHeaderTags::GROUP_HEADER]);
+        /*$content = array_flip($data[NpciXmlHeaderTags::GROUP_HEADER]);
 
-        array_walk_recursive($content, array ($grp, 'addChild'));
+        array_walk_recursive($content, array ($grp, 'addChild'));*/
+
+        $this->addChildren($data[NpciXmlHeaderTags::GROUP_HEADER], $grp);
 
         $req = $grp->addChild(NpciXmlHeaderTags::REQUEST_INITIATING_PARTY);
 
         $info = $req->addChild(NpciXmlHeaderTags::INFO);
 
-        $content = array_flip($data[NpciXmlHeaderTags::INFO]);
+        /*$content = array_flip($data[NpciXmlHeaderTags::INFO]);
 
-        array_walk_recursive($content, array ($info, 'addChild'));
+        array_walk_recursive($content, array ($info, 'addChild'));*/
+
+        $this->addChildren($data[NpciXmlHeaderTags::INFO], $info);
 
         $mandate = $mandateroot->addChild(NpciXmlHeaderTags::MANDATE);
 
@@ -282,44 +294,85 @@ class Gateway extends Base\Gateway
 
         $occurence = $mandate->addChild(NpciXmlHeaderTags::OCCURENCE);
 
-        $content = array_flip($data[NpciXmlHeaderTags::OCCURENCE]);
+        /*$content = array_flip($data[NpciXmlHeaderTags::OCCURENCE]);
 
-        array_walk_recursive($content, array ($occurence, 'addChild'));
+        array_walk_recursive($content, array ($occurence, 'addChild'));*/
 
-        $mandate->addChild(RequestNpciTags::MAX_AMOUNT, $data[RequestNpciTags::MAX_AMOUNT]);
+        $this->addChildren($data[NpciXmlHeaderTags::OCCURENCE], $occurence);
+
+        $maxAmount = $mandate->addChild(RequestNpciTags::MAX_AMOUNT, $data[RequestNpciTags::MAX_AMOUNT]);
+
+        $maxAmount->addAttribute('Ccy', 'INR');
 
         $debtor = $mandate->addChild(NpciXmlHeaderTags::DEBTOR);
 
-        $content = array_flip($data[NpciXmlHeaderTags::DEBTOR]);
+        /*$content = array_flip($data[NpciXmlHeaderTags::DEBTOR]);
 
-        array_walk_recursive($content, array ($debtor, 'addChild'));
+        array_walk_recursive($content, array ($debtor, 'addChild'));*/
+
+        $this->addChildren($data[NpciXmlHeaderTags::DEBTOR], $debtor);
 
         $creditor = $mandate->addChild(NpciXmlHeaderTags::CREDITOR);
 
-        $content = array_flip($data[NpciXmlHeaderTags::CREDITOR]);
+        /*$content = array_flip($data[NpciXmlHeaderTags::CREDITOR]);
 
-        array_walk_recursive($content, array ($creditor, 'addChild'));
+        array_walk_recursive($content, array ($creditor, 'addChild'));*/
 
-        return $xml->asXML();
+        $this->addChildren($data[NpciXmlHeaderTags::CREDITOR], $creditor);
+
+        $xmlString = $document->asXml();
+
+        $signedxml = $this->addSignature($xmlString);
+
+        return $signedxml;
     }
 
     protected function getEncryptedData($secureData)
     {
         $encryptedData = [];
 
-        //$rsa = $this->getRsaInstance('request');
-        $publicKey = file_get_contents(__DIR__ . '/keys/NpciMms.cer');
+        $rsa = $this->getRsaInstance('request');
+        //$publicKey = file_get_contents(__DIR__ . '/keys/NpciMms.cer');
 
         foreach ($secureData as $key => $value)
         {
-            //$encryptedData[$key] = $rsa->encrypt($value);
-            openssl_public_encrypt($value, $encrypted, $publicKey, OPENSSL_PKCS1_OAEP_PADDING);
-
+            $encrypted = $rsa->encrypt($value);
+            //openssl_public_encrypt($value, $encrypted, $publicKey, OPENSSL_PKCS1_OAEP_PADDING);
             $encoded = base64_encode($encrypted);
 
             $encryptedData[$key] = $encoded;
         }
         return $encryptedData;
+    }
+
+    protected function addSignature($xml)
+    {
+        $xmlDoc = $this->makeDomDocument($xml);
+
+        $sign = new XMLSecLibs\XMLSecurityDSig(null);
+
+        $sign->setCanonicalMethod(XMLSecLibs\XMLSecurityDSig::C14N);
+
+        $sign->canonicalizeSignedInfo();
+
+        $sign->addReference(
+            $xmlDoc,
+            XMLSecLibs\XMLSecurityDSig::SHA256,
+            self::TRANSFORMS,
+            ['force_uri' => true]
+        );
+
+        $sign->add509Cert($this->getRzpCert(),true, false, ['subjectName' => true ]);
+
+        $sign->sign($this->getSigningKey());
+
+        $sign->appendSignature($xmlDoc->documentElement);
+
+        $xmlDoc->save('request.xml');
+
+        $signedxml = $xmlDoc->saveXML();
+
+        return $signedxml;
     }
 
     protected function getRsaInstance($mode)
@@ -333,8 +386,8 @@ class Gateway extends Base\Gateway
                 break;
 
             case 'request':
-
-                $rsa->loadKey($this->getPublicKey());
+                $key = $this->getNpciPublicKey();
+                $rsa->loadKey($key);
                 break;
         }
 
@@ -345,9 +398,20 @@ class Gateway extends Base\Gateway
         return $rsa;
     }
 
-    protected function getPublicKey()
+    protected function getNpciPublicKey()
     {
-        return (file_get_contents(__DIR__ . '/keys/NpciMms.cer'));
+        $cert = (file_get_contents(__DIR__ . '/keys/NpciMms.cer'));
+
+        $publicKeyResource = openssl_pkey_get_public($cert);
+
+        $pubkeyInfo = openssl_pkey_get_details($publicKeyResource);
+
+        return $pubkeyInfo['key'];
+    }
+
+    protected function getRzpCert()
+    {
+        return (file_get_contents(__DIR__ . '/keys/cert.pem'));
     }
 
     public function generateHash($content)
@@ -408,5 +472,34 @@ class Gateway extends Base\Gateway
             $this->action,
             $input,
             $this->mode);
+    }
+
+    private function addChildren($data, $xml)
+    {
+        foreach ($data as $key => $value) {
+            $xml->addChild($key,$data[$key]);
+        }
+    }
+
+    protected function getSigningKey()
+    {
+        $key =  (file_get_contents(__DIR__ . '/keys/key.pem'));
+
+        $key = trim(str_replace('\n', "\n", $key));
+
+        $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA256, array('type' => 'private'));
+
+        $objKey->loadKey($key);
+
+        return $objKey;
+    }
+
+    protected function makeDomDocument(string $xml)
+    {
+        $xmlDoc = new DOMDocument('1.0', 'UTF-8');
+
+        $xmlDoc->loadXML($xml);
+
+        return $xmlDoc;
     }
 }
