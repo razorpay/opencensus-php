@@ -403,7 +403,7 @@ class Gateway extends Base\Gateway
         $this->assertAmount($expectedAmount, $actualAmount);
 
         $this->checkResponseStatus($content[Fields::GATEWAY_RESPONSE_CODE], Status::CALLBACK_SUCCESS);
-o
+
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
         return [
