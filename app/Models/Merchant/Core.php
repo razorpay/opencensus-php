@@ -1116,14 +1116,10 @@ class Core extends Base\Core
         return $tags;
     }
 
-    /**
-     * @param Entity      $partner
-     * @param string      $submerchantId
-     * @param string|null $inputAppId
-     *
-     * @return Entity
-     */
-    public function getSubmerchant(Entity $partner, string $submerchantId, string $inputAppId = null): Entity
+    public function getSubmerchant(Entity $partner,
+                                   string $submerchantId,
+                                   bool $fetchAppDetails = true,
+                                   string $inputAppId = null): Entity
     {
         //
         // If the partner is -
@@ -1137,7 +1133,6 @@ class Core extends Base\Core
         // deletes the oauth applications.
         // If the partner tries to access the submerchant detail api without creating an app, throw an error.
         //
-
         if (count($partnerAppIds) === 0)
         {
             throw new BadRequestException(
@@ -1183,7 +1178,7 @@ class Core extends Base\Core
 
         $partnerUser = $partner->primaryOwner();
 
-        $merchant = $this->getPartnerSubmerchantData($partner, $merchant, $partnerUser, true);
+        $merchant = $this->getPartnerSubmerchantData($partner, $merchant, $partnerUser, $fetchAppDetails);
 
         return $merchant;
     }

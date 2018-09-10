@@ -2043,7 +2043,7 @@ class Service extends Base\Service
             // This gets submerchant for a partner, with extra details required by partner dashboard.
             // This does not get called for pure platform partners.
             //
-            $subMerchant = $this->core()->getSubmerchant($merchant, $subMerchant->getId());
+            $subMerchant = $this->core()->getSubmerchant($merchant, $subMerchant->getId(), false, null);
 
             $subMerchant = $subMerchant->toArrayPartner();
         }
@@ -2185,7 +2185,7 @@ class Service extends Base\Service
 
         $partner = $this->fetchPartner();
 
-        $submerchant = $this->core()->getSubmerchant($partner, $submerchantId, $appId);
+        $submerchant = $this->core()->getSubmerchant($partner, $submerchantId, true, $appId);
 
         return $submerchant->toArrayPartner();
     }
