@@ -35,6 +35,13 @@ class UserRolesScope
             'payment_fetch_multiple' => Role::allExceptPaymentLinkRoles(),
             'payment_refund'         => Role::WRITER_ROLES,
 
+            // refund routes
+            'refund_create'              => Role::WRITER_ROLES,
+            'refund_fetch_by_id'         => Role::allExceptPaymentLinkRoles(),
+            'refund_fetch_multiple'      => Role::allExceptPaymentLinkRoles(),
+            'payment_fetch_refunds'      => Role::allExceptPaymentLinkRoles(),
+            'payment_fetch_refund_by_id' => Role::allExceptPaymentLinkRoles(),
+
             // order routes
             'order_fetch'       => Role::allExceptPaymentLinkRoles(),
             'order_fetch_by_id' => Role::allExceptPaymentLinkRoles(),
@@ -46,6 +53,10 @@ class UserRolesScope
             'invitation_edit'   => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
             'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
             'invitation_fetch'  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+
+            // profile routes
+            'merchant_gst_fetch' => [Role::OWNER, Role::FINANCE],
+            'merchant_gst_edit'  => [Role::OWNER, Role::FINANCE],
 
             // merchant routes
             'balance_fetch'                       => array_merge(
@@ -91,6 +102,7 @@ class UserRolesScope
             'invoice_update'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
             'invoice_issue'                     => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
             'invoice_send_notification_private' => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
+            'invoice_cancel'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
             'invoice_fetch'                     => Role::ALL_ROLES,
             'invoice_fetch_multiple'            => Role::ALL_ROLES,
             'invoice_issue_by_batch'            => Role::WRITER_ROLES,

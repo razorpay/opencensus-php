@@ -103,8 +103,7 @@
                                     <br style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important;">
                                     We request you to contact the merchant for any service related queries.
                                     <br style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important;">
-                                    If you want to dispute a payment, please visit our <a title="Razorpay" href="https://razorpay.com" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: #2ba6cb; text-decoration: none;">website</a>
-                                    and follow the instructions on the chat window.
+                                    If you want to dispute a payment, please contact us <a href="https://razorpay.com/contact/">here</a>
                                 @endif
                               </center>
                             </td>
@@ -113,6 +112,6 @@
                     </tr></table></center>
               </td>
             </tr></table>
-          @include('emails.partials.footer', ['message'=>$message])
+          @include('emails.partials.footer', ['message'=>$message, 'type'=>'customer'])
         </td>
       </tr></table></body></html>

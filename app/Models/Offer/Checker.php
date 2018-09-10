@@ -62,7 +62,7 @@ class Checker extends Base\Core
     public function checkValidityOnOrder(Order\Entity $order): bool
     {
         $validOrderAmount = (($this->offer->getMinAmount() === null) or
-                             ($order->getAmount() > $this->offer->getMinAmount()));
+                             ($order->getAmount() >= $this->offer->getMinAmount()));
 
         return (($validOrderAmount === true) and
                 ($this->checkApplicabilityOnOrder($order) === true));

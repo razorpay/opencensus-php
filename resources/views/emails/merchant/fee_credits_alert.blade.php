@@ -61,7 +61,7 @@
                       </p>
 
 <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-  Update your Fee Credits Alerts limit <a href="https://{{ $org_hostname . '/#/app/credits' }}" target="_blank" style="color: #24bbea; text-decoration: none !important;">here</a> or reach out to <a href="mailto:support@razorpay.com" style="color: #24bbea; text-decoration: none !important;">support@razorpay.com</a> for further information on setting up alert limit for Fee Credits.
+  Update your Fee Credits Alerts limit <a href="https://{{ $org_hostname . '/#/app/credits' }}" target="_blank" style="color: #24bbea; text-decoration: none !important;">here</a> or reach out to us <a href="https://dashboard.razorpay.com/#/app/dashboard#request" style="color: #24bbea; text-decoration: none !important;">here</a> for further information on setting up alert limit for Fee Credits.
 </p>
 
 
@@ -140,9 +140,7 @@
             <tr style="padding: 0; vertical-align: top; text-align: left;">
               <td class="center" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: center; color: #aaa; font-size: 12px; line-height: 18px; padding: 0px 0px 10px;">
                 <center style="width: 100%; min-width: 330px;">
-                  Reach out to us by replying
-                  to this email or at <a href="mailto:support@razorpay.com" style="display: inline-block; color: #aaa !important; text-decoration: none;">
-                  support@razorpay.com</a>
+                  @include('emails.partials.support')
                 </center>
               </td>
               <td class="expander" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; visibility: hidden; width: 0px; padding: 0 !important; color: #aaa; font-size: 12px; line-height: 18px;"></td>

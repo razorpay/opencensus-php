@@ -1822,7 +1822,7 @@ trait Authorize
                 return;
             }
 
-            $payment->setMetadataKey(Payment\Entity::PREFERRED_AUTH, [Payment\AuthType::OTP]);
+            $payment->setMetadataKey(Payment\Entity::PREFERRED_AUTH, [Payment\AuthType::OTP, Payment\AuthType::_3DS]);
         }
     }
 
@@ -2405,6 +2405,7 @@ trait Authorize
                 'card_id'           => $savedCardId,
                 'auth_type'         => $payment->getAuthType(),
                 'account_number'    => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null,
+                'account_type'      => $input[Payment\Entity::BANK_ACCOUNT][Token\Entity::ACCOUNT_TYPE] ?? null,
                 'beneficiary_name'  => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? null,
                 'ifsc'              => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null,
                 'max_amount'        => $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? null,
@@ -2432,6 +2433,9 @@ trait Authorize
 
             $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] =
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null;
+
+            $saveMethodInput[Token\Entity::ACCOUNT_TYPE] =
+                $input[Payment\Entity::BANK_ACCOUNT][Token\Entity::ACCOUNT_TYPE] ?? null;
 
             $saveMethodInput[Token\Entity::BENEFICIARY_NAME] =
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? null;

@@ -32,5 +32,6 @@ class Validator extends Base\Validator
         'notes'                 => 'sometimes|array',
         'caller_account_number' => 'sometimes|max:50',
         'merchant_reference_id' => 'required|string|size:14',
+        'category_code'         => 'sometimes|string|size:4',
     ];
 }

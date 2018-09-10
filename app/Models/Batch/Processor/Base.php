@@ -621,7 +621,7 @@ class Base extends BaseModel\Core
                     {
                         foreach ($value as $k => $v)
                         {
-                            $dict["Notes[{$k}]"] = $v;
+                            $dict["notes[{$k}]"] = $v;
                         }
                     }
                     // Else just put the key value in dictionary

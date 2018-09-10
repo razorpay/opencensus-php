@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingAxis;
+namespace RZP\Reconciliator\NetbankingAxis\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Axis;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     protected $netbankingRepo;
 

@@ -42,6 +42,7 @@ class Constants
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
     const OLD_CREDITS_FLOW                = 'old_credits_flow';
     const CHARGE_AT_WILL                  = 'charge_at_will';
+    const SETTLEMENT_24X7                 = 'settlement_24x7';
     const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
     const FSS_RISK_UDF                    = 'fss_risk_udf';
     const RULE_FILTER                     = 'rule_filter';
@@ -153,6 +154,7 @@ class Constants
         self::HIDE_DOWNTIMES                  => true,
         self::OLD_CREDITS_FLOW                => true,
         self::CHARGE_AT_WILL                  => true,
+        self::SETTLEMENT_24X7                 => true,
         self::EMI_MERCHANT_SUBVENTION         => true,
         self::FSS_RISK_UDF                    => true,
         self::RULE_FILTER                     => true,

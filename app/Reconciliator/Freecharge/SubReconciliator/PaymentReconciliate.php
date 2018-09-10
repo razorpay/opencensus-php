@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Freecharge;
+namespace RZP\Reconciliator\Freecharge\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
@@ -8,7 +8,7 @@ use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names
@@ -55,7 +55,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $serviceTax = $row[$serviceTaxColumn];
 
         // Convert service tax into basic unit of currency (ex: paise)
-        $serviceTax = Base\Helper::getIntegerFormattedAmount($serviceTax);
+        $serviceTax = Base\SubReconciliator\Helper::getIntegerFormattedAmount($serviceTax);
 
         $sbCess = $this->getSbCess($row);
         $kkCess = $this->getKkCess($row);
@@ -69,14 +69,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $sbCess = $row[self::COLUMN_SB_CESS] ?? null;
 
-        return Base\Helper::getIntegerFormattedAmount($sbCess);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($sbCess);
     }
 
     protected function getKkCess(array $row)
     {
         $kkCess = $row[self::COLUMN_KK_CESS] ?? null;
 
-        return Base\Helper::getIntegerFormattedAmount($kkCess);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($kkCess);
     }
 
     protected function getGatewayFee($row)
@@ -96,7 +96,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         // But we use the column which is the net deduction.
         // Hence, we don't need to add the service tax to this.
         //
-        return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
     }
 
     protected function getReconPaymentAmount($row)
@@ -106,7 +106,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return null;
         }
 
-        return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
     }
 
     protected function getGatewaySettledAt(array $row)

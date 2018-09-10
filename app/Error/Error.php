@@ -196,6 +196,11 @@ class Error extends Support\Fluent
         return $this->getAttribute(self::INTERNAL_ERROR_CODE);
     }
 
+    public function getGatewayErrorCode()
+    {
+        return $this->getAttribute(self::GATEWAY_ERROR_CODE);
+    }
+
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);

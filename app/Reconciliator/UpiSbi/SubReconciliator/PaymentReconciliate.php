@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Reconciliator\UpiSbi;
+namespace RZP\Reconciliator\UpiSbi\SubReconciliator;
 
 use RZP\Gateway\Upi\Sbi\Action;
 use RZP\Reconciliator\Base;
 use RZP\Models\Base\PublicEntity;
 use RZP\Trace\TraceCode;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /**
      * @see https://drive.google.com/drive/u/0/folders/0B1kf6HOmx7JBTmMzTXgwQVRrNm8

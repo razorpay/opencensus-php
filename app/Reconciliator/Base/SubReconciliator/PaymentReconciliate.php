@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Base;
+namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use App;
 
@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use Rzp\Trace\TraceCode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
+use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
@@ -17,7 +18,7 @@ use RZP\Exception\ReconciliationException;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Foundation\SubReconciliate
+class PaymentReconciliate extends Base\Foundation\SubReconciliate
 {
     const GATEWAY_FEES_ABSENT_GATEWAYS = [
         RequestProcessor\Base::KOTAK,
@@ -37,6 +38,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_CSB,
         RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::UPI_HDFC,
     ];
 
     /**

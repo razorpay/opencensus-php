@@ -53,6 +53,17 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CAPTURE_FAILURE_EXCEPTION             = 'PAYMENT_CAPTURE_FAILURE_EXCEPTION';
     const PAYMENT_QUEUE_CAPTURE_DELETE                  = 'PAYMENT_QUEUE_CAPTURE_DELETE';
     const PAYMENT_CAPTURE_ADD_TO_QUEUE                  = 'PAYMENT_CAPTURE_ADD_TO_QUEUE';
+    const REFUND_QUEUE_SCROOGE_SUCCESS                  = 'REFUND_QUEUE_SCROOGE_SUCCESS';
+    const REFUND_QUEUE_SCROOGE_REQUEST                  = 'REFUND_QUEUE_SCROOGE_REQUEST';
+    const REFUND_QUEUE_SCROOGE_DISPATCH                 = 'REFUND_QUEUE_SCROOGE_DISPATCH';
+    const REFUND_SCROOGE_RESPONSE                       = 'REFUND_SCROOGE_RESPONSE';
+    const REFUND_SCROOGE_VERIFY_RESPONSE                = 'REFUND_SCROOGE_VERIFY_RESPONSE';
+    const REFUND_SCROOGE_FAILURE_EXCEPTION              = 'REFUND_SCROOGE_FAILURE_EXCEPTION';
+    const REFUND_SCROOGE_JOB_FAILURE_EXCEPTION          = 'REFUND_SCROOGE_JOB_FAILURE_EXCEPTION';
+    const REFUND_SCROOGE_QUEUE_DELETE                   = 'REFUND_SCROOGE_QUEUE_DELETE';
+    const REFUND_GATEWAY_CALL_NON_SCROOGE_GATEWAY       = 'REFUND_GATEWAY_CALL_NON_SCROOGE_GATEWAY';
+    const REFUND_MARK_PROCESSED_REQUEST                 = 'REFUND_MARK_PROCESSED_REQUEST';
+    const REFUND_MARK_PROCESSED_NON_SCROOGE_GATEWAY     = 'REFUND_MARK_PROCESSED_NON_SCROOGE_GATEWAY';
     const PAYMENT_TIMED_OUT                             = 'PAYMENT_TIMED_OUT';
     const PAYMENT_VERIFY_FAILED                         = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                                = 'PAYMENT_FAILED';
@@ -160,6 +171,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_TRANSFER_ATTEMPT_CREATED                 = 'FUND_TRANSFER_ATTEMPT_CREATED';
     const FUND_TRANSFER_ATTEMPT_BULK_UPDATE_REQUEST     = 'FUND_TRANSFER_ATTEMPT_BULK_UPDATE_REQUEST';
     const FUND_TRANSFER_ATTEMPT_UPDATED                 = 'FUND_TRANSFER_ATTEMPT_UPDATED';
+    const FUND_TRANSFER_ATTEMPT_SKIPPED                 = 'FUND_TRANSFER_ATTEMPT_SKIPPED';
     const FUND_TRANSFER_ATTEMPT_SOURCE_UPDATED          = 'FUND_TRANSFER_ATTEMPT_SOURCE_UPDATED';
     const PAYMENT_RECURRING_INVALID_STATUS              = 'PAYMENT_RECURRING_INVALID_STATUS';
     const GATEWAY_TOKEN_MISMATCH                        = 'GATEWAY_TOKEN_MISMATCH';
@@ -805,6 +817,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RAVEN_CALLBACK_REQUEST                    = 'RAVEN_CALLBACK_REQUEST';
     const RAVEN_ASYNC_REQUEST_FAILED                = 'RAVEN_ASYNC_REQUEST_FAILED';
     const LUMBERJACK_ASYNC_REQUEST_FAILED           = 'LUMBERJACK_ASYNC_REQUEST_FAILED';
+    const SCROOGE_REQUEST                           = 'SCROOGE_REQUEST';
+    const SCROOGE_RESPONSE                          = 'SCROOGE_RESPONSE';
 
     const EXCHANGE_REQUEST                          = 'EXCHANGE_REQUEST';
     const EXCHANGE_RESPONSE                         = 'EXCHANGE_RESPONSE';
@@ -1199,7 +1213,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const YESBANK_TRANSFER_AMOUNT                       = 'YESBANK_TRANSFER_AMOUNT';
     const YESBANK_CONVERTED_AMOUNT                      = 'YESBANK_CONVERTED_AMOUNT';
 
-    protected static $messages = array(
+    const UPDATE_NODAL_BENEFICIARY                      = 'UPDATE_NODAL_BENEFICIARY';
+    const RETRY_BEAM_FILE_UPLOAD                        = 'RETRY_BEAM_FILE_UPLOAD';
+    const BENEFICIARY_REGISTER_API_INIT                 = 'BENEFICIARY_REGISTER_API_INIT';
+    const BENEFICIARY_REGISTER_API_FETCH                = 'BENEFICIARY_REGISTER_API_FETCH';
+
+    protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
         self::PAYMENT_CREATE_FAILED                     => 'Payment creation failed',
@@ -1345,7 +1364,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::GRATIS_TO_POSTPAID_RESPONSE               => 'Gratis to postpaid response',
 
         self::GATEWAY_METRIC_DIMENSION_PUSH_FAILED      => 'Exception fetching metric dimensions',
-    );
+    ];
 
     /**
      * Translate event code to message

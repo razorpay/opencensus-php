@@ -175,6 +175,15 @@ class Reconciliate extends Base\Core
     }
 
     /**
+     * This should be implemented in the child class if the gateway needs to
+     * look at certain columns to identify whether the row is payment or refund row/header.
+     */
+    public function getKeyColumnNames(array $fileDetails = [])
+    {
+        return [];
+    }
+
+    /**
      * This should be implemented in the child class if the gateway requires certain
      * files to be excluded from doing the reconciliation.
      *
@@ -338,7 +347,8 @@ class Reconciliate extends Base\Core
         $parentNamespace = $this->getParentNamespace();
 
         // SubReconciliator class name should be something like - Reconciliator/Axis/PaymentReconciliate
-        $subReconciliatorClassName = $parentNamespace . '\\'
+
+        $subReconciliatorClassName = $parentNamespace . '\\' . 'SubReconciliator' . '\\'
                                     . ucfirst($reconciliationType)
                                     . 'Reconciliate';
 

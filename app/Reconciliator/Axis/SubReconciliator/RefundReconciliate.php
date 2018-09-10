@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Axis;
+namespace RZP\Reconciliator\Axis\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
@@ -9,7 +9,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Spine\Exception\DbQueryException;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     /*******************
      * Row Header Names

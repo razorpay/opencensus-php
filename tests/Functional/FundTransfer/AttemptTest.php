@@ -49,8 +49,14 @@ class AttemptTest extends TestCase
 
     public function testSettlementFileCreationAxis()
     {
+        Queue::fake();
+
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::AXIS, 1, Attempt\Type::SETTLEMENT);
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('general_test', BeamJob::class);
     }
 
     public function testInitiateAtCheckDuringFileCreation()
@@ -104,5 +110,10 @@ class AttemptTest extends TestCase
     {
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::ICICI, 1, Attempt\Type::PAYOUT);
+    }
+
+    public function testretryFileUploadThroughBeam()
+    {
+        $this->uploadFileThroughBeam(Channel::ICICI, Attempt\Entity::BENEFICIARY, 'test.xlsx');
     }
 }

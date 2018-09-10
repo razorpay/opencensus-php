@@ -26,6 +26,19 @@ class CategoryCode
 
     protected static $mccToCategoryCodeMapping = [
         '6012' => self::L001,
+        '6050' => self::B001,
+        '8299' => self::E001,
+        '8211' => self::E001,
+        '8220' => self::E001,
+        '6300' => self::I001,
+        '6211' => self::M001,
+        '5399' => self::U099,
+        '7399' => self::U099,
+        '5817' => self::F001,
+        '5968' => self::F001,
+        '9311' => self::T001,
+        '4814' => self::U005,
+        '4899' => self::U005,
     ];
 
     public static function getCategoryCodeFromMcc($mcc)

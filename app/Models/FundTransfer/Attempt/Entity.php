@@ -30,6 +30,12 @@ class Entity extends Base\PublicEntity
     const EXCEL_FILE_ID          = 'excel_file_id';
     const INITIATE_AT            = 'initiate_at';
 
+    //Fund transfer retry constants
+    const FILE                  = 'file';
+    const FILE_TYPE             = 'file_type';
+    const SETTLEMENT            = 'settlement';
+    const BENEFICIARY           = 'beneficiary';
+
     protected $entity = 'fund_transfer_attempt';
 
     protected $fillable = [

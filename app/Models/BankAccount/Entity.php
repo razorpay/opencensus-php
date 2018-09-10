@@ -55,6 +55,7 @@ class Entity extends Base\PublicEntity
     //
     const ON                = 'on';
     const RECIPIENT_EMAILS  = 'recipient_emails';
+    const DURATION          = 'duration';
 
     protected static $sign      = 'ba';
 

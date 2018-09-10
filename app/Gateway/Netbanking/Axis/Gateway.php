@@ -224,6 +224,9 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content, 'post');
 
+        // hotfix
+        $request['options']['verify'] = false;
+
         $response = $this->sendGatewayRequest($request);
 
         $verify->verifyResponseContent = $this->parseVerifyResponse($response);
@@ -872,5 +875,12 @@ class Gateway extends Base\Gateway
         }
 
         return $this->config['verify_live_hash_secret'];
+    }
+
+    protected function getCaInfo()
+    {
+        $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
+
+        return $clientCertPath;
     }
 }
