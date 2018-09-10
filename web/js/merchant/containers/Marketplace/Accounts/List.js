@@ -73,8 +73,8 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onToggleAccess = (account, checked) => {
-    console.log('is checked?', checked);
     // Api call to toggle access
+    console.log('Enabled/Disabled dashboard access for "Abced"', checked);
   };
 
   highlightRowAndClose = accountId => {
