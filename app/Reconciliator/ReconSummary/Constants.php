@@ -45,6 +45,7 @@ class Constants
         'netbanking_icici',
         'netbanking_rbl',
         'netbanking_bob',
+        'netbanking_obc',
         'netbanking_hdfc',
         'netbanking_kotak',
         'netbanking_axis',
