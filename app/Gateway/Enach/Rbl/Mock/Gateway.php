@@ -11,6 +11,14 @@ class Gateway extends Rbl\Gateway
 
     public function authorize(array $input)
     {
+        if (($input['payment']['method'] === 'emandate') and
+            ($input['payment']['auth_type'] === 'netbanking'))
+        {
+            $request = parent::authorize($input);
+
+            return $this->netbankingAuthorizeMock($request);
+        }
+
         return $this->authorizeMock($input, 'mock_esigner_payment');
     }
 
@@ -33,5 +41,15 @@ class Gateway extends Rbl\Gateway
         }
 
         $request['url'] = $url;
+    }
+
+    public function netbankingAuthorizeMock($request)
+    {
+        $url = $this->route->getUrlWithPublicAuth(
+            'mock_enach_payment', ['bank' => 'rbl']);
+
+        $request['url'] = $url;
+
+        return $request;
     }
 }
