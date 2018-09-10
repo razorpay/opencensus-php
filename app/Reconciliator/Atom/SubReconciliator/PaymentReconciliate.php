@@ -16,7 +16,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_BANK_REFERENCE_NO   = 'bank_ref_no';
     const COLUMN_ATOM_TRANSACTION_ID = 'atom_txn_id';
     const COLUMN_TRANSACTION_CHARGES = 'txn_charges';
-    const COLUMN_SERVICE_TAX         = 'gst_18';
+    const COLUMN_SERVICE_TAX         = ['gst_18', 'service_tax'];
     const COLUMN_SETTLED_AT          = 'settlement_date';
 
     const SETTLEMENT_DATE_FORMAT     = 'd-M-Y h:i:s';
@@ -46,7 +46,33 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     protected function getGatewayServiceTax($row)
     {
         // Convert service tax into paise
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_SERVICE_TAX]);
+        $gst = null;
+
+        //
+        // Sometimes they send the column name as 'gst_18' and sometimes
+        // 'service_tax' in the MIS file, so we need to check which one is
+        // set in the row
+        //
+        $gstColumn = array_first(self::COLUMN_SERVICE_TAX,
+            function ($col) use ($row)
+            {
+                return (isset($row[$col]) === true);
+            });
+
+        if ($gstColumn !== null)
+        {
+            $gst = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[$gstColumn]);
+        }
+        else
+        {
+            //
+            // This will return back `null` for service tax.
+            // Since it's `null`, it'll mark the row as unreconciled.
+            //
+            $this->reportMissingColumn($row, self::COLUMN_SERVICE_TAX[0]);
+        }
+
+        return $gst;
     }
 
     protected function getReferenceNumber($row)

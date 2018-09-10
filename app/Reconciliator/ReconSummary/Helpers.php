@@ -14,7 +14,12 @@ class Helpers
 
     public static function addExtraColumns(&$entry)
     {
-        $entry['recon_count_percentage'] = number_format(($entry['recon_count'] / $entry['total_count']) * 100, 2);
+        $entry['recon_count_percentage'] = 0;
+
+        if ($entry['total_count'] > 0)
+        {
+            $entry['recon_count_percentage'] = number_format(($entry['recon_count'] / $entry['total_count']) * 100, 2);
+        }
 
         //
         // Note: In case of emandate payments, amount can be 0, resulting total amount 0. In this case,
@@ -61,8 +66,50 @@ class Helpers
             $formattedSummary[$entry['date']][] =  $entry;
         }
 
+        self::setDateWiseStats($formattedSummary);
+
         sortMultiDimensionalArray($formattedSummary, Constants::RESULT_SORT_KEY);
 
         return $formattedSummary;
+    }
+
+    public static function setDateWiseStats(& $formattedSummary)
+    {
+        foreach ($formattedSummary as $date => $dateWiseEntries)
+        {
+            //
+            // For each date, calculate
+            // metadata across all gateways
+            //
+
+            //
+            // initialize each of the params to 0, and
+            // iterate over the params and add them up.
+            // Here we will ignore 'METHOD' during calculations
+            // and later set that to (string) "All"
+            //
+            $metadataEntry = array_fill_keys(Constants::AGGREGATE_PARAMS, 0);
+
+            foreach ($dateWiseEntries as $entry)
+            {
+                foreach (Constants::AGGREGATE_PARAMS as $param)
+                {
+                    if ($param === Constants::METHOD)
+                    {
+                        continue;
+                    }
+
+                    $metadataEntry[$param] += $entry[$param];
+                }
+            }
+
+            // set the percentage column for the date
+            self::addExtraColumns($metadataEntry);
+
+            $metadataEntry[Constants::GATEWAY] = "All";
+            $metadataEntry[Constants::METHOD]  = "All";
+
+            $formattedSummary[$date][] =  $metadataEntry;
+        }
     }
 }

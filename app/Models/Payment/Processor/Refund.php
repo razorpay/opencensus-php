@@ -207,11 +207,15 @@ trait Refund
 
         if ($gatewayVerifyRefundResponse[Payment\Gateway::SUCCESS] !== true)
         {
+            $data = $this->getGatewayDataForRefund($refund, $payment);
+            $data['refund'] = $input;
+
             $gatewayRefundResponse = $this->mutex->acquireAndRelease(
                  $payment->getId(),
-                 function() use ($input, $payment)
+
+                 function() use ($data, $payment)
                  {
-                     return $this->callRefundFunction($payment, $input);
+                     return $this->callRefundFunction($payment, $data);
                  });
 
             //
@@ -1245,44 +1249,29 @@ trait Refund
 
     protected function getGatewayDataForScroogeRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
     {
-        //
-        // TODO: All gateway data here is derivable from other fields.
-        // Can remove this. Later, we might have to still add it to send
-        // gateway reference IDs, claim data, etc
-        //
-        $gatewayData = [
-                            'gateway'       => $payment->getGateway(),
-                            'merchant_id'   => $payment->getMerchantId(),
-                            'refund_id'     => $refund->getId()
-                       ];
+        $refundData = $refund->toArrayGateway();
 
-        $data = [
-            'payment'  => $payment->toArrayGateway(),
-            'refund'   => $refund->toArrayGateway(),
-            'gateway'  => $gatewayData
+        $extraData = [
+            'method'                    => $payment->getMethod(),
+            'payment_amount'            => $payment->getAmount(),
+            'payment_base_amount'       => $payment->getBaseAmount(),
+            'payment_created_at'        => $payment->getCreatedAt(),
+            'payment_gateway_captured'  => $payment->getGatewayCaptured()
         ];
 
-        if ($payment->isMethodCardOrEmi() === true)
-        {
-            $card = $this->repo->card->fetchForPayment($payment);
-
-            $data['card'] = $card->toArray();
-
-            $data['card']['network'] = $data['card']['network_code'];
-        }
+        $scroogeData = array_merge($refundData, $extraData);
 
         if ($payment->isNetbanking() === true)
         {
-            $data['gateway']['bank'] = $payment->getBank();
+            $scroogeData['bank'] = $payment->getBank();
         }
 
         //
         // These attributes are already in scrooge, need to be reset before sending scrooge request
         //
-        unset($data['refund']['gateway']);
-        unset($data['refund']['status']);
+        unset($scroogeData['status']);
 
-        return $data;
+        return $scroogeData;
     }
 
     protected function findExistingRefundForBatch(Batch\Entity $batch, Payment\Entity $payment)
