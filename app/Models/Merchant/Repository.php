@@ -489,7 +489,13 @@ class Repository extends Base\Repository
                     ->orgId($orgId)
                     ->findOrFailPublic($id);
     }
+
     /**
+     * If the submerchant belongs to a pure platform type partner,
+     *      $appId should be one of the oauth apps created by the partner.
+     * If the submerchant belongs to a non pure platform type partner,
+     *      $appId should be the id of the internal partner app created.
+     *
      * @param string $submerchantId
      * @param string $appId
      *

@@ -800,7 +800,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Pure platform type partners cannot access this feature as no internal app is created for them.
+     * Returns the internal dummy app created for all non-pure-platform type partners.
+     * Since the app is not created for pure-platform type partners, they cannot access this feature.
      *
      * @param Entity $merchant
      *
@@ -830,6 +831,12 @@ class Core extends Base\Core
     }
 
     /**
+     * Returns an array of the partner's application ids.
+     *
+     * If the partner is -
+     *      a pure platform partner, the result will be the list of all the ids of the apps created by the partner.
+     *      a non pure platform partner, the result will have just one element - id of the internal dummy app created.
+     *
      * @param Entity $merchant
      *
      * @return array
@@ -1116,21 +1123,27 @@ class Core extends Base\Core
         return $tags;
     }
 
+    /**
+     * Returns the submerchant with the partner context set.
+     *
+     * @param Entity      $partner
+     * @param string      $submerchantId
+     * @param bool        $fetchAppDetails
+     * @param string|null $inputAppId
+     *
+     * @return Entity
+     * @throws BadRequestException
+     */
     public function getSubmerchant(Entity $partner,
                                    string $submerchantId,
                                    bool $fetchAppDetails = true,
                                    string $inputAppId = null): Entity
     {
-        //
-        // If the partner is -
-        //      a non pure platform partner, $appIds will have just one element - id of the internal dummy app created.
-        //      a pure platform partner, the result will be the list of all the ids of the apps created by the partner.
-        //
         $partnerAppIds = $this->getPartnerApplicationIds($partner);
 
         //
-        // Apps not being present is only possible in case of pure platforms where the partner manually creates and
-        // deletes the oauth applications.
+        // Apps not being present is only possible in case of pure platforms where
+        // the partner manually creates and deletes the oauth applications.
         // If the partner tries to access the submerchant detail api without creating an app, throw an error.
         //
         if (count($partnerAppIds) === 0)
@@ -1145,12 +1158,14 @@ class Core extends Base\Core
                 ]);
         }
 
-        // 0th index will always be accessible here
+        // 0th index will always be accessible here. Set the default value for $appId as the first available app id.
         $appId = $partnerAppIds[0];
 
         //
-        // If the partner is a pure platform and the application_id is provided in the input
-        // raise an exception if the application id does not belong to the partners's applications
+        // If the partner is a pure platform partner -
+        //      raise an exception if the input app id does not belong to the list of oauth apps created by him.
+        // If the partner is a non pure platform partner -
+        //      ignore the input application id, as there should only be one associated (internal) partner app created.
         //
         if (($partner->isPurePlatformPartner() === true) and (empty($inputAppId) === false))
         {
@@ -1165,11 +1180,9 @@ class Core extends Base\Core
                         Constants::APPLICATION_ID => $inputAppId,
                     ]);
             }
-            else
-            {
-                // Since the app id in the input is valid, update $appId and proceed for to query the db
-                $appId = $inputAppId;
-            }
+
+            // Since the app id in the input is valid, update $appId and proceed for to query the db
+            $appId = $inputAppId;
         }
 
         $merchant = $this->repo
@@ -1305,17 +1318,17 @@ class Core extends Base\Core
             return [$currentApp, $connectedApps];
         }
 
-        $connectedAppIds = $this->repo
-                                ->merchant_access_map
-                                ->fetchMerchantAccessMapsOnEntityType(
-                                    $submerchant->getId(),
-                                    AccessMap\Entity::APPLICATION)
-                                ->pluck(AccessMap\Entity::ENTITY_ID)
-                                ->toArray();
+        // Fetch all connected app ids
+        $partnerAppIds = $this->repo
+                              ->merchant_access_map
+                              ->fetchMerchantAccessMapsOnEntityType($submerchant->getId(), AccessMap\Entity::APPLICATION)
+                              ->pluck(AccessMap\Entity::ENTITY_ID)
+                              ->toArray();
 
+        // The response from auth service is a public collection array of all the applications linked to the partner
         $partnerApps = app('authservice')->getMultipleApplications([], $partner->getId());
 
-        return $this->spliceCurrentAppFromAllApps($partnerApps, $currentAppId, $connectedAppIds);
+        return $this->spliceCurrentAppFromAllApps($partnerApps, $currentAppId, $partnerAppIds);
     }
 
     /**
@@ -1352,9 +1365,9 @@ class Core extends Base\Core
         $connectedAppIds = array_values(array_diff($connectedAppIds, [$currentAppId]));
 
         // Reject all those apps that are not connected to (authorized by) the submerchant
-        $connectedApps = $partnerApps->reject(function($value) use ($currentAppId, $connectedAppIds)
+        $connectedApps = $partnerApps->reject(function($partnerApp) use ($currentAppId, $connectedAppIds)
         {
-            return (in_array($value[OAuthApp\Entity::ID], $connectedAppIds, true) === false);
+            return (in_array($partnerApp[OAuthApp\Entity::ID], $connectedAppIds, true) === false);
         });
 
         //
