@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Jiomoney;
+namespace RZP\Reconciliator\Jiomoney\SubReconciliator;
 
 use RZP\Exception\ReconciliationException;
 use RZP\Gateway\Base\Action;
@@ -8,7 +8,7 @@ use RZP\Models\Payment\Processor\Wallet;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     /*******************
      * Row Header Names

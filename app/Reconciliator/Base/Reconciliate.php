@@ -347,7 +347,8 @@ class Reconciliate extends Base\Core
         $parentNamespace = $this->getParentNamespace();
 
         // SubReconciliator class name should be something like - Reconciliator/Axis/PaymentReconciliate
-        $subReconciliatorClassName = $parentNamespace . '\\'
+
+        $subReconciliatorClassName = $parentNamespace . '\\' . 'SubReconciliator' . '\\'
                                     . ucfirst($reconciliationType)
                                     . 'Reconciliate';
 

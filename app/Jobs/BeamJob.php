@@ -149,10 +149,18 @@ class BeamJob extends Job
             return;
         }
 
-        if ((in_array($this->response->status_code, self::HTTP_RETRY_CODES, true) === true) and
-            ($this->attempts() < count($this->retryTimeLines)))
+        if (in_array($this->response->status_code, self::HTTP_RETRY_CODES, true) === true)
         {
-            $this->release($this->retryTimeLines[$this->attempts() - 1]);
+            if  ($this->attempts() < count($this->retryTimeLines))
+            {
+                $this->release($this->retryTimeLines[$this->attempts() - 1]);
+
+                return;
+            }
+
+            $this->sendEmail();
+
+            $this->delete();
 
             return;
         }

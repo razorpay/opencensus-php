@@ -65,6 +65,7 @@ class Validator
                                                          . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
                                                          "/Refund MIS for 116798_RAZORPAY_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"
                                                      ],
+        RequestProcessor\Base::UPI_HDFC           => [ "/Merchant Payout Report/"],
         ];
 
     const GATEWAY_BODY_REGEX = [
@@ -94,6 +95,7 @@ class Validator
                                                              "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
                                                          ],
         RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached Recon Data File of Online Transaction/"],
+        RequestProcessor\Base::UPI_HDFC                => ["/Please Find Attachment For Merchant Payout Report/"]
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -353,6 +355,19 @@ class Validator
                        RequestProcessor\Base::UPI_ICICI);
 
         return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    protected function validateUpiHdfcEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::UPI_HDFC);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
+            RequestProcessor\Base::UPI_HDFC);
+
+        return ($validSubject and $validBody);
     }
 
     public function validateNetbankingCorporationEmail(array $emailDetails)

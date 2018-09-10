@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Atom;
+namespace RZP\Reconciliator\Atom\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
@@ -9,7 +9,7 @@ use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const COLUMN_PAYMENT_ID          = 'merchant_txn_id';
     const COLUMN_AMOUNT              = 'gross_txn_amount';
@@ -37,7 +37,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if (isset($row[self::COLUMN_AMOUNT]) === true)
         {
-            return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT]);
+            return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT]);
         }
 
         return null;
@@ -46,7 +46,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getGatewayServiceTax($row)
     {
         // Convert service tax into paise
-        return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_SERVICE_TAX]);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_SERVICE_TAX]);
     }
 
     protected function getReferenceNumber($row)
@@ -89,7 +89,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayFee($row)
     {
-        $fee = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_TRANSACTION_CHARGES]);
+        $fee = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_TRANSACTION_CHARGES]);
 
         $serviceTax = $this->getGatewayServiceTax($row);
 

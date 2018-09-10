@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Reconciliator\HDFC;
+namespace RZP\Reconciliator\HDFC\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class CombinedReconciliate extends Base\CombinedReconciliate
+class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {
     /*******************
      * Row Header Names

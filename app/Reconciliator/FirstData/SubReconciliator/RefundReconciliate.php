@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\FirstData;
+namespace RZP\Reconciliator\FirstData\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
@@ -8,7 +8,7 @@ use RZP\Gateway\FirstData;
 use RZP\Models\Base\PublicEntity;
 use Razorpay\Spine\Exception\DbQueryException;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     /******************
      * Row Header Names

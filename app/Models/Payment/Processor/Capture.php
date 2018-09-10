@@ -338,11 +338,11 @@ trait Capture
 
         $payment->getValidator()->captureValidate($payment, $captureAmount, $currency);
 
-        $data = array(
+        $data = [
             'payment'   => $payment->toArrayGateway(),
             'amount'    => $captureAmount,
             'currency'  => $payment->getCurrency()
-        );
+        ];
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -390,7 +390,6 @@ trait Capture
      * and push it into a queue. We continue with the normal flow afterwards.
      *
      * @param $data
-     * @throws Exception\BaseException
      */
     protected function captureOnGateway($data)
     {
@@ -515,6 +514,8 @@ trait Capture
             $this->createTransactionFromCapturedPayment($payment);
 
             $this->updateOrderAfterCapture($payment);
+
+            $this->updateVirtualAccountStatusIfApplicable($payment);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
@@ -746,6 +747,66 @@ trait Capture
             $this->updateInvoiceAfterCapture($invoice, $payment);
         }
     }
+
+    protected function updateVirtualAccountStatusForBankTransfer(Payment\Entity $payment)
+    {
+        $virtualAccountCore = new VirtualAccount\Core;
+
+        $virtualAccount = $payment->bankTransfer->virtualAccount;
+
+        if (($virtualAccount->hasAmountExpected() === true) and
+            ($virtualAccount->getAmountPaid() >= $virtualAccount->getAmountExpected()))
+        {
+            $virtualAccountCore->updateStatus($virtualAccount, VirtualAccount\Status::PAID);
+        }
+
+        /*
+         *  If amount paid is lesser than amount expected, then
+         *  we will leave the virtual account in active state
+         *  which will be refunded later by cron.
+         */
+    }
+
+    protected function updateVirtualAccountStatusForOrder(Payment\Entity $payment)
+    {
+        $virtualAccountCore = new VirtualAccount\Core;
+
+        $order = $payment->order;
+
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->findActiveVirtualAccountByOrder($order);
+
+        if ($virtualAccount !== null)
+        {
+            $virtualAccountCore->updateStatus($virtualAccount, VirtualAccount\Status::CLOSED);
+        }
+    }
+
+    protected function updateVirtualAccountStatusIfApplicable(Payment\Entity $payment)
+    {
+        if ($payment->isBankTransfer() === true)
+        {
+            /*
+             *  If any payment is a Bank Transfer and If amount
+             *  paid is not lesser than amount expected, then
+             *  we will mark the Virtual Account as paid.
+             */
+
+            $this->updateVirtualAccountStatusForBankTransfer($payment);
+        }
+        else if ($payment->hasOrder() === true)
+        {
+            /*
+             *  If payment is not a Bank Transfer, then we will close
+             *  the Virtual Account that was created for the order.
+             */
+
+            $this->updateVirtualAccountStatusForOrder($payment);
+        }
+
+    }
+
 
     protected function updateOrderStatusPaidIfApplicable(Order\Entity $order, Payment\Entity $payment)
     {
