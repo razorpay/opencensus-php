@@ -832,7 +832,7 @@ class Validator extends Base\Validator
 
     public function validateLinkedAccountDashboardAccess(bool $dashboardAccess, Entity $merchant)
     {
-        $merchantUsersCount = $merchant->users()->count();
+        $merchantUsersCount = $merchant->users->count();
 
         if ($dashboardAccess === true and $merchantUsersCount > 0)
         {

@@ -2355,7 +2355,17 @@ class Service extends Base\Service
 
         if ($dashboardAccess === true)
         {
-            $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
+            if (($parentMerchant->isMarketplace() === true) and
+                ($parentMerchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true))
+            {
+                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
+
+                (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $merchant, $createdNew);
+            }
+        }
+        else
+        {
+            $this->repo->sync($merchant,  'users', []);
         }
 
         return ['success' => true];

@@ -1215,6 +1215,7 @@ final class Route
     ];
 
     public static $proxy = [
+        'merchant_dashboard_access',
         'merchant_fetch_users',
         'transaction_monthly_report',
         'transaction_fetch_by_id',
