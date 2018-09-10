@@ -54,6 +54,8 @@ class UserRolesScope
             'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
             'invitation_fetch'  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
 
+            // Route Routes
+            'merchant_dashboard_access' => [Role::OWNER],
             // profile routes
             'merchant_gst_fetch' => [Role::OWNER, Role::FINANCE],
             'merchant_gst_edit'  => [Role::OWNER, Role::FINANCE],
