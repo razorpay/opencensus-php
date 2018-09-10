@@ -8,6 +8,7 @@ use RZP\Models\Payment\Refund;
 class Constants
 {
     const METHOD                    = 'method';
+    const GATEWAY                   = 'gateway';
     const TOTAL_COUNT               = 'total_count';
     const TOTAL_AMOUNT              = 'total_amount';
     const RECON_COUNT               = 'recon_count';
@@ -44,6 +45,7 @@ class Constants
         'netbanking_icici',
         'netbanking_rbl',
         'netbanking_bob',
+        'netbanking_obc',
         'netbanking_hdfc',
         'netbanking_kotak',
         'netbanking_axis',

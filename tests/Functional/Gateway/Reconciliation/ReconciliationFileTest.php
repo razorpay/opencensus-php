@@ -1031,7 +1031,7 @@ class ReconciliationFileTest extends TestCase
         $facade[AtomPaymentRecon::COLUMN_BANK_REFERENCE_NO]   = $gatewayPayment['bank_payment_id'];
         $facade[AtomPaymentRecon::COLUMN_AMOUNT]              = $gatewayPayment['amount'] / 100;
         $facade[AtomPaymentRecon::COLUMN_TRANSACTION_CHARGES] = (float) $facade[AtomPaymentRecon::COLUMN_AMOUNT] * 1.1;
-        $facade[AtomPaymentRecon::COLUMN_SERVICE_TAX]         = (float) $facade[AtomPaymentRecon::COLUMN_AMOUNT] * 0.002;
+        $facade['GST (18%)']                                  = (float) $facade[AtomPaymentRecon::COLUMN_AMOUNT] * 0.002;
         $facade['Bank / Card Name']                           = $gatewayPayment['bank_name'];
         $facade['Net Amount to be Paid']                      = $facade['GST (18%)'] + $facade['Txn Charges'];
         $facade['Settlement Date']                            = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)->format('d-M-Y h:i:s');
