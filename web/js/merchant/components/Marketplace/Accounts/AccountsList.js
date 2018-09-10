@@ -1,9 +1,10 @@
 import { prefixEntityValue } from 'common/data';
 
 import Time from 'rzp/ui/Time';
-import CheckIcon from 'rzp/ui/CheckIcon';
 import TableBody from 'rzp/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
+import { classList } from 'common/util';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
 import store from 'merchant/store';
 
@@ -50,16 +51,39 @@ const AccountsListItem = ({ account, showEditAccountModal, onEdit }) => {
       </td>
       <td>{account.name}</td>
       <td>
-        <Time value={account.created_at} format="DD MMM YYYY, hh:mm:ss a" />
+        <small class="help-content">
+          <div>
+            <span
+              class={classList(
+                'ModeIndicator',
+                status == 'activated'
+                  ? 'ModeIndicator--live'
+                  : 'ModeIndicator--inactive'
+              )}
+            />
+            {status === 'activated' ? 'Activated' : 'Not Activated'}
+          </div>
+          <Popover align="top" theme="dark">
+            <PopoverBody>
+              {status === 'activated' ? (
+                <div>
+                  Activated on{' '}
+                  <Time value={timeStamp} format="DD MMM YYYY, hh:mm:A" />
+                </div>
+              ) : (
+                <div>
+                  Please fill the Activation form to activate this account.
+                  <br />
+                  <button className="btn-link pull-right" onClick={onEdit}>
+                    Add Details
+                  </button>
+                </div>
+              )}
+            </PopoverBody>
+          </Popover>
+        </small>
       </td>
-      <td>
-        <span data-tip={status == 'activated' ? 'Activated' : 'Not Activated'}>
-          <CheckIcon value={status == 'activated'} />
-        </span>
-      </td>
-      <td>
-        <Time value={timeStamp} format="DD MMM YYYY, hh:mm:ss a" />
-      </td>
+      <td>// SwitchField</td>
     </EntityItemRow>
   );
 };
@@ -67,15 +91,14 @@ const AccountsListItem = ({ account, showEditAccountModal, onEdit }) => {
 export default ({ accounts, isLoading, showEditAccountModal, onEdit }) => {
   return (
     <div class="table-responsive">
-      <table class="table table-hover">
+      <table class="table table-hover" id="accounts-list">
         <thead>
           <tr>
             <th>Account Id</th>
-            <th>Email Id</th>
+            <th>Email</th>
             <th>Name</th>
-            <th>Created At</th>
-            <th>Activated</th>
-            <th>Activated At</th>
+            <th>Account Status</th>
+            <th>Dashboard Access</th>
           </tr>
         </thead>
         <TableBody
