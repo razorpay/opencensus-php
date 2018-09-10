@@ -2024,6 +2024,8 @@ class Service extends Base\Service
             $ownerId
         )
         {
+            $enableDashboardAccess = $input['enable_dashboard_access'] ?? false;
+
             $merchantCore = new Merchant\Core;
 
             $subMerchant = $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount);
@@ -2043,7 +2045,10 @@ class Service extends Base\Service
                 $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
             }
 
-            list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
+            if ((($enableDashboardAccess === true) and ($isLinkedAccount === true)) or ($isLinkedAccount === false))
+            {
+                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
+            }
 
             $this->repo->saveOrFail($subMerchant);
 
@@ -2334,5 +2339,25 @@ class Service extends Base\Service
         $response = (new BankAccount\Beneficiary)->registerBeneficiaryThroughApi($input, $channel);
 
         return $response;
+    }
+
+    public function updateLinkedAccountDashboardAccess(array $input): array
+    {
+        $merchant = $this->auth->getMerchant();
+
+        (new Validator)->validateLinkedAccount($merchant);
+
+        $parentMerchant = $merchant->parent;
+
+        $dashboardAccess = $input['dashboard_access'] ?? false;
+
+        (new Validator)->validateLinkedAccountDashboardAccess($dashboardAccess, $merchant);
+
+        if ($dashboardAccess === true)
+        {
+            $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
+        }
+
+        return ['success' => true];
     }
 }

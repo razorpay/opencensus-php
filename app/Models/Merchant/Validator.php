@@ -829,4 +829,21 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT);
         }
     }
+
+    public function validateLinkedAccountDashboardAccess(bool $dashboardAccess, Entity $merchant)
+    {
+        $merchantUsersCount = $merchant->users()->count();
+
+        if ($dashboardAccess === true and $merchantUsersCount > 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_DASHBOARD_ACCESS_ALREADY_GIVEN);
+        }
+
+        if ($dashboardAccess === false and $merchantUsersCount === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS);
+        }
+    }
 }
