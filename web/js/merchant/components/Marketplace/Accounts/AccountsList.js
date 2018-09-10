@@ -59,7 +59,7 @@ const AccountsListItem = ({
       <td>{account.name}</td>
       <td>
         <small class="help-content">
-          <div>
+          <span>
             <span
               class={classList(
                 'ModeIndicator',
@@ -69,7 +69,7 @@ const AccountsListItem = ({
               )}
             />
             {status === 'activated' ? 'Activated' : 'Not Activated'}
-          </div>
+          </span>
           <Popover align="top" theme="dark">
             <PopoverBody>
               {status === 'activated' ? (

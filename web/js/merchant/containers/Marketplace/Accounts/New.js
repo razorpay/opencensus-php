@@ -9,6 +9,8 @@ import { required } from 'rzp/utils/validators';
 import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import CheckboxField from 'rzp/ui/Forms/CheckboxField';
+
 @connect(
   state => ({
     user: state.session.user,
@@ -81,7 +83,7 @@ export default class AddAccount extends Component {
     const { handleSubmit, accountData } = this.props;
 
     return (
-      <div>
+      <div class="accounts-create-new">
         <ModalHeader
           title={!!accountData ? 'Edit Account' : 'Add Account'}
           onCloseClick={this.props.closeModal}
@@ -114,17 +116,27 @@ export default class AddAccount extends Component {
               <div>
                 <Field name="email" component="input" class="form-control" />
                 <small class="help-block">
-                  Your sub-merchant will receive a Razorpay sign-up link on this
-                  email.
-                </small>
-
-                <small class="help-block">
-                  Note: If no email is provided, your email will be set as the
-                  registered email ID of this merchant. You can add email ID
-                  later.
+                  Your linked-account user can access their dashboard using this
+                  email id. You may Add/Edit the email later.
                 </small>
               </div>
             </div>
+
+            {!accountData && (
+              <div class="form-group">
+                <div class="rzpCheckbox">
+                  <Field
+                    name="enable_dashboard_access"
+                    id="enable_dashboard_access"
+                    component={CheckboxField}
+                    type="checkbox"
+                  />
+                  <label for="enable_dashboard_access" class="icon i-check">
+                    <span>Enable Dashboard access to this account</span>
+                  </label>
+                </div>
+              </div>
+            )}
 
             <div class="Modal__actions">
               <AsyncButton
