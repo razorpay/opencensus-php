@@ -70,10 +70,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $scroogeGatewayRefundRules = [
-        'payment'  => 'required|array',
-        'refund'   => 'required|array',
-        'gateway'  => 'required|array',
-        'card'     => 'required|array'
+        'id'                    => 'required|unsigned_id',
+        'merchant_id'           => 'required|unsigned_id',
+        'payment_id'            => 'required|unsigned_id',
+        'currency'              => 'required|string|size:3',
+        'gateway'               => 'required|string',
+        'amount'                => 'required|integer|min:100',
+        'base_amount'           => 'required|integer|min:100',
+        'method'                => 'required|string',
+        'payment_amount'        => 'required|integer|min:100',
+        'payment_base_amount'   => 'required|integer|min:100',
+        'payment_created_at'    => 'required|epoch',
     ];
 
     protected $payment;
