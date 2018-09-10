@@ -72,6 +72,11 @@ export default class AccountsListContainer extends ListContainer {
     this.setState({ showAccountDetailsFor: account.id });
   };
 
+  onToggleAccess = (account, checked) => {
+    console.log('is checked?', checked);
+    // Api call to toggle access
+  };
+
   highlightRowAndClose = accountId => {
     this.props.luminateRow(accountId);
     this.setState({ showAccountDetailsFor: null });
@@ -144,6 +149,7 @@ export default class AccountsListContainer extends ListContainer {
               : undefined
           }
           onEdit={this.showAccountDetailsModal}
+          onToggleAccess={this.onToggleAccess}
         />
 
         <Pager

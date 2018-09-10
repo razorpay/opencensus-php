@@ -6,9 +6,16 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { classList } from 'common/util';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
+import SwitchField from 'rzp/ui/Forms/SwitchField';
+
 import store from 'merchant/store';
 
-const AccountsListItem = ({ account, showEditAccountModal, onEdit }) => {
+const AccountsListItem = ({
+  account,
+  showEditAccountModal,
+  onEdit,
+  onToggleAccess,
+}) => {
   let status = account.activation_details
     ? account.activation_details.status
     : account.activated;
@@ -83,12 +90,24 @@ const AccountsListItem = ({ account, showEditAccountModal, onEdit }) => {
           </Popover>
         </small>
       </td>
-      <td>// SwitchField</td>
+      <td style={{ textAlign: 'center' }}>
+        <SwitchField
+          defaultChecked={false}
+          onChange={onToggleAccess}
+          type="prime"
+        />
+      </td>
     </EntityItemRow>
   );
 };
 
-export default ({ accounts, isLoading, showEditAccountModal, onEdit }) => {
+export default ({
+  accounts,
+  isLoading,
+  showEditAccountModal,
+  onEdit,
+  onToggleAccess,
+}) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover" id="accounts-list">
@@ -98,7 +117,7 @@ export default ({ accounts, isLoading, showEditAccountModal, onEdit }) => {
             <th>Email</th>
             <th>Name</th>
             <th>Account Status</th>
-            <th>Dashboard Access</th>
+            <th style={{ textAlign: 'center' }}>Dashboard Access</th>
           </tr>
         </thead>
         <TableBody
@@ -113,6 +132,7 @@ export default ({ accounts, isLoading, showEditAccountModal, onEdit }) => {
               account={account}
               showEditAccountModal={showEditAccountModal}
               onEdit={() => onEdit(account)}
+              onToggleAccess={isChecked => onToggleAccess(account, isChecked)}
             />
           ))}
         </TableBody>
