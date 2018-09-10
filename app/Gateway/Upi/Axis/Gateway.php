@@ -162,7 +162,7 @@ class Gateway extends Base\Gateway
     /**
      * The Merchant ID doesn't change for different
      * merchants since this is the master merchant Id
-     * @return string (numeric merchant id)
+     * @return string (merchant id)
      */
     protected function getMerchantId()
     {
@@ -175,17 +175,45 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * This is what shows up as the payee
-     * on the notification to the customer
+     * Merchant Channel ID
+     * @return string (merchant id)
      */
+    protected function getMerchantId2()
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $this->terminal->getGatewayMerchantId2();
+        }
+
+        return $this->config['merchant_channel_id'];
+    }
+
+    /**
+ * This is what shows up as the payee
+ * on the notification to the customer
+ */
     protected function getDefaultPayeeVpa()
     {
         if ($this->mode === Mode::LIVE)
         {
-            return $this->terminal->getGatewayMerchantId();
+            return $this->terminal->getGatewayDefaultVpa();
         }
 
         return $this->config['default_payee_vpa'];
+    }
+
+    /**
+     * This is what shows up as the payee
+     * on the notification to the customer
+     */
+    protected function getMobileNumber()
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $this->terminal->getGatewayMobileNumber();
+        }
+
+        return $this->config['mobile_no'];
     }
 
     /**
@@ -241,7 +269,7 @@ class Gateway extends Base\Gateway
 
         $data = [
             Fields::MERCH_ID        => $this->getMerchantId(),
-            Fields::MERCH_CHAN_ID   => $this->config['merchant_channel_id'],
+            Fields::MERCH_CHAN_ID   => $this->getMerchantId2(),
             Fields::UNQ_TXN_ID      => $payment['id'],
             Fields::UNQ_CUST_ID     => $payment['id'],
             Fields::AMOUNT          => $this->formatAmount($payment['amount']),
@@ -480,9 +508,9 @@ o
 
         $data = [
             Fields::CHECK_STATUS_MERCH_ID       => $this->getMerchantId(),
-            Fields::CHECK_STATUS_MERCH_CHAN_ID  => $this->config['merchant_channel_id'],
+            Fields::CHECK_STATUS_MERCH_CHAN_ID  => $this->getMerchantId2(),
             Fields::CHECK_STATUS_UNQ_TXN_ID     => $payment['id'],
-            Fields::CHECK_STATUS_MOBILE_NO      => $this->config['mobile_no'],
+            Fields::CHECK_STATUS_MOBILE_NO      => $this->getMobileNumber(),
         ];
 
         $dataStr = implode('', $data);
@@ -632,9 +660,9 @@ o
     {
         $data = [
             Fields::MERCH_ID            => $this->getMerchantId(),
-            Fields::MERCH_CHAN_ID       => $this->config['merchant_channel_id'],
+            Fields::MERCH_CHAN_ID       => $this->getMerchantId2(),
             Fields::TXN_REFUND_ID       => $this->getRefundId($input['refund']),
-            Fields::MOB_NO              => $this->config['mobile_no'],
+            Fields::MOB_NO              => $this->getMobileNumber(),
             Fields::TXN_REFUND_AMOUNT   => $this->formatAmount($input['refund']['amount']),
             Fields::UNQ_TXN_ID          => $input['payment']['id'],
             Fields::REFUND_REASON       => $this->getRefundRemark($input),
