@@ -947,17 +947,35 @@ class Gateway extends Base\Gateway
 
         $gatewayMerchantId = $callbackData[ResponseFields::CALLBACK_RESPONSE_PGMID];
 
-        $masterTransactionId = $callbackData[ResponseFields::NPCI_UPI_TXN_ID];
+        $masterTransactionId = $this->gateway . $callbackData[ResponseFields::NPCI_UPI_TXN_ID];
 
-        return [
-            "payment_details"       => $paymentDetails,
-            "gateway_merchant_id"   => $gatewayMerchantId,
-            "master_transaction_id" => $master_transaction_id,
-        ];
+        return [$paymentDetails, $gatewayMerchantId, $master_transaction_id];
     }
 
-    public function callbackEx($paymentId, $callbackData)
+    public function validatePush($input)
     {
+        parent::action($input, Action::VALIDATE_PUSH);
+
+        $success = ($this->isDuplicateUnexpectedPayment($input) === false) && ($this->isValidUnexpectedPayment($input) === true);
+
+        if ($success === false)
+        {
+            throw new Exception\LogicException(
+                'Push Validation failed',
+                null,
+                [
+                    'callbackData' => $input
+                ]
+            );
+        }
+    }
+
+    public function authorizePush($input)
+    {
+        parent::action($input, Action::AUTHORIZE);
+
+        list($paymentId , $callbackData) = $input
+
         $gatewayInput = [
             "payment" => [
                 "id"  => $paymentId,
@@ -966,8 +984,6 @@ class Gateway extends Base\Gateway
                 "expiry_time" => 1, // dummy value
             ]
         ];
-
-        parent::action($input, Action::AUTHORIZE);
 
         $attributes = $this->getGatewayEntityAttributes($gatewayInput);
 

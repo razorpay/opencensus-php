@@ -1375,72 +1375,62 @@ class Service extends Base\Service
         });
     }
 
-    public function createPaymentFromS2SCallback($callbackData, $gatewayIdentifier)
+    public function createPaymentFromS2SCallback($callbackData, $gateway, $paymentAndMerchantDetails)
     {   
-        $gateway = $this->app['gateway']->gateway($gatewayIdentifier);
+        list($paymentInput, $gatewayMerchantId, $masterTransactionId) = $paymentAndMerchantDetails;
 
-        $details = $gateway->getPaymentAndMerchantDetailsFromCallback($callbackData);
-
-        $paymentInput = $details['payment_details'];
-
-        $gatewayMerchantId = $details['gateway_merchant_id'];
-
-        $masterTransactionId = $details['master_transaction_id'];
-
-        $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gatewayIdentifier);
-
-        $gateway->setMode(Mode::LIVE);
-
-        $gateway->setTerminal($terminal);
-
-        $uniquePaymentIdentifier = $gatewayIdentifier . $masterTransactionId;
-
-        $rv = $this->app['api.mutex']->acquireAndRelease(
-            $uniquePaymentIdentifier,
-            function() use ($paymentInput, $callbackData)
+        $success = $this->app['api.mutex']->acquireAndRelease(
+            $masterTransactionId,
+            function() use ($gateway, $gatewayMerchantId, $paymentInput, $callbackData)
         {
-            if ($gateway->isUnexpectedPayment($callbackData) === false)
-            {
-                throw new Exception\LogicException('Not an unexpected payment');
-            }
+            $success = false;
+
+            $mode = $this->app['basicauth']->getMode();
+
+            $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
+
+            $this->app['gateway']->call($gateway, Action::VALIDATE_PUSH, $callbackData, $mode, $terminal);
+
+            $merchant = $this->repo->merchant->findById(Merchant\Account::DEMO_PAGE_ACCOUNT);
+
+            $paymentProcessor = $this->getNewProcessor($merchant);
 
             $gatewayInput = [
                 'terminal_id'       => $terminal->getId(),
                 'skip_gateway_call' => true,
             ];
 
-            $demoMerchant = $this->app['repo']->merchant->findByIdAndOrgId('2aTeFCKTYWwfrF', '100000razorpay');
+            $paymentProcessor->process($paymentInput, $gatewayInput);
 
-            $rv = $this->getNewProcessor($demoMerchant)->process($paymentInput, $gatewayInput);
+            $payment = $paymentProcessor->getPayment();
 
-            $paymentPublicId = $rv["razorpay_payment_id"];
-
-            $payment = $this->repo->payment->findByPublicId($paymentPublicId);
             $paymentId = $payment->getId();
 
             try
             {
-                $this->repo->transaction(function() use ($paymentId, $callbackData)
+                $this->repo->transaction(function() use ($paymentId, $callbackData, $mode, $terminal)
                 {
-                    $rv = $gateway->callbackEx($paymentId, $callbackData);
+                    $input = [$paymentId, $callbackData]
+
+                    $this->app['gateway']->call($gateway, Action::AUTHORIZE_PUSH, $input, $mode, $terminal);
 
                     $payment->setStatus(Payment\Status::AUTHORIZED);
 
                     $this->repo->saveOrFail($payment);
-
-                    return $rv;
                 });
             }
             catch (\Exception $e)
             {
+                $success = true;
+
                 $payment->setStatus(Payment\Status::FAILED);
 
                 $this->repo->saveOrFail($payment);
             }
 
-            return [];
+            return $success;
         });
 
-        return $rv;
+        return ["success" => $success];
     }
 }

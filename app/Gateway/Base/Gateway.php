@@ -1287,23 +1287,9 @@ class Gateway
             'Unexpected Payment is not supported');
     }
 
-    public function isUnexpectedPayment($callbackData)
-    {
-        return (
-            ($this->isDuplicateUnexpectedPayment($callbackData) === false) &&
-            ($this->isValidUnexpectedPayment($callbackData) === true)
-        );
-    }
-
     public function getPaymentAndMerchantDetailsFromCallback($callbackData)
     {
         throw new Exception\LogicException(
             'Extraction of payment and merchant details from callback data is not supported');
-    }
-
-    public function callbackEx($callbackData)
-    {
-        throw new Exception\LogicException(
-            'Creating gateway entity from callback data is not supported');
     }
 }

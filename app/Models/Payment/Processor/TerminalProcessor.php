@@ -30,9 +30,7 @@ class TerminalProcessor extends Base\Core
     {
         $this->payment = $payment;
 
-        if (array_key_exists("skip_gateway_call", $gatewayData) &&
-            ($gatewayData["skip_gateway_call"] === true) &&
-            array_key_exists("terminal_id", $gatewayData))
+        if (array_key_exists("terminal_id", $gatewayData))
         {
             $terminalId = $gatewayData["terminal_id"];
 

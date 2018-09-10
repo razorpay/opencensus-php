@@ -44,15 +44,17 @@ class GatewayController extends Controller
         {
             try
             {
-                \Database\DefaultConnection::set(Mode::LIVE);
+                $this->app['basicauth']->setModeAndDbConnection(
+                    ($this->app['config']->get('app.env') === Environment::PRODUCTION)
+                    ? Mode::LIVE : Mode::TEST
+                );
 
-                $this->app['basicauth']->setMode(Mode::LIVE);
+                $paymentAndMerchantDetails = $gateway->getPaymentAndMerchantDetailsFromCallback($input);
 
-                return (new Payment\Service)->createPaymentFromS2SCallback($input, $gatewayDriver);
+                return (new Payment\Service)->createPaymentFromS2SCallback($input, $gatewayDriver, $paymentAndMerchantDetails);
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
-                // handle
                 throw new Exception\LogicException(
                     'Payment id not found in either database',
                     null,
@@ -63,9 +65,7 @@ class GatewayController extends Controller
             }
         }
 
-        \Database\DefaultConnection::set($mode);
-
-        $this->app['basicauth']->setMode($mode);
+        $this->app['basicauth']->setModeAndDbConnection($mode);
 
         $paymentId = Payment\Entity::getSignedId($paymentId);
 
