@@ -12,4 +12,5 @@ class InfoCode
 
     const UNKNOWN_RECON_TYPE    = 'UNKNOWN_RECON_TYPE';
 
+    const UNEXPECTED_PAYMENT    = 'UNEXPECTED_PAYMENT';
 }

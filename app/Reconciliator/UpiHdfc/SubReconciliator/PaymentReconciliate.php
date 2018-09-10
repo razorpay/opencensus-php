@@ -9,6 +9,7 @@ use RZP\Reconciliator\Base;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\UniqueIdEntity;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -34,12 +35,31 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $paymentId =  $row[self::ORDER_ID];
 
-       if (empty($paymentId) === true)
-       {
+        if (empty($paymentId) === true)
+        {
             $this->evaluateRowProcessedStatus($row);
-       }
+        }
 
-       return $paymentId;
+        //
+        // MIS file contains many direct settled payments, for which order_id doesn't contain
+        // our payment_id, skipping such rows but marking it as failed to notify the number
+        // of such transactions after recon.
+        //
+        else if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'  => Base\InfoCode::UNEXPECTED_PAYMENT,
+                    'row'        => $row,
+                    'payment_id' => $paymentId,
+                    'gateway'    => $this->gateway
+                ]);
+
+            return null;
+        }
+
+        return $paymentId;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)

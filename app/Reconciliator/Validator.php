@@ -357,7 +357,7 @@ class Validator
         return ($validSubject and $validAttachmentCount and $validBody);
     }
 
-    protected function validateUpiHdfcEmail(array $emailDetails)
+    public function validateUpiHdfcEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject(
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
