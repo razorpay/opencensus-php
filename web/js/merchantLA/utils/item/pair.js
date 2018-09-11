@@ -3,6 +3,7 @@ import * as id from './id';
 import { getAmount, getTime } from 'merchantLA/utils/item';
 import { makeIdLink } from 'merchantLA/utils/item/id';
 import { getIntervalCycle, subString } from 'rzp/utils/rzp-utils';
+import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 
 export const withClick = onClick => ({ value, ...rest }) => {
   return {
@@ -43,4 +44,17 @@ export const recipient = { title: 'Recipient', value: id.recipient };
 
 export const mapValues = values => title => {
   return { title, value: item => values[item.id] };
+};
+
+export const settlementStatus = {
+  title: 'Settlement Status',
+  value: item => (
+    <SettlementStatusLabel
+      status={
+        item.recipient_settlement
+          ? item.recipient_settlement.status
+          : 'scheduled'
+      }
+    />
+  ),
 };

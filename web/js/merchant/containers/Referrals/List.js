@@ -63,7 +63,10 @@ export default class ReferralsListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen myRole="manager admin owner">
+          <ShowWhen
+            myRole="manager admin owner"
+            additionalCondition={user => !user.isPartner()}
+          >
             <div class="btn-toolbar">
               <button
                 class="pull-right btn btn-primary"

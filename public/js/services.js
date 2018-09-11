@@ -1041,6 +1041,24 @@ angular
             $state.go(entityDetails.route, params);
           }
         },
+
+        // Check if url has http/https, otherwise prefix http
+        autoPrefixUrls: function(url) {
+          const regex = /^https?:\/\//i;
+          let tempUrl;
+
+          if (!url || url.length === 0) {
+            return url;
+          }
+
+          tempUrl = url.toLowerCase();
+
+          if (!regex.test(tempUrl)) {
+            url = 'http://' + url;
+          }
+
+          return url;
+        },
       };
     },
   ])

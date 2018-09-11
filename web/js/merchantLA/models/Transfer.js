@@ -1,7 +1,7 @@
 import GenericEntity from './GenericEntity';
 
 export default class Transfer extends GenericEntity {
-  resourceUrl = 'transfers';
+  resourceUrl = 'la-transfers';
 
   resourceFields = [
     'account',

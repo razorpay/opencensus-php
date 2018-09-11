@@ -14,6 +14,7 @@ app
     'transformRequestAsFormPost',
     '$window',
     '$localStorage',
+    'utils',
     function(
       $scope,
       $timeout,
@@ -26,7 +27,8 @@ app
       organization,
       transformRequestAsFormPost,
       $window,
-      $localStorage
+      $localStorage,
+      utils
     ) {
       $scope.toArray = function(obj) {
         if (!obj) {
@@ -50,6 +52,11 @@ app
 
       $scope.isLoggedIn = false;
 
+      $scope.websiteRegex = RegExp(
+        '^((https?)://)?([a-z]+[.])?[a-z0-9-]+([.][a-z]{1,4}){1,2}(/.*[?].*)?$',
+        'i'
+      );
+
       // signup state container
       $scope.signup = {
         currentStep: 0, // 0, 1, 2
@@ -65,6 +72,7 @@ app
           role: null,
           department: null,
           business_name: '',
+          business_website: '',
           contact_mobile: '',
           contact_name: '',
         },
@@ -85,10 +93,6 @@ app
             4: {
               name: 'Individual',
               value: 2,
-            },
-            5: {
-              name: 'Not yet registered',
-              value: 11,
             },
             6: {
               name: 'Public Limited',
@@ -214,6 +218,8 @@ app
               $scope.lock_email = data.data.email ? true : false;
               $scope.signup.merchantData.business_name =
                 form_data.merchant_name;
+              $scope.signup.merchantData.business_website =
+                form_data.business_website;
               $scope.signup.merchantData.contact_name = form_data.contact_name;
               $scope.merchant_invitation = true;
             }
@@ -323,9 +329,21 @@ app
       };
 
       $scope.sendDetails = function() {
+        if (!$scope.forms.detailsForm.business_website.$valid) {
+          return;
+        } else if ($scope.signup.merchantData.business_website) {
+          $scope.signup.merchantData.business_website = utils.autoPrefixUrls(
+            $scope.signup.merchantData.business_website
+          );
+        }
+
+        window.ga && ga('send', 'event', 'sign-up-form-success');
+        window.ga && ga('old.send', 'event', 'sign-up-form-success');
+
         pushToDrip();
         invokeAdroll();
         invokeGtag();
+        invokeBing();
 
         // Fire linkedin Pixel.
         var i = new Image();
@@ -367,6 +385,18 @@ app
           } else {
             angular.forEach(data.errors, function(value) {
               $scope.alerts.addAlert('danger', value);
+
+              setTimeout(function() {
+                var alertEle = $('.pre_signup_alert');
+
+                alertEle[0] &&
+                  $('.auth-substep.name-substep').animate(
+                    {
+                      scrollTop: alertEle.offset().top,
+                    },
+                    500
+                  );
+              }, 100);
             });
           }
         });
@@ -485,7 +515,7 @@ app
         (function() {
           var _onload = function() {
             // Use only on prod.
-            if (window.location.hostname != 'dashboard.razorpay.com') {
+            if (window.location.hostname !== 'dashboard.razorpay.com') {
               return;
             }
 
@@ -502,27 +532,48 @@ app
               return;
             }
             var scr = document.createElement('script');
+            (
+              (document.getElementsByTagName('head') || [null])[0] ||
+              document.getElementsByTagName('script')[0].parentNode
+            ).appendChild(scr);
             var host =
               'https:' == document.location.protocol
                 ? 'https://s.adroll.com'
                 : 'http://a.adroll.com';
             scr.setAttribute('async', 'true');
             scr.type = 'text/javascript';
+            scr.onload = function() {
+              __adroll.record_user({
+                adroll_segments: 'ef374af4',
+              });
+            };
             scr.src = host + '/j/roundtrip.js';
-            (
-              (document.getElementsByTagName('head') || [null])[0] ||
-              document.getElementsByTagName('script')[0].parentNode
-            ).appendChild(scr);
           };
           _onload();
         })();
       };
 
       /**
+       * Invoke Bing for conversion tracking.
+       */
+      var invokeBing = function invokeBing() {
+        if (window.location.hostname !== 'dashboard.razorpay.com') {
+          return;
+        }
+        window.uetq = window.uetq || [];
+        window.uetq.push({
+          ec: 'bing',
+          ea: 'click',
+          el: 'connecttobing',
+          ev: 1,
+        });
+      };
+
+      /**
        * Invokes GTAG for conversion tracking.
        */
       var invokeGtag = function invokeGtag() {
-        if (window.location.hostname != 'dashboard.razorpay.com') {
+        if (window.location.hostname !== 'dashboard.razorpay.com') {
           return;
         }
         gtag('event', 'conversion', {
@@ -876,6 +927,7 @@ app
           $scope.signup.merchantData.role = null;
           $scope.signup.merchantData.department = null;
           $scope.signup.merchantData.business_name = '';
+          $scope.signup.merchantData.business_website = '';
           $scope.signup.merchantData.contact_mobile = '';
           $scope.signup.merchantData.contact_name = '';
           $scope.email_not_verified = false;

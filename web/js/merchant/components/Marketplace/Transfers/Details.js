@@ -405,6 +405,15 @@ export default class TransferDetails extends Component {
                             <Definition>
                               {key}
                               {String(transfer.notes[key])}
+                              {!!transfer.linked_account_notes &&
+                                transfer.linked_account_notes.indexOf(key) >
+                                  -1 && (
+                                  <span>
+                                    <i class="i i-info-outline" /> This note is
+                                    shown to the linked account
+                                  </span>
+                                )}
+                              <i />
                             </Definition>
                           </div>
                         )))}

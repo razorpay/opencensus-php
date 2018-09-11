@@ -205,9 +205,8 @@ const Title = ({
                 <i className="i i-info-circle text-fade" />
                 <Popover align="top" followPointer={true} theme="dark">
                   <PopoverBody>
-                    Your account is Under Review. The process usually takes{' '}
-                    {activationDuration}. We will reach out on your contact
-                    email for further clarifications.
+                    Our team will review the form and submitted documents. We
+                    will reach out on your contact email for all updates.
                   </PopoverBody>
                 </Popover>
               </small>
@@ -310,7 +309,7 @@ const Text = ({
       ) : (
         // if user has submitted and is under review
 
-        `It may take ${activationDuration} for review.`
+        'Our team is reviewing the submission.'
       )}
     </span>
   );

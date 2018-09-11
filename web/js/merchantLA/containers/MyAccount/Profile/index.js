@@ -4,12 +4,18 @@ import Alert from 'rzp/ui/Forms/Alert';
 import Spinner from 'rzp/ui/Spinner';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { fetchBankAccount } from 'merchantLA/modules/profile';
 
+import ShowWhen from 'merchantLA/components/ShowWhen';
+
+import User from 'merchant/models/User';
 import MerchantDetails from 'merchantLA/components/MyAccount/Profile/MerchantDetails';
 import BankAccountDetails from 'merchantLA/components/MyAccount/Profile/BankAccountDetails';
 import { fetchUser } from 'merchantLA/modules/session';
 import PasswordForm from './PasswordForm';
+import DisplayNameForm from 'merchant/components/Profile/DisplayNameForm';
+
+import { updateDisplayName } from 'merchantLA/modules/profile';
+import { updateSession } from 'merchantLA/modules/session';
 
 @connect(
   state => {
@@ -17,7 +23,13 @@ import PasswordForm from './PasswordForm';
       user: state.session.user,
     };
   },
-  { ...ModalActions, showNotification, fetchUser }
+  {
+    ...ModalActions,
+    showNotification,
+    fetchUser,
+    updateDisplayName,
+    updateSession,
+  }
 )
 export default class Profile extends Component {
   state = {};
@@ -32,16 +44,10 @@ export default class Profile extends Component {
         });
       }
     });
+  }
 
-    fetchBankAccount()
-      .then(response => {
-        if (response.data) {
-          this.setState({
-            bankAccount: response.data,
-          });
-        }
-      })
-      .catch(err => {});
+  isLinkedAccountOwner() {
+    return ['linked_account_owner'].indexOf(this.props.user.role) > -1;
   }
 
   openChangePasswordModal = () => {
@@ -51,10 +57,50 @@ export default class Profile extends Component {
     });
   };
 
+  updateDisplayName = props => {
+    return this.props
+      .updateDisplayName(props)
+      .then(resp => {
+        if (resp.success) {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Display name changed successfully.',
+          });
+
+          this.props.closeModal();
+
+          const newUser = new User({
+            ...this.props.user,
+            display_name: resp.data.display_name,
+          });
+
+          this.props.updateSession({ user: newUser });
+        }
+
+        return resp;
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
+
+  openChangeDisplayName = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <DisplayNameForm
+          displayName={this.props.user.display_name}
+          updateDisplayName={this.updateDisplayName}
+        />
+      ),
+    });
+  };
+
   render() {
-    console.log('re-render...');
     let { user } = this.props;
-    let { bankAccount } = this.state;
 
     if (!user.isAuthenticated) {
       return (
@@ -63,6 +109,12 @@ export default class Profile extends Component {
         </div>
       );
     }
+
+    const bankAccount = {
+      ifsc: user.bank_branch_ifsc,
+      account_number: user.bank_account_number,
+      name: user.bank_account_name,
+    };
 
     return (
       <div class="content-wrapper content-sm">
@@ -78,12 +130,24 @@ export default class Profile extends Component {
               </div>
             )}
 
-            {user && user.current ? <MerchantDetails user={user} /> : null}
+            {user && user.current ? (
+              <MerchantDetails
+                user={user}
+                changeDisplayName={
+                  Object.keys(user.merchants).length > 1 &&
+                  !!this.isLinkedAccountOwner() &&
+                  this.openChangeDisplayName
+                }
+              />
+            ) : null}
           </div>
 
-          {bankAccount ? (
+          <ShowWhen
+            //myRole="owner"
+            myRole="linked_account_owner"
+          >
             <BankAccountDetails bankAccount={bankAccount} />
-          ) : null}
+          </ShowWhen>
         </div>
       </div>
     );

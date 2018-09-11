@@ -4,9 +4,8 @@ import { Link } from 'react-router-dom';
 import Time from 'rzp/ui/Time';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import DetailRow from '../DetailRow';
-import CheckIcon from 'rzp/ui/CheckIcon';
 import ProgressBar from 'rzp/ui/ProgressBar';
-import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { openModal, closeModal } from 'rzp/modules/modals';
 
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
@@ -14,15 +13,45 @@ import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 import EditWebsiteDetails from 'merchant/containers/EditWebsiteDetails';
 
 export default connect(null, { openModal, closeModal })(
-  ({ user, openModal, closeModal }) => {
+  ({ user, openModal, closeModal, changeDisplayName }) => {
     return (
       <div class="list-group details-row-container">
         <DetailRow label="Merchant Name" value={titleCase(user.name)} />
 
-        <DetailRow
-          label="Merchant Email"
-          value={() => <a href={`mailto:${user.email}`}>{user.email}</a>}
-        />
+        {changeDisplayName && (
+          <DetailRow
+            label={() => (
+              <div>
+                <span>Display Name</span>
+                <small class="help-content">
+                  <i class="i i-info-outline" />
+                  <Popover align="top" theme="dark">
+                    <PopoverBody>
+                      <div>
+                        This is the display name that will be displayed in the
+                        Switch Merchant dropdown.
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </div>
+            )}
+            value={() => (
+              <span>
+                {user.display_name || user.name}
+                <a
+                  class="p-l"
+                  title="Edit Display Name"
+                  onClick={changeDisplayName}
+                >
+                  <i class="i i-edit" />
+                </a>
+              </span>
+            )}
+          />
+        )}
+
+        <DetailRow label="Merchant Email" value={() => user.email} />
 
         <DetailRow
           label="Registration Date"

@@ -109,6 +109,10 @@ export default class User {
     return true;
   }
 
+  get isAgentRole() {
+    return this.findTag('enable_agent_role');
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 
@@ -117,8 +121,20 @@ export default class User {
     });
   }
 
-  /* Check if the tag exists */
+  /* Check case-insensitive tag check existence */
   findTag(tag) {
     return !!this.tags.find(t => t.toLowerCase() === tag.toLowerCase());
+  }
+
+  /**
+   * Detects whether user is partner or not.
+   * If check has to be made for specific type of partners,
+   * then send the types for which check has to be done in arguments
+   */
+  isPartner(...args) {
+    const partnerTypes = [...args];
+    return !!partnerTypes.length
+      ? partnerTypes.indexOf(this.partner_type) > -1
+      : !!this.partner_type;
   }
 }

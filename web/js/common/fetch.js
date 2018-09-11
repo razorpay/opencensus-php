@@ -52,11 +52,11 @@ function _makePayload(payload, type) {
 }
 
 // url are must be absolute url, Eg: /admin/api/{mode}/your_url
-export function adminFormUpload(form, url) {
+export function adminFormUpload(form, url, headers) {
   //Let axios decide which "Content-Type" to send
   let fData = createFormData(form);
 
-  return axios.post(url, fData);
+  return axios.post(url, fData, { headers });
 }
 
 // url are must be absolute url, Eg: /admin/api/{mode}/your_url
@@ -84,6 +84,28 @@ const createFormData2 = (form = {}) => {
     if (typeof form[key] === 'object') {
       Object.keys(form[key]).map(item => {
         formData.append(key + '[' + item + ']', form[key][item]); // Object, eg= type:{a:2,b:4} will be sent as type[a] = 2, type[b] = 4 separately
+      });
+    } else {
+      formData.append(key, form[key]);
+    }
+  });
+  return formData;
+};
+
+// File upload helper with only array support - not objects
+export function adminFormUpload3(form, url) {
+  let fData = createFormData3(form);
+
+  return axios.post(url, fData);
+}
+
+const createFormData3 = (form = {}) => {
+  let formData = new FormData();
+
+  Object.keys(form).map(key => {
+    if (form[key] instanceof Array) {
+      form[key].forEach((item, index) => {
+        formData.append(key + '[' + index + ']', item); // Array, eg= id:[12,14] will be sent as id[0] = 12, id[1] = 14 separately
       });
     } else {
       formData.append(key, form[key]);

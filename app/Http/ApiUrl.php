@@ -17,21 +17,16 @@ class ApiUrl
         'dev'        => '*',
         'dev_docker' => '*',
         'beta'       => [
-            'https://beta-api.razorpay.com/v1/',
-            'https://beta-api-canary.razorpay.com/v1/',
             'https://beta-api.razorpay.in/v1/',
             'https://beta-api-canary.razorpay.in/v1/',
         ],
         'charlie'    => [
-            'https://charlie-api.razorpay.com/v1/',
             'https://charlie-api.razorpay.in/v1/',
         ],
         'delta'      => [
-            'https://delta-api.razorpay.com/v1/',
             'https://delta-api.razorpay.in/v1/',
         ],
         'echo'       => [
-            'https://echo-api.razorpay.com/v1/',
             'https://echo-api.razorpay.in/v1/',
         ],
         'production' => [

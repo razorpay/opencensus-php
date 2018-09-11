@@ -12,7 +12,7 @@ import Group, { GroupItem } from 'rzp/ui/Group';
 
 import { logout, showOrHideTour } from 'merchantLA/modules/session';
 import SubmitFeedback from 'merchantLA/containers/Header/SubmitFeedback';
-import { SwitchMerchantTypeahead } from 'merchantLA/components/HeaderNav/SwitchMerchant';
+import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
 
 @withRouter
 @connect(
@@ -41,6 +41,11 @@ export default class ProfileDropdown extends Component {
     this.props.openModal({
       component: <SubmitFeedback analytics={this.props.analytics} />,
     });
+  };
+
+  openTicketModal = () => {
+    window.rzpTicketSystem &&
+      window.rzpTicketSystem.openModal('#ticket', this.props.analytics);
   };
 
   openSwitchMerchantModal = () => {
@@ -152,6 +157,10 @@ export default class ProfileDropdown extends Component {
                 </div>
               </React.Fragment>
             )}
+
+            <div className="media media-action" onClick={this.openTicketModal}>
+              <div className="media-body">Raise a request</div>
+            </div>
 
             <div className="media media-action" onClick={this.submitFeedback}>
               <div className="media-body">Give feedback or suggestions</div>

@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 
 import LocalStorageService from 'rzp/utils/localStorage';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
@@ -44,6 +44,11 @@ export default class ProfileDropdown extends Component {
     this.props.openModal({
       component: <SubmitFeedback analytics={this.props.analytics} />,
     });
+  };
+
+  openTicketModal = () => {
+    window.rzpTicketSystem &&
+      window.rzpTicketSystem.openModal('#ticket', this.props.analytics);
   };
 
   openSwitchMerchantModal = () => {
@@ -159,6 +164,12 @@ export default class ProfileDropdown extends Component {
                 </div>
               </React.Fragment>
             )}
+
+            <div className="media media-action">
+              <Link to="#request" className="media-body">
+                Raise a request
+              </Link>
+            </div>
 
             <div className="media media-action" onClick={this.submitFeedback}>
               <div className="media-body">Give feedback or suggestions</div>

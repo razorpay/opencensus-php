@@ -16,6 +16,7 @@ import {
 import mainFormTabsContent, {
   mainFormTabs,
   mainFormFieldNamesMeta,
+  INDIVIDUAL,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
@@ -55,10 +56,6 @@ function defaultFieldProps(f) {
   }
   if (!f.hasOwnProperty('required')) {
     f.required = true;
-  }
-
-  if (f.hasOwnProperty('description') && typeof f.description === 'function') {
-    f.description = f.description.bind(self); // Dynamic description based on other fields must be able to access this.state.dirty and this.props
   }
 
   if (f.hasOwnProperty('validator') && typeof f.validator === 'function') {
@@ -214,7 +211,13 @@ export default class ActivationWizard extends React.Component {
 
     if (firstInValid === null) {
       firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
-      !isFormSubmitted && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
+
+      if (!this.isLinkedAccountForm && this.isIndividualTypeLock) {
+        // For non-LA account
+        firstInValid = 1; // Business Overview tab
+      } else {
+        !isFormSubmitted && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
+      }
     }
 
     this.state.activeTab = firstInValid;
@@ -525,6 +528,13 @@ export default class ActivationWizard extends React.Component {
     return !!this.props.accountId;
   }
 
+  get isIndividualTypeLock() {
+    const businessType =
+      this.state.dirty.business_type || this.props.data.business_type;
+
+    return businessType == INDIVIDUAL;
+  }
+
   /*
   * Handle Account No. re-enter match before saving.
   * It mimicks loader used for API to handle cases if tab is changed.
@@ -744,6 +754,11 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
+    if (!this.isLinkedAccountForm && isValid && this.isIndividualTypeLock) {
+      // For non-LA account
+      isValid = false;
+    }
+
     return isValid;
   }
 
@@ -839,9 +854,11 @@ export default class ActivationWizard extends React.Component {
       moreTabs.push(
         <li
           key="submit-tab"
-          onClick={this.toggleSubmitLayer}
+          onClick={
+            this.isIndividualTypeLock ? undefined : this.toggleSubmitLayer
+          }
           class={classList(
-            !this.isAllTabsValid() && 'disabled',
+            (!this.isAllTabsValid() || this.isIndividualTypeLock) && 'disabled',
             this.state.showSubmitLayer && 'active',
             'li--submit'
           )}
@@ -871,6 +888,13 @@ export default class ActivationWizard extends React.Component {
           tabClickHandler={this.changeTab}
           activeTab={activeTab}
           activeTabContdition={!this.state.showSubmitLayer}
+          disableTabCondition={tabId => {
+            return (
+              !this.isLinkedAccountForm &&
+              this.isIndividualTypeLock &&
+              [2, 3, 4].indexOf(tabId) > -1
+            );
+          }}
         />
 
         {/* Activation form Content */}
@@ -984,9 +1008,9 @@ export default class ActivationWizard extends React.Component {
                 // **5. Alert: Form is Submitted
 
                 icon = 'i-check';
-                msg = `Your activation form is already submitted. It usually takes ${activationDuration} for the review.`;
+                msg = `Our team will review the form and submitted documents.`;
                 secondaryMsg =
-                  'For any clarifications, we will reach out on your contact email.';
+                  'We will reach out on your contact email for all updates.';
               }
 
               {
@@ -1045,12 +1069,16 @@ export default class ActivationWizard extends React.Component {
                 )}
 
                 {/* Action Button 2 */}
-                {isLastTab || (
-                  <Button.Primary iconAfter="chevron-right" onClick={this.next}>
-                    <span class="device--desktop">Save & Next</span>
-                    <span class="device--mobile">Next</span>
-                  </Button.Primary>
-                )}
+                {isLastTab ||
+                  ((this.isLinkedAccountForm || !this.isIndividualTypeLock) && (
+                    <Button.Primary
+                      iconAfter="chevron-right"
+                      onClick={this.next}
+                    >
+                      <span class="device--desktop">Save & Next</span>
+                      <span class="device--mobile">Next</span>
+                    </Button.Primary>
+                  ))}
 
                 {/* Action Button 3 */}
                 {isLastTab &&
@@ -1184,6 +1212,10 @@ function ActivationField(field) {
   // Show bank account number if it's activated/locked
   if (rest.hasOwnProperty('type') && rest.type === 'password' && isFormLocked) {
     rest.type = 'text';
+  }
+
+  if (rest.description && typeof rest.description === 'function') {
+    rest.description = rest.description(this);
   }
 
   return (
