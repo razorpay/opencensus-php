@@ -171,6 +171,12 @@ class Gateway
 
     protected $externalMockDomain;
 
+    protected $paymentId;
+
+    protected $curlLogPath;
+
+    protected $curlLog;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -1273,5 +1279,38 @@ class Gateway
         $gatewayMetric = new Metric;
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status);
+    }
+
+    //
+    // This is a temporary function for debugging the curl issue
+    //
+    protected function traceCurlErrorIfApplicable()
+    {
+        try
+        {
+            if ((isset($this->exception) === true) and
+                ($this->exception instanceof \Requests_Exception) and
+                ($this->exception->getType() === 'curlerror'))
+            {
+                $curlData = file_get_contents($this->curlLogPath);
+
+                $dataToTrace = [
+                    'gateway'   => $this->gateway,
+                    'curl_data' => $curlData,
+                ];
+
+                $this->trace->info(TraceCode::GATEWAY_UNKNOWN_CURL_ERROR, $dataToTrace);
+
+                $message = 'Curl error @vv @vivek @viv @kranti';
+
+                // #transactions
+                $this->app['slack']->queue(
+                    $message, $dataToTrace, ['color' => 'bad', 'channel' => 'C04260LMZ']);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
+        }
     }
 }
