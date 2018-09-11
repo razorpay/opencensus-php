@@ -66,7 +66,7 @@ export const trackPlatformAnalyticsHidden = percent => {
 export const trackForceOldDashboard = () => {
   track({
     eventAction: 'Force Old Dashboard on Mobile',
-    eventLabel: `Resolution - ${window.outerWidth}x${window.outerHeight}`,
+    eventLabel: `Resolution - ${window.innerWidth}x${window.outerHeight}`,
   });
 };
 
