@@ -22,10 +22,11 @@ import CopyLink from 'merchant/components/Invoices/CopyLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import StatsInfo from 'ui/StatsTable';
 import GroupDetailsTable from 'rzp/ui/GroupDetailsTable';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { trackDetailViewEdits } from './ga';
+import { trackDetailViewEdits, trackShareActions } from './ga';
 
 import EditPaymentFor from './Edit/EditPaymentFor';
 import EditTimesPayable from './Edit/EditTimesPayable';
@@ -152,15 +153,8 @@ export default class PaymentPagesEntity extends React.Component {
       });
   }
 
-  onCopy = ({ paymentPageId }) => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Payment Pages',
-      eventAction: 'Copy - Payment Page Link',
-      eventLabel: `payment_link_id=${paymentPageId}`,
-    });
-  };
-
   openShareView = () => {
+    trackDetailViewEdits('Click Share');
     this.props.openModal({
       size: 'small',
       component: (
@@ -172,6 +166,7 @@ export default class PaymentPagesEntity extends React.Component {
           url={this.state.paymentPageEntity.short_url}
           title={this.state.paymentPageEntity.title}
           description={this.state.paymentPageEntity.description}
+          trackerFn={trackShareActions}
         />
       ),
     });
@@ -335,6 +330,10 @@ export default class PaymentPagesEntity extends React.Component {
               this.setState({
                 paymentPageEntity: resp.data,
               });
+              trackDetailViewEdits(
+                'Toggle Status',
+                isActive ? 'deactivate' : 'activate'
+              );
             }
             return resp;
           })
@@ -501,9 +500,7 @@ export default class PaymentPagesEntity extends React.Component {
                     <CopyLink
                       url={paymentPageEntity.short_url}
                       onCopy={() => {
-                        this.onCopy({
-                          paymentPageId: paymentPageEntity.id,
-                        });
+                        trackDetailViewEdits('Click Copy');
                       }}
                     />
                   )}
@@ -540,8 +537,13 @@ export default class PaymentPagesEntity extends React.Component {
                         description: paymentPageEntity.description,
                       }}
                       entityId={paymentPageEntity.id}
-                      editFn={this.editPaymentPage}
-                      trackerFn={trackDetailViewEdits}
+                      editFn={data => {
+                        trackDetailViewEdits(
+                          'Edit Description (Save)',
+                          getKeysSeparatedByPipe(data)
+                        );
+                        return this.editPaymentPage(data);
+                      }}
                     />
                   )}
                 />
@@ -580,8 +582,11 @@ export default class PaymentPagesEntity extends React.Component {
                     <EditExpiry
                       value={paymentPageEntity.expire_by}
                       editFn={this.editPaymentPage}
+                      editFn={(...args) => {
+                        trackDetailViewEdits('Edit Expires on (Save)');
+                        return this.editPaymentPage(...args);
+                      }}
                       entityId={paymentPageEntity.id}
-                      trackerFn={trackDetailViewEdits}
                     />
                   )}
                 />
@@ -591,9 +596,11 @@ export default class PaymentPagesEntity extends React.Component {
                   value={() => (
                     <EditTimesPayable
                       value={paymentPageEntity.times_payable}
-                      editFn={this.editPaymentPage}
+                      editFn={(...args) => {
+                        trackDetailViewEdits('Edit Times Payable (Save)');
+                        return this.editPaymentPage(...args);
+                      }}
                       entityId={paymentPageEntity.id}
-                      trackerFn={trackDetailViewEdits}
                     />
                   )}
                 />
