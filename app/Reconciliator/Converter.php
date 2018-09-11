@@ -25,6 +25,7 @@ class Converter extends Base\Core
         RequestProcessor\Base::MOBIKWIK,
         RequestProcessor\Base::OLAMONEY,
         RequestProcessor\Base::FREECHARGE,
+        RequestProcessor\Base::CARD_FSS_BOB,
     ];
 
     const MAX_SHEETS_ALLOWED = 3;

@@ -500,8 +500,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
 
     /**
-     * Checks if currency in recon file matches the actual currency in refund entity
-     * Implementation to be provided by child clasess
+     * Checks if currency in recon file matches the actual currency in
+     * refund entity. Implementation to be provided by child classes.
      *
      * @param  array $row Row data
      *

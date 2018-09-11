@@ -409,4 +409,20 @@ class SubReconciliate extends Base\Core
             $this->setSummaryCount(self::SUCCESSES_SUMMARY, head($row));
         }
     }
+
+    /**
+     * @param array $row
+     * @param string $columnName
+     */
+    protected function reportMissingColumn(array $row, string $columnName)
+    {
+        $this->trace->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'message'           => 'Unable to get the expected column.',
+                'column_name'       => $columnName,
+                'row'               => $row,
+                'gateway'           => $this->gateway
+            ]);
+    }
 }
