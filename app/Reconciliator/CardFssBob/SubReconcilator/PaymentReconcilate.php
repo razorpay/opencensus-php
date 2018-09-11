@@ -7,11 +7,12 @@ use RZP\Constants\Timezone;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
-use RZP\Reconciliator\Base\SubReconciliator;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Card\Fss\Status;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Currency\Currency;
+use RZP\Reconciliator\Base\InfoCode;
+use RZP\Reconciliator\Base\SubReconciliator;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
@@ -32,7 +33,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
+                    'info_code'         => InfoCode::AMOUNT_MISMATCH,
                     'expected_amount'   => $paymentAmount,
                     'currency'          => $this->payment->getCurrency(),
                     'row'               => $row,
@@ -62,7 +63,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'message'           => Base\InfoCode::CURRENCY_MISMATCH,
+                    'message'           => InfoCode::CURRENCY_MISMATCH,
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
                     'row'               => $row,

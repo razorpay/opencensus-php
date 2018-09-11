@@ -105,7 +105,7 @@ class Base extends Core
         self::HITACHI                => ['reportsmailer@hitachi-payments.com'],
         self::CARD_FSS_HDFC          => [],
         self::ATOM                   => [],
-        self::CARD_FSS_BOB                    => [],
+        self::CARD_FSS_BOB           => [],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
 
         // Used when someone from the team needs to send the

@@ -3,12 +3,14 @@
 namespace RZP\Reconciliator\CardFssBob\SubReconciliator;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 
 use RZP\Trace\TraceCode;
-use RZP\Reconciliator\Base\SubReconciliator;
+use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Currency\Currency;
+use RZP\Reconciliator\Base\InfoCode;
+use RZP\Reconciliator\Base\SubReconciliator;
+
 
 class RefundReconciliate extends SubReconciliator\RefundReconciliate
 {
@@ -92,7 +94,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
+                    'info_code'         => InfoCode::AMOUNT_MISMATCH,
                     'message'           => 'Refund amount mismatch',
                     'expected_amount'   => $refundAmount,
                     'currency'          => $this->refund->getCurrency(),
@@ -142,7 +144,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'message'           => Base\InfoCode::CURRENCY_MISMATCH,
+                    'message'           => InfoCode::CURRENCY_MISMATCH,
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
                     'row'               => $row,

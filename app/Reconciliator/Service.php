@@ -14,7 +14,9 @@ use RZP\Reconciliator\RequestProcessor;
 
 class Service extends Base\Service
 {
-
+    /**
+     * List of gateways where we are doing recon processing via non-batch.
+     */
     const NON_BATCH_RECON_GATEWAYS = [
         RequestProcessor\Base::ADMIN,
         RequestProcessor\Base::EBS,
