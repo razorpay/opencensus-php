@@ -1,9 +1,12 @@
 <?php
 
 use Carbon\Carbon;
-
-use RZP\Error\PublicErrorCode;
 use RZP\Constants\Timezone;
+
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\PaymentVerificationException;
 
 return [
     'testAuthenticationFailed' => [
@@ -155,6 +158,54 @@ return [
                 'amount' => 5000,
                 'currency' => 'INR',
             ],
+        ],
+    ],
+
+    'testDigioCallbackFailedVerifySuccess' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR_REQUEST_TIMEOUT,
+                ],
+            ],
+            'status_code' => 504,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
+    ],
+
+    'testDigioAuthFailedVerifySuccess' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => 'Payment processing failed due to error at bank or wallet gateway'
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => 'GATEWAY_ERROR_MANDATE_CREATION_FAILED',
+        ],
+    ],
+
+    'testVerifyMismatch' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => PaymentVerificationException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
 ];
