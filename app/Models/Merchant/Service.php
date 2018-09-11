@@ -2024,7 +2024,7 @@ class Service extends Base\Service
             $ownerId
         )
         {
-            $enableDashboardAccess = (bool) $input['dashboard_access'] ?? false;
+            $enableDashboardAccess = (bool) ($input['dashboard_access'] ?? false);
 
             unset($input['dashboard_access']);
 
