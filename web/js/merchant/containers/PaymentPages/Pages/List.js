@@ -21,6 +21,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import { populateRPLReduxList } from 'merchant/modules/invoices/list';
 
 import OnboardingPP from './OnboardingPP';
+import { trackListActions } from './ga';
 
 @connect(state => ({ ...state.invoices, ...state.session }), {
   showNotification,
@@ -95,27 +96,12 @@ export default class PaymentPagesContainer extends ListContainer {
   onSearchAnalytics = params => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
-      window.rzpAnalytics({
-        eventCategory: 'Dashboard - Payment Pages',
-        eventAction: 'Search - Payment Pages',
-        eventLabel: label,
-      });
+      trackListActions('Search', label);
     }
   };
 
   onClearAnalytics = () => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Payment Pages',
-      eventAction: 'Clear Search Params - Payment Pages',
-    });
-  };
-
-  onCopy = ({ paymentLinkId }) => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Payment Pages',
-      eventAction: 'Copy - Payment Page Link',
-      eventLabel: `payment_link_id=${paymentLinkId}`,
-    });
+    trackListActions('Clear');
   };
 
   render() {
@@ -212,7 +198,12 @@ export default class PaymentPagesContainer extends ListContainer {
                 {paymentPages.map(item => (
                   <EntityItemRow id={item.id} key={item.id}>
                     <td>
-                      <NavLink to={`/paymentpages/${item.id}`}>
+                      <NavLink
+                        to={`/paymentpages/${item.id}`}
+                        onClick={() => {
+                          trackListActions('Title Click');
+                        }}
+                      >
                         {item.title}
                       </NavLink>
                     </td>
@@ -231,12 +222,7 @@ export default class PaymentPagesContainer extends ListContainer {
                       {item.short_url && (
                         <span class="CopyLink">
                           <span>{item.short_url}</span>
-                          <CustomClipboard
-                            value={item.short_url}
-                            onCopy={this.onCopy({
-                              itemId: item.id,
-                            })}
-                          >
+                          <CustomClipboard value={item.short_url}>
                             <button class="btn btn-default btn-xs">copy</button>
                           </CustomClipboard>
                         </span>
