@@ -643,6 +643,23 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals('authorized', $payment['status']);
     }
 
+    public function testCaptureGatewayRequestExceptionRetry()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->getGatewayRequestExceptionInCapture();
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $this->i);
+
+        $this->assertEquals('captured', $payment['status']);
+    }
+
     public function testInvalidAuthFields()
     {
         $validatedFields = [
