@@ -4,9 +4,13 @@ namespace RZP\Reconciliator\Base;
 
 class InfoCode
 {
-    const AMOUNT_MISMATCH   = 'AMOUNT_MISMATCH';
+    const AMOUNT_MISMATCH       = 'AMOUNT_MISMATCH';
 
-    const PAYMENT_ABSENT    = 'PAYMENT_ABSENT';
+    const PAYMENT_ABSENT        = 'PAYMENT_ABSENT';
 
-    const REFUND_ABSENT     = 'REFUND_ABSENT';
+    const REFUND_ABSENT         = 'REFUND_ABSENT';
+
+    const UNKNOWN_RECON_TYPE    = 'UNKNOWN_RECON_TYPE';
+
+    const UNEXPECTED_PAYMENT    = 'UNEXPECTED_PAYMENT';
 }

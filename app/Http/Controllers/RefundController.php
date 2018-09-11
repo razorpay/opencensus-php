@@ -85,6 +85,8 @@ class RefundController extends Controller
      * - No refund entity created on the gateway side.
      *
      * @param $gateway
+     *
+     * @return array
      */
     public function postGatewayRefundRecord($gateway)
     {
@@ -156,6 +158,36 @@ class RefundController extends Controller
     public function postRefundVerify(string $id)
     {
         $response = $this->service()->verify($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function markRefundProcessed(string $id)
+    {
+        $data = $this->service()->markRefundProcessed($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postGatewayRefundCall(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->makeGatewayRefundCall($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postGatewayVerifyRefundCall(string $id)
+    {
+        $response = $this->service()->makeGatewayVerifyRefundCall($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function scroogeRefundCreate(string $id)
+    {
+        $response = $this->service()->createScroogeRefund($id);
 
         return ApiResponse::json($response);
     }

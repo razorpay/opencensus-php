@@ -220,8 +220,13 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+    ];
+
+    const INTERNAL_CONFIG_LIST = [
         self::BILLING_LABEL,
         self::WEBSITE,
+        self::RECEIPT_EMAIL_ENABLED,
+        self::PARENT_ID
     ];
 
     protected $public = [

@@ -154,6 +154,7 @@ class Constants
         self::HIDE_DOWNTIMES                  => true,
         self::OLD_CREDITS_FLOW                => true,
         self::CHARGE_AT_WILL                  => true,
+        self::SETTLEMENT_24X7                 => true,
         self::EMI_MERCHANT_SUBVENTION         => true,
         self::FSS_RISK_UDF                    => true,
         self::RULE_FILTER                     => true,

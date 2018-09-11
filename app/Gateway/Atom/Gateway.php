@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use Requests_Hooks;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
@@ -45,6 +46,8 @@ class Gateway extends Base\Gateway
 
         $request['url'] = $this->createRedirectUrl($request['content']);
         $request['content'] = [];
+
+        $request['options'] = $this->getRequestOptions();
 
         $request = $this->makeRequestAndGetFormData($request);
 
@@ -167,6 +170,22 @@ class Gateway extends Base\Gateway
         ];
 
         return $request;
+    }
+
+    public function getRequestOptions()
+    {
+        $hooks = new Requests_Hooks();
+
+        $hooks->register('curl.before_send', [$this, 'setCurlOpts']);
+
+        $options['hooks'] = $hooks;
+
+        return $options;
+    }
+
+    public function setCurlOpts($curl)
+    {
+        curl_setopt($curl, CURLOPT_REFERER, null);
     }
 
     protected function sendPaymentVerifyRequest($verify)

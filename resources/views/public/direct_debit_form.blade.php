@@ -5,7 +5,7 @@
     <script type="text/javascript">
         var DASHBOARD_HOST = "{{$dashboardHost}}";
     </script>
-    <script type="text/javascript" src='https://betacdn.razorpay.com/static/batchpayments/bundle.js'></script>
+    <script type="text/javascript" src='https://cdn.razorpay.com/static/batchpayments/bundle.js'></script>
 </head>
 <body>
 
