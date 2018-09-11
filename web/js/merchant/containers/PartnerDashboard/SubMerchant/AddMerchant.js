@@ -106,5 +106,5 @@ function isEmailMandatory(user) {
   if (user.isPartner('aggregator')) {
     return !showWhenUtil({ featureEnabled: 'allow_sub_without_email' });
   }
-  return user.isPartner('fully_managed');
+  return !user.isPartner('fully_managed');
 }
