@@ -83,6 +83,8 @@ class Mailgun extends Base
             $this->inputDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
         }
 
+        $this->inputDetails[self::SOURCE] = self::MAILGUN;
+
         $allFilesDetails = $this->getFileDetailsFromInput(
             $this->inputDetails, $input, $fileLocationType);
 
