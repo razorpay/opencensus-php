@@ -328,6 +328,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function editMethods()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editMethods($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getAccountBalance()
     {
         $data = $this->service()->fetchBalance();

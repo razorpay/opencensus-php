@@ -12,12 +12,12 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Pricing\Fee;
 use RZP\Models\Card\Network;
 use RZP\Models\Pricing\Plan;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Feature\Constants;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class Core extends Base\Core
@@ -54,6 +54,32 @@ class Core extends Base\Core
         return $methods->toArray();
     }
 
+    //
+    // this always need to called from
+    // proxy auth so merchant object is not
+    // passed
+    //
+    public function editMethods(array $input)
+    {
+        $methods = $this->getPaymentMethods($this->merchant);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            [
+                'merchant_id' => $this->merchant->getId(),
+                'input' => $input,
+                'current_methods' => $methods->toArrayAdmin(),
+            ]);
+
+        $methods->setMethods($input);
+
+        $this->repo->saveOrFail($methods);
+
+        $methodsArray = $methods->toArrayPublic();
+
+        return array_intersect_key($methodsArray, $input);
+    }
+
     public function validatePricingPlanForMethods(Merchant\Entity $merchant, Plan $plan, Entity $methods)
     {
         $methodsToCheck = Payment\Method::getAllPaymentMethods();
@@ -78,9 +104,30 @@ class Core extends Base\Core
         $this->validateInternationalPricingForMerchant($merchant, $plan);
     }
 
-    public function checkPricing(Merchant\Entity $merchant, Entity $methods)
+    public function checkMccAndEnableEmi(Merchant\Entity $merchant, Entity $methods)
+    {
+        $mcc = $merchant->getCategory();
+
+        if ((empty($mcc) === false) and
+            (in_array($mcc, Emi\Constants::$blackListedMcc, true) === false))
+        {
+            $methods->setMethods([Entity::EMI => true]);
+
+            $this->repo->saveOrFail($methods);
+        }
+    }
+
+    public function checkPricing(Merchant\Entity $merchant, Entity $methods, bool $defaultEmi = false)
     {
         $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+
+        if (($defaultEmi === true) &&
+            ($plan->hasMethod(Payment\Method::EMI) === false))
+        {
+            $emiPricing = $this->repo->pricing->getPricingPlanById(Fee::DEFAULT_EMI_PLAN_ID);
+
+            $plan = $plan->merge($emiPricing);
+        }
 
         $this->validatePricingPlanForMethods($merchant, $plan, $methods);
     }

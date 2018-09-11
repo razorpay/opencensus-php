@@ -95,6 +95,8 @@ class Constants
     // Pre-Auth Shield Integration
     const PRE_AUTH_SHIELD_INTG          = 'pre_auth_shield_intg';
 
+    const EDIT_METHODS                  = 'edit_methods';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -200,6 +202,7 @@ class Constants
         self::EXPOSE_ARN_REFUND               => true,
         self::OFFERS                          => true,
         self::OTP_AUTH_DEFAULT                => true,
+        self::EDIT_METHODS                    => true,
     ];
 
     // Entity type constants

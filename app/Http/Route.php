@@ -176,6 +176,8 @@ final class Route
         'merchant_delete_terminal'                 => ['delete',   'merchants/{mid}/terminals/{tid}',                'MerchantController@deleteTerminal'                                 ],
         'merchant_modify_terminal'                 => ['put',      'merchants/{mid}/terminals/{tid}',                'MerchantController@putTerminal'                                    ],
         'merchant_put_payment_methods'             => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
+        'merchant_methods_edit'                    => ['put',      'merchant/methods',                               'MerchantController@editMethods'                                    ],
+        'merchant_fetch_methods'                   => ['get',      'merchant/methods',                               'MerchantController@getPaymentMethods'                              ],
         'merchant_activate'                        => ['post',     'merchants/{id}/activate',                        'MerchantController@postActivate'                                   ],
         'merchant_send_activation_mail'            => ['post',     'merchants/activation_mail',                      'MerchantController@postSendActivationMail'                         ],
         'merchant_live_enable'                     => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
@@ -1360,6 +1362,8 @@ final class Route
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'webhook_fire',
+        'merchant_methods_edit',
+        'merchant_fetch_methods',
     ];
 
     // These will run on internal auth with the assurance
