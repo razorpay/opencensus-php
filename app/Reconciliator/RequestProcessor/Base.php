@@ -19,6 +19,10 @@ class Base extends Core
     const FORCE_UPDATE              = 'force_update';
     const FORCE_AUTHORIZE           = 'force_authorize';
 
+    const SOURCE                  = 'source';
+    const MAILGUN                 = 'mailgun';
+    const MANUAL                  = 'manual';
+
     const FILE_DETAILS            = 'file_details';
     const INPUT_DETAILS           = 'input_details';
 
@@ -119,6 +123,7 @@ class Base extends Core
      */
     const CONFIG_PARAMS = [
         self::FORCE_UPDATE,
+        self::SOURCE,
         self::FORCE_AUTHORIZE
     ];
 

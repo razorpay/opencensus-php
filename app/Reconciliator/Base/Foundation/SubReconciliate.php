@@ -6,11 +6,10 @@ use App;
 use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Models\Batch;
-use RZP\Reconciliator\Metrics\Metric;
-use RZP\Reconciliator\Metrics\Dimensions;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\Metrics\Metric;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -56,6 +55,11 @@ class SubReconciliate extends Base\Core
     protected $failUnprocessedRow = true;
 
     protected $gateway;
+
+    /**
+     * Indicates whether the Recon file uploaded via mailgun or manual
+     */
+    protected $source;
 
     public function __construct(string $gateway = null)
     {
@@ -205,7 +209,7 @@ class SubReconciliate extends Base\Core
         $this->trace->histogram(
             Metric::RECON_PAYMENT_CREATE_TO_RECONCILED_TIME_MINUTES,
             $payment->transaction->getReconTimeFromTransactionCreationInMinutes(),
-            Metric::getPaymentMetricDimensions($payment)
+            Metric::getPaymentMetricDimensions($payment, $this->source)
         );
     }
 
@@ -214,7 +218,7 @@ class SubReconciliate extends Base\Core
         $this->trace->histogram(
             Metric::RECON_REFUND_CREATE_TO_RECONCILED_TIME_MINUTES,
             $refund->transaction->getReconTimeFromTransactionCreationInMinutes(),
-            Metric::getRefundMetricDimensions($refund)
+            Metric::getRefundMetricDimensions($refund, $this->source)
         );
     }
 
@@ -373,6 +377,11 @@ class SubReconciliate extends Base\Core
     protected function setFailUnprocessedRow(bool $failUnprocessedRow)
     {
         $this->failUnprocessedRow = $failUnprocessedRow;
+    }
+
+    public function setSource(string $source)
+    {
+        $this->source = $source;
     }
 
     /**
