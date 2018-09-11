@@ -21,11 +21,15 @@ class ShieldClient implements ExternalService
 
     const ANALYTICS_PATH    = '/rules/analytics';
 
+    const RISKS_PATH        = '/merchants/{merchant_id}/risks';
+
     const CONTENT_TYPE      = 'content-type';
 
     const RULES             = 'rules';
 
     const RULE_ANALYTICS    = 'rule_analytics';
+
+    const RISKS             = 'risks';
 
     protected $config;
 
@@ -68,6 +72,9 @@ class ShieldClient implements ExternalService
 
             case self::RULE_ANALYTICS:
                 return $this->getRuleAnalytics($input);
+
+            case self::RISKS:
+                return $this->getRisks($input);
         }
 
         return [];
@@ -124,6 +131,13 @@ class ShieldClient implements ExternalService
     public function getRuleAnalytics(array $input): array
     {
         return $this->sendRequest(self::ANALYTICS_PATH, Requests::GET, $input);
+    }
+
+    public function getRisks(array $input)
+    {
+        $riskPath = str_replace('{merchant_id}', Account::SHARED_ACCOUNT, self::RISKS_PATH);
+
+        return $this->sendRequest($riskPath, Requests::GET, $input);
     }
 
     protected function getPaymentProperties(Payment\Entity $payment): array
