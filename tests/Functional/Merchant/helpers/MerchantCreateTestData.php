@@ -1,10 +1,10 @@
 <?php
 
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
+    use RZP\Error\ErrorCode;
+    use RZP\Error\PublicErrorCode;
+    use RZP\Error\PublicErrorDescription;
 
-return [
+    return [
     'testCreateMerchantWithDuplicateEmail' => [
         'request'   => [
             'content' => [
@@ -527,10 +527,11 @@ return [
             'url'     => '/submerchants',
             'method'  => 'POST',
             'content' => [
-                'id'      => '7gcKngYfqyDMjN',
-                'name'    => 'Linked Account 2',
-                'email'   => 'linkedaccount@razorpay.com',
-                'account' => true,
+                'id'               => '7gcKngYfqyDMjN',
+                'name'             => 'Linked Account 2',
+                'email'            => 'linkedaccount@razorpay.com',
+                'account'          => true,
+                'dashboard_access' => true,
             ],
         ],
         'response' => [
@@ -547,9 +548,10 @@ return [
             'url'     => '/submerchants',
             'method'  => 'POST',
             'content' => [
-                'id'      => '7gcKngYfqyDMjN',
-                'name'    => 'Linked Account Name',
-                'account' => true,
+                'id'               => '7gcKngYfqyDMjN',
+                'name'             => 'Linked Account Name',
+                'account'          => true,
+                'dashboard_access' => true,
             ],
         ],
         'response' => [
