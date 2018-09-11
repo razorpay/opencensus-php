@@ -5,8 +5,11 @@ namespace RZP\Tests\Functional\User;
 use DB;
 use Mail;
 use Hash;
+use Carbon\Carbon;
+
+use RZP\Models\User\Constants;
+use RZP\Mail\User\PasswordReset;
 use RZP\Tests\Functional\TestCase;
-use Illuminate\Hashing\BcryptHasher;
 use RZP\Mail\User\AccountVerification;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -370,5 +373,85 @@ class UserTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testPasswordResetMail()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('user', ['email' => 'resetpass@razorpay.com']);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(PasswordReset::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+            $this->assertArrayHasKey('email', $viewData);
+
+            $this->assertEquals('emails.user.password_reset', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testPasswordResetByToken()
+    {
+        $user = $this->fixtures->create('user', [
+                    'email'                 => 'resetpass@razorpay.com',
+                    'password_reset_token'  => str_random(50),
+                    'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+                ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['email']      = $user->getEmail();
+        $testData['request']['content']['token']      = $user->getPasswordResetToken();
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testPasswordResetByExpiredToken()
+    {
+        $user = $this->fixtures->create('user', [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp - 1,
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['email']      = $user->getEmail();
+        $testData['request']['content']['token']      = $user->getPasswordResetToken();
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testPasswordResetByUsedToken()
+    {
+        $user = $this->fixtures->create('user', [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['email']      = $user->getEmail();
+        $testData['request']['content']['token']      = $user->getPasswordResetToken();
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($testData['request']);
+
+        $this->startTest();
     }
 }

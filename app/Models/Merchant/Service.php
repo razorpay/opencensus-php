@@ -88,7 +88,7 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        $isLinkedAccount = (bool)($input['account'] ?? false);
+        $isLinkedAccount = (bool) ($input['account'] ?? false);
 
         $isPartner = $merchant->isPartner();
 
@@ -102,11 +102,13 @@ class Service extends Base\Service
         //
         if ($isLinkedAccount === false)
         {
-            if (($isPartner === false) and ($hasAggregatorFeature === false)) {
+            if (($isPartner === false) and ($hasAggregatorFeature === false))
+            {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
             }
-            else if ($merchant->isPurePlatformPartner() === true) {
+            else if ($merchant->isPurePlatformPartner() === true)
+            {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
             }
@@ -378,12 +380,18 @@ class Service extends Base\Service
         return $merchants->toArrayPublic();
     }
 
-    // This is on proxy auth
-    public function fetchConfig(): array
+    public function fetchConfig(bool $isInternal = false): array
     {
         $merchantId = $this->merchant->getId();
 
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId, Entity::CONFIG_LIST);
+        $configList = Entity::CONFIG_LIST;
+
+        if ($isInternal === true)
+        {
+            $configList = array_merge($configList, Entity::INTERNAL_CONFIG_LIST);
+        }
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId, $configList);
 
         return $merchant->toArray();
     }

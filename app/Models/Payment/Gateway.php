@@ -79,6 +79,11 @@ class Gateway
     const SUPPORTED          = 'supported';
     const NODAL_YESBANK      = 'nodal_yesbank';
 
+    //
+    // Constant used to store the response of various refund functions
+    //
+    const SUCCESS            = 'success';
+
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::HDFC         => [self::ACQUIRER_HDFC],
@@ -160,7 +165,7 @@ class Gateway
      * This should eventually cover all API based refund
      * gateways.
      *
-     * These gateways should have verifyRefund2 implemented.
+     * These gateways should have verifyRefund implemented.
      * and be allowed to perform it.
      * */
     const REFUND_RETRY_GATEWAYS = [
@@ -188,6 +193,32 @@ class Gateway
         Payment\Gateway::UPI_HULK,
         Payment\Gateway::NETBANKING_AIRTEL,
         Payment\Gateway::ATOM,
+        Payment\Gateway::SHARP
+    ];
+
+    /**
+     * Need to ensure that only those gateways which have
+     * verify implemented, are added in this array.
+     * This is only until the flow is complete from Scrooge.
+     * In the starting, we will only implement for APIs.
+     *
+     * TODO: reversal, emandate, bank transfer, netbanking etc type of gateways are not supported yet.
+     *
+     * @var array
+     */
+    public static $scroogeGateways = [
+        Payment\Gateway::SHARP,
+    ];
+
+    /**
+     * Refunds of only these merchant ids will be directed to scrooge.
+     *
+     * @var array
+     */
+    public static $scroogeMerchants = [
+        '9DZkE60krEG4wq',
+        '9ncOh0EZ8sC9z9',
+        '9hefgkvGhT18Q9',
     ];
 
     public static $channels = [
@@ -367,7 +398,6 @@ class Gateway
         self::WALLET_OPENWALLET,
         self::HITACHI,
     ];
-
 
     /**
      * For async gateways, we mark the payment as created and return
@@ -1157,6 +1187,17 @@ class Gateway
         }
 
         return false;
+    }
+
+    /**
+     * @param $gateway
+     * @param $merchantId
+     * @return bool
+     */
+    public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
+    {
+        return ((in_array($gateway, self::$scroogeGateways, true) === true) and
+                (in_array($merchantId, self::$scroogeMerchants, true) === true));
     }
 
     /**

@@ -538,12 +538,14 @@ class HulkGatewayTest extends TestCase
 
         $this->assertSame('failed', $payment->getStatus());
         $this->assertSame('created', $upi->status_code);
+        $this->assertNotNull($upi->npci_reference_id);
 
         $this->forceAuthorizeFailedPayment($payment->getPublicId(),
             [
                 'ifsc'              => 'HDFC0000011',
                 'account_number'    => '110011001100',
                 'vpa'               => 'vishnu@icici',
+                'npci_reference_id' => '800800800800',
             ]);
 
         $payment->reload();
@@ -555,5 +557,6 @@ class HulkGatewayTest extends TestCase
         $this->assertSame('110011001100', $upi->account_number);
         $this->assertSame('vishnu@icici', $upi->vpa);
         $this->assertSame('icici', $upi->provider);
+        $this->assertSame('800800800800', $upi->npci_reference_id);
     }
 }

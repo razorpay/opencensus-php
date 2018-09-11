@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\CardFss;
+namespace RZP\Reconciliator\CardFss\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
@@ -11,7 +11,7 @@ use RZP\Gateway\Card\Fss\Status;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names
@@ -58,7 +58,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         $paymentAmount = $row[self::COLUMN_TRANSACTION_AMOUNT];
 
-        return Base\Helper::getIntegerFormattedAmount($paymentAmount);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($paymentAmount);
     }
 
     /**
@@ -123,7 +123,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         // Convert service tax into paise
-        $serviceTax = Base\Helper::getIntegerFormattedAmount($row[$serviceTaxColumn]);
+        $serviceTax = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[$serviceTaxColumn]);
 
         return abs($serviceTax);
     }
@@ -148,7 +148,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return null;
         }
 
-        $fee =  Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_GATEWAY_FEE]);
+        $fee =  Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_GATEWAY_FEE]);
 
         $fee = abs($fee);
 

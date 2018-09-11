@@ -31,9 +31,10 @@ class Reporting implements ExternalService
     /**
      * Path for various endpoints
      */
-    const CONFIG_PATH   = '/v1/configs';
-    const LOG_PATH      = '/v1/logs';
-    const SCHEDULE_PATH = '/v1/schedules';
+    const CONFIG_PATH           = '/v1/configs';
+    const LOG_PATH              = '/v1/logs';
+    const ADMIN_LOG_PATH        = '/v1/admin-logs';
+    const SCHEDULE_PATH         = '/v1/schedules';
 
     const SCHEDULE_PREFIX = 'sched_';
 
@@ -240,6 +241,12 @@ class Reporting implements ExternalService
     {
         $path = self::LOG_PATH . '/' . $id;
 
+        if (($this->ba->isAppAuth() === true) and
+            ($this->ba->isAdminAuth() === true))
+        {
+            $path = self::ADMIN_LOG_PATH . '/' . $id;
+        }
+
         return $this->createAndSendRequest(Requests::GET, $path);
     }
 
@@ -440,8 +447,10 @@ class Reporting implements ExternalService
         array $input = [],
         array $headers = []): array
     {
-        // In case reporting is to be mocked, don't make any external call
-        // and just return empty array.
+        //
+        // In case reporting is to be mocked, don't make
+        // any external call and just return empty array.
+        //
         if ($this->config['mock'] === true)
         {
             return [];
@@ -502,7 +511,7 @@ class Reporting implements ExternalService
                 $this->getTraceableRequest($request));
 
             throw new Exception\IntegrationException('
-                Could not recieve proper response from reporting service');
+                Could not receive proper response from reporting service');
         }
     }
 

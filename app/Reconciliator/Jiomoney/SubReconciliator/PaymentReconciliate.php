@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Jiomoney;
+namespace RZP\Reconciliator\Jiomoney\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
@@ -13,7 +13,7 @@ use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names

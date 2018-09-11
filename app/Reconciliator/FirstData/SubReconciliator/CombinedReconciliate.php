@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Reconciliator\FirstData;
+namespace RZP\Reconciliator\FirstData\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class CombinedReconciliate extends Base\CombinedReconciliate
+class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {
     /*******************
      * Row Header Names
