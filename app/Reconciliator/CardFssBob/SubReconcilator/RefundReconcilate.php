@@ -105,7 +105,6 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'info_code'         => InfoCode::AMOUNT_MISMATCH,
-                    'message'           => 'Refund amount mismatch',
                     'expected_amount'   => $refundAmount,
                     'currency'          => $this->refund->getCurrency(),
                     'row'               => $row,
@@ -154,7 +153,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'message'           => InfoCode::CURRENCY_MISMATCH,
+                    'info_code'         => InfoCode::CURRENCY_MISMATCH,
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
                     'row'               => $row,

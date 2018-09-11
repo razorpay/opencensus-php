@@ -63,7 +63,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'message'           => InfoCode::CURRENCY_MISMATCH,
+                    'info_code'         => InfoCode::CURRENCY_MISMATCH,
                     'expected_currency' => $expectedCurrency,
                     'recon_currency'    => $reconCurrency,
                     'row'               => $row,
@@ -156,7 +156,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                    'message'         => Base\InfoCode::UNKNOWN_CARD_TYPE,
+                    'info_code'       => InfoCode::UNKNOWN_CARD_TYPE,
                     'recon_card_type' => $cardType,
                     'row'             => $row,
                     'gateway'         => $this->gateway
