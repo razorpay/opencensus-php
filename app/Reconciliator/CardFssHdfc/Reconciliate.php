@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\CardFss;
+namespace RZP\Reconciliator\CardFssHdfc;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\FileProcessor;

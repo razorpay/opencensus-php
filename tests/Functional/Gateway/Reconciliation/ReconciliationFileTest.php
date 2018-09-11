@@ -308,7 +308,7 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToExcelFile($entries, 'combined', 'files/settlement');
 
-        $this->runForFiles([$file], 'CardFss');
+        $this->runForFiles([$file], 'CardFssHdfc');
 
         // ======== verify refund reconciliation ========
         $updatedTransaction = $this->getDbEntityById('transaction', $refund_transaction['id']);
@@ -366,7 +366,7 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'payment');
 
-        $this->runForFiles([$file], 'CardFss');
+        $this->runForFiles([$file], 'CardFssHdfc');
 
         $updatedPayment = $this->getDbEntityById('payment', $response['id']);
 
@@ -413,7 +413,7 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'refund', 'xls');
 
-        $this->runForFiles([$file], 'CardFss');
+        $this->runForFiles([$file], 'CardFssHdfc');
 
         $updatedTransaction = $this->getLastEntity('transaction', true);
 
@@ -452,7 +452,7 @@ class ReconciliationFileTest extends TestCase
         $entries[] = $this->overrideCardFssPayment($gatewayPayment, [], 'card_fss');
 
         $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'payment');
-        $this->runForFiles([$file], 'CardFss', [], ['pay_'. $payment['id']]);
+        $this->runForFiles([$file], 'CardFssHdfc', [], ['pay_'. $payment['id']]);
 
         $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
 
@@ -1375,7 +1375,7 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing', $file);
 
-        $response = $this->runForFiles([$file], 'Bob');
+        $response = $this->runForFiles([$file], 'CardFssBob');
 
         $transactionEntity = $this->getDbLastEntity('transaction');
 
@@ -1424,7 +1424,7 @@ class ReconciliationFileTest extends TestCase
 
         $file = $this->writeToCsvFile($entries, 'MerchantSettlementTransactionListing', $file);
 
-        $this->runForFiles([$file], 'Bob');
+        $this->runForFiles([$file], 'CardFssBob');
 
         $refund = $this->getDbLastEntity('refund');
 

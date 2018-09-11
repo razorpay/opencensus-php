@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Reconciliator\CardFss\SubReconciliator;
+namespace RZP\Reconciliator\CardFssHdfc\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\CardFss\Reconciliate as CardFssReconciliate;
+use RZP\Reconciliator\CardFssHdfc\Reconciliate as CardFssReconciliate;
 
 class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {

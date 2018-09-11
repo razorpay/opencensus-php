@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Bob\SubReconciliator;
+namespace RZP\Reconciliator\CardFssBob\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;

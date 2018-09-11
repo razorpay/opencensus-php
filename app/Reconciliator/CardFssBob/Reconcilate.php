@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Bob;
+namespace RZP\Reconciliator\CardFssBob;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\FileProcessor;
