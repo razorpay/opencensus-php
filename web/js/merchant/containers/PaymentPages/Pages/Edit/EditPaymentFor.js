@@ -19,7 +19,6 @@ export default class EditDescription extends React.Component {
       disableSubmit: false,
     });
     setTimeout(() => document.getElementsByName('title')[0].focus(), 10);
-    this.props.trackerFn(this.props.entityId, 'Edit PaymentFor');
   };
 
   componentDidUpdate() {
@@ -94,7 +93,6 @@ export default class EditDescription extends React.Component {
               class="Button--Link"
               onClick={() => {
                 this.setState(this.resetState());
-                this.props.trackerFn(this.props.entityId, 'Cancel PaymentFor');
               }}
             >
               Cancel
@@ -105,8 +103,6 @@ export default class EditDescription extends React.Component {
               style={{ marginRight: 0, marginLeft: 16 }}
               disabled={!this.state.title || this.state.disableSubmit}
               onClick={() => {
-                this.props.trackerFn(this.props.entityId, 'Save PaymentFor');
-
                 return this.props
                   .editFn({
                     title: this.state.title,

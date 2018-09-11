@@ -25,8 +25,6 @@ export default class EditTimesPayable extends React.Component {
     this.setState({
       isEditableMode: true,
     });
-
-    this.props.trackerFn(this.props.entityId, 'Edit TimesPayable');
   };
 
   render() {
@@ -99,10 +97,6 @@ export default class EditTimesPayable extends React.Component {
               class="Button--Link"
               onClick={() => {
                 this.setState(this.resetState());
-                this.props.trackerFn(
-                  this.props.entityId,
-                  'Cancel timesPayable'
-                );
               }}
             >
               Cancel
@@ -115,8 +109,6 @@ export default class EditTimesPayable extends React.Component {
                 this.state.hasNoLimit === '0' && !this.state.timesPayable
               }
               onClick={() => {
-                this.props.trackerFn(this.props.entityId, 'Save TimesPayable');
-
                 return this.props
                   .editFn({
                     times_payable:
