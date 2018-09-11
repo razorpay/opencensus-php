@@ -453,7 +453,7 @@ return [
 
     'motoTransactionRequest' => [
         'pTranType' => 'MT',
-        'pECI'      =>  '02',
+        'pECI'      => '07',
         'pPan'      => '5567630000002004',
         'pXID'      => '',
         'pALGO'     => '',
