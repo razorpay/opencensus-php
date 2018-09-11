@@ -1,0 +1,76 @@
+/* Entity Detail List */
+.entity-detail-list, .data-table
+  .list-heading
+    background-color: #F7F8FA
+    border-top: 1px solid #dfe0e2
+    padding: 12px
+
+    &::before
+      display: table
+      content: " "
+
+    &::after
+      clear: both
+
+    .label--secondary
+      line-height: 21px
+      float: right
+
+
+/* Entity Detail Row */
+.entity-detail-row
+  padding: 8px
+  border-bottom: 1px solid #ebecee
+
+  &.clickable:hover
+    background-color: #f7f6f6
+    cursor: pointer
+
+  &.active // To highlight selected row
+    background-color: rgba(255,255,215,0.75)
+
+  .row-item
+    display: inline-block
+    vertical-align: middle
+
+    &.content
+      width: 93%
+
+    &.i
+      width: 7%
+      text-align: center
+      font-size: 22px
+      padding: 10px
+      cursor: pointer
+
+  .detail-row
+    display: table
+    width: 100%
+    margin-bottom: 4px
+
+    &:nth-of-type(3) // Style for 3rd row
+      font-size: 13px
+
+  .row-element
+    display: table-cell
+
+  .left
+    width: 60%
+
+  .right
+    width: 40%
+    text-align: right
+
+/* Footer style for grouped entity row */
+.entity-detail-footer
+  background: #EEEEEE
+  color: #57666d
+  text-align: center
+
+  &:hover
+    background: #e7e7e7
+
+  a
+    display: block
+    padding: 12px 0
+    color: inherit

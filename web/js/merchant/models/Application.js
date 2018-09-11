@@ -1,5 +1,5 @@
 import GenericEntity from './GenericEntity';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const editFields = ['id', 'delay_roll'];
 const newFields = ['name', 'website'];
@@ -40,6 +40,12 @@ export default class Application extends GenericEntity {
       });
 
       return response;
+    });
+  }
+
+  fetchPartnerApplication() {
+    return merchantFetch(`${this.resourceUrl}/partner`).then(response => {
+      return response.data;
     });
   }
 

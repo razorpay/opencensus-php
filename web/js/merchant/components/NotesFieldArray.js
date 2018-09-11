@@ -17,7 +17,13 @@ const required = index => {
   };
 };
 
-export default ({ fields, onAdd, nonEditableUptilIndex = -1 }) => {
+export default ({
+  fields,
+  onAdd,
+  nonEditableUptilIndex = -1,
+  showLinkedAccountOpt,
+  customAddMsg = null,
+}) => {
   return (
     <ul class="list-unstyled notes">
       {fields.map((note, index) => {
@@ -48,6 +54,23 @@ export default ({ fields, onAdd, nonEditableUptilIndex = -1 }) => {
                 disabled={index <= nonEditableUptilIndex}
               />
             </div>
+            {showLinkedAccountOpt && (
+              <div class="checkbox rzpCheckbox">
+                <Field
+                  name={`notes[${index}][also_linked_account]`}
+                  id={`notes[${index}][also_linked_account]`}
+                  component="input"
+                  type="checkbox"
+                />
+                <label
+                  for={`notes[${index}][also_linked_account]`}
+                  class="icon i-check"
+                  style={{ lineHeight: '18px' }}
+                >
+                  <span>Show note to Linked Account</span>
+                </label>
+              </div>
+            )}
           </li>
         );
       })}
@@ -59,7 +82,7 @@ export default ({ fields, onAdd, nonEditableUptilIndex = -1 }) => {
             type="button"
             onClick={() => fields.push({})}
           >
-            Add Internal Note
+            {customAddMsg || 'Add Internal Note'}
           </button>
         </li>
       ) : null}

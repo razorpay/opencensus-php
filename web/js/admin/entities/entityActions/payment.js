@@ -206,58 +206,6 @@ export default ({ entity, mode, updateEntity }) => {
   );
 };
 
-// Edit Offer Form
-const EditOfferForm = ({ entity, handleSubmit }) => {
-  return (
-    <ModalContent header="Edit Offer">
-      <Form class="full-span full-elements">
-        <Field label="Name" name="name" defaultValue={entity.name} />
-        {['netbanking', 'wallet', 'upi'].indexOf(entity.payment_method) ===
-          -1 && (
-          <Field
-            label="iins"
-            name="iins"
-            placeholder="Enter comma(,) separated values"
-            defaultValue={entity.iins}
-          />
-        )}
-        {entity.payment_method === 'card' && (
-          <Field
-            label="max Payment Count"
-            name="max_payment_count"
-            defaultValue={entity.max_payment_count}
-          />
-        )}
-        <Field label="Name" name="name" defaultValue={entity.name} />
-
-        <Field
-          label="Linked Offer ids"
-          name="linked_offer_ids"
-          defaultValue={entity.linked_offer_ids}
-        />
-        <Field
-          label="Display Text"
-          name="display_text"
-          defaultValue={entity.display_text}
-        />
-        <Field
-          label="Error Message"
-          name="error_message"
-          defaultValue={entity.error_message}
-        />
-        <Field label="Terms" name="terms" defaultValue={entity.terms} />
-
-        <AsyncButton
-          text="Submit"
-          class="btn"
-          pendingClass="small spinner"
-          onSubmit={handleSubmit}
-        />
-      </Form>
-    </ModalContent>
-  );
-};
-
 class PaymentAnalytics extends Component {
   state = {};
   fields = this::getFields;

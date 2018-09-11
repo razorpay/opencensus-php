@@ -21,7 +21,10 @@ import NewKey from './NewKey';
 )
 export default class KeysListContainer extends ListContainer {
   fetchEntityList(params) {
-    return this.props.fetchKeys();
+    return this.props.fetchKeys(
+      { mode: this.props.session.mode },
+      this.props.session.user.has_key_access
+    );
   }
 
   showRollKeyModal = (params = null) => {
@@ -61,6 +64,8 @@ export default class KeysListContainer extends ListContainer {
     let { loading, keys } = this.props.keys;
     let mode = this.props.session.modeFormatted;
     let status = this.state.status;
+    let hasKeyAccess = this.props.session.user.has_key_access;
+    let businessWebsite = this.props.session.user.business_website;
 
     return (
       <div class="content-wrapper">
@@ -73,6 +78,8 @@ export default class KeysListContainer extends ListContainer {
           generateKey={this.generateKey}
           showRollKeyModal={this.showRollKeyModal}
           merchantId={this.props.session.user.id}
+          hasKeyAccess={hasKeyAccess}
+          businessWebsite={businessWebsite}
         />
       </div>
     );

@@ -8,6 +8,7 @@ import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Table from 'ui/Table';
+import AsyncButton from 'ui/AsyncButton';
 import ShowWhen from 'admin/components/ShowWhen';
 import CreditsDetails from './entityDetails/CreditsDetails';
 import FeaturesDetails from './entityDetails/FeaturesDetails';
@@ -54,6 +55,25 @@ function _getAdminsFields(adminsMap) {
   return [
     ['Role', item => (adminsMap[item.id] ? adminsMap[item.id].role : '')],
     ['Name', item => item.name],
+  ];
+}
+
+function _getSubmerchantFields(unlinkSubmerchant) {
+  return [
+    ['Merchant Id', item => item.id],
+    ['Merchant Name', item => item.name],
+    [
+      'Actions',
+      item => (
+        <AsyncButton
+          class="link danger"
+          onClick={() => unlinkSubmerchant(item.id)}
+          confirm="Are you sure you want to unlink this submerchant"
+        >
+          Unlink
+        </AsyncButton>
+      ),
+    ],
   ];
 }
 
@@ -155,7 +175,7 @@ function _getCreditsFields() {
     return [
       ['Id', item => item.id],
       ['Campaign', item => item.campaign],
-      ['Type', item => item.type],
+      ['Type', item => statusPill(item.type)],
       ['Value', item => item.value],
       ['Created At', item => formatDate(item.created_at)],
     ];
@@ -277,6 +297,7 @@ const utilMapping = {
     openwallet: 'Openwallet',
     mpesa: 'Mpesa',
     paytm: 'Paytm',
+    amazonpay: 'Amazon Pay',
   },
 };
 
@@ -301,6 +322,7 @@ const _getMethods = {
   emi: 'EMI',
   emandate: 'e-Mandate',
   mpesa: 'Mpesa',
+  amazonpay: 'Amazon Pay',
 };
 
 /*---------------------------------------- Render UI resource --------------------------------------------*/
@@ -318,6 +340,7 @@ export function getDetailsViewMap(model) {
     bankDetails,
     creditsLogs,
     adminsMap,
+    submerchants,
   } = model.merchant;
 
   return [
@@ -350,6 +373,25 @@ export function getDetailsViewMap(model) {
           features={features}
           getFeaturesFields={_getFeaturesFields(model.deleteFeature)}
         />
+      ),
+    },
+    {
+      label: 'Partner',
+      value: details.partner_type
+        ? snakeToTitleCase(details.partner_type)
+        : _getBoolIcon(false),
+    },
+    {
+      label: 'Submerchants',
+      toHide: !details.partner_type,
+      permission: 'view_partners',
+      children: () => (
+        <div>
+          <Table
+            items={submerchants}
+            fields={_getSubmerchantFields(model.unlinkSubmerchant)}
+          />
+        </div>
       ),
     },
     {
@@ -473,6 +515,10 @@ export function getDetailsViewMap(model) {
         : null,
     },
     {
+      label: 'Keyless Auth',
+      value: _getBoolIcon(details.activated && !details.has_key_access),
+    },
+    {
       label: 'MCC',
       value: details.category,
     },
@@ -490,9 +536,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Transaction Report Email',
-      value: details.merchant_details
-        ? details.merchant_details.transaction_report_email
-        : null,
+      value: details.transaction_report_email || null,
     },
     {
       label: 'International',
@@ -621,8 +665,8 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Methods',
-      children: () =>
-        Object.keys(_getMethods).map(method => (
+      children: () => {
+        let methodRows = Object.keys(_getMethods).map(method => (
           <EntityRow
             key={method}
             label={_getMethods[method]}
@@ -630,7 +674,21 @@ export function getDetailsViewMap(model) {
               details.methods ? _getBoolIcon(details.methods[method]) : '-'
             }
           />
-        )),
+        ));
+
+        if (details.methods) {
+          let disabledBanks = details.methods.disabled_banks;
+          methodRows.push(
+            <EntityRow
+              key="disabled_banks"
+              label="Disabled Banks"
+              value={disabledBanks.length ? disabledBanks : '--'}
+            />
+          );
+        }
+
+        return methodRows;
+      },
     },
     {
       label: 'Suspended',
@@ -704,6 +762,7 @@ export function getDetailsViewMap(model) {
           creditsLogs={creditsLogs}
           fetchCreditsLogs={model.fetchCreditsLogs}
           getCreditsFields={_getCreditsFields()}
+          merchantId={details.id}
         />
       ),
     },

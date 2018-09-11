@@ -2,6 +2,8 @@ import RouteForm from './Routes';
 import SubscriptionsForm from './Subscriptions';
 import VirtualAccountsForm from './VirtualAccounts';
 
+import SubscriptionsPreStep from '../PreStepForms/Subscriptions';
+
 const FORM_TYPE = {
   marketplace: {
     formComponent: RouteForm,
@@ -15,6 +17,11 @@ const FORM_TYPE = {
 
   subscriptions: {
     formComponent: SubscriptionsForm,
+    title: 'Business Model, Plans',
+    preStep: {
+      component: SubscriptionsPreStep,
+      title: 'Website/App Link',
+    },
     links: {
       docs: 'https://razorpay.com/docs/subscriptions',
       knowMore: 'https://razorpay.com/subscriptions',

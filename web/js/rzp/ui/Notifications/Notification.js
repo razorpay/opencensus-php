@@ -15,7 +15,8 @@ class Notification extends Component {
 
   componentDidMount() {
     setTimeout(() => {
-      this.notificationEle.classList.add('Notification__show');
+      this.notificationEle &&
+        this.notificationEle.classList.add('Notification__show');
     }, 0);
 
     this.timerId = setTimeout(() => {

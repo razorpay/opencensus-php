@@ -16,6 +16,7 @@ import {
 import mainFormTabsContent, {
   mainFormTabs,
   mainFormFieldNamesMeta,
+  INDIVIDUAL,
 } from './ActivationFormMap';
 import accountFormTabsContent, {
   accountFormTabs,
@@ -55,10 +56,6 @@ function defaultFieldProps(f) {
   }
   if (!f.hasOwnProperty('required')) {
     f.required = true;
-  }
-
-  if (f.hasOwnProperty('description') && typeof f.description === 'function') {
-    f.description = f.description.bind(self); // Dynamic description based on other fields must be able to access this.state.dirty and this.props
   }
 
   if (f.hasOwnProperty('validator') && typeof f.validator === 'function') {
@@ -101,7 +98,9 @@ export default class ActivationWizard extends React.Component {
         this.props.data.business_registered_pin
         ? '1'
         : '0', // '1' => checkbox ticked
-    has_gstin: this.props.data && this.props.data.gstin ? '0' : '1', // '0' => value exists
+    has_url:
+      this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
+    has_gstin: this.props.data && this.props.data.has_gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
   };
@@ -212,7 +211,13 @@ export default class ActivationWizard extends React.Component {
 
     if (firstInValid === null) {
       firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
-      !isFormSubmitted && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
+
+      if (!this.isLinkedAccountForm && this.isIndividualTypeLock) {
+        // For non-LA account
+        firstInValid = 1; // Business Overview tab
+      } else {
+        !isFormSubmitted && (this.state.showSubmitLayer = true); // Directly show submit form if it's NOT activated/locked/submitted
+      }
     }
 
     this.state.activeTab = firstInValid;
@@ -321,7 +326,8 @@ export default class ActivationWizard extends React.Component {
       return; // No action if clicked on same Tab. (Click on Save sends newActiveTab = null, so it's not same as click on same tab)
     }
 
-    let currentActive = this.state.activeTab; // currentActive = The tab of which dirty data is saved
+    const currentActive = this.state.activeTab; // currentActive = The tab of which dirty data is saved
+    const savingWhichTab = currentActive;
 
     newActiveTab = newActiveTab != null ? newActiveTab : currentActive; // currentActive tab remains as newActiveTab (To handle Save btn click and 'Submit Form' tab click).
 
@@ -332,6 +338,8 @@ export default class ActivationWizard extends React.Component {
     let shouldSave = Object.keys(this.state.dirty).length ? true : null;
     if (!shouldSave) {
       this.updateFEOnlyValues();
+
+      this.markTabIfActive(savingWhichTab); // To update changes happened due to FE-only fields change, like has_gstin and has_url.
 
       cb && cb(); // If clicked on Save/Save-Next btn without any change
       return;
@@ -348,7 +356,13 @@ export default class ActivationWizard extends React.Component {
       ) {
         // Saving only the fields corresponding to currentActive tab.
         const fieldVal = currentDirty[name];
-        reqData[name] = fieldVal === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
+        reqData[name] = fieldVal;
+
+        // For business website empty string => user don't have website. null => user didn't attempt the field.
+        const allowEmptyString = ['business_website', 'gstin'];
+        if (allowEmptyString.indexOf(name) === -1) {
+          reqData[name] = reqData[name] === '' ? null : fieldVal; // '' -> null. DB has default values as NULL.
+        }
       }
     });
 
@@ -384,7 +398,6 @@ export default class ActivationWizard extends React.Component {
     });
 
     /* Following is api call and post response handling */
-    const savingWhichTab = currentActive;
     const savingDataOfWhichTab = { ...reqData };
 
     this.props.save(reqData).then(data => {
@@ -489,22 +502,19 @@ export default class ActivationWizard extends React.Component {
   };
 
   /*
-  * Fn. to keep _name fields(FE only fields) in sync with updated values(props.data) on tab change.
+  * Fn. to keep _name fields(FE-only fields) in sync with updated values(props.data) on tab change.
   * + Checking/Unchecking/Changing _name FE fields will remain as it is throughout(in state). But changing them might not always save data.
   * + Example: Changing 'has_gstin' from 1 -> 0 (not have-> have) but value is not filled, then tab change won't save anything. So next time, tab is selected, radio box must display as per saved value, not last state value.
   * + Example: If `same_address` ticked but values not saved due to some reason.
   * */
   updateFEOnlyValues() {
     // Step 1:
-    // Handle case where user changed to 'no gst' option. But since we don't modify GST once filled, 1st radio box must get auto selected if GST value exists.
-    // has_gstin  = 0 => selected 1st radio box => Has GSTIN
-    this.setState({
-      has_gstin: this.props.data.gstin ? '0' : '1', // '1' => no value
-    });
+    /*
+    *  Don't update FE-only values like has_gstin / has_url, cuz Input.
+    *  Radio is not externally controlled, so updating state will just update has_gstin and has_url but not the Radio buttons' view and state.
+    * */
 
     // Step 2:
-    // Handle case where user changed to 'no gst' option. But since we don't modify GST once filled, 1st radio box must get auto selected if GST value exists.
-    // has_gstin  = 0 => selected 1st radio box => Has GSTIN
     this.setState({
       same_address:
         this.props.data.business_operation_pin ==
@@ -516,6 +526,13 @@ export default class ActivationWizard extends React.Component {
 
   get isLinkedAccountForm() {
     return !!this.props.accountId;
+  }
+
+  get isIndividualTypeLock() {
+    const businessType =
+      this.state.dirty.business_type || this.props.data.business_type;
+
+    return businessType == INDIVIDUAL;
   }
 
   /*
@@ -614,7 +631,9 @@ export default class ActivationWizard extends React.Component {
      * Step 2: If user marks no GSTIN from radio box
      * */
     if (stateName === 'has_gstin' && fieldValue === '1') {
-      sideEffectFieldsToUpdate['gstin'] = null;
+      sideEffectFieldsToUpdate['gstin'] = '';
+    } else if (stateName === 'has_url' && fieldValue === '1') {
+      sideEffectFieldsToUpdate['business_website'] = '';
     }
 
     /* Step 3: If same_address is already ticked and any of business_registered fields are changed, then mark operational fields dirty;'.*/
@@ -735,6 +754,11 @@ export default class ActivationWizard extends React.Component {
       }
     }
 
+    if (!this.isLinkedAccountForm && isValid && this.isIndividualTypeLock) {
+      // For non-LA account
+      isValid = false;
+    }
+
     return isValid;
   }
 
@@ -830,9 +854,11 @@ export default class ActivationWizard extends React.Component {
       moreTabs.push(
         <li
           key="submit-tab"
-          onClick={this.toggleSubmitLayer}
+          onClick={
+            this.isIndividualTypeLock ? undefined : this.toggleSubmitLayer
+          }
           class={classList(
-            !this.isAllTabsValid() && 'disabled',
+            (!this.isAllTabsValid() || this.isIndividualTypeLock) && 'disabled',
             this.state.showSubmitLayer && 'active',
             'li--submit'
           )}
@@ -862,6 +888,13 @@ export default class ActivationWizard extends React.Component {
           tabClickHandler={this.changeTab}
           activeTab={activeTab}
           activeTabContdition={!this.state.showSubmitLayer}
+          disableTabCondition={tabId => {
+            return (
+              !this.isLinkedAccountForm &&
+              this.isIndividualTypeLock &&
+              [2, 3, 4].indexOf(tabId) > -1
+            );
+          }}
         />
 
         {/* Activation form Content */}
@@ -975,9 +1008,9 @@ export default class ActivationWizard extends React.Component {
                 // **5. Alert: Form is Submitted
 
                 icon = 'i-check';
-                msg = `Your activation form is already submitted. It usually takes ${activationDuration} for the review.`;
+                msg = `Our team will review the form and submitted documents.`;
                 secondaryMsg =
-                  'For any clarifications, we will reach out on your contact email.';
+                  'We will reach out on your contact email for all updates.';
               }
 
               {
@@ -1036,12 +1069,16 @@ export default class ActivationWizard extends React.Component {
                 )}
 
                 {/* Action Button 2 */}
-                {isLastTab || (
-                  <Button.Primary iconAfter="chevron-right" onClick={this.next}>
-                    <span class="device--desktop">Save & Next</span>
-                    <span class="device--mobile">Next</span>
-                  </Button.Primary>
-                )}
+                {isLastTab ||
+                  ((this.isLinkedAccountForm || !this.isIndividualTypeLock) && (
+                    <Button.Primary
+                      iconAfter="chevron-right"
+                      onClick={this.next}
+                    >
+                      <span class="device--desktop">Save & Next</span>
+                      <span class="device--mobile">Next</span>
+                    </Button.Primary>
+                  ))}
 
                 {/* Action Button 3 */}
                 {isLastTab &&
@@ -1175,6 +1212,10 @@ function ActivationField(field) {
   // Show bank account number if it's activated/locked
   if (rest.hasOwnProperty('type') && rest.type === 'password' && isFormLocked) {
     rest.type = 'text';
+  }
+
+  if (rest.description && typeof rest.description === 'function') {
+    rest.description = rest.description(this);
   }
 
   return (

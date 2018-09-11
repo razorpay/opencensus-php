@@ -65,6 +65,12 @@ placeholder () {
         margin: 0;
         color: inherit;
 
+        @media (min-width: 1020px) and (max-width: 1030px) {
+          div.card > span {
+            letter-spacing: -0.2px;
+          }
+        }
+
         small.help-content {
 
           display: inline-block;
@@ -262,17 +268,69 @@ placeholder () {
         }
       }
     }
+
+    &.time-breakdown-select {
+
+      display: none;
+
+      .rzp-group-item.time-breakdown {
+     
+        padding: 0;
+      }
+    }
+
+    @media (max-width: 1130px) {
+
+      &.btn-group.time-breakdown {
+
+        display: none;
+      }
+
+      &.time-breakdown-select {
+
+        display: inline-block;
+      }
+    }
   }
 
   div.chart-container {
 
     height: 248px;
+    position: relative;
   }
 
   .rzp-legend {
 
     padding-top: 8px;
   } 
+
+  &.keymetrics--mobile {
+
+    .card {
+
+      margin-bottom: 12px;
+      background-color: white;
+
+      &.no-trend {
+
+        > div:last-child > div {
+
+          margin-top: 26px;
+          margin-bottom: 0;
+        }
+      }
+
+      > div > div:first-child{
+
+        margin-bottom: 6px;
+      }
+
+      &:last-child {
+
+        margin-bottom: 0;
+      }
+    }
+  }
 }
 
 #chartjs-tooltip {

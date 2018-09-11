@@ -18,60 +18,41 @@
     <div class="auth-body">
       <div class="auth-messaging" ng-class="rightLayout ? 'login' : 'signup'">
         <div class="signup-messaging">
-          <div class="messaging-heading">
+          <div class="messaging-heading text-center">
             Why choose Razorpay?
           </div>
 
-          <div class="messaging-text">
-            “Razorpay is revolutionising the Indian payments space. Their focus on easy on-boarding, swift integrations and high success rates make them the first choice for new age businesses.”
+          <div class="messaging-text text-center">
+            <b>1,00,000+</b> businesses trust their payments with Razorpay
           </div>
 
           <div class="messaging-testimonial">
-            <div class="messaging-image"><img src="img/punit_soni.png" alt=""></div>
-            <div class="messaging-right">
-              <div class="messaging-name">Punit Soni</div>
-              <div class="messaging-position">Ex-CPO, Flipkart</div>
-            </div>
+            <img src="/img/clientele.jpg" style="display: block; width: 100%; height: auto"/>
           </div>
 
           <div class="messaging-support">
             <div class="line-segment"></div>
-            <div class="support-container">
-              <div class="support-icon">
-                <i class="fa fa-phone"></i>
-              </div>
-              <div class="support-info-container">
-                <div class="support-text">
-                  CALL FOR SUPPORT
-                </div>
-                <div class="support-number">
-                  1800 123 1262
-                </div>
-              </div>
-            </div>
+            <div class="text-center">For any help or assistance, feel free to <a href="https://razorpay.com/contact/" target="_blank"><u>Contact us</u></a></div>
           </div>
         </div>
         <div class="login-messaging">
-          <div class="messaging-heading">
-            Accept Payments Using UPI
+          <img src="img/signup-early-access.svg" alt="Early access products" style="margin-bottom: 4px" />
+
+          <div class="messaging-text">
+            Fee collection page? Event Registration page? Donation page? Now, create customised payment pages for your customers to come and pay. No need to write any code!
+          </div>
+
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSc8jQnoIKGY5bH0NI81HZ1ZGzYDv1rguQzGfZjuRq7sOsKseA/viewform" target="_blank" class="messaging-link">Get early access <span>→</span></a>
+
+          <div class="messaging-heading" style="margin-top: 24px;">
+            Introducing GST compliant Invoices
           </div>
 
           <div class="messaging-text">
-            Instant Transfer. Ease of Access. Secured and Hassle Free mode of payment!
+            Create GST compliant and easy to understand invoices with Razorpay Invoices.
           </div>
 
-          <a href="https://razorpay.com/upi/" target="_blank" class="messaging-link">KNOW MORE</a>
-
-          <div class="messaging-heading m-t">
-            Introducing Razorpay Invoices
-          </div>
-
-          <div class="messaging-text">
-            Make your customers pay faster with easy to understand Razorpay Invoices.
-          </div>
-
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSe5FbnjpyzrJfo_-S71gcnbSFlrVC6qdrSuDkL-l-FjG7JCMw/viewform" target="_blank" class="messaging-link">GET EARLY ACCESS</a>
-
+          <a href="https://razorpay.com/invoices/" target="_blank" class="messaging-link">Learn More <span>→</span></a>
 
         </div>
       </div>
@@ -79,10 +60,10 @@
         <div class="overflow-container">
           <div class="translate-container">
             <div class="auth-signup-container" ng-include="'tpl/auth/signup.html'">
-              
+
             </div>
             <div class="auth-signin-container" ng-include="'tpl/auth/signin.html'">
-              
+
             </div>
           </div>
         </div>
@@ -90,16 +71,38 @@
     </div>
   </div>
 </div>
-<script >  
+<script >
 var _dcq = _dcq || [];
-var _dcs = _dcs || {}; 
+var _dcs = _dcs || {};
 _dcs.account = '9421167';
 
 (function() {
   var dc = document.createElement('script');
-  dc.type = 'text/javascript'; dc.async = true; 
+  dc.type = 'text/javascript'; dc.async = true;
   dc.src = '//tag.getdrip.com/9421167.js';
   var s = document.getElementsByTagName('script')[0];
   s.parentNode.insertBefore(dc, s);
 })();
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-928471290');
+</script>
+<script>
+  (function (w, d, t, r, u) {
+      var f, n, i;
+      w[u] = w[u] || [], f = function () {
+        var o = {
+          ti: "5963182"
+        };
+        o.q = w[u], w[u] = new UET(o), w[u].push("pageLoad")
+      }, n = d.createElement(t), n.src = r, n.async = 1, n.onload = n.onreadystatechange = function () {
+        var s = this.readyState;
+        s && s !== "loaded" && s !== "complete" || (f(), n.onload = n.onreadystatechange = null)
+      }, i = d.getElementsByTagName(t)[0], i.parentNode.insertBefore(n, i)
+    })(window, document, "script", "//bat.bing.com/bat.js", "uetq");
 </script>

@@ -4,8 +4,8 @@ import {
   getActionName,
   makeCollectionReducer,
   makeActionCollectionReducer,
-} from 'rzp/modules/collection';
-import { merchantFetch } from 'rzp/utils/ajax';
+} from 'merchant/modules/collection';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const REFUND = 'REFUND_BATCHES';
 

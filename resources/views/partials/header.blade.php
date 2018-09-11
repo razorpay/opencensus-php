@@ -43,9 +43,17 @@
 
             switch (data.name) {
                 case 'set_dimensions': // Set the dimensions
+                    ga('old.set', data.dimensions);
                     ga('set', data.dimensions);
                     break;
                 default:
+                    ga('old.send',
+                        'event',
+                        data.eventCategory || undefined,
+                        data.eventAction || undefined,
+                        data.eventLabel || undefined,
+                        data.eventValue || undefined
+                    )
                     ga('send',
                         'event',
                         data.eventCategory || undefined,
@@ -64,6 +72,25 @@
                 this.send = function (s) {
                     try {
                         var x = JSON.parse(s);
+
+                        // Add MID, email, and contact to the message.
+                        if (x['response'] && typeof x['response']['message'] !== 'undefined') {
+                            if (x['response']['message'] === null) {
+                                x['response']['message'] = '';
+                            }
+
+                            if (typeof x['response']['message'] === 'string') {
+                                x['response']['message'] += '\n\nMID: ' + rzp_user.id;
+                                x['response']['message'] += '\nEmail: ' + ((rzp_user.user && rzp_user.user.email) || rzp_user.email);
+                                x['response']['message'] += '\nContact: ' + ((rzp_user.user && rzp_user.user.contact_mobile) || rzp_user.contact_mobile);
+                                x['response']['message'] += '\nName: ' + rzp_user.business_name;
+                            }
+                        }
+
+                        try {
+                            s = JSON.stringify(x);
+                        } catch (stringifyErr) {}
+
                         if (x['action'] && (x['action'] === 'create_poll_response' || x['action'] === 'update_poll_response')) {
                             if (x['response_content']) {
                                 if (typeof x['response_content'] === 'string') {

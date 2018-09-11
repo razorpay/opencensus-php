@@ -85,6 +85,7 @@ const fields = [
         {item.selectField('payment_method')}
         {item.paymentMethodTypeField()}
         {item.receiverTypeField()}
+        {item.authTypeField()}
         {item.internationalField()}
         {item.emiDurationField()}
       </div>
@@ -99,7 +100,15 @@ const fields = [
       }) || 'Any',
   ],
   ['Issuer', item => item.issuerField() || 'Any'],
-  ['Amount Range', item => item.selectField('amount_range') || 'None'],
+  [
+    'Amount Range (Paisa)',
+    item => (
+      <div>
+        {item.selectField('amount_range') || 'None'}
+        {item.customRangeField()}
+      </div>
+    ),
+  ],
   [
     'Rate (%)',
     item =>
@@ -113,14 +122,34 @@ const fields = [
   [
     'Action',
     item =>
-      ((item.id || item.readonly) && (
-        <AsyncButton
-          class="link danger"
-          pendingClass="spinner"
-          text="Delete"
-          onClick={item.delete}
-        />
-      )) || (
+      ((item.id || item.readonly) &&
+        (item.isEditing ? (
+          <div>
+            <AsyncButton
+              class="link"
+              pendingClass="spinner"
+              onClick={item.update}
+              text="Save"
+            />
+            <span class="link danger" onClick={item.cancelEditHandler}>
+              Cancel
+            </span>
+          </div>
+        ) : (
+          <div>
+            {item.id && (
+              <span class="link" onClick={item.editRuleHandler}>
+                Edit
+              </span>
+            )}
+            <AsyncButton
+              class="link danger"
+              pendingClass="spinner"
+              text="Delete"
+              onClick={item.delete}
+            />
+          </div>
+        ))) || (
         <AsyncButton
           class="btn"
           text="Add"

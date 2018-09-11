@@ -24,6 +24,7 @@ import {
 } from 'merchant/containers/Home/ga';
 import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
 
+import Mobile from './Mobile';
 import { trackBreadcrumbClick } from './ga';
 import { getQuery, aggTypes } from './data';
 
@@ -40,7 +41,8 @@ function getLevels(hierarchy, levels = []) {
   return levels;
 }
 
-const csvDateFormat = 'DD-MM-YYYY';
+const csvDateFormat = 'DD-MM-YYYY',
+  mobileAggKey = 'method';
 
 @connect(null, { ...ModalActions, showNotification })
 class PaymentMethods extends Component {
@@ -82,6 +84,7 @@ class PaymentMethods extends Component {
         startTime: startDate.unix(),
         endTime: endDate.unix(),
         aggType: aggType || selectedAgg.value,
+        ...(this.props.isMobile && { groupBy: [mobileAggKey] }),
       }),
       this.props.mode
     )
@@ -209,9 +212,26 @@ class PaymentMethods extends Component {
 
   render() {
     const { data, error, levels, csvData, isLoading, selectedAgg } = this.state,
-      { startDate, endDate, sectionTitle } = this.props,
+      { startDate, endDate, sectionTitle, isMobile } = this.props,
       levelsLength = levels.length,
       hasNoData = !data || data.length === 0;
+
+    if (isMobile) {
+      const mobileComponentProps = {
+        isLoading,
+        hasNoData,
+        selectedAgg,
+        error,
+        data,
+        aggTypes,
+      };
+
+      mobileComponentProps.aggKey = mobileAggKey;
+      mobileComponentProps.isCurrency = 'isCurrency' in selectedAgg;
+      mobileComponentProps.onAggChange = this.onAggChange;
+
+      return <Mobile {...mobileComponentProps} />;
+    }
 
     return (
       <GenericPanel

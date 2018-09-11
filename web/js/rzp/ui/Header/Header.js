@@ -9,9 +9,11 @@ export default class Header extends Component {
     let { title, showMode, isLoading, children, className } = this.props;
     return (
       <div class={`${className} header`}>
-        <h1>
-          {title} {showMode && `(${titleCase(this.props.mode)} Mode)`}
-        </h1>
+        {!!title && (
+          <h1>
+            {title} {showMode && `(${titleCase(this.props.mode)} Mode)`}
+          </h1>
+        )}
         {children}
       </div>
     );

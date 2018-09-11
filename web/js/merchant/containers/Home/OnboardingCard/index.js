@@ -141,6 +141,8 @@ export default class OnboardingCard extends Component {
                   mode={mode}
                   payments={payments}
                   onFinish={this.onIntegrationComplete}
+                  hasKeyAccess={user.has_key_access}
+                  businessWebsite={user.business_website}
                 />
               </GroupItem>
             </Group>

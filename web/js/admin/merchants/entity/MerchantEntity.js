@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
@@ -123,6 +123,8 @@ const ActionsList = ({ model, merchantId, actions }) => {
   const isDetailsLoading = !Object.keys(toJS(merchant.details)).length;
   const isFeaturesLoading = !Object.keys(toJS(merchant.features)).length;
   let isAdminsLoading = !Object.keys(toJS(merchant.adminsMap)).length;
+  const isPartnerRequestsLoading = !Object.keys(toJS(merchant.partnerRequests))
+    .length;
 
   // If user has no permission, then don't wait for this
   if (!user.permissions.find(perm => perm === 'view_all_admin')) {
@@ -345,18 +347,18 @@ const ActionsList = ({ model, merchantId, actions }) => {
     window.open(`/admin/merchant/${merchantId}/login`, '_blank');
   }
 
-  function grantKeyAccessToMerchant() {
+  function grantKeyAccessToMerchant(keyAccessValue) {
     return adminPut({
       url: `live/merchants/${merchantId}/update_key_access`,
       data: {
-        has_key_access: true,
+        has_key_access: keyAccessValue ? '1' : '0',
       },
     }).then(response => {
       if (response) {
         if (isWorkflow(response)) {
           return;
         }
-        notifySuccess('Merchant granted key access successfully.');
+        notifySuccess("Merchant's key access has been successfully updated.");
         model.updateDetails(response);
       }
     });
@@ -497,18 +499,19 @@ const ActionsList = ({ model, merchantId, actions }) => {
         {//only for activated merchants
         merchant.details.activated == 1 && (
           <ShowWhen permission="edit_merchant_key_access">
-            {/* provide access only when it's not available */}
-            {merchant.details.has_key_access ? null : (
-              <AsyncButton
-                onClick={grantKeyAccessToMerchant}
-                pendingClass="btn-pending"
-                confirm="Are you sure you want to Grant Key Access to this merchant?"
-              >
-                Grant Key Access
-                <span class="spin-btn" />
-                <i class="pull-right i i-hand-stop" />
-              </AsyncButton>
-            )}
+            <AsyncButton
+              onClick={() =>
+                grantKeyAccessToMerchant(!merchant.details.has_key_access)
+              }
+              pendingClass="btn-pending"
+              confirm={`Are you sure you want to ${
+                merchant.details.has_key_access ? 'remove' : 'grant'
+              } Key Access for this merchant?`}
+            >
+              {merchant.details.has_key_access ? 'Remove' : 'Grant'} Key Access
+              <span class="spin-btn" />
+              <i class="pull-right i i-hand-stop" />
+            </AsyncButton>
           </ShowWhen>
         )}
       </div>
@@ -645,7 +648,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
               pendingClass="btn-pending"
               confirm={toggleSuspensionCM()}
             >
-              {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
+              {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}
               <i class="pull-right i i-power" />
               Merchant
               <span class="spin-btn" />
@@ -681,6 +684,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
       <div class="group">
         <div class="group-heading" />
+
+        <ShowWhen permission="view_merchant_banks">
+          <div onClick={actions.ViewBanks}>
+            View Banks
+            <i class="pull-right i i-bank" />
+          </div>
+        </ShowWhen>
+
         <ShowWhen permission="edit_merchant_mark_referred">
           <div onClick={isDetailsLoading ? null : actions.MarkReferred}>
             Mark as Referred
@@ -688,6 +699,36 @@ const ActionsList = ({ model, merchantId, actions }) => {
             {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
+
+        {(function() {
+          const isLoading = isDetailsLoading || isPartnerRequestsLoading;
+          const action = merchant.details.partner_type ? 'Remove' : 'Mark';
+          return (
+            <ShowWhen permission="edit_merchant_requests">
+              <div onClick={isLoading ? null : actions.TogglePartnerType}>
+                {isLoading ? (
+                  <Fragment>
+                    Fetching Partner Status <div class="dot-loader">.</div>{' '}
+                  </Fragment>
+                ) : (
+                  <Fragment>{action} as partner</Fragment>
+                )}
+                <i class="pull-right i-partner" />
+              </div>
+            </ShowWhen>
+          );
+        })()}
+
+        {!isDetailsLoading &&
+          !!merchant.details.partner_type && (
+            <ShowWhen permission="edit_partners">
+              <div onClick={actions.LinkSubmerchant}>
+                Link Submerchant
+                <i class="pull-right i-user-plus" />
+              </div>
+            </ShowWhen>
+          )}
+
         <ShowWhen permission="edit_merchant_screenshot">
           <div onClick={actions.UploadScreenshots}>
             Upload screenshots

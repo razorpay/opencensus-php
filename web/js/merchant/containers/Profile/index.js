@@ -7,6 +7,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import * as ProfileActions from 'merchant/modules/profile';
 import ShowWhen from 'merchant/components/ShowWhen';
 
+import User from 'merchant/models/User';
 import MerchantDetails from 'merchant/components/Profile/MerchantDetails';
 import GST from 'merchant/containers/Profile/GST';
 import BankAccountDetails from 'merchant/components/Profile/BankAccountDetails';
@@ -15,7 +16,11 @@ import Invitations from 'merchant/components/Profile/Invitations';
 import BankAccountDetailsChange from './BankAccountDetailsChange';
 import { fetchUser } from 'merchant/modules/session';
 import PasswordForm from './PasswordForm';
+import DisplayNameForm from 'merchant/components/Profile/DisplayNameForm';
 import UpgradeMerchantForm from './UpgradeMerchantForm';
+
+import { updateDisplayName } from 'merchant/modules/profile';
+import { updateSession } from 'merchant/modules/session';
 
 @connect(
   state => {
@@ -24,7 +29,14 @@ import UpgradeMerchantForm from './UpgradeMerchantForm';
       profile: state.profile,
     };
   },
-  { ...ProfileActions, ...ModalActions, showNotification, fetchUser }
+  {
+    ...ProfileActions,
+    ...ModalActions,
+    showNotification,
+    fetchUser,
+    updateDisplayName,
+    updateSession,
+  }
 )
 export default class Profile extends Component {
   state = {
@@ -48,7 +60,7 @@ export default class Profile extends Component {
 
     // fetch status whether the merchant can change their bank account details or not
     // Only allowed for role types `owner` & `admin`
-    if (['admin', 'owner'].indexOf(this.props.user.role) > -1) {
+    if (this.isAdminOrOwner()) {
       this.props
         .fetchBankAccountChangeStatus(this.props.user.id) //user.id is merchant_id not user_id
         .then(({ data }) => {
@@ -61,6 +73,10 @@ export default class Profile extends Component {
           console.log('ERROR: Failed to fetch bank account change status');
         });
     }
+  }
+
+  isAdminOrOwner() {
+    return ['admin', 'owner'].indexOf(this.props.user.role) > -1;
   }
 
   componentWillReceiveProps(nextProps) {
@@ -142,6 +158,48 @@ export default class Profile extends Component {
     });
   };
 
+  updateDisplayName = props => {
+    return this.props
+      .updateDisplayName(props)
+      .then(resp => {
+        if (resp.success) {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Display name changed successfully.',
+          });
+
+          this.props.closeModal();
+
+          const newUser = new User({
+            ...this.props.user,
+            display_name: resp.data.display_name,
+          });
+
+          this.props.updateSession({ user: newUser });
+        }
+
+        return resp;
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
+
+  openChangeDisplayName = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <DisplayNameForm
+          displayName={this.props.user.display_name}
+          updateDisplayName={this.updateDisplayName}
+        />
+      ),
+    });
+  };
+
   openChangeBankDetailsModal = () => {
     const { bankAccount } = this.props.profile;
 
@@ -219,7 +277,16 @@ export default class Profile extends Component {
               </div>
             )}
 
-            {user && user.current ? <MerchantDetails user={user} /> : null}
+            {user && user.current ? (
+              <MerchantDetails
+                user={user}
+                changeDisplayName={
+                  Object.keys(user.merchants).length > 1 &&
+                  !!this.isAdminOrOwner() &&
+                  this.openChangeDisplayName
+                }
+              />
+            ) : null}
           </div>
 
           <ShowWhen myRole="owner finance">

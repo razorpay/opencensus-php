@@ -145,10 +145,12 @@ const WrapperElement = ({
  * Title for Activation step
  */
 const Title = ({
+  mode,
   children,
   isActivated,
   isSubmitted,
   isRejected,
+  hasKeyAccess,
   needsClarification,
 }) => {
   return (
@@ -156,7 +158,26 @@ const Title = ({
       {isSubmitted ? (
         <span>
           {isActivated ? (
-            'Account Activated'
+            <span>
+              Account Activated
+              {mode === 'live' &&
+                !hasKeyAccess && (
+                  <span>
+                    {' '}
+                    (Limited Access)
+                    <small>
+                      <i className="i i-info-circle text-fade" />
+                      <Popover align="top" followPointer={true} theme="dark">
+                        <PopoverBody>
+                          You can still use Payment Links and Invoices. Add your
+                          Website/App URL to get access to our API’s and other
+                          products like Route, Subscriptions etc.
+                        </PopoverBody>
+                      </Popover>
+                    </small>
+                  </span>
+                )}
+            </span>
           ) : isRejected ? (
             <span>
               Activation Not Accepted{' '}
@@ -184,9 +205,8 @@ const Title = ({
                 <i className="i i-info-circle text-fade" />
                 <Popover align="top" followPointer={true} theme="dark">
                   <PopoverBody>
-                    Your account is Under Review. The process usually takes{' '}
-                    {activationDuration}. We will reach out on your contact
-                    email for further clarifications.
+                    Our team will review the form and submitted documents. We
+                    will reach out on your contact email for all updates.
                   </PopoverBody>
                 </Popover>
               </small>
@@ -289,7 +309,7 @@ const Text = ({
       ) : (
         // if user has submitted and is under review
 
-        `It may take ${activationDuration} for review.`
+        'Our team is reviewing the submission.'
       )}
     </span>
   );
@@ -331,6 +351,8 @@ export default class ActivationStep extends Component {
       isSubmitted,
       isRejected,
       needsClarification,
+      business_website: businessWebsite,
+      has_key_access: hasKeyAccess,
       clarification_mode: clarificationMode,
     } = user;
 
@@ -363,11 +385,14 @@ export default class ActivationStep extends Component {
             <div>
               <b>
                 <Title
+                  mode={mode}
                   isActivated={isActivated}
                   isSubmitted={isSubmitted}
                   hasPersonalised={hasPersonalised}
                   isRejected={isRejected}
                   needsClarification={needsClarification}
+                  businessWebsite={businessWebsite}
+                  hasKeyAccess={hasKeyAccess}
                 />
               </b>
               {!isActivated &&

@@ -1,5 +1,5 @@
 import ajax from 'merchant/utils/ajax';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
@@ -61,6 +61,16 @@ export const updatePassword = data => {
       method: 'post',
       data: data,
       appendModeInQueryParam: true,
+    });
+  };
+};
+
+export const updateDisplayName = data => {
+  return () => {
+    return merchantFetch({
+      url: 'account/config',
+      method: 'put',
+      data,
     });
   };
 };

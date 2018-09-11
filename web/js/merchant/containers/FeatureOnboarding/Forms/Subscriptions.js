@@ -12,12 +12,6 @@ const isWebsiteLengthValid = websiteDetail => {
 };
 
 export default class SubscriptionForm extends Component {
-  state = { isWebsiteLive: false };
-
-  toggleIsWebsiteLive = () => {
-    this.setState({ isWebsiteLive: !this.state.isWebsiteLive });
-  };
-
   render() {
     return (
       <div class="form-body">
@@ -49,38 +43,16 @@ export default class SubscriptionForm extends Component {
           />
         </div>
 
-        <div class="form-group" style={{ marginBottom: 0 }}>
-          <label
-            for="website_checkbox"
-            class="label-required"
-            class="label-required"
-          >
-            Is your website live?
-          </label>
-          <div class="checkbox">
-            <label class="i-switch">
-              <Field
-                name="website_checkbox"
-                component={CheckboxField}
-                onChange={this.toggleIsWebsiteLive}
-              />
-              <i />
-            </label>
-          </div>
+        <div class="form-group">
+          <label for="website_details">Link to your plans page</label>
+          <Field
+            name="website_details"
+            component={InputField}
+            class="form-control"
+            placeholder="http://example.com/pricing"
+            validate={[isWebsiteLengthValid, lenientUrl('Invalid url')]}
+          />
         </div>
-
-        {this.state.isWebsiteLive && (
-          <div class="form-group">
-            <label for="website_details">Link to your plans page</label>
-            <Field
-              name="website_details"
-              component={InputField}
-              class="form-control"
-              placeholder="http://example.com/pricing"
-              validate={[isWebsiteLengthValid, lenientUrl('Invalid url')]}
-            />
-          </div>
-        )}
       </div>
     );
   }

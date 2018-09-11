@@ -174,7 +174,11 @@ const actions = {
   ),
 
   refund: (entity, entityComponent) => (
-    <action.RefundActions entity={entity} mode={entityComponent.params.mode} />
+    <action.RefundActions
+      entity={entity}
+      mode={entityComponent.params.mode}
+      updateEntity={entityComponent::updateEntity}
+    />
   ),
 
   payment: (entity, entityComponent) => (
@@ -230,6 +234,12 @@ const actions = {
         />
       </ShowWhen>
     ),
+  credits: (entity, entityComponent) => (
+    <action.CreditActions
+      entity={entity}
+      updateEntity={entityComponent::updateEntity}
+    />
+  ),
 };
 
 function updateEntity(data) {
@@ -238,7 +248,9 @@ function updateEntity(data) {
   });
 }
 
-const deleteEmiPlan = _ => adminDelete(`emi/${this.id}`);
+function deleteEmiPlan() {
+  return adminDelete(`emi/${this.id}`);
+}
 
 function downloadFile() {
   var windowRef = window.open('', '_blank');

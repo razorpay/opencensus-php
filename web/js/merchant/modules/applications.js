@@ -1,8 +1,9 @@
 import { set, merge, remove } from 'rzp/utils/immutable';
 import Application from 'merchant/models/Application';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const FETCH_APPLICATIONS = 'FETCH_APPLICATIONS';
+const FETCH_PARTNER_APPLICATION = 'FETCH_PARTNER_APPLICATION';
 const FETCH_CONNECTED_APPLICATIONS = 'FETCH_CONNECTED_APPLICATIONS';
 const FETCH_APPLICATION_DETAILS = 'FETCH_APPLICATION_DETAILS';
 const CREATE_APPLICATION = 'CREATE_APPLICATION';
@@ -10,12 +11,13 @@ const UPDATE_APPLICATION = 'UPDATE_APPLICATION';
 const DELETE_APPLICATION = 'DELETE_APPLICATION';
 const REVOKE_ACCESS_TOKEN = 'REVOKE_ACCESS_TOKEN';
 
-export const fetchAppWebhooks = appId => {
+export const fetchAppWebhooks = (appId, mode) => {
   return merchantFetch({
     url: 'webhooks',
     params: {
       application_id: appId,
     },
+    mode,
   });
 };
 
@@ -37,17 +39,20 @@ const _makeWebhookPayload = data => {
   return payload;
 };
 
-export const createAppWebhook = (appId, data) => {
+// mode is explicitly sent by partner->settings->webhook
+export const createAppWebhook = ({ appId, data, mode }) => {
   let payload = _makeWebhookPayload(data);
 
   return merchantFetch({
     url: `oauth/applications/${appId}/webhooks`,
     method: 'post',
     data: payload,
+    mode,
   });
 };
 
-export const editAppWebhook = data => {
+// mode is explicitly sent by partner->settings->webhook
+export const editAppWebhook = ({ data, mode }) => {
   let payload = _makeWebhookPayload(data);
   payload.active = data.active ? 1 : 0; // Send active field also in edit mode
 
@@ -55,6 +60,7 @@ export const editAppWebhook = data => {
     url: `webhooks/${data.id}`,
     method: 'put',
     data: payload,
+    mode,
   });
 };
 
@@ -64,6 +70,14 @@ export const fetchApplications = params => {
   return {
     type: FETCH_APPLICATIONS,
     payload: application.fetchAll(params),
+  };
+};
+
+export const fetchPartnerApplication = () => {
+  let application = new Application();
+  return {
+    type: FETCH_PARTNER_APPLICATION,
+    payload: application.fetchPartnerApplication(),
   };
 };
 
@@ -127,6 +141,7 @@ let initialState = {
   items: [],
   details: {},
   tokens: [],
+  partnerApplication: {},
 };
 
 export default function(state = initialState, action) {
@@ -136,6 +151,7 @@ export default function(state = initialState, action) {
     case `${DELETE_APPLICATION}::PENDING`:
     case `${REVOKE_ACCESS_TOKEN}::PENDING`:
     case `${FETCH_APPLICATION_DETAILS}::PENDING`:
+    case `${FETCH_PARTNER_APPLICATION}::PENDING`:
       return merge(state, {
         loading: true,
       });
@@ -159,6 +175,15 @@ export default function(state = initialState, action) {
       return merge(state, {
         connectedAppsloading: false,
         tokens: action.payload.data.items,
+      });
+
+    case `${FETCH_PARTNER_APPLICATION}::SUCCESS`:
+      return merge(state, {
+        loading: false,
+        partnerApplication: {
+          id: action.payload.id,
+          clientCredentials: action.payload.client_details,
+        },
       });
 
     case `${CREATE_APPLICATION}::SUCCESS`:

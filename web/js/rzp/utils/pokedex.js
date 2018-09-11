@@ -1,3 +1,5 @@
+import { groupBy } from './rzp-utils';
+
 export const OTHERS = 'Others';
 export const MOBILE_SDK = 'Mobile SDK';
 export const BROWSER = 'Browser';
@@ -5,11 +7,13 @@ export const DESKTOP = 'Desktop';
 export const MOBILE = 'Mobile';
 export const ANDROID = 'Android';
 export const IOS = 'iOS';
+export const EMANDATE = 'e-Mandate';
 
 export const globalGroupTitleMap = {
   upi: 'UPI',
   emi: 'EMI',
   ios: IOS,
+  emandate: EMANDATE,
 };
 
 const platformsMap = {
@@ -58,23 +62,6 @@ export const derivePlatformName = ({ platform, device, os }) => {
   }
 
   return OTHERS;
-};
-
-export const groupBy = (records, colName) => {
-  const result = {};
-
-  records.forEach((record, index) => {
-    if (!record.hasOwnProperty(colName)) {
-      return;
-    }
-
-    const colValue = record[colName],
-      colRecords = (result[colValue] = result[colValue] || []);
-
-    colRecords.push(record);
-  });
-
-  return result;
 };
 
 export const groupByPlatform = records => {

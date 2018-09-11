@@ -109,18 +109,8 @@ export default class User {
     return true;
   }
 
-  // RPL will exist and RPL will be shown as Early Access
-  // TODO: Harcoding to true for development testing
-  get isPaymentLinksV2Enabled() {
-    if (this.tags) {
-      return this.findTag('paymentlinks_v2');
-    } else {
-      return false; // Back up as always false, because RPL is dependent upon this
-    }
-  }
-
-  get isReusableLinksShown() {
-    return false;
+  get isAgentRole() {
+    return this.findTag('enable_agent_role');
   }
 
   get enabledFeatures() {
@@ -131,8 +121,20 @@ export default class User {
     });
   }
 
-  /* Check if the tag exists */
+  /* Check case-insensitive tag check existence */
   findTag(tag) {
     return !!this.tags.find(t => t.toLowerCase() === tag.toLowerCase());
+  }
+
+  /**
+   * Detects whether user is partner or not.
+   * If check has to be made for specific type of partners,
+   * then send the types for which check has to be done in arguments
+   */
+  isPartner(...args) {
+    const partnerTypes = [...args];
+    return !!partnerTypes.length
+      ? partnerTypes.indexOf(this.partner_type) > -1
+      : !!this.partner_type;
   }
 }

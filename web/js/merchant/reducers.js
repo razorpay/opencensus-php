@@ -17,12 +17,13 @@ import settlementReducer from 'merchant/modules/settlements/details';
 import webhooksReducer from 'merchant/modules/webhooks';
 import keysReducer from 'merchant/modules/keys';
 import creditsReducer from 'merchant/modules/credits';
-import teamReducer from 'rzp/modules/team';
+import teamReducer from 'merchant/modules/team';
 import configReducer from 'merchant/modules/config';
 import activationReducer from 'merchant/modules/activation';
 import refundReducer from 'merchant/modules/refunds/details';
 import paymentReducer from 'merchant/modules/payments/details';
 import transferReducer from 'merchant/modules/marketplace/transfer';
+import reversalReducer from 'merchant/modules/marketplace/reversal';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
 import referralsReducer from 'merchant/modules/referrals';
 import applicationsReducer from 'merchant/modules/applications';
@@ -30,6 +31,9 @@ import {
   virtualAccountsReducer,
   virtualAccountReducer,
 } from 'merchant/modules/virtualaccounts';
+import submerchantReducer from 'merchant/modules/submerchant';
+import statesReducer from 'merchant/modules/states';
+import taxesReducer from 'merchant/modules/taxes';
 
 import {
   refundBatchesReducer,
@@ -48,7 +52,8 @@ import {
   refundsReducer,
   settlementsReducer,
   disputesReducer,
-} from 'rzp/modules/collection';
+  submerchantsReducer,
+} from 'merchant/modules/collection';
 
 import {
   subscriptionsReducer,
@@ -103,8 +108,13 @@ export default combineReducers({
   mpPayments: mpPaymentsReducer,
   transfers: transfersReducer,
   transfer: transferReducer,
+  reversal: reversalReducer,
   reversals: reversalsReducer,
   virtualaccounts: virtualAccountsReducer,
   virtualaccount: virtualAccountReducer,
+  states: statesReducer,
+  taxes: taxesReducer,
   reports: reportsReducer,
+  submerchants: submerchantsReducer,
+  submerchant: submerchantReducer,
 });

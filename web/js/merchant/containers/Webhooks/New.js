@@ -7,7 +7,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { required, lenientUrl } from 'rzp/utils/validators';
 import { saveWebhook } from 'merchant/modules/webhooks';
-import { merchantFetch } from 'rzp/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import Spinner from 'rzp/ui/Spinner';
 import {
   createAppWebhook,
@@ -65,14 +65,13 @@ export default class AddWebhook extends Component {
       });
   }
 
-  save = props => {
-    let data = { ...props };
-
+  save = data => {
+    const { appId, mode } = this.props;
     let saveWebhook;
-    if (this.props.appId) {
+    if (appId) {
       saveWebhook = this.props.webhook
-        ? editAppWebhook(data)
-        : createAppWebhook(this.props.appId, data);
+        ? editAppWebhook({ data, mode })
+        : createAppWebhook({ appId, data, mode });
     } else {
       saveWebhook = this.props.saveWebhook(data);
     }
@@ -122,6 +121,7 @@ export default class AddWebhook extends Component {
                   class="form-control"
                   autoFocus={true}
                   validate={[required()]}
+                  autocomplete="off"
                 />
               </div>
             </div>
@@ -154,6 +154,7 @@ export default class AddWebhook extends Component {
                   type={this.state.showSecret ? 'text' : 'password'}
                   component={InputField}
                   class="form-control"
+                  autocomplete="off"
                 />
                 <button
                   type="button"

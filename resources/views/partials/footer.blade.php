@@ -8,6 +8,11 @@
         analytics.init(['ga', 'fb', 'linkedin'], {
           ga: 'UA-53341507-2'
         });
+        // Init old key as well
+        ga('create', 'UA-53341507-1', 'auto', 'old');
+
+        ga('set', 'page', location.pathname + location.hash + location.search);
+        ga('old.set', 'page', location.pathname + location.hash + location.search);
         analytics.track('ga', 'pageview');
         try {
           var pendingAction = JSON.parse(analytics.utils.getCookie('pendingAction'));

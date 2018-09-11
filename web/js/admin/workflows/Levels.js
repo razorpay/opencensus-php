@@ -88,6 +88,10 @@ class Level extends Component {
     });
   };
 
+  updateOpType = e => {
+    this.props.level.op_type = e.target.value;
+  };
+
   delete = e => this.props.levels.remove(this.props.level);
 
   render() {
@@ -102,7 +106,11 @@ class Level extends Component {
           <i class="delete i-trash" onClick={this.delete} />
         </div>
         <div class="inline">
-          <SelectField label="Operation Type" defaultValue={level.op_type}>
+          <SelectField
+            label="Operation Type"
+            defaultValue={level.op_type}
+            onChange={this.updateOpType}
+          >
             <option value="and">AND</option>
             <option value="or">OR</option>
           </SelectField>

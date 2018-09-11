@@ -8,12 +8,17 @@ import {
 } from 'merchant/components/StatusLabel';
 
 const commonMeta = {
-  numColumns: 4,
   columns: [
     {
       recordKey: 'amount',
-      transfomer: value => {
-        return <Amount value={value} />;
+      transfomer: (value, record, tabName, displayCompact) => {
+        const component = <Amount value={value} />;
+
+        return displayCompact ? (
+          <Link to={`/${tabName}/${record.id}`}>{component}</Link>
+        ) : (
+          component
+        );
       },
     },
     {
@@ -33,10 +38,10 @@ const commonMeta = {
     {
       recordKey: 'status',
       transfomer: (value, entity) => {
-
-        let Label = entity.entity === 'settlement'
-                      ? SettlementStatusLabel
-                      : PaymentStatusLabel;
+        let Label =
+          entity.entity === 'settlement'
+            ? SettlementStatusLabel
+            : PaymentStatusLabel;
         value = value || 'refunded';
 
         return <Label status={value} />;

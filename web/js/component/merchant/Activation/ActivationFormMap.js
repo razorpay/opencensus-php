@@ -9,25 +9,26 @@ import {
   validateCIN,
   validateIFSC,
   validatePANCard,
+  isUrlLenient,
 } from 'rzp/utils/validators';
 
 // This is as per the value saved in BE database
 const PROPRIETORSHIP = 1;
-const INDIVIDUAL = 2;
+export const INDIVIDUAL = 2;
 const PARTNERSHIP = 3;
 const PRIVATE = 4; // 'Private Limited',
 const PUBLIC = 5; // 'Public Limited',
 const LLP = 6; // 'LLP'
 const NGO = 7; // 'NGO'
-//const Educational_Institute = 8 // Removed now
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
-const NOT_REGISTERED = 11; // 'Society'
-//const Others = 12 // Removed now
 
 const CIN_BusinessTypes = [PRIVATE, PUBLIC];
-const LLPIN_BusinessTypes = [LLP];
+export const LLPIN_BusinessTypes = [LLP];
 const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
+
+const individualMsg =
+  'We are not supporting individuals (unregistered businesses) at the moment. We shall inform you when we start supporting individuals.';
 
 const stateOptions = ['--Select--'].concat(
   Object.keys(states).map(c => {
@@ -79,38 +80,25 @@ const businessModel = [
       { label: 'Proprietorship', name: PROPRIETORSHIP },
       { label: 'Partnership', name: PARTNERSHIP },
       { label: 'Individual', name: INDIVIDUAL },
-      { label: 'Not yet registered', name: NOT_REGISTERED },
       { label: 'Public Limited', name: PUBLIC },
       { label: 'LLP', name: LLP },
       { label: 'Trust', name: TRUST },
       { label: 'Society', name: SOCIETY },
       { label: 'NGO', name: NGO },
     ],
-    description: function() {
+    description: activation => {
       // Changing description of self
       const currentBusinessType =
-        this.state.dirty.business_type || this.props.data.business_type;
+        activation.state.dirty.business_type ||
+        activation.props.data.business_type;
 
-      // if user has selected individual/not yet registered business type
-      if (currentBusinessType && !this.props.accountId) {
+      // if user has selected individual business type
+      if (currentBusinessType && !activation.props.accountId) {
         if (currentBusinessType == INDIVIDUAL) {
           return (
-            <div class="warning-svg">
+            <div class="warning-svg red">
               {WarningSvg()}
-              <span>
-                Review of activation form for individuals takes longer. We may
-                not be able to support a few business models at this moment.
-              </span>
-            </div>
-          );
-        } else if (currentBusinessType == NOT_REGISTERED) {
-          return (
-            <div class="warning-svg">
-              {WarningSvg()}
-              <span>
-                Review of activation form for your case may take longer. We may
-                not be able to support unregistered businesses at this moment.
-              </span>
+              <span>{individualMsg}</span>
             </div>
           );
         }
@@ -190,46 +178,76 @@ const businessModel = [
     required: false,
     description:
       'Approval for international payments takes extra time to process. We will reach out to you as we may require some additional information.',
-    _when: excludeFor_Indiv_NotReg,
+    _when: excludeFor_Indiv,
   },
-  {
-    label: 'Link to Website/App',
-    name: 'business_website',
-    placeholder: 'Enter URL',
-    type: 'url',
-    description: (
-      <React.Fragment>
-        The entered App/Website should contain:
-        <b class="shallow"> About Us</b>, <b class="shallow"> Contact</b>,{' '}
-        <b class="shallow">
-          <a
-            href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
-            target="_blank"
-          >
-            Privacy Policy
-          </a>
-        </b>,{' '}
-        <b class="shallow">
-          <a
-            href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
-            target="_blank"
-          >
-            Terms & Conditions
-          </a>
-        </b>,{' '}
-        <b class="shallow">
-          <a
-            href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
-            target="_blank"
-          >
-            Cancellation/Refund Policy
-          </a>
-        </b>{' '}
-        & <b class="shallow">Pricing</b>. (Refer these links for sample pages)
-      </React.Fragment>
-    ),
-    info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
-  },
+  [
+    {
+      label: 'Website/App URL',
+      _cmp: Input.Radio,
+      _name: 'has_url',
+      className: 'Input--vTop',
+      options: [
+        'Website/App',
+        {
+          label: 'We do not have either',
+          description: (
+            <ul class="Input-desc-list">
+              <li>
+                You can accept payments by sending out Payment Links and
+                Invoices from Dashboard.
+              </li>
+              <li>You will not get access to live APIs.</li>
+              <li>You can upgrade anytime later by adding your website/app.</li>
+            </ul>
+          ),
+        },
+      ],
+    },
+    {
+      label: '',
+      name: 'business_website',
+      placeholder: 'Enter URL',
+      type: 'url',
+      validator: value => {
+        if (!isUrlLenient(value)) {
+          return 'Please enter a valid url';
+        }
+      },
+      description: (
+        <React.Fragment>
+          The entered App/Website should contain:
+          <b class="shallow"> About Us</b>, <b class="shallow"> Contact</b>,{' '}
+          <b class="shallow">
+            <a
+              href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
+              target="_blank"
+            >
+              Privacy Policy
+            </a>
+          </b>,{' '}
+          <b class="shallow">
+            <a
+              href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
+              target="_blank"
+            >
+              Terms & Conditions
+            </a>
+          </b>,{' '}
+          <b class="shallow">
+            <a
+              href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
+              target="_blank"
+            >
+              Cancellation/Refund Policy
+            </a>
+          </b>{' '}
+          & <b class="shallow">Pricing</b>. (Refer these links for sample pages)
+        </React.Fragment>
+      ),
+      info: 'Example: razorpay.com, play.google.com/?id=com.rzp',
+      _when: activation => activation.state.has_url === '0',
+    },
+  ],
 ];
 
 const registrationDetails = [
@@ -239,7 +257,8 @@ const registrationDetails = [
     validator: validateCIN,
     required: true, // It's mandatory only for certain orgs
     maxLength: '21',
-    info: 'Example : U67190TN014PTC096978',
+    className: 'Input--capitalize',
+    info: 'Example : U67190TN2014PTC096978',
     _when: activation => {
       const currentBusinessType =
         activation.state.dirty.business_type ||
@@ -255,7 +274,8 @@ const registrationDetails = [
     label: 'LLPIN',
     name: 'company_cin',
     required: true, // It's mandatory only for LLP
-    info: 'Example : AAB-2933',
+    info: 'Example : AAB2933',
+    className: 'Input--capitalize',
     _when: activation =>
       activation.props.data.business_type &&
       LLPIN_BusinessTypes.indexOf(
@@ -266,10 +286,11 @@ const registrationDetails = [
     label: 'Company PAN Number',
     name: 'company_pan',
     placeholder: 'PAN Number',
+    className: 'Input--capitalize',
     info:
       'Mandatory for Companies. PAN details should be of the mentioned business only.',
     validator: validatePANCard,
-    _when: excludeFor_Indiv_NotReg,
+    _when: excludeFor_Indiv,
   },
   [
     {
@@ -277,7 +298,7 @@ const registrationDetails = [
       name: 'promoter_pan',
       placeholder: 'PAN Number',
       validator: validatePANCard,
-      className: 'Input--vTop',
+      className: 'Input--vTop Input--capitalize',
     },
     {
       label: 'PAN Owner Name',
@@ -363,11 +384,11 @@ const registrationDetails = [
       _name: 'has_gstin',
       label: 'GSTIN',
       options: ['We have a registered GSTIN', "We don't have a GSTIN"],
-      className: 'Input--vTop',
+      className: 'Input--vTop Input--capitalize',
       _cmp: Input.Radio,
-      _when: excludeFor_Indiv_NotReg,
-      description: function() {
-        if (this.state.has_gstin == '1') {
+      _when: excludeFor_Indiv,
+      description: activation => {
+        if (activation.state.has_gstin == '1') {
           return 'You can add your GST details later once you are registered';
         }
       },
@@ -382,14 +403,12 @@ const registrationDetails = [
       name: 'gstin',
       _when: activation => {
         return (
-          excludeFor_Indiv_NotReg(activation) &&
-          activation.state.has_gstin === '0'
+          excludeFor_Indiv(activation) && activation.state.has_gstin === '0'
         );
       },
       _autoRenderImpure: true, // Re-render to show the error
       placeholder: 'Enter GSTIN',
       size: 'small',
-      required: false,
       info:
         'The entered GST Number should match either of the Address given above.',
       validator: value => {
@@ -433,9 +452,9 @@ const bankAccountFields = [
         const bankAccountNumber = this.state.dirty.bank_account_number;
         const accountNo = this.state.account_no;
 
-        const isMatching = bankAccountNumber && bankAccountNumber == accountNo;
+        const isMatching = bankAccountNumber == accountNo;
 
-        if ((!!bankAccountNumber && !accountNo) || !isMatching) {
+        if (!!bankAccountNumber && (!accountNo || !isMatching)) {
           document.querySelector('[data-name="account_no"]').focus(); // Focus on dependent field on Blur. Will be ignored if that is disabled.
         }
       },
@@ -498,11 +517,11 @@ const uploadFields = [
     name: 'business_proof_url',
     label: 'Business Registration Proof',
     _autoRenderImpure: true, // Here, Description on other field while render.
-    description: function() {
+    description: activation => {
       const currentBusinessType =
-        this.state.dirty.business_type != null
-          ? this.state.dirty.business_type
-          : this.props.data.business_type;
+        activation.state.dirty.business_type != null
+          ? activation.state.dirty.business_type
+          : activation.props.data.business_type;
 
       const li1 =
         'GST Certificate / Shop Establishment Act Certificate / Registration Certificate';
@@ -550,13 +569,13 @@ const uploadFields = [
 
       return description;
     },
-    _when: excludeFor_Indiv_NotReg,
+    _when: excludeFor_Indiv,
   },
   {
     name: 'business_pan_url',
     label: 'Company PAN',
     description: 'PAN details should be of the mentioned business only.',
-    _when: excludeFor_Indiv_NotReg,
+    _when: excludeFor_Indiv,
   },
   {
     name: 'address_proof_url',
@@ -598,13 +617,11 @@ function differentAddress(activation) {
 }
 
 /* Return true IF NOT 'Individual/Not registered' business type */
-function excludeFor_Indiv_NotReg(activation) {
+function excludeFor_Indiv(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
 
-  return (
-    [NOT_REGISTERED, INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1
-  );
+  return [INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1;
 }
 
 function requiredForNGO(activation) {

@@ -8,7 +8,7 @@ import SettlementsList from 'merchant/components/Settlements/List';
 import SettlementsListFilter from 'merchant/components/Settlements/ListFilter';
 import SettlementBreakupModal from './BreakupModal';
 import HeaderAction from 'rzp/ui/HeaderAction';
-import { fetchSettlements as fetchAll } from 'rzp/modules/collection';
+import { fetchSettlements as fetchAll } from 'merchant/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';

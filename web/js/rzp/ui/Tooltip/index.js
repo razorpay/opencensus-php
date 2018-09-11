@@ -6,6 +6,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import debounce from 'rzp/utils/debounce';
+
 const DEFAULT_OFFSET = 10,
   TOOLTIP_DELAY = 200;
 
@@ -24,6 +26,7 @@ class Tooltip extends Component {
     this.handleMouseEnter = this.handleMouseEnter.bind(this);
     this.handleMouseLeave = this.handleMouseLeave.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleScroll = debounce(this.handleMouseLeave, 100);
   }
 
   getDimensions(data) {
@@ -207,11 +210,21 @@ class Tooltip extends Component {
       }
     }
 
+    const ele = document.getElementsByClassName(this.props.containerClass)[0];
+
+    let parentAdjustment = { top: 0, left: 0 };
+    if (ele && this.props.containerClass) {
+      const coord = getTranslate(ele);
+
+      parentAdjustment.left = coord[0];
+      parentAdjustment.top = coord[1];
+    }
+
     if (!this.props.followPointer) {
       // when paddingBottom is present, top needs to be adjusted as
       // the box grows down
-      node.style.top = tooltipTop - paddingBottom + 'px';
-      node.style.left = tooltipLeft + 'px';
+      node.style.top = tooltipTop - parentAdjustment.top - paddingBottom + 'px';
+      node.style.left = tooltipLeft - parentAdjustment.left + 'px';
       node.style.paddingLeft = paddingLeft + 'px';
       node.style.paddingTop = paddingTop + 'px';
       node.style.paddingBottom = paddingBottom + 'px';
@@ -236,6 +249,10 @@ class Tooltip extends Component {
   }
 
   hideTooltip() {
+    if (!this.state.show) {
+      return;
+    }
+
     this.setState({
       show: false,
     });
@@ -281,12 +298,18 @@ class Tooltip extends Component {
       parent = this.node.parentElement;
 
     if (!followPointer) {
-      parent.addEventListener('mouseenter', this.handleMouseEnter);
+      parent.addEventListener('mouseenter', this.handleMouseEnter, {
+        passive: true,
+      });
     } else {
-      parent.addEventListener('mousemove', this.handleMouseMove);
+      parent.addEventListener('mousemove', this.handleMouseMove, {
+        passive: true,
+      });
     }
-    parent.addEventListener('mouseleave', this.handleMouseLeave);
-    window.addEventListener('scroll', this.handleMouseLeave);
+    parent.addEventListener('mouseleave', this.handleMouseLeave, {
+      passive: true,
+    });
+    window.addEventListener('scroll', this.handleScroll, { passive: true });
 
     this.eventsBounded = true;
   }
@@ -305,7 +328,7 @@ class Tooltip extends Component {
       parent.removeEventListener('mousemove', this.handleMouseMove);
     }
     parent.removeEventListener('mouseleave', this.handleMouseLeave);
-    window.removeEventListener('scroll', this.handleMouseLeave);
+    window.removeEventListener('scroll', this.handleScroll);
 
     this.eventsBounded = false;
   }
@@ -341,6 +364,7 @@ class Tooltip extends Component {
         onAdjustment,
         onAlignmentChange,
         theme,
+        containerClass,
         ...otherProps
       } = this.props;
 
@@ -377,3 +401,27 @@ Tooltip.propTypes = {
 };
 
 export default Tooltip;
+
+function getTranslate(item) {
+  var transArr = [];
+
+  if (!item) {
+    return;
+  }
+
+  if (!window.getComputedStyle) return;
+  var style = getComputedStyle(item, ''),
+    transform =
+      style.transform ||
+      style.webkitTransform ||
+      style.mozTransform ||
+      style.msTransform;
+  var mat = transform.match(/^matrix3d\((.+)\)$/);
+  if (mat) return parseFloat(mat[1].split(', ')[13]);
+
+  mat = transform.match(/^matrix\((.+)\)$/);
+  mat ? transArr.push(parseFloat(mat[1].split(', ')[4])) : transArr.push(0);
+  mat ? transArr.push(parseFloat(mat[1].split(', ')[5])) : transArr.push(0);
+
+  return transArr;
+}

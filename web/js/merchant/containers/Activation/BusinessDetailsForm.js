@@ -182,7 +182,6 @@ export default class BusinessDetailsForm extends Component {
                 <option value="8">Educational Institutes</option>
                 <option value="9">Trust</option>
                 <option value="10">Society</option>
-                <option value="11">Not yet registered</option>
                 <option value="12">Other</option>
               </Field>
             </div>
@@ -343,10 +342,7 @@ export default class BusinessDetailsForm extends Component {
                     name="business_website"
                     component={InputField}
                     class="form-control"
-                    validate={[
-                      required(),
-                      lenientUrl('Please enter a valid URL'),
-                    ]}
+                    validate={[lenientUrl('Please enter a valid URL')]}
                   />
                   <small class="help-block">
                     <i class="i i-info-circle" />

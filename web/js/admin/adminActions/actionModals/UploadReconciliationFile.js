@@ -1,10 +1,15 @@
 import React from 'react';
-import Field, { FileField, SelectField, SelectMode } from 'ui/Field';
+import Field, {
+  FileField,
+  SelectField,
+  SelectMode,
+  TextAreaField,
+} from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import Form from 'ui/Form';
 import { notifySuccess, notifyError, closeModal } from 'common/modal';
-
-import { adminFormUpload } from 'common/fetch';
+import { splitAndFilter } from 'common/util';
+import { adminFormUpload3 } from 'common/fetch';
 
 const gateWayOptions = [
   'HDFC',
@@ -37,7 +42,9 @@ const gateWayOptions = [
   'Netbanking Pnb',
   'Netbanking Obc',
   'Netbanking Csb',
+  'Netbanking Hdfc',
   'Atom',
+  'CardFss',
 ];
 
 const optionValueMap = {
@@ -62,6 +69,11 @@ export default function UploadReconciliationFile() {
         ))}
       </SelectField>
       <FileField multiple label="Attach Multiple Files" name="files" />
+      <TextAreaField
+        label="Force Authorize"
+        name="force_authorize"
+        placeholder="Enter comma separated ids"
+      />
       <AsyncButton
         text="Upload"
         class="btn"
@@ -77,11 +89,17 @@ export default function UploadReconciliationFile() {
             'attachment-count': files.length || 0,
             gateway: data.gateway,
           };
+          if (data.force_authorize) {
+            form.force_authorize = splitAndFilter(
+              data.force_authorize,
+              ','
+            );
+          }
           for (let i = 0; i < files.length; i++) {
             if (files[i]) form['attachment-' + (i + 1)] = files[i];
           }
 
-          return adminFormUpload(
+          return adminFormUpload3(
             form,
             '/admin/' + data.mode + '/reconciliate'
           ).then(response => {

@@ -3,15 +3,19 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import { roles } from 'rzp/utils/constants';
+import { roles, agentRole } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
-import { updateUser, removeUser, fetchTeamDetails } from 'rzp/modules/team';
+import {
+  updateUser,
+  removeUser,
+  fetchTeamDetails,
+} from 'merchant/modules/team';
 
-const ROLES = without(roles, 'owner');
 @connect(
   state => {
     return {
       merchantId: state.session.user.current,
+      session: state.session,
     };
   },
   {
@@ -72,6 +76,13 @@ export default class EditUser extends Component {
   render() {
     const { handleSubmit, user } = this.props;
 
+    let allRoles = roles;
+
+    if (this.props.session.user.isAgentRole) {
+      allRoles = { ...allRoles, ...agentRole };
+    }
+
+    let ROLES = user.role === 'owner' ? allRoles : without(allRoles, 'owner');
     return (
       <tr>
         <td>{user.email}</td>

@@ -110,10 +110,12 @@ class Service extends Base\Service
 
         $user = Auth::user();
 
+        $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+
         $traceData = [
             'id'          => $user->id,
             'email'       => $user->email,
-            'merchant_id' => $user->currentMerchant()->id,
+            'merchant_id' => $currentMerchantId,
         ];
 
         $this->trace->info(TraceCode::USER_LOGIN, $traceData);
@@ -130,7 +132,7 @@ class Service extends Base\Service
             return [["Password change forbidden on this account"], null];
         }
 
-        list($error, $data) = $this->updatePasswordOnApi($user->id, $input);
+        list($error, $data) = $this->updatePasswordOnApi($input);
 
         $currentSessionId = Session::getId();
 
@@ -202,21 +204,17 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function updatePasswordOnApi($userId, $data)
+    public function updatePasswordOnApi($data)
     {
         $passwordData = [
             'password'              => $data['password'],
             'password_confirmation' => $data['password_confirmation'],
+            'old_password'          => $data['old_password'],
         ];
-
-        if (isset($data['old_password']))
-        {
-            $passwordData['old_password'] = $data['old_password'];
-        }
 
         $request = new \App\Admin\ApiRequestAny();
 
-        list($error, $data) = $request->processInput($passwordData)->send("users/$userId/password", 'PUT');
+        list($error, $data) = $request->processInput($passwordData)->send("users/password", 'PUT');
 
         if (empty($error) === false)
         {

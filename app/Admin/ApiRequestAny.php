@@ -214,6 +214,13 @@ class ApiRequestAny
 
                 $pass = Config::get('api.auth_guest_pass');
             }
+            else if ($clientType === 'internal')
+            {
+                // used only by the dasboard backend.
+                $baUser = 'live';
+
+                $pass = Config::get('api.auth_internal_pass');
+            }
         }
 
         // Set BasicAuth creds
@@ -299,6 +306,12 @@ class ApiRequestAny
         $errors = [];
         $response = null;
         $method = $method ?? Request::method();
+
+        // In some cases (for instance dashboard merchant searches)
+        // $path ends up having URLs which triggers `cURL error 6: Could not resolve host`
+        // because Guzzle doesn't attach $path to the base_url set above
+        // if it contains `://`
+        $path = str_replace('://', '', $path);
 
         try
         {

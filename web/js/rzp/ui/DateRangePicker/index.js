@@ -146,7 +146,12 @@ class DateRangePicker extends Component {
   }
 
   render() {
-    const { icon, onDatesChange } = this.props;
+    const {
+      icon,
+      onDatesChange,
+      numberOfMonths = 2,
+      horizontalMargin = 0,
+    } = this.props;
 
     let { presets, selectedPreset, startDate, endDate } = this.state;
 
@@ -172,6 +177,8 @@ class DateRangePicker extends Component {
             startDate={startDate}
             endDate={endDate}
             onDatesChange={this.onDatesChange}
+            numberOfMonths={numberOfMonths}
+            horizontalMargin={horizontalMargin}
           />
         </div>
       </div>

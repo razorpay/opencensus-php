@@ -1,12 +1,18 @@
 import { toJS, extendObservable, computed } from 'mobx';
 import Collection from 'model/collection';
 import CollectionItem from 'model/collectionItem';
-import fetch, { adminDelete, adminFetch, adminPost } from 'common/fetch';
+import fetch, {
+  adminDelete,
+  adminFetch,
+  adminPost,
+  adminPatch,
+} from 'common/fetch';
 import { methods } from 'common/data';
 import { notifySuccess, notifyError } from 'common/modal';
 import { deepClone } from 'common/util';
 import { cardTypes } from 'common/data';
 import { SwitchField } from 'ui/Field';
+import { isWorkflow } from 'common/util';
 
 export default class Plan extends Collection {
   constructor(props = {}) {
@@ -36,7 +42,12 @@ export default class Plan extends Collection {
       })
     ).then(data => {
       this.items.replace(
-        (data.rules || []).map(p => new Rule(this, p)).concat(new Rule(this))
+        (data.rules || [])
+          .map(p => {
+            p.isEditing = false;
+            return new Rule(this, p);
+          })
+          .concat(new Rule(this))
       );
       return data;
     });
@@ -117,6 +128,7 @@ export const options = {
     '200000-1000000000': '200000-1000000000',
     '0-10000000': '0 - 1 lac',
     '10000000-': '1 lac+',
+    custom: 'Custom',
   },
   emi_duration: {
     '': 'All',
@@ -129,10 +141,16 @@ export const options = {
     ' 21': 21,
     ' 24': 24,
   },
+  auth_type: {
+    '': 'All',
+    pin: 'PIN',
+  },
   percent_rate: '',
   fixed_rate: '',
   min_fee: '',
   max_fee: '',
+  amount_range_min: '',
+  amount_range_max: '',
 };
 
 const ruleProps = Object.keys(options).reduce(function(o, key) {
@@ -143,6 +161,8 @@ const ruleProps = Object.keys(options).reduce(function(o, key) {
   return o;
 }, {});
 
+const editableFields = ['fixed_rate', 'percent_rate', 'min_fee', 'max_fee'];
+
 class Rule extends CollectionItem {
   @computed
   get isCard() {
@@ -151,28 +171,50 @@ class Rule extends CollectionItem {
 
   constructor(collection, props = ruleProps) {
     super(collection, props);
-    this.bind(['save', 'delete']);
+    this.bind([
+      'update',
+      'save',
+      'delete',
+      'editRuleHandler',
+      'cancelEditHandler',
+      'updateRule',
+    ]);
     extendObservable(this, props);
+    this['originalRule'] = {};
+    this['originalRule'] = deepClone(this);
+    editableFields.forEach(elem => {
+      if (this[elem]) {
+        this[elem] /= 100;
+      }
+    });
   }
 
   serialize() {
     let data = toJS(this);
 
     if (data.amount_range) {
-      let range = data.amount_range.split('-');
       data.amount_range_active = 1;
-      data.amount_range_min = range[0];
-      // if the max not specified its 2cr
-      data.amount_range_max = range[1] || 1000000000;
+      if (data.amount_range !== 'custom') {
+        let range = data.amount_range.split('-');
+        data.amount_range_min = range[0];
+        // if the max not specified its 2cr
+        data.amount_range_max = range[1] || 1000000000;
+      }
     }
     delete data.amount_range;
+    delete data.isEditing;
+    delete data.originalRule;
 
-    data.emi_duration = data.emi_duration.trim();
+    data.emi_duration = data.emi_duration && data.emi_duration.trim();
 
     data.percent_rate = Math.round(data.percent_rate * 100);
     data.fixed_rate = Math.round(data.fixed_rate * 100);
     data.min_fee = Math.round(data.min_fee * 100);
-    data.max_fee = Math.round(data.max_fee * 100);
+    data.max_fee =
+      data.max_fee || parseInt(data.max_fee) === 0
+        ? Math.round(data.max_fee * 100)
+        : undefined;
+
     return data;
   }
 
@@ -195,8 +237,11 @@ class Rule extends CollectionItem {
           data: this.serialize(),
         })
       ).then(data => {
-        if (data) {
+        if (data && !isWorkflow(data)) {
           notifySuccess(`Rule added for ${data.plan_name}`);
+          data.isEditing = false;
+          this.amount_range_min = '';
+          this.amount_range = '';
           this.collection.items.splice(-1, 0, new Rule(this.collection, data));
           return data;
         }
@@ -210,9 +255,11 @@ class Rule extends CollectionItem {
     }
     return this.request(
       'delete',
-      adminDelete(`live/pricing/${this.collection.props.id}/rule/${this.id}`)
+      adminDelete(
+        `live/pricing/${this.collection.props.id}/rule/${this.id}/force`
+      )
     ).then(data => {
-      if (data) {
+      if (data && !isWorkflow(data)) {
         notifySuccess(data.message);
         this.collection.items.remove(this);
       }
@@ -228,14 +275,67 @@ class Rule extends CollectionItem {
     return false;
   }
 
+  editRuleHandler(e) {
+    this.isEditing = true;
+  }
+
+  cancelEditHandler(e) {
+    this.updateRule(this['originalRule']);
+    this.isEditing = false;
+  }
+
+  updateRule(data) {
+    for (const key in data) {
+      if (key !== 'originalRule') {
+        this[key] = data[key];
+      }
+      if (editableFields.indexOf(key) !== -1) {
+        this[key] /= 100;
+      }
+    }
+  }
+
+  update() {
+    if (this.id) {
+      let payload = {
+        url: `live/pricing/${this.collection.props.id}/rule/${this.id}`,
+        data: {
+          percent_rate: Math.round(this.percent_rate * 100),
+          fixed_rate: Math.round(this.fixed_rate * 100),
+          min_fee: Math.round(this.min_fee * 100),
+          max_fee: Math.round(this.max_fee * 100),
+        },
+      };
+
+      return this.request(
+        'patch',
+        adminPatch(payload).then(data => {
+          if (data && !isWorkflow(data)) {
+            this.updateRule(data);
+            this.isEditing = false;
+            notifySuccess(`Rule updated for ${data.plan_name}`);
+            return data;
+          }
+        })
+      );
+    }
+  }
+
   field(Component, name, props = {}) {
     let value;
 
     if (name === 'amount_range') {
-      value =
-        this['amount_range_min'] != null
-          ? this['amount_range_min'] + '-' + this['amount_range_max']
-          : this[name];
+      if (
+        this['amount_range_min'] ||
+        parseInt(this['amount_range_min']) === 0
+      ) {
+        value = this['amount_range_min'] + '-' + this['amount_range_max'];
+        if (!options.amount_range[value] && !this.id) {
+          value = 'custom';
+        }
+      } else {
+        value = this[name];
+      }
     } else {
       value = this[name] || '';
     }
@@ -244,10 +344,11 @@ class Rule extends CollectionItem {
       return value;
     }
 
-    if (this.id) {
-      if (props.type === 'number') {
-        value /= 100;
-      }
+    if (!this.isEditing && this.id) {
+      return value;
+    }
+
+    if (this.isEditing && editableFields.indexOf(name) === -1) {
       return value;
     }
 
@@ -259,6 +360,14 @@ class Rule extends CollectionItem {
         {...props}
       />
     );
+  }
+
+  onPropChange(e) {
+    this[e.target.name] = e.target.value;
+    if (e.target.name === 'amount_range' && e.target.value !== 'custom') {
+      this.amount_range_min = '';
+      this.amount_range_max = '';
+    }
   }
 
   selectField(name, values = options[name]) {
@@ -339,6 +448,36 @@ class Rule extends CollectionItem {
       if (field) {
         return <div>{field} Months</div>;
       }
+    }
+  }
+
+  authTypeField() {
+    if (
+      this.payment_method === 'card' &&
+      this.payment_method_type === 'debit'
+    ) {
+      var field = this.selectField('auth_type');
+
+      if (field) {
+        return <div>Auth Type: {field}</div>;
+      }
+    }
+  }
+
+  customRangeField() {
+    if (this.amount_range === 'custom') {
+      let props = {
+        placeholder: 'Paisa',
+      };
+      var minField = this.numberField('amount_range_min', props);
+      var maxField = this.numberField('amount_range_max', props);
+
+      return (
+        <div class="custom-range-cnt">
+          <div>Min {minField}</div>
+          <div>Max {maxField}</div>
+        </div>
+      );
     }
   }
 }

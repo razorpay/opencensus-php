@@ -279,7 +279,7 @@
 .rc-calendar {
   position: relative;
   outline: none;
-  font-family: Arial, "Hiragino Sans GB", "Microsoft Yahei", "Microsoft Sans Serif", "WenQuanYi Micro Hei", sans-serif;
+  font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
   width: 296px;
   list-style: none;
   font-size: 12px;
@@ -1026,13 +1026,21 @@
   color: $primary-color;
 }
 
-
-.rc-calendar-year-panel-tbody td:not([title="2015"]):not([title="2016"]):not([title="2017"]):not([title="2018"]) > a {
+.Input--Calendar-content.disable-past-year .rc-calendar-year-panel-tbody td:not([title="2018"]):not([title="2019"]):not([title="2020"]):not([title="2021"]):not([title="2022"]) > a {
   pointer-events: none;
   color: rgba(102,102,102,0.2);
 }
 
-.rc-calendar-year-panel-tbody td:not([title="2015"]):not([title="2016"]):not([title="2017"]):not([title="2018"]) {
+.Input--Calendar-content.disable-past-year .rc-calendar-year-panel-tbody td:not([title="2018"]):not([title="2019"]):not([title="2020"]):not([title="2021"]):not([title="2022"]) {
+  cursor: not-allowed;
+}
+
+.Input--Calendar-content:not(.disable-past-year) .rc-calendar-year-panel-tbody td:not([title="2015"]):not([title="2016"]):not([title="2017"]):not([title="2018"]) > a {
+  pointer-events: none;
+  color: rgba(102,102,102,0.2);
+}
+
+.Input--Calendar-content:not(.disable-past-year) td:not([title="2015"]):not([title="2016"]):not([title="2017"]):not([title="2018"]) {
   cursor: not-allowed;
 }
 

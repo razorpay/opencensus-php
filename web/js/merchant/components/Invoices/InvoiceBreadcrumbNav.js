@@ -2,8 +2,18 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 export default ({ invoice, onBackNavClick }) => {
   let isNew = !invoice.id;
+  let invoiceText = 'New Invoice';
+
+  if (invoice.receipt) {
+    invoiceText = `#${invoice.receipt}`;
+  }
+
+  if (invoice.id) {
+    invoiceText = `#${invoice.id}`;
+  }
+
   return (
-    <ol class="custom-breadcrumb breadcrumb breadcrumb__backNav">
+    <ol class="breadcrumb breadcrumb__backNav">
       <li>
         <a class="breadcrumb__backNav--link btn" onClick={onBackNavClick}>
           <i class="i i-arrow-back" />
@@ -11,11 +21,12 @@ export default ({ invoice, onBackNavClick }) => {
         </a>
       </li>
       <li>
-        <h3 class="breadcrumb__backNav--heading">
-          {invoice.receipt || invoice.id || 'New Invoice'}
-        </h3>
+        <span class="breadcrumb__backNav--heading">
+          <i class="i i-chevron-right" />
+          {invoiceText}
+        </span>
         {isNew ? (
-          <span class="label label-muted">Unsaved</span>
+          <span class="label label-muted">Draft</span>
         ) : (
           <InvoiceStatusLabel status={invoice.status} />
         )}

@@ -20,6 +20,8 @@ export default ({ entity, updateEntity, mode }) => {
       trivia: body.trivia,
       network: body.network,
       type: body.type,
+      enabled: body.enabled,
+      flows: body.flows,
     };
 
     // Lets remove all the empty variables
@@ -59,77 +61,125 @@ export default ({ entity, updateEntity, mode }) => {
 // Edit iin Form
 const EditIINForm = ({ entity, handleSubmit }) => {
   return (
-    <ModalContent header="Edit iin">
+    <ModalContent header="Edit IIN" className="edit-iin-modal">
       <Form class="full-span">
-        <Field
-          label="IIN (6 digit)"
-          name="iin"
-          defaultValue={entity.iin}
-          disabled
-        />
+        <div class="form-fields">
+          <Field
+            label="IIN (6 digit)"
+            name="iin"
+            defaultValue={entity.iin}
+            disabled
+          />
 
-        <SelectField
-          label="Network"
-          name="network"
-          defaultValue={entity.network}
-        >
-          <option value="" disabled>
-            Select..
-          </option>
-          <option value="American Express">American Express</option>
-          <option value="Diners Club">Diners Club</option>
-          <option value="Discover">Discover</option>
-          <option value="JCB">JCB</option>
-          <option value="Maestro">Maestro</option>
-          <option value="MasterCard">MasterCard</option>
-          <option value="RuPay">RuPay</option>
-          <option value="Visa">Visa</option>
-          <option value="Union Pay">Union Pay</option>
-          <option value="Unknown">Unknown</option>
-        </SelectField>
+          <SelectField
+            label="Network"
+            name="network"
+            defaultValue={entity.network}
+          >
+            <option value="" disabled>
+              Select..
+            </option>
+            <option value="American Express">American Express</option>
+            <option value="Diners Club">Diners Club</option>
+            <option value="Discover">Discover</option>
+            <option value="JCB">JCB</option>
+            <option value="Maestro">Maestro</option>
+            <option value="MasterCard">MasterCard</option>
+            <option value="RuPay">RuPay</option>
+            <option value="Visa">Visa</option>
+            <option value="Union Pay">Union Pay</option>
+            <option value="Unknown">Unknown</option>
+          </SelectField>
 
-        <SelectField label="Type" name="type" defaultValue={entity.type}>
-          <option value="" disabled>
-            Select..
-          </option>
-          <option value="credit">Credit</option>
-          <option value="debit">Debit</option>
-          <option value="unkown">Unknown</option>
-        </SelectField>
+          <SelectField label="Type" name="type" defaultValue={entity.type}>
+            <option value="" disabled>
+              Select..
+            </option>
+            <option value="credit">Credit</option>
+            <option value="debit">Debit</option>
+            <option value="unkown">Unknown</option>
+          </SelectField>
 
-        <Field
-          label="Country (2 character)"
-          name="country"
-          defaultValue={entity.country}
-          length="2"
-        />
-        <Field
-          label="Category"
-          name="category"
-          defaultValue={entity.category}
-          length="2"
-        />
-        <Field label="Issuer" name="issuer" defaultValue={entity.issuer} />
+          <Field
+            label="Country (2 character)"
+            name="country"
+            defaultValue={entity.country}
+            length="2"
+          />
+          <Field
+            label="Category"
+            name="category"
+            defaultValue={entity.category}
+            length="2"
+          />
+          <Field label="Issuer" name="issuer" defaultValue={entity.issuer} />
 
-        <Field
-          label="Issuer Name"
-          name="issuer_name"
-          defaultValue={entity.issuer_name}
-          style={{ width: '200px' }}
-        />
+          <Field
+            label="Issuer Name"
+            name="issuer_name"
+            defaultValue={entity.issuer_name}
+            style={{ width: '200px' }}
+          />
 
-        <CheckField label="EMI" name="emi" defaultChecked={entity.emi}>
-          <span class="m-l">EMI Available</span>
-        </CheckField>
+          <Field label="Trivia" name="trivia" defaultValue={entity.trivia} />
 
-        <Field label="Trivia" name="trivia" defaultValue={entity.trivia} />
+          <CheckField
+            label="EMI Available"
+            name="emi"
+            defaultChecked={entity.emi}
+          />
 
-        <AsyncButton
-          text="Submit"
-          class="btn"
-          pendingClass="small spinner"
-          onSubmit={handleSubmit}
-        />
+          <CheckField
+            label="Enabled"
+            name="enabled"
+            defaultChecked={entity.enabled}
+          />
+
+          <CheckField
+            label="3Ds"
+            name="flows[3ds]"
+            defaultChecked={entity.flows.indexOf('3ds') !== -1}
+          />
+
+          <CheckField
+            label="Pin"
+            name="flows[pin]"
+            defaultChecked={entity.flows.indexOf('pin') !== -1}
+          />
+
+          <CheckField
+            label="OTP"
+            name="flows[otp]"
+            defaultChecked={entity.flows.indexOf('otp') !== -1}
+          />
+
+          <CheckField
+            label="Iframe"
+            name="flows[iframe]"
+            defaultChecked={entity.flows.indexOf('iframe') !== -1}
+          />
+
+          <CheckField
+            label="Magic"
+            name="flows[magic]"
+            defaultChecked={entity.flows.indexOf('magic') !== -1}
+          />
+
+          <CheckField
+            label="Headless OTP"
+            name="flows[headless_otp]"
+            defaultChecked={entity.flows.indexOf('headless_otp') !== -1}
+          />
+        </div>
+
+        <div class="form-actions">
+          <AsyncButton
+            text="Save"
+            class="btn"
+            pendingClass="small spinner"
+            onSubmit={handleSubmit}
+          />
+        </div>
       </Form>
     </ModalContent>
   );

@@ -6,7 +6,7 @@ import {
   fetchPayments,
   fetchRefunds,
   fetchSettlements,
-} from 'rzp/modules/collection';
+} from 'merchant/modules/collection';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
 import GenericPanel, {
@@ -15,21 +15,28 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import { tabs, tabsMeta } from './data';
-import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
 import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
 
-const Row = ({ record, tabName, tabTitle, sectionTitle }) => {
+const shouldDisplayCompact = windowWidth => {
+  return windowWidth < 480;
+};
+
+const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
   const tabMeta = tabsMeta[tabName];
 
   return (
     <tr>
       {tabMeta.columns.map((columnMeta, index) => {
+        if (displayCompact && index === 1) {
+          return null;
+        }
+
         let value = record[columnMeta.recordKey];
 
         value =
           typeof columnMeta.transfomer === 'function'
-            ? columnMeta.transfomer(value, record, tabName)
+            ? columnMeta.transfomer(value, record, tabName, displayCompact)
             : value;
 
         if (columnMeta.recordKey === 'id') {
@@ -55,6 +62,7 @@ const Row = ({ record, tabName, tabTitle, sectionTitle }) => {
       payments: state.payments,
       refunds: state.refunds,
       settlements: state.settlements,
+      windowWidth: state.app.windowWidth,
     };
   },
   {
@@ -69,6 +77,7 @@ export default class RecentActivity extends Component {
 
     this.state = {
       selectedTab: tabs[0],
+      displayCompact: shouldDisplayCompact(props.windowWidth),
     };
 
     this.handleTabClick = ::this.handleTabClick;
@@ -81,6 +90,12 @@ export default class RecentActivity extends Component {
 
     this.setState({ selectedTab: tabName });
     trackTabClick(titleCase(tabName), this.props.sectionTitle);
+  }
+
+  handleResize(props = this.props) {
+    this.setState({
+      displayCompact: shouldDisplayCompact(props.windowWidth),
+    });
   }
 
   fetchData(params) {
@@ -98,10 +113,16 @@ export default class RecentActivity extends Component {
     this.fetchData({ count: 5 });
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (this.props.windowWidth !== nextProps.windowWidth) {
+      this.handleResize(nextProps);
+    }
+  }
+
   render() {
-    const { selectedTab } = this.state,
+    const { selectedTab, displayCompact } = this.state,
       selectedTabData = this.props[selectedTab],
-      numColumns = tabsMeta[selectedTab].numColumns,
+      numColumns = tabsMeta[selectedTab].columns.length,
       selectedTabTitle = titleCase(selectedTab);
 
     let body = null;
@@ -125,6 +146,7 @@ export default class RecentActivity extends Component {
             tabName={selectedTab}
             tabTitle={selectedTabTitle}
             sectionTitle={this.props.sectionTitle}
+            displayCompact={displayCompact}
           />
         );
       });
@@ -132,7 +154,7 @@ export default class RecentActivity extends Component {
 
     return (
       <GenericPanel
-        className="recent-activity-cont"
+        className={`recent-activity-cont${displayCompact ? ' compact' : ''}`}
         isLoading={selectedTabData.loading}
       >
         <PanelTopbar>
@@ -140,7 +162,7 @@ export default class RecentActivity extends Component {
             <div className="row">
               {tabs.map((tabName, index) => {
                 const className =
-                  (tabName === selectedTab ? 'active ' : '') + 'col-sm-4';
+                  (tabName === selectedTab ? 'active ' : '') + 'col-xs-4';
 
                 return (
                   <a

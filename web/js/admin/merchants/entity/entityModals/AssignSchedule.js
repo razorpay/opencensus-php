@@ -17,6 +17,7 @@ const methodMapping = {
   emi: 'EMI',
   wallet: 'Wallet',
   bank_transfer: 'Bank Transfer',
+  emandate: 'e-Mandate',
 };
 
 const type_list = { Settlement: 'settlement' };

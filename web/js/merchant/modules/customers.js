@@ -3,7 +3,7 @@ import {
   listFetchPendingState,
   listFetchSuccessState,
   listFetchErrorState,
-} from 'rzp/modules/collection';
+} from 'merchant/modules/collection';
 import Customer from 'merchant/models/Customer';
 
 export const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH';
@@ -12,6 +12,8 @@ export const CUSTOMERS_AUTOCOMPLETE_FETCH = 'CUSTOMERS_AUTOCOMPLETE_FETCH';
 export const CUSTOMER_CREATE = 'CUSTOMER_CREATE';
 export const CUSTOMER_EDIT = 'CUSTOMER_EDIT';
 export const CUSTOMER_DELETED = 'CUSTOMER_DELETED';
+export const CUSTOMER_ADDRESS_FETCH = 'CUSTOMER_ADDRESS_FETCH';
+export const CUSTOMER_ADDRESS_ADD = 'CUSTOMER_ADDRESS_ADD';
 
 export const fetchCustomers = params => {
   let customer = new Customer();
@@ -56,6 +58,33 @@ export const deleteCustomer = params => {
     type: CUSTOMER_DELETED,
     payload: customer.delete(),
     id: customer.id,
+  };
+};
+
+/**
+ * Fetches customer's addresses.
+ * @param {Customer} params
+ */
+export const fetchCustomerAddresses = params => {
+  let customer = new Customer(params);
+
+  return {
+    type: CUSTOMER_ADDRESS_FETCH,
+    payload: customer.fetchAddresses(),
+  };
+};
+
+/**
+ * Adds a customer's address.
+ * @param {Customer} customerParams
+ * @param {Object} address
+ */
+export const addCustomerAddress = (customerParams, address) => {
+  let customer = new Customer(customerParams);
+
+  return {
+    type: CUSTOMER_ADDRESS_ADD,
+    payload: customer.addAddress(address),
   };
 };
 

@@ -503,7 +503,7 @@ export default function renderTreemap(
   groupTitleMap,
   bankNames
 ) {
-  if (!d3 || !bankNames) {
+  if (!d3 || !bankNames || !node) {
     return {};
   }
 
