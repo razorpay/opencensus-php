@@ -91,15 +91,15 @@ const AccountsListItem = ({
           </Popover>
         </small>
       </td>
-      <ShowWhen myRole="owner">
+      {onToggleDashboardAccess && (
         <td style={{ textAlign: 'center' }}>
           <SwitchField
-            defaultChecked={false}
+            defaultChecked={!!account.dashboard_access}
             onChange={onToggleDashboardAccess}
             type="prime"
           />
         </td>
-      </ShowWhen>
+      )}
     </EntityItemRow>
   );
 };
@@ -119,10 +119,10 @@ export default ({
             <th>Account Id</th>
             <th>Email</th>
             <th>Name</th>
-            <ShowWhen myRole="owner admin manager">
-              <th>Account Status</th>
-            </ShowWhen>
-            <th style={{ textAlign: 'center' }}>Dashboard Access</th>
+            <th>Account Status</th>
+            {onToggleDashboardAccess && (
+              <th style={{ textAlign: 'center' }}>Dashboard Access</th>
+            )}
           </tr>
         </thead>
         <TableBody
@@ -137,8 +137,12 @@ export default ({
               account={account}
               showEditAccountModal={showEditAccountModal}
               onEdit={() => onEdit(account)}
-              onToggleDashboardAccess={isChecked =>
-                onToggleDashboardAccess(account, isChecked)
+              onToggleDashboardAccess={
+                onToggleDashboardAccess
+                  ? isChecked => {
+                      onToggleDashboardAccess(account, isChecked);
+                    }
+                  : undefined
               }
             />
           ))}

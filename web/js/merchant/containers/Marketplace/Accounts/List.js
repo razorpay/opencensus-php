@@ -73,8 +73,34 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onToggleDashboardAccess = (account, checked) => {
-    // Api call to toggle access
-    console.log('Enabled/Disabled dashboard access for "Abced"', checked);
+    console.log(
+      'Enabled/Disabled dashboard access for "Abced"',
+      checked,
+      account.id
+    );
+    this.props
+      .toggleDashboardAccess({
+        dashboard_access: checked,
+        accountId: account.id,
+      })
+      .then(resp => {
+        if (resp) {
+          this.props.showNotification({
+            type: 'success',
+            message: `Dashboard access ${
+              checked ? 'Enabled' : 'Disabled'
+            } for merchant "${account.name}"`,
+          });
+        } else {
+          throw 'Some network error has occurred';
+        }
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
   };
 
   highlightRowAndClose = accountId => {
@@ -150,7 +176,10 @@ export default class AccountsListContainer extends ListContainer {
           }
           onEdit={this.showAccountDetailsModal}
           onToggleDashboardAccess={
-            showWhenUtil({ myRole: 'owner admin manager' })
+            showWhenUtil({
+              featureEnabled: 'enable_la_dashboard',
+              myRole: 'owner admin manager',
+            })
               ? this.onToggleDashboardAccess
               : undefined
           }

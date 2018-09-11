@@ -1,6 +1,5 @@
 /*
-  Custom Checkbox for redux-form Field component
-  Since our backend expects 0/1, this component addresses the indiscrepancy between the checkbox values (0/1 & false/true)
+  Custom Checkbox as a Switch toggle UI
 
   Usage:
     <SwitchField

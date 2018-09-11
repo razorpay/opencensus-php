@@ -60,6 +60,8 @@ export default class AddAccount extends Component {
     if (accountData) {
       requestData.accountId = accountData.id;
       delete requestData.name;
+    } else if (typeof requestData.dashboard_access !== 'undefined') {
+      requestData.dashboard_access = !!requestData.dashboard_access;
     }
 
     return reqFunc(requestData)
@@ -124,7 +126,10 @@ export default class AddAccount extends Component {
             </div>
 
             {!accountData && (
-              <ShowWhen myRole="owner admin manager">
+              <ShowWhen
+                myRole="owner admin manager"
+                featureEnabled="enable_la_dashboard"
+              >
                 <div class="form-group">
                   <div class="rzpCheckbox">
                     <Field
