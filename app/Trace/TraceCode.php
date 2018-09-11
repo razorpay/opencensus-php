@@ -524,6 +524,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_PURCHASE_RESPONSE                 = 'GATEWAY_PURCHASE_RESPONSE';
     const GATEWAY_SUPPORT_ERROR                     = 'GATEWAY_SUPPORT_ERROR';
     const GATEWAY_UNKNOWN_ERROR                     = 'GATEWAY_UNKNOWN_ERROR';
+    const GATEWAY_UNKNOWN_CURL_ERROR                = 'GATEWAY_UNKNOWN_CURL_ERROR';
     const GATEWAY_PAYMENT_AUTHORIZE                 = 'GATEWAY_PAYMENT_AUTHORIZE';
     const GATEWAY_PAYMENT_VERIFY                    = 'GATEWAY_PAYMENT_VERIFY';
     const GATEWAY_PAYMENT_VERIFY_REQUEST            = 'GATEWAY_PAYMENT_VERIFY_REQUEST';

@@ -459,7 +459,25 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getEnrollmentRequestArray($input);
 
-        $response = $this->sendGatewayRequest($request);
+        try
+        {
+            $response = $this->sendGatewayRequest($request);
+        }
+        catch (Exception\GatewayRequestException $e)
+        {
+            $this->traceCurlErrorIfApplicable();
+
+            throw $e;
+        }
+        finally
+        {
+            if (isset($this->curlLog) === true)
+            {
+                fclose($this->curlLog);
+
+                unlink($this->curlLogPath);
+            }
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_ENROLL_RESPONSE,
@@ -479,6 +497,8 @@ class Gateway extends Base\Gateway
     protected function getEnrollmentRequestArray(array $input)
     {
         $traceContent = $content = $this->getVEReqContent($input);
+
+        $this->paymentId = $input['payment']['id'];
 
         $options = $this->getRequestOptions();
 
@@ -866,6 +886,14 @@ class Gateway extends Base\Gateway
         curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
 
         curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientSslKey());
+
+        $this->curlLogPath = storage_path('logs/curl_' . $this->paymentId . '.log');
+
+        $this->curlLog = fopen($this->curlLogPath, 'w'); // opening a log file for curl logs
+
+        curl_setopt($curl, CURLOPT_VERBOSE, true);
+
+        curl_setopt($curl, CURLOPT_STDERR, $this->curlLog);
     }
 
     protected function getGatewayCertDirName()
