@@ -1,20 +1,20 @@
 <?php
 
-namespace RZP\Reconciliator\Bob;
+namespace RZP\Reconciliator\Bob\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
-use RZP\Reconciliator\Base;
+use RZP\Reconciliator\Base\SubReconciliator;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Card\Fss\Status;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Currency\Currency;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 {
     public function getPaymentId(array $row)
     {
@@ -46,7 +46,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReconPaymentAmount($row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null);
+        return SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT] ?? null);
     }
 
     protected function validatePaymentCurrencyEqualsReconCurrency(array $row) : bool
@@ -229,7 +229,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $tax = $gstTax + $csfTax;
 
-        return Base\Helper::getIntegerFormattedAmount($tax);
+        return SubReconciliator\Helper::getIntegerFormattedAmount($tax);
     }
 
     /**
@@ -254,7 +254,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $fee = $lateSettlementFee + $rrfAmount + $msfAmount + $tax;
 
-        return Base\Helper::getIntegerFormattedAmount($fee);
+        return SubReconciliator\Helper::getIntegerFormattedAmount($fee);
     }
 
     /**

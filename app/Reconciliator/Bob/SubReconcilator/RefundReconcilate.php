@@ -1,16 +1,16 @@
 <?php
 
-namespace RZP\Reconciliator\Bob;
+namespace RZP\Reconciliator\Bob\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Trace\TraceCode;
-use RZP\Reconciliator\Base;
+use RZP\Reconciliator\Base\SubReconciliator;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Currency\Currency;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends SubReconciliator\RefundReconciliate
 {
     public function getRefundId(array $row)
     {
@@ -76,7 +76,7 @@ class RefundReconciliate extends Base\RefundReconciliate
             return null;
         }
 
-        $refundAmount = Base\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
+        $refundAmount = SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
 
         return abs($refundAmount);
     }

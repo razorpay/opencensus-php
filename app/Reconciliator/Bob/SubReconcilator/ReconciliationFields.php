@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Bob;
+namespace RZP\Reconciliator\Bob\SubReconciliator;
 
 class ReconciliationFields
 {

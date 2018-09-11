@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Bob;
+namespace RZP\Reconciliator\Bob\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 
@@ -8,7 +8,7 @@ use RZP\Reconciliator\Base;
  * Class CombinedReconciliate
  * @see https://docs.google.com/spreadsheets/d/1T8SHup7_Jgzk2jYYS_D3x--zcU8nrGwyq_0M7UGi3ro/edit?usp=sharing
  */
-class CombinedReconciliate extends Base\CombinedReconciliate
+class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {
     const PURCHASE_TXN = 'purchase';
     const REFUND_TXN   = 'refund';
