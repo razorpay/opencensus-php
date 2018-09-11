@@ -1419,7 +1419,7 @@ class Service extends Base\Service
                     $this->repo->saveOrFail($payment);
                 });
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $success = true;
 

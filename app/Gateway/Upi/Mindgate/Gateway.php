@@ -738,7 +738,7 @@ class Gateway extends Base\Gateway
 
         if (isset($input['payment']['merchant_reference']) === false)
         {
-            $gatewayPayment = $htis->repo->findByPaymentIdAndActionOrFail(
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                 $input['payment']['id'], Action::AUTHORIZE);
 
             $merchantReference = $gatewayPayment['merchant_reference'];

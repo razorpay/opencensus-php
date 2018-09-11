@@ -318,7 +318,7 @@ trait Authorize
 
     protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput): array
     {
-        if (array_key_exists("skip_gateway_call", $gatewayInput) &&
+        if ((isset($gatewayInput["skip_gateway_call"]) === true) and
             ($gatewayInput["skip_gateway_call"] === true))
         {
             return $this->processCreated($payment);

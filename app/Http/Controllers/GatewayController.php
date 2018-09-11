@@ -45,7 +45,7 @@ class GatewayController extends Controller
             try
             {
                 $this->app['basicauth']->setModeAndDbConnection(
-                    ($this->app['config']->get('app.env') === Environment::PRODUCTION)
+                    ($this->app->environment('production') === true)
                     ? Mode::LIVE : Mode::TEST
                 );
 

@@ -30,7 +30,7 @@ class TerminalProcessor extends Base\Core
     {
         $this->payment = $payment;
 
-        if (array_key_exists("terminal_id", $gatewayData))
+        if (isset($gatewayData["terminal_id"]) === true)
         {
             $terminalId = $gatewayData["terminal_id"];
 
