@@ -4184,6 +4184,9 @@ ALTER TABLE subscriptions
     ADD COLUMN current_invoice_amount INTEGER UNSIGNED DEFAULT NULL AFTER current_invoice_id,
     ADD COLUMN issued_invoices_count INTEGER DEFAULT 0 AFTER paid_count;
 
+ALTER TABLE atom
+    ADD COLUMN `date` INTEGER DEFAULT NULL AFTER callback_data;
+
 # Nodal beneficiary schema changes
 ALTER TABLE nodal_beneficiaries
     DROP COLUMN status,
@@ -4279,3 +4282,4 @@ update tokens
 set recurring_failure_reason="Payment failed because account limit exceeded"
 where id in
 ("AX8axVc1Sh8uga", "AZq9Gx5YhyTi8k", "AaJOx3z5PzXSSi", "AbSIf1IMHbqDQ8", "AdiimIYloqhGt5", "AeWUW1Qa3rHZvn");
+
