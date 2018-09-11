@@ -63,7 +63,7 @@ class Base extends Core
     const UPI_ICICI              = 'UpiIcici';
     const ADMIN                  = 'admin';
     const HITACHI                = 'Hitachi';
-    const CARD_FSS_HDFC           = 'CardFssHdfc';
+    const CARD_FSS_HDFC          = 'CardFssHdfc';
     const CARD_FSS_BOB           = 'CardFssBob';
     const ATOM                   = 'Atom';
     const UPI_HDFC               = 'UpiHdfc';

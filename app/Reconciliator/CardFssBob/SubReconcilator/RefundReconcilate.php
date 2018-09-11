@@ -68,8 +68,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
         $rrn = $this->getReferenceNumber($row);
 
-        if ((empty($rrn) === true) and
-            ($onusIndicator === 'YES'))
+        if (empty($rrn) === true)
         {
             $this->reportMissingColumn($row, $row[ReconciliationFields::RRN]);
         }
@@ -77,8 +76,9 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
         if ($onusIndicator === 'YES')
         {
             return $row[ReconciliationFields::RRN] ?? null;
-
         }
+
+        return null;
     }
 
     protected function getReconRefundAmount(array $row)
@@ -113,6 +113,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
             return false;
         }
+
         return true;
     }
 
@@ -161,7 +162,6 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
                 ]);
 
             return false;
-
         }
 
         return true;

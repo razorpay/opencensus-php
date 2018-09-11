@@ -500,8 +500,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
 
     /**
-     * Checks if currency in recon file matches the actual currency in refund entity
-     * Implementation to be provided by child clasess
+     * Checks if currency in recon file matches the actual currency in
+     * refund entity. Implementation to be provided by child classes.
      *
      * @param  array $row Row data
      *
@@ -790,21 +790,5 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         }
 
         $gatewayRefund->setBankPaymentId($referenceNumber);
-    }
-
-    /**
-     * @param array $row
-     * @param string $columnName
-     */
-    protected function reportMissingColumn(array $row, string $columnName)
-    {
-        $this->trace->info(
-            TraceCode::RECON_INFO_ALERT,
-            [
-                'message'           => 'Unable to get the expected column.',
-                'column_name'       => $columnName,
-                'row'               => $row,
-                'gateway'           => $this->gateway
-            ]);
     }
 }

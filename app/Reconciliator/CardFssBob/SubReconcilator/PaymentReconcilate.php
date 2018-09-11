@@ -42,6 +42,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
             return false;
         }
+
         return true;
     }
 
@@ -99,16 +100,20 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
         $rrn = $this->getReferenceNumber($row);
 
-        if ((empty($rrn) === true) and
-            ($onusIndicator === 'YES'))
+        if (empty($rrn) === true)
         {
             $this->reportMissingColumn($row, $row[ReconciliationFields::RRN]);
         }
-
-        if ($onusIndicator === 'YES')
+        else if ($onusIndicator === 'YES')
         {
+            // Only in case of ONUS transactions, we want to store RRN
+            // In all the other cases, we want to store ARN only.
+            // Currently, only ONUS transactions go through this gateways.
+
             return $row[ReconciliationFields::RRN] ?? null;
         }
+
+        return null;
     }
 
     protected function getGatewayPayment($paymentId)
@@ -145,7 +150,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     /**
      * Returns if the card is debit or credit from Payment Method
      * @param array $row Card type would be  Credit Card, Debit Card
-     * @return strings|null if any card type is present
+     * @return string|null if any card type is present
      */
     protected function getCardType($row)
     {
@@ -202,7 +207,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
      */
     protected function getIssuer($row)
     {
-        $onusIndicator = $row[ReconciliationFields::ONUS_INDICATOR];
+        $onusIndicator = $row[ReconciliationFields::ONUS_INDICATOR] ?? null;
 
         if ($onusIndicator === 'YES')
         {
@@ -299,6 +304,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         {
             $this->setPaymentReference1($rowDetails[BaseReconciliate::REFERENCE_NUMBER]);
         }
+
         if (empty($rowDetails[BaseReconciliate::AUTH_CODE]) === false)
         {
             $this->setPaymentReference2($rowDetails[BaseReconciliate::AUTH_CODE]);
