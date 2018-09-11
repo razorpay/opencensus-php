@@ -31,9 +31,10 @@ class Reporting implements ExternalService
     /**
      * Path for various endpoints
      */
-    const CONFIG_PATH   = '/v1/configs';
-    const LOG_PATH      = '/v1/logs';
-    const SCHEDULE_PATH = '/v1/schedules';
+    const CONFIG_PATH           = '/v1/configs';
+    const LOG_PATH              = '/v1/logs';
+    const ADMIN_LOG_PATH        = '/v1/admin-logs';
+    const SCHEDULE_PATH         = '/v1/schedules';
 
     const SCHEDULE_PREFIX = 'sched_';
 
@@ -239,6 +240,12 @@ class Reporting implements ExternalService
     public function fetchLogById(string $id): array
     {
         $path = self::LOG_PATH . '/' . $id;
+
+        if (($this->ba->isAppAuth() === true) and
+            ($this->ba->isAdminAuth() === true))
+        {
+            $path = self::ADMIN_LOG_PATH . '/' . $id;
+        }
 
         return $this->createAndSendRequest(Requests::GET, $path);
     }

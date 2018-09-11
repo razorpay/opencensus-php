@@ -14,16 +14,16 @@ use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Gateway\Card\Fss\Entity as CardFssEntity;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
-use RZP\Reconciliator\HDFC\RefundReconciliate as HdfcRefundRecon;
-use RZP\Reconciliator\HDFC\PaymentReconciliate as HDFCPaymentRecon;
-use RZP\Reconciliator\Axis\PaymentReconciliate as AxisPaymentRecon;
-use RZP\Reconciliator\Atom\PaymentReconciliate as AtomPaymentRecon;
-use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
-use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
-use RZP\Reconciliator\BillDesk\RefundReconciliate as BilldeskRefundRecon;
-use RZP\Reconciliator\Hitachi\PaymentReconciliate as HitachiPaymentRecon;
-use RZP\Reconciliator\Freecharge\PaymentReconciliate as FreechargePaymentRecon;
-use RZP\Reconciliator\VirtualAccYesBank\PaymentReconciliate as VirtualAccYesBank;
+use RZP\Reconciliator\HDFC\SubReconciliator\RefundReconciliate as HdfcRefundRecon;
+use RZP\Reconciliator\HDFC\SubReconciliator\PaymentReconciliate as HDFCPaymentRecon;
+use RZP\Reconciliator\Axis\SubReconciliator\PaymentReconciliate as AxisPaymentRecon;
+use RZP\Reconciliator\Atom\SubReconciliator\PaymentReconciliate as AtomPaymentRecon;
+use RZP\Reconciliator\FirstData\SubReconciliator\PaymentReconciliate as FDPaymentRecon;
+use RZP\Reconciliator\Hitachi\SubReconciliator\RefundReconciliate as HitachiRefundRecon;
+use RZP\Reconciliator\BillDesk\SubReconciliator\RefundReconciliate as BilldeskRefundRecon;
+use RZP\Reconciliator\Hitachi\SubReconciliator\PaymentReconciliate as HitachiPaymentRecon;
+use RZP\Reconciliator\Freecharge\SubReconciliator\PaymentReconciliate as FreechargePaymentRecon;
+use RZP\Reconciliator\VirtualAccYesBank\SubReconciliator\PaymentReconciliate as VirtualAccYesBank;
 
 class ReconciliationFileTest extends TestCase
 {
@@ -1031,7 +1031,7 @@ class ReconciliationFileTest extends TestCase
         $facade[AtomPaymentRecon::COLUMN_BANK_REFERENCE_NO]   = $gatewayPayment['bank_payment_id'];
         $facade[AtomPaymentRecon::COLUMN_AMOUNT]              = $gatewayPayment['amount'] / 100;
         $facade[AtomPaymentRecon::COLUMN_TRANSACTION_CHARGES] = (float) $facade[AtomPaymentRecon::COLUMN_AMOUNT] * 1.1;
-        $facade[AtomPaymentRecon::COLUMN_SERVICE_TAX]         = (float) $facade[AtomPaymentRecon::COLUMN_AMOUNT] * 0.002;
+        $facade['GST (18%)']                                  = (float) $facade[AtomPaymentRecon::COLUMN_AMOUNT] * 0.002;
         $facade['Bank / Card Name']                           = $gatewayPayment['bank_name'];
         $facade['Net Amount to be Paid']                      = $facade['GST (18%)'] + $facade['Txn Charges'];
         $facade['Settlement Date']                            = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)->format('d-M-Y h:i:s');

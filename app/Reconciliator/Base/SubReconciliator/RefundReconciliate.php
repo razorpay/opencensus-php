@@ -1,11 +1,12 @@
 <?php
 
-namespace RZP\Reconciliator\Base;
+namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use App;
 
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
@@ -14,7 +15,7 @@ use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class RefundReconciliate extends Foundation\SubReconciliate
+class RefundReconciliate extends Base\Foundation\SubReconciliate
 {
     /*******************
      * Instance objects

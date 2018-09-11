@@ -7,8 +7,10 @@ use Excel;
 use Closure;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Status;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Gateway;
@@ -16,6 +18,7 @@ use RZP\Models\Merchant\Webhook;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Entity as Payment;
@@ -62,6 +65,7 @@ class EnachRblGatewayTest extends TestCase
             'account_number' => '914010009305862',
             'ifsc'           => 'utib0000123',
             'name'           => 'Test account',
+            'account_type'   => 'current',
         ];
 
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
@@ -77,6 +81,12 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals(0, $enach['amount']);
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertNotNull($enach['signed_xml']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('current', $token['account_type']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+        $this->assertNull($token['expired_at']);
     }
 
     public function testSuccessfulEsignGenerationWithVid()
@@ -158,6 +168,162 @@ class EnachRblGatewayTest extends TestCase
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertEquals('Invalid Aadhaar id', $enach['error_message']);
         $this->assertEquals('REQUEST_VALIDATION_FAILED', $enach['error_code']);
+    }
+
+    public function testDigioVerify()
+    {
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $response = $this->doAuthPayment($payment);
+
+        $verify = $this->verifyPayment($response['razorpay_payment_id']);
+
+        $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
+
+        $this->assertEquals(VerifyResult::STATUS_MATCH, $verify['gateway']['status']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(1, $payment[Payment::VERIFIED]);
+
+        $gateway = $this->getLastEntity('enach', true);
+
+        $this->assertNotNull($gateway['signed_xml']);
+    }
+
+    public function testDigioAuthFailedVerifySuccess()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->mockAuthFailed();
+
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Status::FAILED, $payment['status']);
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+
+        $gateway = $this->getLastEntity('enach', true);
+
+        $this->assertNotNull($gateway['signed_xml']);
+    }
+
+    public function testDigioCallbackFailedVerifySuccess()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->mockPaymentRequestTimeout();
+
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Status::FAILED, $payment['status']);
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+
+        $gateway = $this->getLastEntity('enach', true);
+
+        $this->assertNotNull($gateway['signed_xml']);
+    }
+
+    public function testAuthorizeFailedPayment()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->mockPaymentRequestTimeout();
+
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $testData = $this->testData['testDigioCallbackFailedVerifySuccess'];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Status::AUTHORIZED, $payment['status']);
+        $this->assertEquals(true, $payment['late_authorized']);
+
+        $gateway = $this->getLastEntity('enach', true);
+
+        $this->assertNotNull($gateway['signed_xml']);
     }
 
     public function testAcknowledgementSuccessfulReconciliation()
@@ -373,6 +539,8 @@ class EnachRblGatewayTest extends TestCase
 
         $token = $this->getDbLastEntityToArray('token');
 
+        $this->assertNull($token['expired_at']);
+        $this->assertNull($token['account_type']);
         $this->assertNotNull($token['gateway_token']);
         $this->assertEquals('confirmed', $token['recurring_status']);
 
@@ -883,6 +1051,33 @@ class EnachRblGatewayTest extends TestCase
         $this->assertNotNull($attempt['utr']);
     }
 
+    public function testTokenMaxExpire()
+    {
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'UTIB0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['recurring_token']['expire_by'] = '9223372036854775807';
+
+        $this->doAuthPayment($payment);
+
+        $tokenEntity = $this->getLastEntity('token', true);
+
+        $this->assertEquals('9223372036854775807', $tokenEntity['expired_at']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+    }
+
     protected function makeDebitPayment()
     {
         $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
@@ -1243,5 +1438,27 @@ class EnachRblGatewayTest extends TestCase
         ];
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function mockPaymentRequestTimeout()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'callback')
+            {
+                throw new Exception\GatewayTimeoutException('Gateway timed out');
+            }
+        }, 'esigner_digio');
+    }
+
+    protected function mockAuthFailed()
+    {
+        $this->mockServerContentFunction(function(& $request, $action = null)
+        {
+            if ($action === 'sign')
+            {
+                unset($request['content']['status']);
+            }
+        }, 'esigner_digio');
     }
 }

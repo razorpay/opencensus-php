@@ -548,8 +548,9 @@ if (! function_exists('multidim_array_unique'))
     /**
      * Sorts the given multi dimensional array based on a key
      *
-     * @param array $array
+     * @param array  $array
      * @param string $key
+     * @param int    $sortOrder
      */
     function sortMultiDimensionalArray(array & $array, string $key, int $sortOrder = SORT_DESC)
     {

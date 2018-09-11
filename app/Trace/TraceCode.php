@@ -1214,7 +1214,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const YESBANK_CONVERTED_AMOUNT                      = 'YESBANK_CONVERTED_AMOUNT';
 
     const UPDATE_NODAL_BENEFICIARY                      = 'UPDATE_NODAL_BENEFICIARY';
-
+    const RETRY_BEAM_FILE_UPLOAD                        = 'RETRY_BEAM_FILE_UPLOAD';
     const BENEFICIARY_REGISTER_API_INIT                 = 'BENEFICIARY_REGISTER_API_INIT';
     const BENEFICIARY_REGISTER_API_FETCH                = 'BENEFICIARY_REGISTER_API_FETCH';
 

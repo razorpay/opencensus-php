@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Reconciliator\CardFss;
+namespace RZP\Reconciliator\CardFss\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Base\PublicEntity;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     const COLUMN_GATEWAY_TRANSACTION_ID   = 'aggregator_transaction_id';
     const COLUMN_REFUND_ID                = 'merchant_track_id';
@@ -65,7 +65,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $refundAmount = $row[self::COLUMN_REFUND_AMOUNT];
 
-        return Base\Helper::getIntegerFormattedAmount($refundAmount);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($refundAmount);
     }
 
     protected function validateRefundAmountEqualsReconAmount(array $row)

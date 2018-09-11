@@ -23,7 +23,8 @@ class UfhController extends Controller
      */
     protected function ufhClient(): UfhClient
     {
-        if ($this->ba->isAdminAuth() === true)
+        if (($this->ba->isAppAuth() === true) and
+            ($this->ba->isAdminAuth() === true))
         {
             $headers = [
                 'X-Merchant-Id' => Account::SHARED_ACCOUNT,

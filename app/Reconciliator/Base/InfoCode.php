@@ -17,4 +17,6 @@ class InfoCode
     const UNKNOWN_CARD_TYPE   = 'UNKNOWN_CARD_TYPE';
 
     const UNKNOWN_RECON_TYPE    = 'UNKNOWN_RECON_TYPE';
+
+    const UNEXPECTED_PAYMENT    = 'UNEXPECTED_PAYMENT';
 }
