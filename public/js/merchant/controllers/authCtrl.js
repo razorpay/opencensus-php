@@ -936,6 +936,12 @@ app
         });
         return request;
       };
+
+      $scope.trackContactUsClick = function(e) {
+        if (window.ga && window.ga.length) {
+          window.ga('send', 'event', 'Signup - Steps', 'Click - Contact Us');
+        }
+      };
     },
   ])
   .directive('overrideTab', [
