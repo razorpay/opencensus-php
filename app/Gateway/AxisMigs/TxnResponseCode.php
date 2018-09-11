@@ -3,7 +3,7 @@
 namespace RZP\Gateway\AxisMigs;
 
 use RZP\Error;
-use RZP\Gateway\AxisMigs;
+use RZP\Gateway\AxisMigs\Fields;
 
 class TxnResponseCode
 {
@@ -21,10 +21,12 @@ class TxnResponseCode
             'E5408'   => 'Not an auth transaction',
             'E5414'   => [
                 'no payments identified' => 'No payments identified',
-                'requested capture amount exceeds outstanding authorized amount' => 'Requested capture amount exceeds outstanding authorized amount',
+                'requested capture amount exceeds outstanding authorized amount' =>
+                    'Requested capture amount exceeds outstanding authorized amount',
             ],
             'E5415'   => 'Excessive refund attempted',
-            'I5154'   => 'Invalid Card Number : Card number is best match for card range in card brand MS and not expected card brand MC',
+            'I5154'   => 'Invalid Card Number : Card number is best match for card range in card brand 
+                          MS and not expected card brand MC',
             'I5166'   => 'Invalid credit card: incorrect secure code number length : Invalid Card Security Code length',
             'I5426'   => 'Invalid Permission : advanceMA',
             'W9520'   => 'Server is unable to process the request at the moment - please try later',
@@ -65,7 +67,8 @@ class TxnResponseCode
             'E5408'   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED,
             'E5414'   => [
                 'no payments identified' => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED,
-                'requested capture amount exceeds outstanding authorized amount' => Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
+                'requested capture amount exceeds outstanding authorized amount' =>
+                    Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
             ],
             'E5415'   => Error\ErrorCode::GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED,
             'I5154'   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE,

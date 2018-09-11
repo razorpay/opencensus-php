@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\AxisMigs;
 
+use RZP\Gateway\Mpi\Enstage\Field;
 use Str;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
@@ -12,6 +13,8 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment;
+use RZP\Gateway\AxisMigs;
+use RZP\Gateway\AxisMigs\Fields;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Trace\TraceCode;
 
@@ -1193,5 +1196,117 @@ class Gateway extends Base\Gateway
     protected function shouldRaiseErrorForInternationalMerchant(array $input) : bool
     {
         return ($input['merchant']['international'] === false);
+    }
+
+    protected function checkTransactionResponse($content, $input)
+    {
+        $msg = $txnResponseCode = null;
+
+        if (isset($content[Fields::VPC_TXNRESPONSECODE]) === true)
+        {
+            $txnResponseCode = $content[Fields::VPC_TXNRESPONSECODE];
+        }
+
+        if ($txnResponseCode === '0')
+        {
+            return;
+        }
+
+        if (isset($content[Fields::VPC_MESSAGE]))
+        {
+            $msg = $content[Fields::VPC_MESSAGE];
+        }
+
+        $code = $this->getInternalError($content);
+
+        if ($this->action === Base\Action::REFUND)
+        {
+            // Refund request failed. Just check if refund amount due to
+            // previous requests matches the expected amount.
+            // In that case, we will mark it as success.
+
+            $ret = $this->returnIfRefundAmountMatches($content, $input);
+
+            if ($ret === true)
+            {
+                return;
+            }
+
+            $code = Error\ErrorCode::BAD_REQUEST_REFUND_FAILED;
+        }
+
+        // Payment fails, throw exception
+        throw new Exception\GatewayErrorException(
+            $code,
+            $txnResponseCode,
+            $msg);
+    }
+
+    protected function getErrorCodeField($content)
+    {
+        // This function tells the priority of the error code.
+        if (isset($content[Fields::VPC_MESSAGE]))
+        {
+            return Fields::VPC_MESSAGE;
+        }
+
+        if (isset($content[Fields::VPC_ACQRESPONSECODE]))
+        {
+            return Fields::VPC_ACQRESPONSECODE;
+        }
+
+        if (isset($content[Fields::VPC_TXNRESPONSECODE]))
+        {
+            return Fields::VPC_TXNRESPONSECODE;
+        }
+
+        if (isset($content[Fields::VPC_AVSRESPONSECODE]))
+        {
+            return Fields::VPC_AVSRESPONSECODE;
+        }
+
+        if (isset($content[Fields::VPC_CSCRESULTCODE]))
+        {
+            return Fields::VPC_CSCRESULTCODE;
+        }
+    }
+
+//    protected function getInternalErrorCode($content)
+//    {
+//        $errorCodeFieldName = $this->getErrorCodeField($content);
+//
+//        $fieldClass = Fields::getFieldClass($errorCodeFieldName);
+//
+//        $code = constant($fieldClass::class.'::'.'map')[$content[$errorCodeFieldName]];
+//
+//        return $code;
+//    }
+
+    protected function getInternalError($content)
+    {
+        $errorCodeFieldName = $this->getErrorCodeField($content);
+
+        $fieldClass = Fields::getFieldClass($errorCodeFieldName);
+
+        switch($fieldClass)
+        {
+            case AcqResponseCode::class:
+                $map = AxisMigs\AcqResponseCode::$map;
+                break;
+            case CscResponseCode::class:
+                $map = AxisMigs\CscResponseCode::$map;
+                break;
+            case TxnResponseCode::class:
+                $map = AxisMigs\TxnResponseCode::$map;
+                break;
+            case VpcMessageCode::class:
+                $map = AxisMigs\VpcMessageCode::$map;
+                break;
+            case ErrorCodes::class:
+                $map = Base\ErrorCodes::$map;
+                break;
+        }
+
+        return $map[$errorCodeFieldName];
     }
 }

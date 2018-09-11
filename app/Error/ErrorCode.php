@@ -131,6 +131,14 @@ class ErrorCode
     const GATEWAY_ERROR_MANDATE_CREATION_FAILED                                     = 'GATEWAY_ERROR_MANDATE_CREATION_FAILED';
 
     const GATEWAY_ERROR_ONBOARDING_FAILED                                           = 'GATEWAY_ERROR_ONBOARDING_FAILED';
+    const GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH                                = 'GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH';
+    const GATEWAY_ERROR_VERSION_ERROR                                               = 'GATEWAY_ERROR_VERSION_ERROR';
+    const GATEWAY_ERROR_INVALID_DIGITAL_RECEIPT                                     = 'GATEWAY_ERROR_INVALID_DIGITAL_RECEIPT';
+    const GATEWAY_ERROR_INVALID_TXN_LOG_STRING                                      = 'GATEWAY_ERROR_INVALID_TXN_LOG_STRING';
+    const GATEWAY_ERROR_UNSUPPORTED_ACQUIRER                                        = 'GATEWAY_ERROR_UNSUPPORTED_ACQUIRER';
+    const GATEWAY_ERROR_PARSE_ERROR                                                 = 'GATEWAY_ERROR_PARSE_ERROR';
+    const GATEWAY_ERROR_FILE_ERROR                                                  = 'GATEWAY_ERROR_FILE_ERROR';
+    const GATEWAY_ERROR_SQL_ERROR                                                   = 'GATEWAY_ERROR_SQL_ERROR';
 
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
@@ -214,6 +222,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                      = 'BAD_REQUEST_PAYMENT_CARD_INVALID_CVV';
     const BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED                     = 'BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED';
     const BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE                     = 'BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE';
+    const BAD_REQUEST_CARD_ISSUER_INVALID                                           = 'BAD_REQUEST_CARD_ISSUER_INVALID';
     const BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED                                   = 'BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED';
     const BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER                                   = 'BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER';
     const BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED                          = 'BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED';
@@ -718,6 +727,7 @@ class ErrorCode
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                         = 'BAD_REQUEST_OLD_PASSWORD_MISMATCH';
     const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                       = 'BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID';
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
+    const BAD_REQUEST_INVALID_PASSWORD                                              = 'BAD_REQUEST_INVALID_PASSWORD';
 
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                               = 'BAD_REQUEST_INVITATION_USER_ALREADY_INVITED';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                                = 'BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER';
@@ -825,4 +835,5 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                                   = 'BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                              = 'BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER';
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                                = 'BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS';
+    const BAD_REQUEST_INVALID_LOCALE                                                = 'BAD_REQUEST_INVALID_LOCALE';
 }

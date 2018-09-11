@@ -2,6 +2,9 @@
 
 namespace RZP\Gateway\AxisMigs;
 
+//use RZP\Gateway\Base\ErrorCodes;
+//use RZP\Gateway\AxisMigs;
+
 class Fields
 {
     /**
@@ -33,4 +36,23 @@ class Fields
      * Output Alphanumeric 1 0
      */
     const VPC_TXNRESPONSECODE = 'vpc_TxnResponseCode';
+
+    const VPC_AVSRESPONSECODE = 'vpc_AvsResponseCode';
+
+    const VPC_ACQRESPONSECODE = 'vpc_AcqResponseCode';
+
+    const VPC_MESSAGE = 'vpc_Message';
+
+    public static $fieldClassMap = [
+        self::VPC_CSCRESULTCODE => CscResponseCode::class,
+        self::VPC_AVSRESPONSECODE => AvsResponseCode::class,
+        self::VPC_TXNRESPONSECODE => TxnResponseCode::class,
+        self::VPC_MESSAGE => VpcMessageCode::class,
+        self::VPC_ACQRESPONSECODE => ErrorCodes::class,
+    ];
+
+    public static function getFieldClass($fieldName)
+    {
+        return self::$fieldClassMap[$fieldName];
+    }
 }
