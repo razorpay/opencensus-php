@@ -499,7 +499,7 @@ class EnachRblGatewayTest extends TestCase
 
         $payment = $this->getDbLastEntityToArray('payment');
 
-        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('refunded', $payment['status']);
     }
 
     public function testRegistrationReconWithSharedMerchantProxyAuth()
@@ -590,6 +590,12 @@ class EnachRblGatewayTest extends TestCase
             ],
             $token
         );
+
+        $this->assertNull($token['gateway_token']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('refunded', $payment['status']);
     }
 
     public function testDebitFileGeneration()

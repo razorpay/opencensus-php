@@ -326,7 +326,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $payment = $this->getDbEntityById('payment', $entities[1]['payment']['id'])->toArray();
 
-        $this->assertEquals(Payment\Status::AUTHORIZED, $payment['status']);
+        $this->assertEquals(Payment\Status::REFUNDED, $payment['status']);
 
         $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
 
