@@ -13,9 +13,12 @@ use RZP\Gateway\Base\Verify;
 use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'enach_rbl';
 
     public function authorize(array $input)
@@ -89,6 +92,13 @@ class Gateway extends Base\Gateway
         }
 
         return $data;
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        return $this->callAuthenticationGateway($input);
     }
 
     protected function getRecurringData()
