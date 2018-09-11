@@ -52,6 +52,16 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
         }
     }
 
+    /**
+     * Returns the card_fss trans id
+     * @param $row
+     * @return string|null
+     */
+    protected function getGatewayTransactionId(array $row)
+    {
+        return $row[ReconciliationFields::PG_TRANSACTION_ID] ?? null;
+    }
+
     protected function getArn(array $row)
     {
         $onusIndicator = $row[ReconciliationFields::ONUS_INDICATOR];
