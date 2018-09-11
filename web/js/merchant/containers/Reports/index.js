@@ -52,7 +52,7 @@ export class ReportsContainer extends Component {
   state = { merchantAccounts: [] };
 
   componentWillMount() {
-    this.isMobileDevice = window.outerWidth < 992; // 992 is col-md bootstrap (for adaptive design)
+    this.isMobileDevice = window.innerWidth < 992; // 992 is col-md bootstrap (for adaptive design)
 
     this.linkedAccountOptions = [
       'transaction',
@@ -191,11 +191,7 @@ export class ReportsContainer extends Component {
   }
 
   analytics = values => {
-    let {
-      entity,
-      type,
-      date
-    } = values;
+    let { entity, type, date } = values;
 
     const eOpts = this.entityOptions;
 
@@ -214,15 +210,16 @@ export class ReportsContainer extends Component {
     let label = eOpt.label;
 
     if (entity !== 'transaction' && entity !== 'invoice') {
-      label = label + ' Report'
+      label = label + ' Report';
     }
     let analyticsLabel = '';
     if (entity !== 'invoice') {
       label = titleCase(type) + ' ' + label;
       if (type === 'daily') {
-        analyticsLabel = `date=${date.get('date')}-${date.get('month') + 1}-${date.get('year')}`
+        analyticsLabel = `date=${date.get('date')}-${date.get('month') +
+          1}-${date.get('year')}`;
       } else if (type === 'monthly') {
-        analyticsLabel = `month=${date.get('month') + 1}`
+        analyticsLabel = `month=${date.get('month') + 1}`;
       }
     } else {
       analyticsLabel = `month=${date.get('month') + 1}-${date.get('year')}`;
@@ -231,9 +228,9 @@ export class ReportsContainer extends Component {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Reports',
       eventAction: label,
-      eventLabel: analyticsLabel
+      eventLabel: analyticsLabel,
     });
-  }
+  };
 
   prepareGenerateReport = values => {
     this.analytics(values);
@@ -282,7 +279,7 @@ export class ReportsContainer extends Component {
       };
     }
 
-    ajaxParams.timeout = 4500*60;
+    ajaxParams.timeout = 4500 * 60;
     return this.props
       .generateReport(ajaxParams)
       .then(data => {
@@ -304,7 +301,10 @@ export class ReportsContainer extends Component {
       .catch(e => {
         this.props.showNotification({
           type: 'error',
-          message: (e.errors === '' || (e.errors instanceof Array && e.errors[0] === '')) ? 'File size is too large. Please contact support.' : 'No data found for given time range',
+          message:
+            e.errors === '' || (e.errors instanceof Array && e.errors[0] === '')
+              ? 'File size is too large. Please contact support.'
+              : 'No data found for given time range',
         });
       });
   };
