@@ -72,7 +72,7 @@ export default class AccountsListContainer extends ListContainer {
     this.setState({ showAccountDetailsFor: account.id });
   };
 
-  onToggleAccess = (account, checked) => {
+  onToggleDashboardAccess = (account, checked) => {
     // Api call to toggle access
     console.log('Enabled/Disabled dashboard access for "Abced"', checked);
   };
@@ -149,7 +149,11 @@ export default class AccountsListContainer extends ListContainer {
               : undefined
           }
           onEdit={this.showAccountDetailsModal}
-          onToggleAccess={this.onToggleAccess}
+          onToggleDashboardAccess={
+            showWhenUtil({ myRole: 'owner admin manager' })
+              ? this.onToggleDashboardAccess
+              : undefined
+          }
         />
 
         <Pager

@@ -5,6 +5,7 @@ import TableBody from 'rzp/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { classList } from 'common/util';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 
@@ -14,7 +15,7 @@ const AccountsListItem = ({
   account,
   showEditAccountModal,
   onEdit,
-  onToggleAccess,
+  onToggleDashboardAccess,
 }) => {
   let status = account.activation_details
     ? account.activation_details.status
@@ -90,13 +91,15 @@ const AccountsListItem = ({
           </Popover>
         </small>
       </td>
-      <td style={{ textAlign: 'center' }}>
-        <SwitchField
-          defaultChecked={false}
-          onChange={onToggleAccess}
-          type="prime"
-        />
-      </td>
+      <ShowWhen myRole="owner">
+        <td style={{ textAlign: 'center' }}>
+          <SwitchField
+            defaultChecked={false}
+            onChange={onToggleDashboardAccess}
+            type="prime"
+          />
+        </td>
+      </ShowWhen>
     </EntityItemRow>
   );
 };
@@ -106,7 +109,7 @@ export default ({
   isLoading,
   showEditAccountModal,
   onEdit,
-  onToggleAccess,
+  onToggleDashboardAccess,
 }) => {
   return (
     <div class="table-responsive">
@@ -116,7 +119,9 @@ export default ({
             <th>Account Id</th>
             <th>Email</th>
             <th>Name</th>
-            <th>Account Status</th>
+            <ShowWhen myRole="owner admin manager">
+              <th>Account Status</th>
+            </ShowWhen>
             <th style={{ textAlign: 'center' }}>Dashboard Access</th>
           </tr>
         </thead>
@@ -132,7 +137,9 @@ export default ({
               account={account}
               showEditAccountModal={showEditAccountModal}
               onEdit={() => onEdit(account)}
-              onToggleAccess={isChecked => onToggleAccess(account, isChecked)}
+              onToggleDashboardAccess={isChecked =>
+                onToggleDashboardAccess(account, isChecked)
+              }
             />
           ))}
         </TableBody>

@@ -10,6 +10,7 @@ import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import CheckboxField from 'rzp/ui/Forms/CheckboxField';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(
   state => ({
@@ -123,19 +124,21 @@ export default class AddAccount extends Component {
             </div>
 
             {!accountData && (
-              <div class="form-group">
-                <div class="rzpCheckbox">
-                  <Field
-                    name="enable_dashboard_access"
-                    id="enable_dashboard_access"
-                    component={CheckboxField}
-                    type="checkbox"
-                  />
-                  <label for="enable_dashboard_access" class="icon i-check">
-                    <span>Enable Dashboard access to this account</span>
-                  </label>
+              <ShowWhen myRole="owner admin manager">
+                <div class="form-group">
+                  <div class="rzpCheckbox">
+                    <Field
+                      name="dashboard_access"
+                      id="dashboard_access"
+                      component={CheckboxField}
+                      type="checkbox"
+                    />
+                    <label for="dashboard_access" class="icon i-check">
+                      <span>Enable Dashboard access to this account</span>
+                    </label>
+                  </div>
                 </div>
-              </div>
+              </ShowWhen>
             )}
 
             <div class="Modal__actions">
