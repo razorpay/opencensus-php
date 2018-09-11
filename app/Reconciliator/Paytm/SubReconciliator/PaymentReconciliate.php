@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Reconciliator\Paytm;
+namespace RZP\Reconciliator\Paytm\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names

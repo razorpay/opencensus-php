@@ -1,16 +1,17 @@
 <?php
 
-namespace RZP\Reconciliator\Base;
+namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use App;
 
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Exception\ReconciliationException;
 
-class CombinedReconciliate extends Foundation\SubReconciliate
+class CombinedReconciliate extends Base\Foundation\SubReconciliate
 {
     const NA = 'not_applicable';
 

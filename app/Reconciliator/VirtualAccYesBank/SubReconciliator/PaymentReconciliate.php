@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\VirtualAccYesBank;
+namespace RZP\Reconciliator\VirtualAccYesBank\SubReconciliator;
 
 use Cache;
 use Config;
@@ -12,7 +12,7 @@ use RZP\Reconciliator\Base;
 use RZP\Models\BankTransfer;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const COLUMN_UTR           = 'transaction_ref_no';
     const COLUMN_AMOUNT        = 'amount';
@@ -95,7 +95,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if(isset($row[self::COLUMN_AMOUNT]) === true)
         {
-            return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT]);
+            return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT]);
         }
 
         return null;

@@ -201,6 +201,15 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
+    public function updateStatus(Entity $virtualAccount, string $status)
+    {
+        $virtualAccount->setStatus($status);
+
+        $this->repo->saveOrFail($virtualAccount);
+
+        return $virtualAccount;
+    }
+
     protected function validateDescriptor(Entity $virtualAccount)
     {
         if ($virtualAccount->getDescriptor() === null)

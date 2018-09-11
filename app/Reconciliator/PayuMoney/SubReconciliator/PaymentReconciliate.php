@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\PayuMoney;
+namespace RZP\Reconciliator\PayuMoney\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
@@ -8,7 +8,7 @@ use RZP\Reconciliator\Base;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Wallet\Base\Action;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const PAYMENT_ID        = 'Merchant Transaction ID';
     const BANK_PAYMENT_ID   = 'Payment Id';
@@ -43,7 +43,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getGatewayServiceTax($row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[self::SERVICE_TAX]) ?? null;
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::SERVICE_TAX]) ?? null;
     }
 
     /**
@@ -58,9 +58,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         // the payment amount and the amount that will be settled to our nodal account.
         //
 
-        $amount = Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
+        $amount = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
 
-        $settlementAmount = Base\Helper::getIntegerFormattedAmount($row[self::SETTLEMENT_AMOUNT]);
+        $settlementAmount = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::SETTLEMENT_AMOUNT]);
 
         return ($amount - $settlementAmount) ?? null;
     }
@@ -105,7 +105,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     private function getReconPaymentAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]) ?? null;
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::AMOUNT]) ?? null;
     }
 
     /**

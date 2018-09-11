@@ -14,9 +14,12 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'enach_rbl';
 
     public function authorize(array $input)
@@ -92,6 +95,13 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        return $this->callAuthenticationGateway($input);
+    }
+
     protected function getRecurringData()
     {
         $recurringData = [
@@ -133,12 +143,6 @@ class Gateway extends Base\Gateway
     {
         throw new Exception\RuntimeException(
             'Refund is not implemented');
-    }
-
-    public function verify(array $input)
-    {
-        throw new Exception\RuntimeException(
-            'Verify is not implemented');
     }
 
     protected function callAuthenticationGateway(array $input)
