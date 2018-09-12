@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
@@ -15,6 +16,8 @@ use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
 abstract class Processor extends Base\Core
 {
     const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_%s';
+
+    const VERIFY_MUTEX_RESOURCE = 'SETTLEMENT_VERIFICATION_%s';
 
     const MUTEX_LOCK_TIMEOUT = 300;
 
@@ -37,6 +40,9 @@ abstract class Processor extends Base\Core
     abstract protected function getRowProcessorNamespace($row);
 
     abstract protected function processReconciliation(array $input);
+
+    abstract protected function verifySettlements(array $input);
+
 
     public function __construct()
     {
@@ -147,5 +153,71 @@ abstract class Processor extends Base\Core
         $email = new ReconciliationEmail($data);
 
         Mail::queue($email);
+    }
+
+    /**
+     * @param $input
+     * @return mixed
+     */
+    public function verify($input)
+    {
+        $mutexResource = sprintf(self::VERIFY_MUTEX_RESOURCE, static::$channel);
+
+        $summary = $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function () use ($input)
+            {
+                return $this->verifySettlements($input);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_VERIFICATION_IN_PROGRESS,
+            50,
+            2000,
+            4000);
+
+        return $summary;
+    }
+
+
+    protected function startVerification($data): array
+    {
+        $summary = $this->repo->transaction(function() use ($data)
+        {
+            try
+            {
+                foreach ($data as $row)
+                {
+                    $this->trace->info(TraceCode::VERIFY_FTA_ROW, ['row' => $row]);
+
+                    $rowProcessorNamespace = $this->getRowProcessorNamespace($row);
+
+                    $entity = (new $rowProcessorNamespace($row))->verifyRow();
+
+                    if ($entity === null)
+                    {
+                        // Define the column that has FTA in each, and access that
+                        $this->unprocessedRows[] = $row;
+                    }
+                    else
+                    {
+                        $this->allReconciledRows[] = $entity;
+                    }
+                }
+            }
+            catch (\Throwable $e)
+            {
+                (new SlackNotification)->failure('setl_verify', $e);
+
+                throw $e;
+            }
+
+            $summary = $this->getSummary();
+
+            return $summary;
+        });
+
+        (new SlackNotification)->success('setl_verify', $summary);
+
+        return $summary;
     }
 }

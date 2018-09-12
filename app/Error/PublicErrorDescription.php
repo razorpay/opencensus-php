@@ -639,6 +639,9 @@ class PublicErrorDescription
 
     const BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                          = 'Keys sent in linked_account_notes must exist in notes';
     const BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT                             = 'The account provided is not a linked account';
+    const BAD_REQUEST_LINKED_ACCOUNT_DASHBOARD_ACCESS_ALREADY_GIVEN             = 'Linked Account dashboard access is already given to the merchant';
+    const BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS                  = 'No Valid email address present to provide linked account dashboard access';
+    const BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS                         = 'No Linked Account dashboard users to revoke access';
 
     // Partners
     const BAD_REQUEST_PARTNER_TYPE_INVALID                                      = 'Partner type is invalid';

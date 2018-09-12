@@ -1260,6 +1260,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'cron');
     }
 
+    public function isSubscriptionsApp()
+    {
+        return ($this->getInternalApp() === 'subscriptions');
+    }
+
     public function getOAuthApplicationId()
     {
         return $this->applicationId;

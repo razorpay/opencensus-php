@@ -39,6 +39,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::UPI_HDFC,
+        RequestProcessor\Base::UPI_ICICI,
     ];
 
     /**
@@ -1619,22 +1620,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             }
             return true;
         }
-    }
-
-    /**
-     * @param array $row
-     * @param string $columnName
-     */
-    protected function reportMissingColumn(array $row, string $columnName)
-    {
-        $this->trace->info(
-            TraceCode::RECON_INFO_ALERT,
-            [
-                'message'           => 'Unable to get the expected column.',
-                'column_name'       => $columnName,
-                'row'               => $row,
-                'gateway'           => $this->gateway
-            ]);
     }
 
     /**

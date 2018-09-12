@@ -71,9 +71,11 @@ class CreateAtomGateway extends Migration
             $table->text(Atom::CALLBACK_DATA)
                   ->nullable();
 
+            $table->integer(Atom::DATE)
+                  ->nullable();
+
             $table->integer(Atom::CREATED_AT);
             $table->integer(Atom::UPDATED_AT);
-
 
             $table->foreign(Atom::PAYMENT_ID)
                   ->references(RZP\Models\Payment\Entity::ID)

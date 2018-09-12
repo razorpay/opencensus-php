@@ -177,7 +177,7 @@ class BasicAuthTest extends TestCase
 
         foreach ($internalRoutes as $routeName => $routeInfo)
         {
-            $testData['request']['method'] = $routeInfo[0];
+            $testData['request']['method'] = ($routeInfo[0] === 'any' ? 'post' : $routeInfo[0]);
             $testData['request']['url']    = $routeInfo[1];
 
             $this->startTest($testData);
@@ -192,7 +192,7 @@ class BasicAuthTest extends TestCase
 
         foreach ($internalRoutes as $routeName => $routeInfo)
         {
-            $testData['request']['method'] = $routeInfo[0];
+            $testData['request']['method'] = ($routeInfo[0] === 'any' ? 'post' : $routeInfo[0]);
             $testData['request']['url']    = $routeInfo[1];
 
             $this->startTest($testData);

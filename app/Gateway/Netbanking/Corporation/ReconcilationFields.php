@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Corporation;
 
-class ReconcilationFields
+class ReconciliationFields
 {
     const MERCHANT_CODE      = 'merchant_code';
 

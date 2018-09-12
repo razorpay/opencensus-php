@@ -394,11 +394,6 @@ class Gateway extends Base\Gateway
      */
     protected function getEncryptionKey()
     {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->terminal['gateway_terminal_password'];
-        }
-
         return $this->config['gateway_encryption_key'];
     }
 

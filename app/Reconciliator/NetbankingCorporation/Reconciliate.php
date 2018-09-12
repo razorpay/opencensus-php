@@ -4,7 +4,7 @@ namespace RZP\Reconciliator\NetbankingCorporation;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\FileProcessor;
-use RZP\Gateway\Netbanking\Corporation\ReconcilationFields;
+use RZP\Gateway\Netbanking\Corporation\ReconciliationFields;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -15,7 +15,7 @@ class Reconciliate extends Base\Reconciliate
 
     public function getColumnHeadersForType($type)
     {
-        return ReconcilationFields::getPaymentColumnHeaders();
+        return ReconciliationFields::getPaymentColumnHeaders();
     }
 
     public function getNumLinesToSkip(array $fileDetails)

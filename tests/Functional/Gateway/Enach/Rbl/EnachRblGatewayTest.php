@@ -324,6 +324,10 @@ class EnachRblGatewayTest extends TestCase
         $gateway = $this->getLastEntity('enach', true);
 
         $this->assertNotNull($gateway['signed_xml']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('initiated', $token['recurring_status']);
     }
 
     public function testAcknowledgementSuccessfulReconciliation()
@@ -499,7 +503,7 @@ class EnachRblGatewayTest extends TestCase
 
         $payment = $this->getDbLastEntityToArray('payment');
 
-        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('refunded', $payment['status']);
     }
 
     public function testRegistrationReconWithSharedMerchantProxyAuth()
@@ -590,6 +594,12 @@ class EnachRblGatewayTest extends TestCase
             ],
             $token
         );
+
+        $this->assertNull($token['gateway_token']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('refunded', $payment['status']);
     }
 
     public function testDebitFileGeneration()
@@ -689,6 +699,8 @@ class EnachRblGatewayTest extends TestCase
             'error_code' => '',
             'error_desc' => '',
         ];
+
+        Carbon::setTestNow(Carbon::now()->addDays(10));
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
@@ -1213,7 +1225,7 @@ class EnachRblGatewayTest extends TestCase
         if ($mock)
         {
             $request = $this->makeFirstGatewayPaymentMockRequest(
-                $url, $method, $content);
+                 $url, $method, $content);
         }
 
         return $this->submitPaymentCallbackRequest($request);
