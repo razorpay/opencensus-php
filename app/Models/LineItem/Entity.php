@@ -303,7 +303,7 @@ class Entity extends Base\PublicEntity
             return $this->getGrossAmount();
         }
 
-        return $this->getGrossAmount() - $this->getTaxAmount();
+        return ($this->getGrossAmount() - $this->getTaxAmount());
     }
 
 
