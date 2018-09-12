@@ -582,10 +582,6 @@ export default class PaymentPagesEntity extends React.Component {
                     <EditExpiry
                       value={paymentPageEntity.expire_by}
                       editFn={this.editPaymentPage}
-                      editFn={(...args) => {
-                        trackDetailViewEdits('Edit Expires on (Save)');
-                        return this.editPaymentPage(...args);
-                      }}
                       entityId={paymentPageEntity.id}
                     />
                   )}
