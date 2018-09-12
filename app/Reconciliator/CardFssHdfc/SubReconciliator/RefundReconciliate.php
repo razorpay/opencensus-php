@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\CardFss\SubReconciliator;
+namespace RZP\Reconciliator\CardFssHdfc\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;

@@ -56,29 +56,29 @@ class PaymentLinkTest extends TestCase
     {
         Mail::fake();
 
-        $metrics = $this->createMetricsMock();
-
-        $metrics->expects($this->at(5))
-                ->method('count')
-                ->with(
-                    'invoice_created_total',
-                    1,
-                    [
-                        'type'             => 'link',
-                        'has_batch'        => 1,
-                        'has_subscription' => 0,
-                    ]);
-
-        $metrics->expects($this->at(8))
-                ->method('count')
-                ->with(
-                    'invoice_created_total',
-                    1,
-                    [
-                        'type'             => 'link',
-                        'has_batch'        => 1,
-                        'has_subscription' => 0,
-                    ]);
+//        $metrics = $this->createMetricsMock();
+//
+//        $metrics->expects($this->at(5))
+//                ->method('count')
+//                ->with(
+//                    'invoice_created_total',
+//                    1,
+//                    [
+//                        'type'             => 'link',
+//                        'has_batch'        => 1,
+//                        'has_subscription' => 0,
+//                    ]);
+//
+//        $metrics->expects($this->at(8))
+//                ->method('count')
+//                ->with(
+//                    'invoice_created_total',
+//                    1,
+//                    [
+//                        'type'             => 'link',
+//                        'has_batch'        => 1,
+//                        'has_subscription' => 0,
+//                    ]);
 
         $entries = $this->getDefaultFileEntries();
 

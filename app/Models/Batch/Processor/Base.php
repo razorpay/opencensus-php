@@ -85,7 +85,7 @@ class Base extends BaseModel\Core
      * They are re-used in the flow.
      * E.g.
      * - sending mails with attachment,
-     * - unlinking post processing etc..
+     * - un-linking post processing etc..
      */
     protected $inputFileLocalPath;
     protected $outputFileLocalPath;
@@ -621,7 +621,7 @@ class Base extends BaseModel\Core
                     {
                         foreach ($value as $k => $v)
                         {
-                            $dict["Notes[{$k}]"] = $v;
+                            $dict["notes[{$k}]"] = $v;
                         }
                     }
                     // Else just put the key value in dictionary

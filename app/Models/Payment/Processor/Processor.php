@@ -240,7 +240,7 @@ class Processor
         }
         catch (\Throwable $e)
         {
-            $attributes = [Metric::LABEL_TRACE_CODE =>  $e->getCode()];
+            $attributes = [Metric::LABEL_TRACE_CODE => $e->getCode()];
 
             $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
 
@@ -1950,6 +1950,11 @@ class Processor
             return false;
         }
 
+        if ($this->isAutoRefundDelayExceeded($payment) === true)
+        {
+            return false;
+        }
+
         if ($payment->isLateAuthorized() === true)
         {
             return $this->shouldAutoCaptureLateAuthorized($payment);
@@ -1958,7 +1963,7 @@ class Processor
         return true;
     }
 
-    protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment): bool
+    protected function isAutoRefundDelayExceeded(Payment\Entity $payment): bool
     {
         $merchant = $payment->merchant;
 
@@ -1966,36 +1971,34 @@ class Processor
 
         $createdAt = $payment->getCreatedAt();
 
-        $shouldRefundAt = $createdAt + $autoRefundDelay;
+        $refundAt = $createdAt + $autoRefundDelay;
 
         $currentTime = Carbon::now()->getTimestamp();
 
         $this->trace->info(
-            TraceCode::LATE_AUTHORIZE_AUTO_CAPTURE,
+            TraceCode::AUTO_CAPTURE_REFUND_DELAY,
             [
                 'payment_id'        => $payment->getId(),
                 'status'            => $payment->getStatus(),
                 'refund_delay'      => $autoRefundDelay,
-                'should_refund_at'  => $shouldRefundAt,
+                'should_refund_at'  => $refundAt,
                 'current_time'      => $currentTime,
             ]);
 
-        //
-        // If the payment is supposed to get refunded by now,
-        // do not auto capture it.
-        //
-        if ($currentTime > $shouldRefundAt)
-        {
-            return false;
-        }
+        return ($currentTime > $refundAt);
+    }
 
+    protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment): bool
+    {
         // Auto capturing a late authorized invoice has a little different logic.
         // Later, we would add logic for auto capturing a payment which is not
         // associated with an invoice also.
-        if ($payment->hasInvoice())
+        if ($payment->hasInvoice() === true)
         {
             return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
         }
+
+        $merchant = $payment->merchant;
 
         return $this->shouldAutoCaptureLateAuthorizedOrder($merchant);
     }
@@ -2309,10 +2312,10 @@ class Processor
         $this->trace->count(
             Metric::PAYMENT_PROCESS_FAILED,
             [
-                Metric::LABEL_TRACE_CODE            =>  array_get($errorAttributes, Error::INTERNAL_ERROR_CODE),
-                Metric::LABEL_TRACE_FIELD           =>  array_get($errorAttributes, Error::FIELD),
-                Metric::LABEL_TRACE_SOURCE          =>  array_get($errorAttributes, Error::ERROR_CLASS),
-                Metric::LABEL_PAYMENT_IS_CREATED    =>  array_get($errorAttributes, Metric::LABEL_PAYMENT_IS_CREATED),
+                Metric::LABEL_TRACE_CODE            => array_get($errorAttributes, Error::INTERNAL_ERROR_CODE),
+                Metric::LABEL_TRACE_FIELD           => array_get($errorAttributes, Error::FIELD),
+                Metric::LABEL_TRACE_SOURCE          => array_get($errorAttributes, Error::ERROR_CLASS),
+                Metric::LABEL_PAYMENT_IS_CREATED    => array_get($errorAttributes, Metric::LABEL_PAYMENT_IS_CREATED),
             ]
         );
     }

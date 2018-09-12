@@ -391,8 +391,9 @@ class Validator extends Base\Validator
     protected static $upiHulkTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_hulk',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::UPI                        => 'required|boolean|in:1',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string|in:proxy,app',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
     ];
@@ -494,6 +495,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|in:proxy,app',
     ];
 
     protected static $enachRblTerminalRules = [

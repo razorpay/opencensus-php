@@ -38,6 +38,24 @@ mappings:
   # [1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days, 10days, 15days, 1month, 2months, 4months, 6months]
   name: "api_recon_refund_create_to_reconciled_time_minutes"
 
+- match: api_recon_refund_created_to_processed_time_minutes.*
+  timer_type: histogram
+  buckets: [60, 360, 720, 1440, 2880, 4320, 7200, 10080, 14400, 21600, 43200, 86400, 172800, 259200]
+  # [1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days, 10days, 15days, 1month, 2months, 4months, 6months]
+  name: "api_recon_refund_created_to_processed_time_minutes"
+
+- match: api_recon_mis_file_processing_time_seconds.*
+  timer_type: histogram
+  buckets: [5, 10, 30, 45, 60, 120, 180, 240, 300, 360, 480, 600, 720, 900, 1200, 1500, 1800, 2400, 3000, 3600]
+  # [5 sec, 10sec, 30sec, 45sec, 1min, 2min, 3min, 4min, 5min, 6min, 8min, 10min, 12min, 15min, 20min, 25min, 30min, 40min, 50min, 1hr]
+  name: "api_recon_mis_file_processing_time_seconds"
+
+- match: api_recon_mis_file_parsing_time_seconds.*
+  timer_type: histogram
+  buckets: [5, 10, 30, 45, 60, 120, 180, 240, 300, 360, 480, 600, 720, 900, 1200, 1500, 1800, 2400, 3000, 3600]
+  # [5 sec, 10sec, 30sec, 45sec, 1min, 2min, 3min, 4min, 5min, 6min, 8min, 10min, 12min, 15min, 20min, 25min, 30min, 40min, 50min, 1hr]
+  name: "api_recon_mis_file_parsing_time_seconds"
+
 - match: api_refund_processed_from_created_minutes.*
   timer_type: histogram
   buckets: [60, 360, 720, 1440, 2880, 4320, 7200, 10080, 14400, 21600, 43200, 86400, 172800, 259200, 525600]

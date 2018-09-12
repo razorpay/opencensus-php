@@ -408,7 +408,7 @@ trait Authorize
         $this->repo->saveOrFail($payment);
     }
 
-    protected function autoCapturePaymentIfApplicable(Payment\Entity $payment)
+    public function autoCapturePaymentIfApplicable(Payment\Entity $payment)
     {
         if ($this->shouldAutoCapture($payment) === true)
         {

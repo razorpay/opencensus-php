@@ -212,7 +212,7 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertEquals(Status::PROCESSED, $batch['status']);
     }
 
-    public function testObcManualReconcilation()
+    public function testObcManualReconciliation()
     {
         $this->gateway = 'netbanking_obc';
 

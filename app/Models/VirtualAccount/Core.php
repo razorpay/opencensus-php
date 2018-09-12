@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
@@ -203,6 +204,15 @@ class Core extends Base\Core
 
     public function updateStatus(Entity $virtualAccount, string $status)
     {
+        $bankAccount = $virtualAccount->bankAccount;
+
+        if (($status === Status::CLOSED) and ($bankAccount !== null))
+        {
+            $this->repo->deleteOrFail($bankAccount);
+
+            $this->trace->info(TraceCode::BANK_ACCOUNT_DELETED, $bankAccount->toArray());
+        }
+
         $virtualAccount->setStatus($status);
 
         $this->repo->saveOrFail($virtualAccount);

@@ -516,7 +516,7 @@ class HdfcGatewayTest extends TestCase
         });
     }
 
-    public function testVerifyRefundDeniedByRiskOnGateway()
+    public function testVerifyRefundFailedOnGatewayRetry()
     {
         $payment = $this->doAuthAndCapturePayment();
 
@@ -545,20 +545,15 @@ class HdfcGatewayTest extends TestCase
                 $content['udf5']         = 'TrackID';
             }
 
-            if ($action === 'refund')
-            {
-                $content['result'] = 'DENIED BY RISK';
-            }
-
             return $content;
         });
 
-        $testData = $this->testData[__FUNCTION__];
+        $response = $this->retryFailedRefund($refund['id']);
 
-        $this->runRequestResponseFlow($testData, function() use ($refund)
-        {
-            $this->retryFailedRefund($refund['id']);
-        });
+        $refund = $this->getEntityById('refund', $refund['id'], true);
+
+        $this->assertEquals(2, $refund['attempts']);
+        $this->assertEquals('processed', $refund['status']);
     }
 
     public function testVerifyRefundFailedOnGateway()

@@ -354,7 +354,7 @@ class Repository extends Base\Repository
         $data =  $this->newQuery()
                        ->select(DB::raw('refunds.gateway as gateway, count(*) AS count'))
                        ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
-                       ->where($refundStatus, '=', Refund\STATUS::FAILED)
+                       ->where($refundStatus, '=', Refund\Status::FAILED)
                        ->groupBy($refundGateway)
                        ->get();
 
@@ -378,7 +378,7 @@ class Repository extends Base\Repository
         $query =  $this->newQuery()
                        ->select($refundAttrs)
                        ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
-                       ->where($refundStatus, '=',Refund\STATUS::FAILED)
+                       ->where($refundStatus, '=', Refund\Status::FAILED)
                        ->where($refundCreatedAt, '>=', $from)
                        ->where($refundCreatedAt, '<=', $to)
                        ->with(['payment']);
@@ -391,12 +391,19 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-     /**
+    /**
      * Fetches all refunds for card gateways where refund is processed after
      * six months from payment created at . It could not be processed via API
-     * @return array
+     *
+     * @param $from
+     * @param $to
+     * @param $gateway
+     * @param $acquirer
+     * @param $timeRange
+     *
+     * @return Base\PublicCollection
      */
-    public function fetchFailedCardRefundsToProcessManually($from, $to, $gateway, $acquirer, $timerange)
+    public function fetchFailedCardRefundsToProcessManually($from, $to, $gateway, $acquirer, $timeRange)
     {
         $refundAttributes = $this->dbColumn('*');
 
@@ -422,13 +429,13 @@ class Repository extends Base\Repository
 
         $terminalAcquirerAttr = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
 
-        $paymentCreatedBefore = Carbon::now()->subSeconds($timerange)->timestamp;
+        $paymentCreatedBefore = Carbon::now()->subSeconds($timeRange)->timestamp;
 
         return $this->newQuery()
                     ->select($refundAttributes)
                     ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
                     ->join(Table::TERMINAL,$paymentTerminalAttr, '=', $TerminalId)
-                    ->where($refundStatus, '=',Refund\STATUS::FAILED)
+                    ->where($refundStatus, '=',Refund\Status::FAILED)
                     ->where($terminalAcquirerAttr, '=',$acquirer)
                     ->whereNotNull($paymentRefundStatus)
                     ->where($refundCreatedAt, '>=', $from)

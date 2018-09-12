@@ -189,7 +189,8 @@ class Shield
 
     protected function populatePaymentRequestDetails(Payment\Entity $payment, array & $payloadDetails)
     {
-        $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE]  = $this->request->header('Accept-Language');
+        $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE] =
+            $this->request->header('Accept-Language') ?: ShieldConstants::DEFAULT_ACCEPT_LANGUAGE;
 
         $paymentAnalytics = $payment->getMetadata("payment_analytics");
 

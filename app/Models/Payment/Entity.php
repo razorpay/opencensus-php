@@ -2468,7 +2468,7 @@ class Entity extends Base\PublicEntity
 
     public function receiver()
     {
-        return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID);
+        return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID)->withTrashed();
     }
 
     public function netbanking()

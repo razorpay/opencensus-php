@@ -116,4 +116,46 @@ return [
             ],
         ],
     ],
+
+    'testFetchMethods' => [
+        'request' => [
+            'url' => '/merchant/methods',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'emi' => false
+            ],
+        ],
+    ],
+
+    'testEnableEmi' => [
+        'request' => [
+            'url' => '/merchant/methods',
+            'method' => 'put',
+            'content'   => [
+                'emi'  => true,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'emi' => true
+            ],
+        ],
+    ],
+
+    'testDisableEmi' => [
+        'request' => [
+            'url' => '/merchant/methods',
+            'method' => 'put',
+            'content'   => [
+                'emi'  => 0,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'emi' => false
+            ],
+        ],
+    ],
 ];

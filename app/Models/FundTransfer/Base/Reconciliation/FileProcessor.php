@@ -74,7 +74,7 @@ abstract class FileProcessor extends Processor
 
     protected function processReconciliation(array $input)
     {
-        $reconcileFile = $this->getReconcilationFile($input);
+        $reconcileFile = $this->getReconciliationFile($input);
 
         $this->trace->info(
             TraceCode::MISC_TRACE_CODE,
@@ -131,7 +131,7 @@ abstract class FileProcessor extends Processor
         return $response;
     }
 
-    protected function getReconcilationFile($input)
+    protected function getReconciliationFile($input)
     {
         $reconcileFile = null;
 

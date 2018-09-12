@@ -17,17 +17,19 @@ use RZP\Models\FundTransfer\Attempt\Metric;
 
 abstract class NodalAccount extends Base\Core
 {
-    const SUCCESS               = 'success';
+    const SUCCESS                = 'success';
 
-    const FAILED                = 'failed';
+    const FAILED                 = 'failed';
 
-    const MIN_RTGS_AMOUNT       = 200000;
+    const MIN_RTGS_AMOUNT        = 200000;
 
-    const MAX_IMPS_AMOUNT       = 200000;
+    const MAX_IMPS_AMOUNT        = 200000;
 
-    const RTGS_CUTOFF_HOUR      = 15;
+    const RTGS_CUTOFF_HOUR_MIN   = 8;
 
-    const RTGS_CUTOFF_MINUTE    = 45;
+    const RTGS_CUTOFF_HOUR_MAX   = 15;
+
+    const RTGS_CUTOFF_MINUTE_MAX = 45;
 
     protected $batchFundTransfer = null;
 
@@ -95,17 +97,25 @@ abstract class NodalAccount extends Base\Core
 
     protected function getTransferMode($amount, Merchant\Entity $merchant): string
     {
-        $rtgsCutoffTime = Carbon::createFromTime(
-                                self::RTGS_CUTOFF_HOUR,
-                                self::RTGS_CUTOFF_MINUTE,
-                                0,
-                                Timezone::IST)->getTimestamp();
+        $rtgsMinCutoffTime = Carbon::createFromTime(
+            self::RTGS_CUTOFF_HOUR_MIN,
+            0,
+            0,
+            Timezone::IST
+        )->getTimestamp();
+
+        $rtgsMaxCutoffTime = Carbon::createFromTime(
+            self::RTGS_CUTOFF_HOUR_MAX,
+            self::RTGS_CUTOFF_MINUTE_MAX,
+            0,
+            Timezone::IST)->getTimestamp();
+
 
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
         $mode = Mode::NEFT;
 
-        if (($now <= $rtgsCutoffTime) and
+        if ((($now >= $rtgsMinCutoffTime) and ($now <= $rtgsMaxCutoffTime)) and
             ($amount >= self::MIN_RTGS_AMOUNT))
         {
             $mode = Mode::RTGS;
