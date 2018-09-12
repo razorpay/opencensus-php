@@ -1059,6 +1059,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECEIVER_TYPE, $receiverType);
     }
 
+    public function setSubscriptionId(string $subscriptionId)
+    {
+        $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
+    }
+
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------

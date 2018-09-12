@@ -2189,6 +2189,8 @@ final class Route
         'subscriptions' => [
             'invoice_create',
             'customer_fetch_by_id',
+            'payment_capture',
+            'payment_refund',
             'webhook_fire',
             'merchant_fetch_config_internal',
         ],

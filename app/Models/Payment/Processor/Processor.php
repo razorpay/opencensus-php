@@ -136,6 +136,11 @@ class Processor
      */
     protected $offer;
 
+    /**
+     * @var Subscription\Entity
+     */
+    protected $subscription;
+
     protected $receiver;
     protected $segment;
 
@@ -189,11 +194,12 @@ class Processor
 
     public function flushPaymentObjects()
     {
-        $this->order   = null;
-        $this->offer   = null;
-        $this->payment = null;
-        $this->refund  = null;
-        $this->type    = null;
+        $this->order        = null;
+        $this->offer        = null;
+        $this->payment      = null;
+        $this->refund       = null;
+        $this->type         = null;
+        $this->subscription = null;
     }
 
     public function process(array $input, $gatewayInput = []): array
@@ -203,6 +209,8 @@ class Processor
             $this->setMethodForInput($input);
 
             $payment = $this->buildPaymentEntity($input);
+
+            $this->preProcessForSubscriptionsIfApplicable($input, $payment);
 
             $ret = $this->preProcessPaymentInputs($input, $payment);
 
@@ -234,6 +242,7 @@ class Processor
 
             $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
 
+
             $this->pushPaymentCreateErrorMetrics($attributes);
 
             throw $e;
@@ -255,6 +264,69 @@ class Processor
         $this->payment->reload();
 
         return $this->payment;
+    }
+
+    protected function preProcessForSubscriptionsIfApplicable(array & $input, Payment\Entity $payment)
+    {
+        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+        {
+            return;
+        }
+
+        $this->subscription = $this->app['module']
+                                 ->subscription
+                                 ->fetchSubscriptionInfo($input);
+
+        if ($this->subscription->isExternal() === true)
+        {
+            $payment->setSubscriptionId($this->subscription->getId());
+
+            $subscriptionPaymentRecurringType = $this->subscription->getRecurringType();
+
+            $payment->setRecurringType($subscriptionPaymentRecurringType);
+
+            $this->addOrderIdToInputForExternalSubscription($input);
+
+            $this->addCustomerIdToInputForExternalSubscription($input);
+        }
+    }
+
+    protected function addOrderIdToInputForExternalSubscription(array & $input)
+    {
+        assert($this->subscription->isExternal() === true);
+
+        if ($this->subscription->hasCurrentInvoice() === true)
+        {
+            $currentInvoiceId = $this->subscription->getCurrentInvoiceId();
+
+            $invoice = $this->repo->invoice->findOrFailPublic($currentInvoiceId);
+
+            $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($invoice->getOrderId());
+        }
+    }
+
+    protected function addCustomerIdToInputForExternalSubscription(array & $input)
+    {
+        assert($this->subscription->isExternal() === true);
+        //
+        // If a subscription_id is sent in the input, the customer_id should
+        // never be sent. It's either associated with the subscription (local customer)
+        // or we use the global customer and associate that later.
+        //
+        if (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT,
+                null,
+                [
+                    'subscription_id'   => $this->subscription->getId(),
+                ]);
+        }
+
+        if ($this->subscription->hasCustomer() === true)
+        {
+            $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($this->subscription->getCustomerId());
+        }
     }
 
     protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
@@ -1347,14 +1419,10 @@ class Processor
      */
     protected function addOrderIdToInputForSubscriptionIfApplicable(array & $input, Payment\Entity $payment)
     {
-        if (isset ($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
+        if (($this->subscription === null) or ($this->subscription->isExternal() === true))
         {
             return;
         }
-
-        $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
-
-        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
         //
         // In case the subscription is in active or halted state,
@@ -1362,9 +1430,9 @@ class Processor
         // 1. It would already be present if it's automated charge.
         // 2. Change card flow is being done. Hence, no invoice and stuff.
         //
-        if ($subscription->isCreated() === true)
+        if ($this->subscription->isCreated() === true)
         {
-            $this->addOrderIdToInputForCreatedSubscription($subscription, $input);
+            $this->addOrderIdToInputForCreatedSubscription($input);
         }
         else
         {
@@ -1372,6 +1440,8 @@ class Processor
 
             if ($cardChange === true)
             {
+                $subscription = $this->subscription;
+
                 if ($subscription->isCardChangeStatus() === false)
                 {
                     throw new Exception\BadRequestException(
@@ -1395,14 +1465,14 @@ class Processor
         }
     }
 
-    protected function addOrderIdToInputForCreatedSubscription(Subscription\Entity $subscription, array & $input)
+    protected function addOrderIdToInputForCreatedSubscription(array & $input)
     {
         //
         // Invoice would have been created if:
         // - First charge needs to be done as part of authentication with or without addons
         // - Only addons need to be added, and no first charge needs to be done as part of authentication.
         //
-        $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
+        $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($this->subscription);
 
         $subscriptionInvoicesCount = $subscriptionInvoices->count();
 
@@ -1429,7 +1499,7 @@ class Processor
         }
     }
 
-    protected function addOrderIdToInputForPendingSubscription(Subscription\Entity $subscription, array & $input)
+    protected function addOrderIdToInputForPendingSubscription($subscription, array & $input)
     {
         $subscriptionInvoice = $this->repo->invoice->fetchLatestInvoiceOfPendingSubscription($subscription);
 
