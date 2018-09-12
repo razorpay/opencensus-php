@@ -2362,7 +2362,15 @@ class Service extends Base\Service
             {
                 list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
 
-                (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $merchant, $createdNew);
+                if (empty($newUser) === false)
+                {
+                    (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $merchant, $createdNew);
+                }
+                elseif ($parentMerchant->getEmail() === $merchant->getEmail())
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS);
+                }
             }
         }
         else
