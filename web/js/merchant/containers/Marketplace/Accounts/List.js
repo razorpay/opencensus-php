@@ -73,12 +73,7 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onToggleDashboardAccess = (account, checked) => {
-    console.log(
-      'Enabled/Disabled dashboard access for "Abced"',
-      checked,
-      account.id
-    );
-    this.props
+    return this.props
       .toggleDashboardAccess({
         dashboard_access: checked,
         accountId: account.id,
@@ -91,6 +86,8 @@ export default class AccountsListContainer extends ListContainer {
               checked ? 'Enabled' : 'Disabled'
             } for merchant "${account.name}"`,
           });
+
+          return resp;
         } else {
           throw 'Some network error has occurred';
         }
@@ -100,6 +97,8 @@ export default class AccountsListContainer extends ListContainer {
           type: 'error',
           message: errors,
         });
+
+        throw errors;
       });
   };
 

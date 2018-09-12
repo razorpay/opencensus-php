@@ -169,9 +169,7 @@ export default ({
               onEdit={() => onEdit(account)}
               onToggleDashboardAccess={
                 onToggleDashboardAccess
-                  ? isChecked => {
-                      onToggleDashboardAccess(account, isChecked);
-                    }
+                  ? isChecked => onToggleDashboardAccess(account, isChecked)
                   : undefined
               }
             />
