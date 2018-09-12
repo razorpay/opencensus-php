@@ -916,7 +916,10 @@ class Gateway extends Base\Gateway
             {
                 fclose($this->curlLog);
 
-                unlink($this->curlLogPath);
+                if (file_exists($this->curlLogPath) === true)
+                {
+                    unlink($this->curlLogPath);
+                }
             }
         }
 
