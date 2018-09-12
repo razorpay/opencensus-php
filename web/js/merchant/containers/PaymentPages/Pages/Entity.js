@@ -537,13 +537,8 @@ export default class PaymentPagesEntity extends React.Component {
                         description: paymentPageEntity.description,
                       }}
                       entityId={paymentPageEntity.id}
-                      editFn={data => {
-                        trackDetailViewEdits(
-                          'Edit Description (Save)',
-                          getKeysSeparatedByPipe(data)
-                        );
-                        return this.editPaymentPage(data);
-                      }}
+                      editFn={this.editPaymentPage}
+                      trackerFn={trackDetailViewEdits}
                     />
                   )}
                 />
@@ -592,11 +587,9 @@ export default class PaymentPagesEntity extends React.Component {
                   value={() => (
                     <EditTimesPayable
                       value={paymentPageEntity.times_payable}
-                      editFn={(...args) => {
-                        trackDetailViewEdits('Edit Times Payable (Save)');
-                        return this.editPaymentPage(...args);
-                      }}
+                      editFn={this.editPaymentPage}
                       entityId={paymentPageEntity.id}
+                      trackerFn={trackDetailViewEdits}
                     />
                   )}
                 />

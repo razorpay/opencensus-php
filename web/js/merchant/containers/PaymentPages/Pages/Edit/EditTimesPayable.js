@@ -25,6 +25,8 @@ export default class EditTimesPayable extends React.Component {
     this.setState({
       isEditableMode: true,
     });
+
+    this.props.trackerFn('Edit Times Payable');
   };
 
   render() {
@@ -119,6 +121,7 @@ export default class EditTimesPayable extends React.Component {
                   .then(resp => {
                     if (resp && resp.data) {
                       this.setState(this.resetState());
+                      this.props.trackerFn('Edit Times Payable (Saved)');
                     }
                   });
               }}

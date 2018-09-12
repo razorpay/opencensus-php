@@ -1,6 +1,7 @@
 import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import { maxLength } from 'rzp/utils/validators';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 export default class EditDescription extends React.Component {
   state = this.resetState();
@@ -19,6 +20,7 @@ export default class EditDescription extends React.Component {
       disableSubmit: false,
     });
     setTimeout(() => document.getElementsByName('title')[0].focus(), 10);
+    this.props.trackerFn('Edit Description');
   };
 
   componentDidUpdate() {
@@ -103,16 +105,19 @@ export default class EditDescription extends React.Component {
               style={{ marginRight: 0, marginLeft: 16 }}
               disabled={!this.state.title || this.state.disableSubmit}
               onClick={() => {
-                return this.props
-                  .editFn({
-                    title: this.state.title,
-                    description: this.state.description,
-                  })
-                  .then(resp => {
-                    if (resp && resp.data) {
-                      this.setState(this.resetState());
-                    }
-                  });
+                const data = {
+                  title: this.state.title,
+                  description: this.state.description,
+                };
+                return this.props.editFn(data).then(resp => {
+                  if (resp && resp.data) {
+                    this.setState(this.resetState());
+                    this.props.trackerFn(
+                      'Edit Description (Saved)',
+                      getKeysSeparatedByPipe(data)
+                    );
+                  }
+                });
               }}
               showLoader={false}
               pendingState="Saving..."
