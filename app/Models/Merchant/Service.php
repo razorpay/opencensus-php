@@ -2351,7 +2351,7 @@ class Service extends Base\Service
 
         $parentMerchant = $merchant->parent;
 
-        $dashboardAccess = $input['dashboard_access'] ?? false;
+        $dashboardAccess = (bool) ($input['dashboard_access'] ?? false);
 
         (new Validator)->validateLinkedAccountDashboardAccess($dashboardAccess, $merchant);
 
