@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Throwable;
 use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Order;
@@ -429,14 +430,49 @@ trait Capture
                 $this->repo->saveOrFail($this->payment);
             }
         }
-        catch (Exception\GatewayTimeoutException $ex)
+        catch (Exception\GatewayTimeoutException $e)
         {
-            $this->handleGatewayTimeoutOnCapture($data, $ex);
+            $this->handleGatewayTimeoutOnCapture($data, $e);
+        }
+        catch (Throwable $e)
+        {
+            // We are using Throwable as a catch-all.
+        }
+        finally
+        {
+            if (isset($e) === true)
+            {
+                if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === true)
+                {
+                    $this->trace->traceException($e);
+
+                    $data['mode'] = $this->mode;
+
+                    $this->trace->info(
+                        TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE,
+                        ['payment_id' => $this->payment->getId()]);
+
+                    //
+                    // Adding a delay here because some gateways return back an error if a capture request
+                    // is sent within a few seconds of the first capture request.
+                    // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
+                    // previous capture request.
+                    //
+                    CaptureJob::dispatch($data);
+                }
+
+                throw $e;
+            }
         }
     }
 
     protected function handleGatewayTimeoutOnCapture(array $data, Exception\GatewayTimeoutException $ex)
     {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === true)
+        {
+            return;
+        }
+
         $paymentGateway = $this->payment->getGateway();
 
         //

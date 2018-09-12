@@ -96,14 +96,7 @@ class Capture extends Job
     {
         if ($this->attempts() > self::MAX_JOB_ATTEMPTS)
         {
-            $this->trace->error(
-                TraceCode::PAYMENT_QUEUE_CAPTURE_DELETE,
-                [
-                    'data'         => $this->data,
-                    'job_attempts' => $this->attempts(),
-                    'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
-                ]
-            );
+            $this->raiseAlerts();
 
             $this->delete();
         }
@@ -111,7 +104,23 @@ class Capture extends Job
         {
             // When queue_driver is sync, there's no release and
             // hence it's as good as deleting the job.
-            $this->release(self::JOB_RELEASE_WAIT);
+            $this->release($this->getRetryTime());
         }
+    }
+
+    protected function getRetryTime()
+    {
+        return self::JOB_RELEASE_WAIT;
+    }
+
+    protected function raiseAlerts()
+    {
+        $this->trace->error(TraceCode::PAYMENT_QUEUE_CAPTURE_DELETE, [
+            'data'         => $this->data,
+            'job_attempts' => $this->attempts(),
+            'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
+        ]);
+
+        // @todo: add slack notifier
     }
 }
