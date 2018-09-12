@@ -44,7 +44,9 @@ const gateWayOptions = [
   'Netbanking Csb',
   'Netbanking Hdfc',
   'Atom',
-  'CardFss',
+  'CardFssBob',
+  'CardFssHdfc',
+  'UpiMindgate',
 ];
 
 const optionValueMap = {
