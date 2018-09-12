@@ -107,7 +107,7 @@ class Base extends Core
         self::UPI_SBI                => [],
         self::PAYUMONEY              => [],
         self::HITACHI                => ['reportsmailer@hitachi-payments.com'],
-        self::CARD_FSS_HDFC          => [],
+        self::CARD_FSS_HDFC          => ['merchantops@fss.co.in'],
         self::ATOM                   => [],
         self::CARD_FSS_BOB           => [],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],

@@ -306,7 +306,7 @@ class ReconciliationFileTest extends TestCase
         $entries[] = array_combine($paymentHeader, array_pad($refundHeader, count($paymentHeader), null));
         $entries[] = array_combine($paymentHeader, array_pad($refundData, count($paymentHeader), null));
 
-        $file = $this->writeToExcelFile($entries, 'combined', 'files/settlement');
+        $file = $this->writeToExcelFile($entries, 'AllTransaction', 'files/settlement');
 
         $this->runForFiles([$file], 'CardFssHdfc');
 
@@ -364,7 +364,7 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $this->overrideCardFssPayment($gatewayPayment);
 
-        $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'payment');
+        $file = $this->writeToExcelFile($entries, 'AllTransaction', 'files/settlement', 'payment');
 
         $this->runForFiles([$file], 'CardFssHdfc');
 
@@ -411,7 +411,7 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $this->overrideCardFssRefund($gatewayRefund, $gatewayPayment);
 
-        $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'refund', 'xls');
+        $file = $this->writeToExcelFile($entries, 'AllTransaction', 'files/settlement', 'refund', 'xls');
 
         $this->runForFiles([$file], 'CardFssHdfc');
 
@@ -451,7 +451,8 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $this->overrideCardFssPayment($gatewayPayment, [], 'card_fss');
 
-        $file = $this->writeToExcelFile($entries, 'report', 'files/settlement', 'payment');
+        $file = $this->writeToExcelFile($entries, 'AllTransaction', 'files/settlement', 'payment');
+
         $this->runForFiles([$file], 'CardFssHdfc', [], ['pay_'. $payment['id']]);
 
         $updatedPayment = $this->getDbEntityById('payment', $payment['id']);

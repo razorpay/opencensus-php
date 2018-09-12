@@ -62,4 +62,18 @@ class Reconciliate extends Base\Reconciliate
         //
         return self::COMBINED;
     }
+
+    public function inExcludeList(array $fileDetails)
+    {
+        //
+        // We process only those files who have 'alltransaction'
+        // in their file names, thus return false for such files.
+        //
+        if (strpos($fileDetails[FileProcessor::FILE_NAME], 'alltransaction') !== false)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
