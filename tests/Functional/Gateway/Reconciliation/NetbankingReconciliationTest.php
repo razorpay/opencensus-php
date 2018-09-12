@@ -71,7 +71,7 @@ class NetbankingReconciliationTest extends TestCase
         {
             if ($action === 'claims_data')
             {
-                $content['0']['extra_row'] = 'abc';
+                unset($content[0]['Error Description']);
             }
         });
 

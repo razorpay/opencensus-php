@@ -314,6 +314,25 @@ function array_combine_pad(array $headers, array $columns)
     return array_combine($headers, $columns);
 }
 
+function array_combine_pad_headers(array $headers, array $columns)
+{
+    $headersCount = count($headers);
+    $columnsCount = count($columns);
+
+    $extra = $columnsCount - $headersCount;
+
+    // Needs to start from 1 so that the first
+    // extra field is named as extra_field_1
+    for($i = 1; $i <= $extra; $i++)
+    {
+        $key = 'extra_field_' . $i;
+
+        $headers[] = $key;
+    }
+
+    return array_combine($headers, $columns);
+}
+
 function upi_uuid($prefix = true)
 {
     $uuid = strtoupper(gen_uuid());
