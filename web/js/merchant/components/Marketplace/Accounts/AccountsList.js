@@ -5,11 +5,33 @@ import TableBody from 'rzp/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { classList } from 'common/util';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import ShowWhen from 'merchant/components/ShowWhen';
 
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 
 import store from 'merchant/store';
+
+const ToggleField = ({ children, onEdit, isDisabled }) => {
+  if (isDisabled) {
+    return (
+      <small class="help-content">
+        {children}
+        <Popover align="top" theme="dark">
+          <PopoverBody>
+            <div>
+              Please add Email id for linked account to grant dashboard access
+              <br />
+              <button className="btn-link pull-right" onClick={onEdit}>
+                Add Email
+              </button>
+            </div>
+          </PopoverBody>
+        </Popover>
+      </small>
+    );
+  }
+
+  return children;
+};
 
 const AccountsListItem = ({
   account,
@@ -25,6 +47,7 @@ const AccountsListItem = ({
     : account.activated_at;
 
   const user = store.getState().session.user;
+  const noLAEmail = user.merchants[user.current].email === account.email;
 
   return (
     <EntityItemRow id={account.id}>
@@ -34,8 +57,7 @@ const AccountsListItem = ({
         </a>
       </td>
       <td>
-        {showEditAccountModal &&
-        user.merchants[user.current].email === account.email ? (
+        {showEditAccountModal && noLAEmail ? (
           <button
             class="btn btn-link no-padding"
             onClick={() => showEditAccountModal(account)}
@@ -93,11 +115,19 @@ const AccountsListItem = ({
       </td>
       {onToggleDashboardAccess && (
         <td style={{ textAlign: 'center' }}>
-          <SwitchField
-            defaultChecked={!!account.dashboard_access}
-            onChange={onToggleDashboardAccess}
-            type="prime"
-          />
+          {
+            <ToggleField
+              onEdit={() => showEditAccountModal(account)}
+              isDisabled={noLAEmail}
+            >
+              <SwitchField
+                defaultChecked={!!account.dashboard_access}
+                onChange={onToggleDashboardAccess}
+                disabled={noLAEmail}
+                type="prime"
+              />
+            </ToggleField>
+          }
         </td>
       )}
     </EntityItemRow>

@@ -12,6 +12,10 @@
   width: 28px
   height: 14px
 
+  &:disabled, &[disabled] {
+    opacity: 0.4
+    cursor: not-allowed
+  }
 
   &:before {
     content: ''
@@ -20,7 +24,7 @@
     height: 100%
     width: 100%
     background-color: #F2F5F6
-    box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.24);
+    box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.24)
   }
   &:after {
     left: 2px
@@ -35,6 +39,8 @@
     line-height: 2px
     transition: .2s
   }
+
+
 
   &--default.checked {
     &:before {
