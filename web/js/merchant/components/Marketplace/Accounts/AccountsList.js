@@ -18,7 +18,8 @@ const ToggleField = ({ children, onEdit, isDisabled }) => {
         <Popover align="top" theme="dark">
           <PopoverBody>
             <div>
-              Please add Email id for linked account to grant dashboard access
+              Please add Email id for this linked account to grant dashboard
+              access
               <br />
               <button className="btn-link pull-right" onClick={onEdit}>
                 Add Email
