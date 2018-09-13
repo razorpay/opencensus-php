@@ -700,6 +700,8 @@ class EnachRblGatewayTest extends TestCase
             'error_desc' => '',
         ];
 
+        Carbon::setTestNow(Carbon::now()->addDays(10));
+
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
         $this->assertEquals('emandate', $batch['type']);
