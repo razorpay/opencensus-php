@@ -168,8 +168,10 @@ class Server extends Base\Mock\Server
 
     protected function encrypt($plaintext)
     {
-        return $this->getCipherInstance()
+        $ciphertext = $this->getCipherInstance()
                     ->encrypt($plaintext);
+
+        return strtoupper(bin2hex($ciphertext));
     }
 
     public function getAsyncCallbackContent(array $upiEntity, array $payment)
