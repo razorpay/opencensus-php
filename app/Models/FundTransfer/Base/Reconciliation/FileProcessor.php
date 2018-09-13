@@ -149,4 +149,9 @@ abstract class FileProcessor extends Processor
 
         return $reconcileFile;
     }
+
+    protected function verifySettlements(array $input)
+    {
+        return;
+    }
 }

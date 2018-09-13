@@ -320,6 +320,7 @@ final class Route
         'setl_reconcile'                           => ['post',     'settlements/reconcile/{channel}',                'SettlementController@postSettlementReconcileThroughFile'           ],
         'setl_reconcile_h2h'                       => ['post',     'settlements/h2hreconcile/{channel}',             'SettlementController@postH2HSettlementReconcile'                   ],
         'setl_reconcile_pull'                      => ['post',     'settlements/reconcile/api/{channel}',            'SettlementController@postSettlementReconcileThroughApi'            ],
+        'setl_verify'                              => ['post',     'settlements/verify/{channel}',                   'SettlementController@postSettlementVerifyThroughApi',              ],
         'setl_calc_previous_fees'                  => ['post',     'settlements/fees/previous',                      'SettlementController@postSettlementCalculateFees',                 ],
         'setl_get_details'                         => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                    => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
@@ -1194,6 +1195,7 @@ final class Route
         'bank_transfer_payment_receiver_backfill',
         'admin_mdr_update',
         'merchant_post_beneficiary_api',
+        'setl_verify',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2187,6 +2189,7 @@ final class Route
             'setcronjob_webhook',
             'admin_mdr_update',
             'merchant_post_beneficiary_api',
+            'setl_verify',
         ],
 
         'subscriptions' => [

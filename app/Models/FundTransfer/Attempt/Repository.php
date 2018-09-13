@@ -200,4 +200,62 @@ class Repository extends Base\Repository
                     ->skip($offset)
                     ->get();
     }
+
+    /**
+     * @param string $channel
+     * @param string $status
+     * @param null $from
+     * @param null $to
+     * @param null $limit
+     * @param int|null $offset
+     * @return mixed
+     */
+    public function getAttemptsWithStatusBetweenTimestamps(
+        string $channel, string $status = null, $from = null, $to = null, $limit = null, int $offset = null)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::CHANNEL, $channel);
+
+        if (($from !== null) and ($to !== null))
+        {
+            $query = $query->whereBetween(Entity::CREATED_AT, [$from, $to]);
+        }
+
+        if ($status !== null)
+        {
+            $query = $query->where(Entity::STATUS, $status);
+        }
+
+        if ($limit !== null)
+        {
+            $query->take($limit);
+        }
+
+        if ($offset !== null)
+        {
+            $query->skip($offset);
+        }
+
+        return $query->get();
+    }
+
+    public function getAttemptsWithIds(
+        string $channel, array $ids, int $limit = null, int $offset = null)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::CHANNEL, $channel)
+                      ->whereIn(Entity::ID, $ids);
+
+        if ($limit !== null)
+        {
+            $query->take($limit);
+        }
+
+        if ($offset !== null)
+        {
+            $query->skip($offset);
+        }
+
+        return $query->get();
+    }
 }

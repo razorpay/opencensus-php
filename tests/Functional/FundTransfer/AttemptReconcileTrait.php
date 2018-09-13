@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\FundTransfer;
 
 use Mail;
+use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationMail;
 
@@ -143,7 +145,6 @@ trait AttemptReconcileTrait
         {
             $dataKey = 'matchAttemptForReconFailure' . ucfirst($channel);
         }
-
         $this->assertTestResponse($attempt, $dataKey);
 
         $this->assertEquals($channel, $attempt[Attempt\Entity::CHANNEL]);
@@ -215,5 +216,22 @@ trait AttemptReconcileTrait
         $key = substr($url, $ix + 1);
 
         return $key;
+    }
+
+    protected function verifyProcessedSettlements(string $channel, $failureTest)
+    {
+        $request = [
+            'url'       => '/settlements/verify/' . $channel,
+            'content'   => [
+                'status'            => Attempt\Status::PROCESSED,
+                'failed_response'   => (int) $failureTest
+            ]
+        ];
+
+        $this->ba->cronAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
     }
 }

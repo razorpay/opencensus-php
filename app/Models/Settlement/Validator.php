@@ -62,6 +62,15 @@ class Validator extends Base\Validator
         'balance_' . Entity::CHANNEL    => 'required|string|custom',
     ];
 
+    protected static $settlementVerifyRules = [
+        'from'            => 'required_without_all:fta_ids,status|filled|epoch|date_format:U',
+        'to'              => 'required_with:to|epoch|date_format:U|after:from',
+        'fta_ids'         => 'required_without_all:from,status|array',
+        'fta_ids.*'       => 'sometimes|string|size:14',
+        'failed_response' => 'sometimes|int',
+        Entity::STATUS    => 'required_without_all:fta_ids,from|string|in:initiated,failed,processed',
+    ];
+
     protected function validateGateway($attribute, $value)
     {
         Payment\Gateway::validateGateway($value);
