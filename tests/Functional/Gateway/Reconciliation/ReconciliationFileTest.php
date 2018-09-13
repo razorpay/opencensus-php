@@ -645,8 +645,6 @@ class ReconciliationFileTest extends TestCase
 
     public function testAtomReconPaymentFile()
     {
-        $this->markTestSkipped();
-
         $this->fixtures->create('terminal:shared_atom_terminal');
 
         $payment = $this->getDefaultNetbankingPaymentArray();

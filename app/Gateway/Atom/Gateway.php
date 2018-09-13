@@ -214,8 +214,9 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        if (($responseArray['VERIFIED'] === 'NODATA') and ($this->isEarlyDayTransaction($paymentCreatedAt) === true)
-            and (isset($gatewayPayment['date']) === false))
+        if (($responseArray['VERIFIED'] === 'NODATA') and
+            ($this->isEarlyDayTransaction($paymentCreatedAt) === true) and
+            (isset($gatewayPayment['date']) === false))
         {
             $originalDate = $content[VerifyRequestFields::TRANSACTION_DATE];
 
@@ -240,16 +241,17 @@ class Gateway extends Base\Gateway
             $responseArray = $this->verifyResponseXmlToArray($response->body);
         }
 
-        if (($responseArray['VERIFIED'] !== 'NODATA') and (isset($gatewayPayment['date']) === false))
+        if (($responseArray['VERIFIED'] !== 'NODATA') and
+            (isset($gatewayPayment['date']) === false))
         {
             $date = $content[VerifyRequestFields::TRANSACTION_DATE];
 
             $dateTimestamp = Carbon::createFromFormat('Y-m-d', $date , Timezone::IST)->timestamp;
             
             $data = [
-            Entity::DATE => $dateTimestamp,
+                Entity::DATE => $dateTimestamp,
             ];
-
+            
             $verify->payment->fill($data);
 
             $verify->payment->saveOrFail();
