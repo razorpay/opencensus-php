@@ -446,19 +446,7 @@ trait Capture
                 {
                     $this->trace->traceException($e);
 
-                    $data['mode'] = $this->mode;
-
-                    $this->trace->info(
-                        TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE,
-                        ['payment_id' => $this->payment->getId()]);
-
-                    //
-                    // Adding a delay here because some gateways return back an error if a capture request
-                    // is sent within a few seconds of the first capture request.
-                    // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
-                    // previous capture request.
-                    //
-                    CaptureJob::dispatch($data);
+                    $this->$this->pushCaptureToQueue($data);
                 }
                 else
                 {
@@ -491,7 +479,12 @@ trait Capture
 
         $this->trace->traceException($ex);
 
-        $data['mode'] = $this->mode;
+        $this->pushCaptureToQueue($data);
+    }
+
+    protected function pushCaptureToQueue($paymentData)
+    {
+        $paymentData['mode'] = $this->mode;
 
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE,
@@ -503,7 +496,7 @@ trait Capture
         // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
         // previous capture request.
         //
-        CaptureJob::dispatch($data);
+        CaptureJob::dispatch($paymentData);
     }
 
     /**
