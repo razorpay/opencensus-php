@@ -264,6 +264,54 @@ class NetbankingKotakGatewayTest extends TestCase
         $this->assertEquals('failed', $payment['status']);
     }
 
+    public function testFailedPaymentCallbackWithError()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === Action::CALLBACK)
+            {
+                $content[Fields::AUTHORIZATION_STATUS] = Status::ERROR;
+            }
+        });
+
+        $payment = $this->getDefaultNetbankingPaymentArray('KKBK');
+
+        $data = $this->testData['testFailedPaymentVerifyCallback'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
+    public function testFailedPaymentCallbackWithRandomError()
+    {
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === Action::CALLBACK)
+            {
+                $content[Fields::AUTHORIZATION_STATUS] = 'Random';
+            }
+        });
+
+        $payment = $this->getDefaultNetbankingPaymentArray('KKBK');
+
+        $data = $this->testData['testFailedPaymentVerifyCallback'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('failed', $payment['status']);
+    }
+
     protected function setUpMailMock()
     {
         $date = Carbon::today(Timezone::IST)->format('d-m-Y');

@@ -356,7 +356,7 @@ trait Capture
             $data['currency'] = Currency\Currency::INR;
         }
 
-        $this->captureOnGateway($data);
+        $this->captureOnGateway($data, $autoCaptured);
 
         return $payment;
     }
@@ -391,20 +391,22 @@ trait Capture
      *
      * @param $data
      */
-    protected function captureOnGateway($data)
+    protected function captureOnGateway($data, $autoCaptured = false)
     {
         $this->verifyOrderUnpaid($this->payment);
 
         $this->mutex->acquireAndRelease(
             $this->payment->getId(),
-            function() use ($data)
+            function() use ($data, $autoCaptured)
             {
+                $this->repo->reload($this->payment);
+
                 $this->callAndHandleCaptureOnGateway($data);
 
                 // In case of a failure (marking the payment as failed),
                 // we won't record this capture since we throw the exception
                 // after marking the payment as failed.
-                $this->recordCapture();
+                $this->recordCapture($autoCaptured);
             });
 
         $this->triggerPaymentCapturedEvents();
@@ -493,14 +495,12 @@ trait Capture
         });
     }
 
-    protected function recordCapture()
+    protected function recordCapture($autoCaptured = false)
     {
         $payment = $this->payment;
 
-        $this->repo->transaction(function() use ($payment)
+        $this->repo->transaction(function() use ($payment, $autoCaptured)
         {
-            $autoCaptured = $payment->getAutoCaptured();
-
             $this->lockForUpdateAndReload($payment);
 
             if ($payment->hasBeenCaptured() === true)

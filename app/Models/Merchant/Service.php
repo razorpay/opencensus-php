@@ -873,6 +873,26 @@ class Service extends Base\Service
         return (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input);
     }
 
+    public function editMethods($input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            [
+                'merchant_id' => $this->merchant->getId(),
+                'input' => $input,
+            ]);
+
+        if($this->merchant->isFeatureEnabled(Feature\Constants::EDIT_METHODS) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        (new Validator)->validateInput('edit_methods', $input);
+
+        return (new Merchant\Methods\Core)->editMethods($input);
+    }
+
     public function getMerchantWebhooks($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);

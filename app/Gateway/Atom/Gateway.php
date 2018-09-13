@@ -194,7 +194,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content, 'get');
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $request);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'gateway'     => $this->gateway,
+                'payment_id'  => $verify->input['payment']['id'],
+                'request'     => $request,
+            ]);
 
         $request['url'] = $this->createRedirectUrl($request['content']);
 
@@ -206,8 +212,10 @@ class Gateway extends Base\Gateway
 
         $paymentCreatedAt = $verify->input['payment'][Payment\Entity::CREATED_AT];
 
-        if (($responseArray[VerifyResponseFields::STATUS] === Constants::NODATA) and
-            ($this->isEarlyDayTransaction($paymentCreatedAt) === true))
+        $gatewayPayment = $verify->payment;
+
+        if (($responseArray['VERIFIED'] === 'NODATA') and ($this->isEarlyDayTransaction($paymentCreatedAt) === true)
+            and (isset($gatewayPayment['date']) === false))
         {
             $originalDate = $content[VerifyRequestFields::TRANSACTION_DATE];
 
@@ -215,11 +223,12 @@ class Gateway extends Base\Gateway
 
             $request = $this->getStandardRequestArray($content, 'get');
 
-            $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
                 [
-                    'request'    => $request,
-                    'gateway'    => $this->gateway,
-                    'payment_id' => $verify->input['payment']['id'],
+                    'gateway'     => $this->gateway,
+                    'payment_id'  => $verify->input['payment']['id'],
+                    'request'     => $request,
                 ]);
 
             $request['url'] = $this->createRedirectUrl($request['content']);
@@ -227,17 +236,24 @@ class Gateway extends Base\Gateway
             $request['content'] = [];
 
             $response = $this->sendGatewayRequest($request);
+
+            $responseArray = $this->verifyResponseXmlToArray($response->body);
         }
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'gateway'    => $this->gateway,
-                'response'   => $response->body,
-                'payment_id' => $verify->input['payment']['id'],
-            ]);
+        if (($responseArray['VERIFIED'] !== 'NODATA') and (isset($gatewayPayment['date']) === false))
+        {
+            $date = $content[VerifyRequestFields::TRANSACTION_DATE];
 
-        $responseArray = $this->verifyResponseXmlToArray($response->body);
+            $dateTimestamp = Carbon::createFromFormat('Y-m-d', $date , Timezone::IST)->timestamp;
+            
+            $data = [
+            Entity::DATE => $dateTimestamp,
+            ];
+
+            $verify->payment->fill($data);
+
+            $verify->payment->saveOrFail();
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -379,12 +395,15 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestContent(Entity $gatewayPayment, array $input)
     {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
+
         $content = [
             RefundRequestFields::MERCHANT_ID            => $this->getMerchantId(),
             RefundRequestFields::PASSWORD               => base64_encode($this->getSecureSecret()),
             RefundRequestFields::GATEWAY_TRANSACTION_ID => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
             RefundRequestFields::REFUND_AMOUNT          => $this->getFormattedAmount($input['refund']['amount']),
-            RefundRequestFields::TRANSACTION_DATE       => $this->getFormattedDate($input['payment'][Payment\Entity::CREATED_AT]),
+            RefundRequestFields::TRANSACTION_DATE       => $this->getFormattedDate($gatewayPayment['date']),
             RefundRequestFields::REFUND_ID              => $input['refund']['id'],
         ];
 
@@ -443,11 +462,15 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        $gatewayPayment = $verify->payment;
+
+        $date = isset($gatewayPayment['date']) ? $gatewayPayment['date'] : $input['payment']['created_at'];
+
         $data = [
             VerifyRequestFields::MERCHANT_ID      => $this->getMerchantId(),
             VerifyRequestFields::TRANSACTION_ID   => $input['payment']['id'],
             VerifyRequestFields::AMOUNT           => $this->getFormattedAmount($input['payment']['amount']),
-            VerifyRequestFields::TRANSACTION_DATE => $this->getFormattedDate($input['payment']['created_at']),
+            VerifyRequestFields::TRANSACTION_DATE => $this->getFormattedDate($date),
         ];
 
         return $data;
@@ -602,6 +625,10 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackAttributes(array $content)
     {
+        $content['date'] = Carbon::parse($content['date'])->format('d-m-Y');
+
+        $timestamp = Carbon::createFromFormat('d-m-Y', $content['date'], Timezone::IST)->timestamp;
+
         $attributes = [
             Entity::ERROR_DESCRIPTION  => 'NA',
             Entity::GATEWAY_PAYMENT_ID => $content[AuthResponseFields::GATEWAY_PAYMENT_ID],
@@ -609,6 +636,7 @@ class Gateway extends Base\Gateway
             Entity::STATUS             => $content[AuthResponseFields::STATUS_CODE],
             Entity::RECEIVED           => true,
             Entity::BANK_NAME          => $content[AuthResponseFields::BANK_NAME],
+            Entity::DATE               => $timestamp,
         ];
 
         if ($attributes[Entity::STATUS] === Status::SUCCESS)
@@ -771,8 +799,8 @@ class Gateway extends Base\Gateway
         return ($paymentTime->secondsSinceMidnight() <= self::TIME_WINDOW);
     }
 
-    protected function getPreviousDate($date)
+    protected function getPreviousDate($originalDate)
     {
-      return date('Y-m-d', strtotime('-1 day', strtotime($date)));
+        return date('Y-m-d', strtotime('-1 day',strtotime($originalDate)));
     }
 }

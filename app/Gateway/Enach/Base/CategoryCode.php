@@ -27,6 +27,7 @@ class CategoryCode
     protected static $mccToCategoryCodeMapping = [
         '6012' => self::L001,
         '6050' => self::B001,
+        '6051' => self::B001,
         '8299' => self::E001,
         '8211' => self::E001,
         '8220' => self::E001,

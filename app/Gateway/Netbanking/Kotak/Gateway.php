@@ -116,7 +116,7 @@ class Gateway extends Base\Gateway
         {
             $response = $this->verifyCallback($input, $gatewayPayment);
         }
-        if (($attrs[Fields::STATUS] === Status::FAIL) or ($response[Fields::AUTHORIZATION_STATUS] !== Status::SUCCESS))
+        else
         {
             $this->trace->info(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,

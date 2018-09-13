@@ -174,6 +174,9 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
                     $subReconciliatorObject = $this->getSubReconciliatorObject($entityType);
 
+                    // As we are creating subRecon object again here, need to set the source for it
+                    $subReconciliatorObject->setSource($this->source);
+
                     $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
                     {
                         $subReconciliatorObject->setExtraDetails($extraDetails);

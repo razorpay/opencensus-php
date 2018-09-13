@@ -176,6 +176,8 @@ final class Route
         'merchant_delete_terminal'                 => ['delete',   'merchants/{mid}/terminals/{tid}',                'MerchantController@deleteTerminal'                                 ],
         'merchant_modify_terminal'                 => ['put',      'merchants/{mid}/terminals/{tid}',                'MerchantController@putTerminal'                                    ],
         'merchant_put_payment_methods'             => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
+        'merchant_methods_edit'                    => ['put',      'merchant/methods',                               'MerchantController@editMethods'                                    ],
+        'merchant_fetch_methods'                   => ['get',      'merchant/methods',                               'MerchantController@getPaymentMethods'                              ],
         'merchant_activate'                        => ['post',     'merchants/{id}/activate',                        'MerchantController@postActivate'                                   ],
         'merchant_send_activation_mail'            => ['post',     'merchants/activation_mail',                      'MerchantController@postSendActivationMail'                         ],
         'merchant_live_enable'                     => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
@@ -244,6 +246,7 @@ final class Route
         'virtual_account_create'                   => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_order_create'             => ['post',     'orders/{id}/virtual_accounts',                   'VirtualAccountController@createForOrder'                           ],
         'virtual_account_edit'                     => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
+        'virtual_account_close'                    => ['post',     'virtual_accounts/{id}/close',                    'VirtualAccountController@closeVirtualAccount'                      ],
         'virtual_account_fetch'                    => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
         'virtual_account_fetch_multiple'           => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
         'virtual_account_fetch_payments'           => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
@@ -1071,6 +1074,7 @@ final class Route
         'transfer_create_reversal',
         'virtual_account_create',
         'virtual_account_edit',
+        'virtual_account_close',
         'virtual_account_fetch',
         'virtual_account_fetch_multiple',
         'payment_bank_transfer_fetch',
@@ -1360,6 +1364,8 @@ final class Route
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'webhook_fire',
+        'merchant_methods_edit',
+        'merchant_fetch_methods',
     ];
 
     // These will run on internal auth with the assurance
@@ -2183,6 +2189,8 @@ final class Route
         'subscriptions' => [
             'invoice_create',
             'customer_fetch_by_id',
+            'payment_capture',
+            'payment_refund',
             'webhook_fire',
             'merchant_fetch_config_internal',
         ],
@@ -2294,6 +2302,7 @@ final class Route
         'subscription_manual_retry'            => [Feature::SUBSCRIPTIONS],
         'virtual_account_create'               => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'                 => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_close'                => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch'                => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],

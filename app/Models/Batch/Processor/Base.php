@@ -85,7 +85,7 @@ class Base extends BaseModel\Core
      * They are re-used in the flow.
      * E.g.
      * - sending mails with attachment,
-     * - unlinking post processing etc..
+     * - un-linking post processing etc..
      */
     protected $inputFileLocalPath;
     protected $outputFileLocalPath;

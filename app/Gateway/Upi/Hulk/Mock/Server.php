@@ -166,6 +166,6 @@ class Server extends Base\Mock\Server
 
     protected function getHmac(string $content)
     {
-        return hash_hmac('sha256', $content, 'hulk_api_password');
+        return hash_hmac('sha256', $content, config('gateway.upi_hulk.gateway_terminal_password'));
     }
 }

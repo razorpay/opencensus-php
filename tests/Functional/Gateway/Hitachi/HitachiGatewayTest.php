@@ -115,6 +115,54 @@ class HitachiGatewayTest extends TestCase
         // Switch to private auth for subsequent recurring payment
         $this->ba->privateAuth();
 
+        $this->mockServerRequestFunction(
+            function(& $request)
+            {
+                $this->assertEquals('02', $request['pECI']);
+                $this->assertFalse(isset($request['pCVV2']));
+            });
+
+        $response = $this->doS2sRecurringPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals($token, $paymentEntity['token_id']);
+        $this->assertEquals('100HitachiTmnl', $paymentEntity['terminal_id']);
+    }
+
+    public function testRecurringPaymentForMaster()
+    {
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['card']['number'] = CardNumber::VALID_NOT_ENROLL_NUMBER;
+
+        $response = $this->doAuthPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('100HitachiTmnl', $paymentEntity['terminal_id']);
+
+        $token = $paymentEntity['token_id'];
+
+        unset($payment['card']);
+
+        // Set payment for subsequent recurring payment
+        $payment['token'] = $token;
+
+        // Switch to private auth for subsequent recurring payment
+        $this->ba->privateAuth();
+
+        $this->mockServerRequestFunction(
+            function(& $request)
+            {
+                $this->assertEquals('07', $request['pECI']);
+                $this->assertFalse(isset($request['pCVV2']));
+            });
+
         $response = $this->doS2sRecurringPayment($payment);
 
         $paymentId = $response['razorpay_payment_id'];
@@ -798,7 +846,7 @@ class HitachiGatewayTest extends TestCase
         $this->assertEquals(0, $hitachiPayment['verified']);
     }
 
-    public function testMotoTransaction()
+    public function testMotoTransactionForMaster()
     {
         $motoTerminal = $this->fixtures->create('terminal:shared_hitachi_moto_terminal');
 
@@ -814,6 +862,38 @@ class HitachiGatewayTest extends TestCase
             function(& $request) use ($testData)
             {
                 $this->assertArraySelectiveEquals($testData, $request);
+                $this->assertFalse(isset($request['pCVV2']));
+            });
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($motoTerminal['id'], $payment['terminal_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('skip', $payment['auth_type']);
+    }
+
+    public function testMotoTransactionForVisa()
+    {
+        $motoTerminal = $this->fixtures->create('terminal:shared_hitachi_moto_terminal');
+
+        $this->fixtures->merchant->addFeatures(['direct_debit']);
+
+        $this->payment['auth_type'] = 'skip';
+
+        $this->payment['card']['number'] = CardNumber::INTERNATIONAL_VISA;
+
+        unset($this->payment['card']['cvv']);
+
+        $testData = $this->testData['motoTransactionRequest'];
+
+        $this->mockServerRequestFunction(
+            function(& $request) use ($testData)
+            {
+                $this->assertEquals('02', $request['pECI']);
                 $this->assertFalse(isset($request['pCVV2']));
             });
 
