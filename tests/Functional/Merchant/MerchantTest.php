@@ -1651,6 +1651,17 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesForPaidOrder()
+    {
+        $order = $this->fixtures->order->createPaid();
+
+        $this->ba->publicAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer()
     {
         $this->ba->publicAuth();

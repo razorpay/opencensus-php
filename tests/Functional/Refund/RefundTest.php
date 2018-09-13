@@ -1094,6 +1094,9 @@ class RefundTest extends TestCase
         $attr = [
             'payment' => $payment,
             'status' => 'failed',
+            'error_code' => 'test',
+            'error_description' => 'test',
+            'internal_error_code' => 'test',
             'gateway_refunded' => false,
             'attempts' => 1,
         ];
@@ -1125,6 +1128,10 @@ class RefundTest extends TestCase
         $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
 
         $this->assertEquals('refund', $bankAccount['type']);
+
+        $this->assertNull($refund['error_code']);
+        $this->assertNull($refund['error_description']);
+        $this->assertNull($refund['internal_error_code']);
     }
 
     public function testTpvPaymentRefundFailedAttempt()

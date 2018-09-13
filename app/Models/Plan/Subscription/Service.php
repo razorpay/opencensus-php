@@ -261,11 +261,22 @@ class Service extends Base\Service
         return $summary;
     }
 
-    public function chargeSubscriptionInvoiceManually(string $invoiceId)
+    public function chargeSubscriptionInvoiceManuallyOld(string $invoiceId)
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $this->merchant);
 
-        $subscription = $invoice->subscription;
+        $subscriptionId = $invoice->getSubscriptionId();
+
+        $subscriptionId = Entity::getSignedIdOrNull($subscriptionId);
+
+        return $this->chargeSubscriptionInvoiceManually($subscriptionId, $invoiceId);
+    }
+
+    public function chargeSubscriptionInvoiceManually(string $subscriptionId, string $invoiceId)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $this->merchant);
+
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
         $this->trace->info(
             TraceCode::SUBSCRIPTION_INVOICE_MANUAL_CHARGE,

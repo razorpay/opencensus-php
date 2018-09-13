@@ -102,7 +102,7 @@ class Validator extends Base\Core
                                                          ],
         RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached Recon Data File of Online Transaction/"],
         RequestProcessor\Base::UPI_HDFC                => ["/Please Find Attachment For Merchant Payout Report/"],
-        RequestProcessor\Base::AIRTEL                  => ["/PFA your merchant txn report for Yesterday"],
+        RequestProcessor\Base::AIRTEL                  => ["/PFA your merchant txn report for Yesterday/"],
         RequestProcessor\Base::CARD_FSS_HDFC           => [
                                                             "/Please find attached All transaction Report & Settlement Report "
                                                             . "for transactions done on FSSPaY/"

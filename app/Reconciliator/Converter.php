@@ -27,6 +27,7 @@ class Converter extends Base\Core
         RequestProcessor\Base::OLAMONEY,
         RequestProcessor\Base::FREECHARGE,
         RequestProcessor\Base::CARD_FSS_BOB,
+        RequestProcessor\Base::NETBANKING_IDFC,
     ];
 
     const MAX_SHEETS_ALLOWED = 3;

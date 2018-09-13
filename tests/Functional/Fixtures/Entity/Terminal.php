@@ -29,6 +29,7 @@ class Terminal extends Base
         $this->createSharedNetbankingAxisTerminal();
         $this->createSharedNetbankingFederalTerminal();
         $this->createSharedNetbankingBobTerminal();
+        $this->createSharedNetbankingIdfcTerminal();
         $this->createSharedNetbankingRblTerminal();
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
@@ -1526,6 +1527,24 @@ class Terminal extends Base
         return $this->createSharedNetbankingFederalTerminal($attributes);
     }
 
+    public function createSharedNetbankingIdfcTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_IDFC_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => Gateway::NETBANKING_IDFC,
+            'gateway_merchant_id'       => 'test_merchant_id',
+            'netbanking'                => 1,
+            'gateway_secure_secret'     => 'random_idfc_code',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
     public function createSharedNetbankingBobTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
@@ -1921,5 +1940,27 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createDirectSettlementHdfcTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DirectseTmnl',
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'netbanking_hdfc',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT => '1',
+                Type::NON_RECURRING     => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
     }
 }
