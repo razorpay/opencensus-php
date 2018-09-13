@@ -1052,6 +1052,8 @@ class RefundTest extends TestCase
 
     public function testTpvPaymentRefundNetbanking()
     {
+        $this->markTestSkipped();
+
         list($payment, $order) = $this->tpvPayment();
 
         $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);
@@ -1085,6 +1087,8 @@ class RefundTest extends TestCase
 
     public function testTpvPaymentRefundNetbankingOld()
     {
+        $this->markTestSkipped();
+
         list($payment, $order) = $this->tpvPayment();
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
@@ -1129,6 +1133,8 @@ class RefundTest extends TestCase
 
     public function testTpvPaymentRefundFailedAttempt()
     {
+        $this->markTestSkipped();
+
         list($payment, $order) = $this->tpvPayment();
 
         $this->fixtures->merchant->addFeatures(['bank_transfer_refund']);

@@ -168,6 +168,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferRefundYesbankTpvPayment()
     {
+        $this->markTestSkipped();
+
         $channel = Channel::YESBANK;
 
         $this->createTpvRefund();

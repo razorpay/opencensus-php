@@ -22,6 +22,8 @@ class AtomGatewayTest extends TestCase
 
     public function testNetbankingPaymentAuthorize()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $content = $this->doAuthPayment($this->payment);
@@ -99,6 +101,8 @@ class AtomGatewayTest extends TestCase
 
     public function testNetbankingPaymentCapture()
     {
+        $this->markTestSkipped();
+
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->assertTestResponse($payment);
@@ -106,6 +110,8 @@ class AtomGatewayTest extends TestCase
 
     public function testSbiAssociatedNetbankingPaymentCapture()
     {
+        $this->markTestSkipped();
+
         $this->payment = $this->getDefaultNetbankingPaymentArray('SBBJ');
 
         $this->doAuthAndCapturePayment($this->payment);
@@ -121,6 +127,8 @@ class AtomGatewayTest extends TestCase
 
     public function testAtomVerifyPayment()
     {
+        $this->markTestSkipped();
+
         $this->setMockGatewayTrue();
 
         $this->payment['amount'] = '50020';
@@ -138,6 +146,8 @@ class AtomGatewayTest extends TestCase
 
     public function testNBPaymentOnSharedTerminal()
     {
+        $this->markTestSkipped();
+
         $this->merchant = $this->fixtures->create('merchant:with_keys');
 
         $this->ba->setDefaultKey('rzp_test_AltTestAuthKey')->publicAuth();
@@ -152,6 +162,8 @@ class AtomGatewayTest extends TestCase
 
     public function testTpvPayment()
     {
+        $this->markTestSkipped();
+
         $terminal = $this->fixtures->create('terminal:shared_atom_tpv_terminal');
 
         $this->ba->privateAuth();
@@ -219,6 +231,8 @@ class AtomGatewayTest extends TestCase
 
     public function testVerifyFailedPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->doAuthPayment($this->payment);
 
         $gatewayPayment = $this->getLastEntity('atom', true);
@@ -269,6 +283,8 @@ class AtomGatewayTest extends TestCase
 
     public function testPaymentRefund()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $payment = $this->doAuthAndCapturePayment($this->payment);
@@ -288,6 +304,8 @@ class AtomGatewayTest extends TestCase
 
     public function testPaymentPartialRefund()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $this->doAuthAndCapturePayment($this->payment);
@@ -323,6 +341,8 @@ class AtomGatewayTest extends TestCase
 
     public function testRefundFailed()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $payment = $this->doAuthAndCapturePayment($this->payment);
