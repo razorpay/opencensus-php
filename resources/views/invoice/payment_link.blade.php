@@ -7,7 +7,7 @@ $invoice_expire_by              = $invoice_data['expire_by'];
 $invoice_payments               = $invoice_data['payments'];
 $is_invoice_partial_payment     = $invoice_data['partial_payment'] === true;
 $invoice_status                 = $invoice_data['status'];
-
+$customer_details               = $invoice_data['customer_details'];
 ?>
 
 <!doctype html>
@@ -17,7 +17,8 @@ $invoice_status                 = $invoice_data['status'];
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
-    <meta name="robots" content="noindex">
+    <meta name="description" content="Payment of Rs. {{amount_format_IN($invoice_data['amount'])}} requested by {{$invoice_data['merchant_label']}} for {{$invoice_data['description']}}">
+    @include('invoice.robot')
 
     @if (isset($invoice_data))
         <meta property="og:title" content="Payment of Rs. {{amount_format_IN($invoice_data['amount'])}} requested by {{$invoice_data['merchant_label']}} for {{$invoice_data['description']}}">
@@ -440,14 +441,14 @@ $invoice_status                 = $invoice_data['status'];
                                 <div class="val">{{epoch_format($invoice_expire_by)}} </div>
                             </div>
                         @endif
-                        @if($invoice_data['customer_details']['customer_name'] or $invoice_data['customer_details']['customer_email'])
+                        @if($customer_details['customer_name'] or $customer_details['customer_email'])
                             <div class="info">
                                 ISSUED TO
-                                @if($invoice_data['customer_details']['customer_name'])
-                                    <div class="val">{{$invoice_data['customer_details']['customer_name']}}</div>
+                                @if($customer_details['customer_name'])
+                                    <div class="val">{{$customer_details['customer_name']}}</div>
                                 @endif
-                                @if($invoice_data['customer_details']['customer_email'])
-                                    <div class="val">{{$invoice_data['customer_details']['customer_email']}}</div>
+                                @if($customer_details['customer_email'])
+                                    <div class="val">{{$customer_details['customer_email']}}</div>
                                 @endif
                             </div>
                         @endif
