@@ -3,6 +3,7 @@
 namespace RZP\Modules\Subscriptions;
 
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 /**
  * Class Internal
  *
@@ -12,11 +13,11 @@ use RZP\Models\Payment;
  */
 class Internal extends Base
 {
-    public function fetchSubscriptionInfo(array $input = [], $callback = false)
+    public function fetchSubscriptionInfo(array $input = [], Merchant\Entity $merchant, $callback = false)
     {
         $subscription = $this->repo
                              ->subscription
-                             ->findByPublicIdAndMerchant($input[Payment\Entity::SUBSCRIPTION_ID], $this->merchant);
+                             ->findByPublicIdAndMerchant($input[Payment\Entity::SUBSCRIPTION_ID], $merchant);
 
         $subscription->setExternal(false);
 

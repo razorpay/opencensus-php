@@ -273,8 +273,8 @@ class Processor
         }
 
         $this->subscription = $this->app['module']
-                                 ->subscription
-                                 ->fetchSubscriptionInfo($input);
+                                   ->subscription
+                                   ->fetchSubscriptionInfo($input, $payment->merchant);
 
         if ($this->subscription->isExternal() === true)
         {
