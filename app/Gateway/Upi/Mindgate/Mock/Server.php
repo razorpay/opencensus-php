@@ -183,7 +183,8 @@ class Server extends Base\Mock\Server
         $response = $this->makeResponse($content);
 
         return [
-            'meRes' => $response->content()
+            'pgMerchantId' => 'HDFC000000000',
+            'meRes'        => $response->content()
         ];
     }
 
