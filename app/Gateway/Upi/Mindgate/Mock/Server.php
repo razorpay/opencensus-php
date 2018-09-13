@@ -403,6 +403,15 @@ class Server extends Base\Mock\Server
             $response['bank_reference'],
         ];
 
-        return $this->makeResponse($res, Action::VALIDATE_PUSH);
+        $finalResponse = $this->makeResponse($res, Action::VALIDATE_PUSH);
+
+        $finalResponseBody = [
+            'pgMerchantId' => $input[1],
+            'meRes'        => $finalResponse->getContent(),
+        ];
+
+        $finalResponse->setContent($finalResponseBody);
+
+        return $finalResponse;
     }
 }
