@@ -460,8 +460,10 @@ trait Capture
                     //
                     CaptureJob::dispatch($data);
                 }
-
-                throw $e;
+                else
+                {
+                    throw $e;
+                }
             }
         }
     }
