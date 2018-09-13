@@ -16,6 +16,7 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
+use RZP\Models\Admin\Org;
 use RZP\Trace\TraceCode;
 use RZP\Constants;
 use RZP\Constants\MailTags;
@@ -1422,9 +1423,15 @@ class Service extends Base\Service
 
             $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
 
-            $this->app['gateway']->call($gateway, Action::VALIDATE_PUSH, $callbackData, $mode, $terminal);
+            $this->app['gateway']->call($gateway, Payment\Action::VALIDATE_PUSH, $callbackData, $mode, $terminal);
 
-            $merchant = $this->repo->merchant->findById(Merchant\Account::DEMO_PAGE_ACCOUNT);
+            $merchantAccount = (
+                $this->app->environment('production') === true ?
+                Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT
+            );
+
+            $merchant = $this->repo->merchant->findByIdAndOrgId(
+                $merchantAccount, Org\Entity::RAZORPAY_ORG_ID);
 
             $paymentProcessor = $this->getNewProcessor($merchant);
 
@@ -1437,25 +1444,25 @@ class Service extends Base\Service
 
             $payment = $paymentProcessor->getPayment();
 
-            $paymentId = $payment->getId();
-
             try
             {
-                $this->repo->transaction(function() use ($paymentId, $callbackData, $mode, $terminal)
+                $this->repo->transaction(function() use ($payment, $gateway, $callbackData, $mode, $terminal)
                 {
+                    $paymentId = $payment->getId();
+
                     $input = [$paymentId, $callbackData];
 
-                    $this->app['gateway']->call($gateway, Action::AUTHORIZE_PUSH, $input, $mode, $terminal);
+                    $this->app['gateway']->call($gateway, Payment\Action::AUTHORIZE_PUSH, $input, $mode, $terminal);
 
                     $payment->setStatus(Payment\Status::AUTHORIZED);
 
                     $this->repo->saveOrFail($payment);
                 });
+
+                $success = true;
             }
             catch (\Throwable $e)
             {
-                $success = true;
-
                 $payment->setStatus(Payment\Status::FAILED);
 
                 $this->repo->saveOrFail($payment);

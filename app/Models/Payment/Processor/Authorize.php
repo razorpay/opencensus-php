@@ -87,7 +87,7 @@ trait Authorize
             return $ret;
         }
 
-        return $this->processPaymentFinal($payment);
+        return $this->processPaymentFinal($payment, $gatewayInput);
     }
 
     protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array $gatewayInput)

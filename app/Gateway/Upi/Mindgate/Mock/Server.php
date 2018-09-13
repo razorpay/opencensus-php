@@ -21,10 +21,11 @@ class Server extends Base\Mock\Server
      * actual incoming request
      */
     const REQUEST_FIELD_COUNT = [
-        Action::COLLECT      => 17,
-        Action::VERIFY       => 14,
-        Action::REFUND       => 20,
-        Action::VALIDATE_VPA => 14,
+        Action::COLLECT       => 17,
+        Action::VERIFY        => 14,
+        Action::REFUND        => 20,
+        Action::VALIDATE_VPA  => 14,
+        Action::VALIDATE_PUSH => 14,
     ];
 
     /**
@@ -32,11 +33,12 @@ class Server extends Base\Mock\Server
      * including the NA padding
      */
     const RESPONSE_FIELD_COUNT = [
-        Action::AUTHORIZE       => 17,
-        Action::VALIDATE_VPA    => 14,
-        Action::VERIFY          => 21,
-        Action::CALLBACK        => 21,
-        Action::REFUND          => 21,
+        Action::AUTHORIZE     => 17,
+        Action::VALIDATE_VPA  => 14,
+        Action::VERIFY        => 21,
+        Action::CALLBACK      => 21,
+        Action::REFUND        => 21,
+        Action::VALIDATE_PUSH => 21,
     ];
 
     public function authorize($input)
@@ -354,5 +356,50 @@ class Server extends Base\Mock\Server
         $key = config('gateway.upi_mindgate.gateway_encryption_key');
 
         return hex2bin($key);
+    }
+
+    public function validatePush($input)
+    {
+        parent::validatePush($input);
+
+        $input = $this->parseInput($input);
+
+        $this->validateActionInput($input);
+
+        $app = App::getFacadeRoot();
+
+        // creating dummy payment array
+        $payment = [
+            'vpa'        => 'a@b',
+            'amount'     => 1300,
+            'created_at' => time(),
+        ];
+
+        $response = $this->getDefaultVerifyResponse($input, $payment);
+
+        $this->content($response,'verify');
+
+        $res = [
+            $response['txn_id'],
+            $response['payment_id'],
+            $response['amount'],
+            $response['auth_time'],
+            $response['status'],
+            $response['message'],
+            $response['resp_code'],
+            $response['approval_num'],
+            $response['payer_va'],
+            $response['cust_ref_id'],
+            // The Reference Id field always holds NA for now
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            $response['bank_reference'],
+        ];
+
+        return $this->makeResponse($res, Action::VALIDATE_PUSH);
     }
 }
