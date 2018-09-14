@@ -432,41 +432,49 @@ trait Capture
         }
         catch (Throwable $ex)
         {
+            $this->trace->traceException($ex);
+
             $this->handleExceptionOnCapture($data, $ex);
         }
     }
 
-    protected function handleGatewayTimeoutOnCapture(Exception\GatewayTimeoutException $ex)
+    /**
+     * If the feature is enabled, we will always mark it as captured on our end.
+     * If the feature is not enabled, we will mark it as captured on our based on some conditions.
+     *
+     * @param           $data
+     * @param Throwable $ex
+     *
+     * @throws Throwable
+     */
+    protected function handleExceptionOnCapture(array $data, Throwable $ex)
     {
-        $paymentGateway = $this->payment->getGateway();
-
-        //
-        // If the capture times out for HDFC, we mark it as captured on API and add the captureOnGateway
-        // to a queue. We then try to capture on HDFC.
-        // We do a similar thing for Cybersource. But, right now, we are not adding to the queue. We will
-        // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
-        // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
-        //
-        if ($paymentGateway !== Payment\Gateway::HDFC)
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === true)
         {
+            $this->dispatchCaptureFailure($data);
+        }
+        else
+        {
+            //
+            // If the capture times out for HDFC, we mark it as captured on API and add the captureOnGateway
+            // to a queue. We then try to capture on HDFC.
+            // We do a similar thing for Cybersource. But, right now, we are not adding to the queue. We will
+            // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
+            // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
+            //
+
+            if ((($ex instanceof Exception\GatewayTimeoutException) === true) and
+                ($this->payment->getGateway() !== Payment\Gateway::HDFC))
+            {
+                $this->dispatchCaptureFailure($data);
+            }
+
             throw $ex;
         }
     }
 
-    protected function handleExceptionOnCapture($data, Throwable $ex)
+    protected function dispatchCaptureFailure(array $data)
     {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === false)
-        {
-            if (($ex instanceof Exception\GatewayTimeoutException) === false)
-            {
-                throw $ex;
-            }
-
-            $this->handleGatewayTimeoutOnCapture($ex);
-        }
-
-        $this->trace->traceException($ex);
-
         $data['mode'] = $this->mode;
 
         $this->trace->info(
