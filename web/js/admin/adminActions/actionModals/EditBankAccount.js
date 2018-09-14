@@ -18,7 +18,7 @@ export default function EditBankAccount() {
       let payload = {
         url: `live/bank_accounts/${body.ba_id}`,
         data: {
-          name: body.name,
+          beneficiary_name: body.name,
         },
       };
 
