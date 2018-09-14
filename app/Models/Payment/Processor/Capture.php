@@ -470,7 +470,7 @@ trait Capture
             $this->handleGatewayTimeoutOnCapture($data, $e);
         }
 
-        $this->trace->traceException($ex);
+        $this->trace->traceException($e);
 
         $data['mode'] = $this->mode;
 

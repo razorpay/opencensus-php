@@ -7,7 +7,9 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mockery;
 use Mail;
+use Queue;
 
+use RZP\Jobs\Capture as CaptureJob;
 use RZP\Mail\Payment\Captured as CapturedMail;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -67,6 +69,63 @@ class CaptureTest extends TestCase
         $this->assertEquals(true, $payment['gateway_captured']);
 
         Mail::assertQueued(CapturedMail::class);
+    }
+
+    public function testCaptureFailedWithQueue()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures(['capture_queue']);
+
+        $payment = $this->defaultAuthPayment();
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'capture')
+            {
+                throw new Exception\RuntimeException;
+            }
+        });
+
+        $this->ba->privateAuth();
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(null, $payment['gateway_captured']);
+        $this->assertEquals('captured', $payment['status']);
+
+        Queue::assertPushed(CaptureJob::class, function ($job) use ($payment)
+        {
+            $data = $job->getData();
+
+            return $payment['id'] === $data['payment']['public_id'];
+        });
+
+        Mail::assertQueued(CapturedMail::class);
+    }
+
+    public function testCaptureFailedWithoutQueue()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'capture')
+            {
+                throw new Exception\RuntimeException;
+            }
+        });
+
+        $this->ba->privateAuth();
+
+        $this->startTest($payment['id'], $payment['amount']);
     }
 
     public function testBulkCapture()

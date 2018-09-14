@@ -21,7 +21,6 @@ class Capture extends Job
 
     protected $data;
 
-
     public function __construct(array $data)
     {
         parent::__construct($data['mode']);
@@ -122,5 +121,10 @@ class Capture extends Job
         ]);
 
         // @todo: add slack notifier
+    }
+
+    public function getData()
+    {
+        return $this->data;
     }
 }
