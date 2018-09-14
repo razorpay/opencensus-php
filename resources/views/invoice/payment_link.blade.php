@@ -36,7 +36,7 @@ $customer_details               = $invoice_data['customer_details'];
             <script>
                 var Razorpay = {
                     config: {
-                        api: '/'
+                        api: "{{ config('app.url') }}/"
                     }
                 }
             </script>

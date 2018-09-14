@@ -4,7 +4,6 @@
     $payment_page_data          = $data['payment_link'] ?? null;
     $is_test_mode               = $data['is_test_mode'] ?? false;
     $has_udf                    = (empty($udf_schema) === false);
-    $max_mobile_width           = 853;
 ?>
 
 
@@ -45,14 +44,7 @@
             var data = {!!utf8_json_encode($data)!!};
 
             var templateData = {
-                is_test_mode: data.is_test_mode || false,
-                payment_page_data: data.payment_link || {},
-                max_mobile_width: 853,
                 meta: {
-//                    company_contact: {
-//                        phone: '1800 103 6354',
-//                        email: 'asdasd@asdad.com'
-//                    },
                     intro_note: 'You can now pay your bill in a simple, convenient and secure way with Razorpay in 3 simple steps:',
                     instructions: ['Enter your Service number.', 'View your Bill details.', 'Pay with your desired mode of payment.']
                 },
@@ -65,15 +57,17 @@
             }
         </script>
 
-        <script src="https://cdn.razorpay.com/static/analytics/bundle.js" async defer></script>
+        <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
         <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/paymentpage_app.js" onload="renderPaymentPage()" defer></script>
-
-        <script src="https://checkout.razorpay.com/v1/checkout.js" async defer></script>
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <script src="https://checkout.razorpay.com/v1/checkout.js" async defer></script>
     </head>
 
     <body>
         <div id="hostedpage-container">
         </div>
+        <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
+        <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/paymentpage_app.js" onload="renderPaymentPage()" defer></script>
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     </body>
 </html>
