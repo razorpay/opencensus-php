@@ -483,7 +483,12 @@ trait Authorize
 
         $this->runAuthorizeFailedTransaction($payment);
 
-        $this->traceAuthorizeFailedOperationData($payment);
+        $this->trace->info(
+            TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+            [
+                'payment_id' => $payment->getId(),
+                'error' => $payment->getErrorDetails(),
+            ]);
 
         return $payment->toArrayAdmin();
     }
@@ -497,7 +502,6 @@ trait Authorize
      * @param Payment\Entity $payment
      * @param array $input
      * @return array $payment
-     * @throws Exception\BadRequestValidationFailureException
      */
     public function forceAuthorizeFailedPayment(Payment\Entity $payment, array $input = []): array
     {
@@ -3673,26 +3677,6 @@ trait Authorize
             $this->app['events']->fire($event, $eventPayload);
         }
     }
-
-    protected function traceAuthorizeFailedOperationData(Payment\Entity $payment)
-    {
-        $traceData = array(
-            'payment_id' => $payment->getId(),
-            'error' => $payment->getErrorDetails(),
-        );
-
-        $message = 'Payment failed earlier converted to authorized';
-
-        $slackData = ['id' => $payment->getDashboardEntityLinkForSlack()];
-
-        $this->app['slack']->queue(
-            $message, $slackData, ['color' => 'good', 'channel' => Config::get('slack.channels.tech_logs')]);
-
-        $this->trace->info(
-            TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
-            $traceData);
-    }
-
 
     protected function recordTerminalAudit(array $terminalData, Payment\Entity $payment, int $retryAttempts)
     {
