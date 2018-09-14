@@ -21,6 +21,8 @@ class Capture extends Job
 
     protected $data;
 
+    protected $slack;
+
     public function __construct(array $data)
     {
         parent::__construct($data['mode']);
@@ -127,11 +129,14 @@ class Capture extends Job
             'color'   => 'danger'
         ];
 
-        $this->slack->queue('Payment couldn\'t be captured via queue', [
-            'payment_id' => $this->data['payment']['id'],
-            'gateway'    => $this->data['payment']['gateway'],
-            'attempts'   => $this->attempts(),
-        ], $settings);
+        $this->slack->queue(
+            'Payment couldn\'t be captured via queue',
+            [
+                'payment_id' => $this->data['payment']['id'],
+                'gateway'    => $this->data['payment']['gateway'],
+                'attempts'   => $this->attempts(),
+            ],
+            $settings);
     }
 
     public function getData()

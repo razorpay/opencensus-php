@@ -432,8 +432,6 @@ trait Capture
         }
         catch (Throwable $ex)
         {
-            $this->trace->traceException($ex);
-
             $this->handleExceptionOnCapture($data, $ex);
         }
     }
@@ -451,7 +449,7 @@ trait Capture
     {
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === true)
         {
-            $this->dispatchCaptureFailure($data);
+            $this->dispatchCaptureFailure($ex, $data);
         }
         else
         {
@@ -462,19 +460,22 @@ trait Capture
             // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
             // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
             //
-
             if ((($ex instanceof Exception\GatewayTimeoutException) === true) and
-                ($this->payment->getGateway() !== Payment\Gateway::HDFC))
+                ($this->payment->getGateway() === Payment\Gateway::HDFC))
             {
-                $this->dispatchCaptureFailure($data);
+                $this->dispatchCaptureFailure($ex, $data);
             }
-
-            throw $ex;
+            else
+            {
+                throw $ex;
+            }
         }
     }
 
-    protected function dispatchCaptureFailure(array $data)
+    protected function dispatchCaptureFailure(Throwable $ex, array $data)
     {
+        $this->trace->traceException($ex);
+
         $data['mode'] = $this->mode;
 
         $this->trace->info(
