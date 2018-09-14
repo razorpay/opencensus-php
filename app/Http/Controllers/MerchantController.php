@@ -265,6 +265,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function putBankAccount($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editBankAccount($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getBankAccountChangeStatus($id)
     {
         $input = Request::all();

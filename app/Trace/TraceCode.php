@@ -710,6 +710,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED  = 'BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED';
 
     const BANK_ACCOUNT_DELETED                      = 'BANK_ACCOUNT_DELETED';
+    const BANK_ACCOUNT_EDIT                         = 'BANK_ACCOUNT_EDIT';
 
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST         = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST';
     const BHARAT_QR_PAYMENT_PROCESSING_FAILED       = 'BHARAT_QR_PAYMENT_PROCESSING_FAILED';
@@ -1225,6 +1226,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RETRY_BEAM_FILE_UPLOAD                        = 'RETRY_BEAM_FILE_UPLOAD';
     const BENEFICIARY_REGISTER_API_INIT                 = 'BENEFICIARY_REGISTER_API_INIT';
     const BENEFICIARY_REGISTER_API_FETCH                = 'BENEFICIARY_REGISTER_API_FETCH';
+    const VERIFY_FUND_TRANSFER_INIT                     = 'VERIFY_FUND_TRANSFER_INIT';
+    const FTA_VERIFICATION_SKIPPED                      = 'FTA_VERIFICATION_SKIPPED';
+    const VERIFY_FTA_ROW                                = 'VERIFY_FTA_ROW';
+    const FTA_RECON_PARSED_DATA                         = 'FTA_RECON_PARSED_DATA';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

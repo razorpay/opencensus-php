@@ -147,4 +147,45 @@ abstract class RowProcessor extends Base\Core
 
         return (empty($value) === true) ? null : $value;
     }
+
+    public function verifyRow()
+    {
+        $this->processRow();
+
+        $this->trace->info(TraceCode::FTA_RECON_PARSED_DATA, ['parsed_data' => $this->parsedData]);
+
+        if (empty($this->reconEntityId) === false)
+        {
+            $this->fetchEntities();
+        }
+
+        if (empty($this->reconEntity) === true)
+        {
+            $this->trace->error(TraceCode::FTA_VERIFICATION_SKIPPED,
+                [
+                    'row'           => $this->row,
+                    'parsed_data'   => $this->parsedData,
+                ]);
+
+            return null;
+        }
+
+        $this->updateVerificationResult();
+
+        return $this->reconEntity;
+    }
+
+    protected function updateVerificationResult()
+    {
+        $this->updateVerifyReconEntity();
+
+        $sourceBatchId = $this->reconEntity->source->getBatchFundTransferId();
+
+        if ($sourceBatchId !== $this->reconEntity->getBatchFundTransferId())
+        {
+            return;
+        }
+
+        $this->updateSourceEntity();
+    }
 }

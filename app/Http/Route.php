@@ -166,6 +166,7 @@ final class Route
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                     => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
         'merchant_add_bank_account'                => ['post',     'merchants/{id}/bank_account',                    'MerchantController@postBankAccount'                                ],
+        'merchant_edit_bank_account'               => ['put',      'bank_accounts/{id}',                             'MerchantController@putBankAccount'                                 ],
         'merchant_bank_account_change_status'      => ['get',      'merchants/{id}/bank_account_change/status',      'MerchantController@getBankAccountChangeStatus'                     ],
         'merchant_fetch_bank_account'              => ['get',      'merchants/{id}/bank_account',                    'MerchantController@getBankAccount'                                 ],
         'merchant_generate_test_bank_acnt'         => ['post',     'merchants/bank_account/generate/test',           'MerchantController@postGenerateTestBankAccounts'                   ],
@@ -319,6 +320,7 @@ final class Route
         'setl_reconcile'                           => ['post',     'settlements/reconcile/{channel}',                'SettlementController@postSettlementReconcileThroughFile'           ],
         'setl_reconcile_h2h'                       => ['post',     'settlements/h2hreconcile/{channel}',             'SettlementController@postH2HSettlementReconcile'                   ],
         'setl_reconcile_pull'                      => ['post',     'settlements/reconcile/api/{channel}',            'SettlementController@postSettlementReconcileThroughApi'            ],
+        'setl_verify'                              => ['post',     'settlements/verify/{channel}',                   'SettlementController@postSettlementVerifyThroughApi',              ],
         'setl_calc_previous_fees'                  => ['post',     'settlements/fees/previous',                      'SettlementController@postSettlementCalculateFees',                 ],
         'setl_get_details'                         => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                    => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
@@ -1193,6 +1195,7 @@ final class Route
         'bank_transfer_payment_receiver_backfill',
         'admin_mdr_update',
         'merchant_post_beneficiary_api',
+        'setl_verify',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1496,6 +1499,7 @@ final class Route
         'refund_verify_failed',
         'refund_verify_failed_bulk',
         'refund_without_verify_bulk',
+        'merchant_edit_bank_account',
         'merchant_edit_email',
         'dispute_reason_create',
         'merchant_tags_bulk',
@@ -1849,6 +1853,7 @@ final class Route
         'refund_verify_failed'                     => '*',
         'refund_verify_failed_bulk'                => Permission::RETRY_REFUND,
         'refund_without_verify_bulk'               => Permission::RETRY_REFUND,
+        'merchant_edit_bank_account'               => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_edit_email'                      => '*',
         'refund_verify'                            => '*',
         'pricing_get_plans'                        => '*',
@@ -2184,6 +2189,7 @@ final class Route
             'setcronjob_webhook',
             'admin_mdr_update',
             'merchant_post_beneficiary_api',
+            'setl_verify',
         ],
 
         'subscriptions' => [

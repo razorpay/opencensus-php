@@ -302,6 +302,7 @@ trait Callback
                                         Payment\Entity::AMOUNT          => $payment->getAmount(),
                                         Payment\Entity::SUBSCRIPTION_ID => $subscriptionId,
                                     ],
+                                    $payment->merchant,
                                     $callback = true);
     }
 

@@ -738,6 +738,15 @@ class Service extends Base\Service
         return $ba->toArray();
     }
 
+    public function editBankAccount($id, $input)
+    {
+        $bankAccount = $this->repo->bank_account->findOrFailPublic($id);
+
+        $bankAccount = (new BankAccount\Core)->editBankAccount($bankAccount, $input);
+
+        return $bankAccount->toArray();
+    }
+
     /**
      * This function returns if there any open workflow actions associated with the current bank account entity of a
      * merchant. @todo: Replace this with a more generic approach based on primary entity
@@ -769,7 +778,6 @@ class Service extends Base\Service
         }
 
         return false;
-
     }
 
     public function getBankAccount($id)

@@ -242,7 +242,6 @@ class Processor
 
             $attributes[Metric::LABEL_PAYMENT_IS_CREATED] = isset($payment) === true ? $payment->wasRecentlyCreated : false;
 
-
             $this->pushPaymentCreateErrorMetrics($attributes);
 
             throw $e;
@@ -274,8 +273,8 @@ class Processor
         }
 
         $this->subscription = $this->app['module']
-                                 ->subscription
-                                 ->fetchSubscriptionInfo($input);
+                                   ->subscription
+                                   ->fetchSubscriptionInfo($input, $payment->merchant);
 
         if ($this->subscription->isExternal() === true)
         {
@@ -2035,15 +2034,23 @@ class Processor
 
     protected function isAutoRefundDelayExceeded(Payment\Entity $payment): bool
     {
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
         $merchant = $payment->merchant;
 
         $autoRefundDelay = $merchant->getAutoRefundDelay();
 
         $createdAt = $payment->getCreatedAt();
 
-        $refundAt = $createdAt + $autoRefundDelay;
+        $minRefundAt = $createdAt + Merchant\Entity::MIN_AUTO_REFUND_DELAY;;
+        $merchantRefundAt = $createdAt + $autoRefundDelay;
 
-        $currentTime = Carbon::now()->getTimestamp();
+        $refundAt = max($minRefundAt, $merchantRefundAt);
+
+        if ($payment->isEmandate() === true)
+        {
+            $refundAt = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_EMANDATE;
+        }
 
         $this->trace->info(
             TraceCode::AUTO_CAPTURE_REFUND_DELAY,

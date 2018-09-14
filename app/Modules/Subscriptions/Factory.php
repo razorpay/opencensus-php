@@ -17,7 +17,7 @@ class Factory
 
     protected static function shouldUseExternalService(): bool
     {
-        $merchantFeatureCheck = true;
+        $merchantFeatureCheck = false;
 
         $merchant = app('basicauth')->getMerchant();
 

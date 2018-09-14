@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Plan\Subscription;
 
@@ -58,7 +59,7 @@ class External extends Base
         return $request;
     }
 
-    public function fetchSubscriptionInfo(array $input, $callback = false)
+    public function fetchSubscriptionInfo(array $input, Merchant\Entity $merchant, $callback = false)
     {
         $amount             = $input[Payment\Entity::AMOUNT] ?? null;
         $isCardChange       = $input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false;
@@ -79,7 +80,7 @@ class External extends Base
         }
 
         $headers = [
-            self::MERCHANT_HEADER_KEY => $this->merchant->getId(),
+            self::MERCHANT_HEADER_KEY => $merchant->getId(),
             self::MODE_HEADER_KEY     => $this->mode,
             'X-Razorpay-Auth'         => 'privilege',
         ];
