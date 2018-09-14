@@ -1785,6 +1785,19 @@ class InvoiceTest extends TestCase
         $this->assertEquals($invoice['id'], $payment['invoice_id']);
     }
 
+    public function testGetInvoicesLineItemsWithTaxableAmount()
+    {
+        $order = $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice', ['order_id' => '100000000order']);
+
+        $this->fixtures->create('item');
+
+        $this->fixtures->create('line_item', ['entity_id' => $invoice->getId()]);
+
+        $this->startTest();
+    }
+
     public function testGetInvoicesAfterCreatingMultipleInvoicesAndPaying()
     {
         $order1 = $this->createOrder();
