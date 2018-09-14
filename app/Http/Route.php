@@ -166,6 +166,7 @@ final class Route
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                     => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
         'merchant_add_bank_account'                => ['post',     'merchants/{id}/bank_account',                    'MerchantController@postBankAccount'                                ],
+        'merchant_edit_bank_account'               => ['put',      'bank_accounts/{id}',                             'MerchantController@putBankAccount'                                 ],
         'merchant_bank_account_change_status'      => ['get',      'merchants/{id}/bank_account_change/status',      'MerchantController@getBankAccountChangeStatus'                     ],
         'merchant_fetch_bank_account'              => ['get',      'merchants/{id}/bank_account',                    'MerchantController@getBankAccount'                                 ],
         'merchant_generate_test_bank_acnt'         => ['post',     'merchants/bank_account/generate/test',           'MerchantController@postGenerateTestBankAccounts'                   ],
@@ -176,6 +177,8 @@ final class Route
         'merchant_delete_terminal'                 => ['delete',   'merchants/{mid}/terminals/{tid}',                'MerchantController@deleteTerminal'                                 ],
         'merchant_modify_terminal'                 => ['put',      'merchants/{mid}/terminals/{tid}',                'MerchantController@putTerminal'                                    ],
         'merchant_put_payment_methods'             => ['put',      'merchants/{mid}/methods',                        'MerchantController@putMethods'                                     ],
+        'merchant_methods_edit'                    => ['put',      'merchant/methods',                               'MerchantController@editMethods'                                    ],
+        'merchant_fetch_methods'                   => ['get',      'merchant/methods',                               'MerchantController@getPaymentMethods'                              ],
         'merchant_activate'                        => ['post',     'merchants/{id}/activate',                        'MerchantController@postActivate'                                   ],
         'merchant_send_activation_mail'            => ['post',     'merchants/activation_mail',                      'MerchantController@postSendActivationMail'                         ],
         'merchant_live_enable'                     => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
@@ -244,6 +247,7 @@ final class Route
         'virtual_account_create'                   => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_order_create'             => ['post',     'orders/{id}/virtual_accounts',                   'VirtualAccountController@createForOrder'                           ],
         'virtual_account_edit'                     => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
+        'virtual_account_close'                    => ['post',     'virtual_accounts/{id}/close',                    'VirtualAccountController@closeVirtualAccount'                      ],
         'virtual_account_fetch'                    => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
         'virtual_account_fetch_multiple'           => ['get',      'virtual_accounts',                               'VirtualAccountController@list'                                     ],
         'virtual_account_fetch_payments'           => ['get',      'virtual_accounts/{id}/payments',                 'VirtualAccountController@getPayments'                              ],
@@ -316,6 +320,7 @@ final class Route
         'setl_reconcile'                           => ['post',     'settlements/reconcile/{channel}',                'SettlementController@postSettlementReconcileThroughFile'           ],
         'setl_reconcile_h2h'                       => ['post',     'settlements/h2hreconcile/{channel}',             'SettlementController@postH2HSettlementReconcile'                   ],
         'setl_reconcile_pull'                      => ['post',     'settlements/reconcile/api/{channel}',            'SettlementController@postSettlementReconcileThroughApi'            ],
+        'setl_verify'                              => ['post',     'settlements/verify/{channel}',                   'SettlementController@postSettlementVerifyThroughApi',              ],
         'setl_calc_previous_fees'                  => ['post',     'settlements/fees/previous',                      'SettlementController@postSettlementCalculateFees',                 ],
         'setl_get_details'                         => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                    => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
@@ -870,6 +875,9 @@ final class Route
         'admin_mdr_update'                         => ['put',      'mdr_update',                                     'AdminController@updateMdr'                                         ],
         'merchant_bulk_edit_attributes'            => ['post',     'merchants/bulk/attributes',                      'MerchantController@bulkEditMerchantAttributes'                     ],
 
+        // Apspdcl integration - bridge for remote endpoint access for hosted via api.
+        'apspdcl_bridge'                           => ['any',      'apspdcl/{any}',                                  'ApspdclController@any'                                             ],
+
     ];
 
     public static $public = [
@@ -1071,6 +1079,7 @@ final class Route
         'transfer_create_reversal',
         'virtual_account_create',
         'virtual_account_edit',
+        'virtual_account_close',
         'virtual_account_fetch',
         'virtual_account_fetch_multiple',
         'payment_bank_transfer_fetch',
@@ -1189,6 +1198,8 @@ final class Route
         'bank_transfer_payment_receiver_backfill',
         'admin_mdr_update',
         'merchant_post_beneficiary_api',
+        'setl_verify',
+        'apspdcl_bridge',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1360,6 +1371,8 @@ final class Route
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'webhook_fire',
+        'merchant_methods_edit',
+        'merchant_fetch_methods',
     ];
 
     // These will run on internal auth with the assurance
@@ -1490,6 +1503,7 @@ final class Route
         'refund_verify_failed',
         'refund_verify_failed_bulk',
         'refund_without_verify_bulk',
+        'merchant_edit_bank_account',
         'merchant_edit_email',
         'dispute_reason_create',
         'merchant_tags_bulk',
@@ -1843,6 +1857,7 @@ final class Route
         'refund_verify_failed'                     => '*',
         'refund_verify_failed_bulk'                => Permission::RETRY_REFUND,
         'refund_without_verify_bulk'               => Permission::RETRY_REFUND,
+        'merchant_edit_bank_account'               => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_edit_email'                      => '*',
         'refund_verify'                            => '*',
         'pricing_get_plans'                        => '*',
@@ -2178,11 +2193,14 @@ final class Route
             'setcronjob_webhook',
             'admin_mdr_update',
             'merchant_post_beneficiary_api',
+            'setl_verify',
         ],
 
         'subscriptions' => [
             'invoice_create',
             'customer_fetch_by_id',
+            'payment_capture',
+            'payment_refund',
             'webhook_fire',
             'merchant_fetch_config_internal',
         ],
@@ -2224,6 +2242,7 @@ final class Route
         'hosted' => [
             'merchant_secret',
             'payment_acknowledge',
+            'apspdcl_bridge',
         ],
 
         'h2h' => [
@@ -2294,6 +2313,7 @@ final class Route
         'subscription_manual_retry'            => [Feature::SUBSCRIPTIONS],
         'virtual_account_create'               => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'                 => [Feature::VIRTUAL_ACCOUNTS],
+        'virtual_account_close'                => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch'                => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
@@ -2605,21 +2625,25 @@ final class Route
         $uri     = $info[1];
         $action  = $info[2];
 
-        // For any we have to register all the methods their is no specific called any in HTTP methods.
+        // For 'any' we have to register all the methods, there is no http verb called 'any'.
         if ($methods === ['any'])
         {
             $methods = Router::$verbs;
         }
 
-        $router = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
+        $route = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
 
-        //
-        // We add the web middleware group, conditionally to routes
-        // which require cookie / session access
-        //
+        // Hack: To fix by adding support for regex constraint on route parameters.
+        if ($name === 'apspdcl_bridge')
+        {
+            // Allows any suffix on this route
+            $route->where('any', '.*');
+        }
+
+        // We add the web middleware group, conditionally to routes which require cookie / session access.
         if (in_array($name, self::$session, true) === true)
         {
-            $router->middleware('web');
+            $route->middleware('web');
         }
     }
 

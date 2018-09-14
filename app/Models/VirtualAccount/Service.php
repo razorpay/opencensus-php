@@ -149,6 +149,17 @@ class Service extends Base\Service
         return $virtualAccount->toArrayPublic();
     }
 
+    public function closeVirtualAccount(string $id)
+    {
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $virtualAccount = $this->core->updateStatus($virtualAccount, STATUS::CLOSED);
+
+        return $virtualAccount->toArrayPublic();
+    }
+
     public function fetchPayments(string $virtualAccountId)
     {
         $payments = $this->repo

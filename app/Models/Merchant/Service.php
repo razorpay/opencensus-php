@@ -738,6 +738,15 @@ class Service extends Base\Service
         return $ba->toArray();
     }
 
+    public function editBankAccount($id, $input)
+    {
+        $bankAccount = $this->repo->bank_account->findOrFailPublic($id);
+
+        $bankAccount = (new BankAccount\Core)->editBankAccount($bankAccount, $input);
+
+        return $bankAccount->toArray();
+    }
+
     /**
      * This function returns if there any open workflow actions associated with the current bank account entity of a
      * merchant. @todo: Replace this with a more generic approach based on primary entity
@@ -769,7 +778,6 @@ class Service extends Base\Service
         }
 
         return false;
-
     }
 
     public function getBankAccount($id)
@@ -871,6 +879,26 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         return (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input);
+    }
+
+    public function editMethods($input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            [
+                'merchant_id' => $this->merchant->getId(),
+                'input' => $input,
+            ]);
+
+        if($this->merchant->isFeatureEnabled(Feature\Constants::EDIT_METHODS) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        (new Validator)->validateInput('edit_methods', $input);
+
+        return (new Merchant\Methods\Core)->editMethods($input);
     }
 
     public function getMerchantWebhooks($id)

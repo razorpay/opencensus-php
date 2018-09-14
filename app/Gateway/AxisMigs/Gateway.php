@@ -4,6 +4,8 @@ namespace RZP\Gateway\AxisMigs;
 
 use Str;
 use Carbon\Carbon;
+use Requests_Hooks;
+
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
@@ -870,7 +872,19 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAmaRequestArray($content);
         // send the request and get response
-        $response = $this->postRequest($request);
+
+        $this->paymentId = $input['payment']['id'];
+
+        $shouldRetry = function ($e)
+        {
+            return (in_array(get_class($e), [Exception\GatewayRequestException::class], true));
+        };
+
+        $response = $this->retryHandler(
+            [$this, 'postRequest'],
+            [$request],
+            $shouldRetry,
+            2);
 
         return $response;
     }
@@ -878,9 +892,45 @@ class Gateway extends Base\Gateway
     public function postRequest($request)
     {
         $options['timeout'] = 60;
+
+        $hooks = new Requests_Hooks();
+
+        $hooks->register('curl.before_send', function ($curl)
+        {
+            $this->curlLogPath = storage_path('logs/curl_' . $this->paymentId . '.log');
+
+            $this->curlLog = fopen($this->curlLogPath, 'w'); // opening a log file for curl logs
+
+            curl_setopt($curl, CURLOPT_VERBOSE, true);
+            curl_setopt($curl, CURLOPT_STDERR, $this->curlLog);
+        });
+
+        $options['hooks'] = $hooks;
+
         $request['options'] = $options;
 
-        $this->response = $this->sendGatewayRequest($request);
+        try
+        {
+            $this->response = $this->sendGatewayRequest($request);
+        }
+        catch (Exception\GatewayRequestException $e)
+        {
+            $this->traceCurlErrorIfApplicable();
+
+            throw $e;
+        }
+        finally
+        {
+            if (isset($this->curlLog) === true)
+            {
+                fclose($this->curlLog);
+
+                if (file_exists($this->curlLogPath) === true)
+                {
+                    unlink($this->curlLogPath);
+                }
+            }
+        }
 
         return $this->response;
     }

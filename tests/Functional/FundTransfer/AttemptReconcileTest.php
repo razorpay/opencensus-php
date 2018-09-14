@@ -546,4 +546,24 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals(Attempt\Status::FAILED, $fta['status']);
     }
+
+    public function testSettlementVerificationForYesbank()
+    {
+        $this->verifySettlementReconProcessForYesbank();
+
+        $this->reconcileEntitiesForChannel(Channel::YESBANK);
+
+        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+
+        $content = $this->verifyProcessedSettlements(Channel::YESBANK, true);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($content['unprocessed_count'], 0);
+
+        $this->assertEquals(Attempt\Status::INITIATED, $fta['status']);
+
+        $this->assertEquals('FAILED', $fta['bank_status_code']);
+    }
+
 }

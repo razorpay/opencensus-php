@@ -11,7 +11,9 @@ use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Base\Verify;
 use RZP\Models\Customer\Token;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Settlement\Holidays;
 use RZP\Constants\Mode as BaseMode;
 use RZP\Models\Bank\Name as BankName;
@@ -91,6 +93,15 @@ class Gateway extends Base\Gateway
         ];
 
         return $content;
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
     }
 
     protected function getRedirectRequestArray(array $input, $response)
@@ -344,6 +355,111 @@ class Gateway extends Base\Gateway
 
     protected function getRepository()
     {
-        return;
+        $gateway = 'enach';
+
+        return $this->app['repo']->$gateway;
+    }
+
+    protected function sendPaymentVerifyRequest(Verify $verify)
+    {
+        $request = $this->getVerifyRequestArray($verify);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $rawContent = $response->body;
+
+        $verify->verifyResponseContent = $this->jsonToArray($rawContent);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response_body' => $rawContent,
+                'content'       => $verify->verifyResponseContent,
+                'payment_id'    => $verify->input['payment']['id'],
+                'status_code'   => $response->status_code,
+                'gateway'       => $this->gateway,
+            ]);
+    }
+
+    protected function getVerifyRequestArray($verify)
+    {
+        $request = $this->getStandardRequestArray([], 'get', null, false);
+
+        $gatewayPayment = $verify->payment;
+
+        $replacePairs = [
+            '{id}' => $gatewayPayment->getGatewayReferenceId(),
+        ];
+
+        $request['url'] = strtr($request['url'], $replacePairs);
+
+        return $request;
+    }
+
+    protected function verifyPayment(Verify $verify)
+    {
+        $verify->status = $this->getVerifyStatus($verify);
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $verify->payment = $this->saveSignedXml($verify);
+    }
+
+    protected function getVerifyStatus(Verify $verify): string
+    {
+        $status = VerifyResult::STATUS_MATCH;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        return $status;
+    }
+
+    protected function checkGatewaySuccess(Verify $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        $status = (isset($content['status']) === true) ? trim($content['status']) : Status::UNSIGNED;
+
+        if ($status === Status::SIGNED)
+        {
+            $verify->gatewaySuccess = true;
+        }
+    }
+
+    protected function saveSignedXml(Verify $verify)
+    {
+        if ($verify->gatewaySuccess === true)
+        {
+            $gatewayPayment = $verify->payment;
+
+            $content = [
+                'mandate_id' => $gatewayPayment->getGatewayReferenceId()
+            ];
+
+            $request = $this->getStandardRequestArray($content, 'GET', 'fetch', false);
+
+            $response = $this->sendGatewayRequest($request);
+
+            $mandateXml = $response->body;
+
+            $content = [
+                'signed_xml' => $mandateXml
+            ];
+
+            $gatewayPayment->fill($content);
+
+            $this->app['repo']->enach->saveOrFail($gatewayPayment);
+
+            return $gatewayPayment;
+        }
     }
 }

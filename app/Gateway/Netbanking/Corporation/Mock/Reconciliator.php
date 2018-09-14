@@ -8,7 +8,7 @@ use RZP\Models\FileStore;
 use RZP\Gateway\Base\Mock;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
-use RZP\Gateway\Netbanking\Corporation\ReconcilationFields;
+use RZP\Gateway\Netbanking\Corporation\ReconciliationFields;
 
 class Reconciliator extends Mock\Reconciliator
 {
@@ -46,7 +46,7 @@ class Reconciliator extends Mock\Reconciliator
 
         $netbanking = $input[0]['netbanking'];
 
-        $data = [ReconcilationFields::getPaymentColumnHeaders()];
+        $data = [ReconciliationFields::getPaymentColumnHeaders()];
 
         $data[] = [ '12345',
                     Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('dmY'),

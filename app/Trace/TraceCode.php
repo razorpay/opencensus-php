@@ -43,6 +43,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_ALREADY_CAPTURED                      = 'PAYMENT_ALREADY_CAPTURED';
     const PAYMENT_PAYOUT_REQUEST                        = 'PAYMENT_PAYOUT_REQUEST';
     const PAYMENT_AUTO_CAPTURE                          = 'PAYMENT_AUTO_CAPTURE';
+    const PAYMENT_AUTO_CAPTURE_CRON                     = 'PAYMENT_AUTO_CAPTURE_CRON';
     const PAYMENT_AUTO_CAPTURE_FAILED                   = 'PAYMENT_AUTO_CAPTURE_FAILED';
     const PAYMENT_AUTO_REFUND                           = 'PAYMENT_AUTO_REFUND';
     const PAYMENT_AUTO_REFUND_CRON                      = 'PAYMENT_AUTO_REFUND_CRON';
@@ -175,6 +176,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_TRANSFER_ATTEMPT_SOURCE_UPDATED          = 'FUND_TRANSFER_ATTEMPT_SOURCE_UPDATED';
     const PAYMENT_RECURRING_INVALID_STATUS              = 'PAYMENT_RECURRING_INVALID_STATUS';
     const GATEWAY_TOKEN_MISMATCH                        = 'GATEWAY_TOKEN_MISMATCH';
+
+    const AUTO_CAPTURE_REFUND_DELAY                     = 'AUTO_CAPTURE_REFUND_DELAY';
 
     const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
     const INVALID_AUTH                                  = 'INVALID_AUTH';
@@ -524,6 +527,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_PURCHASE_RESPONSE                 = 'GATEWAY_PURCHASE_RESPONSE';
     const GATEWAY_SUPPORT_ERROR                     = 'GATEWAY_SUPPORT_ERROR';
     const GATEWAY_UNKNOWN_ERROR                     = 'GATEWAY_UNKNOWN_ERROR';
+    const GATEWAY_UNKNOWN_CURL_ERROR                = 'GATEWAY_UNKNOWN_CURL_ERROR';
     const GATEWAY_PAYMENT_AUTHORIZE                 = 'GATEWAY_PAYMENT_AUTHORIZE';
     const GATEWAY_PAYMENT_VERIFY                    = 'GATEWAY_PAYMENT_VERIFY';
     const GATEWAY_PAYMENT_VERIFY_REQUEST            = 'GATEWAY_PAYMENT_VERIFY_REQUEST';
@@ -704,6 +708,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_BANK_CODE_MISSING           = 'BANK_TRANSFER_BANK_CODE_MISSING';
     const BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED   = 'BANK_TRANSFER_PAYER_BANK_ACCOUNT_EDITED';
     const BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED  = 'BANK_TRANSFER_PAYER_BANK_ACCOUNT_SKIPPED';
+
+    const BANK_ACCOUNT_DELETED                      = 'BANK_ACCOUNT_DELETED';
+    const BANK_ACCOUNT_EDIT                         = 'BANK_ACCOUNT_EDIT';
 
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST         = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST';
     const BHARAT_QR_PAYMENT_PROCESSING_FAILED       = 'BHARAT_QR_PAYMENT_PROCESSING_FAILED';
@@ -1195,6 +1202,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FUND_TRANSFER_RECON_EMAIL_FAILED              = 'FUND_TRANSFER_RECON_EMAIL_FAILED';
 
+    // Subscription service
+    const SUBSCRIPTION_SERVICE_REQUEST                  = 'SUBSCRIPTION_SERVICE_REQUEST';
     const PAYMENT_MDR_UPDATE_ERROR                      = 'PAYMENT_MDR_UPDATE_ERROR';
     const PAYMENT_MDR_UPDATE_JOB_RECEIVED               = 'PAYMENT_MDR_UPDATE_JOB_RECEIVED';
     const PAYMENT_MDR_LAST_UPDATED_DATA                 = 'PAYMENT_MDR_LAST_UPDATED_DATA';
@@ -1217,6 +1226,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RETRY_BEAM_FILE_UPLOAD                        = 'RETRY_BEAM_FILE_UPLOAD';
     const BENEFICIARY_REGISTER_API_INIT                 = 'BENEFICIARY_REGISTER_API_INIT';
     const BENEFICIARY_REGISTER_API_FETCH                = 'BENEFICIARY_REGISTER_API_FETCH';
+    const VERIFY_FUND_TRANSFER_INIT                     = 'VERIFY_FUND_TRANSFER_INIT';
+    const FTA_VERIFICATION_SKIPPED                      = 'FTA_VERIFICATION_SKIPPED';
+    const VERIFY_FTA_ROW                                = 'VERIFY_FTA_ROW';
+    const FTA_RECON_PARSED_DATA                         = 'FTA_RECON_PARSED_DATA';
+
+    const APSPDCL_REQUEST                               = 'APSPDCL_REQUEST';
+    const APSPDCL_REQUEST_ERROR                         = 'APSPDCL_REQUEST_ERROR';
+    const APSPDCL_RESPONSE                              = 'APSPDCL_RESPONSE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

@@ -65,6 +65,17 @@ class HulkGatewayTest extends TestCase
 
     public function testPaymentCallback()
     {
+        $this->mockServerRequestFunction(
+            function($content, $action)
+            {
+                if ($action === 'authorize')
+                {
+                    $this->assertSame('pull', $content['type']);
+
+                    $this->assertArrayNotHasKey('receiver_id', $content);
+                }
+            });
+
         $this->doAuthPaymentViaAjaxRoute(array_except($this->payment, 'description'));
 
         $payment = $this->getDbLastPayment();
@@ -388,7 +399,7 @@ class HulkGatewayTest extends TestCase
                 {
                     $this->assertSame('expected_push', $content['type']);
                     $this->assertSame((string) $merchant['category'], $content['category_code']);
-
+                    $this->assertArrayNotHasKey('receiver_id', $content);
                 }
             });
 
@@ -558,5 +569,52 @@ class HulkGatewayTest extends TestCase
         $this->assertSame('vishnu@icici', $upi->vpa);
         $this->assertSame('icici', $upi->provider);
         $this->assertSame('800800800800', $upi->npci_reference_id);
+    }
+
+    public function testCollectOnGatewayAppAuth()
+    {
+        $this->fixtures->edit('terminal', $this->sharedTerminal->getId(),
+            [
+                'gateway_access_code' => 'app'
+            ]);
+
+        $this->mockServerRequestFunction(
+            function($content, $action)
+            {
+                if ($action === 'authorize')
+                {
+                    $this->assertSame('pull', $content['type']);
+
+                    $this->assertSame('vpa_merchantsVpaId', $content['receiver_id']);
+                }
+            });
+
+        $this->doAuthPaymentViaAjaxRoute(array_except($this->payment, 'description'));
+    }
+
+    public function testIntentOnGatewayAppAuth()
+    {
+        $this->fixtures->create('terminal:shared_upi_hulk_intent_terminal',
+            [
+                'gateway_access_code' => 'app'
+            ]);
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->mockServerRequestFunction(
+            function($content, $action)
+            {
+                if ($action === 'authorize')
+                {
+                    $this->assertSame('expected_push', $content['type']);
+
+                    $this->assertSame('vpa_merchantsVpaId', $content['receiver_id']);
+                }
+            });
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
     }
 }

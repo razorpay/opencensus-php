@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\CardFss;
+namespace RZP\Reconciliator\CardFssHdfc;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\FileProcessor;
@@ -61,5 +61,19 @@ class Reconciliate extends Base\Reconciliate
         // and thus all payments and refunds will be put in the same sheet
         //
         return self::COMBINED;
+    }
+
+    public function inExcludeList(array $fileDetails)
+    {
+        //
+        // We process only those files who have 'alltransaction'
+        // in their file names, thus return false for such files.
+        //
+        if (strpos($fileDetails[FileProcessor::FILE_NAME], 'alltransaction') !== false)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

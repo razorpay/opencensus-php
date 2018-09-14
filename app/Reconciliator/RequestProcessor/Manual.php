@@ -54,6 +54,8 @@ class Manual extends Base
 
         $this->validator->validateManualInput($inputDetails);
 
+        $inputDetails[self::SOURCE] = self::MANUAL;
+
         return $inputDetails;
     }
 

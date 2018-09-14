@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\CardFss\SubReconciliator;
+namespace RZP\Reconciliator\CardFssHdfc\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;

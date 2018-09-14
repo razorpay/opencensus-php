@@ -18,13 +18,13 @@ class Status
         self::FAILED,
     ];
 
-    const TRACKABLE_STATUSES = [
+    const TRACKED_STATUSES = [
         Status::PROCESSED,
         Status::FAILED
     ];
 
     public static function isStatusTrackedForMetrics(string $status): bool
     {
-        return (in_array($status, Status::TRACKABLE_STATUSES, true) === true);
+        return (in_array($status, Status::TRACKED_STATUSES, true) === true);
     }
 }

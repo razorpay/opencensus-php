@@ -7,7 +7,9 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mockery;
 use Mail;
+use Queue;
 
+use RZP\Jobs\Capture as CaptureJob;
 use RZP\Mail\Payment\Captured as CapturedMail;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -67,6 +69,124 @@ class CaptureTest extends TestCase
         $this->assertEquals(true, $payment['gateway_captured']);
 
         Mail::assertQueued(CapturedMail::class);
+    }
+
+    public function testCaptureFailedWithQueue()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures(['capture_queue']);
+
+        $payment = $this->defaultAuthPayment();
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'capture')
+            {
+                throw new Exception\RuntimeException;
+            }
+        });
+
+        $this->ba->privateAuth();
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(null, $payment['gateway_captured']);
+        $this->assertEquals('captured', $payment['status']);
+
+        Queue::assertPushed(CaptureJob::class, function ($job) use ($payment)
+        {
+            $data = $job->getData();
+
+            return $payment['id'] === $data['payment']['public_id'];
+        });
+
+        Mail::assertQueued(CapturedMail::class);
+    }
+
+    public function testCaptureFailedWithoutQueue()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'capture')
+            {
+                throw new Exception\RuntimeException;
+            }
+        });
+
+        $this->ba->privateAuth();
+
+        $this->startTest($payment['id'], $payment['amount']);
+    }
+
+    public function testCaptureTimeoutWithoutQueue()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $payment = $this->defaultAuthPayment();
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'capture')
+            {
+                throw new Exception\GatewayTimeoutException('curl 35:');
+            }
+        });
+
+        $this->ba->privateAuth();
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(null, $payment['gateway_captured']);
+        $this->assertEquals('captured', $payment['status']);
+
+        Queue::assertPushed(CaptureJob::class, function ($job) use ($payment)
+        {
+            $data = $job->getData();
+
+            return $payment['id'] === $data['payment']['public_id'];
+        });
+
+        Mail::assertQueued(CapturedMail::class);
+    }
+
+    public function testCaptureTimeoutWithoutQueueNonHdfc()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
+        $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $payment = $this->defaultAuthPayment();
+
+        $this->gateway = 'axis_migs';
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'capture')
+            {
+                throw new Exception\GatewayTimeoutException('curl 35:');
+            }
+        });
+
+        $this->ba->privateAuth();
+
+        $this->startTest($payment['id'], $payment['amount']);
     }
 
     public function testBulkCapture()
@@ -517,57 +637,133 @@ class CaptureTest extends TestCase
     {
         $this->app['config']->set('gateway.mock_hdfc', true);
         $this->app['config']->set('gateway.mock_atom', true);
+        $cardId = $this->fixtures->create('card')['id'];
 
-        $createdAt = time() - rand(0, 23) * 60 * 60;
+        $this->fixtures->merchant->editAutoRefundDelay('1 hours');
+        $this->fixtures->merchant->editLateAuthAutoCapture(true);
+
+        $order = $this->fixtures->create('order:payment_capture_order');
+
+        $orderId = $order->getId();
+
+        $createdAt = Carbon::now()->subMinutes(15)->getTimestamp(); // 15 minutes; should be captured
         $updatedAt = $createdAt;
+        $refundAt = Carbon::createFromTimestamp($createdAt)->addHour()->getTimestamp();
 
         $payment = $this->fixtures->create(
-            'payment:authorized', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
+            'payment:authorized', [
+                'created_at'    => $createdAt,
+                'updated_at'    => $updatedAt,
+                'authorized_at' => $updatedAt,
+                'order_id'      => $orderId,
+                'card_id'       => $cardId,
+                'refund_at'     => $refundAt,
+            ]);
 
-        $payment = $this->fixtures->create(
-            'payment:netbanking_authorized', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
+        $this->fixtures->merchant->editLateAuthAutoCapture(true, '1cXSLlUU8V9sXl');
 
-        $createdAt = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
+        $order = $this->fixtures->create('order:payment_capture_order', [
+            'merchant_id'   => '1cXSLlUU8V9sXl',
+        ]);
+        $orderId = $order->getId();
+
+        $createdAt = Carbon::now()->subMinutes(15)->getTimestamp(); // 15 minutes;
         $updatedAt = $createdAt;
+        // 5 days - default value for auto_refund_delay
+        $refundAt = Carbon::createFromTimestamp($createdAt)->addDays(5)->getTimestamp();
+
+        // merchant with default refund delay; should be captured
+        $payment = $this->fixtures->create(
+            'payment:authorized', [
+            'created_at'    => $createdAt,
+            'updated_at'    => $updatedAt,
+            'authorized_at' => $updatedAt,
+            'order_id'      => $orderId,
+            'card_id'       => $cardId,
+            'merchant_id'   => '1cXSLlUU8V9sXl',
+            'refund_at'     => $refundAt,
+        ]);
+
+        $order = $this->fixtures->create('order:payment_capture_order');
+
+        $orderId = $order->getId();
+
+        $createdAt = Carbon::now()->subHours(2)->getTimestamp();    // 2 hours; should not be captured
+        $updatedAt = $createdAt;
+        $refundAt = Carbon::createFromTimestamp($createdAt)->addHour()->getTimestamp();
 
         $payment = $this->fixtures->create(
-            'payment:status_created', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
+            'payment:authorized', [
+            'created_at'    => $createdAt,
+            'updated_at'    => $updatedAt,
+            'authorized_at' => $updatedAt,
+            'order_id'      => $orderId,
+            'card_id'       => $cardId,
+            'refund_at'     => $refundAt,
+        ]);
 
+        $this->fixtures->merchant->editAutoRefundDelay('1 hours', '10NodalAccount');
+
+        $order = $this->fixtures->create('order:payment_capture_order', [
+           'merchant_id'   => '10NodalAccount',
+        ]);
+
+        $orderId = $order->getId();
+
+        $createdAt = Carbon::now()->subMinutes(15)->getTimestamp(); // 15 minutes;
+        $updatedAt = $createdAt;
+        $refundAt = Carbon::createFromTimestamp($createdAt)->addHour()->getTimestamp();
+
+        // merchant does not have late_auth_auto_capture; should not be captured
         $payment = $this->fixtures->create(
-            'payment:captured', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
+            'payment:authorized', [
+            'created_at'    => $createdAt,
+            'updated_at'    => $updatedAt,
+            'authorized_at' => $updatedAt,
+            'order_id'      => $orderId,
+            'card_id'       => $cardId,
+            'merchant_id'   => '10NodalAccount',
+            'refund_at'     => $refundAt,
+        ]);
 
+        $order = $this->fixtures->create('order:payment_capture_order');
+
+        $orderId = $order->getId();
+
+        $createdAt = Carbon::now()->subMinutes(15)->getTimestamp(); // 15 minutes
+        $updatedAt = $createdAt;
+        $refundAt = Carbon::createFromTimestamp($createdAt)->addHour()->getTimestamp();
+
+        // payment in created state; should not be captured
         $payment = $this->fixtures->create(
-            'payment:netbanking_captured', ['created_at' => $createdAt, 'updated_at' => $updatedAt]);
+            'payment:created', [
+            'created_at'    => $createdAt,
+            'updated_at'    => $updatedAt,
+            'order_id'      => $orderId,
+            'card_id'       => $cardId,
+            'merchant_id'   => '10000000000000',
+            'refund_at'     => $refundAt,
+        ]);
 
-        $x = range(1,3);
+        //order without auto capture
+        $order = $this->fixtures->create('order');
 
-        foreach ($x as $i)
-        {
-            $createdAt = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
-            $updatedAt = $createdAt;
+        $orderId = $order->getId();
 
-            $payment = $this->fixtures->create(
-                'payment:authorized',
-                ['created_at' => $createdAt,
-                 'updated_at' => $updatedAt]);
-        }
-
-        foreach ($x as $i)
-        {
-            $createdAt = time() - (24 + rand(0, 23)) * 60 * 60 - rand(0, 3600);
-            $updatedAt = $createdAt;
-
-            $payment = $this->fixtures->create(
-                'payment:netbanking_authorized',
-                ['created_at' => $createdAt,
-                 'updated_at' => $updatedAt]);
-        }
-
-        $payment = $this->fixtures->create('payment:netbanking_authorized');
+        //order without auto capture, should not be captured
+        $payment = $this->fixtures->create(
+            'payment:authorized', [
+            'created_at'    => $createdAt,
+            'updated_at'    => $updatedAt,
+            'authorized_at' => $updatedAt,
+            'order_id'      => $orderId,
+            'card_id'       => $cardId,
+            'refund_at'     => $refundAt,
+        ]);
 
         $content = $this->doAutoCapture();
 
-        $this->assertSame(6, $content['count']);
+        $this->assertSame(2, $content['count']);
     }
 
     public function testAutoCaptureEmail()
@@ -713,13 +909,13 @@ class CaptureTest extends TestCase
         $credit1 = $this->fixtures->create('credits', [
                        'type'        => 'fee',
                        'value'       => 34000,
-                       'expired_at' => time() + 2*24*60*60,
+                       'expired_at' => time() + 2 * 24 * 60 * 60,
                    ]);
 
         $credit2 = $this->fixtures->create('credits', [
                        'type'  => 'fee',
                        'value' => 10000,
-                       'expired_at' => time() + 1*24*60*60,
+                       'expired_at' => time() + 1 * 24 * 60 * 60,
                    ]);
 
         $payment = $this->fixtures->create('payment:authorized', [
@@ -749,13 +945,13 @@ class CaptureTest extends TestCase
         $credit1 = $this->fixtures->create('credits', [
                        'type'        => 'fee',
                        'value'       => 34000,
-                       'expired_at' => time() + 2*24*60*60,
+                       'expired_at' => time() + 2 * 24 * 60 * 60,
                    ]);
 
         $credit2 = $this->fixtures->create('credits', [
                        'type'  => 'fee',
                        'value' => 10000,
-                       'expired_at' => time() + 1*24*60*60,
+                       'expired_at' => time() + 1 * 24 * 60 * 60,
                    ]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 0]);
@@ -845,7 +1041,7 @@ class CaptureTest extends TestCase
         $credit2 = $this->fixtures->create('credits', [
                        'type'  => 'amount',
                        'value' => 10000,
-                       'expired_at' => time() + 1*24*60*60,
+                       'expired_at' => time() + 1 * 24 * 60 * 60,
                    ]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 30]);
@@ -889,7 +1085,7 @@ class CaptureTest extends TestCase
         $credit2 = $this->fixtures->create('credits', [
                        'type'  => 'amount',
                        'value' => 10000,
-                       'expired_at' => time() + 1*24*60*60,
+                       'expired_at' => time() + 1 * 24 * 60 * 60,
                    ]);
 
         $pricing = $this->fixtures->base->createEntity('pricing', [
@@ -1024,7 +1220,7 @@ class CaptureTest extends TestCase
         $credit2 = $this->fixtures->create('credits', [
                        'type'  => 'amount',
                        'value' => 10000,
-                       'expired_at' => time() + 1*24*60*60,
+                       'expired_at' => time() + 1 * 24 * 60 * 60,
                    ]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 24000]);
@@ -1075,7 +1271,7 @@ class CaptureTest extends TestCase
         $credit2 = $this->fixtures->create('credits', [
                        'type'  => 'fee',
                        'value' => 10000,
-                       'expired_at' => time() + 1*24*60*60,
+                       'expired_at' => time() + 1 * 24 * 60 * 60,
                    ]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 24000]);
