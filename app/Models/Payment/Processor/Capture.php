@@ -438,11 +438,6 @@ trait Capture
 
     protected function handleGatewayTimeoutOnCapture(array $data, Exception\GatewayTimeoutException $ex)
     {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === true)
-        {
-            return;
-        }
-
         $paymentGateway = $this->payment->getGateway();
 
         //
