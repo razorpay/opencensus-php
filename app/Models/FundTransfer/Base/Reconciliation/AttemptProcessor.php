@@ -3,8 +3,10 @@
 namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
 use Mail;
+use Carbon\Carbon;
 
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Attempt;
@@ -134,6 +136,12 @@ abstract class AttemptProcessor extends Processor
             $from = $input['from'];
             $to = $input['to'];
         }
+        else
+        {
+            $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+            $to = Carbon::today(Timezone::IST)->getTimestamp() - 1;
+        }
 
         return [$from, $to];
     }
@@ -143,7 +151,7 @@ abstract class AttemptProcessor extends Processor
     {
         $batchSize = 150;
 
-        if(empty($input['fta_ids']) === false)
+        if (empty($input['fta_ids']) === false)
         {
             return $this->repo->fund_transfer_attempt
                         ->getAttemptsWithIds(
