@@ -385,7 +385,7 @@ app
           if (data.success) {
             trackDrip('signup_flow_completed');
             pushToDrip();
-            window.ga && ga('send', 'event', 'Click - Finish');
+            window.ga && window.ga('send', 'event', 'Click - Finish');
 
             // if verification is already done, go to dashboard (call /user again to check)
             user.identity(true).then(function(userDetails) {
@@ -989,7 +989,7 @@ app
             'event',
             'Signup - Steps',
             'Step - ' + stepName,
-            sourceLabe
+            sourceLabel
           );
       };
 
