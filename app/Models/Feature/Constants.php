@@ -85,6 +85,7 @@ class Constants
     const EXPOSE_ARN_REFUND               = 'expose_arn_refund';
     const OFFERS                          = 'offers';
     const OTP_AUTH_DEFAULT                = 'otp_auth_default';
+    const CAPTURE_QUEUE                   = 'capture_queue';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -205,6 +206,7 @@ class Constants
         self::OFFERS                          => true,
         self::OTP_AUTH_DEFAULT                => true,
         self::EDIT_METHODS                    => true,
+        self::CAPTURE_QUEUE                   => true,
     ];
 
     // Entity type constants
