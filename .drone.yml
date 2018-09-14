@@ -75,24 +75,6 @@ pipeline:
     when:
       status: [success]
       event: push
-  rebuild-cache:
-    image: razorpay/containers:drone-s3-cache
-    endpoint: http://rzp-drone-cache.s3-ap-south-1.amazonaws.com
-    # This uses the first 5 characters of the Unix Epoch timestamp
-    # which roughly changes every day so that the cache size does not
-    # get huge over time (one build every day gets affected and downloads
-    # the whole cache though)
-    path: "/rzp/dashboard/${DRONE_BUILD_CREATED:0:5}.tar"
-    secrets:
-      - aws_region
-      - aws_access_key_id
-      - aws_secret_access_key
-    rebuild: true
-    mount:
-      # - docker_cache
-      - npm_cache
-    when:
-      event: [push, deployment]
   get-javascript-artifacts-from-cache:
     image: razorpay/containers:drone-s3-cache
     restore: true
