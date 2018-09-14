@@ -1376,7 +1376,7 @@ class Service extends Base\Service
     }
 
     public function createPaymentFromS2SCallback($callbackData, $gateway, $paymentAndMerchantDetails)
-    {   
+    {
         list($paymentInput, $gatewayMerchantId, $masterTransactionId) = $paymentAndMerchantDetails;
 
         $success = $this->app['api.mutex']->acquireAndRelease(
@@ -1410,7 +1410,7 @@ class Service extends Base\Service
             {
                 $this->repo->transaction(function() use ($paymentId, $callbackData, $mode, $terminal)
                 {
-                    $input = [$paymentId, $callbackData]
+                    $input = [$paymentId, $callbackData];
 
                     $this->app['gateway']->call($gateway, Action::AUTHORIZE_PUSH, $input, $mode, $terminal);
 
