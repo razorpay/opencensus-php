@@ -128,6 +128,67 @@ class CaptureTest extends TestCase
         $this->startTest($payment['id'], $payment['amount']);
     }
 
+    public function testCaptureTimeoutWithoutQueue()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $payment = $this->defaultAuthPayment();
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'capture')
+            {
+                throw new Exception\GatewayTimeoutException('curl 35:');
+            }
+        });
+
+        $this->ba->privateAuth();
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(null, $payment['gateway_captured']);
+        $this->assertEquals('captured', $payment['status']);
+
+        Queue::assertPushed(CaptureJob::class, function ($job) use ($payment)
+        {
+            $data = $job->getData();
+
+            return $payment['id'] === $data['payment']['public_id'];
+        });
+
+        Mail::assertQueued(CapturedMail::class);
+    }
+
+    public function testCaptureTimeoutWithoutQueueNonHdfc()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
+        $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $payment = $this->defaultAuthPayment();
+
+        $this->gateway = 'axis_migs';
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'capture')
+            {
+                throw new Exception\GatewayTimeoutException('curl 35:');
+            }
+        });
+
+        $this->ba->privateAuth();
+
+        $this->startTest($payment['id'], $payment['amount']);
+    }
+
     public function testBulkCapture()
     {
         Mail::fake();
