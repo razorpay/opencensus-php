@@ -170,7 +170,7 @@ class ShieldClient implements ExternalService
 
         $listItemPath = str_replace('{list_id}', $listId, $listItemPath);
 
-        return $this->sendRequest($listItemPath,Requests::GET, $input);
+        return $this->sendRequest($listItemPath, Requests::GET, $input);
     }
 
     public function getListItemsById(string $id, string $merchantId, array $input): array
