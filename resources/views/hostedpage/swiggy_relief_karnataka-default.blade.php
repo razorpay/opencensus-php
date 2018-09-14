@@ -16,7 +16,7 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <title>{{$payment_page_data['title']}}</title>
+        <title>Swiggy - Kodagu Flood Relief Campaign</title>
         <meta charset="utf-8">
         <meta name="robots" content="noindex">
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
