@@ -387,8 +387,10 @@ class Validator extends Base\Validator
 
     /**
      * For non empty receipt, validates that it's unique for given merchant across it's NON cancelled & expired items
+     *
      * @param  string $attribute
      * @param  string $receipt
+     *
      * @throws BadRequestValidationFailureException
      */
     public function validateReceipt(string $attribute, string $receipt)
@@ -409,8 +411,6 @@ class Validator extends Base\Validator
      * allowed to be created or not.
      *
      * @return null
-     *
-     * @throws BadRequestException
      */
     public function validateMerchantSpecificData()
     {

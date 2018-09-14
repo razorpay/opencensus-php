@@ -234,7 +234,7 @@ class Converter extends Base\Core
                 }
                 else
                 {
-                    if ($columnHeadersCount !== count($row))
+                    if ($columnHeadersCount > count($row))
                     {
                         //
                         // This can happen if any row in the file has dummy data.
@@ -251,18 +251,17 @@ class Converter extends Base\Core
                         continue;
                     }
 
-                    /**
-                     * Enabling header normalization for limited gateways for now.
-                     * Will migrate other gateways gradually.
-                     */
+                    // Enabling header normalization for limited gateways for now.
+                    // Will migrate other gateways gradually.
                     if(in_array($gateway,self::NORMALIZED_HEADER_GATEWAYS, true) === true)
                     {
                         //Normalizes the header values of file
                         $columnHeaders = $this->normalizeHeaders($columnHeaders);
                     }
 
-                    // Combines the columnHeaders(keys) with the row(values).
-                    $data[] = array_combine($columnHeaders, $row);
+                    // Combines the columnHeaders(keys) with the row(values)
+                    $data[] = array_combine_pad_headers($columnHeaders, $row);
+
                 }
 
                 $currentLineNumber++;

@@ -324,6 +324,10 @@ class EnachRblGatewayTest extends TestCase
         $gateway = $this->getLastEntity('enach', true);
 
         $this->assertNotNull($gateway['signed_xml']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('initiated', $token['recurring_status']);
     }
 
     public function testAcknowledgementSuccessfulReconciliation()
@@ -695,6 +699,8 @@ class EnachRblGatewayTest extends TestCase
             'error_code' => '',
             'error_desc' => '',
         ];
+
+        Carbon::setTestNow(Carbon::now()->addDays(10));
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 

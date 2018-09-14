@@ -280,7 +280,11 @@ class Reconciliation extends Base
 
         $delimiter = $this->gatewayReconciliator->getDelimiter();
 
-        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $delimiter, $this->batch->getGateway());
+        $csvArray = $this->converter->convertCsvToArray($fileDetails,
+                                                        $columnHeaders,
+                                                        $linesToSkip,
+                                                        $delimiter,
+                                                        $this->batch->getGateway());
 
         $totalCount += count($csvArray);
 

@@ -194,6 +194,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new BeamService($app);
         });
 
+        $this->app->singleton('module', function($app)
+        {
+            return new RZP\Modules\Manager($app);
+        });
+
         $this->registerShield();
 
         $this->registerApiMutex();

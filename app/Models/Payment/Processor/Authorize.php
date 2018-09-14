@@ -560,7 +560,7 @@ trait Authorize
         //
         // Subscription association to payment happens in pre-process
         //
-        if ($payment->getSubscriptionId() === null)
+        if ($this->subscription === null)
         {
             return;
         }
@@ -576,12 +576,26 @@ trait Authorize
                 ]);
         }
 
-        $subscription = $payment->subscription;
-
         //
         // Allow manual charge of older invoices, even when subscription is in terminal state
         // TODO: Rethink, won't work for S2S payments which are always in private auth
         //
+
+        //
+        // For subserv subscriptions, these checks validations will take place
+        // in subserv, when we make the first call to fetch and validate subscription
+        //
+        if ($this->subscription->isExternal() === true)
+        {
+            return;
+        }
+
+        //
+        // Storing subscription in a separate variable here, so as not
+        // to change signature of several legacy methods.
+        //
+        $subscription = $this->subscription;
+
         if (($subscription->isTerminalStatus() === true) and
             ($this->app['basicauth']->isPrivateAuth() === false))
         {
@@ -711,13 +725,13 @@ trait Authorize
         //
         if ($cardChange === true)
         {
-            $this->validateSubscriptionAmount($subscription, $payment->getAmount(), true);
+            $this->validateSubscriptionAmount($subscription, $payment->getAmount(), $cardChange = true);
         }
     }
 
     protected function validateNewSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
     {
-        $this->validateSubscriptionAmount($subscription, $payment->getAmount());
+        $this->validateSubscriptionAmount($subscription, $payment->getAmount(), $cardChange = false);
 
         $subscription->getValidator()->validateStartAtForAuthTransaction();
 
@@ -1675,17 +1689,20 @@ trait Authorize
             $this->checkAndFillSavedAppToken($input);
         }
 
+        $followGlobal = false;
+
         if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
         {
-            $this->associateSubscriptionToPayment($payment, $input);
+            if ($this->subscription->isExternal() === false)
+            {
+                $this->associateSubscriptionToPayment($payment, $input);
 
-            $subscription = $payment->subscription;
-
-            $this->addCustomerIdToSubscriptionInput($subscription, $input);
+                $this->addCustomerIdToSubscriptionInput($input);
+            }
 
             $this->addTestSuccessFlagToGatewayInput($input, $gatewayInput);
 
-            if ($subscription->isGlobal() === true)
+            if ($this->subscription->isGlobal() === true)
             {
                 $followGlobal = true;
             }
@@ -1703,7 +1720,7 @@ trait Authorize
 
         // First fetch the relevant customer (global or local)
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
-                                                                $input, $this->merchant, $followGlobal ?? false);
+                                                                $input, $this->merchant, $followGlobal);
 
         if ($customer === null)
         {
@@ -1717,17 +1734,19 @@ trait Authorize
         {
             $localCustomer = null;
 
-            if ($payment->hasSubscription() === true)
+            //
+            // TODO: all these checks won't work in case of auth transaction for subserv,
+            // needs to be refactored so that we pass all the recurring input directly to processor
+            //
+            if ($this->subscription !== null)
             {
-                $subscription = $payment->subscription;
-
                 //
                 // If global, create a local customer and link that to the subscription.
                 // $customer is global here currently, create its local copy.
                 //
-                if ($subscription->hasCustomer() === false)
+                if ($this->subscription->hasCustomer() === false)
                 {
-                    $localCustomer = $this->associateLocalCustomerToSubscription($subscription, $customer);
+                    $localCustomer = $this->createLocalCustomerForSubscription($customer);
                 }
                 else
                 {
@@ -1735,7 +1754,7 @@ trait Authorize
                     // `else` is from the second charge onwards
                     // or change card flow.
                     //
-                    $localCustomer = $subscription->customer;
+                    $localCustomer = $this->subscription->customer;
                 }
             }
 
@@ -1793,7 +1812,10 @@ trait Authorize
 
         $payment->setInternational();
 
-        $this->setRecurringType($payment, $input);
+        if (($this->subscription === null) or ($this->subscription->isExternal() === false))
+        {
+            $this->setRecurringType($payment, $input);
+        }
 
         $this->setAutoRefundTimestamp($payment);
 
@@ -1907,13 +1929,11 @@ trait Authorize
         // and then an hour later, we auto-charge. In that 1 hr gap, the
         // customer can make a payment (via public auth and all)
         //
-        if ($payment->hasSubscription() === true)
+        if ($this->subscription !== null)
         {
-            $subscription = $payment->subscription;
-
             $type = Payment\RecurringType::AUTO;
 
-            if ($subscription->hasBeenAuthenticated() === false)
+            if ($this->subscription->hasBeenAuthenticated() === false)
             {
                 $type = Payment\RecurringType::INITIAL;
             }
@@ -1962,25 +1982,19 @@ trait Authorize
         }
     }
 
-    protected function associateLocalCustomerToSubscription(
-        Subscription\Entity $subscription, Customer\Entity $customer)
+    protected function createLocalCustomerForSubscription(
+        Customer\Entity $customer)
     {
-        $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer, $subscription->merchant);
+        $localCustomer = (new Customer\Core)->createLocalCustomerFromGlobal($customer, $this->subscription->merchant);
 
         $localCustomer->globalCustomer()->associate($customer);
 
         $this->repo->saveOrFail($localCustomer);
 
         return $localCustomer;
-
-        // $subscription->customer()->associate($localCustomer);
-        //
-        // // If this gets saved and then the payment fails, what happens?
-        // // We remove the relation if the payment fails, in `updatePaymentFailed`
-        // $this->repo->saveOrFail($subscription);
     }
 
-    protected function addCustomerIdToSubscriptionInput(Subscription\Entity $subscription, array & $input)
+    protected function addCustomerIdToSubscriptionInput(array & $input)
     {
         //
         // If a subscription_id is sent in the input, the customer_id should
@@ -1993,7 +2007,7 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT,
                 null,
                 [
-                    'subscription_id'   => $subscription->getId(),
+                    'subscription_id'   => $this->subscription->getId(),
                 ]);
         }
 
@@ -2027,7 +2041,7 @@ trait Authorize
         //
         // In case of global flows, the subscription will always be associated with the global token.
         //
-        if ($subscription->hasCustomer() === true)
+        if ($this->subscription->hasCustomer() === true)
         {
             //
             // In case the subscription already has a customer
@@ -2036,7 +2050,7 @@ trait Authorize
             // second 2FA (change card). In the subsequent charges flow,
             // app_token won't be present anyway, since it's internal.
             //
-            if ($subscription->isGlobal() === true)
+            if ($this->subscription->isGlobal() === true)
             {
                 $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
@@ -2047,30 +2061,26 @@ trait Authorize
                         ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
                         null,
                         [
-                            'subscription_id' => $subscription->getId(),
+                            'subscription_id' => $this->subscription->getId(),
                             'global' => true,
                         ]);
                 }
             }
 
-            $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
+            $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($this->subscription->getCustomerId());
         }
     }
 
     protected function associateSubscriptionToPayment(Payment\Entity $payment, array $input)
     {
-        $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
-
-        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
-
         $this->trace->info(
             TraceCode::PAYMENT_SUBSCRIPTION_ASSOCIATE,
             [
                 'payment_id'        => $payment->getId(),
-                'subscription_id'   => $subscription->getId(),
+                'subscription_id'   => $this->subscription->getId(),
             ]);
 
-        $payment->subscription()->associate($subscription);
+        $payment->subscription()->associate($this->subscription);
     }
 
     protected function setGatewayInputForUpi($input, & $gatewayInput)
@@ -2116,7 +2126,7 @@ trait Authorize
                 null,
                 [
                     'payment_id'        => $payment->getId(),
-                    'subscription_id'   => $payment->subscription->getId()
+                    'subscription_id'   => $this->subscription->getId()
                 ]);
         }
 
@@ -3069,12 +3079,12 @@ trait Authorize
             // any reason. But, here, we catch the exception.
             //
 
-            if ($payment->hasSubscription() === false)
+            if (($this->subscription === null) or ($this->subscription->isExternal() === true))
             {
                 return;
             }
 
-            $subscription = $payment->subscription;
+            $subscription = $this->subscription;
 
             if ($subscription->isCreated() === true)
             {
@@ -3524,7 +3534,7 @@ trait Authorize
 
     protected function fillReturnDataWithSubscription(Payment\Entity $payment, array & $data)
     {
-        $data['razorpay_subscription_id'] = $payment->subscription->getPublicId();
+        $data['razorpay_subscription_id'] = $this->subscription->getPublicId();
 
         $this->fillReturnDataWithSignatureIfApplicable($data);
     }

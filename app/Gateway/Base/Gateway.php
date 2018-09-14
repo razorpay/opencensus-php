@@ -1303,9 +1303,9 @@ class Gateway
 
                 $message = 'Curl error @vv @vivek @viv @kranti';
 
-                // #transactions
+                // #tech_curl_error
                 $this->app['slack']->queue(
-                    $message, $dataToTrace, ['color' => 'bad', 'channel' => 'C04260LMZ']);
+                    $message, $dataToTrace, ['color' => 'bad', 'channel' => 'GCRJYQEP6']);
             }
         }
         catch (\Throwable $ex)

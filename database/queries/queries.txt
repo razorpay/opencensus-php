@@ -4205,6 +4205,9 @@ ALTER TABLE users
 ALTER TABLE tokens
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number;
 
+ALTER TABLE subscriptions
+    ADD COLUMN global_customer TINYINT(1) DEFAULT 1 AFTER customer_id;
+
 -- For M021
 update tokens
 set recurring_failure_reason="Payment processing failed due to error at bank or wallet gateway"

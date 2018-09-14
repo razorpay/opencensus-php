@@ -875,7 +875,16 @@ class Gateway extends Base\Gateway
 
         $this->paymentId = $input['payment']['id'];
 
-        $response = $this->postRequest($request);
+        $shouldRetry = function ($e)
+        {
+            return (in_array(get_class($e), [Exception\GatewayRequestException::class], true));
+        };
+
+        $response = $this->retryHandler(
+            [$this, 'postRequest'],
+            [$request],
+            $shouldRetry,
+            2);
 
         return $response;
     }
@@ -916,7 +925,10 @@ class Gateway extends Base\Gateway
             {
                 fclose($this->curlLog);
 
-                unlink($this->curlLogPath);
+                if (file_exists($this->curlLogPath) === true)
+                {
+                    unlink($this->curlLogPath);
+                }
             }
         }
 

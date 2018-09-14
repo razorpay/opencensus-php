@@ -3,22 +3,24 @@
 namespace RZP\Models\Payment\Processor;
 
 use Mail;
+
 use RZP\Error;
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Card;
-use RZP\Models\Card\IIN;
-use RZP\Models\Customer;
-use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Methods;
+use RZP\Models\Card;
 use RZP\Models\Order;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Status;
-use RZP\Models\Transaction;
+use RZP\Models\Customer;
+use RZP\Error\ErrorCode;
+use RZP\Models\Card\IIN;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
+use RZP\Models\Payment\Status;
+use RZP\Models\Customer\Token;
+use RZP\Models\Merchant\Methods;
+use RZP\Models\Plan\Subscription;
 
 trait Callback
 {
@@ -257,6 +259,8 @@ trait Callback
 
                 $isCorporatePayment = $payment->isCorporateNetbanking();
 
+                $this->setSubscriptionForCallback($payment);
+
                 //
                 // In case of non - corporate payments, this case is fine.
                 // In case of corporate and payment already having been authorized
@@ -280,6 +284,26 @@ trait Callback
             2000);
 
         return $response;
+    }
+
+    protected function setSubscriptionForCallback(Payment\Entity $payment)
+    {
+        if ($payment->hasSubscription() === false)
+        {
+            return;
+        }
+
+        $subscriptionId = Subscription\Entity::getSignedId($payment->getSubscriptionId());
+
+        $this->subscription = $this->app['module']
+                                   ->subscription
+                                   ->fetchSubscriptionInfo(
+                                    [
+                                        Payment\Entity::AMOUNT          => $payment->getAmount(),
+                                        Payment\Entity::SUBSCRIPTION_ID => $subscriptionId,
+                                    ],
+                                    $payment->merchant,
+                                    $callback = true);
     }
 
     protected function callGatewayCallback($input)
