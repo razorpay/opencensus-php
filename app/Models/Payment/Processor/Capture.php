@@ -430,29 +430,9 @@ trait Capture
                 $this->repo->saveOrFail($this->payment);
             }
         }
-        catch (Exception\GatewayTimeoutException $e)
-        {
-            $this->handleGatewayTimeoutOnCapture($data, $e);
-        }
         catch (Throwable $e)
         {
-            // We are using Throwable as a catch-all.
-        }
-        finally
-        {
-            if (isset($e) === true)
-            {
-                if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === true)
-                {
-                    $this->trace->traceException($e);
-
-                    $this->$this->pushCaptureToQueue($data);
-                }
-                else
-                {
-                    throw $e;
-                }
-            }
+            $this->handleExceptionOnCapture($data, $e);
         }
     }
 
@@ -476,15 +456,23 @@ trait Capture
         {
             throw $ex;
         }
+    }
+
+    protected function handleExceptionOnCapture($data, Throwable $e)
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === false)
+        {
+            if (($e instanceof Exception\GatewayTimeoutException) === false)
+            {
+                throw $e;
+            }
+
+            $this->handleGatewayTimeoutOnCapture($data, $e);
+        }
 
         $this->trace->traceException($ex);
 
-        $this->pushCaptureToQueue($data);
-    }
-
-    protected function pushCaptureToQueue($paymentData)
-    {
-        $paymentData['mode'] = $this->mode;
+        $data['mode'] = $this->mode;
 
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE,
@@ -496,7 +484,7 @@ trait Capture
         // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
         // previous capture request.
         //
-        CaptureJob::dispatch($paymentData);
+        CaptureJob::dispatch($data);
     }
 
     /**
