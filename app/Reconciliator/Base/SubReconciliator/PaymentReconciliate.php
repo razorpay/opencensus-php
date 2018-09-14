@@ -39,6 +39,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::HITACHI,
         RequestProcessor\Base::UPI_HDFC,
+        RequestProcessor\Base::UPI_ICICI,
     ];
 
     /**
