@@ -3,7 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
-
+use Slack;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
