@@ -32,6 +32,8 @@ class Capture extends Job
     {
         parent::handle();
 
+        $this->slack = Slack::getFacadeRoot();
+
         $this->trace->info(
             TraceCode::PAYMENT_QUEUE_CAPTURE_REQUEST,
             $this->data
@@ -120,7 +122,16 @@ class Capture extends Job
             'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
         ]);
 
-        // @todo: add slack notifier
+        $settings = [
+            'channel' => config('slack.channels.tech_logs'),
+            'color'   => 'danger'
+        ];
+
+        $this->slack->queue('Payment couldn\'t be captured via queue', [
+            'payment_id' => $this->data['payment']['id'],
+            'gateway'    => $this->data['payment']['gateway'],
+            'attempts'   => $this->attempts(),
+        ], $settings);
     }
 
     public function getData()

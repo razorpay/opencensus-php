@@ -430,13 +430,13 @@ trait Capture
                 $this->repo->saveOrFail($this->payment);
             }
         }
-        catch (Throwable $e)
+        catch (Throwable $ex)
         {
-            $this->handleExceptionOnCapture($data, $e);
+            $this->handleExceptionOnCapture($data, $ex);
         }
     }
 
-    protected function handleGatewayTimeoutOnCapture(array $data, Exception\GatewayTimeoutException $ex)
+    protected function handleGatewayTimeoutOnCapture(Exception\GatewayTimeoutException $ex)
     {
         $paymentGateway = $this->payment->getGateway();
 
@@ -453,19 +453,19 @@ trait Capture
         }
     }
 
-    protected function handleExceptionOnCapture($data, Throwable $e)
+    protected function handleExceptionOnCapture($data, Throwable $ex)
     {
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === false)
         {
-            if (($e instanceof Exception\GatewayTimeoutException) === false)
+            if (($ex instanceof Exception\GatewayTimeoutException) === false)
             {
-                throw $e;
+                throw $ex;
             }
 
-            $this->handleGatewayTimeoutOnCapture($data, $e);
+            $this->handleGatewayTimeoutOnCapture($ex);
         }
 
-        $this->trace->traceException($e);
+        $this->trace->traceException($ex);
 
         $data['mode'] = $this->mode;
 
