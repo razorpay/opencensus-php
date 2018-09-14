@@ -1231,6 +1231,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_FTA_ROW                                = 'VERIFY_FTA_ROW';
     const FTA_RECON_PARSED_DATA                         = 'FTA_RECON_PARSED_DATA';
 
+    const APSPDCL_REQUEST                               = 'APSPDCL_REQUEST';
+    const APSPDCL_REQUEST_ERROR                         = 'APSPDCL_REQUEST_ERROR';
+    const APSPDCL_RESPONSE                              = 'APSPDCL_RESPONSE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

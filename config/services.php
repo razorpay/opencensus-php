@@ -55,5 +55,9 @@ return [
                 ],
             ],
         ],
-    ]
+    ],
+
+    'apspdcl' => [
+        'base_url' => env('APSPDCL_BASE_URL'),
+    ],
 ];
