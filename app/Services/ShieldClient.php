@@ -181,7 +181,7 @@ class ShieldClient implements ExternalService
 
         $listItemPath = str_replace('{list_id}', $listId, $listItemPath);
 
-        return $this->sendRequest($listItemPath . '/' . $id,Requests::GET);
+        return $this->sendRequest($listItemPath . '/' . $id, Requests::GET);
     }
 
     protected function getPaymentProperties(Payment\Entity $payment): array
