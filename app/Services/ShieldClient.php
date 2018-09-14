@@ -69,19 +69,21 @@ class ShieldClient implements ExternalService
 
     public function fetchMultiple(string $entity, array $input)
     {
+        $merchantId = $input['merchant_id'] ?? Account::SHARED_ACCOUNT;
+
         switch ($entity)
         {
             case self::RULES:
-                return $this->getRules($input);
+                return $this->getRules($input, $merchantId);
 
             case self::RULE_ANALYTICS:
                 return $this->getRuleAnalytics($input);
 
             case self::LISTS:
-                return $this->getLists($input);
+                return $this->getLists($input, $merchantId);
 
             case self::LIST_ITEMS:
-                return $this->getListItems($input);
+                return $this->getListItems($input, $merchantId);
         }
 
         return [];
@@ -89,13 +91,18 @@ class ShieldClient implements ExternalService
 
     public function fetch(string $entity, string $id, array $input)
     {
+        $merchantId = $input['merchant_id'] ?? Account::SHARED_ACCOUNT;
+
         switch ($entity)
         {
             case self::RULES:
-                return $this->getRuleById($id);
+                return $this->getRuleById($id, $merchantId);
 
             case self::LISTS:
-                return $this->getListById($id);
+                return $this->getListById($id, $merchantId);
+
+            case self::LIST_ITEMS:
+                return $this->getListItemsById($id, $merchantId, $input);
         }
 
         return [];
@@ -106,14 +113,14 @@ class ShieldClient implements ExternalService
         return $this->sendRequest($this->getMerchantPath(self::RULES_PATH), Requests::POST, $input);
     }
 
-    public function getRules(array $input)
+    public function getRules(array $input, string $merchantId)
     {
-        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH), Requests::GET, $input);
+        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH, $merchantId), Requests::GET, $input);
     }
 
-    public function getRuleById(string $id): array
+    public function getRuleById(string $id, string $merchantId): array
     {
-        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH) . '/' . $id, Requests::GET);
+        return $this->sendRequest($this->getMerchantPath(self::RULES_PATH, $merchantId) . '/' . $id, Requests::GET);
     }
 
     public function deleteRuleById(string $id): array
@@ -143,19 +150,19 @@ class ShieldClient implements ExternalService
         return $this->sendRequest(self::ANALYTICS_PATH, Requests::GET, $input);
     }
 
-    public function getLists(array $input): array
+    public function getLists(array $input, string $merchantId): array
     {
-        return $this->sendRequest($this->getMerchantPath(self::LISTS_PATH), Requests::GET, $input);
+        return $this->sendRequest($this->getMerchantPath(self::LISTS_PATH, $merchantId), Requests::GET, $input);
     }
 
-    public function getListById(string $id): array
+    public function getListById(string $id, string $merchantId): array
     {
-        return $this->sendRequest($this->getMerchantPath(self::LISTS_PATH) . '/' . $id, Requests::GET);
+        return $this->sendRequest($this->getMerchantPath(self::LISTS_PATH, $merchantId) . '/' . $id, Requests::GET);
     }
 
-    public function getListItems(array $input): array
+    public function getListItems(array $input, $merchantId): array
     {
-        $listItemPath = $this->getMerchantPath(self::LIST_ITEMS_PATH);
+        $listItemPath = $this->getMerchantPath(self::LIST_ITEMS_PATH, $merchantId);
 
         $listId =  $input['list_id'] ?? 1; // by default use the first list
 
@@ -164,6 +171,17 @@ class ShieldClient implements ExternalService
         $listItemPath = str_replace('{list_id}', $listId, $listItemPath);
 
         return $this->sendRequest($listItemPath,Requests::GET, $input);
+    }
+
+    public function getListItemsById(string $id, string $merchantId, array $input): array
+    {
+        $listItemPath = $this->getMerchantPath(self::LIST_ITEMS_PATH, $merchantId);
+
+        $listId =  $input['list_id'] ?? 1; // by default use the first list
+
+        $listItemPath = str_replace('{list_id}', $listId, $listItemPath);
+
+        return $this->sendRequest($listItemPath . '/' . $id,Requests::GET);
     }
 
     protected function getPaymentProperties(Payment\Entity $payment): array
