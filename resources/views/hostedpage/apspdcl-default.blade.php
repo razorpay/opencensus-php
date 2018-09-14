@@ -11,11 +11,12 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <title>Payment Page - {{$payment_page_data['title']}}</title>
+        <title>APSPDCL - Online Electricity Bill Payment</title>
         <meta charset="utf-8">
-        <meta name="robots" content="noindex">
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
         <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
+        @include('hostedpage.partials.robot')
+        <meta name="description" content="Pay online for your APSPDCL electricity bill in 3 simple steps via Razorpay Payment Pages.">
 
         @if (isset($payment_page_data))
             <meta property="og:title" content="Payment request by {{$data['merchant']['name']}} for {{$payment_page_data['title']}}">
@@ -65,7 +66,7 @@
         </script>
 
         <script src="https://cdn.razorpay.com/static/analytics/bundle.js" async defer></script>
-        <script src="http://127.0.0.1:7999/static/hosted/paymentpage_app.js" onload="renderPaymentPage()" defer></script>
+        <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/paymentpage_app.js" onload="renderPaymentPage()" defer></script>
 
         <script src="https://checkout.razorpay.com/v1/checkout.js" async defer></script>
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
