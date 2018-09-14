@@ -89,7 +89,7 @@ pipeline:
       - aws_secret_access_key
     rebuild: true
     mount:
-      - docker_cache
+      # - docker_cache
       - npm_cache
     when:
       event: [push, deployment]
