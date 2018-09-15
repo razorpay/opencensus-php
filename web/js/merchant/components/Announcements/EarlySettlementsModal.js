@@ -22,6 +22,9 @@ import RadioButton from 'rzp/ui/Forms/RadioButton';
 export default class RequestEarlyAccessForm extends Component {
   constructor(props) {
     super(props);
+
+    this.props.initialValues.email = this.props.user.email;
+    this.props.initialValues.phone = this.props.user.contact_mobile;
     this.state = {};
     this.state.saved = false;
     this.onSubmit = this.onSubmit.bind(this);

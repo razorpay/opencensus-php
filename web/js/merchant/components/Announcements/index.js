@@ -44,6 +44,7 @@ export default class Announcement extends Component {
 export class EarlySettlementAnnouncement extends Component {
   constructor(props) {
     super();
+    this.props = props;
     this.state = {};
     this.state.bannerKey = `early-settlement-banner-viewed-${props.user.id}`;
     if (props.user.findTag('early_settlements_available')) {
@@ -72,10 +73,14 @@ export class EarlySettlementAnnouncement extends Component {
   }
 
   render() {
+    let className = 'settlement-anc';
+    className += this.props.withTour ? ' with-tour' : '';
+    className += this.props.inMobile ? ' inMobile' : '';
+
     return (
       <ShowWhen myRole="owner manager admin">
         <Announcement
-          class="settlement-anc"
+          class={className}
           hidden={this.state.isHidden}
           handleClose={this.handleClose}
         >
@@ -83,11 +88,13 @@ export class EarlySettlementAnnouncement extends Component {
             <div class="title">
               <span>Introducing Early Settlements</span>
             </div>
-            <div class="corner" />
+
+            {this.props.inMobile ? '' : <div class="corner" />}
+
             <div class="content">
               <span>
-                Get your payments within 12 working hours and never have a
-                shortfall of working capital.
+                Get your payments within <strong>12 working hours</strong> and
+                never have a shortfall of working capital.
               </span>
               <Button.Transparent class="btn-link" onClick={this.handleRequest}>
                 Request Access <i class="i-chevron-right" />

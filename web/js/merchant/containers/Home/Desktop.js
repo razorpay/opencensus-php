@@ -119,8 +119,6 @@ class AnalyticsDesktop extends Component {
 
     return (
       <div className="home-analytics-desktop">
-        <EarlySettlementAnnouncement />
-
         <div ref={node => onExtraContentMount(node)} className="extra-content">
           {!isAdmin && (
             <div>
@@ -153,6 +151,9 @@ class AnalyticsDesktop extends Component {
               )}
             </div>
           )}
+
+          <EarlySettlementAnnouncement withTour={hasNewAnalyticsTour} />
+
           <div
             className={`v2-onboarding-card${
               expandOnboardingBanner ? ' expand' : ''

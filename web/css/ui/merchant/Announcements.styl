@@ -35,7 +35,6 @@
   position: relative
   border-radius: 2px
   box-shadow: 0 1px 4px 0 rgba(0,0,0,0.1)
-  font-weight: bold
 
   .title
     float: left
@@ -43,7 +42,8 @@
     // background: #4975D5
     background: linear-gradient(270deg, #2682FF 0%, #415BD3 100%);
     color: white
-    padding: 15px
+    padding: 15px 0 15px 15px
+    border-radius: 2px 0 0 2px;
 
   .corner
     float: left
@@ -55,12 +55,14 @@
 
   .content
     float: left
-    padding: 15px
+    padding: 15px 15px 15px 0
+    width: 65%
   
   .close-btn
-    font-size: 20px
+    color: #58666D
+    font-size: 26px
     position: absolute
-    top: 8px
+    top: 4px
     right: 12px
     padding: 4px 8px
 
@@ -85,3 +87,37 @@
 
   .submit-btn, .close-btn
     width: 100%
+
+.Announcement_Banner_2.with-tour
+  margin-top: 20px
+
+@media only screen and (max-width: 1190px)
+  .Announcement_Banner_2
+    height: 68px
+
+    .title
+      height 68px
+      padding: 24px 0 15px 15px
+
+    .corner
+      border-width: 68px 68px 0 0
+
+    .close-btn
+      top: 12px
+
+.Announcement_Banner_2.inMobile
+  height 148px
+
+  .title
+    float: none
+    height 48px
+    padding: 15px
+    border-radius: 2px 2px 0 0
+
+  .content
+    width: 100%
+    padding: 15px
+  
+  .close-btn
+    color: #ffffff;
+    top: 2px
