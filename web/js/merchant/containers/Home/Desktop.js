@@ -18,6 +18,7 @@ import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import { showOrHideTour } from 'merchant/modules/session';
+import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 
 import {
   trackPresetChange,
@@ -26,7 +27,10 @@ import {
   trackViewTour,
 } from './ga';
 
-@connect(null, { showOrHideTour })
+@connect(
+  null,
+  { showOrHideTour }
+)
 class AnalyticsDesktop extends Component {
   constructor(props) {
     super(props);
@@ -115,6 +119,8 @@ class AnalyticsDesktop extends Component {
 
     return (
       <div className="home-analytics-desktop">
+        <EarlySettlementAnnouncement />
+
         <div ref={node => onExtraContentMount(node)} className="extra-content">
           {!isAdmin && (
             <div>
