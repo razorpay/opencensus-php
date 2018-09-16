@@ -47,7 +47,7 @@ export class EarlySettlementAnnouncement extends Component {
     this.props = props;
     this.state = {};
     this.state.bannerKey = `early-settlement-banner-viewed-${props.user.id}`;
-    if (props.user.findTag('early_settlements_available')) {
+    if (props.user.findTag('announcement_early_settlements')) {
       this.state.isHidden = LocalStorageService.getItem(this.state.bannerKey);
     } else {
       this.state.isHidden = true;
