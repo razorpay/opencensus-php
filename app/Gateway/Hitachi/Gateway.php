@@ -519,13 +519,13 @@ class Gateway extends Base\Gateway
         $content[RequestFields::XID]         = $authResponse[Mpi\Base\Entity::XID];
         $content[RequestFields::ALGORITHM]   = $authResponse[Mpi\Base\Entity::CAVV_ALGORITHM];
 
-        $network = Network::getCode($this->input['card']['network']);
+        $networkCode = $this->input['card']['network_code'];
 
-        if ($network === Card\Network::VISA)
+        if ($networkCode === Card\Network::VISA)
         {
             $content[RequestFields::CAVV2] = $authResponse[Mpi\Base\Entity::CAVV];
         }
-        else if (($network === Card\Network::MC) or ($network === Card\Network::MAES))
+        else if (($networkCode === Card\Network::MC) or ($networkCode === Card\Network::MAES))
         {
             $content[RequestFields::UCAF] = $authResponse[Mpi\Base\Entity::CAVV];
         }
@@ -560,12 +560,12 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::TRANSACTION_TYPE] = 'SI';
 
-        $network = Network::getCode($input['card']['network']);
+        $networkCode = $input['card']['network_code'];
 
-        if (($network === Card\Network::VISA) or
-            ($network === Card\Network::MC))
+        if (($networkCode === Card\Network::VISA) or
+            ($networkCode === Card\Network::MC))
         {
-            $content[RequestFields::ECI] = Eci::SI;
+            $content[RequestFields::ECI] = Eci::getEciValueforSI($networkCode);
         }
         else
         {
@@ -598,7 +598,9 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::TRANSACTION_TYPE] = TransactionType::MOTO;
 
-        $content[RequestFields::ECI] = Eci::MOTO;
+        $networkCode = $input['card']['network_code'];
+
+        $content[RequestFields::ECI] = Eci::getEciValueForMoto($networkCode);
 
         $content[RequestFields::AUTH_STATUS] = Mpi\Base\AuthenticationStatus::N;
 
@@ -625,7 +627,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
 
-        $networkCode  = Network::getCode($input['card']['network']);
+        $networkCode = $input['card']['network_code'];
 
         $eciValues = [
             Card\Network::VISA => '07',

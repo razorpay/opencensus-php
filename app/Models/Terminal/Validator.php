@@ -64,6 +64,7 @@ class Validator extends Base\Validator
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::UPI_MINDGATE,
+        Payment\Gateway::UPI_AXIS,
         Payment\Gateway::NETBANKING_CSB,
         Payment\Gateway::NETBANKING_BOB,
         Payment\Gateway::NETBANKING_ICICI,
@@ -388,11 +389,24 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
     ];
 
+    protected static $upiAxisTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_axis',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::UPI                        => 'required|boolean|in:1',
+    ];
+
+    protected static $upiAxisEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:upi_axis',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
+    ];
+
     protected static $upiHulkTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_hulk',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::UPI                        => 'required|boolean|in:1',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string|in:proxy,app',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
     ];
@@ -444,7 +458,7 @@ class Validator extends Base\Validator
 
     protected static $netbankingCorporationTerminalRules = [
         Entity::GATEWAY                     => 'required|in:netbanking_corporation',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:3',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
     ];
 
@@ -494,6 +508,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|in:proxy,app',
     ];
 
     protected static $enachRblTerminalRules = [

@@ -71,7 +71,7 @@ class NetbankingReconciliationTest extends TestCase
         {
             if ($action === 'claims_data')
             {
-                $content['0']['extra_row'] = 'abc';
+                unset($content[0]['Error Description']);
             }
         });
 
@@ -212,7 +212,7 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertEquals(Status::PROCESSED, $batch['status']);
     }
 
-    public function testObcManualReconcilation()
+    public function testObcManualReconciliation()
     {
         $this->gateway = 'netbanking_obc';
 

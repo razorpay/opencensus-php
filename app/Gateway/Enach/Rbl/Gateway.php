@@ -199,4 +199,21 @@ class Gateway extends Base\Gateway
 
         return $esignerGatewayResponse;
     }
+
+    protected function extractPaymentsProperties($gatewayPayment)
+    {
+        $response = [];
+
+        // For api based emandate initial payments, if late authorized,
+        // we need to update the token status to confirmed
+        if (($this->input['payment']['method'] === Payment\Method::EMANDATE) and
+            ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL))
+        {
+            $recurringData = $this->getRecurringData($gatewayPayment);
+
+            $response = array_merge($response, $recurringData);
+        }
+
+        return $response;
+    }
 }

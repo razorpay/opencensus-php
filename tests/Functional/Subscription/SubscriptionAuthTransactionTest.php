@@ -60,6 +60,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals($exceptedSignature, $actualSignature);
 
         $subscription = $this->getDbLastEntityPublic('subscription');
+
         $payment = $this->getDbLastEntityPublic('payment');
         $refund = $this->getDbLastEntityPublic('refund');
         $token = $this->getDbLastEntityPublic('token');
@@ -299,19 +300,10 @@ class SubscriptionAuthTransactionTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 123);
 
-        try
+        $this->makeRequestAndCatchException(function () use ($paymentRequest)
         {
-            $recurringPayment = $this->doAuthPayment($paymentRequest);
-        }
-        catch (BadRequestException $ex)
-        {
-            $this->assertEquals('The amount does not match with the expected amount for the '.
-                'transaction. It might have been tampered.', $ex->getMessage());
-
-            return;
-        }
-
-        $this->assertTrue(false);
+            $this->doAuthPayment($paymentRequest);
+        }, BadRequestException::class, 'The amount does not match with the expected amount for the transaction. It might have been tampered.');
     }
 
     public function testSubscriptionAuthTxnWithPastStartAt()
@@ -324,19 +316,10 @@ class SubscriptionAuthTransactionTest extends TestCase
 
         Carbon::setTestNow();
 
-        try
+        $this->makeRequestAndCatchException(function () use ($paymentRequest)
         {
-            $recurringPayment = $this->doAuthPayment($paymentRequest);
-        }
-        catch (BadRequestException $ex)
-        {
-            $this->assertEquals('Subscription\'s start time is past the current time. ' .
-                'Cannot do an auth transaction now.', $ex->getMessage());
-
-            return;
-        }
-
-        $this->assertTrue(false);
+            $this->doAuthPayment($paymentRequest);
+        }, BadRequestException::class, 'Subscription\'s start time is past the current time. Cannot do an auth transaction now.');
     }
 
     public function testSubscriptionAuthTxnWithNotCreatedState()
@@ -351,20 +334,10 @@ class SubscriptionAuthTransactionTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
 
-        try
+        $this->makeRequestAndCatchException(function () use ($paymentRequest)
         {
-            $recurringPayment = $this->doAuthPayment($paymentRequest);
-        }
-        catch (BadRequestException $ex)
-        {
-            $this->assertEquals(
-                'The subscription is in a terminal state',
-                $ex->getMessage());
-
-            return;
-        }
-
-        $this->assertTrue(false);
+            $this->doAuthPayment($paymentRequest);
+        }, BadRequestException::class, 'The subscription is in a terminal state');
     }
 
     public function testSubscriptionAuthTxnWithExpiredState()
@@ -379,18 +352,10 @@ class SubscriptionAuthTransactionTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
 
-        try
+        $this->makeRequestAndCatchException(function () use ($paymentRequest)
         {
-            $recurringPayment = $this->doAuthPayment($paymentRequest);
-        }
-        catch (BadRequestException $ex)
-        {
-            $this->assertEquals('The subscription is in a terminal state', $ex->getMessage());
-
-            return;
-        }
-
-        $this->assertTrue(false);
+            $this->doAuthPayment($paymentRequest);
+        }, BadRequestException::class, 'The subscription is in a terminal state');
     }
 
     public function testSubscriptionAuthTxnWithTokenAlreadyAssociated()
@@ -407,18 +372,10 @@ class SubscriptionAuthTransactionTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
 
-        try
+        $this->makeRequestAndCatchException(function () use ($paymentRequest)
         {
-            $recurringPayment = $this->doAuthPayment($paymentRequest);
-        }
-        catch (BadRequestException $ex)
-        {
-            $this->assertEquals('The subscription already has a token associated with it', $ex->getMessage());
-
-            return;
-        }
-
-        $this->assertTrue(false);
+            $this->doAuthPayment($paymentRequest);
+        }, BadRequestException::class, 'The subscription already has a token associated with it');
     }
 
     protected function createFixturesForAddon($subscription, $plan, $totalAmount, $addonAmount, $first = false)

@@ -336,6 +336,65 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+
+    /**
+     * Fetch the payments that are authorized, refund_at time has not been crossed yet,
+     * are within lower & upper time limits whose order's auto capture is set and
+     * merchant wants to capture late_auth payments
+     *
+     * @todo : We have hardcoded goibibo mid for now. We need to fix this.
+     *
+     * @param $from     int     Lower limit to capture payments
+     * @param $to       int     Upper limit to capture payments
+     *
+     * @return mixed
+     */
+    public function getAuthorizedAutoCapturePaymentsBetweenTimestamps(int $from, int $to)
+    {
+        $paymentRepo = $this->repo->payment;
+
+        $merchantRepo = $this->repo->merchant;
+
+        $orderRepo = $this->repo->order;
+
+        $paymentMerchantId = $paymentRepo->dbColumn(Payment\Entity::MERCHANT_ID);
+
+        $paymentOrderId = $paymentRepo->dbColumn(Payment\Entity::ORDER_ID);
+
+        $merchantId = $merchantRepo->dbColumn(Merchant\Entity::ID);
+
+        $orderId    = $orderRepo->dbColumn(Order\Entity::ID);
+
+        $paymentAuthorizedAt = $paymentRepo->dbColumn(Payment\Entity::AUTHORIZED_AT);
+
+        $paymentStatus = $paymentRepo->dbColumn(Payment\Entity::STATUS);
+
+        $paymentRefundAt = $paymentRepo->dbColumn(Payment\Entity::REFUND_AT);
+
+        $paymentMerchantId = $paymentRepo->dbColumn(Payment\Entity::MERCHANT_ID);
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $merchantAutoCaptureLateAuth = $merchantRepo->dbColumn(Merchant\Entity::AUTO_CAPTURE_LATE_AUTH);
+
+        $orderPaymentCaptureFlag = $orderRepo->dbColumn(Order\Entity::PAYMENT_CAPTURE);
+
+        $query = $this->newQuery()
+                        ->select($this->dbColumn('*'))
+                        ->join(Table::MERCHANT, $paymentMerchantId, '=', $merchantId)
+                        ->join(Table::ORDER, $paymentOrderId, '=', $orderId)
+                        ->whereBetween($paymentAuthorizedAt, [$from, $to])
+                        ->where($paymentStatus, '=', Payment\Status::AUTHORIZED)
+                        ->where($paymentRefundAt, '>', $currentTime)
+                        ->where($merchantAutoCaptureLateAuth, '=', true)
+                        ->where($orderPaymentCaptureFlag, '=', true)
+                        // '10000000000000', '1cXSLlUU8V9sXl' are test cases MID
+                        ->whereIn($paymentMerchantId, ['6ZLE5BE57SExGF', '10000000000000', '1cXSLlUU8V9sXl'])
+                        ->get();
+
+        return $query;
+    }
+
     public function getAutoCapturedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
     {
         return $this->newQuery()
@@ -1029,10 +1088,10 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->select($paymentColumns)
                     ->join(Table::VIRTUAL_ACCOUNT, function ($join) use($paymentReceiverId, $qrcodeId, $bankAccountId)
-                        {
-                            $join->on($paymentReceiverId, '=', $qrcodeId);
-                            $join->orOn($paymentReceiverId, '=', $bankAccountId);
-                        })
+                    {
+                        $join->on($paymentReceiverId, '=', $qrcodeId);
+                        $join->orOn($paymentReceiverId, '=', $bankAccountId);
+                    })
                     ->where($virtualAccountIdCol, '=', $virtualAccountId)
                     ->where($paymentMerchantId, '=', $merchant->getId())
                     ->orderByCreatedAt()

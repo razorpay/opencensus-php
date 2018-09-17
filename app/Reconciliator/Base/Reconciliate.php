@@ -137,10 +137,11 @@ class Reconciliate extends Base\Core
      * The logic here is exactly the same as in startReconciliate, except that we
      * pass the batch entity to the individual subreconciliators
      *
-     * @param array         $allFilesContents
-     * @param Batch\Entity  $batch
+     * @param array $allFilesContents
+     * @param Batch\Entity $batch
+     * @param string $source
      */
-    public function startReconciliationV2(array $allFilesContents, Batch\Entity $batch)
+    public function startReconciliationV2(array $allFilesContents, Batch\Entity $batch, string $source)
     {
         foreach ($allFilesContents as $fileContents)
         {
@@ -158,6 +159,8 @@ class Reconciliate extends Base\Core
             $this->updateBatchWithReconciliationType($batch, $reconciliationType, $extraDetails);
 
             $this->setSubReconciliator($reconciliationType);
+
+            $this->subReconciliator->setSource($source);
 
             $this->subReconciliator->startReconciliationV2($fileContents, $batch);
         }

@@ -198,4 +198,31 @@ class MethodsTest extends TestCase
         // No netbanking for subscriptions
         $this->assertArrayNotHasKey('netbanking', $content['recurring']);
     }
+
+    public function testFetchMethods()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEnableEmi()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::EDIT_METHODS]);
+
+        $this->fixtures->merchant->disableEmi('10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testDisableEmi()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::EDIT_METHODS]);
+
+        $this->startTest();
+    }
 }

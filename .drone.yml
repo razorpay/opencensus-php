@@ -46,7 +46,7 @@ pipeline:
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
     commands:
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Application Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - sleep 1
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -65,7 +65,6 @@ pipeline:
       - ES_AUDIT_HOST=elasticsearch2
     commands:
       - sleep 10
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Payment Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -302,7 +301,7 @@ pipeline:
         exclude: [push]
         include: [deployment]
   deploy-stage-beta:
-    image: razorpay/drone-kubernetes
+    image: razorpay/drone-kubernetes:parallel
     pull: true
     secrets:
       - docker_username

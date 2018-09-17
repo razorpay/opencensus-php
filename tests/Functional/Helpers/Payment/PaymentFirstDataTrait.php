@@ -116,6 +116,22 @@ trait PaymentFirstDataTrait
         });
     }
 
+    protected function getGatewayRequestExceptionInCapture()
+    {
+        $this->i = true;
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            if ($this->i === true)
+            {
+                $this->i = false;
+
+                throw new Exception\GatewayRequestException('Gateway request exception');
+            }
+
+        });
+    }
+
     protected function clearMockFunction()
     {
         $this->mockServerContentFunction(function(& $input)
