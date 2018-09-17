@@ -45,6 +45,8 @@ build:
           code: >
               export REDIS_HOST="$REDIS_PORT_6379_TCP_ADDR"
               export REDIS_PORT="6379"
+              export REDIS_LABS_HOST="$REDIS_PORT_6379_TCP_ADDR"
+              export REDIS_LABS_PORT="6379"
       - create-file:
           name: Create assertion.ini
           filename: /etc/php7/conf.d/assertion.ini
