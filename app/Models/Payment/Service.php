@@ -643,6 +643,15 @@ class Service extends Base\Service
         return $this->getNewProcessor()->callback($id, $hash, $input);
     }
 
+    public function npciCallback($id, $hash, array $input)
+    {
+        $payment = $this->repo->payment->findByPublicId($id);
+
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+
+        return $this->getNewProcessor($merchant)->callback($id, $hash, $input);
+    }
+
     public function s2sCallback($id, $input)
     {
         $payment = $this->repo->payment->findByPublicId($id);
