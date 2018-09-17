@@ -141,8 +141,6 @@ class Gateway extends Base\Gateway
 
         $verify = new Verify($this->gateway, $input);
 
-        $verify->throwExceptionOnMismatch = false;
-
         $verifyResponse = $this->runPaymentVerifyFlow($verify);
 
         $signedXml = base64_decode($verify->verifyResponseContent[ResponseFields::CONTENT]) ?? null;

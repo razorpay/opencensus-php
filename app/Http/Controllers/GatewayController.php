@@ -361,18 +361,6 @@ class GatewayController extends Controller
         return Redirect::to($url . '?'. $query);
     }
 
-    protected function getCallbackUrlFromPaymentIdAndMode($paymentId, $mode)
-    {
-        $payment = $this->repo->payment->findOrFailPublic($paymentId);
-
-        $publicPaymentId = $payment->getPublicId();
-
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-        $publicKey = $keys->first()->getPublicKey($mode);
-
-        return $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
-    }
-
     protected function getNetbankingEntityAndModeByTraceId($traceId)
     {
         $app = $this->app;
