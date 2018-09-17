@@ -21,4 +21,11 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::REGISTRATION_STATUS)
                     ->firstOrFail();
     }
+
+    public function getLastCreatedByGateway($esignerGateway)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ESIGNER_GATEWAY, $esignerGateway)
+                    ->first();
+    }
 }

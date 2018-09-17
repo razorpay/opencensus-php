@@ -145,6 +145,13 @@ class Service extends Base\Service
      * @param array $input
      * @return array
      * @throws Exception\ServerErrorException
+     *
+     * Set a single redis key.
+     * Currently it supports the below key:
+     *  - `merchant_enach_configs`
+     *       - This is to set the merchant specific rule to select
+     *         the esigner gateway for enach.
+     *       - Supported values are `esigner_legaldesk` and `esigner_digio`
      */
     public function updateConfigKey(array $input): array
     {
@@ -154,7 +161,7 @@ class Service extends Base\Service
 
         try
         {
-            $currentConfig = Cache::get($input['key']);
+            $currentConfig = $this->app['cache']->get($input['key']) ?? [];
         }
         catch (\Throwable $ex)
         {
@@ -171,10 +178,6 @@ class Service extends Base\Service
         {
             $currentConfig = json_decode($currentConfig, true);
         }
-        else
-        {
-            $currentConfig = [];
-        }
 
         $oldConfig = $currentConfig;
 
@@ -186,7 +189,7 @@ class Service extends Base\Service
             'new_value' => $currentConfig,
         ];
 
-        Cache::forever($input['key'], json_encode($currentConfig));
+        $this->app['cache']->forever($input['key'], json_encode($currentConfig));
 
         $this->trace->info(TraceCode::REDIS_KEY_SET, $data);
 

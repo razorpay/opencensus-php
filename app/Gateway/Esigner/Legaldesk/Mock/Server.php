@@ -5,6 +5,7 @@ namespace RZP\Gateway\Esigner\Legaldesk\Mock;
 use RZP\Gateway\Base;
 use Lib\Formatters\Xml;
 use RZP\Models\Payment;
+use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 use RZP\Gateway\Esigner\Legaldesk\ResponseFields;
 
 class Server extends Base\Mock\Server
@@ -56,22 +57,15 @@ class Server extends Base\Mock\Server
 
         $this->content($content, 'mandate_sign');
 
-        // In tests we create a payment with the gateway Legaldesk, however when testing it via mocks
-        // out of the tests, the payment would be having the gateway Enach RBL
-        $payment = $this->app['repo']->payment
-                        ->getLastCreatedEmandatePaymentByGateway(Payment\Gateway::ESIGNER_LEGALDESK);
+        $enach = $this->app['repo']->enach
+                      ->getLastCreatedByGateway(Payment\Gateway::ESIGNER_LEGALDESK);
 
-        if ($payment === null)
-        {
-            $payment = $this->app['repo']->payment->getLastCreatedEmandatePaymentByGateway(Payment\Gateway::ENACH_RBL);
-        }
-
-        $callbackUrl = $this->route->getPublicCallbackUrlWithHash($payment[Payment\Entity::PUBLIC_ID]);
+        $callbackUrl = $this->route->getPublicCallbackUrlWithHash('pay_' . $enach[EnachEntity::PAYMENT_ID]);
 
         $request = [
-            'url' => $callbackUrl,
-            'method' => 'POST',
-            'content' => $content
+            'url'     => $callbackUrl,
+            'method'  => 'POST',
+            'content' => $content,
         ];
 
         return $this->makePostResponse($request);
@@ -86,13 +80,13 @@ class Server extends Base\Mock\Server
         $xml = Xml::create('Document', $xmlContent);
 
         $content = [
-            ResponseFields::STATUS => 'success',
+            ResponseFields::STATUS              => 'success',
             ResponseFields::RESPONSE_TIME_STAMP => '2018-08-09T20:04:59',
-            ResponseFields::ERROR => 'NA',
-            ResponseFields::ERROR_CODE => 'NA',
-            ResponseFields::API_RESPONSE_ID => '5b6c51139788dd40bd25ded6',
-            ResponseFields::CONTENT => base64_encode($xml),
-            ResponseFields::CONTENT_TYPE => 'xml',
+            ResponseFields::ERROR               => 'NA',
+            ResponseFields::ERROR_CODE          => 'NA',
+            ResponseFields::API_RESPONSE_ID     => '5b6c51139788dd40bd25ded6',
+            ResponseFields::CONTENT             => base64_encode($xml),
+            ResponseFields::CONTENT_TYPE        => 'xml',
         ];
 
         $this->content($content, 'fetch_mandate_content');
@@ -150,7 +144,7 @@ class Server extends Base\Mock\Server
     {
         $result = '';
 
-        for($i = 0; $i < $length; $i++)
+        for ($i = 0; $i < $length; $i++)
         {
             $result .= mt_rand(0, 9);
         }
