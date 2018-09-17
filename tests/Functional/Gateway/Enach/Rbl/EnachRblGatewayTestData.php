@@ -40,6 +40,21 @@ return [
         ]
     ],
 
+    'legaldeskVerifyFailed' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\PaymentVerificationException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ]
+    ],
+
     'testRegistrationReconWithTestMerchantProxyAuth' => [
         'response'  => [
             'content'     => [

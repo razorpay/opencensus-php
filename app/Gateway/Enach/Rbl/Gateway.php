@@ -156,33 +156,7 @@ class Gateway extends Base\Gateway
 
         $this->authenticationGateway = $enach[Base\Entity::ESIGNER_GATEWAY];
 
-        $response = $this->callAuthenticationGateway($input, $enach);
-
-        $this->updateGatewayPaymentIfRequired($enach, $response['signed_xml']);
-
-        $response['verify_response']['gatewayPayment'] = $enach->toArray();
-
-        return $response['verify_response'];
-    }
-
-    protected function updateGatewayPaymentIfRequired($enach, $signedXml)
-    {
-        // For late authorized payments, update the enach entity with signed_xml
-        if (($enach[Base\Entity::STATUS] === null) and
-            ($enach[Base\Entity::SIGNED_XML] === null) and
-            ($signedXml !== null)
-        )
-        {
-            $enachAttributes = [
-                Base\Entity::SIGNED_XML => $signedXml
-            ];
-
-            $enach->fill($enachAttributes);
-
-            $enach->saveOrFail();
-        }
-
-        return $enach;
+        return $this->callAuthenticationGateway($input, $enach);
     }
 
     /**

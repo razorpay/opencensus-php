@@ -152,14 +152,22 @@ class EnachRblGatewayTest extends TestCase
         $this->assertNull($enach['signed_xml']);
         $this->assertEquals('created', $payment['status']);
 
-        $response = $this->verifyPayment($payment->getPublicId());
+        $testData = $this->testData['legaldeskVerifyFailed'];
 
-        $this->assertEquals(1, $response['payment']['verified']);
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $response = $this->verifyPayment($payment->getPublicId());
 
-        $this->assertEquals('status_mismatch', $response['gateway']['status']);
-        $this->assertEquals('esigner_legaldesk', $response['gateway']['gateway']);
+            $this->assertEquals(1, $response['payment']['verified']);
 
-        $this->assertNotEmpty($response['gateway']['gatewayPayment']['signed_xml']);
+            $this->assertEquals('status_mismatch', $response['gateway']['status']);
+            $this->assertEquals('esigner_legaldesk', $response['gateway']['gateway']);
+
+            $this->assertNotEmpty($response['gateway']['gatewayPayment']['signed_xml']);
+        });
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertNotEmpty($enach['signed_xml']);
     }
 
     public function testSuccessfulEsignGenerationWithVid()

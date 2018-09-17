@@ -141,14 +141,7 @@ class Gateway extends Base\Gateway
 
         $verify = new Verify($this->gateway, $input);
 
-        $verifyResponse = $this->runPaymentVerifyFlow($verify);
-
-        $signedXml = base64_decode($verify->verifyResponseContent[ResponseFields::CONTENT]) ?? null;
-
-        return [
-            'verify_response' => $verifyResponse,
-            'signed_xml'      => $signedXml
-        ];
+        return $this->runPaymentVerifyFlow($verify);
     }
 
     protected function sendPaymentVerifyRequest($verify)
@@ -245,6 +238,28 @@ class Gateway extends Base\Gateway
         $verify->amountMismatch = false;
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $this->saveSignedXml($verify);
+    }
+
+    protected function saveSignedXml(Verify $verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        if ($verify->gatewaySuccess === true)
+        {
+            $mandateXml = base64_decode($verify->verifyResponseContent[ResponseFields::CONTENT]) ?? null;
+
+            $content = [
+                'signed_xml' => $mandateXml
+            ];
+
+            $gatewayPayment->fill($content);
+
+            $this->repo->saveOrFail($gatewayPayment);
+
+            return $gatewayPayment;
+        }
     }
 
     protected function checkVerifyGatewaySuccess($verify)
