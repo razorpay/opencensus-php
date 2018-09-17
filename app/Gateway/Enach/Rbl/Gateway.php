@@ -90,6 +90,7 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
+        sd($input);
         parent::callback($input);
 
         $authResponse = $this->callAuthenticationGateway($input);
@@ -177,6 +178,8 @@ class Gateway extends Base\Gateway
 
         $checksum = $this->generateHash($secureData);
 
+        $encryptedChecksum = $this->encryptChecksum($checksum);
+
         $data = $this->getDataForXml($input, $secureData);
 
         $xml = $this->getXml($data);
@@ -188,7 +191,7 @@ class Gateway extends Base\Gateway
         $content = [
             'MerchantID' => $mid,
             'MandateReqDoc' => $xml,
-            'CheckSumVal' => $checksum,
+            'CheckSumVal' => $encryptedChecksum,
             'BankID' => $bank,
         ];
 
@@ -201,14 +204,16 @@ class Gateway extends Base\Gateway
 
     protected function getSecureData($input)
     {
-        $nextWorkingDt = $this->getNextWorkingDate($input);
+        $nextWorkingDt = $this->getNextWorkingDate($input)->format('Y-m-d+05:30');
 
-        $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST);
+        $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST)
+                                                      ->format('Y-m-d+05:30');
 
         return [
             RequestNpciTags::DEBTOR_ACCOUNT => $input['token']->getAccountNumber(),
-            RequestNpciTags::FIRST_COLLECTION_DATE => $nextWorkingDt->toIso8601String(), //TODO check if this format is correct
-            RequestNpciTags::FINAL_COLLECTION_DATE => $finalCollection->toIso8601String(),
+            RequestNpciTags::FIRST_COLLECTION_DATE => $nextWorkingDt,
+            RequestNpciTags::FINAL_COLLECTION_DATE => $finalCollection,
+            RequestNpciTags::COLLECTION_AMOUNT    => '',
             RequestNpciTags::MAX_AMOUNT => $input['token']->getMaxAmount() / 100,
         ];
     }
@@ -237,7 +242,7 @@ class Gateway extends Base\Gateway
                 RequestNpciTags::NAME                  => 'Razorpay software pvt ltd', //Todo check if this ok
             ],
 
-            RequestNpciTags::MANDATE_ID                    => $this->getMandateId(),
+            RequestNpciTags::MANDATE_ID           => $this->getMandateId($input['payment']['id']),
 
             NpciXmlHeaderTags::OCCURENCE          => [
                 RequestNpciTags::SEQUENCE_TYPE         => 'RCUR',
@@ -272,19 +277,11 @@ class Gateway extends Base\Gateway
 
         $grp = $mandateroot->addChild(NpciXmlHeaderTags::GROUP_HEADER);
 
-        /*$content = array_flip($data[NpciXmlHeaderTags::GROUP_HEADER]);
-
-        array_walk_recursive($content, array ($grp, 'addChild'));*/
-
         $this->addChildren($data[NpciXmlHeaderTags::GROUP_HEADER], $grp);
 
         $req = $grp->addChild(NpciXmlHeaderTags::REQUEST_INITIATING_PARTY);
 
         $info = $req->addChild(NpciXmlHeaderTags::INFO);
-
-        /*$content = array_flip($data[NpciXmlHeaderTags::INFO]);
-
-        array_walk_recursive($content, array ($info, 'addChild'));*/
 
         $this->addChildren($data[NpciXmlHeaderTags::INFO], $info);
 
@@ -294,10 +291,6 @@ class Gateway extends Base\Gateway
 
         $occurence = $mandate->addChild(NpciXmlHeaderTags::OCCURENCE);
 
-        /*$content = array_flip($data[NpciXmlHeaderTags::OCCURENCE]);
-
-        array_walk_recursive($content, array ($occurence, 'addChild'));*/
-
         $this->addChildren($data[NpciXmlHeaderTags::OCCURENCE], $occurence);
 
         $maxAmount = $mandate->addChild(RequestNpciTags::MAX_AMOUNT, $data[RequestNpciTags::MAX_AMOUNT]);
@@ -306,21 +299,23 @@ class Gateway extends Base\Gateway
 
         $debtor = $mandate->addChild(NpciXmlHeaderTags::DEBTOR);
 
-        /*$content = array_flip($data[NpciXmlHeaderTags::DEBTOR]);
-
-        array_walk_recursive($content, array ($debtor, 'addChild'));*/
-
         $this->addChildren($data[NpciXmlHeaderTags::DEBTOR], $debtor);
 
         $creditor = $mandate->addChild(NpciXmlHeaderTags::CREDITOR);
 
-        /*$content = array_flip($data[NpciXmlHeaderTags::CREDITOR]);
-
-        array_walk_recursive($content, array ($creditor, 'addChild'));*/
-
         $this->addChildren($data[NpciXmlHeaderTags::CREDITOR], $creditor);
 
         $xmlString = $document->asXml();
+
+        $xmlDoc = new DOMDocument('1.0', 'UTF-8');
+
+        $xmlDoc->preserveWhiteSpace = false;
+
+        $xmlDoc->formatOutput = true;
+
+        $xmlDoc->loadXML($xmlString);
+
+        $xmlString = $xmlDoc->saveXML();
 
         $signedxml = $this->addSignature($xmlString);
 
@@ -329,6 +324,8 @@ class Gateway extends Base\Gateway
 
     protected function getEncryptedData($secureData)
     {
+        unset($secureData[RequestNpciTags::COLLECTION_AMOUNT]);
+
         $encryptedData = [];
 
         $rsa = $this->getRsaInstance('request');
@@ -343,6 +340,17 @@ class Gateway extends Base\Gateway
             $encryptedData[$key] = $encoded;
         }
         return $encryptedData;
+    }
+
+    protected function encryptChecksum($checksum)
+    {
+        $rsa = $this->getRsaInstance('request');
+
+        $encrypted = $rsa->encrypt($checksum);
+
+        $encoded = base64_encode($encrypted);
+
+        return $encoded;
     }
 
     protected function addSignature($xml)
@@ -368,9 +376,11 @@ class Gateway extends Base\Gateway
 
         $sign->appendSignature($xmlDoc->documentElement);
 
-        $xmlDoc->save('request.xml');
-
         $signedxml = $xmlDoc->saveXML();
+
+        //$xmlDoc->save('request.xml');
+
+        assertTrue($this->verifySignature($signedxml));
 
         return $signedxml;
     }
@@ -393,14 +403,14 @@ class Gateway extends Base\Gateway
 
         $rsa->setEncryptionMode(RSA::ENCRYPTION_OAEP);
         $rsa->setHash('sha256');
-        $rsa->setMGFHash('sha256');
+        $rsa->setMGFHash('sha1');
 
         return $rsa;
     }
 
     protected function getNpciPublicKey()
     {
-        $cert = (file_get_contents(__DIR__ . '/keys/NpciMms.cer'));
+        $cert = (file_get_contents(__DIR__ . '/keys/onmag_cert.cer'));
 
         $publicKeyResource = openssl_pkey_get_public($cert);
 
@@ -455,14 +465,21 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getMsgId()
+    protected function getUniqueId()
     {
-        return 'msg_' . UniqueIdEntity::generateUniqueId();
+        return UniqueIdEntity::generateUniqueId();
     }
 
-    protected function getMandateId()
+    protected function getMsgId()
     {
-        return 'mandate_' . UniqueIdEntity::generateUniqueId();
+        $id = $this->getUniqueId();
+
+        return 'msg' . '_' . $id;
+    }
+
+    protected function getMandateId($id)
+    {
+        return 'mandate' . '_' . $id;
     }
 
     protected function callAuthenticationGateway(array $input)
@@ -501,5 +518,40 @@ class Gateway extends Base\Gateway
         $xmlDoc->loadXML($xml);
 
         return $xmlDoc;
+    }
+
+    protected function verifySignature(string $xml)
+    {
+        $sign = new XMLSecLibs\XMLSecurityDSig(null);
+
+        $xmlDoc = new DOMDocument('1.0', 'UTF-8');
+
+        $xmlDoc->loadXML($xml);
+
+        assertTrue($sign->locateSignature($xmlDoc));
+
+        $sign->canonicalizeSignedInfo();
+
+        assertTrue($sign->validateReference());
+
+        $objKey = $sign->locateKey();
+
+        $objKey->loadKey($this->getSigningPublicKey());
+
+        $verify = $sign->verify($objKey);
+
+        // Calls openssl_verify, which returns 1 on success, 0 on failure, -1 on error
+        return ($verify === 1);
+    }
+
+    protected function getSigningPublicKey()
+    {
+        $cert = $this->getRzpCert();
+
+        $publicKeyResource = openssl_pkey_get_public($cert);
+
+        $pubkeyInfo = openssl_pkey_get_details($publicKeyResource);
+
+        return $pubkeyInfo['key'];
     }
 }
