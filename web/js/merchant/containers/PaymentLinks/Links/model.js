@@ -1,4 +1,6 @@
 import { merchantFetch } from 'merchant/utils/ajax';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+
 import { trackFormSubmit } from './ga';
 
 /*
@@ -43,7 +45,7 @@ export function createPaymentLink(reqPayload) {
     notes: reqPayload.notes && Object.keys(reqPayload.notes).length,
     version: 'Payment Links V2',
   };
-  trackFormSubmit(JSON.stringify(reqPayloadToTrack));
+  trackFormSubmit(getKeysSeparatedByPipe(reqPayloadToTrack));
 
   return merchantFetch({
     url: 'invoices',
