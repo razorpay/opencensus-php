@@ -49,6 +49,7 @@ class Gateway
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
+    const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
     const UPI_HULK               = 'upi_hulk';
     const AEPS_ICICI             = 'aeps_icici';
@@ -182,6 +183,7 @@ class Gateway
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_ICICI,
+        Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::WALLET_MPESA,
         Payment\Gateway::CARD_FSS,
@@ -255,6 +257,7 @@ class Gateway
         self::FIRST_DATA          => Settlement\Channel::KOTAK,
         self::UPI_MINDGATE        => Settlement\Channel::KOTAK,
         self::UPI_ICICI           => Settlement\Channel::KOTAK,
+        self::UPI_AXIS            => Settlement\Channel::KOTAK,
         self::UPI_HULK            => Settlement\Channel::KOTAK,
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
@@ -342,6 +345,7 @@ class Gateway
         Method::UPI => [
             self::UPI_MINDGATE,
             self::UPI_ICICI,
+            self::UPI_AXIS,
             self::UPI_SBI,
             self::UPI_HULK,
         ],
@@ -412,6 +416,7 @@ class Gateway
         self::UPI_HULK,
         self::UPI_SBI,
         self::SHARP,
+        self::UPI_AXIS,
     ];
 
     public static $headless = [
@@ -530,6 +535,7 @@ class Gateway
         Upi::HDFC  => Gateway::UPI_MINDGATE,
         Upi::ICIC  => Gateway::UPI_ICICI,
         Upi::SBIN  => Gateway::UPI_SBI,
+        Upi::UTIB  => Gateway::UPI_AXIS,
     ];
 
     public static $acquirerToCodeMap = [
@@ -976,7 +982,8 @@ class Gateway
         Gateway::UPI_HULK,
         Gateway::WALLET_OLAMONEY,
         Gateway::NETBANKING_CORPORATION,
-        Gateway::SHARP
+        Gateway::SHARP,
+        Gateway::UPI_AXIS,
     ];
 
     /**

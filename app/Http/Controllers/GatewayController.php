@@ -59,6 +59,51 @@ class GatewayController extends Controller
         return (new Payment\Service)->s2sCallback($paymentId, $input);
     }
 
+    protected function handleServerCallback($input, $gatewayDriver)
+    {
+        $gateway = $this->app['gateway']->gateway($gatewayDriver);
+
+        $input = $gateway->preProcessServerCallback($input);
+
+        $paymentId = $gateway->getPaymentIdFromServerCallback($input);
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        if ($mode === null)
+        {
+            throw new Exception\LogicException(
+                'Payment id not found in either database',
+                null,
+                [
+                    'gateway'    => $gatewayDriver,
+                    'payment_id' => $paymentId
+                ]);
+        }
+
+        \Database\DefaultConnection::set($mode);
+
+        $this->app['basicauth']->setMode($mode);
+
+        $paymentId = Payment\Entity::getSignedId($paymentId);
+
+        $postInput = [
+            'gateway'   => $input,
+        ];
+
+        try
+        {
+            $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+
+            $response = $gateway->postProcessServerCallback($postInput);
+        }
+        catch (\Exception $exception)
+        {
+            $response = $gateway->postProcessServerCallback($postInput, $exception);
+        }
+
+        return $response;
+    }
+
     protected function callbackEbs($input)
     {
         $gateway = $this->app['gateway']->gateway('ebs');
@@ -147,6 +192,9 @@ class GatewayController extends Controller
                 $data = $this->processServerCallback($input, Gateway::UPI_HULK);
 
                 break;
+
+            case Gateway::UPI_AXIS:
+                $data = $this->handleServerCallback($input, $gateway);
 
         }
 
