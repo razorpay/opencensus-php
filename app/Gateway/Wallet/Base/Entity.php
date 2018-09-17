@@ -125,6 +125,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::WALLET, $wallet);
     }
 
+    public function setGatewayPaymentId($gatewayPaymentId)
+    {
+        $this->setAttribute(self::GATEWAY_PAYMENT_ID, $gatewayPaymentId);
+    }
+
     public function setDate(string $date)
     {
         $this->setAttribute(self::DATE, $date);

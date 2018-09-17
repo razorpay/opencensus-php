@@ -125,8 +125,6 @@ trait ReconTrait
 
         $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
 
-        $this->fixtures->create($this->method, ['payment_id' => $payment->getId()]);
-
         return $payment->getId();
     }
 
