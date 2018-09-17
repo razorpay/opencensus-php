@@ -220,11 +220,17 @@ trait AttemptReconcileTrait
 
     protected function verifyProcessedSettlements(string $channel, $failureTest)
     {
+        $from = Carbon::today(Timezone::IST)->getTimestamp();
+
+        $to = Carbon::tomorrow(Timezone::IST)->getTimestamp() - 1;
+
         $request = [
             'url'       => '/settlements/verify/' . $channel,
             'content'   => [
                 'status'            => Attempt\Status::PROCESSED,
-                'failed_response'   => (int) $failureTest
+                'failed_response'   => (int) $failureTest,
+                'from'              => $from,
+                'to'                => $to
             ]
         ];
 

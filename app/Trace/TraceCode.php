@@ -858,6 +858,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_SYNC_MERCHANT_FAILED                   = 'ES_SYNC_MERCHANT_FAILED';
 
     const RECON_ALERT                               = 'RECON_ALERT';
+    const RECON_EMAIL_VALIDATION_FAILED             = 'RECON_EMAIL_VALIDATION_FAILED';
     const RECON_FILE_SKIP                           = 'RECON_FILE_SKIP';
     const RECON_MISMATCH                            = 'RECON_MISMATCH';
     const RECON_INFO                                = 'RECON_INFO';
@@ -1230,6 +1231,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_VERIFICATION_SKIPPED                      = 'FTA_VERIFICATION_SKIPPED';
     const VERIFY_FTA_ROW                                = 'VERIFY_FTA_ROW';
     const FTA_RECON_PARSED_DATA                         = 'FTA_RECON_PARSED_DATA';
+
+    const APSPDCL_REQUEST                               = 'APSPDCL_REQUEST';
+    const APSPDCL_REQUEST_ERROR                         = 'APSPDCL_REQUEST_ERROR';
+    const APSPDCL_RESPONSE                              = 'APSPDCL_RESPONSE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

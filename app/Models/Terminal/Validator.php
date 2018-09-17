@@ -458,7 +458,7 @@ class Validator extends Base\Validator
 
     protected static $netbankingCorporationTerminalRules = [
         Entity::GATEWAY                     => 'required|in:netbanking_corporation',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:3',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
     ];
 

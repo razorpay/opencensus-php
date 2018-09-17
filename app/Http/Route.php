@@ -875,6 +875,9 @@ final class Route
         'admin_mdr_update'                         => ['put',      'mdr_update',                                     'AdminController@updateMdr'                                         ],
         'merchant_bulk_edit_attributes'            => ['post',     'merchants/bulk/attributes',                      'MerchantController@bulkEditMerchantAttributes'                     ],
 
+        // Apspdcl integration - bridge for remote endpoint access for hosted via api.
+        'apspdcl_bridge'                           => ['any',      'apspdcl/{any}',                                  'ApspdclController@any'                                             ],
+
     ];
 
     public static $public = [
@@ -1196,6 +1199,7 @@ final class Route
         'admin_mdr_update',
         'merchant_post_beneficiary_api',
         'setl_verify',
+        'apspdcl_bridge',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2238,6 +2242,7 @@ final class Route
         'hosted' => [
             'merchant_secret',
             'payment_acknowledge',
+            'apspdcl_bridge',
         ],
 
         'h2h' => [
@@ -2620,21 +2625,25 @@ final class Route
         $uri     = $info[1];
         $action  = $info[2];
 
-        // For any we have to register all the methods their is no specific called any in HTTP methods.
+        // For 'any' we have to register all the methods, there is no http verb called 'any'.
         if ($methods === ['any'])
         {
             $methods = Router::$verbs;
         }
 
-        $router = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
+        $route = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
 
-        //
-        // We add the web middleware group, conditionally to routes
-        // which require cookie / session access
-        //
+        // Hack: To fix by adding support for regex constraint on route parameters.
+        if ($name === 'apspdcl_bridge')
+        {
+            // Allows any suffix on this route
+            $route->where('any', '.*');
+        }
+
+        // We add the web middleware group, conditionally to routes which require cookie / session access.
         if (in_array($name, self::$session, true) === true)
         {
-            $router->middleware('web');
+            $route->middleware('web');
         }
     }
 
