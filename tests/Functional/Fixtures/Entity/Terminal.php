@@ -1652,6 +1652,26 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiAxisTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_AXIS_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_axis',
+            'gateway_merchant_id'       => 'RAZAORPAY',
+            'gateway_terminal_id'       => 'RAZAORPAYAPP',
+            'gateway_merchant_id2'      => 'razaorpay@axis',
+            'gateway_terminal_password' => '1520',
+            'upi'                       => true,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedUpiIciciIntentTerminal(array $attributes)
     {
         $attributes = [

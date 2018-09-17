@@ -13,7 +13,7 @@ $customer_details               = $invoice_data['customer_details'];
 <!doctype html>
 <html>
 <head>
-    <title>Payment Link</title>
+    <title>{{$invoice_data['merchant_label']}} - Payment Link</title>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">

@@ -9,21 +9,18 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
-class Hdfc extends Base
+class HdfcEmandate extends Hdfc
 {
-    const FILE_NAME              = 'HDFC_Netbanking_Refunds';
+    const FILE_NAME              = 'HDFC_Emandate_Refunds';
     const EXTENSION              = FileStore\Format::XLSX;
-    const FILE_TYPE              = FileStore\Type::HDFC_NETBANKING_REFUND;
+    const FILE_TYPE              = FileStore\Type::HDFC_EMANDATE_REFUND;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const GATEWAY                = Payment\Gateway::NETBANKING_HDFC;
     const GATEWAY_CODE           = IFSC::HDFC;
 
-    /**
-     * Formats the data fetched from database as per HDFC netbanking refund file format
-     */
     protected function formatDataForFile(array $data)
     {
-         $formattedData = [];
+        $formattedData = [];
 
         foreach ($data as $index => $row)
         {
@@ -33,7 +30,6 @@ class Hdfc extends Base
             $formattedData[] = [
                 'Sr No'            => $index + 1,
                 'Transaction date' => $date,
-                'Bank reference #' => $row['gateway']['bank_payment_id'],
                 'Order #'          => $row['payment']['id'],
                 'Order Amount'     => $row['payment']['amount'] / 100,
                 'Refund Amount'    => $row['refund']['amount'] / 100,
@@ -42,33 +38,6 @@ class Hdfc extends Base
         }
 
         return $formattedData;
-    }
-
-    /**
-     * Fetches required data to be sent as part of the mail to HDFC
-     */
-    protected function formatDataForMail(array $data)
-    {
-        $file = $this->gatewayFile
-                     ->files()
-                     ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                     ->first();
-
-        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
-
-        $mailData = [
-            'file_name' => $file->getLocation(),
-            'signed_url' => $signedUrl
-        ];
-
-        return $mailData;
-    }
-
-    protected function getFileToWriteNameWithoutExt()
-    {
-        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
-
-        return static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 
     public function fetchEntities(): PublicCollection
@@ -82,7 +51,8 @@ class Hdfc extends Base
             static::GATEWAY_CODE,
             $begin,
             $end,
-            static::GATEWAY
+            static::GATEWAY,
+            Payment\Method::EMANDATE
         );
 
         return $refunds;

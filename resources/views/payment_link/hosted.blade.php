@@ -12,9 +12,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
 <!doctype html>
 <html>
 <head>
-    <title>
-    {{$payment_page_data['title']}} by {{$data['merchant']['name']}}. Proceed to pay Rs. {{amount_format_IN($payment_page_data['amount'])}} via Razorpay Payment Pages.
-    </title>
+    <title>{{$data['merchant']['name']}} - {{$payment_page_data['title']}}</title>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">

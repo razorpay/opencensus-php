@@ -3,10 +3,12 @@
 namespace RZP\Reconciliator;
 
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Reconciliator\RequestProcessor;
 
-class Validator
+class Validator extends Base\Core
 {
     const ACCEPTED_EXTENSIONS_MAP = [
         'csv'  => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
@@ -63,7 +65,7 @@ class Validator
         RequestProcessor\Base::UPI_ICICI          => [
                                                          "/Eazypay app\s*sales summary-[0-9]{2}-"
                                                          . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-                                                         "/Refund MIS for 116798_RAZORPAY_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"
+                                                         "/Refund MIS for [0-9]{6}_RAZORPAY/"
                                                      ],
         RequestProcessor\Base::UPI_HDFC           => [ "/Merchant Payout Report/"],
         RequestProcessor\Base::CARD_FSS_HDFC           => ["/^Settlement Report FSSPaY - Razorpay/"],
@@ -572,6 +574,15 @@ class Validator
                 return true;
             }
         }
+
+        $this->trace->debug(
+            TraceCode::RECON_EMAIL_VALIDATION_FAILED,
+            [
+                'subject'       => $subject,
+                'regex_array'   => $regexArray,
+                'gateway'       => $gateway,
+            ]);
+
         return false;
     }
 
@@ -586,6 +597,15 @@ class Validator
                 return true;
             }
         }
+
+        $this->trace->debug(
+            TraceCode::RECON_EMAIL_VALIDATION_FAILED,
+            [
+                'email_body'    => $body,
+                'regex_array'   => $regexArray,
+                'gateway'       => $gateway,
+            ]);
+
         return false;
     }
 

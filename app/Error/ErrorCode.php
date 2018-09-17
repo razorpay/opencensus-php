@@ -73,6 +73,10 @@ class ErrorCode
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
     const GATEWAY_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT                              = 'GATEWAY_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT';
     const GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED                                   = 'GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED';
+    const GATEWAY_ERROR_TOKEN_INCOMPLETE                                            = 'GATEWAY_ERROR_TOKEN_INCOMPLETE';
+    const GATEWAY_ERROR_TOKEN_VALIDATION_FAILED                                     = 'GATEWAY_ERROR_TOKEN_VALIDATION_FAILED';
+    const GATEWAY_ERROR_DUPLICATE_TOKEN                                             = 'GATEWAY_ERROR_DUPLICATE_TOKEN';
+    const GATEWAY_ERROR_TOKEN_NOT_FOUND                                             = 'GATEWAY_ERROR_TOKEN_NOT_FOUND';
     const GATEWAY_ERROR_CONSUMER_PAN_TAMPERED                                       = 'GATEWAY_ERROR_CONSUMER_PAN_TAMPERED';
     const GATEWAY_ERROR_MERCHANT_PAN_TAMPERED                                       = 'GATEWAY_ERROR_MERCHANT_PAN_TAMPERED';
     const GATEWAY_ERROR_STATUS_CODE_MISMATCH                                        = 'GATEWAY_ERROR_STATUS_CODE_MISMATCH';
