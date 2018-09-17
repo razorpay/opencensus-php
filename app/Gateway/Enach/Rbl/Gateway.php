@@ -86,7 +86,7 @@ class Gateway extends Base\Gateway
             Action::AUTHORIZE
         );
 
-        $authenticationGateway = $enach[Base\Entity::ESIGNER_GATEWAY];
+        $authenticationGateway = $enach[Base\Entity::AUTHENTICATION_GATEWAY];
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
@@ -154,7 +154,7 @@ class Gateway extends Base\Gateway
             Action::AUTHORIZE
         );
 
-        $authenticationGateway = $enach[Base\Entity::ESIGNER_GATEWAY];
+        $authenticationGateway = $enach[Base\Entity::AUTHENTICATION_GATEWAY];
 
         return $this->callAuthenticationGateway($input, $authenticationGateway);
     }

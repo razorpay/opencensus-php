@@ -4287,4 +4287,4 @@ where id in
 ("AX8axVc1Sh8uga", "AZq9Gx5YhyTi8k", "AaJOx3z5PzXSSi", "AbSIf1IMHbqDQ8", "AdiimIYloqhGt5", "AeWUW1Qa3rHZvn");
 
 ALTER TABLE enach
-    ADD COLUMN esigner_gateway VARCHAR(255) DEFAULT NULL AFTER refund_id;
+    ADD COLUMN authentication_gateway VARCHAR(255) DEFAULT NULL AFTER refund_id;

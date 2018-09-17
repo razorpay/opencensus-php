@@ -101,7 +101,7 @@ class EnachRblGatewayTest extends TestCase
 
         $enach = $this->testSuccessfulEsignGeneration();
 
-        $this->assertEquals('esigner_legaldesk', $enach['esigner_gateway']);
+        $this->assertEquals('esigner_legaldesk', $enach['authentication_gateway']);
     }
 
     public function testEsignVerifyOnLegaldesk()

@@ -18,7 +18,7 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
         $gatewayPayment->setPaymentId($this->input['payment']['id']);
 
-        $gatewayPayment->setEsignerGateway($eSignerGateway);
+        $gatewayPayment->setAuthenticationGateway($eSignerGateway);
 
         $gatewayPayment->setAmount($this->input['payment']['amount']);
 
