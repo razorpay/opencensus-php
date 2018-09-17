@@ -210,14 +210,17 @@ class Tooltip extends Component {
       }
     }
 
-    const ele = document.getElementsByClassName(this.props.containerClass)[0];
+    const ele = document.querySelector(this.props.parentQuerySelector);
 
     let parentAdjustment = { top: 0, left: 0 };
-    if (ele && this.props.containerClass) {
-      const coord = getTranslate(ele);
+    if (ele && this.props.parentQuerySelector) {
+      // Relative height of parent wrt to window
+      const viewportOffset = ele.getBoundingClientRect();
+      const top = viewportOffset.top;
+      const left = viewportOffset.left;
 
-      parentAdjustment.left = coord[0];
-      parentAdjustment.top = coord[1];
+      parentAdjustment.left = left;
+      parentAdjustment.top = top;
     }
 
     if (!this.props.followPointer) {
@@ -364,7 +367,7 @@ class Tooltip extends Component {
         onAdjustment,
         onAlignmentChange,
         theme,
-        containerClass,
+        parentQuerySelector,
         ...otherProps
       } = this.props;
 
