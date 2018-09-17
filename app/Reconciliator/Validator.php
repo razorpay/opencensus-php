@@ -67,6 +67,7 @@ class Validator extends Base\Core
                                                          . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
                                                          "/Refund MIS for [0-9]{6}_RAZORPAY/"
                                                      ],
+        RequestProcessor\Base::AIRTEL             => ["/Ecom Merchant Transaction_Report for [0-9]+/"],
         RequestProcessor\Base::UPI_HDFC           => [ "/Merchant Payout Report/"],
         RequestProcessor\Base::CARD_FSS_HDFC           => ["/^Settlement Report FSSPaY - Razorpay/"],
 
@@ -101,7 +102,8 @@ class Validator extends Base\Core
                                                          ],
         RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached Recon Data File of Online Transaction/"],
         RequestProcessor\Base::UPI_HDFC                => ["/Please Find Attachment For Merchant Payout Report/"],
-        RequestProcessor\Base::CARD_FSS_HDFC                => [
+        RequestProcessor\Base::AIRTEL                  => ["/PFA your merchant txn report for Yesterday"],
+        RequestProcessor\Base::CARD_FSS_HDFC           => [
                                                             "/Please find attached All transaction Report & Settlement Report "
                                                             . "for transactions done on FSSPaY/"
                                                           ],
@@ -115,7 +117,8 @@ class Validator extends Base\Core
         RequestProcessor\Base::FIRST_DATA         => 1,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => 1,
         RequestProcessor\Base::HITACHI            => 1,
-        RequestProcessor\Base::UPI_ICICI          => 1
+        RequestProcessor\Base::UPI_ICICI          => 1,
+        RequestProcessor\Base::AIRTEL             => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -173,6 +176,23 @@ class Validator extends Base\Core
         return $this->validateEmailSubject(
                     $emailDetails[RequestProcessor\Mailgun::SUBJECT],
                     RequestProcessor\Base::KOTAK);
+    }
+
+    public function validateAirtelEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::AIRTEL);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            RequestProcessor\Base::AIRTEL);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::AIRTEL);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
     }
 
     public function validateFreechargeEmail(array $emailDetails)

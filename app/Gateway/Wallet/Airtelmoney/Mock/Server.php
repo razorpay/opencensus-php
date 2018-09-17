@@ -376,7 +376,7 @@ class Server extends Base\Mock\Server
                 RefundFields::MERCHANT_ID      => $request[RefundFields::MERCHANT_ID],
                 RefundFields::ERROR_CODE       => Constants::SUCCESS,
                 RefundFields::AMOUNT           => $request[RefundFields::AMOUNT],
-                RefundFields::TRANSACTION_ID   => $request[RefundFields::TRANSACTION_ID],
+                RefundFields::TRANSACTION_ID   => $this->getArtlTxnId(),
                 RefundFields::TRANSACTION_DATE => $date,
                 RefundFields::STATUS           => Status::SUCCESS,
                 RefundFields::SESSION_ID       => $request[RefundFields::SESSION_ID],

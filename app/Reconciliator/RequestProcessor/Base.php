@@ -40,6 +40,7 @@ class Base extends Core
     const HDFC                   = 'HDFC';
     const AXIS                   = 'Axis';
     const KOTAK                  = 'Kotak';
+    const AIRTEL                 = 'Airtel';
     const BILLDESK               = 'BillDesk';
     const PAYZAPP                = 'PayZapp';
     const MOBIKWIK               = 'Mobikwik';
@@ -91,6 +92,7 @@ class Base extends Core
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
+        self::AIRTEL                 => ['no-reply@airtelbank.com'],
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],
         self::NETBANKING_PNB         => [],
