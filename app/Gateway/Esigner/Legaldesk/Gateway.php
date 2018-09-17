@@ -65,9 +65,9 @@ class Gateway extends Base\Gateway
                 $response[ResponseFields::ERROR_CODE],
                 $response[ResponseFields::ERROR],
                 [
-                    'payment_id'             => $input['payment']['id'],
-                    'token_id'               => $input['token']['id'],
-                    'mandate_crete_response' => $response,
+                    'payment_id'              => $input['payment']['id'],
+                    'token_id'                => $input['token']['id'],
+                    'mandate_create_response' => $response,
                 ]);
         }
 
