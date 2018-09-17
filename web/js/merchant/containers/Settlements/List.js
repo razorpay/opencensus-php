@@ -13,9 +13,10 @@ import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
+import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlementsModal';
 
 @connect(
-  state => state.settlements,
+  state => ({ user: state.session.user, ...state.settlements }),
   {
     fetchAll,
     ...ModalActions,
@@ -75,11 +76,18 @@ export default class SettlementsListContainer extends ListContainer {
     });
   };
 
+  showRequestEarySettlementForm = e => {
+    this.props.openModal({
+      component: <RequestEarlyAccessForm />,
+      size: 'small',
+    });
+  };
+
   render() {
     let { loading, items, error } = this.props;
 
     return (
-      <div>
+      <React.Fragment>
         <EarlySettlementAnnouncement />
 
         <tabbed-container>
@@ -92,13 +100,27 @@ export default class SettlementsListContainer extends ListContainer {
           <content>
             <div class="content-wrapper">
               <HeaderAction>
-                <a
-                  class="btn btn-link"
-                  href="http://razorpay.com/settlement"
-                  target="_blank"
-                >
-                  How settlements work?&nbsp;<span class="icon i-external-link" />
-                </a>
+                <React.Fragment>
+                  {this.props.user.findTag('announcement_early_settlements') ? (
+                    <a
+                      class="btn btn-link req-es-btn"
+                      onClick={this.showRequestEarySettlementForm}
+                    >
+                      Request Early Settlements{' '}
+                      <i class="fa fa-circle interpunct" />
+                    </a>
+                  ) : (
+                    ''
+                  )}
+
+                  <a
+                    class="btn btn-link settlement-doc-btn"
+                    href="http://razorpay.com/settlement"
+                    target="_blank"
+                  >
+                    How settlements work?&nbsp;<span class="icon i-external-link" />
+                  </a>
+                </React.Fragment>
               </HeaderAction>
               <SettlementsListFilter
                 form="settlementsListFilter"
@@ -144,7 +166,7 @@ export default class SettlementsListContainer extends ListContainer {
             </div>
           </content>
         </tabbed-container>
-      </div>
+      </React.Fragment>
     );
   }
 }

@@ -10,7 +10,7 @@ import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 
 export default function MyAccount() {
   return (
-    <div>
+    <React.Fragment>
       <EarlySettlementAnnouncement />
 
       <tabbed-container>
@@ -47,6 +47,6 @@ export default function MyAccount() {
           <Route path="/team" component={TeamManagement} />
         </content>
       </tabbed-container>
-    </div>
+    </React.Fragment>
   );
 }

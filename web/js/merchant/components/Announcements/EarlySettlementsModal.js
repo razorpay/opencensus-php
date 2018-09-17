@@ -6,6 +6,7 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import InputField from 'rzp/ui/Forms/InputField';
 import { Field, reduxForm } from 'redux-form';
 import RadioButton from 'rzp/ui/Forms/RadioButton';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
 @connect(
   state => ({ user: state.session.user }),
@@ -23,21 +24,26 @@ export default class RequestEarlyAccessForm extends Component {
   constructor(props) {
     super(props);
 
-    this.props.initialValues.email = this.props.user.email;
+    this.props.initialValues.email = this.props.user.user.email;
     this.props.initialValues.phone = this.props.user.contact_mobile;
-    this.state = {};
-    this.state.saved = false;
+    this.state = {
+      saving: false,
+      saved: false,
+    };
     this.onSubmit = this.onSubmit.bind(this);
   }
 
   onSubmit(body) {
+    this.setState({
+      saving: true,
+    });
     axios({
       method: 'post',
       url: 'https://hooks.zapier.com/hooks/catch/1088429/qljsgo',
       data: {
         user_email: body.email,
         user_phone: body.phone,
-        merchant_id: this.props.user.id,
+        merchant_id: this.props.user.current,
         merchant_name: this.props.user.name,
         role: this.props.user.role,
         activation_status: this.props.user.activation_status,
@@ -48,8 +54,11 @@ export default class RequestEarlyAccessForm extends Component {
       },
     }).then(response => {
       if (response.status == 200) {
-        this.props.closeBanner();
+        if (this.props.closeBanner) {
+          this.props.closeBanner();
+        }
         this.setState({
+          saving: false,
           saved: true,
         });
       }
@@ -103,20 +112,57 @@ export default class RequestEarlyAccessForm extends Component {
           </div>
           <div class="form-group">
             <label>Interested In</label>
-            <Field
-              name="interested_in"
-              component={RadioButton}
-              htmlValue="automatic"
-              label="Automatic Early Settlements"
-            />
+            <div>
+              <Field
+                name="interested_in"
+                component={RadioButton}
+                htmlValue="automatic"
+                label={() => (
+                  <span>
+                    Automatic Early Settlements
+                    <span class="help-content">
+                      <i className="i i-help m-l" />
+                      <Popover
+                        align="right"
+                        theme="dark"
+                        parentQuerySelector=".rzp-early-stl-modal"
+                      >
+                        <PopoverBody>
+                          All of your settlements are done early, within few
+                          hours.
+                        </PopoverBody>
+                      </Popover>
+                    </span>
+                  </span>
+                )}
+              />
+            </div>
+
             <Field
               name="interested_in"
               component={RadioButton}
               htmlValue="on-demand"
-              label="On-demand Early Settlements"
+              label={() => (
+                <span>
+                  On-demand Early Settlements
+                  <span class="help-content">
+                    <i className="i i-help m-l" />
+                    <Popover
+                      align="right"
+                      theme="dark"
+                      parentQuerySelector=".rzp-early-stl-modal"
+                    >
+                      <PopoverBody>
+                        Settle your balance amount when needed. The Settlement
+                        will be initiated in the next available slot.
+                      </PopoverBody>
+                    </Popover>
+                  </span>
+                </span>
+              )}
             />
           </div>
-          <Button.Primary class="submit-btn">
+          <Button.Primary class="submit-btn" disabled={this.state.saving}>
             Request Early Access
           </Button.Primary>
         </form>

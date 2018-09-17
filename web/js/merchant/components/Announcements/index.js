@@ -10,22 +10,33 @@ import RequestEarlyAccessForm from './EarlySettlementsModal';
 export default class Announcement extends Component {
   constructor(props) {
     super();
-    this.props = props;
+    this.state = {
+      hidden: false,
+    };
   }
 
   handleClose = () => {
+    if (this.props.bannerKey) {
+      LocalStorageService.setItem(this.props.bannerKey, 1);
+    }
+
     if (this.props.handleClose) {
       this.props.handleClose();
     }
+
+    this.setState({
+      hidden: true,
+    });
   };
 
   render() {
     return (
       <div
         class={classList(
-          'Announcement_Banner_2',
+          'Announcement_Banner',
           this.props.className,
-          this.props.hidden && 'Announcement_Banner--hide'
+          (this.props.hidden || this.state.hidden) &&
+            'Announcement_Banner--hide'
         )}
       >
         {this.props.children}
@@ -44,9 +55,10 @@ export default class Announcement extends Component {
 export class EarlySettlementAnnouncement extends Component {
   constructor(props) {
     super();
-    this.props = props;
-    this.state = {};
-    this.state.bannerKey = `early-settlement-banner-viewed-${props.user.id}`;
+    this.state = {
+      bannerKey: `early-settlement-banner-viewed-${props.user.id}`,
+    };
+
     if (props.user.findTag('announcement_early_settlements')) {
       this.state.isHidden = LocalStorageService.getItem(this.state.bannerKey);
     } else {
@@ -75,7 +87,6 @@ export class EarlySettlementAnnouncement extends Component {
   render() {
     let className = 'settlement-anc';
     className += this.props.withTour ? ' with-tour' : '';
-    className += this.props.inMobile ? ' inMobile' : '';
 
     return (
       <ShowWhen myRole="owner manager admin">
@@ -83,18 +94,19 @@ export class EarlySettlementAnnouncement extends Component {
           class={className}
           hidden={this.state.isHidden}
           handleClose={this.handleClose}
+          bannerKey={this.state.bannerKey}
         >
           <div>
             <div class="title">
               <span>Introducing Early Settlements</span>
             </div>
 
-            {this.props.inMobile ? '' : <div class="corner" />}
+            <div class="corner" />
 
             <div class="content">
               <span>
-                Get your payments within <strong>12 working hours</strong> and
-                never have a shortfall of working capital.
+                Get your payments settled within <strong>a few hours</strong>{' '}
+                and never have a shortfall of working capital.&nbsp;
               </span>
               <Button.Transparent class="btn-link" onClick={this.handleRequest}>
                 Request Access <i class="i-chevron-right" />

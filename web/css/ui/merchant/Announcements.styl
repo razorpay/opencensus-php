@@ -1,34 +1,4 @@
 .Announcement_Banner
-  padding: 12px 36px 12px 12px
-  text-align: center
-  margin-bottom: 12px
-  line-height: 20px
-  color: #fff
-  background-color: #5d89e5
-  background: linear-gradient(223.96deg, #3059c0 0%, #5d89e5 100%)
-  position: relative
-  transition: 0.25s cubic-bezier(0.12, 1.03, 1, 1)
-
-  &--hide
-    height: 0
-    margin: 0
-    padding: 0
-
-  .link
-    text-decoration: underline
-    color: inherit
-
-  .close-btn
-    font-size: 20px
-    position: absolute
-    top: 8px
-    right: 12px
-    padding: 4px 8px
-
-.Announcement_Banner--hide
-  display: none
-
-.Announcement_Banner_2
   margin: 65px 20px 0px 20px
   background: #ffffff
   height: 50px
@@ -39,24 +9,24 @@
   .title
     float: left
     height: 50px
-    // background: #4975D5
-    background: linear-gradient(270deg, #2682FF 0%, #415BD3 100%);
+    font-weight: bold
+    background: linear-gradient(270deg, #2682FF 0%, #415BD3 100%)
     color: white
     padding: 15px 0 15px 15px
-    border-radius: 2px 0 0 2px;
+    border-radius: 2px 0 0 2px
 
   .corner
     float: left
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 50px 50px 0 0;
-    border-color: #2682FF transparent transparent transparent;
+    width: 0
+    height: 0
+    border-style: solid
+    border-width: 50px 50px 0 0
+    border-color: #2682FF transparent transparent transparent
 
   .content
     float: left
     padding: 15px 15px 15px 0
-    width: 65%
+    width: 72%
   
   .close-btn
     color: #58666D
@@ -67,14 +37,13 @@
     padding: 4px 8px
 
   .btn-link 
-    margin: 0 5px
     font-weight: bold
     text-decoration: none
 
     .i-chevron-right
-      top: 2px;
-      left: 0;
-      position: relative;
+      top: 2px
+      left: 0
+      position: relative
 
 .Modal--small .rzp-early-stl-modal
   color: #58666E
@@ -88,16 +57,19 @@
   .submit-btn, .close-btn
     width: 100%
 
-.Announcement_Banner_2.with-tour
+.Announcement_Banner.with-tour
   margin-top: 20px
 
-@media only screen and (max-width: 1190px)
-  .Announcement_Banner_2
+@media only screen and (max-width: 1190px) and (min-width: 1021px)
+  .Announcement_Banner
     height: 68px
 
     .title
       height 68px
       padding: 24px 0 15px 15px
+    
+    .content
+      width: 65%
 
     .corner
       border-width: 68px 68px 0 0
@@ -105,19 +77,27 @@
     .close-btn
       top: 12px
 
-.Announcement_Banner_2.inMobile
-  height 148px
+@media only screen and (max-width: 1020px)
+  .Announcement_Banner
+    height: auto  
 
-  .title
-    float: none
-    height 48px
-    padding: 15px
-    border-radius: 2px 2px 0 0
+    .title
+      float: none
+      height 48px
+      padding: 12px
+      border-radius: 2px 2px 0 0
+    
+    .corner
+      display: none
+    
+    .content
+      float: none
+      width: 100%
+      padding: 12px
+    
+    .close-btn
+      color: #ffffff
+      top: 2px
 
-  .content
-    width: 100%
-    padding: 15px
-  
-  .close-btn
-    color: #ffffff;
-    top: 2px
+.Announcement_Banner--hide
+  display: none
