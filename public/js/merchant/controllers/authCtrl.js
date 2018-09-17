@@ -354,6 +354,10 @@ app
           );
         }
 
+        // IMPORTANT: DO NOT REMOVE THESE (USED FOR MARKETING PURPOSES - TRACK SIGNUP ATTEMPTS)
+        window.ga && ga('send', 'event', 'sign-up-form-success');
+        window.ga && ga('old.send', 'event', 'sign-up-form-success');
+
         pushToDrip();
         invokeAdroll();
         invokeGtag();
