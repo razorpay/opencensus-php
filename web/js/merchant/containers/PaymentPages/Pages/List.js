@@ -222,7 +222,12 @@ export default class PaymentPagesContainer extends ListContainer {
                       {item.short_url && (
                         <span class="CopyLink">
                           <span>{item.short_url}</span>
-                          <CustomClipboard value={item.short_url}>
+                          <CustomClipboard
+                            value={item.short_url}
+                            onCopy={() => {
+                              trackListActions('Click Copy URL');
+                            }}
+                          >
                             <button class="btn btn-default btn-xs">copy</button>
                           </CustomClipboard>
                         </span>
