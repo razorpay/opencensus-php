@@ -264,6 +264,19 @@ class MockGatewayController extends Controller
         return $server->sign($input);
     }
 
+    public function postEnachPayment($bank)
+    {
+        $input = Request::all();
+
+        $driver = 'enach_' . $bank;
+
+        $server = $this->gateway->server($driver);
+
+        $data =  $server->authorize($input);
+
+        return $data;
+    }
+
     public function postUpiPayment($bank)
     {
         $input = Request::all();
