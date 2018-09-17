@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 import * as ModalActions from 'rzp/modules/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
 import RequestEarlyAccessForm from './EarlySettlementsModal';
+import trackESAnnouncements from './ga';
 
 export default class Announcement extends Component {
   constructor(props) {
@@ -56,7 +57,7 @@ export class EarlySettlementAnnouncement extends Component {
   constructor(props) {
     super();
     this.state = {
-      bannerKey: `early-settlement-banner-viewed-${props.user.id}`,
+      bannerKey: `early-settlement-banner-viewed-${props.user.current}`,
     };
 
     if (props.user.findTag('announcement_early_settlements')) {
@@ -65,11 +66,23 @@ export class EarlySettlementAnnouncement extends Component {
       this.state.isHidden = true;
     }
 
-    this.handleClose = this.handleClose.bind(this);
+    this.handleCloseButton = this.handleCloseButton.bind(this);
+    this.closeBanner = this.closeBanner.bind(this);
     this.handleRequest = this.handleRequest.bind(this);
   }
 
-  handleClose() {
+  componentDidMount() {
+    if (!this.state.isHidden) {
+      trackESAnnouncements.earlySettlementAppear(this.props.from);
+    }
+  }
+
+  handleCloseButton() {
+    this.closeBanner();
+    trackESAnnouncements.earlySettlementClickCloseButton(this.props.from);
+  }
+
+  closeBanner() {
     this.setState({
       isHidden: true,
     });
@@ -78,8 +91,14 @@ export class EarlySettlementAnnouncement extends Component {
   }
 
   handleRequest() {
+    trackESAnnouncements.earlySettlementClickRequestAccess(this.props.from);
     this.props.openModal({
-      component: <RequestEarlyAccessForm closeBanner={this.handleClose} />,
+      component: (
+        <RequestEarlyAccessForm
+          closeBanner={this.closeBanner}
+          from={this.props.from}
+        />
+      ),
       size: 'small',
     });
   }
@@ -93,7 +112,7 @@ export class EarlySettlementAnnouncement extends Component {
         <Announcement
           class={className}
           hidden={this.state.isHidden}
-          handleClose={this.handleClose}
+          handleClose={this.handleCloseButton}
           bannerKey={this.state.bannerKey}
         >
           <div>

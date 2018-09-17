@@ -152,7 +152,10 @@ class AnalyticsDesktop extends Component {
             </div>
           )}
 
-          <EarlySettlementAnnouncement withTour={hasNewAnalyticsTour} />
+          <EarlySettlementAnnouncement
+            withTour={hasNewAnalyticsTour}
+            from="Home-Desktop"
+          />
 
           <div
             className={`v2-onboarding-card${

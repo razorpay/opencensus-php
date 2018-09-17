@@ -14,6 +14,10 @@ import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlementsModal';
+import {
+  trackEarlySettlementRequests,
+  trackHowSettlementsWorkClicks,
+} from './ga';
 
 @connect(
   state => ({ user: state.session.user, ...state.settlements }),
@@ -77,6 +81,7 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   showRequestEarySettlementForm = e => {
+    trackEarlySettlementRequests();
     this.props.openModal({
       component: <RequestEarlyAccessForm />,
       size: 'small',
@@ -88,7 +93,7 @@ export default class SettlementsListContainer extends ListContainer {
 
     return (
       <React.Fragment>
-        <EarlySettlementAnnouncement />
+        <EarlySettlementAnnouncement from="Settlements" />
 
         <tabbed-container>
           <header>
@@ -117,6 +122,7 @@ export default class SettlementsListContainer extends ListContainer {
                     class="btn btn-link settlement-doc-btn"
                     href="http://razorpay.com/settlement"
                     target="_blank"
+                    onClick={trackHowSettlementsWorkClicks}
                   >
                     How settlements work?&nbsp;<span class="icon i-external-link" />
                   </a>

@@ -7,6 +7,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import { Field, reduxForm } from 'redux-form';
 import RadioButton from 'rzp/ui/Forms/RadioButton';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import trackESAnnouncements from './ga';
 
 @connect(
   state => ({ user: state.session.user }),
@@ -31,12 +32,15 @@ export default class RequestEarlyAccessForm extends Component {
       saved: false,
     };
     this.onSubmit = this.onSubmit.bind(this);
+    this.closeForm = this.closeForm.bind(this);
   }
 
   onSubmit(body) {
     this.setState({
       saving: true,
     });
+    trackESAnnouncements.earlySettlementModalSubmit(this.props.from);
+
     axios({
       method: 'post',
       url: 'https://hooks.zapier.com/hooks/catch/1088429/qljsgo',
@@ -65,6 +69,11 @@ export default class RequestEarlyAccessForm extends Component {
     });
   }
 
+  closeForm() {
+    trackESAnnouncements.earlySettlementModalClose(this.props.from);
+    this.props.closeModal();
+  }
+
   render() {
     let { handleSubmit } = this.props;
 
@@ -85,7 +94,7 @@ export default class RequestEarlyAccessForm extends Component {
       <div class="modal-body rzp-early-stl-modal">
         <ModalHeader
           title="Request Early Settlements"
-          onCloseClick={this.props.closeModal}
+          onCloseClick={this.closeForm}
         />
         <div class="help-block">
           With early settlements, you will receive your settlements ahead of
@@ -128,7 +137,7 @@ export default class RequestEarlyAccessForm extends Component {
                         parentQuerySelector=".rzp-early-stl-modal"
                       >
                         <PopoverBody>
-                          All of your settlements are done early, within few
+                          All of your settlements are done early, within a few
                           hours.
                         </PopoverBody>
                       </Popover>

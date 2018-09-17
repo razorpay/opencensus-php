@@ -11,7 +11,7 @@ import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 export default function MyAccount() {
   return (
     <React.Fragment>
-      <EarlySettlementAnnouncement />
+      <EarlySettlementAnnouncement from="MyAccount" />
 
       <tabbed-container>
         <header id="myaccount-header">

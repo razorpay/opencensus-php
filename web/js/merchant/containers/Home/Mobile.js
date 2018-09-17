@@ -58,7 +58,7 @@ class AnalyticsMobile extends Component {
 
     return (
       <div className="home-analytics-mobile">
-        <EarlySettlementAnnouncement />
+        <EarlySettlementAnnouncement from="Home-Mobile" />
 
         <div ref={node => onExtraContentMount(node)} className="extra-content">
           <div
