@@ -196,6 +196,9 @@ class Entity
     const REPORTING_SCHEDULES          = 'reporting.schedules';
     const SHIELD_RULES                 = 'shield.rules';
     const SHIELD_RULE_ANALYTICS        = 'shield.rule_analytics';
+    const SHIELD_RISKS                 = 'shield.risks';
+    const SHIELD_LISTS                 = 'shield.lists';
+    const SHIELD_LIST_ITEMS            = 'shield.list_items';
 
     /**
      * Defines a map of entites which are currently
@@ -423,6 +426,9 @@ class Entity
         self::REPORTING_SCHEDULES          => \RZP\Services\Reporting::class,
         self::SHIELD_RULES                 => \RZP\Services\ShieldClient::class,
         self::SHIELD_RULE_ANALYTICS        => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RISKS                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LISTS                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LIST_ITEMS            => \RZP\Services\ShieldClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [
