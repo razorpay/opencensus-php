@@ -23,7 +23,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
               <Popover
                 align="left"
                 theme="dark"
-                containerClass="switch-merchant__Tether"
+                parentQuerySelector=".switch-merchant__Tether"
               >
                 <PopoverBody>
                   <div>{option.display_name || option.name}</div>
