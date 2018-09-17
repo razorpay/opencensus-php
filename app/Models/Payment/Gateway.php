@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use App;
+use Illuminate\Auth\Access\Gate;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
@@ -757,6 +758,7 @@ class Gateway
             Gateway::NETBANKING_AXIS,
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
+            Gateway::ENACH_RBL,
         ],
         // Esigner Digio is added here just for test cases
         AuthType::AADHAAR => [
