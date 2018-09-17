@@ -9,13 +9,10 @@ use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Enach\Base;
 use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\Verify;
 use RZP\Models\Customer\Token;
 use RZP\Models\Settlement\Holidays;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\AuthorizeFailed;
-
-use Cache;
 
 class Gateway extends Base\Gateway
 {
@@ -23,8 +20,11 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'enach_rbl';
 
-    protected $authenticationGateway = Payment\Gateway::ESIGNER_DIGIO;
-
+    /**
+     * @param array $input
+     * @return array|void
+     * @throws Exception\GatewayErrorException
+     */
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -37,13 +37,13 @@ class Gateway extends Base\Gateway
 
         try
         {
-            $this->authenticationGateway = $input['authenticate']['gateway'] ?? Payment\Gateway::ESIGNER_DIGIO;
+            $authenticationGateway = $input['authenticate']['gateway'];
 
-            $authenticationResponse = $this->callAuthenticationGateway($input);
+            $authenticationResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
             $content[Base\Entity::GATEWAY_REFERENCE_ID] = $authenticationResponse['content']['reference_id'];
 
-            $this->createGatewayPaymentEntity($content, $this->authenticationGateway, Action::AUTHORIZE);
+            $this->createGatewayPaymentEntity($content, $authenticationGateway, Action::AUTHORIZE);
 
             unset($authenticationResponse['content']['reference_id']);
         }
@@ -60,7 +60,7 @@ class Gateway extends Base\Gateway
 
             if ($content[Base\Entity::GATEWAY_REFERENCE_ID] !== null)
             {
-                $this->createGatewayPaymentEntity($content, $this->authenticationGateway, 'authorize');
+                $this->createGatewayPaymentEntity($content, $authenticationGateway, Action::AUTHORIZE);
             }
             else
             {
@@ -86,9 +86,9 @@ class Gateway extends Base\Gateway
             Action::AUTHORIZE
         );
 
-        $this->authenticationGateway = $enach[Base\Entity::ESIGNER_GATEWAY];
+        $authenticationGateway = $enach[Base\Entity::ESIGNER_GATEWAY];
 
-        $authResponse = $this->callAuthenticationGateway($input, $enach);
+        $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
         $this->updateGatewayPaymentEntity($enach, $authResponse, false);
 
@@ -154,19 +154,20 @@ class Gateway extends Base\Gateway
             Action::AUTHORIZE
         );
 
-        $this->authenticationGateway = $enach[Base\Entity::ESIGNER_GATEWAY];
+        $authenticationGateway = $enach[Base\Entity::ESIGNER_GATEWAY];
 
-        return $this->callAuthenticationGateway($input, $enach);
+        return $this->callAuthenticationGateway($input, $authenticationGateway);
     }
 
     /**
      * @param array $input
+     * @param $authenticationGateway
      * @return array
      */
-    protected function callAuthenticationGateway(array $input)
+    protected function callAuthenticationGateway(array $input, $authenticationGateway)
     {
         $esignerGatewayResponse = $this->app['gateway']->call(
-            $this->authenticationGateway,
+            $authenticationGateway,
             $this->action,
             $input,
             $this->mode);
