@@ -9,14 +9,14 @@ class Gateway extends Rbl\Gateway
 {
     use Base\Mock\GatewayTrait;
 
+    protected $bank = 'rbl';
+
     public function authorize(array $input)
     {
         if (($input['payment']['method'] === 'emandate') and
             ($input['payment']['auth_type'] === 'netbanking'))
         {
-            $request = parent::authorize($input);
-
-            return $this->netbankingAuthorizeMock($request);
+            return $this->authorizeMock($input, 'mock_enach_payment');
         }
 
         return $this->authorizeMock($input, 'mock_esigner_payment');
@@ -26,30 +26,30 @@ class Gateway extends Rbl\Gateway
     {
         $gateway = $this->gateway;
 
-        $route = 'mock_esigner_payment';
-
-        $url = $this->route->getUrl($route, ['signer' => 'digio']);
-
-        if ($request['method'] === 'get')
+        if($route === 'mock_enach_payment')
         {
-            // The key thing now is to replace the url from gateway to our mock one!
-            $parts = parse_url($request['url']);
-
-            $url = $url . '?' .$parts['query'];
+            $url = $this->route->getUrl($route, ['bank' => 'rbl']);
 
             $request['url'] = $url;
         }
 
-        $request['url'] = $url;
-    }
+        else
+        {
+            $route = 'mock_esigner_payment';
 
-    public function netbankingAuthorizeMock($request)
-    {
-        $url = $this->route->getUrlWithPublicAuth(
-            'mock_enach_payment', ['bank' => 'rbl']);
+            $url = $this->route->getUrl($route, ['signer' => 'digio']);
 
-        $request['url'] = $url;
+            if ($request['method'] === 'get')
+            {
+                // The key thing now is to replace the url from gateway to our mock one!
+                $parts = parse_url($request['url']);
 
-        return $request;
+                $url = $url . '?' .$parts['query'];
+
+                $request['url'] = $url;
+            }
+
+            $request['url'] = $url;
+        }
     }
 }
