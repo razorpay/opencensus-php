@@ -53,7 +53,11 @@ class AdminFetch
                 'ruleset'           => [
                     Fetch::LABEL        => 'ruleset',
                     Fetch::TYPE         => Fetch::TYPE_STRING
-                ]
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
             ],
             Entity::SHIELD_RULE_ANALYTICS => [
                 'entity_id'         => [
@@ -123,7 +127,11 @@ class AdminFetch
                         'domain',
                         'ip'
                     ]
-                ]
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
             ],
             Entity::SHIELD_LIST_ITEMS => [
                 'list_id'         => [
@@ -150,6 +158,10 @@ class AdminFetch
                 'value'         => [
                     Fetch::LABEL        => 'value',
                     Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
             ],
         ];
