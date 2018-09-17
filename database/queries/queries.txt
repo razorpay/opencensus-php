@@ -4201,3 +4201,6 @@ ALTER TABLE users
 
 ALTER TABLE tokens
     ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number;
+
+ALTER TABLE enach
+    ADD COLUMN esigner_gateway VARCHAR(255) DEFAULT NULL AFTER payment_id;

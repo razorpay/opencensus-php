@@ -9,6 +9,7 @@ class Entity extends Base\Entity
 {
     const ID                    = 'id';
     const PAYMENT_ID            = 'payment_id';
+    const ESIGNER_GATEWAY       = 'esigner_gateway';
     const REFUND_ID             = 'refund_id';
     const ACQUIRER              = 'acquirer';
     const ACTION                = 'action';
@@ -29,6 +30,7 @@ class Entity extends Base\Entity
     protected $fields = [
         self::ID,
         self::PAYMENT_ID,
+        self::ESIGNER_GATEWAY,
         self::REFUND_ID,
         self::ACTION,
         self::BANK,
@@ -43,6 +45,7 @@ class Entity extends Base\Entity
 
     protected $fillable = [
         self::RECEIVED,
+        self::ESIGNER_GATEWAY,
         self::SIGNED_XML,
         self::UMRN,
         self::STATUS,
@@ -100,6 +103,11 @@ class Entity extends Base\Entity
     public function setBank(string $bank)
     {
         $this->setAttribute(self::BANK, $bank);
+    }
+
+    public function setEsignerGateway($gateway)
+    {
+        $this->setAttribute(self::ESIGNER_GATEWAY, $gateway);
     }
 
     public function payment()

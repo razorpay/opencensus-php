@@ -142,6 +142,58 @@ class Service extends Base\Service
     }
 
     /**
+     * @param array $input
+     * @return array
+     * @throws Exception\ServerErrorException
+     */
+    public function updateConfigKey(array $input): array
+    {
+        (new Validator)->validateInput('update_config_key', $input);
+
+        $currentConfig = null;
+
+        try
+        {
+            $currentConfig = Cache::get($input['key']);
+        }
+        catch (\Throwable $ex)
+        {
+
+            throw new Exception\ServerErrorException(
+                'Redis key fetch failed',
+                ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
+                $input
+            );
+        }
+
+        // This can happen if the caching service(redis) is down
+        if ($currentConfig !== null)
+        {
+            $currentConfig = json_decode($currentConfig, true);
+        }
+        else
+        {
+            $currentConfig = [];
+        }
+
+        $oldConfig = $currentConfig;
+
+        array_set($currentConfig, $input['path'], $input['value']);
+
+        $data = [
+            'key'       => $input['key'],
+            'old_value' => $oldConfig,
+            'new_value' => $currentConfig,
+        ];
+
+        Cache::forever($input['key'], json_encode($currentConfig));
+
+        $this->trace->info(TraceCode::REDIS_KEY_SET, $data);
+
+        return $data;
+    }
+
+    /**
      * @param string $key
      * @param mixed $newValue
      *

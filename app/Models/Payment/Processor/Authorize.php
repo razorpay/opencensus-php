@@ -1265,8 +1265,54 @@ trait Authorize
         $this->setGatewayTokenInInput($payment, $gatewayInput);
     }
 
+    /**
+     * @param Payment\Entity $payment
+     * @param array $gatewayInput
+     * @throws Exception\ServerErrorException
+     */
     protected function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
     {
+        //
+        // Todo: During NPCI eMandate integration, we need to have one more condition
+        // here to check if the auth method is aadhaar.
+        //
+        if (($payment->isMethod(Payment\Method::EMANDATE) === true) and
+            (Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true))
+        {
+            $eSignerGateway = Payment\Gateway::ESIGNER_DIGIO;
+
+            $key = ConfigKey::MERCHANT_ENACH_CONFIGS;
+
+            $merchantId = $payment->merchant->getId();
+
+            $esignerConfigs = null;
+
+            try
+            {
+                $esignerConfigs = Cache::get($key);
+            }
+            catch (\Throwable $ex)
+            {
+                // If cache fetch fails(say, the cache service is down), do not fail the payment.
+                // Instead, fallback to the default eSigner gateway.
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::REDIS_KEY_FETCH,
+                    ['key' => $key]
+                );
+            }
+
+            $esignerConfigs = json_decode($esignerConfigs, true);
+
+            if (isset($esignerConfigs['auth_gateway'][$merchantId]) === true)
+            {
+                $eSignerGateway = $esignerConfigs['auth_gateway'][$merchantId];
+            }
+
+            $gatewayInput['authenticate']['gateway'] = $eSignerGateway;
+        }
+
         if (($payment->isMethodCardOrEmi() === true) and
             (Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true))
         {

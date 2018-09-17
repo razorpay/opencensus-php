@@ -15,11 +15,15 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\AuthorizeFailed;
 
+use Cache;
+
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
     protected $gateway = 'enach_rbl';
+
+    protected $authenticationGateway = Payment\Gateway::ESIGNER_DIGIO;
 
     public function authorize(array $input)
     {
@@ -33,11 +37,13 @@ class Gateway extends Base\Gateway
 
         try
         {
+            $this->authenticationGateway = $input['authenticate']['gateway'] ?? Payment\Gateway::ESIGNER_DIGIO;
+
             $authenticationResponse = $this->callAuthenticationGateway($input);
 
             $content[Base\Entity::GATEWAY_REFERENCE_ID] = $authenticationResponse['content']['reference_id'];
 
-            $this->createGatewayPaymentEntity($content, 'authorize');
+            $this->createGatewayPaymentEntity($content, $this->authenticationGateway, Action::AUTHORIZE);
 
             unset($authenticationResponse['content']['reference_id']);
         }
@@ -54,7 +60,7 @@ class Gateway extends Base\Gateway
 
             if ($content[Base\Entity::GATEWAY_REFERENCE_ID] !== null)
             {
-                $this->createGatewayPaymentEntity($content, 'authorize');
+                $this->createGatewayPaymentEntity($content, $this->authenticationGateway, 'authorize');
             }
             else
             {
@@ -75,12 +81,14 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $authResponse = $this->callAuthenticationGateway($input);
-
         $enach = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],
             Action::AUTHORIZE
         );
+
+        $this->authenticationGateway = $enach[Base\Entity::ESIGNER_GATEWAY];
+
+        $authResponse = $this->callAuthenticationGateway($input, $enach);
 
         $this->updateGatewayPaymentEntity($enach, $authResponse, false);
 
@@ -92,13 +100,6 @@ class Gateway extends Base\Gateway
         }
 
         return $data;
-    }
-
-    public function verify(array $input)
-    {
-        parent::verify($input);
-
-        return $this->callAuthenticationGateway($input);
     }
 
     protected function getRecurringData()
@@ -148,22 +149,24 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $response = $this->callAuthenticationGateway($input);
-
-        $this->updateGatewayPaymentIfRequired($response['signed_xml']);
-
-        return $response['verify_response'];
-    }
-
-    protected function updateGatewayPaymentIfRequired($signedXml)
-    {
-        $input = $this->input;
-
         $enach = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],
             Action::AUTHORIZE
         );
 
+        $this->authenticationGateway = $enach[Base\Entity::ESIGNER_GATEWAY];
+
+        $response = $this->callAuthenticationGateway($input, $enach);
+
+        $this->updateGatewayPaymentIfRequired($enach, $response['signed_xml']);
+
+        $response['verify_response']['gatewayPayment'] = $enach->toArray();
+
+        return $response['verify_response'];
+    }
+
+    protected function updateGatewayPaymentIfRequired($enach, $signedXml)
+    {
         // For late authorized payments, update the enach entity with signed_xml
         if (($enach[Base\Entity::STATUS] === null) and
             ($enach[Base\Entity::SIGNED_XML] === null) and
@@ -178,14 +181,22 @@ class Gateway extends Base\Gateway
 
             $enach->saveOrFail();
         }
+
+        return $enach;
     }
 
+    /**
+     * @param array $input
+     * @return array
+     */
     protected function callAuthenticationGateway(array $input)
     {
-        return $this->app['gateway']->call(
-            Payment\Gateway::ESIGNER_LEGALDESK,
+        $esignerGatewayResponse = $this->app['gateway']->call(
+            $this->authenticationGateway,
             $this->action,
             $input,
             $this->mode);
+
+        return $esignerGatewayResponse;
     }
 }

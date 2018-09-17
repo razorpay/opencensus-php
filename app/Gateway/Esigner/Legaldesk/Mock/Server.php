@@ -58,7 +58,8 @@ class Server extends Base\Mock\Server
 
         // In tests we create a payment with the gateway Legaldesk, however when testing it via mocks
         // out of the tests, the payment would be having the gateway Enach RBL
-        $payment = $this->app['repo']->payment->getLastCreatedEmandatePaymentByGateway(Payment\Gateway::ESIGNER_LEGALDESK);
+        $payment = $this->app['repo']->payment
+                        ->getLastCreatedEmandatePaymentByGateway(Payment\Gateway::ESIGNER_LEGALDESK);
 
         if ($payment === null)
         {
@@ -133,7 +134,7 @@ class Server extends Base\Mock\Server
             ResponseFields::ERROR               => 'NA',
             ResponseFields::ERROR_CODE          => 'NA',
             ResponseFields::RESPONSE_TIME_STAMP => '2018-08-09T20:04:59',
-            ResponseFields::CONTENT             => $xml,
+            ResponseFields::CONTENT             => base64_encode($xml),
             ResponseFields::CONTENT_TYPE        => 'xml',
         ];
     }
@@ -142,7 +143,7 @@ class Server extends Base\Mock\Server
     {
         $route = 'mock_esigner_payment';
 
-        return $this->route->getUrl($route, ['signer' => 'legaldesk']) . '?mandate_id=' . $mandateId;
+        return $this->route->getUrl($route, ['signer' => 'esigner_legaldesk']) . '?mandate_id=' . $mandateId;
     }
 
     protected function generateRandomNumber($length)

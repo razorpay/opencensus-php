@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Enach\Rbl\Mock;
 
 use RZP\Gateway\Base;
+use RZP\Models\Payment;
 use RZP\Gateway\Enach\Rbl;
 
 class Gateway extends Rbl\Gateway
@@ -16,7 +17,11 @@ class Gateway extends Rbl\Gateway
 
     protected function putMockPaymentGatewayUrl(array & $request, $route)
     {
-        $url = $this->route->getUrl($route, ['signer' => 'legaldesk']);
+        $gateway = Payment\Gateway::ESIGNER_DIGIO;
+
+        $gateway = $this->input['authenticate']['gateway'] ?? $gateway;
+
+        $url = $this->route->getUrl($route, ['signer' => $gateway]);
 
         if ($request['method'] === 'get')
         {

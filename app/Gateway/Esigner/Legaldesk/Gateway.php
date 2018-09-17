@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Gateway\Base\Action;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 
@@ -163,10 +164,13 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * @param $mandateId
      * @param array $input
      * @return array
      *
      * This can be called from both verify and from the callback.
+     * @throws Exception\GatewayRequestException
+     * @throws Exception\GatewayTimeoutException
      */
     protected function getMandateStatusAndSignedXml($mandateId, $input)
     {
@@ -349,6 +353,8 @@ class Gateway extends Base\Gateway
 
     protected function getRepository()
     {
-        return;
+        $gateway = 'enach';
+
+        return $this->app['repo']->$gateway;
     }
 }

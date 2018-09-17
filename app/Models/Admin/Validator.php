@@ -3,6 +3,9 @@
 namespace RZP\Models\Admin;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Gateway;
+use RZP\Exception;
 
 class Validator extends Base\Validator
 {
@@ -45,4 +48,34 @@ class Validator extends Base\Validator
     protected static $scorecardRules = [
         'count'             => 'required|integer|max:100'
     ];
+
+    protected static $updateConfigKeyRules = [
+        'key'   => 'required|in:merchant_enach_configs',
+        'path'  => 'required|string',
+        'value' => 'required|string',
+    ];
+
+    protected static $updateConfigKeyValidators = [
+        'update_config_value'
+    ];
+
+    /**
+     * @param array $input
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateUpdateConfigValue(array $input)
+    {
+        // Checks if the values passed for eSigner gateways are correct
+        if ($input['key'] === ConfigKey::MERCHANT_ENACH_CONFIGS)
+        {
+            if (in_array($input['value'], [Gateway::ESIGNER_DIGIO, Gateway::ESIGNER_LEGALDESK]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_INVALID_GATEWAY,
+                    'gateway',
+                    $input['value']
+                );
+            }
+        }
+    }
 }
