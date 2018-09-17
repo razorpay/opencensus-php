@@ -2,7 +2,10 @@
 
 namespace RZP\Gateway\Atom\Mock;
 
+use RZP\Constants\Timezone;
 use RZP\Exception;
+use Carbon\Carbon;
+use RZP\Gateway\Atom\DateFormat;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Constants\HashAlgo;
@@ -113,13 +116,21 @@ class Server extends Base\Mock\Server
     {
         $this->action = Action::CALLBACK;
 
+        $format = DateFormat::CALLBACK;
+
+        $date = $input[AuthRequestFields::DATE];
+
+        $timestamp = Carbon::createFromFormat('d/m/Y H:i:s', $date, Timezone::IST)->timestamp;
+
+        $callbackTime = Carbon::createFromTimeStamp($timestamp, Timezone::IST)->format($format);
+
         $response = [
             AuthResponseFields::GATEWAY_PAYMENT_ID  => (string) mt_rand(1111111, 9999999),
             AuthResponseFields::TRANSACTION_ID      => $input[AuthRequestFields::TRANSACTION_ID],
             AuthResponseFields::AMOUNT              => $input[AuthRequestFields::AMOUNT],
             AuthResponseFields::SURCHARGE           => '0',
             AuthResponseFields::PRODUCT_ID          => $input[AuthRequestFields::PRODUCT_ID],
-            AuthResponseFields::DATE                => $input[AuthRequestFields::DATE],
+            AuthResponseFields::DATE                => $callbackTime,
             AuthResponseFields::BANK_TRANSACTION_ID => (string) mt_rand(11111111, 99999999),
             AuthResponseFields::STATUS_CODE         => Status::SUCCESS,
             AuthResponseFields::CLIENT_CODE         => $input[AuthRequestFields::CLIENT_CODE],
@@ -194,7 +205,6 @@ class Server extends Base\Mock\Server
         {
             $secret = $this->config['test_callback_hash_secret'];
         }
-
 
         return $secret;
     }

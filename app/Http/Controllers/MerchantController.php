@@ -265,6 +265,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function putBankAccount($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editBankAccount($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getBankAccountChangeStatus($id)
     {
         $input = Request::all();
@@ -324,6 +333,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $data = $this->service()->setPaymentMethods($merchantId, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function editMethods()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editMethods($input);
 
         return ApiResponse::json($data);
     }

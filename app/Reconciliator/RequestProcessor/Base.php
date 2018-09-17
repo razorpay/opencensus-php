@@ -19,6 +19,10 @@ class Base extends Core
     const FORCE_UPDATE              = 'force_update';
     const FORCE_AUTHORIZE           = 'force_authorize';
 
+    const SOURCE                  = 'source';
+    const MAILGUN                 = 'mailgun';
+    const MANUAL                  = 'manual';
+
     const FILE_DETAILS            = 'file_details';
     const INPUT_DETAILS           = 'input_details';
 
@@ -36,6 +40,7 @@ class Base extends Core
     const HDFC                   = 'HDFC';
     const AXIS                   = 'Axis';
     const KOTAK                  = 'Kotak';
+    const AIRTEL                 = 'Airtel';
     const BILLDESK               = 'BillDesk';
     const PAYZAPP                = 'PayZapp';
     const MOBIKWIK               = 'Mobikwik';
@@ -63,7 +68,8 @@ class Base extends Core
     const UPI_ICICI              = 'UpiIcici';
     const ADMIN                  = 'admin';
     const HITACHI                = 'Hitachi';
-    const CARD_FSS               = 'CardFss';
+    const CARD_FSS_HDFC          = 'CardFssHdfc';
+    const CARD_FSS_BOB           = 'CardFssBob';
     const ATOM                   = 'Atom';
     const UPI_HDFC               = 'UpiHdfc';
 
@@ -86,6 +92,7 @@ class Base extends Core
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
+        self::AIRTEL                 => ['no-reply@airtelbank.com'],
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],
         self::NETBANKING_PNB         => [],
@@ -102,8 +109,9 @@ class Base extends Core
         self::UPI_SBI                => [],
         self::PAYUMONEY              => [],
         self::HITACHI                => ['reportsmailer@hitachi-payments.com'],
-        self::CARD_FSS               => [],
+        self::CARD_FSS_HDFC          => ['merchantops@fss.co.in'],
         self::ATOM                   => [],
+        self::CARD_FSS_BOB           => [],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
 
         // Used when someone from the team needs to send the
@@ -117,6 +125,7 @@ class Base extends Core
      */
     const CONFIG_PARAMS = [
         self::FORCE_UPDATE,
+        self::SOURCE,
         self::FORCE_AUTHORIZE
     ];
 

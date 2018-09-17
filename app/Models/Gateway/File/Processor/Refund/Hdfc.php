@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicCollection;
 
 class Hdfc extends Base
 {
@@ -68,5 +69,22 @@ class Hdfc extends Base
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         return static::FILE_NAME . '_' . $this->mode . '_' . $time;
+    }
+
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+
+        $end = $this->gatewayFile->getEnd();
+
+        $refunds = $this->repo->refund->fetchRefundsForMethodGatewaysBetweenTimestamps(
+            static::PAYMENT_TYPE_ATTRIBUTE,
+            static::GATEWAY_CODE,
+            $begin,
+            $end,
+            static::GATEWAY
+        );
+
+        return $refunds;
     }
 }

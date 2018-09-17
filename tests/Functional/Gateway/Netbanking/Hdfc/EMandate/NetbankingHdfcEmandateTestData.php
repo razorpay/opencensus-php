@@ -275,4 +275,11 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
         ],
     ],
+
+    'testRefundDebitPayment' => [
+        'type' => 'refund',
+        'target' => 'hdfc_emandate',
+        'sender' => 'refunds@razorpay.com',
+        'status' => 'file_sent',
+    ]
 ];

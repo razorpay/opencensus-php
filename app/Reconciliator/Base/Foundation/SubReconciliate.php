@@ -6,11 +6,10 @@ use App;
 use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Models\Batch;
-use RZP\Reconciliator\Metrics\Metric;
-use RZP\Reconciliator\Metrics\Dimensions;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\Metrics\Metric;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -56,6 +55,11 @@ class SubReconciliate extends Base\Core
     protected $failUnprocessedRow = true;
 
     protected $gateway;
+
+    /**
+     * Indicates whether the Recon file uploaded via mailgun or manual
+     */
+    protected $source;
 
     public function __construct(string $gateway = null)
     {
@@ -205,7 +209,7 @@ class SubReconciliate extends Base\Core
         $this->trace->histogram(
             Metric::RECON_PAYMENT_CREATE_TO_RECONCILED_TIME_MINUTES,
             $payment->transaction->getReconTimeFromTransactionCreationInMinutes(),
-            Metric::getPaymentMetricDimensions($payment)
+            Metric::getPaymentMetricDimensions($payment, $this->source)
         );
     }
 
@@ -214,7 +218,7 @@ class SubReconciliate extends Base\Core
         $this->trace->histogram(
             Metric::RECON_REFUND_CREATE_TO_RECONCILED_TIME_MINUTES,
             $refund->transaction->getReconTimeFromTransactionCreationInMinutes(),
-            Metric::getRefundMetricDimensions($refund)
+            Metric::getRefundMetricDimensions($refund, $this->source)
         );
     }
 
@@ -375,6 +379,11 @@ class SubReconciliate extends Base\Core
         $this->failUnprocessedRow = $failUnprocessedRow;
     }
 
+    public function setSource(string $source)
+    {
+        $this->source = $source;
+    }
+
     /**
      * For certain rows, where we are not able to successfully identify the payment
      * or refund entity to reconcile, we mark the row processing as success or failure
@@ -408,5 +417,21 @@ class SubReconciliate extends Base\Core
         {
             $this->setSummaryCount(self::SUCCESSES_SUMMARY, head($row));
         }
+    }
+
+    /**
+     * @param array $row
+     * @param string $columnName
+     */
+    protected function reportMissingColumn(array $row, string $columnName)
+    {
+        $this->trace->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'message'           => 'Unable to get the expected column.',
+                'column_name'       => $columnName,
+                'row'               => $row,
+                'gateway'           => $this->gateway
+            ]);
     }
 }
