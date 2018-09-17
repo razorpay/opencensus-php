@@ -2,8 +2,7 @@
 
 namespace RZP\Gateway\AxisMigs;
 
-//use RZP\Gateway\Base\ErrorCodes;
-//use RZP\Gateway\AxisMigs;
+use RZP\Gateway\Base;
 
 class Fields
 {
@@ -37,22 +36,35 @@ class Fields
      */
     const VPC_TXNRESPONSECODE = 'vpc_TxnResponseCode';
 
-    const VPC_AVSRESPONSECODE = 'vpc_AvsResponseCode';
+    const VPC_AVSRESPONSECODE = 'vpc_AVSResultCode';
 
     const VPC_ACQRESPONSECODE = 'vpc_AcqResponseCode';
 
-    const VPC_MESSAGE = 'vpc_Message';
+    const VPC_MESSAGE         = 'vpc_Message';
 
     public static $fieldClassMap = [
-        self::VPC_CSCRESULTCODE => CscResponseCode::class,
-        self::VPC_AVSRESPONSECODE => AvsResponseCode::class,
-        self::VPC_TXNRESPONSECODE => TxnResponseCode::class,
-        self::VPC_MESSAGE => VpcMessageCode::class,
-        self::VPC_ACQRESPONSECODE => ErrorCodes::class,
+        self::VPC_CSCRESULTCODE     => CscResponseCode::class,
+        self::VPC_AVSRESPONSECODE   => AvsResponseCode::class,
+        self::VPC_TXNRESPONSECODE   => TxnResponseCode::class,
+        self::VPC_MESSAGE           => VpcMessageCode::class,
+        self::VPC_ACQRESPONSECODE   => Base\ErrorCodes::class,
     ];
 
     public static function getFieldClass($fieldName)
     {
         return self::$fieldClassMap[$fieldName];
+    }
+
+    public static function getErrorCodeFields()
+    {
+        // This array tells the priority of the error code. Here VPC_MESSAGE is
+        // the first priority because it provides most granular data among others
+        return [
+            self::VPC_MESSAGE,
+            self::VPC_ACQRESPONSECODE,
+            self::VPC_TXNRESPONSECODE,
+            self::VPC_AVSRESPONSECODE,
+            self::VPC_CSCRESULTCODE,
+        ];
     }
 }

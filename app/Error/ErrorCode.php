@@ -97,6 +97,7 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                                = 'GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR';
 
     const GATEWAY_ERROR_CARD_INVALID_NAME                                           = 'GATEWAY_ERROR_CARD_INVALID_NAME';
+    const GATEWAY_ERROR_CARD_NUMBER_INVALID_LENGTH                                  = 'GATEWAY_ERROR_CARD_NUMBER_INVALID_LENGTH';
     const GATEWAY_ERROR_CARD_INVALID_NUMBER                                         = 'GATEWAY_ERROR_CARD_INVALID_NUMBER';
     const GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE                                    = 'GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE';
     const GATEWAY_ERROR_CARD_INVALID_BRAND                                          = 'GATEWAY_ERROR_CARD_INVALID_BRAND';
@@ -105,6 +106,7 @@ class ErrorCode
     const GATEWAY_ERROR_CARD_INVALID_ZIP                                            = 'GATEWAY_ERROR_CARD_INVALID_ZIP';
     const GATEWAY_ERROR_CARD_INVALID_CVV                                            = 'GATEWAY_ERROR_CARD_INVALID_CVV';
     const GATEWAY_ERROR_CARD_MISSING_CVV                                            = 'GATEWAY_ERROR_CARD_MISSING_CVV';
+    const GATEWAY_ERROR_INVALID_CARD_NUMBER_PREFIX                                  = 'GATEWAY_ERROR_INVALID_CARD_NUMBER_PREFIX';
 
     const GATEWAY_ERROR_HEADLESS_PARSING_FAILED                                     = 'GATEWAY_ERROR_HEADLESS_PARSING_FAILED';
 
@@ -130,6 +132,12 @@ class ErrorCode
 
     const GATEWAY_ERROR_MANDATE_CREATION_FAILED                                     = 'GATEWAY_ERROR_MANDATE_CREATION_FAILED';
 
+    const GATEWAY_ERROR_CREDIT_CARD_NUMBER_DECRYPTION_FAILED                        = 'GATEWAY_ERROR_CREDIT_CARD_NUMBER_DECRYPTION_FAILED';
+    const GATEWAY_ERROR_CREDIT_CARD_ENCRYPTION_FAILED                               = 'GATEWAY_ERROR_CREDIT_CARD_ENCRYPTION_FAILED';
+    const GATEWAY_ERROR_CRYPTO_ALOGRITHM_ERROR                                      = 'GATEWAY_ERROR_CRYPTO_ALOGRITHM_ERROR';
+    const GATEWAY_ERROR_RSA_DECRYPTION_FAILED                                       = 'GATEWAY_ERROR_RSA_DECRYPTION_FAILED';
+    const GATEWAY_ERROR_RSA_ENCRYPTION_FAILED                                       = 'GATEWAY_ERROR_RSA_ENCRYPTION_FAILED';
+
     const GATEWAY_ERROR_ONBOARDING_FAILED                                           = 'GATEWAY_ERROR_ONBOARDING_FAILED';
     const GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH                                = 'GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH';
     const GATEWAY_ERROR_VERSION_ERROR                                               = 'GATEWAY_ERROR_VERSION_ERROR';
@@ -139,6 +147,9 @@ class ErrorCode
     const GATEWAY_ERROR_PARSE_ERROR                                                 = 'GATEWAY_ERROR_PARSE_ERROR';
     const GATEWAY_ERROR_FILE_ERROR                                                  = 'GATEWAY_ERROR_FILE_ERROR';
     const GATEWAY_ERROR_SQL_ERROR                                                   = 'GATEWAY_ERROR_SQL_ERROR';
+    const GATEWAY_ERROR_DELETING_TERMINAL                                           = 'GATEWAY_ERROR_CREATING_TERMINAL';
+    const GATEWAY_ERROR_CREATING_TERMINAL                                           = 'GATEWAY_ERROR_CREATING_TERMINAL';
+    const GATEWAY_ERROR_INVALID_ACKNOWLEDGMENT                                     = 'GATEWAY_ERROR_INVALID_ACKNOWLEDGMENT';
 
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
@@ -635,6 +646,7 @@ class ErrorCode
 
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
     const SERVER_ERROR_HARVESTER_INVALID_RESPONSE                                   = 'SERVER_ERROR_HARVESTER_INVALID_RESPONSE';
+    const SERVER_ERROR_DUPLICATE_SESSION_ID                                          = 'SERVER_ERROR_DUPLICATE_SESSION_ID';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
@@ -836,4 +848,15 @@ class ErrorCode
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                              = 'BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER';
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                                = 'BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS';
     const BAD_REQUEST_INVALID_LOCALE                                                = 'BAD_REQUEST_INVALID_LOCALE';
+    const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                                  = 'BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED';
+    const BAD_REQUEST_SECURE_CGI_PARAM_KEY_CORRUPT_INVALID                          = 'BAD_REQUEST_SECURE_CGI_PARAM_KEY_CORRUPT_INVALID';
+    const BAD_REQUEST_SECURE_CGI_PARAM_PRIVATE_KEY_CORRUPT_INVALID                  = 'BAD_REQUEST_SECURE_CGI_PARAM_PRIVATE_KEY_CORRUPT_INVALID';
+    const BAD_REQUEST_SECURE_CGI_PARAM_PUBLIC_KEY_CORRUPT_INVALID                   = 'BAD_REQUEST_SECURE_CGI_PARAM_PUBLIC_KEY_CORRUPT_INVALID';
+    const BAD_REQUEST_GENERIC_TRANSACTION_ERROR                                     = 'BAD_REQUEST_GENERIC_TRANSACTION_ERROR';
+    const BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED                                    = 'BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED';
+    const BAD_REQUEST_TERMINAL_ERROR                                                = 'BAD_REQUEST_TERMINAL_ERROR';
+    const BAD_REQUEST_SHARED_TERMINAL_ERROR                                         = 'BAD_REQUEST_SHARED_TERMINAL_ERROR';
+    const BAD_REQUEST_RECON_NOT_IN_PROGRESS                                         = 'BAD_REQUEST_RECON_NOT_IN_PROGRESS';
+    const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                           = 'BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE';
+    const BAD_REQUEST_INVALID_CARD_DETAILS                                          = 'BAD_REQUEST_INVALID_CARD_DETAILS';
 }

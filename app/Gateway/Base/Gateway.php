@@ -170,6 +170,8 @@ class Gateway
 
     protected $externalMockDomain;
 
+    protected $gatewayErrorCode = null;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -1197,5 +1199,81 @@ class Gateway
     protected function getExternalMockUrl(string $type)
     {
         return $this->externalMockDomain . '/' . $this->gateway . $this->getRelativeUrl($type);
+    }
+
+    protected function getInternalErrorCode($content)
+    {
+        $gatewayErrorCode = $errorCodeClass = $errorCodeFieldName = $errorDescription = null;
+
+        $fieldsClass = $this->getGatewayFieldClass();
+
+        $errorCodeFieldNameList = $fieldsClass::getErrorCodeFields();
+
+        foreach ($errorCodeFieldNameList as $index => $fieldName)
+        {
+            if (isset($content[$fieldName]) === false)
+            {
+                continue;
+            }
+
+            $errorCodeClass = $fieldsClass::getFieldClass($fieldName);
+
+            $gatewayErrorCode = $errorCodeClass::getRelevantGatewayErrorCode($content[$fieldName]);
+
+            $errorCode = $errorCodeClass::getErrorCodeMapped($gatewayErrorCode);
+
+            if (empty($errorCode) === false)
+            {
+                break;
+            }
+        }
+
+        $this->gatewayErrorCode = $gatewayErrorCode;
+
+        return $errorCode;
+    }
+
+    protected function getGatewayErrorDescription($content)
+    {
+        $gatewayErrorCode = $errorCodeClass = $errorCodeFieldName = $errorDescription = null;
+
+        $fieldsClass = $this->getGatewayFieldClass();
+
+        $errorCodeFieldNameList = $fieldsClass::getErrorCodeFields();
+
+        foreach ($errorCodeFieldNameList as $index => $fieldName)
+        {
+            if (isset($content[$fieldName]) === false)
+            {
+                continue;
+            }
+
+            $errorCodeClass = $fieldsClass::getFieldClass($fieldName);
+
+            $gatewayErrorCode = $errorCodeClass::getRelevantGatewayErrorCode($content[$fieldName]);
+
+            $errorDescription = $errorCodeClass::getErrorDescriptionMapped($gatewayErrorCode);
+
+            if (empty($errorDescription) === false)
+            {
+                break;
+            }
+        }
+
+        return $errorDescription;
+    }
+
+    protected function getGatewayErrorCode($content)
+    {
+
+    }
+
+    protected function getGatewayFieldClass()
+    {
+        $gatewayPath = $this->getGatewayNamespace();
+
+        $fieldClass = $gatewayPath.'\Fields';
+
+        return $fieldClass;
     }
 }

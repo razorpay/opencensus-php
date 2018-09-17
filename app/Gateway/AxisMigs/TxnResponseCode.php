@@ -3,11 +3,11 @@
 namespace RZP\Gateway\AxisMigs;
 
 use RZP\Error;
-use RZP\Gateway\AxisMigs\Fields;
+use RZP\Gateway\Base\ErrorCodes;
 
-class TxnResponseCode
+class TxnResponseCode extends ErrorCodes
 {
-    public static $messages = [
+    public static $errorDescriptionMap = [
         '0' => 'Transaction Successful',
         '1' => 'Unknown Error',
         '2' => 'Bank Declined Transaction',
@@ -87,10 +87,10 @@ class TxnResponseCode
         'I' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         'L' => Error\ErrorCode::SERVER_ERROR,
         'N' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE,
-        // 'P' => '',
-        // 'R' => '',
-        // 'S' => '',
-        // 'T' => '',
+//        'P' => '',
+        'R' => Error\ErrorCode::BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED,
+        'S' => Error\ErrorCode::SERVER_ERROR_DUPLICATE_SESSION_ID,
+        'T' => Error\ErrorCode::BAD_REQUEST_CARD_AVS_FAILED,
         'U' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         'V' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         '?' => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
@@ -103,34 +103,33 @@ class TxnResponseCode
         return (isset(self::$map[$code]) === true);
     }
 
-    public static function getErrorCodeMapped($code, $msg = null)
+    public static function getErrorCodeMapped($code)
     {
-        if (is_array(self::$map[$code]) === true)
+        if (isset(self::$map[$code]) === true)
         {
-            $subCode = explode('-', explode(':', $msg)[0])[0];
-
-            if (isset(self::$map[$code][$subCode]) === true)
+            if (is_array(self::$map[$code]) === true)
             {
-                if (is_array(self::$map[$code][$subCode]) === true)
-                {
-                    $msgCode = strtolower(last(explode('reason: ', $msg)));
-
-                    if (isset(self::$map[$code][$subCode][$msgCode]) === true)
-                    {
-                        return self::$map[$code][$subCode][$msgCode];
-                    }
-
-                    $subCode = 'default';
-                }
-            }
-            else
-            {
-                $subCode = 'default';
+                return self::$map[$code]['default'];
             }
 
-            return self::$map[$code][$subCode];
+            return self::$map[$code];
         }
 
-        return self::$map[$code];
+        return;
+    }
+
+    public static function getGatewayErrorDescription($code)
+    {
+        if (isset(self::$errorDescriptionMap[$code]) === true)
+        {
+            if (is_array(self::$errorDescriptionMap[$code]) === true)
+            {
+                return self::$errorDescriptionMap[$code]['default'];
+            }
+
+            return self::$errorDescriptionMap[$code];
+        }
+
+        return;
     }
 }

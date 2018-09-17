@@ -3,8 +3,9 @@
 namespace RZP\Gateway\AxisMigs;
 
 use RZP\Error;
+use RZP\Gateway\Base\ErrorCodes;
 
-class AcqResponseCode
+class AcqResponseCode extends ErrorCodes
 {
     public static $map = array(
         '01' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION,
@@ -91,7 +92,8 @@ class AcqResponseCode
         '75' => 'Allowable number of PIN tries exceeded',
         '76' => 'Reserved for private use',
         '89' => 'Reserved for private use',
-        '90' => 'Cutoff is in process (Switch ending a days business and starting the next. The transaction can be sent again in a few minutes).',
+        '90' => 'Cutoff is in process (Switch ending a days business and starting the next. 
+                 The transaction can be sent again in a few minutes).',
         '91' => 'Issuer or switch is inoperative',
         '92' => 'Financial institution or intermediate network facility cannot be found for routing',
         '93' => 'Transaction cannot be completed. Violation of law',
