@@ -164,6 +164,29 @@ class AdminFetch
                     Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
             ],
+            Entity::SHIELD_RISKS => [
+                'entity_id'         => [
+                    Fetch::LABEL        => 'entity_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'entity_type'       => [
+                    Fetch::LABEL        => 'entity_type',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'action'            => [
+                    Fetch::LABEL        => 'action',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'block',
+                        'review',
+                        'allow'
+                    ]
+                ],
+            ],
         ];
     }
 

@@ -21,6 +21,8 @@ class ShieldClient implements ExternalService
 
     const ANALYTICS_PATH    = '/rules/analytics';
 
+    const RISKS_PATH        = '/merchants/{merchant_id}/risks';
+    
     const LISTS_PATH        = '/merchants/{merchant_id}/lists';
 
     const LIST_ITEMS_PATH   = '/merchants/{merchant_id}/lists/{list_id}/list_items';
@@ -31,6 +33,8 @@ class ShieldClient implements ExternalService
 
     const RULE_ANALYTICS    = 'rule_analytics';
 
+    const RISKS             = 'risks';
+    
     const LISTS             = 'lists';
 
     const LIST_ITEMS        = 'list_items';
@@ -79,6 +83,9 @@ class ShieldClient implements ExternalService
             case self::RULE_ANALYTICS:
                 return $this->getRuleAnalytics($input);
 
+            case self::RISKS:
+                return $this->getRisks($input, $merchantId);
+                
             case self::LISTS:
                 return $this->getLists($input, $merchantId);
 
@@ -97,6 +104,9 @@ class ShieldClient implements ExternalService
         {
             case self::RULES:
                 return $this->getRuleById($id, $merchantId);
+
+            case self::RISKS:
+                return $this->getRiskById($id, $merchantId);
 
             case self::LISTS:
                 return $this->getListById($id, $merchantId);
@@ -148,6 +158,16 @@ class ShieldClient implements ExternalService
     public function getRuleAnalytics(array $input): array
     {
         return $this->sendRequest(self::ANALYTICS_PATH, Requests::GET, $input);
+    }
+
+    public function getRisks(array $input, string $merchantId)
+    {
+        return $this->sendRequest($this->getMerchantPath(self::RISKS_PATH, $merchantId), Requests::GET, $input);
+    }
+
+    public function getRiskById(string $id, string $merchantId): array
+    {
+        return $this->sendRequest($this->getMerchantPath(self::RISKS_PATH, $merchantId) . '/' . $id, Requests::GET);
     }
 
     public function getLists(array $input, string $merchantId): array
