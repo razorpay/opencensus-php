@@ -18,9 +18,9 @@ const isMobileResolution = width => {
 
 let initialState = {
   luminateRowId: null,
-  windowWidth: window.outerWidth,
+  windowWidth: window.innerWidth,
   windowHeight: window.outerHeight,
-  isMobileResolution: isMobileResolution(window.outerWidth),
+  isMobileResolution: isMobileResolution(window.innerWidth),
 };
 
 export const setBaseLocation = location => {
@@ -54,9 +54,9 @@ export const resizeWindow = () => {
   return {
     type: RESIZE_WINDOW,
     payload: {
-      windowWidth: window.outerWidth,
+      windowWidth: window.innerWidth,
       windowHeight: window.outerHeight,
-      isMobileResolution: isMobileResolution(window.outerWidth),
+      isMobileResolution: isMobileResolution(window.innerWidth),
     },
   };
 };

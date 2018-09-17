@@ -38,7 +38,26 @@
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
 @else
   <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
-  <script async="true" src="https://static.helpninja.com/helpninja.js" id="oc_script" convid="-Kvx6dgy972KCFPlQR0s"></script>
 @endif
+
+<script>
+
+    function addHelpNinja() {
+        var helpNinjaScript = document.createElement('script');
+        helpNinjaScript.setAttribute('src','https://static.helpninja.com/helpninja.js');
+        helpNinjaScript.setAttribute('id', 'oc_script');
+        helpNinjaScript.setAttribute('convid', '-Kvx6dgy972KCFPlQR0s');
+        helpNinjaScript.async = true;
+
+        document.head.appendChild(helpNinjaScript);
+    }
+
+    const screenWidth = window.innerWidth;
+
+    if (screenWidth > 780) {
+        addHelpNinja();
+    }
+
+</script>
 
 @include('partials/footer')

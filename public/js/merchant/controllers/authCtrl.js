@@ -282,6 +282,14 @@ app
               : 'merchant';
             trackDrip('account_created');
             pushToDrip();
+            window.ga &&
+              window.ga(
+                'send',
+                'event',
+                'Signup - Email Password',
+                'Click - Create Account (Success)'
+              );
+
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
               if (data.user.confirmed) {
@@ -307,6 +315,15 @@ app
             ) {
               trackDrip('error_email_taken');
             }
+
+            window.ga &&
+              window.ga(
+                'send',
+                'event',
+                'Signup - Email Password',
+                'Click - Create Account (Error)',
+                JSON.stringify(data.errors)
+              );
 
             angular.forEach(data.errors, function(value) {
               $scope.alerts.addAlert('danger', value);
@@ -337,6 +354,7 @@ app
           );
         }
 
+        // IMPORTANT: DO NOT REMOVE THESE (USED FOR MARKETING PURPOSES - TRACK SIGNUP ATTEMPTS)
         window.ga && ga('send', 'event', 'sign-up-form-success');
         window.ga && ga('old.send', 'event', 'sign-up-form-success');
 
@@ -371,6 +389,8 @@ app
           if (data.success) {
             trackDrip('signup_flow_completed');
             pushToDrip();
+            window.ga && window.ga('send', 'event', 'Click - Finish');
+
             // if verification is already done, go to dashboard (call /user again to check)
             user.identity(true).then(function(userDetails) {
               // user.authorize and then if email verified
@@ -388,6 +408,14 @@ app
 
               setTimeout(function() {
                 var alertEle = $('.pre_signup_alert');
+
+                window.ga &&
+                  ga(
+                    'send',
+                    'event',
+                    'Click - Finish',
+                    JSON.stringify(data.errors)
+                  );
 
                 alertEle[0] &&
                   $('.auth-substep.name-substep').animate(
@@ -862,6 +890,14 @@ app
               $scope.alerts.addAlert('danger', value);
             });
           }
+
+          window.ga &&
+            window.ga(
+              'send',
+              'event',
+              'Click - Resend Verification Email',
+              JSON.stringify(data.errors)
+            );
         });
       };
 
@@ -935,6 +971,48 @@ app
           $scope.forms.detailsForm.$setPristine();
         });
         return request;
+      };
+
+      $scope.trackContactUsClick = function(e) {
+        window.ga &&
+          window.ga('send', 'event', 'Signup - Steps', 'Click - Contact Us');
+      };
+
+      /*
+      * stepName: at which step name
+      * sourceLabel: from which CTA, step
+      * */
+      $scope.trackStepClicksOnMore = function(stepName, sourceLabel) {
+        if (!stepName || !sourceLabel) {
+          return;
+        }
+
+        window.ga &&
+          window.ga(
+            'send',
+            'event',
+            'Signup - Steps',
+            'Step - ' + stepName,
+            sourceLabel
+          );
+      };
+
+      /*
+      * toStepName: to which link the back click points
+      * */
+      $scope.trackBackClick = function(toStepName) {
+        if (!toStepName) {
+          return;
+        }
+
+        window.ga &&
+          window.ga(
+            'send',
+            'event',
+            'Signup - Steps',
+            'Click - Back',
+            toStepName
+          );
       };
     },
   ])

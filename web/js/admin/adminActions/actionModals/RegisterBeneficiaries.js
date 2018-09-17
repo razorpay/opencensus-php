@@ -15,10 +15,17 @@ import { ModalContent } from 'component/Modal';
 export default function RegisterBeneficiaries() {
   function onSubmit(body) {
     if (body.merchant_ids) {
+      let merchantIds = splitAndFilter(body.merchant_ids, ',');
+
+      if (merchantIds.length > 1000) {
+        notifyError('Number of merchant ids should not be more than 1000.');
+        return;
+      }
+
       let payload = {
         url: `live/merchants/beneficiary/file/${body.bene_channel}`,
         data: {
-          merchant_ids: splitAndFilter(body.merchant_ids, ','),
+          merchant_ids: merchantIds,
         },
       };
 
@@ -49,6 +56,7 @@ export default function RegisterBeneficiaries() {
         name="merchant_ids"
         required
         placeholder="Enter comma separated merchant ids"
+        helpMsg="Supports only upto 1000 merchant Ids at one time."
       />
       <div class="form-actions text-right">
         <button class="btn" type="submit">

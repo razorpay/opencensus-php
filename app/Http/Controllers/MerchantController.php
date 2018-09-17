@@ -227,9 +227,20 @@ class MerchantController extends Controller
 
     public function downloadReport(string $logId)
     {
-        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+        $adminUser = Auth::guard('api')->user();
 
-        list($error, $data) = $request->send("reporting/logs/$logId", 'GET');
+        $clientType = ['client_type' => 'merchant'];
+        $reportingLogUrl = "reporting/logs/$logId";
+
+        if (empty($adminUser) === false)
+        {
+            $clientType = ['client_type' => 'admin'];
+            $reportingLogUrl = "admin-reporting/logs/$logId";
+        }
+
+        $request = new \App\Admin\ApiRequestAny($clientType);
+
+        list($error, $data) = $request->send($reportingLogUrl, 'GET');
 
         if ((empty($error) === true) and
             (empty($data) === false) and
@@ -237,10 +248,17 @@ class MerchantController extends Controller
         {
             $fileId = $data['file_id'];
 
-            // Re-create to avoid any GC-related bugs
-            $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+            $ufhFileUrl = "ufh/file/$fileId/get-signed-url";
 
-            list($error, $data) = $request->send("ufh/file/$fileId/get-signed-url", 'GET');
+            if (empty($adminUser) === false)
+            {
+                $ufhFileUrl = "admin-ufh/file/$fileId/get-signed-url";
+            }
+
+            // Re-create to avoid any GC-related bugs
+            $request = new \App\Admin\ApiRequestAny($clientType);
+
+            list($error, $data) = $request->send($ufhFileUrl, 'GET');
 
             // Trigger download
             if ((empty($error) === true) and
