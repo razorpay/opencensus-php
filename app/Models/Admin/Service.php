@@ -174,7 +174,7 @@ class Service extends Base\Service
         }
 
         // This can happen if the caching service(redis) is down
-        if ($currentConfig !== null)
+        if (empty($currentConfig) === false)
         {
             $currentConfig = json_decode($currentConfig, true);
         }
