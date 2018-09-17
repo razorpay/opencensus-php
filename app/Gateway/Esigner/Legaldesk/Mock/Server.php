@@ -57,10 +57,17 @@ class Server extends Base\Mock\Server
 
         $this->content($content, 'mandate_sign');
 
-        $enach = $this->app['repo']->enach
-                      ->getLastCreatedByGateway(Payment\Gateway::ESIGNER_LEGALDESK);
+        // In tests we create a payment with the gateway Legaldesk, however when testing it via mocks
+        // out of the tests, the payment would be having the gateway Enach RBL
+        $payment = $this->app['repo']->payment
+                        ->getLastCreatedEmandatePaymentByGateway(Payment\Gateway::ESIGNER_LEGALDESK);
 
-        $callbackUrl = $this->route->getPublicCallbackUrlWithHash('pay_' . $enach[EnachEntity::PAYMENT_ID]);
+        if ($payment === null)
+        {
+            $payment = $this->app['repo']->payment->getLastCreatedEmandatePaymentByGateway(Payment\Gateway::ENACH_RBL);
+        }
+
+        $callbackUrl = $this->route->getPublicCallbackUrlWithHash($payment[Payment\Entity::PUBLIC_ID]);
 
         $request = [
             'url'     => $callbackUrl,
