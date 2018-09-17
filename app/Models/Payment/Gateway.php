@@ -3,7 +3,6 @@
 namespace RZP\Models\Payment;
 
 use App;
-use Illuminate\Auth\Access\Gate;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
