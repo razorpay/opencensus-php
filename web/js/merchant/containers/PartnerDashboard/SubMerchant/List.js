@@ -24,6 +24,11 @@ import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
 
 import AddMerchant from './AddMerchant';
 import ListFilter from './ListFilter';
+import {
+  trackListEvents,
+  trackSearchAnalytics,
+  trackClearAnalytics,
+} from '../ga';
 
 const email = {
   title: 'Registered Email',
@@ -101,6 +106,10 @@ export default class SubMerchantsList extends ListContainer {
       });
   };
 
+  componentDidMount() {
+    trackListEvents('Go To');
+  }
+
   search = () => {};
   render() {
     const user = this.props.user;
@@ -140,6 +149,8 @@ export default class SubMerchantsList extends ListContainer {
             type="link"
             count={this.state.count}
             onSubmit={this.search}
+            onSearchAnalytics={trackSearchAnalytics}
+            onClearAnalytics={trackClearAnalytics}
           />
           <DataTable
             title="Sub Merchants"
