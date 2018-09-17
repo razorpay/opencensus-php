@@ -66,8 +66,5 @@
     <body>
         <div id="hostedpage-container">
         </div>
-        <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
-        <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/paymentpage_app.js" onload="renderPaymentPage()" defer></script>
-        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     </body>
 </html>
