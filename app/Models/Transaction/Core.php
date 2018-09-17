@@ -32,6 +32,7 @@ use RZP\Models\Merchant\RefundSource;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Models\Transaction\Processor as TransactionProcessor;
 
 class Core extends Base\Core
 {
@@ -51,6 +52,16 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
+    /*
+     * Refactoring entity by entity, will introduce factory method in the future
+    */
+    public function createTransactionForSource(Base\Entity $source)
+    {
+        $txnProcessor = (new TransactionProcessor\Payment($source));
+
+        return $txnProcessor->createTransaction();
+    }
+
     /**
      * This will be called only in case of Non Auth Capture Flow
      * We will create a dummy transaction with no fee split.
@@ -65,6 +76,13 @@ class Core extends Base\Core
             [
                 'payment_id' => $payment->getId()
             ]);
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_V2) === true)
+        {
+            return $this->createTransactionForSource($payment);
+        }
 
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, false);
 
@@ -106,6 +124,13 @@ class Core extends Base\Core
 
     public function createOrUpdateFromPaymentCaptured(Payment\Entity $payment)
     {
+        $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_V2) === true)
+        {
+            return $this->createTransactionForSource($payment);
+        }
+
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         $this->trace->info(
