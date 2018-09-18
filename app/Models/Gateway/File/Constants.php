@@ -12,6 +12,7 @@ class Constants
     const KOTAK            = 'kotak';
     const FEDERAL          = 'federal';
     const BOB              = 'bob';
+    const IDFC             = 'idfc';
     const INDUSIND         = 'indusind';
     const RBL              = 'rbl';
     const SCBL             = 'scbl';
@@ -57,7 +58,8 @@ class Constants
             self::RBL,
             self::INDUSIND,
             self::OBC,
-            self::CSB
+            self::CSB,
+            self::IDFC,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -109,6 +111,7 @@ class Constants
             self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
             self::OBC      => ['obc.netbanking.refunds@razorpay.com'],
             self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
+            self::IDFC     => ['settlements@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [
