@@ -97,8 +97,8 @@ class Base extends BaseModel\Core
     protected $outputFileType;
 
     /**
-     * @var bool
-     * override from child processor to use new spreadsheet library
+     * Override from child processor to use new spreadsheet library.
+     * @var boolean
      */
     protected $useSpreadSheetLibrary = false;
 
@@ -810,12 +810,21 @@ class Base extends BaseModel\Core
         }
     }
 
-    protected function parseExcelSheets($filePath)
+    /**
+     * Parses excel sheet at given path. By default uses FileHandlerTrait's parseExcelSheets() method(existing flow).
+     * But for specific batch where the flag is overridden and made true, uses new phpoffice/phpspreadsheet library.
+     * We intend to move fully to this new library uses but is being done incrementally.
+     * @param  string $filePath
+     * @return array
+     */
+    protected function parseExcelSheets($filePath): array
     {
-        if ($this->useSpreadSheetLibrary)
+        if ($this->useSpreadSheetLibrary === true)
         {
-            return $this->parseExcelSheetsUsingSpreadSheet($filePath);
+            // TODO: Add a trace here with batch id etc. in payload.
+            return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath);
         }
+
         return $this->parentParseExcelSheets($filePath);
     }
 

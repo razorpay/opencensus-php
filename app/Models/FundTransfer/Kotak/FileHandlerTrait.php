@@ -797,12 +797,12 @@ trait FileHandlerTrait
     }
 
     /**
-     * {@inheritDoc}
-     * Parses excel sheets at given path and returns array content
+     * Parses excel sheets at given path and returns array content.
+     * Uses new phpoffice/phpspreadsheet package instead of maatwebsite/excel.
      * @param  string $filePath
      * @return array
      */
-    protected function parseExcelSheetsUsingSpreadSheet($filePath)
+    protected function parseExcelSheetsUsingPhpSpreadSheet($filePath): array
     {
         $fileType = SpreadsheetIOFactory::identify($filePath);
         $reader = SpreadsheetIOFactory::createReader($fileType);

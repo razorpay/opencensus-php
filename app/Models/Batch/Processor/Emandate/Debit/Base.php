@@ -9,7 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
-use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
+use RZP\Models\Batch\Processor\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
@@ -20,6 +20,11 @@ class Base extends BaseProcessor
     const GATEWAY_PAYMENT_ID    = 'gateway_payment_id';
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_MESSAGE = 'gateway_error_message';
+
+    /**
+     * {@inheritDoc}
+     */
+    protected $useSpreadSheetLibrary = true;
 
     protected function processEntry(array & $entry)
     {

@@ -9,10 +9,17 @@ use RZP\Gateway\Enach\Rbl;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Base\Entity;
+use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
 
 class EnachRbl extends Base
 {
     const GATEWAY = Gateway::ENACH_RBL;
+
+    /**
+     * {@inheritDoc}
+     * @var boolean
+     */
+    protected $useSpreadSheetLibrary = false;
 
     protected $gatewayPaymentMapping = [
         self::GATEWAY_REGISTRATION_STATUS => Entity::REGISTRATION_STATUS,
@@ -71,39 +78,34 @@ class EnachRbl extends Base
     }
 
     /**
-     * Overriding parseExcelSheets() because of different startRow.
-     * Ideally, we should store `$startRow` in a variable and then use.
+     * {@override}
      * @param  string $filePath
      * @return array
      */
-    protected function parseExcelSheets($filePath)
+    protected function parseExcelSheetsUsingPhpSpreadSheet($filePath): array
     {
-        Config::set('excel.import.force_sheets_collection', true);
-        Config::set('excel.import.heading', 'original');
-        Config::set('excel.import.startRow', 2);
+        $fileType = SpreadsheetIOFactory::identify($filePath);
+        $reader = SpreadsheetIOFactory::createReader($fileType);
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($filePath);
+        // Override 1: Asserts that it has 2 sheets (For some reason it is expected). And it returns the 2nd sheet's content.
+        assertTrue($spreadsheet->getSheetCount() === 2);
+        $rows = $spreadsheet->setSheetIndex(1)->toArray();
+        // Override 2: Shifts through 1 row. 1st row in this particular file is not to be considered.
+        array_shift($rows);
+        // First row is always expected to be header
+        $headers = array_values(array_shift($rows) ?? []);
+        // No rows exists
+        if (empty($headers) === true)
+        {
+            return [];
+        }
+        // Format rows as "heading key => value" kind of associative array
+        foreach ($rows as & $row)
+        {
+            $row = array_combine($headers, array_values($row));
+        }
 
-        $this->app['excel.reader']->setSelectedSheets([]);
-
-        $this->app['excel.reader']->setSelectedSheetIndices([]);
-
-        $this->traceExcelReaderConfig();
-
-        $sheets = $this->parseExcelFile($filePath);
-
-        //
-        // Resetting startRow to 1 again
-        //
-        Config::set('excel.import.startRow', 1);
-
-        $hasDoubleSheets  = (count($sheets) === 2);
-        $errorMessage    = 'Sheets keys: ' . implode('.', array_keys($sheets));
-
-        assertTrue($hasDoubleSheets, $errorMessage);
-
-        //
-        // We use 2nd index as 1st sheet contains the summary and
-        // 2nd sheet contains th actual recon data
-        //
-        return last($sheets);
+        return $rows;
     }
 }

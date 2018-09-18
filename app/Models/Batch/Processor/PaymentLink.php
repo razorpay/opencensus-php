@@ -21,8 +21,7 @@ class PaymentLink extends Base
     protected $usesNewPlHeader = false;
 
     /**
-     * @var bool $useSpreadSheetLibrary
-     * override to use new SpreadSheetLibrary
+     * {@inheritDoc}
      */
     protected $useSpreadSheetLibrary = true;
 
