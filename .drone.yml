@@ -253,6 +253,34 @@ pipeline:
       event:
         exclude: [push]
         include: [deployment]
+  deploy-deployments-stage-echo:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment:
+      - api-sqs-es-sync
+      - api-sqs-gen-test
+      #- api-sqs-invoice-emails
+      - api-sqs-invoice-reports
+      - api-sqs-webhooks-test
+    repo: razorpay/api
+    namespace: echo
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-echo
+      event:
+        exclude: [push]
+        include: [deployment]
   deploy-stage-delta:
     image: razorpay/drone-kubernetes
     pull: true
@@ -269,6 +297,34 @@ pipeline:
     kind: daemonset
     daemonset:
       - api-web
+    repo: razorpay/api
+    namespace: delta
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-delta
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-deployments-stage-delta:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment:
+      - api-sqs-es-sync
+      - api-sqs-gen-test
+      #- api-sqs-invoice-emails
+      - api-sqs-invoice-reports
+      - api-sqs-webhooks-test
     repo: razorpay/api
     namespace: delta
     tag:
@@ -303,6 +359,34 @@ pipeline:
       event:
         exclude: [push]
         include: [deployment]
+  deploy-deployments-stage-charlie:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment:
+      - api-sqs-es-sync
+      - api-sqs-gen-test
+      #- api-sqs-invoice-emails
+      - api-sqs-invoice-reports
+      - api-sqs-webhooks-test
+    repo: razorpay/api
+    namespace: charlie
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-charlie
+      event:
+        exclude: [push]
+        include: [deployment]
   deploy-stage-beta:
     image: razorpay/drone-kubernetes
     pull: true
@@ -319,6 +403,34 @@ pipeline:
     kind: daemonset
     daemonset:
       - api-web
+    repo: razorpay/api
+    namespace: beta
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-beta
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-deployments-stage-beta:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment:
+      - api-sqs-es-sync
+      - api-sqs-gen-test
+      #- api-sqs-invoice-emails
+      - api-sqs-invoice-reports
+      - api-sqs-webhooks-test
     repo: razorpay/api
     namespace: beta
     tag:
