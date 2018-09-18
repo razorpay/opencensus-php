@@ -12,11 +12,20 @@ import { fetchSettlements as fetchAll } from 'merchant/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
+import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlementsModal';
+import {
+  trackEarlySettlementRequests,
+  trackHowSettlementsWorkClicks,
+} from './ga';
 
-@connect(state => state.settlements, {
-  fetchAll,
-  ...ModalActions,
-})
+@connect(
+  state => ({ user: state.session.user, ...state.settlements }),
+  {
+    fetchAll,
+    ...ModalActions,
+  }
+)
 export default class SettlementsListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics({
@@ -71,72 +80,99 @@ export default class SettlementsListContainer extends ListContainer {
     });
   };
 
+  showRequestEarySettlementForm = e => {
+    trackEarlySettlementRequests();
+    this.props.openModal({
+      component: <RequestEarlyAccessForm />,
+      size: 'small',
+    });
+  };
+
   render() {
     let { loading, items, error } = this.props;
 
     return (
-      <tabbed-container>
-        <header>
-          <NavLink to="/settlements">Settlements</NavLink>
-        </header>
+      <React.Fragment>
+        <EarlySettlementAnnouncement from="Settlements" />
 
-        <TestModeBanner />
+        <tabbed-container>
+          <header>
+            <NavLink to="/settlements">Settlements</NavLink>
+          </header>
 
-        <content>
-          <div class="content-wrapper">
-            <HeaderAction>
-              <a
-                class="btn btn-link"
-                href="http://razorpay.com/settlement"
-                target="_blank"
-              >
-                How settlements work?&nbsp;<span class="icon i-external-link" />
-              </a>
-            </HeaderAction>
-            <SettlementsListFilter
-              form="settlementsListFilter"
-              count={this.state.count}
-              onSubmit={this.search}
-              onSearchAnalytics={this.onSearchAnalytics}
-              onClearAnalytics={this.onClearAnalytics}
-            />
+          <TestModeBanner />
 
-            {error && <Alert type="error" message={error} />}
+          <content>
+            <div class="content-wrapper">
+              <HeaderAction>
+                <React.Fragment>
+                  {this.props.user.findTag('announcement_early_settlements') ? (
+                    <a
+                      class="btn btn-link req-es-btn"
+                      onClick={this.showRequestEarySettlementForm}
+                    >
+                      Request Early Settlements{' '}
+                      <i class="fa fa-circle interpunct" />
+                    </a>
+                  ) : (
+                    ''
+                  )}
 
-            <SettlementsList
-              settlements={items}
-              isLoading={loading}
-              showBreakup={this.showBreakup}
-            />
-
-            <Pager
-              count={this.state.count}
-              skip={this.state.skip}
-              length={items.length}
-              onClick={this.paginate}
-            />
-
-            <div class="row">
-              <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
-                <div>
-                  The amount that gets settled to your bank account will show up
-                  here.
-                </div>
-                <div>
                   <a
-                    class="btn-link"
-                    target="_blank"
+                    class="btn btn-link settlement-doc-btn"
                     href="http://razorpay.com/settlement"
+                    target="_blank"
+                    onClick={trackHowSettlementsWorkClicks}
                   >
-                    See our Settlements Guide
-                  </a>{' '}
-                  to understand how it works.
+                    How settlements work?&nbsp;<span class="icon i-external-link" />
+                  </a>
+                </React.Fragment>
+              </HeaderAction>
+              <SettlementsListFilter
+                form="settlementsListFilter"
+                count={this.state.count}
+                onSubmit={this.search}
+                onSearchAnalytics={this.onSearchAnalytics}
+                onClearAnalytics={this.onClearAnalytics}
+              />
+
+              {error && <Alert type="error" message={error} />}
+
+              <SettlementsList
+                settlements={items}
+                isLoading={loading}
+                showBreakup={this.showBreakup}
+              />
+
+              <Pager
+                count={this.state.count}
+                skip={this.state.skip}
+                length={items.length}
+                onClick={this.paginate}
+              />
+
+              <div class="row">
+                <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
+                  <div>
+                    The amount that gets settled to your bank account will show
+                    up here.
+                  </div>
+                  <div>
+                    <a
+                      class="btn-link"
+                      target="_blank"
+                      href="http://razorpay.com/settlement"
+                    >
+                      See our Settlements Guide
+                    </a>{' '}
+                    to understand how it works.
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </content>
-      </tabbed-container>
+          </content>
+        </tabbed-container>
+      </React.Fragment>
     );
   }
 }
