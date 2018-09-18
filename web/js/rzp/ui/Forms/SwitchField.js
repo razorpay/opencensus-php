@@ -25,13 +25,15 @@ export default class SwitchField extends React.Component {
       const isChecked = !this.state.checked;
 
       this.setState({ checked: isChecked }, _ => {
+        const self = this;
+
         if (onChange) {
-          const promise = onChange(isChecked);
-          if (promise.then) {
-            promise.catch(err => {
-              setTimeout(() => this.setState({ checked: !isChecked }), 200);
-            });
+          function postActionCB(isSuccess) {
+            if (!isSuccess) {
+              setTimeout(() => self.setState({ checked: !isChecked }), 100);
+            }
           }
+          const promise = onChange(isChecked, postActionCB);
         }
       });
     }

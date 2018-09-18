@@ -23,6 +23,71 @@ import { showWhenUtil } from 'merchant/components/ShowWhen';
   luminateRow,
 })
 export default class AccountsListContainer extends ListContainer {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
+  onToggleDashboardAccess = (account, checked, cb) => {
+    this.context
+      .confirm({
+        header: `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
+        message: () => (
+          <div class="text-semi-muted">
+            <p>
+              {`Are you sure you want to ${
+                checked ? 'Enable' : 'Disable'
+              } dashboard access for this linked account`}
+            </p>
+          </div>
+        ),
+        affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
+        affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
+        abortLabel: 'Cancel',
+        action: () => {
+          return this.props
+            .toggleDashboardAccess({
+              dashboard_access: checked,
+              accountId: account.id,
+            })
+            .then(resp => {
+              if (resp) {
+                this.props.showNotification({
+                  type: 'success',
+                  message: `Dashboard access ${
+                    checked ? 'Enabled' : 'Disabled'
+                  } for merchant "${account.name}"`,
+                });
+
+                return resp;
+              } else {
+                throw 'Some network error has occurred';
+              }
+            })
+            .catch(({ errors }) => {
+              if (
+                !errors ||
+                (errors instanceof Array === true &&
+                  (!errors.length || !errors[0]))
+              ) {
+                errors = 'Some network error has occurred';
+              }
+
+              this.props.showNotification({
+                type: 'error',
+                message: errors,
+              });
+
+              cb(false);
+
+              throw errors;
+            });
+        },
+      })
+      .catch(() => {
+        cb(false);
+      }); // dummy catch to handle confirm abort rejection
+  };
+
   fetchEntityList({ id, ...params }) {
     if (id) {
       return Promise.resolve(
@@ -70,36 +135,6 @@ export default class AccountsListContainer extends ListContainer {
   showAccountDetailsModal = account => {
     this.props.closeModal();
     this.setState({ showAccountDetailsFor: account.id });
-  };
-
-  onToggleDashboardAccess = (account, checked) => {
-    return this.props
-      .toggleDashboardAccess({
-        dashboard_access: checked,
-        accountId: account.id,
-      })
-      .then(resp => {
-        if (resp) {
-          this.props.showNotification({
-            type: 'success',
-            message: `Dashboard access ${
-              checked ? 'Enabled' : 'Disabled'
-            } for merchant "${account.name}"`,
-          });
-
-          return resp;
-        } else {
-          throw 'Some network error has occurred';
-        }
-      })
-      .catch(({ errors }) => {
-        this.props.showNotification({
-          type: 'error',
-          message: errors,
-        });
-
-        throw errors;
-      });
   };
 
   highlightRowAndClose = accountId => {
