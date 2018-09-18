@@ -155,6 +155,7 @@ class AnalyticsDesktop extends Component {
           <EarlySettlementAnnouncement
             withTour={hasNewAnalyticsTour}
             from="Home-Desktop"
+            marginBottom={!showOnboardingBanner}
           />
 
           <div

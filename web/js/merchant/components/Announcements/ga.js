@@ -29,3 +29,13 @@ const trackESAnnouncements = () => {
 };
 
 export default trackESAnnouncements();
+
+export const trackRequestEarlySettlementModalSubmit = setTrackData({
+  eventCategory: 'Dashboard - Settlements',
+  eventAction: 'Request Early Settlement: Modal Submit',
+});
+
+export const trackRequestEarlySettlementModalClose = setTrackData({
+  eventCategory: 'Dashboard - Settlements',
+  eventAction: 'Request Early Settlement: Modal Close',
+});
