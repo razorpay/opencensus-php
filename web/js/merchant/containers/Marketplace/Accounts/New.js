@@ -9,6 +9,10 @@ import { required } from 'rzp/utils/validators';
 import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import CheckboxField from 'rzp/ui/Forms/CheckboxField';
+import ShowWhen from 'merchant/components/ShowWhen';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+
 @connect(
   state => ({
     user: state.session.user,
@@ -57,6 +61,8 @@ export default class AddAccount extends Component {
     if (accountData) {
       requestData.accountId = accountData.id;
       delete requestData.name;
+    } else if (typeof requestData.dashboard_access !== 'undefined') {
+      requestData.dashboard_access = !!requestData.dashboard_access;
     }
 
     return reqFunc(requestData)
@@ -78,10 +84,17 @@ export default class AddAccount extends Component {
   };
 
   render() {
-    const { handleSubmit, accountData } = this.props;
+    const { handleSubmit, user, accountData } = this.props;
+    let noLAEmail;
+
+    if (!accountData) {
+      noLAEmail =
+        !this.state.email ||
+        user.merchants[user.current].email === this.state.email;
+    }
 
     return (
-      <div>
+      <div class="accounts-edit-new">
         <ModalHeader
           title={!!accountData ? 'Edit Account' : 'Add Account'}
           onCloseClick={this.props.closeModal}
@@ -112,19 +125,43 @@ export default class AddAccount extends Component {
             <div class="form-group">
               <label>Account Email</label>
               <div>
-                <Field name="email" component="input" class="form-control" />
+                <Field
+                  name="email"
+                  component="input"
+                  class="form-control"
+                  value={this.state.email}
+                  onChange={e => this.setState({ email: e.target.value })}
+                />
                 <small class="help-block">
-                  Your sub-merchant will receive a Razorpay sign-up link on this
-                  email.
-                </small>
-
-                <small class="help-block">
-                  Note: If no email is provided, your email will be set as the
-                  registered email ID of this merchant. You can add email ID
-                  later.
+                  Your linked-account user can access their dashboard using this
+                  email id. You may Add/Edit the email later.
                 </small>
               </div>
             </div>
+
+            {!accountData && (
+              <ShowWhen
+                myRole="owner admin manager"
+                featureEnabled="enable_la_dashboard"
+              >
+                <div class="form-group">
+                  <EnableDashboardField isDisabled={noLAEmail}>
+                    <div class="rzpCheckbox">
+                      <Field
+                        name="dashboard_access"
+                        id="dashboard_access"
+                        component={CheckboxField}
+                        type="checkbox"
+                        disabled={noLAEmail}
+                      />
+                      <label for="dashboard_access" class="icon i-check">
+                        <span>Enable Dashboard access to this account</span>
+                      </label>
+                    </div>
+                  </EnableDashboardField>
+                </div>
+              </ShowWhen>
+            )}
 
             <div class="Modal__actions">
               <AsyncButton
@@ -143,4 +180,28 @@ export default class AddAccount extends Component {
 
 AddAccount.defaultProps = {
   onSave: () => {},
+};
+
+const EnableDashboardField = ({ children, isDisabled }) => {
+  if (isDisabled) {
+    return (
+      <small class="help-content">
+        {children}
+        <Popover
+          align="top"
+          parentQuerySelector={`.accounts-edit-new`}
+          theme="dark"
+        >
+          <PopoverBody>
+            <div>
+              Please add Email id to enable dashboard access for this linked
+              account
+            </div>
+          </PopoverBody>
+        </Popover>
+      </small>
+    );
+  }
+
+  return children;
 };

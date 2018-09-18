@@ -43,6 +43,7 @@ const LOADING = {
   SUCCESS: 1, // Success = show success msg
   PENDING: 0, // Pending = show spinner
   INITIAL: null, // Initial = hide spinner
+  DEFAULT: 2, // Some custom message when form opens
 };
 
 function defaultFieldProps(f) {
@@ -89,7 +90,7 @@ let FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
 export default class ActivationWizard extends React.Component {
   state = {
-    isSaving: LOADING.INITIAL,
+    isSaving: this.isLinkedAccountForm ? LOADING.DEFAULT : LOADING.INITIAL,
     dirty: {},
     tabs: [],
     same_address:
@@ -1060,7 +1061,10 @@ export default class ActivationWizard extends React.Component {
         {!isFormLocked && (
           <footer>
             {/* Spinner state */}
-            <Loader isSaving={this.state.isSaving} />
+            <Loader
+              isSaving={this.state.isSaving}
+              defaultMsg={this.props.defaultMsg}
+            />
             {!this.state.showSubmitLayer && (
               <React.Fragment>
                 {/* Action Button 1 */}
@@ -1113,7 +1117,7 @@ export default class ActivationWizard extends React.Component {
 * Component for showing step saving loader in footer
 * @prop {Boolean or null} isSaving - Current status of Loader
 * */
-function Loader({ isSaving }) {
+function Loader({ isSaving, defaultMsg }) {
   if (isSaving === LOADING.INITIAL) {
     return <span class="Loader" />;
   }
@@ -1141,6 +1145,10 @@ function Loader({ isSaving }) {
             </span>
             <span class="text-danger device--mobile">Not Saved!</span>
           </React.Fragment>;
+        } else if (isSaving === LOADING.DEFAULT) {
+          {
+            defaultMsg;
+          }
         }
       }}
     </span>
