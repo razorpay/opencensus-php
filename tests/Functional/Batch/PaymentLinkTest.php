@@ -292,7 +292,15 @@ class PaymentLinkTest extends TestCase
 
     public function testCreateBatchWithHumanReadableExpireBy()
     {
+        // Mocks the Carbon instance so epoch attributes could be asserted without worrying about execution delays.
+        Carbon::setTestNow(Carbon::now(Timezone::IST));
+
+        // Also updates test data with input expire_by values here after mocking Carbon instance.
         $rows = $this->testData[__FUNCTION__ . 'FileRows'];
+        foreach ($rows as $i => & $row)
+        {
+            $row[Header::EXPIRE_BY] = Carbon::now(Timezone::IST)->addDays($i + 1)->format('d-m-Y H:i:s');
+        }
 
         $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
 
@@ -319,7 +327,7 @@ class PaymentLinkTest extends TestCase
             $expireBy         = $invoice['expire_by'];
             $expectedExpireBy = Carbon::now(Timezone::IST)->addDays((int) $receipt)->getTimestamp();
 
-            $this->assertEquals($expectedExpireBy, $expireBy, '', 10);
+            $this->assertEquals($expectedExpireBy, $expireBy);
         }
     }
 
