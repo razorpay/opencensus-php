@@ -77,6 +77,16 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::SIGNED_XML);
     }
 
+    public function getRegistrationStatus()
+    {
+        return $this->getAttribute(self::REGISTRATION_STATUS);
+    }
+
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
     public function setUmrn(string $umrn)
     {
         $this->setAttribute(self::UMRN, $umrn);
