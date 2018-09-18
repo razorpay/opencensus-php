@@ -62,6 +62,7 @@ class ViewSerializer extends Base\Core
                 'details' => "{$checkoutUrl}/integration/{$this->mode}/apspdcl/pages/{$this->paymentLink->getPublicId()}/details",
                 'order'   => "{$checkoutUrl}/integration/{$this->mode}/apspdcl/pages/{$this->paymentLink->getPublicId()}/order",
             ],
+            'gcaptcha_key' => $this->app['config']->get('app.payment_link.gcaptcha_key'),
         ];
 
         return $payload;
