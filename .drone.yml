@@ -466,6 +466,35 @@ pipeline:
       event:
         exclude: [push]
         include: [deployment]
+  deploy-deployments-prod-api:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_klusterapi
+      - client_key_klusterapi
+      - server_cert_klusterapi
+      - client_cert_klusterapi
+    user: drone
+    cluster: kluster-api
+    auth_mode: client-cert
+    deployment:
+      - api-sqs-es-sync
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-webhooks-test
+    repo: razorpay/api
+    namespace: api
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: prod-api
+      branch: master
+      event:
+        exclude: [push]
+        include: [deployment]
   deploy-prod-dark-api:
     image: razorpay/drone-kubernetes
     pull: true

@@ -36,7 +36,7 @@ spec:
             configMapKeyRef:
               key: APP_MODE
               name: api
-        image: razorpay/api:1048c5b6e8e6d3a35eea9e955f2fb2678956aa02
+        image: razorpay/api:4bbdf122142a64c40565ebd1337af51d66ea75bc
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
