@@ -855,7 +855,7 @@ class MerchantCreateTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000',
-                                                                 'email' => $merchant->getEmail()]);
+                                                                 'email' => 'test@razorpay.com']);
 
         $this->ba->proxyAuth();
 
