@@ -15,20 +15,37 @@ class Crypto
         self::ENVELOPED
     ];
 
-    public function __construct(array $config)
+    protected $privateKey;
+
+    protected $encryptionCertificate;
+
+    protected $signingCertificate;
+
+    public function __construct(array $config = null)
     {
         $this->config = $config;
+    }
+
+    public function setPrivateKeyPath($path)
+    {
+        $this->privateKey = $path;
+    }
+
+    public function setEncryptionCertificatePath($path)
+    {
+        $this->encryptionCertificate = $path;
+    }
+
+    public function setSigningCertificatePath($path)
+    {
+        $this->signingCertificate = $path;
     }
 
     public function decrypt($data)
     {
         $data = base64_decode($data);
 
-        $rsa = $this->getRSAInstance();
-
-        $key = $this->getDecryptionKey();
-
-        $rsa->loadKey($key);
+        $rsa = $this->getRSAInstance('response');
 
         return $rsa->decrypt($data);
     }
@@ -52,6 +69,8 @@ class Crypto
         {
 
             case 'response':
+                $key = $this->getRzpPrivateKey();
+                $rsa->loadKey($key);
                 break;
 
             case 'request':
@@ -65,26 +84,6 @@ class Crypto
         $rsa->setMGFHash('sha1');
 
         return $rsa;
-    }
-
-    protected function getDecryptionKey()
-    {
-        $key = $this->config['test_decryption_key'];
-
-        // The trim is to make sure that the key doesn't end with
-        // an extra newline
-        return trim(str_replace('\n', "\n", $key));
-    }
-
-    protected function getNpciPublicKey()
-    {
-        $cert = (file_get_contents(__DIR__ . '/keys/onmag_cert.cer'));
-
-        $publicKeyResource = openssl_pkey_get_public($cert);
-
-        $pubkeyInfo = openssl_pkey_get_details($publicKeyResource);
-
-        return $pubkeyInfo['key'];
     }
 
     public function addSignature($xmlString)
@@ -106,7 +105,7 @@ class Crypto
 
         $sign->add509Cert($this->getRzpCert(),true, false, ['subjectName' => true ]);
 
-        $sign->sign($this->getSigningKey());
+        $sign->sign($this->getRzpSigningKey());
 
         $sign->appendSignature($xmlDoc->documentElement);
 
@@ -117,33 +116,6 @@ class Crypto
         assertTrue($this->verifySignature($signedxml));
 
         return $signedxml;
-    }
-
-    protected function getRzpCert()
-    {
-        return (file_get_contents(__DIR__ . '/keys/cert.pem'));
-    }
-
-    protected function getSigningKey()
-    {
-        $key =  (file_get_contents(__DIR__ . '/keys/key.pem'));
-
-        $key = trim(str_replace('\n', "\n", $key));
-
-        $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA256, array('type' => 'private'));
-
-        $objKey->loadKey($key);
-
-        return $objKey;
-    }
-
-    protected function makeDomDocument(string $xml)
-    {
-        $xmlDoc = new DOMDocument('1.0', 'UTF-8');
-
-        $xmlDoc->loadXML($xml);
-
-        return $xmlDoc;
     }
 
     protected function verifySignature(string $xml)
@@ -162,7 +134,7 @@ class Crypto
 
         $objKey = $sign->locateKey();
 
-        $objKey->loadKey($this->getSigningPublicKey());
+        $objKey->loadKey($this->getRzpPublicKey());
 
         $verify = $sign->verify($objKey);
 
@@ -170,7 +142,12 @@ class Crypto
         return ($verify === 1);
     }
 
-    protected function getSigningPublicKey()
+    protected function getRzpCert()
+    {
+        return (file_get_contents($this->signingCertificate));
+    }
+
+    protected function getRzpPublicKey()
     {
         $cert = $this->getRzpCert();
 
@@ -179,5 +156,47 @@ class Crypto
         $pubkeyInfo = openssl_pkey_get_details($publicKeyResource);
 
         return $pubkeyInfo['key'];
+    }
+
+    protected function getNpciPublicKey()
+    {
+        $cert = (file_get_contents($this->encryptionCertificate));
+
+        $publicKeyResource = openssl_pkey_get_public($cert);
+
+        $pubkeyInfo = openssl_pkey_get_details($publicKeyResource);
+
+        return $pubkeyInfo['key'];
+    }
+
+    protected function getRzpSigningKey()
+    {
+        $key =  (file_get_contents($this->privateKey));
+
+        $key = trim(str_replace('\n', "\n", $key));
+
+        $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA256, array('type' => 'private'));
+
+        $objKey->loadKey($key);
+
+        return $objKey;
+    }
+
+    protected function getRzpPrivateKey()
+    {
+        $key =  (file_get_contents($this->privateKey));
+
+        $key = trim(str_replace('\n', "\n", $key));
+
+        return $key;
+    }
+
+    protected function makeDomDocument(string $xml)
+    {
+        $xmlDoc = new DOMDocument('1.0', 'UTF-8');
+
+        $xmlDoc->loadXML($xml);
+
+        return $xmlDoc;
     }
 }
