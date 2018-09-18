@@ -1,6 +1,6 @@
 import React from 'react';
 import Form from 'ui/Form';
-import { TextAreaField } from 'ui/Field';
+import Field, { TextAreaField } from 'ui/Field';
 
 import { adminPost } from 'common/fetch';
 import { splitAndFilter } from 'common/util';
@@ -11,20 +11,20 @@ import {
   openModal,
 } from 'common/modal';
 import { ModalContent } from 'component/Modal';
+import {adminPut} from 'common/fetch';
 
-export default function RetryBulkRefunds() {
+export default function EditBankAccount() {
   function onSubmit(body) {
-    if (body.refund_ids) {
       let payload = {
-        url: `live/refunds/retry/bulk`,
+        url: `live/bank_accounts/${body.ba_id}`,
         data: {
-          refund_ids: splitAndFilter(body.refund_ids, ','),
+          beneficiary_name: body.name,
         },
       };
 
-      adminPost(payload).then(response => {
+      adminPut(payload).then(response => {
         if (response) {
-          notifySuccess('Refund retry has been successfully initiated.');
+          notifySuccess('Bank account has been edited successfully');
           closeModal();
           openModal(
             <ModalContent header="API Response" noPadding>
@@ -35,20 +35,12 @@ export default function RetryBulkRefunds() {
           );
         }
       });
-    } else {
-      notifyError('Refund Ids are mandatory.');
-    }
   }
 
   return (
-    <Form class="full-span retry-bulk-refunds-action" onSubmit={onSubmit}>
-      <TextAreaField
-        label="Refund Ids"
-        type="text"
-        name="refund_ids"
-        required
-        placeholder="Enter comma separated refund ids"
-      />
+    <Form class="full-span edit-bank-account-action" onSubmit={onSubmit}>
+      <Field required label="Beneficiary Name" type="text" name="name" />
+      <Field required label="Bank Account ID" type="text" name="ba_id" />
       <div class="form-actions text-right">
         <button class="btn" type="submit">
           Submit
@@ -58,5 +50,5 @@ export default function RetryBulkRefunds() {
   );
 }
 
-RetryBulkRefunds.title = 'Retry Refunds in Bulk';
-RetryBulkRefunds.permission = 'retry_refund';
+EditBankAccount.title = 'Edit Bank Account';
+EditBankAccount.permission = 'edit_merchant_bank_detail';
