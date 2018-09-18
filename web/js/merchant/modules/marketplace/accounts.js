@@ -40,7 +40,7 @@ export const toggleDashboardAccess = data => {
   return {
     type: ACCOUNT_DASHBOARD_ACCESS,
     payload: merchantFetch({
-      url: 'la-merchants-dashboard/access',
+      url: 'la-merchants/dashboard-access',
       method: 'post',
       appendModeInURL: true,
       accountId: data.accountId,
