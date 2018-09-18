@@ -100,7 +100,15 @@ const fields = [
       }) || 'Any',
   ],
   ['Issuer', item => item.issuerField() || 'Any'],
-  ['Amount Range', item => item.selectField('amount_range') || 'None'],
+  [
+    'Amount Range (Paisa)',
+    item => (
+      <div>
+        {item.selectField('amount_range') || 'None'}
+        {item.customRangeField()}
+      </div>
+    ),
+  ],
   [
     'Rate (%)',
     item =>

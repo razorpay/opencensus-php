@@ -52,3 +52,5 @@ export BulkAssignMerchantFeature from './BulkAssignMerchantFeature';
 export BulkEditMerchants from './BulkEditMerchants';
 
 export RegisterBeneficiaries from './RegisterBeneficiaries';
+
+export EditBankAccount from './EditBankAccount';
