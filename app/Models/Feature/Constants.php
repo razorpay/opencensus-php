@@ -80,20 +80,25 @@ class Constants
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
     const SUBSCRIPTION_V2                 = 'subscription_v2';
+    const SUBSCRIPTION_AUTH_V2            = 'subscription_auth_v2';
     const EXPOSE_ARN_PAYMENT              = 'expose_arn_payment';
     const EXPOSE_ARN_REFUND               = 'expose_arn_refund';
     const OFFERS                          = 'offers';
     const OTP_AUTH_DEFAULT                = 'otp_auth_default';
+    const CAPTURE_QUEUE                   = 'capture_queue';
+    const TRANSACTION_V2                  = 'transaction_v2';
 
     // Orders
-    const ORDER_ID_MANDATORY            = 'order_id_mandatory';
-    const ORDER_RECEIPT_UNIQUE          = 'order_receipt_unique';
+    const ORDER_ID_MANDATORY              = 'order_id_mandatory';
+    const ORDER_RECEIPT_UNIQUE            = 'order_receipt_unique';
 
     // Payment authentication
-    const ATM_PIN_AUTH                  = 'atm_pin_auth';
+    const ATM_PIN_AUTH                    = 'atm_pin_auth';
 
     // Pre-Auth Shield Integration
     const PRE_AUTH_SHIELD_INTG          = 'pre_auth_shield_intg';
+
+    const EDIT_METHODS                  = 'edit_methods';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -196,10 +201,14 @@ class Constants
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
         self::SUBSCRIPTION_V2                 => true,
+        self::SUBSCRIPTION_AUTH_V2            => true,
         self::EXPOSE_ARN_PAYMENT              => true,
         self::EXPOSE_ARN_REFUND               => true,
         self::OFFERS                          => true,
         self::OTP_AUTH_DEFAULT                => true,
+        self::EDIT_METHODS                    => true,
+        self::CAPTURE_QUEUE                   => true,
+        self::TRANSACTION_V2                  => true,
     ];
 
     // Entity type constants

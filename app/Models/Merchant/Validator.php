@@ -165,6 +165,11 @@ class Validator extends Base\Validator
         Entity::EMAIL => 'required|email',
     ];
 
+    protected static $editMethodsRules = [
+        //only this method editing is allowed for now
+        Methods\Entity::EMI => 'required|bool',
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];

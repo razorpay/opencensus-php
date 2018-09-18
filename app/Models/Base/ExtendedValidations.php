@@ -70,6 +70,27 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         return true;
     }
 
+    protected function validateUnsignedId($attribute, $id)
+    {
+        if (is_string($id) === false)
+        {
+            throw new BadRequestValidationFailureException("The $attribute must be a string");
+        }
+
+        $match = preg_match('/[a-zA-Z0-9]{14}\b/', $id);
+
+        //
+        // This should be compared against 1 and not 0 because
+        // preg_match returns either 0 or false in case of failure.
+        //
+        if ($match !== 1)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        return true;
+    }
+
     protected function validateSequentialArray($attribute, $value)
     {
         //

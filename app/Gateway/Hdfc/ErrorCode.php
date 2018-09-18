@@ -320,7 +320,7 @@ class ErrorCode
         self::RP00003     => 'Gateway request timeout. Request actually timed out with no result returned.',
         self::RP00004     => 'Gateway request timeout. Response returned but response result code is "HOST TIMEOUT"',
         self::RP00005     => 'Denied by risk. Response result code is "DENIED BY RISK"',
-        self::RP00006     => 'Authorization not approved. Response result code is "NOT APPROVED"',
+        self::RP00006     => 'Authentication not approved. Response result code is "NOT APPROVED"',
         self::RP00007     => 'Purchase/Capture/Refund not done. Response result code is "NOT CAPTURED"',
         self::RP00008     => 'Gateway server error. Wrong response http status_code, > than 500 signifying gateway server error',
         self::RP00009     => 'Wrong response content-type, not application/xml',

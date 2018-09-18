@@ -208,6 +208,36 @@ return [
         ],
     ],
 
+    'testCaptureFailedWithoutQueue' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\RuntimeException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR
+        ],
+    ],
+
+    'testCaptureTimeoutWithoutQueueNonHdfc' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 504,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayTimeoutException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT
+        ],
+    ],
+
     'testCaptureWithMinAmountAllowed' => [
         'response' => [
             'content' => [

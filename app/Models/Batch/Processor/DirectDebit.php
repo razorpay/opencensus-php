@@ -187,4 +187,11 @@ class DirectDebit extends Base
 
         return  $entity->getMaskedCardNumber();
     }
+
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        unset($payloadEntry[Header::DIRECT_DEBIT_CARD_NUMBER]);
+        unset($payloadEntry[Header::DIRECT_DEBIT_EXPIRY_MONTH]);
+        unset($payloadEntry[Header::DIRECT_DEBIT_EXPIRY_YEAR]);
+    }
 }

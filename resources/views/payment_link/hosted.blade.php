@@ -12,11 +12,12 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
 <!doctype html>
 <html>
 <head>
-    <title>Payment Page</title>
+    <title>{{$data['merchant']['name']}} - {{$payment_page_data['title']}}</title>
     <meta charset="utf-8">
-    @include('hostedpage.partials.robot')
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
+    <meta name="description" content='"{{$payment_page_data['title']}}" by {{$data['merchant']['name']}}. Proceed to pay Rs. {{amount_format_IN($payment_page_data['amount'])}} via Razorpay Payment Pages.'>
+    @include('hostedpage.partials.robot')
 
     @if (isset($payment_page_data))
         <meta property="og:title" content="Payment of Rs. {{amount_format_IN($payment_page_data['amount'])}} requested by {{$data['merchant']['name']}} for {{$payment_page_data['title']}}">

@@ -156,6 +156,7 @@ class Entity
     const AEPS_ICICI             = 'aeps_icici';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
+    const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
     const UPI_HULK               = 'upi_hulk';
     const ENACH_RBL              = 'enach_rbl';
@@ -194,6 +195,9 @@ class Entity
     const REPORTING_SCHEDULES          = 'reporting.schedules';
     const SHIELD_RULES                 = 'shield.rules';
     const SHIELD_RULE_ANALYTICS        = 'shield.rule_analytics';
+    const SHIELD_RISKS                 = 'shield.risks';
+    const SHIELD_LISTS                 = 'shield.lists';
+    const SHIELD_LIST_ITEMS            = 'shield.list_items';
 
     /**
      * Defines a map of entites which are currently
@@ -308,6 +312,7 @@ class Entity
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Sbi::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
+        self::UPI_AXIS               => \RZP\Gateway\Upi\Axis::class,
         self::UPI_HULK               => \RZP\Gateway\Upi\Hulk::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Icici::class,
@@ -392,6 +397,7 @@ class Entity
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Base::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Base::class,
+        self::UPI_AXIS               => \RZP\Gateway\Upi\Base::class,
         self::UPI_HULK               => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
 
@@ -416,6 +422,9 @@ class Entity
         self::REPORTING_SCHEDULES          => \RZP\Services\Reporting::class,
         self::SHIELD_RULES                 => \RZP\Services\ShieldClient::class,
         self::SHIELD_RULE_ANALYTICS        => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RISKS                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LISTS                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LIST_ITEMS            => \RZP\Services\ShieldClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [

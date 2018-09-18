@@ -902,4 +902,26 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+
+    'testAddHulkTerminalWithAppAuth' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_hulk',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => 'vpa_12345678901234',
+                'gateway_terminal_password' => '12345678',
+                'gateway_access_code'       => 'app',
+                'upi'                       => true,
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway'                   => 'upi_hulk',
+                'gateway_merchant_id'       => 'vpa_12345678901234',
+                'enabled'                   => true
+            ]
+        ]
+    ]
 ];

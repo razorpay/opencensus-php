@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Reconciliator\Metrics\Metric;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 use Symfony\Component\HttpFoundation\File\MimeType\FileBinaryMimeTypeGuesser;
@@ -136,14 +137,26 @@ class Reconciliation extends Base
     }
 
     /**
-     * We call the gateway's reconciliator class with the file entries obtained
-     * by parsing the file
+     * We call the gateway's reconciliator class with
+     * the file entries obtained by parsing the file
      *
      * @param   array       $entries
      */
     protected function processEntries(array & $entries)
     {
-        $this->gatewayReconciliator->startReconciliationV2($entries, $this->batch);
+        $start = time();
+
+        $source = $this->settingsAccessor->get(RequestProcessor\Base::SOURCE);
+
+        $this->gatewayReconciliator->startReconciliationV2($entries, $this->batch, $source);
+
+        $processingTime = (time() - $start);
+
+        $gateway = $this->batch->getGateway();
+
+        $dimensions = Metric::getFileProcessingMetricDimension($gateway, $source);
+
+        $this->trace->histogram(Metric::RECON_MIS_FILE_PROCESSING_TIME_SECONDS, $processingTime, $dimensions);
     }
 
     protected function postProcessEntries(array & $entries)
@@ -173,7 +186,7 @@ class Reconciliation extends Base
     /**
      * Parses the file and converts the contents into an in memory array
      *
-     * @param  string   $filePath  Path of the file to be parsed
+     * @param  string $filePath  Path of the file to be parsed
      *
      * @return array parsed contents of the recon file
      *
@@ -181,6 +194,8 @@ class Reconciliation extends Base
      */
     protected function parseFile(string $filePath): array
     {
+        $start = time();
+
         $inputFileDetails = $this->getInputFileDetails($filePath);
 
         $fileType = $inputFileDetails[FileProcessor::FILE_TYPE];
@@ -197,9 +212,19 @@ class Reconciliation extends Base
         {
             throw new Exception\ReconciliationException(
                 'File is neither an Excel nor a CSV type.',
-                [self::FILE_DETAILS => $inputFileDetails]
-            );
+                [
+                    self::FILE_DETAILS => $inputFileDetails
+                ]);
         }
+
+        $fileParseTime = (time() - $start);
+
+        $source = $this->settingsAccessor->get(RequestProcessor\Base::SOURCE);
+        $gateway = $this->batch->getGateway();
+
+        $dimensions = Metric::getFileProcessingMetricDimension($gateway, $source);
+
+        $this->trace->histogram(Metric::RECON_MIS_FILE_PARSING_TIME_SECONDS, $fileParseTime, $dimensions);
 
         return $fileContent;
     }
@@ -255,7 +280,11 @@ class Reconciliation extends Base
 
         $delimiter = $this->gatewayReconciliator->getDelimiter();
 
-        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $delimiter, $this->batch->getGateway());
+        $csvArray = $this->converter->convertCsvToArray($fileDetails,
+                                                        $columnHeaders,
+                                                        $linesToSkip,
+                                                        $delimiter,
+                                                        $this->batch->getGateway());
 
         $totalCount += count($csvArray);
 

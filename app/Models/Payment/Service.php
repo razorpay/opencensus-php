@@ -439,6 +439,13 @@ class Service extends Base\Service
     {
         $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
+        if ($payment->hasBeenCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED
+            );
+        }
+
         $transaction = $this->repo->transaction->findByEntityId($payment->getId(), $this->merchant, true);
 
         return $transaction->toArrayPublic();
@@ -1021,13 +1028,19 @@ class Service extends Base\Service
 
     public function autoCaptureOldAuthorizedPayments()
     {
-        $timeLowerLimit = time() - (48 * 60 * 60);
-        $timeUpperLimit = time() - (24 * 60 * 60);
+        $timeLowerLimit = Carbon::now()->subHour()->getTimestamp();
 
-        $payments = $this->repo->payment->getAuthorizedPaymentsBetweenTimestamps(
-                            $timeLowerLimit, $timeUpperLimit);
+        $timeUpperLimit = Carbon::now()->subMinutes(5)->getTimestamp();
 
-        $count = 0;
+        $payments = $this->repo
+                         ->payment
+                         ->getAuthorizedAutoCapturePaymentsBetweenTimestamps(
+                            $timeLowerLimit, $timeUpperLimit
+                         );
+
+        $success          = 0;
+        $totalCount       = count($payments);
+        $failedPaymentIds = [];
 
         foreach ($payments as $payment)
         {
@@ -1035,17 +1048,37 @@ class Service extends Base\Service
 
             try
             {
-                $this->getNewProcessor()->autoCapturePayment($payment);
+                $this->getNewProcessor()->autoCapturePaymentIfApplicable($payment);
+
+                $success++;
             }
             catch (Exception\RecoverableException $e)
             {
+                $this->trace->traceException(
+                    $e,
+                    Trace::WARNING,
+                    TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
+                    [
+                        'step'          => 'auto_capture_authorized',
+                        'payment_id'    => $payment->getId()
+                    ]
+                );
+
+                $failedPaymentIds[] = $payment->getId();
+
                 continue;
             }
-
-            $count++;
         }
 
-        return ['count' => $count];
+        $dataToTrace = [
+            'count'              => $totalCount,
+            'success_count'      => $success,
+            'failed_payment_ids' => $failedPaymentIds
+        ];
+
+        $this->trace->info(TraceCode::PAYMENT_AUTO_CAPTURE_CRON, $dataToTrace);
+
+        return $dataToTrace;
     }
 
     public function deliverAutoCaptureEmail()

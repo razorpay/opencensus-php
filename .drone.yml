@@ -43,6 +43,7 @@ pipeline:
       - DB_TEST_HOST=testdb
       - DB_AUTH_HOST=authdb
       - REDIS_HOST=redis
+      - REDIS_LABS_HOST=redis
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
     commands:
@@ -61,6 +62,7 @@ pipeline:
       - DB_TEST_HOST=testdb2
       - DB_AUTH_HOST=authdb
       - REDIS_HOST=redis2
+      - REDIS_LABS_HOST=redis2
       - ES_HOST=elasticsearch2
       - ES_AUDIT_HOST=elasticsearch2
     commands:

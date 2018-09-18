@@ -73,11 +73,13 @@ return [
         'query_cache_test' => [
             'driver'     => 'redis',
             'connection' => 'query_cache_test',
+            'prefix'     => 'test',
         ],
 
         'query_cache_live' => [
             'driver'     => 'redis',
             'connection' => 'query_cache_live',
+            'prefix'     => 'live',
         ],
     ],
 
