@@ -18,11 +18,12 @@ class ApspdclController extends Controller
      */
     public function any(Request $req)
     {
-        $path   = $req->getRequestUri();
-        $method = $req->method();
-        $input  = $req->post();
+        $path    = $req->getRequestUri();
+        $method  = $req->method();
+        $input   = $req->post();
+        $headers = ['Content-Type' => 'application/json'];
 
-        $this->trace->info(TraceCode::APSPDCL_REQUEST, compact('path', 'method', 'input'));
+        $this->trace->info(TraceCode::APSPDCL_REQUEST, compact('path', 'method', 'input', 'headers'));
 
         $apspdclEndpoint = config('services.apspdcl.base_url') . str_after($req->getRequestUri(), '/v1/apspdcl');
 
@@ -33,7 +34,7 @@ class ApspdclController extends Controller
 
         try
         {
-            $resp    = Requests::request($apspdclEndpoint, [], $input, $method);
+            $resp    = Requests::request($apspdclEndpoint, $headers, $input, $method);
             $code    = $resp->status_code;
             $body    = $resp->body;
             $headers = $resp->headers->getAll();
