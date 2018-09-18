@@ -2052,6 +2052,10 @@ class Service extends Base\Service
             $ownerId
         )
         {
+            $enableDashboardAccess = (bool) ($input['dashboard_access'] ?? false);
+
+            unset($input['dashboard_access']);
+
             $merchantCore = new Merchant\Core;
 
             $subMerchant = $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount);
@@ -2071,7 +2075,13 @@ class Service extends Base\Service
                 $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
             }
 
-            list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
+            // Users will be created and given access to the account in partners flow, irrespective of enable
+            // dashboard access. users will be created and given access in linked accounts case only when enable
+            // dashboard access is true.
+            if ((($enableDashboardAccess === true) and ($isLinkedAccount === true)) or ($isLinkedAccount === false))
+            {
+                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
+            }
 
             $this->repo->saveOrFail($subMerchant);
 
@@ -2362,5 +2372,52 @@ class Service extends Base\Service
         $response = (new BankAccount\Beneficiary)->registerBeneficiaryThroughApi($input, $channel);
 
         return $response;
+    }
+
+    /**
+     * Function to provide dashboard access to linked accounts.
+     * @param array $input
+     *
+     * @return array
+     * @throws \RZP\Exception\BadRequestException
+     *
+     */
+    public function updateLinkedAccountDashboardAccess(array $input): array
+    {
+        $merchant = $this->auth->getMerchant();
+
+        (new Validator)->validateLinkedAccount($merchant);
+
+        $parentMerchant = $merchant->parent;
+
+        $dashboardAccess = (bool) ($input['dashboard_access'] ?? false);
+
+        (new Validator)->validateLinkedAccountDashboardAccess($dashboardAccess, $merchant);
+
+        if ($dashboardAccess === true)
+        {
+            if (($parentMerchant->isMarketplace() === true) and
+                ($parentMerchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true))
+            {
+                if ($parentMerchant->getEmail() === $merchant->getEmail())
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS);
+                }
+
+                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
+
+                if (empty($newUser) === false)
+                {
+                    (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $merchant, $createdNew);
+                }
+            }
+        }
+        else
+        {
+            $this->repo->sync($merchant,  'users', []);
+        }
+
+        return ['success' => true];
     }
 }
