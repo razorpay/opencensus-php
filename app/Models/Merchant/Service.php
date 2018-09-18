@@ -2089,8 +2089,7 @@ class Service extends Base\Service
         });
 
         // Sends email to marketplace LA dashboard enabled users.
-        if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true) and
-            ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true))
+        if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true))
         {
             (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
         }
@@ -2133,10 +2132,7 @@ class Service extends Base\Service
         $subMerchantUser = null;
         $createdNew      = false;
 
-        $isMarketplaceWithLADashTag = (($merchant->isMarketplace() === true) and
-                                       ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true));
-
-        if ((($merchant->isPartner() === true) or ($isMarketplaceWithLADashTag === true)) and
+        if ((($merchant->isPartner() === true) or ($merchant->isMarketplace() === true)) and
             ($subMerchant->getEmail() !== $merchant->getEmail()))
         {
             list($subMerchantUser, $createdNew) =
@@ -2394,23 +2390,19 @@ class Service extends Base\Service
 
         (new Validator)->validateLinkedAccountDashboardAccess($dashboardAccess, $merchant);
 
-        if ($dashboardAccess === true)
+        if (($dashboardAccess === true) and ($parentMerchant->isMarketplace() === true))
         {
-            if (($parentMerchant->isMarketplace() === true) and
-                ($parentMerchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true))
+            if ($parentMerchant->getEmail() === $merchant->getEmail())
             {
-                if ($parentMerchant->getEmail() === $merchant->getEmail())
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS);
-                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS);
+            }
 
-                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
+            list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
 
-                if (empty($newUser) === false)
-                {
-                    (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $merchant, $createdNew);
-                }
+            if (empty($newUser) === false)
+            {
+                (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $merchant, $createdNew);
             }
         }
         else

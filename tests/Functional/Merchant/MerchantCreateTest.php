@@ -543,10 +543,6 @@ class MerchantCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
-
         $this->ba->proxyAuth();
 
         $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
@@ -655,10 +651,6 @@ class MerchantCreateTest extends TestCase
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
-
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
 
         $this->ba->proxyAuth();
 
@@ -840,10 +832,6 @@ class MerchantCreateTest extends TestCase
 
         $this->createUserMerchantMapping('10000000000000', 'owner');
 
-        $merchant = Merchant\Entity::find('10000000000000');
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
-
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
@@ -864,10 +852,6 @@ class MerchantCreateTest extends TestCase
     {
         $this->createUserMerchantMapping('10000000000000', 'owner');
 
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
-
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000',
@@ -883,10 +867,6 @@ class MerchantCreateTest extends TestCase
     public function testCreateLinkedAccountDashboardAccessRevoke()
     {
         $this->createUserMerchantMapping('10000000000000', 'owner');
-
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
@@ -917,10 +897,6 @@ class MerchantCreateTest extends TestCase
     {
         $this->createUserMerchantMapping('10000000000000', 'owner');
 
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
-
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
@@ -945,10 +921,6 @@ class MerchantCreateTest extends TestCase
     public function testLinkedAccountDashboardAccessRevokeNoUsers()
     {
         $this->createUserMerchantMapping('10000000000000', 'owner');
-
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
