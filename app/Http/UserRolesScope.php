@@ -54,8 +54,6 @@ class UserRolesScope
             'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
             'invitation_fetch'  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
 
-            // Route Routes
-            'merchant_dashboard_access' => [Role::OWNER],
             // profile routes
             'merchant_gst_fetch' => [Role::OWNER, Role::FINANCE],
             'merchant_gst_edit'  => [Role::OWNER, Role::FINANCE],
@@ -129,7 +127,8 @@ class UserRolesScope
             'item_update'         => Role::WRITER_ROLES,
 
             // marketplace
-            'transfer_fetch_multiple' => Role::READER_ROLES,
+            'transfer_fetch_multiple'      => Role::READER_ROLES,
+            'merchant_dashboard_access_la' => [Role::OWNER, Role::ADMIN, Role::MANAGER],
 
             // TODO change the role to LA dashboard admin and owner after launch.
             'transfer_fetch_multiple_la'  => Role::LINKED_ACCOUNT_ROLES,
