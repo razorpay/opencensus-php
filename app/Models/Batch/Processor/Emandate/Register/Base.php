@@ -8,7 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\Entity as GatewayEntity;
-use RZP\Models\Batch\Processor\Base as BaseProcessor;
+use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
 
 abstract class Base extends BaseProcessor
 {

@@ -23,7 +23,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends BaseModel\Core
 {
-    use FileHandlerTrait;
+    use FileHandlerTrait { parseExcelSheets as parentParseExcelSheets; }
 
     /**
      * Lock wait timeout for batch entity
@@ -95,6 +95,12 @@ class Base extends BaseModel\Core
      */
     protected $inputFileType;
     protected $outputFileType;
+
+    /**
+     * @var bool
+     * override from child processor to use new spreadsheet library
+     */
+    protected $useSpreadSheetLibrary = false;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -803,6 +809,16 @@ class Base extends BaseModel\Core
                 throw new LogicException("Extension not handled: {$ext}");
         }
     }
+
+    protected function parseExcelSheets($filePath)
+    {
+        if ($this->useSpreadSheetLibrary)
+        {
+            return $this->parseExcelSheetsUsingSpreadSheet($filePath);
+        }
+        return $this->parentParseExcelSheets($filePath);
+    }
+
 
     protected function parseFileAndCleanEntries(string $filePath): array
     {

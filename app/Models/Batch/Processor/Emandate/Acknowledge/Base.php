@@ -3,7 +3,7 @@
 namespace RZP\Models\Batch\Processor\Emandate\Acknowledge;
 
 use RZP\Models\FileStore;
-use RZP\Models\Batch\Processor\Base as BaseProcessor;
+use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
