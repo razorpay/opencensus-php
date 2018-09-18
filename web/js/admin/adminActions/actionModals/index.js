@@ -54,3 +54,5 @@ export BulkEditMerchants from './BulkEditMerchants';
 export RegisterBeneficiaries from './RegisterBeneficiaries';
 
 export EditBankAccount from './EditBankAccount';
+
+export BeamNodalAction from '/BeamNodalAction';
