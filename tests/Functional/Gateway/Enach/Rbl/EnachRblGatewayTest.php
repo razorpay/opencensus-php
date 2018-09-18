@@ -6,31 +6,30 @@ use Mail;
 use Excel;
 use Closure;
 use Mockery;
-use RZP\Exception;
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Mail\Gateway\EMandate\Base as Email;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use Illuminate\Http\Testing\File as TestingFile;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
-use RZP\Tests\Functional\FundTransfer\AttemptTrait;
-
 /**
  * @group dns-sensitive
  */
@@ -81,6 +80,43 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals(0, $enach['amount']);
         $this->assertNotNull($enach['gateway_reference_id']);
         $this->assertNotNull($enach['signed_xml']);
+    }
+
+    public function testPaymentNpci()
+    {
+        $payment                 = $this->getEmandatePaymentArray('HDFC', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(0, $payment['amount']);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertNotNull($enach['gateway_reference_id']);
+
+        $this->assertEquals('true', $enach['registration_status']);
+
+        //$this->assertNotNull($enach['registration_date']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('netbanking', $token['auth_type']);
+
+        $this->assertEquals('confirmed', $token['recurring_status']);
     }
 
     public function testSuccessfulEsignGenerationWithVid()
