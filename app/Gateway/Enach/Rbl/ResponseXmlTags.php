@@ -1,0 +1,28 @@
+<?php
+
+namespace RZP\Gateway\Enach\Rbl;
+
+class ResponseXmlTags
+{
+    // fields
+    const MESSAGE_ID = 'MsgId';
+    const CREATION_DATE_TIME = 'CreDtTm';
+    const RESPONSE_PARTY = 'ReqInitPty';
+    const MANDATE_REQUEST_ID = 'MndtReqId';
+    const ORIGINGAL_MSG_ID = 'NPCI_RefMsgId';
+    const ACCEPTED = 'Accptd';
+    const ACCEPT_REF_NO = 'AccptRefNo';
+    const REJECTION_CODE = 'ReasonCode';
+    const REJECT_DESCRIPTION = 'ReasonDesc';
+    const REJECTION_BY = 'RejectBy';
+    const DEBTOR_IFSC = 'IFSC';
+
+    //headers
+    const MANDATE_ACCEPT_RESPONSE = 'MndtAccptResp';
+    const GROUP_HEADER = 'GrpHdr';
+    const ACCEPT_DETAILS = 'UndrlygAccptncDtls';
+    const ORIGINAL_MSG_INFO = 'OrgnlMsgInf';
+    const ACCEPT_RESULT = 'AccptncRslt';
+    const REJECT_REASON = 'RjctRsn';
+    const DEBTOR = 'DBTR';
+}
