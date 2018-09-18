@@ -6,13 +6,25 @@ use Carbon\Carbon;
 
 use RZP\Gateway\Base;
 use RZP\Constants\HashAlgo;
+use RZP\Constants\Timezone;
+use RZP\Gateway\Enach\Rbl\Crypto;
 
 class Server extends Base\Mock\Server
 {
     use Base\Mock\GatewayTrait;
 
+    protected $crypto;
+
     public function authorize($input)
     {
+        $this->crypto = new Crypto();
+
+        $this->crypto->setPrivateKeyPath(__DIR__ . '/keys/mock_key.pem');
+
+        $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/cert.pem');
+
+        $this->crypto->setSigningCertificatePath(__DIR__ . '/keys/mock_cert.pem');
+
         $requestXml = (array) simplexml_load_string(trim($input['MandateReqDoc']));
 
         $json = json_encode($requestXml);
@@ -23,13 +35,13 @@ class Server extends Base\Mock\Server
 
         $this->content($respType, 'authorize');
 
-        $responseData = $this->getResponseData($requestArray, $respType);
-
-        $responseXml = $this->getResponseOrErrorXml($responseData, $respType);
-
-        $secureData = $this->getSecureData($responseData);
+        $secureData = $this->getSecureData();
 
         $checksum = $this->generateHash($secureData);
+
+        $responseData = $this->getResponseData($requestArray, $respType, $secureData);
+
+        $responseXml = $this->getResponseOrErrorXml($responseData, $respType);
 
         //$callbackUrl = $this->route->getUrl('gateway_emandate_callback_npci_nb');
 
@@ -50,48 +62,48 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
-    private function getResponseData($requestArray, $respType)
+    private function getResponseData($requestArray, $respType, $secureData)
     {
         if($respType === 'RespXml')
         {
             $data = [
-                'GrpHdr' => [
-                    'MsgId' => '000f0f29dc27f00000101b09c5227457f17',
-                    'CreDtTm' => Carbon::now()->toIso8601String(),
+                'GrpHdr'      => [
+                    'MsgId'          => '000f0f29dc27f00000101b09c5227457f17',
+                    'CreDtTm'        => Carbon::now(Timezone::IST)->toIso8601String(),
                 ],
                 'OrgnlMsgInf' => [
-                    'MndtReqId' => $requestArray['MndtAuthReq']['Mndt']['MndtReqId'],
-                    'NPCI_RefMsgId' => $requestArray['MndtAuthReq']['GrpHdr']['MsgId'],
-                    'CreDtTm' => $requestArray['MndtAuthReq']['GrpHdr']['CreDtTm'],
+                    'MndtReqId'      => $requestArray['MndtAuthReq']['Mndt']['MndtReqId'],
+                    'NPCI_RefMsgId'  => $requestArray['MndtAuthReq']['GrpHdr']['MsgId'],
+                    'CreDtTm'        => $requestArray['MndtAuthReq']['GrpHdr']['CreDtTm'],
                 ],
-                'AccptncRslt' => [
-                    'Accptd' => 'true',
-                    'AccptRefNo' => 22132232,
+                'AccptncRslt'  => [
+                    'Accptd'         => $this->crypto->encrypt($secureData['Accptd']),
+                    'AccptRefNo'     => $this->crypto->encrypt($secureData['AccptRefNo']),
                 ],
-                'RjctRsn' => [
-                    'ReasonCode' => '',
-                    'ReasonDesc' => '',
-                    'RejectBy' => '',
+                'RjctRsn'      => [
+                    'ReasonCode'     => $this->crypto->encrypt($secureData['ReasonCode']),
+                    'ReasonDesc'     => $this->crypto->encrypt($secureData['ReasonDesc']),
+                    'RejectBy'       => $this->crypto->encrypt($secureData['RejectBy']),
                 ],
-                'IFSC' => 'HDFC000000000001'
+                'IFSC'          => 'HDFC000000000001'
             ];
         }
         else
         {
             $data = [
-                'GrpHdr' => [
-                    'MsgId' => '000f0f29dc27f00000101b09c5227457f17',
-                    'CreDtTm' => Carbon::now()->toIso8601String(),
+                'GrpHdr'       => [
+                    'MsgId'          => '000f0f29dc27f00000101b09c5227457f17',
+                    'CreDtTm'        => Carbon::now()->toIso8601String(),
                 ],
-                'OrigReqInfo' => [
-                    'MndtReqId' => $requestArray['MndtAuthReq']['Mndt']['MndtReqId'],
-                    'NPCI_RefMsgId' => $requestArray['MndtAuthReq']['GrpHdr']['MsgId'],
-                    'CreDtTm' => $requestArray['MndtAuthReq']['GrpHdr']['CreDtTm'],
+                'OrigReqInfo'   => [
+                    'MndtReqId'      => $requestArray['MndtAuthReq']['Mndt']['MndtReqId'],
+                    'NPCI_RefMsgId'  => $requestArray['MndtAuthReq']['GrpHdr']['MsgId'],
+                    'CreDtTm'        => $requestArray['MndtAuthReq']['GrpHdr']['CreDtTm'],
                 ],
                 'MndtErrorDtls' => [
-                    'ErrorCode' => 2022,
-                    'ErrorDesc' => 'Invalid XML Request',
-                    'RejectBy' => 'BANK'
+                    'ErrorCode'      => 2022,
+                    'ErrorDesc'      => 'Invalid XML Request',
+                    'RejectBy'       => 'BANK'
                 ]
             ];
         }
@@ -211,14 +223,18 @@ class Server extends Base\Mock\Server
         return $data;
     }
 
-    protected function getSecureData($data)
+    protected function getSecureData()
     {
-        return [
-            $data['AccptncRslt']['Accptd'],
-            $data['AccptncRslt']['AccptRefNo'],
-            $data['RjctRsn']['ReasonCode'],
-            $data['RjctRsn']['ReasonDesc'],
-            $data['RjctRsn']['RejectBy'],
+        $data = [
+            'Accptd' => 'true',
+            'AccptRefNo' => '22132232',
+            'ReasonCode' => '',
+            'ReasonDesc' => '',
+            'RejectBy' => '',
         ];
+
+        $this->content($data, 'authorize_get_secure_data');
+
+        return $data;
     }
 }
