@@ -27,7 +27,9 @@ class Server extends Base\Mock\Server
 
         $checksum = $this->generateHash($secureData);
 
-        $callbackUrl = $this->route->getUrl('gateway_emandate_callback_npci_nb');
+        //$callbackUrl = $this->route->getUrl('gateway_emandate_callback_npci_nb');
+
+        $callbackUrl = $input['callback'];
 
         $content = [
             'CheckSumVal'     => $checksum,
@@ -80,7 +82,7 @@ class Server extends Base\Mock\Server
 
         $this->addChildren($data['GrpHdr'], $grp);
 
-        $grp->addChild('ReqInitPty');
+        $grp->addChild('ReqInitPty', 'NPCI');
 
         $accptd = $mandateroot->addChild( 'UndrlygAccptncDtls');
 

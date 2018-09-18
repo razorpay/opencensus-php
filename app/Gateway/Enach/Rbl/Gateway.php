@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RobRichards\XMLSecLibs;
 use RZP\Constants\Timezone;
@@ -17,9 +18,11 @@ use RZP\Constants\HashAlgo;
 use RZP\Gateway\Enach\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
+use RZP\Gateway\Enach\Base\Entity;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Gateway\Enach\Base\CategoryCode;
+use RZP\Exception\GatewayErrorException;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 class Gateway extends Base\Gateway
@@ -90,8 +93,13 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        sd($input);
         parent::callback($input);
+
+        if (($input['payment']['method'] === 'emandate') and
+            ($input['payment']['auth_type'] === 'netbanking'))
+        {
+            return $this->netbankingCallback($input);
+        }
 
         $authResponse = $this->callAuthenticationGateway($input);
 
@@ -121,6 +129,26 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
+    }
+
+    protected function netbankingCallback($input)
+    {
+        $xmlData = $this->getDataFromXmlResponse($input['gateway'][ResponseFields::RESPONSE_XML]);
+
+        $this->validateCallbackChecksum($xmlData, $input['gateway'][ResponseFields::CHECKSUM]);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
+
+        $attributes = $this->getResponseAttributes($xmlData);
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $attributes, false);
+
+        //$this->checkCallbackStatus($attributes, $callbackData);
+
+        $recurringData = $this->getRecurringDataFromNpciResponse($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $recurringData);
     }
 
     protected function getRecurringData()
@@ -189,10 +217,11 @@ class Gateway extends Base\Gateway
         $bank = $input['payment']['bank'];
 
         $content = [
-            'MerchantID' => $mid,
-            'MandateReqDoc' => $xml,
-            'CheckSumVal' => $encryptedChecksum,
-            'BankID' => $bank,
+            RequestFields::MERCHANT_ID => $mid,
+            RequestFields::REQUEST_XML => $xml,
+            RequestFields::CHECKSUM => $encryptedChecksum,
+            RequestFields::BANK_ID => $bank,
+            'callback' => $input['callbackUrl']        //TODO remove this and implement callback route
         ];
 
         $request = $this->getStandardRequestArray($content, 'post', 'npciauth');
@@ -553,5 +582,155 @@ class Gateway extends Base\Gateway
         $pubkeyInfo = openssl_pkey_get_details($publicKeyResource);
 
         return $pubkeyInfo['key'];
+    }
+
+    protected function getDataFromXmlResponse($xmlString)
+    {
+        $responseXml = (array) simplexml_load_string(trim($xmlString));
+
+        $json = json_encode($responseXml);
+
+        $responseArray = json_decode($json,true);
+
+        $data = [
+            ResponseXmlTags::MESSAGE_ID         => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                 [ResponseXmlTags::GROUP_HEADER]
+                                                                 [ResponseXmlTags::MESSAGE_ID],
+
+            ResponseXmlTags::CREATION_DATE_TIME => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                 [ResponseXmlTags::GROUP_HEADER]
+                                                                 [ResponseXmlTags::CREATION_DATE_TIME],
+
+            ResponseXmlTags::RESPONSE_PARTY     => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                 [ResponseXmlTags::GROUP_HEADER]
+                                                                 [ResponseXmlTags::RESPONSE_PARTY],
+
+            ResponseXmlTags::MANDATE_REQUEST_ID => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                 [ResponseXmlTags::ORIGINAL_MSG_INFO]
+                                                                 [ResponseXmlTags::MANDATE_REQUEST_ID],
+
+            ResponseXmlTags::ORIGINGAL_MSG_ID   => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                 [ResponseXmlTags::ORIGINAL_MSG_INFO]
+                                                                 [ResponseXmlTags::ORIGINGAL_MSG_ID],
+
+            ResponseXmlTags::ACCEPTED           => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                 [ResponseXmlTags::ACCEPT_RESULT]
+                                                                 [ResponseXmlTags::ACCEPTED],
+
+            ResponseXmlTags::ACCEPT_REF_NO      => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                 [ResponseXmlTags::ACCEPT_RESULT]
+                                                                 [ResponseXmlTags::ACCEPT_REF_NO],
+
+            ResponseXmlTags::REJECTION_CODE     => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                 [ResponseXmlTags::ACCEPT_RESULT]
+                                                                 [ResponseXmlTags::REJECT_REASON]
+                                                                 [ResponseXmlTags::REJECTION_CODE],
+
+            ResponseXmlTags::REJECT_DESCRIPTION => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                 [ResponseXmlTags::ACCEPT_RESULT]
+                                                                 [ResponseXmlTags::REJECT_REASON]
+                                                                 [ResponseXmlTags::REJECT_DESCRIPTION],
+
+            ResponseXmlTags::REJECTION_BY       => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                 [ResponseXmlTags::ACCEPT_RESULT]
+                                                                 [ResponseXmlTags::REJECT_REASON]
+                                                                 [ResponseXmlTags::REJECTION_BY],
+
+            ResponseXmlTags::DEBTOR_IFSC        => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                 [ResponseXmlTags::ACCEPT_RESULT]
+                                                                 [ResponseXmlTags::DEBTOR]
+                                                                 [ResponseXmlTags::DEBTOR_IFSC],
+        ];
+
+        foreach($data as $key => $value)
+        {
+            if (empty($data[$key]) === true)
+            {
+                $data[$key] = '';
+            }
+        }
+
+        return $data;
+    }
+
+    protected function getResponseAttributes($data)
+    {
+        $attr = [];
+
+        $accepted = $data[ResponseXmlTags::ACCEPTED];
+
+        if($accepted === RegistrationStatus::SUCCESS)
+        {
+            $attr[Entity::REGISTRATION_STATUS] = RegistrationStatus::SUCCESS;
+            $attr[Entity::GATEWAY_REFERENCE_ID] = $data[ResponseXmlTags::ACCEPT_REF_NO];
+            //$attr[Entity::REGISTRATION_DATE] =
+        }
+        else
+        {
+            $attr[Entity::REGISTRATION_STATUS] = RegistrationStatus::FAILURE;
+            $attr[Entity::ERROR_CODE] = $data[ResponseXmlTags::REJECTION_CODE];
+            $attr[Entity::ERROR_MESSAGE] = $data[ResponseXmlTags::REJECT_DESCRIPTION];
+        }
+
+        return $attr;
+    }
+
+    protected function validateCallbackChecksum($xmlData, $checksum)
+    {
+        $expectedChecksum = $this->getCallbackChecksum($xmlData);
+
+        if ($checksum !== $expectedChecksum)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed checksum verification');
+        }
+    }
+
+    protected function getCallbackChecksum($xmldata)
+    {
+        $securedata = [
+            $xmldata[ResponseXmlTags::ACCEPTED],
+            $xmldata[ResponseXmlTags::ACCEPT_REF_NO],
+            $xmldata[ResponseXmlTags::REJECTION_CODE],
+            $xmldata[ResponseXmlTags::REJECT_DESCRIPTION],
+            $xmldata[ResponseXmlTags::REJECTION_BY]
+        ];
+
+        return $this->generateHash($securedata);
+    }
+
+    protected function getRecurringDataFromNpciResponse($gatewayPayment)
+    {
+        $status = $gatewayPayment->getRegistrationStatus();
+
+        if (isset(RegistrationStatus::STATUS_TO_RECURRING_STATUS_MAP[$status]) === false)
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                '',
+                ['gateway_payment' => $gatewayPayment->toArray()]);
+        }
+
+        $recurringStatus = RegistrationStatus::STATUS_TO_RECURRING_STATUS_MAP[$status];
+
+        $errorCode = $gatewayPayment->getErrorCode();
+
+        $recurringFailureReason = RegistrationStatus::getFailureMessage($errorCode);
+
+        $recurringData = [
+            Token\Entity::RECURRING_STATUS         => $recurringStatus,
+            Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
+        ];
+
+        return $recurringData;
     }
 }
