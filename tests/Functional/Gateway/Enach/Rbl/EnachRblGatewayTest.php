@@ -1225,7 +1225,7 @@ class EnachRblGatewayTest extends TestCase
         if ($mock)
         {
             $request = $this->makeFirstGatewayPaymentMockRequest(
-                $url, $method, $content);
+                 $url, $method, $content);
         }
 
         return $this->submitPaymentCallbackRequest($request);
