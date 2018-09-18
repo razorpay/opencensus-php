@@ -118,7 +118,7 @@ class Gateway extends Base\Gateway
 
     protected function netbankingAuthorize($input)
     {
-        $this->crypto = new Crypto($this->config);
+        $this->setCryptoAttribute();
 
         $this->createGatewayPaymentEntity([], 'authorize');
 
@@ -131,14 +131,46 @@ class Gateway extends Base\Gateway
 
     protected function netbankingCallback($input)
     {
-        $xmlData = $this->getDataFromXmlResponse($input['gateway'][ResponseFields::RESPONSE_XML]);
+        $this->setCryptoAttribute();
 
-        $this->validateCallbackChecksum($xmlData, $input['gateway'][ResponseFields::CHECKSUM]);
+        $xmlData = [];
+
+        //$attributes = [];
+
+        $responseXml = (array) simplexml_load_string(trim($input['gateway'][ResponseFields::RESPONSE_XML]));
+
+        $json = json_encode($responseXml);
+
+        $responseArray = json_decode($json,true);
+
+        if($input['gateway'][ResponseFields::RESPONSE_TYPE] === ResponseType::SUCCESS)
+        {
+            $xmlData = $this->getDataFromResponse($responseArray);
+
+            $secureData = [
+                $xmlData[ResponseXmlTags::ACCEPTED],
+                $xmlData[ResponseXmlTags::ACCEPT_REF_NO],
+                $xmlData[ResponseXmlTags::REJECTION_CODE],
+                $xmlData[ResponseXmlTags::REJECT_DESCRIPTION],
+                $xmlData[ResponseXmlTags::REJECTION_BY]
+            ];
+
+            $this->validateCallbackChecksum(
+                                            $this->generateHash($secureData),
+                                            $input['gateway'][ResponseFields::CHECKSUM]
+                                           );
+
+            $attributes = $this->getResponseGatewayAttributes($xmlData);
+        }
+        else
+        {
+            $xmlData = $this->getDataFromErrorResponse($responseArray);
+
+            $attributes = $this->getErrorResponseGatewayAttributes($xmlData);
+        }
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
-
-        $attributes = $this->getResponseAttributes($xmlData);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $attributes, false);
 
@@ -438,14 +470,8 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getDataFromXmlResponse($xmlString)
+    protected function getDataFromResponse($responseArray)
     {
-        $responseXml = (array) simplexml_load_string(trim($xmlString));
-
-        $json = json_encode($responseXml);
-
-        $responseArray = json_decode($json,true);
-
         $data = [
             ResponseXmlTags::MESSAGE_ID         => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
                                                                  [ResponseXmlTags::GROUP_HEADER]
@@ -469,33 +495,43 @@ class Gateway extends Base\Gateway
                                                                  [ResponseXmlTags::ORIGINAL_MSG_INFO]
                                                                  [ResponseXmlTags::ORIGINGAL_MSG_ID],
 
-            ResponseXmlTags::ACCEPTED           => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+            'Mandate_Creation_Date_Time'        => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
                                                                  [ResponseXmlTags::ACCEPT_DETAILS]
-                                                                 [ResponseXmlTags::ACCEPT_RESULT]
-                                                                 [ResponseXmlTags::ACCEPTED],
+                                                                 [ResponseXmlTags::ORIGINAL_MSG_INFO]
+                                                                 [ResponseXmlTags::MANDATE_REQUEST_CREATION_DATE_TIME],
 
-            ResponseXmlTags::ACCEPT_REF_NO      => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
-                                                                 [ResponseXmlTags::ACCEPT_RESULT]
-                                                                 [ResponseXmlTags::ACCEPT_REF_NO],
+            ResponseXmlTags::ACCEPTED           => $this->crypto->decrypt(
+                                                                 $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                                [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                                [ResponseXmlTags::ACCEPT_RESULT]
+                                                                                [ResponseXmlTags::ACCEPTED]),
 
-            ResponseXmlTags::REJECTION_CODE     => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
-                                                                 [ResponseXmlTags::ACCEPT_RESULT]
-                                                                 [ResponseXmlTags::REJECT_REASON]
-                                                                 [ResponseXmlTags::REJECTION_CODE],
+            ResponseXmlTags::ACCEPT_REF_NO      => $this->crypto->decrypt(
+                                                                 $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                                [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                                [ResponseXmlTags::ACCEPT_RESULT]
+                                                                                [ResponseXmlTags::ACCEPT_REF_NO]),
 
-            ResponseXmlTags::REJECT_DESCRIPTION => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
-                                                                 [ResponseXmlTags::ACCEPT_RESULT]
-                                                                 [ResponseXmlTags::REJECT_REASON]
-                                                                 [ResponseXmlTags::REJECT_DESCRIPTION],
+            ResponseXmlTags::REJECTION_CODE     => $this->crypto->decrypt(
+                                                                 $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                                [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                                [ResponseXmlTags::ACCEPT_RESULT]
+                                                                                [ResponseXmlTags::REJECT_REASON]
+                                                                                [ResponseXmlTags::REJECTION_CODE]),
 
-            ResponseXmlTags::REJECTION_BY       => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
-                                                                 [ResponseXmlTags::ACCEPT_RESULT]
-                                                                 [ResponseXmlTags::REJECT_REASON]
-                                                                 [ResponseXmlTags::REJECTION_BY],
+            ResponseXmlTags::REJECT_DESCRIPTION => $this->crypto->decrypt(
+                                                                 $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                                [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                                [ResponseXmlTags::ACCEPT_RESULT]
+                                                                                [ResponseXmlTags::REJECT_REASON]
+                                                                                [ResponseXmlTags::REJECT_DESCRIPTION]),
+
+            ResponseXmlTags::REJECTION_BY       => $this->crypto->decrypt(
+                                                                 $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                                [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                                [ResponseXmlTags::ACCEPT_RESULT]
+                                                                                [ResponseXmlTags::REJECT_REASON]
+                                                                                [ResponseXmlTags::REJECTION_BY]),
 
             ResponseXmlTags::DEBTOR_IFSC        => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
                                                                  [ResponseXmlTags::ACCEPT_DETAILS]
@@ -503,6 +539,7 @@ class Gateway extends Base\Gateway
                                                                  [ResponseXmlTags::DEBTOR]
                                                                  [ResponseXmlTags::DEBTOR_IFSC],
         ];
+        sd($data);
 
         foreach($data as $key => $value)
         {
@@ -515,7 +552,51 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getResponseAttributes($data)
+    protected function getDataFromErrorResponse($responseArray)
+    {
+        return [
+            ResponseXmlTags::MESSAGE_ID => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+            [ResponseXmlTags::GROUP_HEADER]
+            [ResponseXmlTags::MESSAGE_ID],
+
+            ResponseXmlTags::CREATION_DATE_TIME => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+            [ResponseXmlTags::GROUP_HEADER]
+            [ResponseXmlTags::CREATION_DATE_TIME],
+
+            ResponseXmlTags::RESPONSE_PARTY     => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+            [ResponseXmlTags::GROUP_HEADER]
+            [ResponseXmlTags::RESPONSE_PARTY],
+
+            ResponseXmlTags::MANDATE_REQUEST_ID => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+            [ResponseXmlTags::ACCEPT_DETAILS]
+            [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
+            [ResponseXmlTags::MANDATE_REQUEST_ID],
+
+            ResponseXmlTags::ORIGINGAL_MSG_ID   => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+            [ResponseXmlTags::ACCEPT_DETAILS]
+            [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
+            [ResponseXmlTags::ORIGINGAL_MSG_ID],
+
+            'Mandate_Creation_Date_Time' => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+            [ResponseXmlTags::ACCEPT_DETAILS]
+            [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
+            [ResponseXmlTags::MANDATE_REQUEST_CREATION_DATE_TIME],
+
+            ResponseXmlTags::ERROR_CODE => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+            [ResponseXmlTags::MANDATE_ERROR_DETAILS]
+            [ResponseXmlTags::ERROR_CODE],
+
+            ResponseXmlTags::ERROR_CODE => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+            [ResponseXmlTags::MANDATE_ERROR_DETAILS]
+            [ResponseXmlTags::ERROR_DESCRIPTION],
+
+            ResponseXmlTags::REJECTION_BY => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+            [ResponseXmlTags::MANDATE_ERROR_DETAILS]
+            [ResponseXmlTags::REJECTION_BY],
+        ];
+    }
+
+    protected function getResponseGatewayAttributes($data)
     {
         $attr = [];
 
@@ -537,28 +618,22 @@ class Gateway extends Base\Gateway
         return $attr;
     }
 
-    protected function validateCallbackChecksum($xmlData, $checksum)
+    protected function getErrorResponseGatewayAttributes($data)
     {
-        $expectedChecksum = $this->getCallbackChecksum($xmlData);
+        return [
+            Entity::REGISTRATION_STATUS => RegistrationStatus::FAILURE,
+            Entity::ERROR_CODE          => $data[ResponseXmlTags::ERROR_CODE],
+            Entity::ERROR_MESSAGE       => $data[ResponseXmlTags::ERROR_DESCRIPTION],
+        ];
+    }
 
+    protected function validateCallbackChecksum($expectedChecksum, $checksum)
+    {
         if ($checksum !== $expectedChecksum)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
         }
-    }
-
-    protected function getCallbackChecksum($xmldata)
-    {
-        $securedata = [
-            $xmldata[ResponseXmlTags::ACCEPTED],
-            $xmldata[ResponseXmlTags::ACCEPT_REF_NO],
-            $xmldata[ResponseXmlTags::REJECTION_CODE],
-            $xmldata[ResponseXmlTags::REJECT_DESCRIPTION],
-            $xmldata[ResponseXmlTags::REJECTION_BY]
-        ];
-
-        return $this->generateHash($securedata);
     }
 
     protected function getRecurringDataFromNpciResponse($gatewayPayment)
@@ -586,5 +661,17 @@ class Gateway extends Base\Gateway
         ];
 
         return $recurringData;
+    }
+
+    protected function setCryptoAttribute()
+    {
+        $this->crypto = new Crypto($this->config);
+
+        if ($this->mode === Mode::TEST)
+        {
+            $this->crypto->setPrivateKeyPath(__DIR__ . '/keys/key.pem');
+            $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/mock_cert.pem');
+            $this->crypto->setSigningCertificatePath(__DIR__ . '/keys/cert.pem');
+        }
     }
 }
