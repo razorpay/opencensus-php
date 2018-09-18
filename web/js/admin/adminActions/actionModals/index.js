@@ -55,4 +55,4 @@ export RegisterBeneficiaries from './RegisterBeneficiaries';
 
 export EditBankAccount from './EditBankAccount';
 
-export BeamNodalAction from '/BeamNodalAction';
+export BeamNodalAction from './BeamNodalAction';
