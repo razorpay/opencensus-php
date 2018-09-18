@@ -12,8 +12,23 @@ export default function BeamNodalAction() {
   return (
     <Form class="full-span">
       <Field label="File ID" type="text" name="file_id" required/>
-      <Field label="File Type" type="text" name="file_type" required />
-      <Field label="Channel" type="text" name="channel" required/>
+
+        <SelectField label="File Type" name="file_type" required={true}>
+            {Object.keys(filetypes).map(opt => (
+                <option value={opt} key={opt}>
+                    {filetypes[opt]}
+                </option>
+            ))}
+        </SelectField>
+
+        <SelectField label="Channel" name="channel" required={true}>
+            {Object.keys(options).map(opt => (
+                <option value={opt} key={opt}>
+                    {options[opt]}
+                </option>
+            ))}
+        </SelectField>
+
       <SelectMode defaultValue="live" />
       <AsyncButton
         text="Send File"
@@ -39,3 +54,14 @@ export default function BeamNodalAction() {
     </Form>
   );
 }
+
+const options = {
+    icici: 'ICICI',
+    axis: 'Axis',
+    hdfc: 'HDFC',
+};
+
+const filetypes = {
+    settlement: 'Settlement',
+    beneficiary: 'Beneficiary',
+};
