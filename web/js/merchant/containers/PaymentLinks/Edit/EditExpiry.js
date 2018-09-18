@@ -29,7 +29,7 @@ export default class EditExpiry extends React.Component {
       isEditableMode: true,
     });
 
-    this.props.trackerFn(this.props.entityId, 'Edit Expiry');
+    this.props.trackerFn('Edit Expiry');
   };
 
   onDateChange = date => {
@@ -148,10 +148,10 @@ export default class EditExpiry extends React.Component {
                   .then(resp => {
                     if (resp && resp.data) {
                       this.setState(this.resetState());
+
+                      this.props.trackerFn('Edit Expiry (Saved)');
                     }
                   });
-
-                this.props.trackerFn(this.props.entityId, 'Save Expiry');
               }}
               showLoader={false}
               pendingState="Saving..."

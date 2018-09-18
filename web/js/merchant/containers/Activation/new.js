@@ -366,6 +366,7 @@ export default class ActivationContainer extends React.Component {
           saveFile={this.saveFile}
           submitForm={this.submitForm}
           getPincodeDetails={this.getPincodeDetails}
+          defaultMsg={this.props.defaultMsg}
         />
       );
     }

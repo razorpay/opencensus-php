@@ -1,6 +1,6 @@
 import { setTrackData } from 'rzp/utils/googleAnalytics';
 
-const eventCategory = 'Dashboard - Payment Links';
+const eventCategory = 'Dashboard - Payment Pages';
 
 export const track = setTrackData({
   eventCategory,
@@ -10,63 +10,48 @@ export const track = setTrackData({
  * Track Edit, Saves, Add, etc clicks in details view.
  * @param {String} action, {String} paymentLinkId
  */
-export function trackDetailViewEdits(paymentLinkId, action) {
+export function trackDetailViewEdits(action, eventLabel) {
   track({
-    eventAction: `PL Details View - ${action}`,
-    eventLabel: 'Payment Links V2',
+    eventAction: `Details View - ${action}`,
+    eventLabel,
   });
 }
 
 /**
- * Track toggle of partial payment in details view.
- * @param {String} action, {Integer} value, {String} paymentLinkId
+ * Tracks activities in share modal
+ * @param {String} action
+ * @param {String} eventLabel
  */
-export function trackTogglePartialPayment(paymentLinkId, action, value) {
+export function trackShareActions(action, eventLabel) {
   track({
-    eventAction: `PL Details View - ${action}`,
-    eventLabel: 'Payment Links V2',
-    eventValue: value,
+    eventAction: `Share - ${action}`,
+    eventLabel,
   });
 }
 
 /*
 * Track click on Create Payment Link (for V2 users)
 * */
-export function trackOpenCreateForm(e) {
+export function trackCreateActions(action, eventLabel) {
   track({
-    eventAction: 'Open Form - New Payment Link',
-    eventLabel: 'Payment Links V2',
+    eventAction: `Create - Payment Page (${action})`,
+    eventLabel,
   });
 }
 
-/*
-* Track click on "What's this" helper text
-* */
-export function trackHelpClick(e) {
+/**
+ * Track activities on share modal after successful creation of payment page
+ */
+export function trackSuccessActions(action, eventLabel) {
   track({
-    eventAction: "Click - Create Payment Link - What's This",
-    eventLabel: 'From PLV2 Create Modal',
+    eventAction: `Success - ${action}`,
+    eventLabel,
   });
 }
 
-/*
-* Track click on submit form
-* @params {String} data
-* */
-export function trackFormSubmit(data) {
+export function trackListActions(action, eventLabel) {
   track({
-    eventAction: 'Submit Form - New Payment Link',
-    eventLabel: data,
-  });
-}
-
-/*
-* Track click on submit form
-* @params {String} data
-* */
-export function closePaymentLinkForm(text) {
-  track({
-    eventAction: 'Close Form - New Payment Link',
-    eventLabel: text + ' | Payment Links V2',
+    eventAction: `List View - ${action}`,
+    eventLabel,
   });
 }

@@ -213,7 +213,7 @@ export default class ReportsContainer extends Component {
 
   componentWillMount() {
     // 992 is col-md bootstrap (for adaptive design)
-    this.isMobileDevice = window.outerWidth < 992;
+    this.isMobileDevice = window.innerWidth < 992;
     this.requests
       .then(resps => {
         const { 0: configResp, 1: accountsResp } = resps,

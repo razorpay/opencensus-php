@@ -72,6 +72,36 @@ export default class AccountsListContainer extends ListContainer {
     this.setState({ showAccountDetailsFor: account.id });
   };
 
+  onToggleDashboardAccess = (account, checked) => {
+    return this.props
+      .toggleDashboardAccess({
+        dashboard_access: checked,
+        accountId: account.id,
+      })
+      .then(resp => {
+        if (resp) {
+          this.props.showNotification({
+            type: 'success',
+            message: `Dashboard access ${
+              checked ? 'Enabled' : 'Disabled'
+            } for merchant "${account.name}"`,
+          });
+
+          return resp;
+        } else {
+          throw 'Some network error has occurred';
+        }
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+
+        throw errors;
+      });
+  };
+
   highlightRowAndClose = accountId => {
     this.props.luminateRow(accountId);
     this.setState({ showAccountDetailsFor: null });
@@ -144,6 +174,14 @@ export default class AccountsListContainer extends ListContainer {
               : undefined
           }
           onEdit={this.showAccountDetailsModal}
+          onToggleDashboardAccess={
+            showWhenUtil({
+              featureEnabled: 'enable_la_dashboard',
+              myRole: 'owner admin manager',
+            })
+              ? this.onToggleDashboardAccess
+              : undefined
+          }
         />
 
         <Pager
