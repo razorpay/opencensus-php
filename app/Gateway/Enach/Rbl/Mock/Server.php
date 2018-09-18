@@ -19,9 +19,13 @@ class Server extends Base\Mock\Server
 
         $requestArray = json_decode($json,true);
 
-        $responseData = $this->getResponseData($requestArray);
+        $respType = 'RespXml';
 
-        $responseXml = $this->getResponseXml($responseData);
+        $this->content($respType, 'authorize');
+
+        $responseData = $this->getResponseData($requestArray, $respType);
+
+        $responseXml = $this->getResponseOrErrorXml($responseData, $respType);
 
         $secureData = $this->getSecureData($responseData);
 
@@ -34,7 +38,7 @@ class Server extends Base\Mock\Server
         $content = [
             'CheckSumVal'     => $checksum,
             'MandateRespDoc'  => $responseXml,
-            'RespType'        => 'RespXML',
+            'RespType'        => $respType,
         ];
 
         $request = [
@@ -46,29 +50,67 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
-    private function getResponseData($requestArray)
+    private function getResponseData($requestArray, $respType)
     {
-        return [
-            'GrpHdr' => [
+        if($respType === 'RespXml')
+        {
+            $data = [
+                'GrpHdr' => [
                     'MsgId' => '000f0f29dc27f00000101b09c5227457f17',
                     'CreDtTm' => Carbon::now()->toIso8601String(),
-                    ],
-            'OrgnlMsgInf' => [
+                ],
+                'OrgnlMsgInf' => [
                     'MndtReqId' => $requestArray['MndtAuthReq']['Mndt']['MndtReqId'],
                     'NPCI_RefMsgId' => $requestArray['MndtAuthReq']['GrpHdr']['MsgId'],
                     'CreDtTm' => $requestArray['MndtAuthReq']['GrpHdr']['CreDtTm'],
-                    ],
-            'AccptncRslt' => [
+                ],
+                'AccptncRslt' => [
                     'Accptd' => 'true',
                     'AccptRefNo' => 22132232,
-                    ],
-            'RjctRsn' => [
+                ],
+                'RjctRsn' => [
                     'ReasonCode' => '',
                     'ReasonDesc' => '',
                     'RejectBy' => '',
-                    ],
-            'IFSC' => 'HDFC000000000001'
-        ];
+                ],
+                'IFSC' => 'HDFC000000000001'
+            ];
+        }
+        else
+        {
+            $data = [
+                'GrpHdr' => [
+                    'MsgId' => '000f0f29dc27f00000101b09c5227457f17',
+                    'CreDtTm' => Carbon::now()->toIso8601String(),
+                ],
+                'OrigReqInfo' => [
+                    'MndtReqId' => $requestArray['MndtAuthReq']['Mndt']['MndtReqId'],
+                    'NPCI_RefMsgId' => $requestArray['MndtAuthReq']['GrpHdr']['MsgId'],
+                    'CreDtTm' => $requestArray['MndtAuthReq']['GrpHdr']['CreDtTm'],
+                ],
+                'MndtErrorDtls' => [
+                    'ErrorCode' => 2022,
+                    'ErrorDesc' => 'Invalid XML Request',
+                    'RejectBy' => 'BANK'
+                ]
+            ];
+        }
+
+        $this->content($data, 'authorize_get_data');
+
+        return $data;
+    }
+
+    private function getResponseOrErrorXml($data, $respType)
+    {
+        if ($respType === 'RespXml')
+        {
+            return $this->getResponseXml($data);
+        }
+        else
+        {
+            return $this->getErrorXml($data);
+        }
     }
 
     private function getResponseXml($data)
@@ -105,9 +147,28 @@ class Server extends Base\Mock\Server
         return $document->saveXML();
     }
 
-    private function getChecksum($responsedata)
+    private function getErrorXml($data)
     {
+        $document = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>'
+            .'<Document xmlns="http://npci.org/onmags/schema"/>');
 
+        $mandateroot = $document->addChild('MndtAccptResp');
+
+        $grp = $mandateroot->addChild( 'GrpHdr');
+
+        $this->addChildren($data['GrpHdr'], $grp);
+
+        $grp->addChild('ReqInitPty', 'NPCI');
+
+        $info = $mandateroot->addChild( 'OrigReqInfo');
+
+        $this->addChildren($data['OrigReqInfo'], $info);
+
+        $error = $mandateroot->addChild( 'MndtErrorDtls');
+
+        $this->addChildren($data['MndtErrorDtls'], $error);
+
+        return $document->saveXML();
     }
 
     private function addChildren($data, $xml)
