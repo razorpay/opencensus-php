@@ -29,11 +29,7 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = 'enach_rbl';
 
-    const ENVELOPED = 'http://www.w3.org/2000/09/xmldsig#enveloped-signature';
-
-    const TRANSFORMS = [
-        self::ENVELOPED
-    ];
+    protected $crypto;
 
     public function authorize(array $input)
     {
@@ -122,6 +118,8 @@ class Gateway extends Base\Gateway
 
     protected function netbankingAuthorize($input)
     {
+        $this->crypto = new Crypto($this->config);
+
         $this->createGatewayPaymentEntity([], 'authorize');
 
         $request = $this->getRequest($input);
@@ -206,7 +204,7 @@ class Gateway extends Base\Gateway
 
         $checksum = $this->generateHash($secureData);
 
-        $encryptedChecksum = $this->encryptChecksum($checksum);
+        $encryptedChecksum = $this->crypto->encrypt($checksum);
 
         $data = $this->getDataForXml($input, $secureData);
 
@@ -346,7 +344,7 @@ class Gateway extends Base\Gateway
 
         $xmlString = $xmlDoc->saveXML();
 
-        $signedxml = $this->addSignature($xmlString);
+        $signedxml = $this->crypto->addSignature($xmlString);
 
         return $signedxml;
     }
@@ -357,100 +355,13 @@ class Gateway extends Base\Gateway
 
         $encryptedData = [];
 
-        $rsa = $this->getRsaInstance('request');
-        //$publicKey = file_get_contents(__DIR__ . '/keys/NpciMms.cer');
-
         foreach ($secureData as $key => $value)
         {
-            $encrypted = $rsa->encrypt($value);
-            //openssl_public_encrypt($value, $encrypted, $publicKey, OPENSSL_PKCS1_OAEP_PADDING);
-            $encoded = base64_encode($encrypted);
+            $encrypted = $this->crypto->encrypt($value);
 
-            $encryptedData[$key] = $encoded;
+            $encryptedData[$key] = $encrypted;
         }
         return $encryptedData;
-    }
-
-    protected function encryptChecksum($checksum)
-    {
-        $rsa = $this->getRsaInstance('request');
-
-        $encrypted = $rsa->encrypt($checksum);
-
-        $encoded = base64_encode($encrypted);
-
-        return $encoded;
-    }
-
-    protected function addSignature($xml)
-    {
-        $xmlDoc = $this->makeDomDocument($xml);
-
-        $sign = new XMLSecLibs\XMLSecurityDSig(null);
-
-        $sign->setCanonicalMethod(XMLSecLibs\XMLSecurityDSig::C14N);
-
-        $sign->canonicalizeSignedInfo();
-
-        $sign->addReference(
-            $xmlDoc,
-            XMLSecLibs\XMLSecurityDSig::SHA256,
-            self::TRANSFORMS,
-            ['force_uri' => true]
-        );
-
-        $sign->add509Cert($this->getRzpCert(),true, false, ['subjectName' => true ]);
-
-        $sign->sign($this->getSigningKey());
-
-        $sign->appendSignature($xmlDoc->documentElement);
-
-        $signedxml = $xmlDoc->saveXML();
-
-        //$xmlDoc->save('request.xml');
-
-        assertTrue($this->verifySignature($signedxml));
-
-        return $signedxml;
-    }
-
-    protected function getRsaInstance($mode)
-    {
-        $rsa = new RSA();
-
-        switch ($mode)
-        {
-
-            case 'response':
-                break;
-
-            case 'request':
-                $key = $this->getNpciPublicKey();
-                $rsa->loadKey($key);
-                break;
-        }
-
-        $rsa->setEncryptionMode(RSA::ENCRYPTION_OAEP);
-        $rsa->setHash('sha256');
-        $rsa->setMGFHash('sha1');
-
-        return $rsa;
-    }
-
-    protected function getNpciPublicKey()
-    {
-        $cert = (file_get_contents(__DIR__ . '/keys/onmag_cert.cer'));
-
-        $publicKeyResource = openssl_pkey_get_public($cert);
-
-        $pubkeyInfo = openssl_pkey_get_details($publicKeyResource);
-
-        return $pubkeyInfo['key'];
-    }
-
-    protected function getRzpCert()
-    {
-        return (file_get_contents(__DIR__ . '/keys/cert.pem'));
     }
 
     public function generateHash($content)
@@ -525,63 +436,6 @@ class Gateway extends Base\Gateway
         foreach ($data as $key => $value) {
             $xml->addChild($key,$data[$key]);
         }
-    }
-
-    protected function getSigningKey()
-    {
-        $key =  (file_get_contents(__DIR__ . '/keys/key.pem'));
-
-        $key = trim(str_replace('\n', "\n", $key));
-
-        $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA256, array('type' => 'private'));
-
-        $objKey->loadKey($key);
-
-        return $objKey;
-    }
-
-    protected function makeDomDocument(string $xml)
-    {
-        $xmlDoc = new DOMDocument('1.0', 'UTF-8');
-
-        $xmlDoc->loadXML($xml);
-
-        return $xmlDoc;
-    }
-
-    protected function verifySignature(string $xml)
-    {
-        $sign = new XMLSecLibs\XMLSecurityDSig(null);
-
-        $xmlDoc = new DOMDocument('1.0', 'UTF-8');
-
-        $xmlDoc->loadXML($xml);
-
-        assertTrue($sign->locateSignature($xmlDoc));
-
-        $sign->canonicalizeSignedInfo();
-
-        assertTrue($sign->validateReference());
-
-        $objKey = $sign->locateKey();
-
-        $objKey->loadKey($this->getSigningPublicKey());
-
-        $verify = $sign->verify($objKey);
-
-        // Calls openssl_verify, which returns 1 on success, 0 on failure, -1 on error
-        return ($verify === 1);
-    }
-
-    protected function getSigningPublicKey()
-    {
-        $cert = $this->getRzpCert();
-
-        $publicKeyResource = openssl_pkey_get_public($cert);
-
-        $pubkeyInfo = openssl_pkey_get_details($publicKeyResource);
-
-        return $pubkeyInfo['key'];
     }
 
     protected function getDataFromXmlResponse($xmlString)
