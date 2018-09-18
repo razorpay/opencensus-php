@@ -1065,6 +1065,8 @@ trait Refund
         //
         $this->repo->reload($refund);
 
+        $refund->setErrorNull();
+
         $this->setPaymentAndRefundInfo($refund, $payment);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
