@@ -4,6 +4,7 @@ import { set, merge, unshift } from 'rzp/utils/immutable';
 const ACCOUNTS_FETCH = 'ACCOUNTS_FETCH';
 const ACCOUNT_CREATE = 'ACCOUNT_CREATE';
 const UPDATE_EMAIL = 'UPDATE_EMAIL';
+const ACCOUNT_DASHBOARD_ACCESS = 'ACCOUNT_DASHBOARD_ACCESS';
 
 export const fetchAccountsApi = params => {
   return ajax(
@@ -31,6 +32,19 @@ export const saveAccount = data => {
       method: 'post',
       appendModeInQueryParam: true,
       data,
+    }).then(response => response.data),
+  };
+};
+
+export const toggleDashboardAccess = data => {
+  return {
+    type: ACCOUNT_DASHBOARD_ACCESS,
+    payload: merchantFetch({
+      url: 'la-merchants/dashboard-access',
+      method: 'post',
+      appendModeInURL: true,
+      accountId: data.accountId,
+      data: { dashboard_access: data.dashboard_access },
     }).then(response => response.data),
   };
 };
