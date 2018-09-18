@@ -269,7 +269,7 @@ pipeline:
     deployment:
       - api-sqs-es-sync
       - api-sqs-gen-test
-      #- api-sqs-invoice-emails
+      - api-sqs-invoice-email
       - api-sqs-invoice-reports
       - api-sqs-webhooks-test
     repo: razorpay/api
@@ -322,7 +322,7 @@ pipeline:
     deployment:
       - api-sqs-es-sync
       - api-sqs-gen-test
-      #- api-sqs-invoice-emails
+      - api-sqs-invoice-email
       - api-sqs-invoice-reports
       - api-sqs-webhooks-test
     repo: razorpay/api
@@ -375,7 +375,7 @@ pipeline:
     deployment:
       - api-sqs-es-sync
       - api-sqs-gen-test
-      #- api-sqs-invoice-emails
+      - api-sqs-invoice-email
       - api-sqs-invoice-reports
       - api-sqs-webhooks-test
     repo: razorpay/api
@@ -428,7 +428,7 @@ pipeline:
     deployment:
       - api-sqs-es-sync
       - api-sqs-gen-test
-      #- api-sqs-invoice-emails
+      - api-sqs-invoice-email
       - api-sqs-invoice-reports
       - api-sqs-webhooks-test
     repo: razorpay/api

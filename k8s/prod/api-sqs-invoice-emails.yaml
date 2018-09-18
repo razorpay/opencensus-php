@@ -2,8 +2,8 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    name: api-sqs-invoice-emails
-  name: api-sqs-invoice-emails
+    name: api-sqs-invoice-email
+  name: api-sqs-invoice-email
   namespace: api
 spec:
   progressDeadlineSeconds: 600
@@ -11,7 +11,7 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      name: api-sqs-invoice-emails
+      name: api-sqs-invoice-email
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -23,7 +23,7 @@ spec:
         iam.amazonaws.com/role: kube-prod-api
       creationTimestamp: null
       labels:
-        name: api-sqs-invoice-emails
+        name: api-sqs-invoice-email
     spec:
       containers:
       - args:
