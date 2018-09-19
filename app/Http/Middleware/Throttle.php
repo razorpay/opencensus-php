@@ -73,6 +73,7 @@ final class Throttle
             Metric::LABEL_RZP_MERCHANT_ID       => $requestCtx->getMid() ?: Metric::LABEL_NONE_VALUE,
             Metric::LABEL_RZP_OAUTH_CLIENT_ID   => $requestCtx->getOAuthClientId() ?: Metric::LABEL_NONE_VALUE,
             Metric::LABEL_RZP_AUTH              => $requestCtx->getAuth(),
+            Metric::LABEL_RZP_AUTH_FLOW_TYPE    => $requestCtx->getAuthFlowType(),
             Metric::LABEL_RZP_INTERNAL_APP_NAME => $requestCtx->getInternalAppName() ?: Metric::LABEL_NONE_VALUE,
         ];
     }
