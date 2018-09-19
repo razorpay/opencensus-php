@@ -51,6 +51,8 @@ class NetbankingIciciRefundFileTest extends TestCase
 
         $file = $this->getLastEntity('file_store', true);
 
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
         $expectedFileContent = [
             'type'        => 'icici_netbanking_refund',
             'entity_type' => 'gateway_file',
@@ -69,8 +71,8 @@ class NetbankingIciciRefundFileTest extends TestCase
             $this->assertEquals($expectedSubject, $mail->subject);
 
             $testData = [
-                'body'      => RefundFileMailConstants::BODY_MAP[Gateway::NETBANKING_ICICI],
-                'file_name' => "Icici_Netbanking_Refunds_test_$today.xlsx",
+                'body'          => RefundFileMailConstants::BODY_MAP[Gateway::NETBANKING_ICICI],
+                'file_name'     => "Icici_Netbanking_Refunds_test_$today.xlsx",
             ];
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
@@ -81,6 +83,13 @@ class NetbankingIciciRefundFileTest extends TestCase
 
             $this->assertCount(10, $sheet[0]);
             $this->assertEquals($sheet[0]['refund_amount'], 500);
+
+            //
+            // Marking netbanking transaction as reconciled after sending in bank file
+            //
+            $refundTransaction = $this->getLastEntity('transaction', true);
+
+            $this->assertNotNull($refundTransaction['reconciled_at']);
 
             return ($mail->hasFrom('refunds@razorpay.com') and
                     ($mail->hasTo(RefundFileMailConstants::RECIPIENT_EMAILS_MAP[Gateway::NETBANKING_ICICI])));

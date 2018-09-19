@@ -205,6 +205,10 @@ class Service extends Base\Service
 
         $data['features'] = [];
 
+        // refresh the features here, if it has been accessed before in the
+        // same request context.
+        $entity->load('features');
+
         $enabledFeatures = $entity->features
                                   ->pluck(\RZP\Models\Feature\Entity::NAME)
                                   ->toArray();

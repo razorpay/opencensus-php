@@ -8,6 +8,19 @@ use RZP\Trace\TraceCode;
 
 class OtpElf
 {
+    const ERROR_PAGE_UNKNOWN        = 'PAGE_UNKNOWN';
+    const ERROR_PARSER_ERROR        = 'PARSER_ERROR';
+    const ERROR_PAGE_TYPE_UNKNOWN   = 'PAGE_TYPE_UNKNOWN';
+    const ERROR_TYPE_NOT_RECOGNIZED = 'TYPE_NOT_RECOGNIZED';
+    const ERROR_INVALID_OTP         = 'INVALID_OTP';
+
+    public static $otpElfErrors = [
+        self::ERROR_PAGE_UNKNOWN,
+        self::ERROR_PARSER_ERROR,
+        self::ERROR_PAGE_TYPE_UNKNOWN,
+        self::ERROR_TYPE_NOT_RECOGNIZED,
+    ];
+
     protected $baseUrl;
 
     protected $config;
@@ -35,7 +48,10 @@ class OtpElf
     public function otpResend(array $input)
     {
         $content = [
-
+            'payment_id' => $input['payment_id'],
+            'request'    => [
+                'action' => 'resend_otp',
+            ]
         ];
 
         $response = $this->sendRequest('/act', 'POST', $content);

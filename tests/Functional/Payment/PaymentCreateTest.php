@@ -55,6 +55,21 @@ class PaymentCreateTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
+    public function testCreatePaymentWithValidOrderIdWithTrace()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory', 'log_response']);
+
+        $this->doAuthPayment($payment);
+    }
+
     public function testCreatePaymentWithInvalidMethod()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -483,6 +498,8 @@ class PaymentCreateTest extends TestCase
 
     public function testPaymentWithEmptyAcquirerData()
     {
+        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
+
         $paymentData = $this->getDefaultPaymentArray();
 
         $payment = $this->doAuthPayment($paymentData);
@@ -502,6 +519,8 @@ class PaymentCreateTest extends TestCase
 
     public function testPaymentWithAcquirerData()
     {
+        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
+
         $paymentData = $this->getDefaultNetbankingPaymentArray();
 
         $this->doAuthPayment($paymentData);
@@ -511,6 +530,114 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('acquirer_data', $payment);
 
         $this->assertArrayHasKey('bank_transaction_id', $payment['acquirer_data']);
+    }
+
+    public function testPreferredRecurringPaymentInputValidation()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+        $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
+
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        unset($payment['email'], $payment['contact'], $payment['notes']);
+
+        $payment['recurring'] = true;
+        $payment['preferred_recurring'] = true;
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->getFormViaCreateRoute($payment);
+            });
+    }
+
+    public function testPreferredRecurringPaymentInputValidationInvalidMethod()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+        $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
+
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+        $payment['recurring'] = true;
+
+        unset($payment['email'], $payment['contact'], $payment['notes']);
+
+        $response = $this->getFormViaCreateRoute($payment);
+        $content = $response['content'];
+        $content['contact'] = '+919999999998';
+        $content['email'] = 'test@razorpay.com';
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+    }
+
+    public function testPreferredRecurringPaymentRecurringInvalidMethod()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+        $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
+
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $payment['preferred_recurring'] = true;
+
+        unset($payment['email'], $payment['contact'], $payment['notes']);
+
+        $response = $this->getFormViaCreateRoute($payment);
+        $content = $response['content'];
+        $content['contact'] = '+919999999998';
+        $content['email'] = 'test@razorpay.com';
+
+        $payment = $this->doAuthPayment($content, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['razorpay_payment_id'], $paymentEntity['id']);
+        $this->assertEquals(false, $paymentEntity['recurring']);
+    }
+
+    public function testPreferredRecurringPaymentInvalidMethod()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
+        $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
+
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        unset($payment['email'], $payment['contact'], $payment['notes']);
+
+        $response = $this->getFormViaCreateRoute($payment);
+        $content = $response['content'];
+        $content['contact'] = '+919999999998';
+        $content['email'] = 'test@razorpay.com';
+
+        $payment = $this->doAuthPayment($content, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['razorpay_payment_id'], $paymentEntity['id']);
+        $this->assertEquals(false, $paymentEntity['recurring']);
+    }
+
+    public function testPreferredRecurringPaymentCard()
+    {
+        $this->mockTokenex();
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['save'] = true;
+        $payment['preferred_recurring'] = true;
+        unset($payment['recurring']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $paymentEntity['recurring']);
     }
 
     protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC', $amount = 2000)

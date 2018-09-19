@@ -364,7 +364,8 @@ class Validator extends Base\Validator
                 ($rule[Entity::AMOUNT_RANGE_MIN] === $newRule[Entity::AMOUNT_RANGE_MIN]) and
                 ($rule[Entity::AMOUNT_RANGE_MAX] === $newRule[Entity::AMOUNT_RANGE_MAX]) and
                 ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]) and
-                ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]))
+                ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
+                ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
@@ -377,6 +378,7 @@ class Validator extends Base\Validator
                 ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]) and
                 ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]) and
                 ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
+                ($rule[Entity::RECEIVER_TYPE] === $newRule[Entity::RECEIVER_TYPE]) and
                 (isset($newRule[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
                 (isset($rule[Entity::AMOUNT_RANGE_ACTIVE]) === true))
             {

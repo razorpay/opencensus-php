@@ -14,7 +14,12 @@ class Service extends Base\Service
 {
     public function initiateFundTransfers(array $input, $channel = null)
     {
-        $this->trace->info(TraceCode::INITIATE_FUND_TRANSFER, $input);
+        $this->trace->info(
+            TraceCode::INITIATE_FUND_TRANSFER,
+            [
+                'input'     => $input,
+                'channel'   => $channel
+            ]);
 
         $data = (new Initiator)->initiateFundTransfers($input, $channel);
 
@@ -172,5 +177,20 @@ class Service extends Base\Service
         $data = (new Report)->sendFTAReconReport();
 
         return $data;
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function nodalFileUploadThroughBeam(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::RETRY_BEAM_FILE_UPLOAD,
+            [
+                'input'     => $input
+            ]);
+
+        return $this->core()->nodalFileUploadThroughBeam($input);
     }
 }

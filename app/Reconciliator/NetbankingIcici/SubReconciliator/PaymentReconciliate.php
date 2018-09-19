@@ -1,14 +1,15 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingIcici;
+namespace RZP\Reconciliator\NetbankingIcici\SubReconciliator;
 
 use Carbon\Carbon;
+use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Icici;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const COLUMN_PAYMENT_REF_NO  = 'PRN';
     const COLUMN_BANK_PAYMENT_ID = 'BID';
@@ -50,9 +51,19 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                                                                      [Icici\Confirmation::YES]);
     }
 
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
-        $this->allowForceAuthorization = $this->validatePaymentForForceAuthorize();
+        $this->allowForceAuthorization = $this->validatePaymentForForceAuthorize($payment);
+
+        //
+        // Calling parent function here because for this gateway allowing force authorize is conditional.
+        // If payment is not around midnight but payment is given for force_authorize in API call,
+        // we force authorize the payment. And if payment is around midnight, we don't check force_authorize input.
+        //
+        if ($this->allowForceAuthorization === false)
+        {
+            parent::setAllowForceAuthorization($payment);
+        }
     }
 
     /**
@@ -61,11 +72,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * This is done because tracking api of netbanking ICICI takes payment date into consideration
      * and for payments made during midnight, date saved in ICICI db can be of next day's date which leads to
      * wrong status of payment in tracking/verify response.
+     *
+     * @param Payment\Entity $payment
+     *
      * @return bool
      */
-    protected function validatePaymentForForceAuthorize()
+    protected function validatePaymentForForceAuthorize(Payment\Entity $payment)
     {
-        $createdTime = $this->payment->getCreatedAt() ;
+        $createdTime = $payment->getCreatedAt() ;
 
         $createdDate =  Carbon::createFromTimestamp($createdTime, Timezone::IST);
 

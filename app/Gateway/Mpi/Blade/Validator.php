@@ -45,8 +45,8 @@ class Validator extends JitValidator
         'Message.PARes.Purchase.date'                                                   => 'required|date_format:Ymd H:i:s',
         'Message.PARes.Purchase.exponent'                                               => 'required|digits_between:1,1',
         'Message.PARes.IReq'                                                            => 'sometimes|array',
-        'Message.PARes.IReq.iReqCode'                                                   => 'required_with:Message.PARes.IReq|min:1|max:3',
-        'Message.PARes.IReq.iReqDetail'                                                 => 'required_with:Message.PARes.IReq|max:2048',
+        'Message.PARes.IReq.iReqCode'                                                   => 'sometimes|min:1|max:3',
+        'Message.PARes.IReq.iReqDetail'                                                 => 'sometimes|max:2048',
         'Message.PARes.IReq.vendorCode'                                                 => 'sometimes|max:256',
         'Message.PARes.Merchant'                                                        => 'required|array',
         'Message.PARes.Merchant.acqBIN'                                                 => 'required|string|min:1|max:24',
@@ -99,7 +99,7 @@ class Validator extends JitValidator
         if ($response[PARes::PURCHASE][PARes::XID] !== $expectedXid)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                ErrorCode::GATEWAY_ERROR_PARES_DATA_MISMATCH,
                 '',
                 'Value mismatch for xid',
                 [
@@ -118,7 +118,7 @@ class Validator extends JitValidator
         if ($response[PARes::PURCHASE][PARes::DATE] !== $purchaseDate)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                ErrorCode::GATEWAY_ERROR_PARES_DATA_MISMATCH,
                 '',
                 'Value mismatch',
                 [
@@ -135,7 +135,7 @@ class Validator extends JitValidator
         if ($currency !== Currency::getIsoCode($input['payment']['currency']))
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                ErrorCode::GATEWAY_ERROR_PARES_DATA_MISMATCH,
                 '',
                 'Invalid currency code',
                 [
@@ -152,7 +152,7 @@ class Validator extends JitValidator
         if ($amount !== $input['payment']['amount'])
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                ErrorCode::GATEWAY_ERROR_PARES_DATA_MISMATCH,
                 '',
                 'Amount mismatch',
                 [
@@ -169,7 +169,7 @@ class Validator extends JitValidator
         if ($exponent !== Currency::getExponent($input['payment']['currency']))
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                ErrorCode::GATEWAY_ERROR_PARES_DATA_MISMATCH,
                 '',
                 'Exponent mismatch',
                 [
@@ -184,7 +184,7 @@ class Validator extends JitValidator
         if ($response[PARes::MESSAGE][PARes::ATTRIBUTES][PARes::ID] !== $input['payment']['public_id'])
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                ErrorCode::GATEWAY_ERROR_PARES_DATA_MISMATCH,
                 '',
                 'Payment ID mismatch',
                 [

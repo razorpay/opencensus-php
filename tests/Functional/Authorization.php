@@ -91,6 +91,13 @@ class Authorization
         $this->addAppAuthHeaders($hostName);
     }
 
+    public function subscriptionsAuth()
+    {
+        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.subscriptions')['secret']);
+
+        $this->proxy = true;
+    }
+
     public function addAppAuthHeaders($hostName)
     {
         if ($hostName === null)
@@ -269,6 +276,24 @@ class Authorization
         $cronConfig = \Config::get('applications.cron');
 
         $pwd = $cronConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
+    public function kotakAuth($mode = 'test')
+    {
+        $kotakConfig = \Config::get('applications.kotak');
+
+        $pwd = $kotakConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
+    public function yesbankAuth($mode = 'test')
+    {
+        $kotakConfig = \Config::get('applications.yesbank');
+
+        $pwd = $kotakConfig['secret'];
 
         $this->appAuth('rzp_'.$mode, $pwd);
     }

@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN\Flow;
 use RZP\Models\Payment\Method;
@@ -35,6 +36,7 @@ class TransactionFilter extends Terminal\Filter
         'mcc',
         'auth_type',
         'bharat_qr',
+        'direct_settlement',
     ];
 
     public function methodFilter($terminal)
@@ -88,15 +90,16 @@ class TransactionFilter extends Terminal\Filter
         if ($payment->isMethodCardOrEmi() === true)
         {
             $network = $payment->card->getNetworkCode();
+            $gateway = $terminal->getGateway();
 
             if ($payment->isBharatQr() === true)
             {
-                $supported = ((Gateway::isBharatQrCardNetworkSupported($network, $terminal->getGateway())) and
+                $supported = ((Gateway::isBharatQrCardNetworkSupported($network, $gateway)) and
                               (empty($terminal[strtolower($network) . '_mpan']) === false));
             }
             else
             {
-                $supported =  Gateway::isCardNetworkSupported($network, $terminal->getGateway(), $payment->isRecurring());
+                $supported = Gateway::isCardNetworkSupported($network, $gateway, $payment->isRecurring());
             }
 
             return $supported;
@@ -234,13 +237,30 @@ class TransactionFilter extends Terminal\Filter
             return false;
         }
 
-        if (($payment->isCard() === true) and
-            ($payment->card->isDebit() === true))
+        if ($payment->isCard() === true)
         {
-            if (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) !== true) and
-                ($terminal->getGateway() !== Gateway::HITACHI))
+            switch (true)
             {
-                return false;
+                case $payment->card->isDebit():
+
+                    if (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) !== true) and
+                        ($terminal->isDebitRecurring() === false))
+                    {
+                        return false;
+                    }
+
+                    break;
+
+                default:
+
+                    if (($payment->isSecondRecurring() === true) and
+                        ($terminal->getGateway() === Gateway::HDFC) and
+                        ($terminal->isDebitRecurring() === true))
+                    {
+                        return false;
+                    }
+
+                    break;
             }
         }
 
@@ -252,7 +272,7 @@ class TransactionFilter extends Terminal\Filter
         // All first recurring payments or payments made via public
         // auth need to go via 3DS Recurring terminals only.
         //
-        if ($payment->isSecondRecurring(true, $gatewayTokens) === false)
+        if ($payment->isSecondRecurring() === false)
         {
             return ($terminal->is3DSRecurring() === true);
         }
@@ -606,12 +626,32 @@ class TransactionFilter extends Terminal\Filter
                             {
                                 return true;
                             }
+
+                            //
+                            // Expresspay is supported on Hitachi.
+                            // Hence, it should be enabled only for axis MC/Visa cards.
+                            //
+                            if (($gateway === Payment\Gateway::HITACHI) and
+                                ($payment->card->iinRelation->supports(Flow::OTP) === true) and
+                                ($payment->card->getIssuer() === IFSC::UTIB))
+                            {
+                                return true;
+                            }
                         }
 
                         break;
 
                     case Payment\AuthType::_3DS:
                         if ($this->is3DSTerminal($terminal) === true)
+                        {
+                            return true;
+                        }
+
+                        break;
+
+                    case Payment\AuthType::SKIP:
+                        // Moto terminal is selected only on skip auth
+                        if ($terminal->isMoto() === true)
                         {
                             return true;
                         }
@@ -636,6 +676,7 @@ class TransactionFilter extends Terminal\Filter
         return ($this->is3DSTerminal($terminal) === true);
     }
 
+    // @codingStandardsIgnoreLine
     protected function is3DSTerminal($terminal)
     {
         return (($terminal->isPin() === false) and ($terminal->isIvr() === false));
@@ -670,5 +711,33 @@ class TransactionFilter extends Terminal\Filter
         {
             return ($terminal->isBharatQr() === false);
         }
+    }
+
+    public function directSettlementFilter($terminal, $applicableTerminals)
+    {
+       if ($this->input['payment']->isNetbanking() === false)
+       {
+            return true;
+       }
+
+       $directSettlementTerminals = array_filter(
+                                    $applicableTerminals,
+                                    function ($terminal)
+                                    {
+                                        return ($terminal->isDirectSettlement() === true);
+                                    });
+
+        // if no direct settlement terminals found, return true.
+        if (empty($directSettlementTerminals) === true)
+        {
+            return true;
+        }
+
+        if (in_array($terminal, $directSettlementTerminals, true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

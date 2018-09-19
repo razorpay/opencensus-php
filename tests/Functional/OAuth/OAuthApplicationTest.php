@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\OAuth;
 
+use Illuminate\Database\Eloquent\Factory;
+
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -19,6 +21,10 @@ class OAuthApplicationTest extends TestCase
         parent::setUp();
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->proxyAuth();
     }
@@ -39,6 +45,56 @@ class OAuthApplicationTest extends TestCase
                                     'applications',
                                     'POST',
                                     $requestParams);
+
+        // TODO: Enable post migrations
+        //$this->markPartner();
+
+        $this->startTest();
+    }
+
+    public function testCreatePartnerApplication()
+    {
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $createParams = [
+            'name'     => 'fdsfsd',
+            'website'  => 'https://www.example.com',
+            'logo_url' => '/logo/app_logo.png',
+            'type'     => 'partner',
+        ];
+
+        $requestParams = array_merge($requestParams, $createParams);
+
+        $this->setAuthServiceMockDetail(
+                                    'applications',
+                                    'POST',
+                                    $requestParams);
+
+        $this->markPartner('fully_managed');
+
+        $this->startTest();
+    }
+
+    public function testCreatePartnerApplicationPurePlatform()
+    {
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $createParams = [
+            'name'     => 'fdsfsd',
+            'website'  => 'https://www.example.com',
+            'logo_url' => '/logo/app_logo.png',
+            'type'     => 'partner',
+        ];
+
+        $requestParams = array_merge($requestParams, $createParams);
+
+        $this->setAuthServiceMockDetail(
+                                    'applications',
+                                    'POST',
+                                    $requestParams,
+                                    0);
+
+        $this->markPartner();
 
         $this->startTest();
     }
@@ -63,6 +119,39 @@ class OAuthApplicationTest extends TestCase
                                     'applications',
                                     'GET',
                                     $requestParams);
+
+        // TODO: Enable post migrations
+        //$this->markPartner();
+
+        $this->startTest();
+    }
+
+    public function testGetPartnerApplicationPurePlatform()
+    {
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $this->setAuthServiceMockDetail(
+                                    'applications',
+                                    'GET',
+                                    $requestParams,
+                                    0);
+
+        $this->markPartner();
+
+        $this->startTest();
+    }
+
+    public function testGetPartnerApplicationBank()
+    {
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $this->setAuthServiceMockDetail(
+                                    'applications',
+                                    'GET',
+                                    $requestParams,
+                                    0);
+
+        $this->markPartner('bank');
 
         $this->startTest();
     }
@@ -91,5 +180,17 @@ class OAuthApplicationTest extends TestCase
                                     $requestParams);
 
         $this->startTest();
+    }
+
+    protected function markPartner(
+        string $type = 'pure_platform',
+        string $merchantId = '10000000000000')
+    {
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => $type]);
+
+        if ($type !== 'pure_platform')
+        {
+            $this->createOAuthApplication(['merchant_id' => $merchantId, 'type' => 'partner']);
+        }
     }
 }

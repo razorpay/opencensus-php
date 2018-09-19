@@ -5,10 +5,12 @@ namespace RZP\Models\BankTransfer;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
+use RZP\Models\Settlement\Channel;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
-use RZP\Models\Transaction\Channel;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Refund extends Base\Core
@@ -26,9 +28,18 @@ class Refund extends Base\Core
     {
         $bankTransfer = $this->getBankTransfer($input['payment']);
 
-        $bankTransfer->getValidator()->validateRefundIsAllowed();
+        $haystack = ['A0DbFSFMubDEAy', 'AEYsLhL8DAQAeh', 'AFG1ItI8zwijGP', 'AGsXWuKUv6XiVU', 'AMqpPrSMsxKKPc', 'AQNG7kHM5tfk4G', 'ATCKgAcp7cswbo'];
+
+        if (in_array($input['payment'], $haystack) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                $input);
+        }
 
         $bankAccount = $this->createOrUpdateBankAccount($input, $bankTransfer);
+
+        $bankAccount->getValidator()->validateRefundIsAllowed();
 
         $this->createRefundAttemptEntity($input, $bankTransfer, $bankAccount);
     }
@@ -69,7 +80,7 @@ class Refund extends Base\Core
 
         $data = [
             FundTransferAttempt\Entity::PURPOSE         => FundTransferAttempt\Purpose::REFUND,
-            FundTransferAttempt\Entity::CHANNEL         => $bankTransfer->merchant->getChannel(),
+            FundTransferAttempt\Entity::CHANNEL         => Channel::YESBANK,
             FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
             FundTransferAttempt\Entity::NARRATION       => $this->getNarration($bankTransfer),

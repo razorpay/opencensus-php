@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Helpers;
 
 use Symfony\Bridge\PhpUnit\DnsMock;
+
 /**
  * To use this, annotate the class with
  * dns-sensitive (see WebhookTest.php)
@@ -14,7 +15,25 @@ trait MocksDnsTrait
     private function setupMockDns()
     {
         DnsMock::withMockedHosts([
+            'webhook.com' => [
+                [
+                    'type'  => 'A',
+                    'ip'    => '182.74.201.50',
+                ]
+            ],
             'example.com' => [
+                [
+                    'type' => 'A',
+                    'ip' => '1.2.3.4',
+                ],
+            ],
+            'www.example.com' => [
+                [
+                    'type' => 'A',
+                    'ip' => '1.2.3.4',
+                ],
+            ],
+            'abc.com' => [
                 [
                     'type' => 'A',
                     'ip' => '1.2.3.4',
@@ -28,8 +47,8 @@ trait MocksDnsTrait
             ],
             '169.254.169.254.xip.io'    => [
                 [
-                    'type'  =>  'A',
-                    'ip'    =>  '169.254.169.254',
+                    'type'  => 'A',
+                    'ip'    => '169.254.169.254',
                 ]
             ],
         ]);

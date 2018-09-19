@@ -26,6 +26,9 @@ class Constants
     const RECON             = 'recon';
     const SETTLEMENT_ALERTS = 'settlement_alert';
     const PRODUCT_OAUTH     = 'product_oauth';
+    const BEAM_FAILURE      = 'beam_failure';
+    const CREDITS_ALERTS    = 'credit_alerts';
+    const FRESHDESK         = 'freshdesk';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT           => 'support@razorpay.com',
@@ -49,7 +52,9 @@ class Constants
         self::NOREPLY           => 'no-reply@razorpay.com',
         self::RECON             => 'pgrecon@razorpay.com',
         self::SETTLEMENT_ALERTS => 'settlement.alerts@razorpay.com',
-        self::PRODUCT_OAUTH     => 'product.oauth@razorpay.com'
+        self::PRODUCT_OAUTH     => 'product.oauth@razorpay.com',
+        self::CREDITS_ALERTS    => 'credit.alerts@razorpay.com',
+        self::FRESHDESK         => 'rzr05py08emsp@razorpay.com',
     ];
 
     const HEADERS = [
@@ -68,5 +73,7 @@ class Constants
         self::DISPUTES      => 'Razorpay Risk Team',
         self::RECON         => 'Reconciliation Summary',
         self::PRODUCT_OAUTH => 'Product OAuth',
+        self::BEAM_FAILURE  => 'Beam Request Failure',
+        self::FRESHDESK     => 'Team Razorpay',
     ];
 }

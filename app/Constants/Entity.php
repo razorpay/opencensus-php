@@ -48,16 +48,16 @@ class Entity
     const PAYMENT               = 'payment';
     const PRICING               = 'pricing';
     const WEBHOOK               = 'webhook';
+    const QR_CODE               = 'qr_code';
+    const ACCOUNT               = 'account';
     const DISCOUNT              = 'discount';
     const EMI_PLAN              = 'emi_plan';
     const CUSTOMER              = 'customer';
     const MERCHANT              = 'merchant';
-    const ACCOUNT               = 'account';
     const REVERSAL              = 'reversal';
     const SCHEDULE              = 'schedule';
     const TERMINAL              = 'terminal';
     const TRANSFER              = 'transfer';
-    const QR_CODE               = 'qr_code';
     const BHARAT_QR             = 'bharat_qr';
     const PROMOTION             = 'promotion';
     const LINE_ITEM             = 'line_item';
@@ -88,11 +88,12 @@ class Entity
     const MERCHANT_REQUEST      = 'merchant_request';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const GATEWAY_DOWNTIME      = 'gateway_downtime';
+    const MERCHANT_INVOICE      = 'merchant_invoice';
+    const NODAL_BENEFICIARY     = 'nodal_beneficiary';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_PROMOTION    = 'merchant_promotion';
     const CREDIT_TRANSACTION    = 'credit_transaction';
-    const MERCHANT_INVOICE      = 'merchant_invoice';
     const MERCHANT_EMI_PLANS    = 'merchant_emi_plans';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const MERCHANT_ACCESS_MAP   = 'merchant_access_map';
@@ -139,6 +140,7 @@ class Entity
     const ENACH                  = 'enach';
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
+    const ISG                    = 'isg';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const WALLET                 = 'wallet';
@@ -154,11 +156,13 @@ class Entity
     const AEPS_ICICI             = 'aeps_icici';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
+    const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
     const UPI_HULK               = 'upi_hulk';
     const ENACH_RBL              = 'enach_rbl';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const NETBANKING_AXIS        = 'netbanking_axis';
+    const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_BOB         = 'netbanking_bob';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
@@ -193,6 +197,9 @@ class Entity
     const REPORTING_SCHEDULES          = 'reporting.schedules';
     const SHIELD_RULES                 = 'shield.rules';
     const SHIELD_RULE_ANALYTICS        = 'shield.rule_analytics';
+    const SHIELD_RISKS                 = 'shield.risks';
+    const SHIELD_LISTS                 = 'shield.lists';
+    const SHIELD_LIST_ITEMS            = 'shield.list_items';
 
     /**
      * Defines a map of entites which are currently
@@ -297,6 +304,7 @@ class Entity
         self::AMEX                   => \RZP\Gateway\Amex::class,
         self::HDFC                   => \RZP\Gateway\Hdfc::class,
         self::HITACHI                => \RZP\Gateway\Hitachi::class,
+        self::ISG                    => \RZP\Gateway\Isg::class,
         self::PAYTM                  => \RZP\Gateway\Paytm::class,
         self::SHARP                  => \RZP\Gateway\Sharp::class,
         self::WALLET                 => \RZP\Gateway\Wallet\Base::class,
@@ -306,6 +314,7 @@ class Entity
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Sbi::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
+        self::UPI_AXIS               => \RZP\Gateway\Upi\Axis::class,
         self::UPI_HULK               => \RZP\Gateway\Upi\Hulk::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Icici::class,
@@ -322,6 +331,7 @@ class Entity
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,
         self::WALLET_SBIBUDDY        => \RZP\Gateway\Wallet\Sbibuddy::class,
+        self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Idfc::class,
         self::NETBANKING_AXIS        => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Hdfc::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Bob::class,
@@ -383,6 +393,8 @@ class Entity
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_ALLAHABAD   => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Base::class,
+
 
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,
         self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Base::class,
@@ -392,6 +404,7 @@ class Entity
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Base::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Base::class,
+        self::UPI_AXIS               => \RZP\Gateway\Upi\Base::class,
         self::UPI_HULK               => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
 
@@ -416,6 +429,9 @@ class Entity
         self::REPORTING_SCHEDULES          => \RZP\Services\Reporting::class,
         self::SHIELD_RULES                 => \RZP\Services\ShieldClient::class,
         self::SHIELD_RULE_ANALYTICS        => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RISKS                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LISTS                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LIST_ITEMS            => \RZP\Services\ShieldClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [

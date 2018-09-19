@@ -1063,4 +1063,36 @@ class Gateway extends Base\Gateway
             }
         }
     }
+
+    /**
+     * This function authorize the payment forcefully when verify api is not supported
+     * or not giving correct response.
+     *
+     * @param $input
+     * @return bool
+     */
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                        $input['payment']['id'],
+                                        Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, there's nothing to do here. We just return back.
+        if (($gatewayPayment->getRef() !== null) and
+            ($gatewayPayment->getReceived() === true))
+        {
+            return true;
+        }
+
+        $attributes = [
+            Entity::STATUS  => Status::SUCCESS,
+            Entity::REF     => $input['gateway']['reference_number']
+        ];
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+    }
 }

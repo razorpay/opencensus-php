@@ -11,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestContext;
 use RZP\Base\RepositoryManager;
 
 
@@ -64,6 +65,11 @@ abstract class AuthCreds
     protected $merchant = null;
 
     /**
+     * @var RequestContext
+     */
+    protected $reqCtx;
+
+    /**
      * Key and secret sent by client for
      * basic auth.
      *
@@ -112,6 +118,8 @@ abstract class AuthCreds
         $this->trace = $this->app['trace'];
 
         $this->key = $key;
+
+        $this->reqCtx = $app['request.ctx'];
     }
 
     public function getMode()

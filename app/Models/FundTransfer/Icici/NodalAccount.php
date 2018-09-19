@@ -11,8 +11,11 @@ use RZP\Encryption\Type;
 use RZP\Models\FileStore;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Mail\Base\Constants;
+use RZP\Services\Beam\Service;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Encryption\AESEncryption;
+use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Mail\Settlement\Settlement as SettlementMail;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 
@@ -31,6 +34,8 @@ class NodalAccount extends NodalBase\FileProcessor
         Mode::IMPS    => 'M',
         Mode::IFT     => 'I',
     ];
+
+    const BEAM_FILE_TYPE = 'settlement';
 
     /**
      * Prefix for filename when the purpose is `Refund`
@@ -70,6 +75,13 @@ class NodalAccount extends NodalBase\FileProcessor
         $fileData = $this->getFileData($file);
 
         $this->sendIciciTransferMail($fileData);
+
+        //
+        // Pushing to Beam after sending the email
+        // such that current settlement processing
+        // doesn't get affected by Beam errors.
+        //
+        $this->sendFile($file);
 
         return $file;
     }
@@ -153,7 +165,7 @@ class NodalAccount extends NodalBase\FileProcessor
             return Mode::IFT;
         }
 
-        $mode = $this->getTransferMode($amount);
+        $mode = $this->getTransferMode($amount, $ba->merchant);
 
         return $mode;
     }
@@ -250,5 +262,32 @@ class NodalAccount extends NodalBase\FileProcessor
     protected function formatAmount($amount)
     {
         return sprintf('%0.2f', $amount);
+    }
+
+    /**
+     * @param FileStore\Creator $file
+     * Send file to bank through Beam
+     */
+    protected function sendFile(FileStore\Creator $file)
+    {
+        $fileInfo = [$file->getFullFileName()];
+
+        $data =  [
+            Service::BEAM_PUSH_FILES   => $fileInfo,
+            Service::BEAM_PUSH_JOBNAME => BeamConstants::ICICI_BENEFICIARY_JOB_NAME
+        ];
+
+        // In seconds
+        $timelines = [15, 30, 45, 60, 90, 120, 150, 180, 210];
+
+        $mailInfo = [
+            'fileInfo'  => $fileInfo,
+            'channel'   => $this->channel,
+            'filetype'  => self::BEAM_FILE_TYPE,
+            'subject'   => 'File Send failure',
+            'recipient' => Constants::MAIL_ADDRESSES[Constants::SETTLEMENT_ALERTS]
+        ];
+
+        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
     }
 }

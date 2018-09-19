@@ -33,6 +33,7 @@ use RZP\Models\Plan\Subscription;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Gateway\File as GatewayFile;
+use RZP\Services\Beam\Service as BeamService;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -57,6 +58,12 @@ class ApiServiceProvider extends BaseServiceProvider
 
             $entityClass::observe($entityObserverClass);
         }
+
+        // attaching payment observer since its invalidates
+        // the upi status on update
+        $entityClass = E::getEntityClass(E::PAYMENT);
+        $entityObserverClass = E::getEntityObserverClass(E::PAYMENT);
+        $entityClass::observe($entityObserverClass);
     }
 
     /**
@@ -180,6 +187,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new RazorXClient($app);
         });
 
+        $this->registerShieldClient();
+
+        $this->app->singleton('beam', function($app)
+        {
+            return new BeamService($app);
+        });
+
+        $this->app->singleton('module', function($app)
+        {
+            return new RZP\Modules\Manager($app);
+        });
+
         $this->registerShield();
 
         $this->registerApiMutex();
@@ -187,6 +206,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMaxMind();
 
         $this->registerRaven();
+
+        $this->registerScrooge();
 
         $this->registerElfin();
 
@@ -231,6 +252,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'mailgun',
             'maxmind',
             'raven',
+            'scrooge',
             'repo',
             'elfin',
             'segment',
@@ -244,6 +266,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'sns',
             'pincodesearch',
             'razorx',
+            'shield.service',
+            'beam',
         ];
     }
 
@@ -267,6 +291,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.raven.mock');
 
             $implementation = $mock ? Mock\Raven::class : Raven::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerScrooge()
+    {
+        $this->app->bind('scrooge', function($app)
+        {
+            $mock = $app['config']->get('applications.scrooge.mock');
+
+            $implementation = $mock ? Mock\Scrooge::class : Scrooge::class;
 
             return new $implementation($app);
         });
@@ -473,7 +509,7 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerShield()
+    protected function registerShieldClient()
     {
         $this->app->singleton('shield', function($app)
         {
@@ -482,6 +518,14 @@ class ApiServiceProvider extends BaseServiceProvider
             $implementation = $mock ? Mock\ShieldClient::class : ShieldClient::class;
 
             return new $implementation;
+        });
+    }
+
+    protected function registerShield()
+    {
+        $this->app->singleton('shield.service', function($app)
+        {
+            return new Shield($app);
         });
     }
 

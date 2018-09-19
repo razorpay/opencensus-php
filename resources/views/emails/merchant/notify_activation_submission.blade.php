@@ -13,7 +13,7 @@
 
             <p>Your {{ $org['business_name'] }} activation form is complete and we have notified the admins to verify the details. We will communicate to you if anything else is required.</p>
 
-            <p>Meanwhile, you can integrate with {{ $org['business_name'] }} in test mode and feel free to communicate with us at support@razorpay.com in case of any issues or queries.</p>
+            <p>Meanwhile, you can integrate with {{ $org['business_name'] }} in test mode and feel free to communicate with us <a href="https://dashboard.razorpay.com/#/app/dashboard#request">here</a> in case of any issues or queries.</p>
         </div>
 
         <div>

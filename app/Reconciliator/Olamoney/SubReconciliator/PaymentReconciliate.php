@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Reconciliator\Olamoney;
+namespace RZP\Reconciliator\Olamoney\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names
@@ -46,7 +46,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         // Convert service tax into basic unit of currency (ex: paise)
-        $serviceTax = Base\Helper::getIntegerFormattedAmount($row[$serviceTaxColumn]);
+        $serviceTax = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[$serviceTaxColumn]);
 
         return $serviceTax;
     }
@@ -64,7 +64,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         // Convert fee into basic unit of currency (ex: paise)
-        $fee = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
+        $fee = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
 
         // Already in basic unit of currency. Hence, no conversion needed
         $serviceTax = $this->getGatewayServiceTax($row);

@@ -400,6 +400,9 @@ trait EmandateTrait
 
         $request = $this->getStandardRequestArray($content);
 
+        // hotfix for disabling ssl cert verify
+        $request['options']['verify'] = false;
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
@@ -436,7 +439,7 @@ trait EmandateTrait
     public function getEmandateEncryptedData(array $data): string
     {
         return base64_encode(
-            $this->getEncryptor()->encryptString(
+            $this->getEmandateEncryptor()->encryptString(
                 urldecode(http_build_query($data))
             )
         );
@@ -444,7 +447,7 @@ trait EmandateTrait
 
     public function getEmandateDecryptedData(string $body, array $input = []): array
     {
-        $decrypted = $this->getEncryptor()->decryptString(base64_decode($body));
+        $decrypted = $this->getEmandateEncryptor()->decryptString(base64_decode($body));
 
         parse_str($decrypted, $output);
 
@@ -463,7 +466,7 @@ trait EmandateTrait
         return $output;
     }
 
-    protected function getEncryptor()
+    protected function getEmandateEncryptor()
     {
         $aes = new AESCrypto(AES::MODE_ECB, $this->getEmandateSecret());
 
@@ -531,7 +534,9 @@ trait EmandateTrait
             unset($arrayToBeHashed[3]);
         }
 
-        return $this->generateHash($arrayToBeHashed);
+        $str = implode('', $arrayToBeHashed);
+
+        return $this->getHashOfString($str);
     }
 
     protected function getEmandateSecret() : string

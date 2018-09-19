@@ -2,12 +2,14 @@
 
 namespace RZP\Tests\Functional\FundTransfer;
 
-use Carbon\Carbon;
 use Mail;
+use Queue;
+use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
 use RZP\Exception;
+use RZP\Jobs\BeamJob;
 use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Batch;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -41,26 +43,13 @@ trait AttemptTrait
     protected function assertInitiateTransferResponseSuccess(string $channel, array $content, int $sourceCount)
     {
         $this->assertArrayHasKey($channel, $content);
-        $this->assertArrayHasKey('file', $content[$channel]);
-        $this->assertNotNull($content[$channel]['file']['local_file_path']);
-
-        $this->assertEquals($sourceCount, $content[$channel]['count']);
-    }
-
-    protected function assertInitiateOnlineTransferResponseSuccess(
-        string $channel, array $content, int $sourceCount, bool $failureTest)
-    {
-        $this->assertArrayHasKey($channel, $content);
-
-        $this->assertEquals($sourceCount, $content[$channel]['count']);
-
-        if ($failureTest === false)
+        $count = $content[$channel]['count'];
+        $this->assertEquals($sourceCount, $count);
+        if($count > 0)
         {
-            $this->assertEquals($sourceCount, $content[$channel]['success']);
-        }
-        else
-        {
-            $this->assertEquals($sourceCount, $content[$channel]['failure']);
+            $this->assertArrayHasKey('file', $content[$channel]);
+            $this->assertNotNull($content[$channel]['file']['local_file_path']);
+
         }
     }
 
@@ -71,7 +60,21 @@ trait AttemptTrait
 
         $this->assertInitiateTransferResponseSuccess($channel, $content, $sourceCount);
 
-        $this->assertEntitiesAfterInitiateTransfer($channel, $purpose, $sourceType, $sourceCount);
+        if ($sourceCount > 0)
+        {
+            $this->assertEntitiesAfterInitiateTransfer($channel, $purpose, $sourceType, $sourceCount);
+        }
+
+        return $content;
+    }
+
+    protected function initiateTransferAndAssertSuccess(
+        string $channel, string $purpose, int $sourceCount, string $sourceType)
+    {
+        $content = $this->initiateTransfer($channel, $purpose);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
 
         return $content;
     }
@@ -94,8 +97,6 @@ trait AttemptTrait
         $this->createDataForChannel($channel, $purpose, $setlCount, $sourceType);
 
         $content = $this->initiateTransfer($channel, $purpose, $failureTest);
-
-        $this->assertInitiateOnlineTransferResponseSuccess($channel, $content, $setlCount, $failureTest);
     }
 
     protected function createDataAndAssertInitiateTransferSuccess(string $channel, int $setlCount, string $sourceType)
@@ -243,5 +244,30 @@ trait AttemptTrait
         $this->createRefundFromPayments($payments);
 
         $this->initiateSettlements($channel);
+    }
+
+    public function uploadFileThroughBeam(string $channel, string $fileType, string $filename)
+    {
+        Queue::fake();
+
+        $content = [
+          'file'     => $filename,
+          'channel'  => $channel,
+          'file_type' => $fileType
+        ];
+
+        $request = [
+            'url'       => '/nodal_file_upload/retry',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('general_test', BeamJob::class);
     }
 }

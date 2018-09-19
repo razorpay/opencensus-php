@@ -37,6 +37,66 @@ class AtomGatewayTest extends TestCase
         $this->assertTestResponse($payment);
     }
 
+    public function testSignatureNotFound()
+    {
+        $this->mockSignatureNotFound();
+
+        $this->ba->publicAuth();
+
+        $data = $this->testData['testFailedPayment'];
+
+        $payment = $this->payment;
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testAmountNotound()
+    {
+        $this->ba->publicAuth();
+
+        $data = $this->testData['testInvalidResponse'];
+
+        $payment = $this->payment;
+
+        $this->mockInvalidCallback('amt');
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testStatusFieldNotPresent()
+    {
+        $data = $this->testData['testInvalidResponse'];
+
+        $payment = $this->payment;
+
+        $this->mockInvalidCallback('f_code');
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testTransactionIDNotPresent()
+    {
+        $data = $this->testData['testInvalidResponse'];
+
+        $payment = $this->payment;
+
+        $this->mockInvalidCallback('mer_txn');
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testNetbankingPaymentCapture()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
@@ -102,12 +162,13 @@ class AtomGatewayTest extends TestCase
 
         $order = $this->startTest();
 
+        $this->payment['bank'] = 'CBIN';
         $this->payment['order_id'] = $order['id'];
 
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
             $content['bank_txn'] = '99999999';
-            $content['bank_name'] = 'SBIN';
+            $content['bank_name'] = 'CBIN';
         });
 
         $this->doAuthPayment($this->payment);
@@ -319,6 +380,32 @@ class AtomGatewayTest extends TestCase
             $content['atomtxnId'] = $gatewayPayment['gateway_payment_id'];
 
             $content['BID']       = $gatewayPayment['bank_payment_id'];
+        });
+    }
+
+    protected function mockSignatureNotFound()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'hash')
+            {
+                unset($content['signature']);
+            }
+            if ($action === 'callback')
+            {
+                $content['f_code'] = 'F';
+            }
+        });
+    }
+
+    protected function mockInvalidCallback($field)
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null) use ($field)
+        {
+            if ($action === 'callback')
+            {
+                unset($content[$field]);
+            }
         });
     }
 }

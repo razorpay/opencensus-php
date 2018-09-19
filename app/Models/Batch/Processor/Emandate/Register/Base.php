@@ -69,7 +69,7 @@ abstract class Base extends BaseProcessor
     }
 
     abstract protected function getDataFromRow(array $entry): array;
-    abstract protected function getTokenStatus(string $gatewayTokenStatus): string;
+    abstract protected function getTokenStatus(string $gatewayTokenStatus, array $content): string;
     abstract protected function getTokenErrorMessage(string $gatewayTokenStatus, array $entry);
     abstract protected function getGatewayPayment(Payment\Entity $payment);
 
@@ -92,6 +92,10 @@ abstract class Base extends BaseProcessor
             ($payment->hasBeenCaptured() === false))
         {
             $this->captureAuthorizedPayment($payment);
+        }
+        else if ($data[self::TOKEN_STATUS] === Token\RecurringStatus::REJECTED)
+        {
+            $this->refundPayment($payment);
         }
     }
 
@@ -150,6 +154,22 @@ abstract class Base extends BaseProcessor
         // token to be confirmed if there is any bug on our end
         //
         $this->paymentProcessor->capture($payment, $parameters);
+    }
+
+    protected function refundPayment($payment)
+    {
+        if ($payment->isAuthorized() === false)
+        {
+            $this->trace->critical(TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
+                [
+                    'status' => $payment->getStatus(),
+                    'payment_id' => $payment->getId(),
+                ]);
+
+            return;
+        }
+
+        (new Payment\Processor\Processor($payment->merchant))->refundAuthorizedPayment($payment);
     }
 
     protected function updateTokenEntity(Token\Entity $token, array $content)

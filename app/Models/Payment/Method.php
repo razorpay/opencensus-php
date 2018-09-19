@@ -45,6 +45,11 @@ class Method
         self::BANK_TRANSFER,
     ];
 
+    public static $recurringMethods = [
+        self::CARD,
+        self::EMANDATE,
+    ];
+
     protected static $asynchronous = [
         self::UPI,
     ];

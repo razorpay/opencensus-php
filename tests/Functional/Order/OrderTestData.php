@@ -531,6 +531,58 @@ return [
         ],
     ],
 
+
+    'testCreateOrderWithRepeatedOffers' => [
+        'request' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offers'        => [
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offer_id'      => null,
+                'offers'        => null,
+            ],
+        ],
+    ],
+
+    'testCreateOrderWithOffersAndOfferID' => [
+        'request' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offer_id'      => null,
+                'offers'        => [
+                ],
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Request should send either offer_id or offers',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateOrderWithMultipleOffers' => [
         'request' => [
             'content' => [
@@ -775,6 +827,22 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.'
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testPartialPaymentExcessAmountManualCaptureFailure' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE'
                 ]
             ],
             'status_code' => 400

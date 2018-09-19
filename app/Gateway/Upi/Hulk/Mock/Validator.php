@@ -10,6 +10,7 @@ class Validator extends Base\Validator
         'type'                  => 'required|string|in:pull,push',
         'amount'                => 'required|integer|min:100',
         'currency'              => 'required|string|in:INR',
+        'receiver_id'           => 'sometimes|string|size:18',
         'expire_at'             => 'sometimes_if:type,pull|epoch',
         'sender'                => 'sometimes|array',
         'sender.address'        => 'string|max:255',
@@ -28,9 +29,11 @@ class Validator extends Base\Validator
         'type'                  => 'required|string|in:expected_push',
         'amount'                => 'required|integer|min:100',
         'currency'              => 'required|string|in:INR',
+        'receiver_id'           => 'sometimes|string|size:18',
         'description'           => 'required|string|max:255',
         'notes'                 => 'sometimes|array',
         'caller_account_number' => 'sometimes|max:50',
         'merchant_reference_id' => 'required|string|size:14',
+        'category_code'         => 'sometimes|string|size:4',
     ];
 }

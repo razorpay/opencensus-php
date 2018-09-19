@@ -204,7 +204,16 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $requestContent);
 
-        $response = $this->getSoapResponse($requestContent);
+        $shouldRetry = function ($e)
+        {
+            return (in_array(get_class($e), [Exception\GatewayRequestException::class], true));
+        };
+
+        $response = $this->retryHandler(
+            [$this, 'getSoapResponse'],
+            [$requestContent],
+            $shouldRetry,
+            2);
 
         $this->trace->info(
             TraceCode::GATEWAY_CAPTURE_RESPONSE,
@@ -946,7 +955,28 @@ class Gateway extends Base\Gateway
 
         $this->traceSoapRequest($request);
 
-        $response = $this->sendGatewayRequest($request);
+        try
+        {
+            $response = $this->sendGatewayRequest($request);
+        }
+        catch (Exception\GatewayRequestException $e)
+        {
+            $this->traceCurlErrorIfApplicable();
+
+            throw $e;
+        }
+        finally
+        {
+            if (isset($this->curlLog) === true)
+            {
+                fclose($this->curlLog);
+
+                if (file_exists($this->curlLogPath) === true)
+                {
+                    unlink($this->curlLogPath);
+                }
+            }
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_RESPONSE,
@@ -1195,7 +1225,22 @@ class Gateway extends Base\Gateway
 
         $hooks = new Requests_Hooks();
 
-        $hooks->register('curl.before_send', [$this, 'setCurlSslOpts']);
+        $requestId = Entity::generateUniqueId();
+
+        $this->requestId = $requestId;
+
+        $hooks->register('curl.before_send', function ($curl) use ($requestId)
+        {
+            $this->setCurlSslOpts($curl);
+
+            $this->curlLogPath = storage_path('logs/curl_' . $requestId . '.log');
+
+            $this->curlLog = fopen($this->curlLogPath, 'w'); // opening a log file for curl logs
+
+            curl_setopt($curl, CURLOPT_VERBOSE, true);
+
+            curl_setopt($curl, CURLOPT_STDERR, $this->curlLog);
+        });
 
         $options['hooks'] = $hooks;
 
@@ -1210,7 +1255,11 @@ class Gateway extends Base\Gateway
 
         curl_setopt($curl, CURLOPT_SSLCERTPASSWD, $this->getClientCertificatePassword());
 
-        curl_setopt($curl, CURLOPT_CAINFO, $this->getServerCertificate());
+        //
+        // Not required, as this server cert is already available in that provided by the OS
+        // TODO: Remove this whole line
+        //
+        // curl_setopt($curl, CURLOPT_CAINFO, $this->getServerCertificate());
 
         curl_setopt($curl, CURLOPT_HTTPHEADER, ["Content-Type: text/xml"]);
     }

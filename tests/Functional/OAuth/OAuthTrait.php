@@ -24,6 +24,7 @@ trait OAuthTrait
         factory(Client\Entity::class)->create(
             [
                 'application_id' => $application->id,
+                'redirect_url'   => ['http://www.example.com'],
                 'environment'    => 'dev'
             ]);
 
@@ -52,9 +53,11 @@ trait OAuthTrait
                            ->first();
     }
 
-    public function createPartnerApplicationAndGetClientByEnv(string $env = 'dev')
+    public function createPartnerApplicationAndGetClientByEnv(string $env = 'dev', array $attributes = [])
     {
-        $application = $this->createOAuthApplication(['type' => 'partner']);
+        $attributes = array_merge($attributes, ['type' => 'partner']);
+
+        $application = $this->createOAuthApplication($attributes);
 
         return $application->clients()
                            ->get()
@@ -142,10 +145,11 @@ trait OAuthTrait
     protected function setAuthServiceMockDetail(
         string $route,
         string $method,
-        array $requestParams = null)
+        array  $requestParams = null,
+        int    $times = 1)
     {
         $this->authServiceMock
-             ->expects($this->once())
+             ->expects($this->exactly($times))
              ->method('sendRequest')
              ->with($route, $method, $requestParams)
              ->willReturn([]);

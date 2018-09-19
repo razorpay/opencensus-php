@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Offer;
 
 use Carbon\Carbon;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -39,6 +40,7 @@ class OffersPaymentTest extends TestCase
         $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
+
         $this->assertEquals(90000, $payment['amount']);
         $this->assertEquals('authorized', $payment['status']);
 
@@ -66,6 +68,113 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals($payment['id'], $discount['payment_id']);
         $this->assertEquals($order['id'], $discount['order_id']);
         $this->assertEquals($offer['id'], $discount['offer_id']);
+    }
+
+    public function testOfferPaymentWithMerchantSub()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', ['issuer' => 'HDFC', 'payment_network' => null]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'amount'      => 500000,
+            'force_offer' => true,
+        ]);
+
+        $payment = $this->getOrderPaymentArray($order);
+
+        $payment['method'] = 'emi';
+        $payment['emi_duration'] = 9;
+        $payment['card']['number'] = '41476700000006';
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(474100, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 500000, 'INR', 474100);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(474100, $payment['amount']);
+        $this->assertEquals(474100, $payment['base_amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        // Payment Offer row got created
+        $entityOffers = $this->getEntities('entity_offer', ['entity_type' => 'payment'], true);
+        $entityOffer = $entityOffers['items'][0];
+
+        $this->assertEquals($offer->getId(), $entityOffer['offer_id']);
+        $this->assertEquals($payment['entity'], $entityOffer['entity_type']);
+        $this->assertEquals($payment['id'], 'pay_' . $entityOffer['entity_id']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(500000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
+
+        $offer = $this->getLastEntity('offer', true);
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(25900, $discount['amount']);
+        $this->assertEquals($payment['id'], $discount['payment_id']);
+        $this->assertEquals($order['id'], $discount['order_id']);
+        $this->assertEquals($offer['id'], $discount['offer_id']);
+    }
+
+    public function testPaymentWithMerchantSubWrongEMIPlan()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', ['issuer' => 'HDFC', 'payment_network' => null]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'amount'      => 500000,
+            'force_offer' => true,
+        ]);
+
+        $payment = $this->getOrderPaymentArray($order);
+
+        $payment['method'] = 'emi';
+        $payment['emi_duration'] = 6;
+        $payment['card']['number'] = '41476700000006';
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->doAuthPayment($payment);
+    }
+
+    public function testPaymentWithMerchantSubWrongIssuer()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', ['issuer' => 'UTIB', 'payment_network' => null]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'amount'      => 500000,
+            'force_offer' => true,
+        ]);
+
+        $payment = $this->getOrderPaymentArray($order);
+
+        $payment['method'] = 'emi';
+        $payment['emi_duration'] = '9';
+        $payment['card']['number'] = '41476700000006';
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->doAuthPayment($payment);
     }
 
     public function testOfferPaymentMultipleOffers()

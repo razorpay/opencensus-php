@@ -12,18 +12,10 @@ pipeline:
       - aws_region
     when:
       event: push
-  test:
-    group: A
+  prepare_test:
     image: razorpay/pithos:rzp-php7.1
     pull: true
     secrets: [docker_username, docker_password, git_token, rzp_api]
-    environment:
-      - DB_LIVE_HOST=livedb
-      - DB_TEST_HOST=testdb
-      - DB_AUTH_HOST=authdb
-      - REDIS_HOST=redis
-      - ES_HOST=elasticsearch
-      - ES_AUDIT_HOST=elasticsearch
     commands:
       - cp ./environment/.env.drone ./environment/.env.testing
       - touch /etc/php7/conf.d/assertion.ini
@@ -34,9 +26,48 @@ pipeline:
       - mkdir -p $COMPOSER_CACHE_DIR
       - chmod 777 -R storage
       - composer config --global github-oauth.github.com $GIT_TOKEN
+      - composer global require hirak/prestissimo
       - composer install --no-interaction --optimize-autoloader
       - mkdir -p /opt/razorpay/certs/first_data
-      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --debug --verbose --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  test_default:
+    group: A
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=livedb
+      - DB_TEST_HOST=testdb
+      - DB_AUTH_HOST=authdb
+      - REDIS_HOST=redis
+      - REDIS_LABS_HOST=redis
+      - ES_HOST=elasticsearch
+      - ES_AUDIT_HOST=elasticsearch
+    commands:
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Application Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+    when:
+      event:
+        exclude: [deployment, tag, pull_request]
+        include: [push]
+  test_payments:
+    group: A
+    image: razorpay/pithos:rzp-php7.1
+    pull: true
+    secrets: [docker_username, docker_password, git_token, rzp_api]
+    environment:
+      - DB_LIVE_HOST=livedb2
+      - DB_TEST_HOST=testdb2
+      - DB_AUTH_HOST=authdb
+      - REDIS_HOST=redis2
+      - REDIS_LABS_HOST=redis2
+      - ES_HOST=elasticsearch2
+      - ES_AUDIT_HOST=elasticsearch2
+    commands:
+      - sleep 10
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Payment Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -109,6 +140,24 @@ services:
       event:
         exclude: [deployment, pull_request]
         include: [push]
+  livedb2:
+    image: mysql:5.7
+    environment:
+      - MYSQL_DATABASE=api
+      - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  testdb2:
+    image: mysql:5.7
+    environment:
+      - MYSQL_DATABASE=api_test
+      - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   authdb:
     image: mysql:5.7
     environment:
@@ -124,7 +173,19 @@ services:
       event:
         exclude: [deployment, pull_request]
         include: [push]
+  redis2:
+    image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   elasticsearch:
+    image: elasticsearch:5.2-alpine
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
+  elasticsearch2:
     image: elasticsearch:5.2-alpine
     when:
       event:
@@ -192,6 +253,81 @@ pipeline:
       event:
         exclude: [push]
         include: [deployment]
+  deploy-stage-delta:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    kind: daemonset
+    daemonset:
+      - api-web
+    repo: razorpay/api
+    namespace: delta
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-delta
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-stage-charlie:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    kind: daemonset
+    daemonset:
+      - api-web
+    repo: razorpay/api
+    namespace: charlie
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-charlie
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-stage-beta:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    kind: daemonset
+    daemonset:
+      - api-web
+    repo: razorpay/api
+    namespace: beta
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-beta
+      event:
+        exclude: [push]
+        include: [deployment]
   deploy-prod-api:
     image: razorpay/drone-kubernetes
     pull: true
@@ -214,6 +350,33 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: prod-api
+      branch: master
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-prod-dark-api:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_klusterapi
+      - client_key_klusterapi
+      - server_cert_klusterapi
+      - client_cert_klusterapi
+    user: drone
+    cluster: kluster-api
+    auth_mode: client-cert
+    kind: deployment
+    deployment:
+      - api-dark
+    repo: razorpay/api
+    namespace: api-dark
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: prod-api-dark
+      branch: [master, dark]
       event:
         exclude: [push]
         include: [deployment]

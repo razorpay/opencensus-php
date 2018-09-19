@@ -22,7 +22,7 @@
         min-height: 540px;
     }
 
-    #desktop-container::before {
+    #desktop-container.no-display-image::before {
         content: '';
         position: absolute;
         width: 100%;
@@ -32,6 +32,10 @@
         background: {{$data['merchant']['brand_color']}};
         z-index: -1;
     }
+
+    #desktop-container #header-details {
+        max-width: 65%;
+   }
 
     #desktop-container .content {
         display: table;
@@ -82,6 +86,10 @@
         float: right;
     }
 
+    .description-footer a {
+        width: 100%;
+    }
+
     .description-footer img {
         height: 18px;
         vertical-align: bottom;
@@ -102,11 +110,11 @@
         display: none;
     }
 
-    #desktop-container #footer-section {
+    #desktop-container.no-display-image #footer-section {
         margin: 40px auto 100px;
     }
 
-    #footer-section #secure-lock-icon {
+    #desktop-container.no-display-image #footer-section #secure-lock-icon {
         display: inline-block;
         fill: {{$tertiary_color}};
     }

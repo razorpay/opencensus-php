@@ -171,10 +171,6 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    /**
-     * @deprecated
-     * @return mixed
-     */
     public function postAutoCapture()
     {
         $data = $this->service()->autoCaptureOldAuthorizedPayments();
@@ -402,6 +398,15 @@ class PaymentController extends Controller
         $input = Request::all();
 
         $data = $this->service()->validateVpa($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getPaymentFlowsPrivate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getPaymentFlowsPrivate($input);
 
         return ApiResponse::json($data);
     }

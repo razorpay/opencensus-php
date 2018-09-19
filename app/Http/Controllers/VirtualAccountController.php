@@ -18,6 +18,13 @@ class VirtualAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function closeVirtualAccount(string $id)
+    {
+        $response = $this->service()->closeVirtualAccount($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function getPayments(string $id)
     {
         $response = $this->service()->fetchPayments($id);

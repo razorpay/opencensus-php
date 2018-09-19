@@ -17,6 +17,7 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\Invoice\Repository              $invoice
  * @property Models\Tax\Repository                  $tax
  * @property Models\Payment\Repository              $payment
+ * @property Models\Payment\Refund\Repository       $refund
  * @property Models\Merchant\Repository             $merchant
  * @property Models\Batch\Repository                $batch
  * @property Models\BankAccount\Repository          $bank_account
@@ -257,7 +258,7 @@ class RepositoryManager extends Illuminate\Support\Manager
         // If we catch an exception, we will roll back so nothing gets messed
         // up in the database. Then we'll re-throw the exception so it can
         // be handled how the developer sees fit for their applications.
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->db->connection(Mode::LIVE)->rollBack();
             $this->db->connection(Mode::TEST)->rollBack();

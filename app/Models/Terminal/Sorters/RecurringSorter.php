@@ -20,7 +20,7 @@ class RecurringSorter extends Terminal\Sorter
         //
         // We do the fallback stuff only for second recurring + card payments.
         //
-        if (($payment->isSecondRecurring(true, $gatewayTokens) === false) or
+        if (($payment->isSecondRecurring() === false) or
             ($payment->isCard() === false))
         {
             return $terminals;

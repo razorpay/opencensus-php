@@ -118,7 +118,27 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($attributes);
 
-        return $this->getIntentRequest($input);
+        $request = $this->getIntentRequest($input);
+
+        if ($this->shouldSignIntentRequest() === true)
+        {
+            $secure = $this->getSecureInstance();
+
+            $secure->setRequest($request);
+
+            $data = [
+                'intent_url'    => $secure->getIntentUrl(),
+                'qr_code_url'   => $secure->getQrcodeUrl(),
+            ];
+        }
+        else
+        {
+            $data = [
+                'intent_url'    => $this->generateIntentString($request),
+            ];
+        }
+
+        return ['data' => $data];
     }
 
     protected function getIntentRequest($input)
@@ -133,9 +153,12 @@ class Gateway extends Base\Gateway
             Base\IntentParams::MCC           => '5411',
         ];
 
-        $query = str_replace(' ', '', urldecode(http_build_query($content)));
+        if (isset($input['upi']['reference_url']) === true)
+        {
+            $content[Base\IntentParams::URL] = $input['upi']['reference_url'];
+        }
 
-        return ['data' => ['intent_url' => 'upi://pay?' . $query]];
+        return $content;
     }
 
     /**

@@ -153,6 +153,17 @@ class Server extends Base\Mock\Server
 
         $responseCode = $this->getVerifyResponseCode($payment['vpa']);
 
+        if (empty($payment['created_at']) === true)
+        {
+            $initDate = Carbon::now();
+        }
+        else
+        {
+            $initDate = Carbon::createFromTimestampUTC($payment['created_at']);
+        }
+
+        $completeDate = $initDate->copy()->addMinutes(1);
+
         $response = [
             'response'          => $responseCode,
             'merchantId'        => $input['merchantId'],
@@ -160,10 +171,13 @@ class Server extends Base\Mock\Server
             'terminalId'        => '1234',
             'success'           => $this->getSuccess($responseCode),
             'message'           => $message,
-            'merchantTranId'    => $input['merchantTranId'],
             'OriginalBankRRN'   => (string) random_int(1111111111, 9999999999),
+            'merchantTranId'    => $input['merchantTranId'],
+            'payerVA'           => $payment['vpa'],
+            'amount'            => $amount,
             'status'            => $status,
-            'Amount'            => $amount,
+            'TxnInitDate'       => $initDate->getTimestamp(),
+            'TxnCompletionDate' => $completeDate->getTimestamp(),
         ];
 
         $this->content($response, 'verify');

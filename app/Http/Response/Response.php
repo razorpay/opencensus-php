@@ -94,6 +94,11 @@ class Response
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED);
     }
 
+    public function requestBlocked()
+    {
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_FORBIDDEN);
+    }
+
     public function onlyHttpsAllowed()
     {
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
@@ -293,8 +298,10 @@ class Response
         $callbackRoutes = [
             'payment_create_fees',
             'payment_create_checkout',
-            'payment_callback_with_key_post',
+            'payment_callback_get',
+            'payment_callback_post',
             'payment_callback_with_key_get',
+            'payment_callback_with_key_post',
             'payment_redirect_callback'
         ];
 

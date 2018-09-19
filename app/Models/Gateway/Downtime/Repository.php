@@ -14,7 +14,7 @@ class Repository extends Base\Repository
         Entity::ISSUER      => 'sometimes|string|max:50',
         Entity::METHOD      => 'sometimes|string|max:30',
         Entity::BEGIN       => 'sometimes|integer',
-        Entity::END         => 'sometimes|integer',
+        Entity::END         => 'required_with:begin|integer',
         Entity::PARTIAL     => 'sometimes|bool',
         Entity::SOURCE      => 'sometimes|string|max:30',
     );
@@ -25,7 +25,7 @@ class Repository extends Base\Repository
         Entity::ISSUER      => 'sometimes|string|max:50',
         Entity::METHOD      => 'sometimes|string|max:30',
         Entity::BEGIN       => 'sometimes|integer',
-        Entity::END         => 'sometimes|integer',
+        Entity::END         => 'required_with:begin|integer',
         Entity::PARTIAL     => 'sometimes|bool',
         Entity::SOURCE      => 'sometimes|string|max:30',
     );
@@ -171,11 +171,19 @@ class Repository extends Base\Repository
 
     protected function addQueryParamBegin($query, $params)
     {
+        if (empty($params[Entity::END]) === false)
+        {
+            return;
+        }
+
         // The default value for Entity::END is null. This is because we do not
         // necessarily know the end time in case of an unscheduled downtime.
         //
         // If an end time does exist, downtime should have ended after
         // the start of the query begin time for there to be an overlap
+
+        $query->where(Entity::BEGIN, '<=', $params[Entity::BEGIN]);
+
         $query->where(function ($query) use ($params)
         {
             $query->whereNull(Entity::END)
@@ -185,8 +193,41 @@ class Repository extends Base\Repository
 
     protected function addQueryParamEnd($query, $params)
     {
-        // If query does have an endtime, then downtime should
-        // have begun before it for there to be an overlap
-        $query->where(Entity::BEGIN, '<=', $params[Entity::END]);
+        $query->where(function ($query) use ($params)
+        {
+            $query->orWhere(function ($query) use ($params)
+            {
+                $query->where(Entity::BEGIN, '<=', $params[Entity::BEGIN]);
+
+                $query->where(function ($query) use ($params)
+                {
+                    $query->whereNull(Entity::END)
+                          ->orWhere(Entity::END, '>=', $params[Entity::BEGIN]);
+                });
+            });
+
+            // If query does have an endtime, then either downtime should
+            // have begun before it for there to be an overlap
+            $query->orWhere(function ($query) use ($params)
+            {
+                $query->where(Entity::BEGIN, '<=', $params[Entity::END]);
+
+                $query->where(function ($query) use ($params)
+                {
+                    $query->whereNull(Entity::END)
+                          ->orWhere(Entity::END, '>=', $params[Entity::END]);
+                });
+
+            });
+
+            // or there can be downtimes which started after begin but ended before
+            // the end time
+            $query->orWhere(function ($query) use ($params)
+            {
+                $query->where(Entity::BEGIN, '>=', $params[Entity::BEGIN])
+                      ->whereNotNull(Entity::END)
+                      ->where(Entity::END, '<=', $params[Entity::END]);
+            });
+        });
     }
 }

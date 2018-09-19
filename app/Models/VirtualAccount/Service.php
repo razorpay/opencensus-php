@@ -78,11 +78,9 @@ class Service extends Base\Service
                     return $existingVirtualAccount->toArrayPublic();
                 }
 
-                $amountExpected = $this->getExpectedAmountForVirtualAccount($order);
-
                 $createArray = [
                     Entity::ORDER_ID        => $order->getPublicId(),
-                    Entity::AMOUNT_EXPECTED => $amountExpected,
+                    Entity::AMOUNT_EXPECTED => $order->getAmountDue(),
                     Entity::NOTES           => $input[Entity::NOTES] ?? [],
                     Entity::RECEIVERS       => [
                         Entity::TYPES => [
@@ -91,7 +89,16 @@ class Service extends Base\Service
                     ],
                 ];
 
-                return $this->create($createArray);
+                $virtualAccount = $this->create($createArray);
+
+                if ($order->merchant->isFeeBearerCustomer() === true)
+                {
+                    $amountExpected = $this->getExpectedAmountForVirtualAccount($order);
+
+                    $virtualAccount[Entity::AMOUNT_EXPECTED] = $amountExpected;
+                }
+
+                return $virtualAccount;
             },
             60,
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
@@ -101,10 +108,6 @@ class Service extends Base\Service
 
     protected function getExpectedAmountForVirtualAccount(Order\Entity $order)
     {
-        if ($order->merchant->isFeeBearerCustomer() === false)
-        {
-            return $order->getAmountDue();
-        }
 
         $fee = (new BankTransfer\Core)->getFeesForOrder($order);
 
@@ -142,6 +145,17 @@ class Service extends Base\Service
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $virtualAccount = $this->core->edit($virtualAccount, $input);
+
+        return $virtualAccount->toArrayPublic();
+    }
+
+    public function closeVirtualAccount(string $id)
+    {
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $virtualAccount = $this->core->updateStatus($virtualAccount, STATUS::CLOSED);
 
         return $virtualAccount->toArrayPublic();
     }

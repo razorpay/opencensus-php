@@ -30,5 +30,11 @@ class Constants
         self::UTM_CONTENT,
         self::TIMESTAMP,
     ];
+
+    const PASSWORD_RESET_TOKEN_EXPIRY_TIME =  3600; //1 hour
+
+    const LINKED_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME =  86400; //24 hours
+
+    const SUBMERCHANT_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME =  86400; //24 hours
 }
 

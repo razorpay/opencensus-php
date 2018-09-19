@@ -227,22 +227,27 @@ class Service extends Base\Service
 
     public function loginWithOAuth($input)
     {
-        // TODO: error validation
+        $validator = new Validator();
 
+        $validator->validateInput('o_auth_login', $input);
+
+        $orgId = $this->auth->getOrgId();
         // Get the admin record
-        $admin = $this->repo->admin->findByEmail($input['email']);
+        $admin = $this->getAdminFromEmail($orgId, $input['email']);
 
-        if (($admin->getOAuthAccessToken() === $input['oauth_access_token']) and
-            ($admin->getOAuthProviderID() === $input['oauth_provider_id']))
-        {
-            $data = $this->generateLoginToken($admin);
+        // store access token and provider id.
+        $oauthData = [
+            'oauth_access_token' => $input['oauth_access_token'],
+            'oauth_provider_id'  => $input['oauth_provider_id'],
+        ];
 
-            $this->fireAdminAction($admin, Action::LOGIN_OAUTH);
+        $this->core()->edit($admin, $oauthData);
 
-            return $data;
-        }
+        $data = $this->generateLoginToken($admin);
 
-        $this->handleAuthFailure($admin, Action::LOGIN_FAIL_OAUTH);
+        $this->fireAdminAction($admin, Action::LOGIN_OAUTH);
+
+        return $data;
     }
 
     /**
@@ -400,24 +405,6 @@ class Service extends Base\Service
         $admins = $this->repo->admin->fetchByOrgId($this->adminOrgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admins->toArrayPublic();
-    }
-
-    public function fetchMultipleOnAppAuth(array $input)
-    {
-        $admins = $this->repo->admin->fetch($input);
-
-        $admins = $admins->toArrayPublic();
-
-        // heimdall dashboard has a custom parser which is not compatible with
-        // collections. If dashboard needs a single entity and passes a unique
-        // key return the only collection
-        // todo: Use toArrayPublicEmbedded
-        if ($admins['count'] === 1)
-        {
-            return $admins['items'][0];
-        }
-
-        return [];
     }
 
     public function editAdmin(string $adminId, array $input)

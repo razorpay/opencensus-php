@@ -768,6 +768,8 @@ trait FileHandlerTrait
 
         $app['excel.reader']->setSelectedSheetIndices([]);
 
+        $this->traceExcelReaderConfig();
+
         $sheets = $this->parseExcelFile($filePath);
 
         $hasSingleSheet  = (count($sheets) === 1);
@@ -790,6 +792,22 @@ trait FileHandlerTrait
         // }
 
         // return $finalEntries;
+    }
+
+    /**
+     * Traces excel reader configuration, helps with debugging
+     */
+    protected function traceExcelReaderConfig()
+    {
+        $reader = app('excel.reader');
+
+        $config = [
+            'import_configs'       => config('excel.import'),
+            'sheetsSelected'       => $reader->selectedSheets,
+            'selectedSheetIndices' => $reader->selectedSheetIndices,
+        ];
+
+        $this->trace()->debug(TraceCode::EXCEL_READER_IMPORT_CONFIG, $config);
     }
 
     protected function getFileLines($file)
@@ -843,7 +861,7 @@ trait FileHandlerTrait
 
         $newFilepath = $this->getFileToReadFullPath($extension);
 
-        $dir = $this->getStorageDir();
+        $dir = FileStore\Utility::getStorageDir();
 
         if (file_exists($dir) === false)
         {
@@ -871,14 +889,9 @@ trait FileHandlerTrait
         return $mode;
     }
 
-    protected function getStorageDir()
-    {
-        return storage_path('files/settlement');
-    }
-
     protected function getFullFilePath($filename)
     {
-        return $this->getStorageDir() . '/' . $filename;
+        return FileStore\Utility::getStorageDir() . '/' . $filename;
     }
 
     protected function trace()

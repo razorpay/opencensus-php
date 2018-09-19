@@ -28,9 +28,11 @@ class Validator extends Base\Validator
         // We generate it if expired_at is not present and method is emandate
         Entity::EXPIRED_AT          => 'sometimes|epoch|nullable|custom',
         Entity::ACCOUNT_NUMBER      => 'sometimes|nullable|alpha_num|between:5,20',
+        Entity::ACCOUNT_TYPE        => 'sometimes|nullable|string|in:savings,current',
         Entity::BENEFICIARY_NAME    => 'sometimes|nullable|alpha_space_num|between:4,120',
         Entity::IFSC                => 'sometimes|nullable|alpha_num|size:11',
         Entity::AADHAAR_NUMBER      => 'sometimes|nullable|string|size:12',
+        Entity::AADHAAR_VID         => 'sometimes|nullable|string|size:16',
     ];
 
     protected static $createDirectRules = [

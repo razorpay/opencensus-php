@@ -15,32 +15,14 @@ use RZP\Reconciliator\RequestProcessor;
 class Service extends Base\Service
 {
     /**
-     * List of gateways where we are doing recon processing via batch.
+     * List of gateways where we are doing recon processing via non-batch.
      */
-    const BATCH_RECON_GATEWAYS = [
-        RequestProcessor\Base::AXIS,
-        RequestProcessor\Base::HDFC,
-        RequestProcessor\Base::ATOM,
-        RequestProcessor\Base::KOTAK,
-        RequestProcessor\Base::HITACHI,
-        RequestProcessor\Base::CARD_FSS,
-        RequestProcessor\Base::JIOMONEY,
-        RequestProcessor\Base::BILLDESK,
-        RequestProcessor\Base::UPI_ICICI,
-        RequestProcessor\Base::OLAMONEY,
-        RequestProcessor\Base::MOBIKWIK,
-        RequestProcessor\Base::FIRST_DATA,
-        RequestProcessor\Base::FREECHARGE,
-        RequestProcessor\Base::NETBANKING_CSB,
-        RequestProcessor\Base::NETBANKING_OBC,
-        RequestProcessor\Base::NETBANKING_RBL,
-        RequestProcessor\Base::NETBANKING_AXIS,
-        RequestProcessor\Base::NETBANKING_ICICI,
-        RequestProcessor\Base::NETBANKING_FEDERAL,
-        RequestProcessor\Base::NETBANKING_HDFC,
-        RequestProcessor\Base::NETBANKING_ALLAHABAD,
-        RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK
+      const NON_BATCH_RECON_GATEWAYS = [
+        RequestProcessor\Base::ADMIN,
+        RequestProcessor\Base::EBS,
+        RequestProcessor\Base::PAYTM,
+        RequestProcessor\Base::PAYUMONEY,
+        RequestProcessor\Base::PAYZAPP,
     ];
 
     /**
@@ -57,8 +39,9 @@ class Service extends Base\Service
 
         try
         {
-            $summary = $this->processReconciliationRequest($input);
+            $source = $this->getRequestSource($input);
 
+            $summary = $this->processReconciliationRequest($input, $source);
         }
         catch (\Throwable $e)
         {
@@ -128,18 +111,30 @@ class Service extends Base\Service
         return $data;
     }
 
+    protected function getRequestSource(array $input): string
+    {
+        if ($this->isManualRequest($input) === true)
+        {
+            return RequestProcessor\Base::MANUAL;
+        }
+
+        return RequestProcessor\Base::MAILGUN;
+    }
+
     /**
      * Determines whether the reconciliation request is manual or
      * via MailGun and gets the files details accordingly.
      *
-     * @param array $input The input received from the route.
+     * @param array  $input The input received from the route.
+     * @param string $source
+     *
      * @return array Summary of reconciliation
      * @throws Exception\ReconciliationException Raised when there are no
      *                                           files to reconcile.
      */
-    protected function processReconciliationRequest(array $input)
+    protected function processReconciliationRequest(array $input, string $source)
     {
-        $requestProcessor = $this->getRequestProcessor($input);
+        $requestProcessor = $this->getRequestProcessor($source);
 
         //
         // Sets the gateway reconciliator object and
@@ -168,12 +163,12 @@ class Service extends Base\Service
         // This is a temporary logic. Plan is to move all gateway reconciliation
         // to batch once it is stable
         //
-        if (in_array($gateway, self::BATCH_RECON_GATEWAYS, true) === true)
+        if (in_array($gateway, self::NON_BATCH_RECON_GATEWAYS, true) === true)
         {
-            return $orchestrator->orchestrateV2($reconDetails);
+            return $orchestrator->orchestrate($reconDetails);
         }
 
-        return $orchestrator->orchestrate($reconDetails);
+        return $orchestrator->orchestrateV2($reconDetails);
     }
 
     /**
@@ -201,22 +196,17 @@ class Service extends Base\Service
      * Initializes the request processor to be used to handle the request
      * based on the source of the request i.e manual | mailgun
      *
-     * @param  array                        $input
+     * @param string $source
+     *
      * @return RequestProcessor\Base
      */
-    protected function getRequestProcessor(array $input): RequestProcessor\Base
+    protected function getRequestProcessor(string $source): RequestProcessor\Base
     {
-        // Checks if it's manual call or mailgun call
-        if ($this->isManualRequest($input) === true)
-        {
-            $requestProcessor = new RequestProcessor\Manual;
-        }
-        else
-        {
-            $requestProcessor = new RequestProcessor\Mailgun;
-        }
+        $source = studly_case($source);
 
-        return $requestProcessor;
+        $requestProcessor = __NAMESPACE__ . "\\RequestProcessor\\$source";
+
+        return new $requestProcessor;
     }
 
     /**

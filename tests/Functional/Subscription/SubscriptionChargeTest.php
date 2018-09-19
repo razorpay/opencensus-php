@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Subscription;
 
 use Carbon\Carbon;
 use RZP\Models\Item;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
@@ -48,6 +49,10 @@ class SubscriptionChargeTest extends TestCase
         // Because in test cases subsription start date is set
         // to 20 Jan 2018 and it should always be in future
         Carbon::setTestNow("10-1-2018 3:00:00");
+
+        $merchant = Merchant\Entity::find('10000000000000');
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
     }
 
     public function testSubscriptionFirstCharge()
@@ -621,7 +626,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->clearMock();
 
-        $result = $this->chargeSubscriptionInvoiceManually($invoice);
+        $result = $this->chargeSubscriptionInvoiceManually($invoice, $subscription);
 
         $subscription = $this->getLastEntity('subscription', true);
 
@@ -684,7 +689,7 @@ class SubscriptionChargeTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
 
-        $result = $this->chargeSubscriptionInvoiceManually($invoice);
+        $result = $this->chargeSubscriptionInvoiceManually($invoice, $subscription);
 
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);
@@ -781,7 +786,7 @@ class SubscriptionChargeTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
 
-        $result = $this->chargeSubscriptionInvoiceManually($invoice);
+        $result = $this->chargeSubscriptionInvoiceManually($invoice, $subscription);
 
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);
@@ -819,7 +824,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('issued', $invoice['status']);
         $this->assertInvoiceCount(2, $subscription['id']);
 
-        $result = $this->chargeSubscriptionInvoiceManually($reallyOldInvoice);
+        $result = $this->chargeSubscriptionInvoiceManually($reallyOldInvoice, $subscription);
 
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);
@@ -850,7 +855,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('issued', $invoice['status']);
         $this->assertInvoiceCount(2, $subscription['id']);
 
-        $result = $this->chargeSubscriptionInvoiceManually($invoice);
+        $result = $this->chargeSubscriptionInvoiceManually($invoice, $subscription);
 
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);

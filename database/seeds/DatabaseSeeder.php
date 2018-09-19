@@ -1127,6 +1127,7 @@ class DatabaseSeeder extends Seeder
         $this->createPayzappTerminals();
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
+        $this->createNetbankingIdfcTerminals();
         $this->createNetbankingKotakTerminals();
         $this->createNetbankingIciciTerminals();
         $this->createNetbankingAirtelTerminals();
@@ -1148,7 +1149,9 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingRblTerminal();
         $this->createNetbankingCsbTerminal();
         $this->createEbsTerminal();
+        $this->createEnachRblTerminal();
         $this->createAepsTerminal();
+        $this->createHitachiGatewayMotoTerminal();
         $this->createEnstageTerminal();
     }
 
@@ -1198,8 +1201,7 @@ class DatabaseSeeder extends Seeder
                 'updated_at'                => time(),
             ]
         );
-
-        DB::table(Table::TERMINAL)->insert(
+         DB::table(Table::TERMINAL)->insert(
             [
                 'id'                    => Terminal\Shared::NETBANKING_ALLAHABAD_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
@@ -1214,7 +1216,36 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createNetbankingIdfcTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => '22nP3sEf2tQco2',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_IDFC,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_idfc',
+                'gateway_secure_secret'     => Crypt::encrypt('test_account_netbanking_idfb_secret'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
+        );
 
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_IDFC_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_IDFC,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'demo_merchant_netbanking_idfc',
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_idfb_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
 
     protected function createNetbankingHdfcTerminals()
     {
@@ -1735,6 +1766,21 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::UPI_AXIS_RAZORPAY_TERMINAL,
+            'merchant_id'               => Account::DEMO_ACCOUNT,
+            'gateway'                   => Gateway::UPI_AXIS,
+            'card'                      => '0',
+            'netbanking'                => '0',
+            'upi'                       => '1',
+            'gateway_merchant_id'       => 'RAZAORPAY',
+            'gateway_terminal_id'       => '1234',
+            'gateway_merchant_id2'      => 'razaorpay@axis',
+            'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_axis_terminal_pass'),
+            'created_at'                => time(),
+            'updated_at'                => time(),
+        ]);
+
+        DB::table(Table::TERMINAL)->insert([
             'id'                        => Terminal\Shared::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL,
             'merchant_id'               => Account::SHARED_ACCOUNT,
             'gateway'                   => Gateway::UPI_SBI,
@@ -2082,6 +2128,47 @@ class DatabaseSeeder extends Seeder
                 'aeps'                  => '1',
                 'gateway_merchant_id'   => 'abcd',
                 'gateway_secure_secret' => 'secret',
+                'created_at'            => time(),
+                'updated_at'            => time()
+            ]
+        );
+    }
+
+   protected function createHitachiGatewayMotoTerminal()
+   {
+       DB::table(Table::TERMINAL)->insert([
+           'id'                        => Terminal\Shared::HITACHI_MOTO_TERMINAL,
+           'merchant_id'               => Account::TEST_ACCOUNT,
+           'gateway'                   => Gateway::HITACHI,
+           'gateway_acquirer'          => 'rbl',
+           'card'                      => 1,
+           'type'                      => 512,
+           'gateway_merchant_id'       => 'test_merchant_hitachi',
+           'gateway_secure_secret'     => Crypt::encrypt('test_hitachi_secure_secret'),
+           'gateway_terminal_password' => Crypt::encrypt('test_hitachi_secure_secret2'),
+           'recurring'                 => 1,
+           'created_at'                => time(),
+           'updated_at'                => time()
+       ]);
+   }
+    protected function createEnachRblTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::ENACH_RBL_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::ENACH_RBL,
+                'gateway_acquirer'      => 'ratn',
+                'card'                  => '0',
+                'netbanking'            => '0',
+                'recurring'             => '1',
+                'emandate'              => '1',
+                'gateway_access_code'   => 'RATN0TESTER',
+                'gateway_merchant_id'   => 'NACH00000000001981',
+                'gateway_merchant_id2'  => 'Test Merchant',
+                'gateway_terminal_id'   => 'RATNTestr',
+                'category'              => '6012',
+                'type'                  => 6,
                 'created_at'            => time(),
                 'updated_at'            => time()
             ]

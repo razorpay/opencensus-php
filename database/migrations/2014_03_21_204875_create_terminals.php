@@ -140,6 +140,9 @@ class CreateTerminals extends Migration
             $table->string(Terminal::NETWORK_CATEGORY)
                   ->nullable();
 
+            $table->json(Terminal::ENABLED_BANKS)
+                  ->nullable();
+
             $table->integer(Terminal::CREATED_AT);
 
             $table->integer(Terminal::UPDATED_AT);

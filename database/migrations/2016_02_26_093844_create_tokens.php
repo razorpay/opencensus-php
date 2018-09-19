@@ -55,6 +55,9 @@ class CreateTokens extends Migration
             $table->string(Token::ACCOUNT_NUMBER, 40)
                   ->nullable();
 
+            $table->string(Token::ACCOUNT_TYPE, 255)
+                  ->nullable();
+
             $table->string(Token::BENEFICIARY_NAME, 120)
                   ->nullable();
 
@@ -62,6 +65,9 @@ class CreateTokens extends Migration
                   ->nullable();
 
             $table->string(Token::AADHAAR_NUMBER)
+                  ->nullable();
+
+            $table->string(Token::AADHAAR_VID)
                   ->nullable();
 
             $table->text(Token::GATEWAY_TOKEN)
@@ -100,7 +106,7 @@ class CreateTokens extends Migration
             $table->integer(Token::USED_AT)
                   ->nullable();
 
-            $table->integer(Token::EXPIRED_AT)
+            $table->bigInteger(Token::EXPIRED_AT)
                   ->nullable();
 
             $table->integer(Token::CREATED_AT);

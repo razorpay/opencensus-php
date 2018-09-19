@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Esigner\Digio\Mock;
 
+use Request;
 use RZP\Gateway\Base;
 use Lib\Formatters\Xml;
 
@@ -38,6 +39,8 @@ class Server extends Base\Mock\Server
 
     public function callback($input)
     {
+        $this->content($input);
+
         $xmlContent = [
 
         ];
@@ -53,6 +56,15 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    public function verify($input)
+    {
+        $request = $this->mockRequest;
+
+        $data = $this->getVerifyResponse($request);
+
+        return $this->makeResponse(json_encode($data));
+    }
+
     public function sign($input)
     {
         $request = [
@@ -64,6 +76,8 @@ class Server extends Base\Mock\Server
                 'digio_doc_id' => str_random(40)
             ]
         ];
+
+        $this->content($request, 'sign');
 
         return $this->makePostResponse($request);
     }
@@ -77,5 +91,25 @@ class Server extends Base\Mock\Server
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
 
         return $response;
+    }
+
+    protected function getVerifyResponse($request)
+    {
+        $requestArray = explode('/', $request['url']);
+
+        $mandateId = end($requestArray);
+
+        $data = [
+            'id'             => $mandateId,
+            'enach_type'     => 'CREATE',
+            'status'         => 'signed',
+            'partner_entity' => [
+                'email'        => 'enach@sponsorbank.com',
+                'status'       => 'downloaded',
+                'last_updated' => "2017-11-13 13:44:46"
+            ]
+        ];
+
+        return $data;
     }
 }

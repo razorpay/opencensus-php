@@ -13,11 +13,9 @@ use RZP\Models\FileStore;
 use RZP\Encryption\AESEncryption;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\BankAccount\Entity as BankAccount;
-use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
-use RZP\Models\FundTransfer\Base\Beneficiary as BaseBeneficiary;
+use RZP\Models\FundTransfer\Base\Beneficiary\FileProcessor;
 
-class Beneficiary extends BaseBeneficiary
+class Beneficiary extends FileProcessor
 {
     protected $id;
 
@@ -54,9 +52,7 @@ class Beneficiary extends BaseBeneficiary
 
         foreach ($bankAccounts as $ba)
         {
-            $beneName = $ba->getBeneficiaryName();
-
-            $beneName = substr($beneName, 0, 50);
+            $beneName =  $this->normalizeBeneficiaryName($ba->getBeneficiaryName());
 
             $ifsc = strtoupper($ba->getIfscCode());
 
@@ -105,5 +101,27 @@ class Beneficiary extends BaseBeneficiary
             'mtime' => Carbon::now()->timestamp,
             'mode'  => '33188'
         ];
+    }
+
+    /**
+     * Normalizes beneficiary name should have length of max 50
+     * Allowed characters  a-z A-Z @ # $ & ( ) - , + { } . [ ] " ; : ? / * \ ` ~
+     *
+     * @param $name
+     *
+     * @return string
+     */
+    protected function normalizeBeneficiaryName($name): string
+    {
+        if($name !== null)
+        {
+            $normalizedNameWithSpaces =  preg_replace('/[^a-zA-Z\s@#\$&\(\)\-,\"\+~`\{\}\.~;:\?\*\[\]\/\\\]/', '', $name);
+
+            $normalizedString = preg_replace('/\s+/',' ', $normalizedNameWithSpaces);
+
+            return substr($normalizedString, 0, 50);
+        }
+
+        return $name;
     }
 }

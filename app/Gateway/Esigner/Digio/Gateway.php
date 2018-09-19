@@ -11,15 +11,22 @@ use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Base\Verify;
+use RZP\Models\Customer\Token;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Settlement\Holidays;
 use RZP\Constants\Mode as BaseMode;
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Gateway\Enach\Base\Entity;
 use RZP\Models\Bank\Name as BankName;
+use RZP\Gateway\Enach\Base\CategoryCode;
 
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'esigner_digio';
+
+    protected $accountTypeMapping = [
+        Token\Entity::ACCOUNT_TYPE_SAVINGS => 'Savings',
+        Token\Entity::ACCOUNT_TYPE_CURRENT => 'Current',
+    ];
 
     public function authorize(array $input)
     {
@@ -28,7 +35,7 @@ class Gateway extends Base\Gateway
         $request = $this->getMandateCreationRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
-        
+
         $this->trace->info(TraceCode::GATEWAY_MANDATE_RESPONSE, [
             'gateway' => 'digio',
             'payment_id' => $input['payment']['id'],
@@ -86,6 +93,15 @@ class Gateway extends Base\Gateway
         ];
 
         return $content;
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
     }
 
     protected function getRedirectRequestArray(array $input, $response)
@@ -156,6 +172,11 @@ class Gateway extends Base\Gateway
             'content'        => $this->getEmandateData($input)
         ];
 
+        if ($input['token']->getAadhaarVid() !== null)
+        {
+            $content['signers'][0]['vid'] = $input['token']->getAadhaarVid();
+        }
+
         return $this->getStandardRequestArray($content, 'POST', 'create');
     }
 
@@ -171,34 +192,45 @@ class Gateway extends Base\Gateway
     protected function getEmandateData(array $input)
     {
         $nextWorkingDt = $this->getNextWorkingDate($input);
-        $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST);
 
         $destinationBankIfsc = $input['token']->getIfsc();
         $bankCode = $this->getTerminalAccessCode($input);
 
-        $traceContent = $content = [
+        $mcc = $this->input['terminal']['category'];
+        $serviceProviderName = $input['merchant']->getFilteredDba() ?: $this->getGatewayMerchantId2();
+
+        $content = [
             'mandate_request_id'            => $input['payment']['id'],
             'mandate_creation_date_time'    => $nextWorkingDt->toIso8601String(),
             'sponsor_bank_id'               => $bankCode,
             'sponsor_bank_name'             => BankName::getName($bankCode),
             'destination_bank_id'           => $destinationBankIfsc,
             'destination_bank_name'         => BankName::getName($destinationBankIfsc),
+            // TODO: Remove sending aadhaar number later
             'aadhaar'                       => $input['token']->getAadhaarNumber(),
             'bank_identifier'               => substr($bankCode, 0, 4),
-            'management_category'           => CategoryCode::A001,
-            'service_provider_name'         => $this->getGatewayMerchantId2(),
+            'management_category'           => CategoryCode::getCategoryCodeFromMcc($mcc),
+            'service_provider_name'         => substr($serviceProviderName, 0, 40),
             'service_provider_utility_code' => $this->getGatewayMerchantId(),
             'login_id'                      => $this->getGatewayTerminalId(),
             'customer_account_number'       => $input['token']->getAccountNumber(),
-            'customer_account_type'         => 'SAVINGS',
+            'customer_account_type'         => $this->getAccountType($input['token']->getAccountType()),
             'instrument_type'               => Instrument::DEBIT,
             'customer_name'                 => $input['token']->getBeneficiaryName(),
             'maximum_amount'                => $input['token']->getMaxAmount() / 100,
             'is_recurring'                  => true,
             'frequency'                     => Frequency::ADHOC,
             'first_collection_date'         => $nextWorkingDt->format('Y-m-d'),
-            'final_collection_date'         => $finalCollection->format('Y-m-d'),
         ];
+
+        if ($input['token']->getExpiredAt() !== null)
+        {
+            $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST);
+
+            $content['final_collection_date'] = $finalCollection->format('Y-m-d');
+        }
+
+        $traceContent = $content;
 
         $paymentEmail = $input['payment'][Payment\Entity::EMAIL];
 
@@ -213,6 +245,16 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_MANDATE_CONTENT, $traceContent);
 
         return json_encode($content);
+    }
+
+    protected function getAccountType($accountType)
+    {
+        if (isset($this->accountTypeMapping[$accountType]) === true)
+        {
+            return $this->accountTypeMapping[$accountType];
+        }
+
+        return 'Savings';
     }
 
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null, $json = true)
@@ -313,6 +355,111 @@ class Gateway extends Base\Gateway
 
     protected function getRepository()
     {
-        return;
+        $gateway = 'enach';
+
+        return $this->app['repo']->$gateway;
+    }
+
+    protected function sendPaymentVerifyRequest(Verify $verify)
+    {
+        $request = $this->getVerifyRequestArray($verify);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $rawContent = $response->body;
+
+        $verify->verifyResponseContent = $this->jsonToArray($rawContent);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response_body' => $rawContent,
+                'content'       => $verify->verifyResponseContent,
+                'payment_id'    => $verify->input['payment']['id'],
+                'status_code'   => $response->status_code,
+                'gateway'       => $this->gateway,
+            ]);
+    }
+
+    protected function getVerifyRequestArray($verify)
+    {
+        $request = $this->getStandardRequestArray([], 'get', null, false);
+
+        $gatewayPayment = $verify->payment;
+
+        $replacePairs = [
+            '{id}' => $gatewayPayment->getGatewayReferenceId(),
+        ];
+
+        $request['url'] = strtr($request['url'], $replacePairs);
+
+        return $request;
+    }
+
+    protected function verifyPayment(Verify $verify)
+    {
+        $verify->status = $this->getVerifyStatus($verify);
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $verify->payment = $this->saveSignedXml($verify);
+    }
+
+    protected function getVerifyStatus(Verify $verify): string
+    {
+        $status = VerifyResult::STATUS_MATCH;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        return $status;
+    }
+
+    protected function checkGatewaySuccess(Verify $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        $status = (isset($content['status']) === true) ? trim($content['status']) : Status::UNSIGNED;
+
+        if ($status === Status::SIGNED)
+        {
+            $verify->gatewaySuccess = true;
+        }
+    }
+
+    protected function saveSignedXml(Verify $verify)
+    {
+        if ($verify->gatewaySuccess === true)
+        {
+            $gatewayPayment = $verify->payment;
+
+            $content = [
+                'mandate_id' => $gatewayPayment->getGatewayReferenceId()
+            ];
+
+            $request = $this->getStandardRequestArray($content, 'GET', 'fetch', false);
+
+            $response = $this->sendGatewayRequest($request);
+
+            $mandateXml = $response->body;
+
+            $content = [
+                'signed_xml' => $mandateXml
+            ];
+
+            $gatewayPayment->fill($content);
+
+            $this->app['repo']->enach->saveOrFail($gatewayPayment);
+
+            return $gatewayPayment;
+        }
     }
 }

@@ -5,8 +5,8 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testSuccessful1yEnrolledCard' => [
-        'entity'               => 'mpi_blade',
+    'testSuccessfullyEnrolledCard' => [
+        'entity'               => 'mpi',
         'action'               => 'authorize',
         'amount'               => 50000,
         'currency'             => 'INR',
@@ -17,6 +17,7 @@ return [
         'response_code'        => '000',
         'response_description' => 'Success',
         'gateway_payment_id'   => 'TVBJWElENXdYN3ZVOGlQMm1FM2Y',
+        'gateway'              => 'mpi_enstage',
     ],
 
     'testAuthenticationError' => [
