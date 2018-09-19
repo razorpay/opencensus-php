@@ -43,6 +43,7 @@ class Base extends Core
     const AIRTEL                 = 'Airtel';
     const BILLDESK               = 'BillDesk';
     const PAYZAPP                = 'PayZapp';
+    const MPESA                  = 'Mpesa';
     const MOBIKWIK               = 'Mobikwik';
     const PAYTM                  = 'Paytm';
     const OLAMONEY               = 'Olamoney';
@@ -85,6 +86,7 @@ class Base extends Core
         self::BILLDESK               => [],
         self::PAYZAPP                => [],
         self::MOBIKWIK               => [],
+        self::MPESA                  => [],
         self::PAYTM                  => [],
         self::KOTAK                  => ['bankalerts@kotak.com'],
         self::OLAMONEY               => ['olamoney-noreply@olacabs.com'],

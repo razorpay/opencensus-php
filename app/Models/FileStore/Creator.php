@@ -693,6 +693,7 @@ class Creator extends Base\Core
                 $this->writeTextFile();
                 break;
 
+            case Format::XLS:
             case Format::XLSX:
                 Config::set('excel::export.calculate', true);
 
