@@ -22,7 +22,6 @@ use RZP\Models\Schedule;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\User\Role;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
@@ -2084,6 +2083,12 @@ class Service extends Base\Service
             }
 
             $this->repo->saveOrFail($subMerchant);
+
+            $subMerchantAdditionType = ($isLinkedAccount === true) ? Metric::MARKETPLACE : Metric::PARTNER;
+
+            $dimensions = [Metric::SUB_MERCHANT_ADD_TYPE => $subMerchantAdditionType];
+
+            $this->trace->count(Metric::ADD_SUB_MERCHANT, $dimensions);
 
             return [$subMerchant, $newUser, $createdNew];
         });

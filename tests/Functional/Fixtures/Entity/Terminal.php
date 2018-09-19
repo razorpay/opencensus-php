@@ -29,6 +29,7 @@ class Terminal extends Base
         $this->createSharedNetbankingAxisTerminal();
         $this->createSharedNetbankingFederalTerminal();
         $this->createSharedNetbankingBobTerminal();
+        $this->createSharedNetbankingIdfcTerminal();
         $this->createSharedNetbankingRblTerminal();
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
@@ -1524,6 +1525,24 @@ class Terminal extends Base
         ];
 
         return $this->createSharedNetbankingFederalTerminal($attributes);
+    }
+
+    public function createSharedNetbankingIdfcTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_IDFC_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => Gateway::NETBANKING_IDFC,
+            'gateway_merchant_id'       => 'test_merchant_id',
+            'netbanking'                => 1,
+            'gateway_secure_secret'     => 'random_idfc_code',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
     }
 
     public function createSharedNetbankingBobTerminal(array $attributes = [])

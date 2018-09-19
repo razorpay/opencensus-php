@@ -10,8 +10,6 @@ use RZP\Reconciliator\Base\SubReconciliator\Helper;
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const COLUMN_PAYMENT_ID = 'partner_txn_id';
-    const COLUMN_COMMISSION = 'commision_dr';
-    const COLUMN_SERVICE_TAX = ['ugst_dr', 'igst_dr', 'cgst_dr', 'sgst_dr', 'tds_dr', 'gds_dr'];
     const COLUMN_AMOUNT     = 'original_input_amt';
     const COLUMN_GATEWAY_PAYMENT_ID = 'transaction_id';
 
@@ -27,21 +25,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return $paymentId;
-    }
-
-    protected function getGatewayServiceTax($row)
-    {
-        $gatewayTax = 0;
-
-        foreach (self::COLUMN_SERVICE_TAX as $serviceTax)
-        {
-            if (isset($row[$serviceTax]) === true)
-            {
-                $gatewayTax += Helper::getIntegerFormattedAmount($row[$serviceTax]);
-            }
-        }
-
-        return $gatewayTax;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
@@ -74,18 +57,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT]);
-    }
-
-    protected function getGatewayFee($row)
-    {
-        $gatewayFee = $this->getGatewayServiceTax($row);
-
-        if (isset($row[self::COLUMN_COMMISSION]) === true)
-        {
-            $gatewayFee += Helper::getIntegerFormattedAmount($row[self::COLUMN_COMMISSION]);
-        }
-
-        return $gatewayFee;
     }
 
     protected function getGatewayPayment($paymentId)

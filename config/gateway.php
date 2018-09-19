@@ -29,6 +29,7 @@ return [
         'kotak',
         'mobikwik',
         'netbanking_hdfc',
+        'netbanking_idfc',
         'netbanking_bob',
         'netbanking_corporation',
         'netbanking_kotak',
@@ -83,6 +84,7 @@ return [
     'mock_netbanking_airtel'      => env('NETBANKING_AIRTEL_MOCK'),
     'mock_netbanking_axis'        => env('NETBANKING_AXIS_MOCK'),
     'mock_netbanking_federal'     => env('NETBANKING_FEDERAL_MOCK'),
+    'mock_netbanking_idfc'        => env('NETBANKING_IDFC_MOCK'),
     'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
@@ -428,6 +430,11 @@ return [
         'test_merchant_id'       => env('NETBANKING_BOB_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_BOB_GATEWAY_TEST_HASH_SECRET'),
         'pooling_account_number' => env('BOB_POOLING_ACCOUNT_NUMBER'),
+    ],
+
+    'netbanking_idfc' => [
+        'test_merchant_id'       => env('NETBANKING_IDFC_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_TEST_HASH_SECRET')
     ],
 
     'netbanking_icici' => [

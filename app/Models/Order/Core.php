@@ -110,6 +110,16 @@ class Core extends Base\Core
         Entity $order,
         Merchant\Entity $merchant): array
     {
+        if ($order->getStatus() === Status::PAID)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID,
+                null,
+                [
+                    'order_id' => $order->getId(),
+                ]);
+        }
+
         $data = [
             Entity::PARTIAL_PAYMENT => $order->isPartialPaymentAllowed(),
             Entity::AMOUNT          => $order->getAmount(),
