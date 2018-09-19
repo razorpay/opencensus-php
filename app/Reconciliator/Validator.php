@@ -3,10 +3,12 @@
 namespace RZP\Reconciliator;
 
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Reconciliator\RequestProcessor;
 
-class Validator
+class Validator extends Base\Core
 {
     const ACCEPTED_EXTENSIONS_MAP = [
         'csv'  => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
@@ -63,9 +65,13 @@ class Validator
         RequestProcessor\Base::UPI_ICICI          => [
                                                          "/Eazypay app\s*sales summary-[0-9]{2}-"
                                                          . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-                                                         "/Refund MIS for 116798_RAZORPAY_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"
+                                                         "/Refund MIS for [0-9]{6}_RAZORPAY/"
                                                      ],
+        RequestProcessor\Base::AIRTEL             => ["/Ecom Merchant Transaction_Report for [0-9]+/"],
         RequestProcessor\Base::UPI_HDFC           => [ "/Merchant Payout Report/"],
+        RequestProcessor\Base::CARD_FSS_HDFC           => ["/^Settlement Report FSSPaY - Razorpay/"],
+
+
         ];
 
     const GATEWAY_BODY_REGEX = [
@@ -95,7 +101,12 @@ class Validator
                                                              "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
                                                          ],
         RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached Recon Data File of Online Transaction/"],
-        RequestProcessor\Base::UPI_HDFC                => ["/Please Find Attachment For Merchant Payout Report/"]
+        RequestProcessor\Base::UPI_HDFC                => ["/Please Find Attachment For Merchant Payout Report/"],
+        RequestProcessor\Base::AIRTEL                  => ["/PFA your merchant txn report for Yesterday/"],
+        RequestProcessor\Base::CARD_FSS_HDFC           => [
+                                                            "/Please find attached All transaction Report & Settlement Report "
+                                                            . "for transactions done on FSSPaY/"
+                                                          ],
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -106,7 +117,8 @@ class Validator
         RequestProcessor\Base::FIRST_DATA         => 1,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => 1,
         RequestProcessor\Base::HITACHI            => 1,
-        RequestProcessor\Base::UPI_ICICI          => 1
+        RequestProcessor\Base::UPI_ICICI          => 1,
+        RequestProcessor\Base::AIRTEL             => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -164,6 +176,23 @@ class Validator
         return $this->validateEmailSubject(
                     $emailDetails[RequestProcessor\Mailgun::SUBJECT],
                     RequestProcessor\Base::KOTAK);
+    }
+
+    public function validateAirtelEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::AIRTEL);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            RequestProcessor\Base::AIRTEL);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::AIRTEL);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
     }
 
     public function validateFreechargeEmail(array $emailDetails)
@@ -379,6 +408,19 @@ class Validator
         return ($validBody);
     }
 
+    public function validateCardFssHdfcEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::CARD_FSS_HDFC);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
+            RequestProcessor\Base::CARD_FSS_HDFC);
+
+        return ($validSubject and $validBody);
+    }
+
     /**
      * For emails without attachments, but links, we allow
      * zero attachments during the initial validation.
@@ -552,6 +594,15 @@ class Validator
                 return true;
             }
         }
+
+        $this->trace->debug(
+            TraceCode::RECON_EMAIL_VALIDATION_FAILED,
+            [
+                'subject'       => $subject,
+                'regex_array'   => $regexArray,
+                'gateway'       => $gateway,
+            ]);
+
         return false;
     }
 
@@ -566,6 +617,15 @@ class Validator
                 return true;
             }
         }
+
+        $this->trace->debug(
+            TraceCode::RECON_EMAIL_VALIDATION_FAILED,
+            [
+                'email_body'    => $body,
+                'regex_array'   => $regexArray,
+                'gateway'       => $gateway,
+            ]);
+
         return false;
     }
 

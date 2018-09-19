@@ -212,7 +212,7 @@ class Gateway extends Base\Gateway
 
         $content = $input[Fields::RAW];
 
-        $password = $this->getTerminalPassword();
+        $password = $this->getGatewayPassword();
 
         $hashed = hash_hmac(self::HASH_ALGO, $content, $password);
 
@@ -267,26 +267,64 @@ class Gateway extends Base\Gateway
 
     protected function sendGatewayRequest($request)
     {
-        $terminal = $this->terminal;
+        $username = $this->getGatewayUsername();
+        $password = $this->getGatewayPassword();
 
-        $request['options']['auth'] = [$this->getMerchantId(), $this->getTerminalPassword()];
+        if ($this->shouldUseAppAuth() === true)
+        {
+            // Url must be appended with app
+            $request['url'] .= '/app';
+        }
+        else
+        {
+            // Otherwise we will use proxy auth
+            $username .= '_' . $this->input['merchant']['id'];
+        }
+
+        $request['options']['auth'] = [$username, $password];
 
         return parent::sendGatewayRequest($request);
     }
 
-    protected function getMerchantId(): string
+    protected function getGatewayUsername(): string
     {
-        if ($this->mode === Mode::TEST)
+        if ($this->isTestMode() === true)
         {
-            return 'rzp_test_' . $this->input['merchant']['id'];
+            return 'rzp_test';
         }
 
-        return 'rzp_live_' . $this->input['merchant']['id'];
+        return 'rzp_live';
     }
 
-    public function getTerminalPassword()
+    protected function getGatewayPassword(): string
     {
-        return $this->input['terminal']['gateway_terminal_password'];
+        // This is set on all environments, we will be using this regardless of auth
+        return $this->config['gateway_terminal_password'];
+    }
+
+    /**
+     * If gateway_access_code is empty, we will still be using proxy auth.
+     * This way we can switch between proxy and app auth from terminal itself.
+     *
+     * @return bool
+     */
+    protected function shouldUseAppAuth()
+    {
+        return ($this->input['terminal']['gateway_access_code'] === 'app');
+    }
+
+    /**
+     * Sets receiver id in request's content if terminal is for
+     * app auth, Hulk needs receiver id to resolve merchant
+     *
+     * @param $content
+     */
+    protected function setReceiverIdIfApplicable(& $content)
+    {
+        if ($this->shouldUseAppAuth() === true)
+        {
+            $content[Fields::RECEIVER_ID] = $this->input['terminal']['gateway_merchant_id'];
+        }
     }
 
     protected function getAuthorizeRequestArray(array $input): array
@@ -312,6 +350,8 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_REFERENCE_ID   => $payment['id'],
             Fields::CATEGORY_CODE           => (string) ($input['merchant']['category'] ?? 5411),
         ];
+
+        $this->setReceiverIdIfApplicable($content);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -341,6 +381,8 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_REFERENCE_ID   => $payment['id'],
             Fields::CATEGORY_CODE           => (string) ($input['merchant']['category'] ?? 5411),
         ];
+
+        $this->setReceiverIdIfApplicable($content);
 
         if ($input['merchant']->isTPVRequired() === true)
         {

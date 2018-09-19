@@ -29,16 +29,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[self::MERCHANT_TRAN_ID];
     }
 
-    protected function getGatewayFee($row)
-    {
-        return $row[self::COMMISSION] ?? null;
-    }
-
-    protected function getGatewayServiceTax($row)
-    {
-        return $row[self::SERVICE_TAX] ?? null;
-    }
-
     protected function getReconPaymentStatus(array $row)
     {
         // If status is not set, assuming status to be failed

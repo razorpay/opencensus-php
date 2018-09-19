@@ -3381,6 +3381,32 @@ return [
         ],
     ],
 
+    'testGetInvoicesLineItemsWithTaxableAmount' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'inv_1000000invoice',
+                        'customer_id' => 'cust_100000customer',
+                        'order_id' => 'order_100000000order',
+                        'line_items' => [
+                            [
+                                'id' => 'li_100000lineitem',
+                                'taxable_amount' => 100000,
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetInvoicesAfterCreatingMultipleInvoicesAndPaying' => [
         'request' => [
             'url' => '/invoices',

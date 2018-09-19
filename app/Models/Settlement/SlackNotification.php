@@ -23,7 +23,8 @@ class SlackNotification extends Base\Core
         'setl_reconciliation'     => 'Settlements reconciled. ',
         'reconcile_file'          => 'Reconciliation file processed.',
         'setl_return'             => 'Settlements returns occurred. ',
-        'fta_recon_report'        => 'Settlement Potential Failures');
+        'fta_recon_report'        => 'Settlement Potential Failures',
+        'setl_verify'             => 'Settlement verification complete',);
 
     public function success($operation, $data)
     {

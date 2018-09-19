@@ -477,6 +477,12 @@ trait Refund
     {
         $payment = $this->retrieve($paymentId);
 
+        // From subscription service we will always refund authorized payments
+        if ($this->ba->isSubscriptionsApp() === true)
+        {
+            return $this->refundAuthorizedPayment($payment, $input);
+        }
+
         return $this->refundCapturedPayment($payment, $input);
     }
 
@@ -1058,6 +1064,8 @@ trait Refund
         // different process, it is processed accordingly here.
         //
         $this->repo->reload($refund);
+
+        $refund->setErrorNull();
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 

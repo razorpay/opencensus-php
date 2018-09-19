@@ -85,7 +85,7 @@ class Base extends BaseModel\Core
      * They are re-used in the flow.
      * E.g.
      * - sending mails with attachment,
-     * - unlinking post processing etc..
+     * - un-linking post processing etc..
      */
     protected $inputFileLocalPath;
     protected $outputFileLocalPath;
@@ -395,11 +395,15 @@ class Base extends BaseModel\Core
 
         foreach ($entries as $index => & $entry)
         {
+            $entryTracePayload = $entry;
+
+            $this->removeCriticalDataFromTracePayload($entryTracePayload);
+
             $tracePayload = $this->batch->toArrayTrace(
                 [],
                 [
                     'row_index' => $index,
-                    'row'       => $entry,
+                    'row'       => $entryTracePayload,
                 ]);
 
             try
@@ -448,6 +452,16 @@ class Base extends BaseModel\Core
     protected function processEntry(array & $entry)
     {
         throw new \BadMethodCallException();
+    }
+
+    /**
+     * This method can be implemented by the child classes if some data
+     * needs to be removed from tracing.
+     *
+     */
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        return;
     }
 
     /**

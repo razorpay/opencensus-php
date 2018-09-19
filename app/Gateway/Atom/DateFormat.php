@@ -9,6 +9,7 @@ class DateFormat
     const AUTHORIZE = 'd/m/Y H:i:s';
     const VERIFY    = 'Y-m-d';
     const REFUND    = 'Y-m-d';
+    const CALLBACK  = 'D M d H:i:s e Y';
 
     const ACTION_MAP = [
         Action::AUTHORIZE => DateFormat::AUTHORIZE,

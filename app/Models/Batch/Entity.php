@@ -3,8 +3,12 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\FileStore;
 
+/**
+ * @property Merchant\Entity    $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     const NAME                      = 'name';

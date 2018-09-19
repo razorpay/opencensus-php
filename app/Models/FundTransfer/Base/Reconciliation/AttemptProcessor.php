@@ -3,8 +3,11 @@
 namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
 use Mail;
+use Carbon\Carbon;
 
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Attempt;
 
@@ -93,5 +96,84 @@ abstract class AttemptProcessor extends Processor
         $response['total_count'] += $summary['total_count'];
 
         $response['unprocessed_count'] += $summary['unprocessed_count'];
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    protected function verifySettlements(array $input)
+    {
+        $lock = new Attempt\Lock(static::$channel);
+
+        $attempts = $this->fetchAttempts($input);
+
+        $lockedAttempts = $lock->lockAttempts($attempts);
+
+        $response = $this->startVerification($lockedAttempts);
+
+        $lock->releaseAttempts($attempts);
+
+        $this->trace->info(
+            TraceCode::ATTEMPT_RECONCILIATION_STATUS,
+            [
+                'channel' => static::$channel,
+            ] + $response);
+
+        return $response;
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    protected function getTimestamps(array $input): array
+    {
+        list($from, $to) = [null, null];
+
+        if ((isset($input['from']) === true) and (isset($input['to']) === true))
+        {
+            $from = $input['from'];
+            $to = $input['to'];
+        }
+        else
+        {
+            $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+            $to = Carbon::today(Timezone::IST)->getTimestamp() - 1;
+        }
+
+        return [$from, $to];
+    }
+
+
+    protected function fetchAttempts($input)
+    {
+        $batchSize = 150;
+
+        if (empty($input['fta_ids']) === false)
+        {
+            return $this->repo->fund_transfer_attempt
+                        ->getAttemptsWithIds(
+                            static::$channel,
+                            $input['fta_ids'],
+                            $batchSize
+                        );
+        }
+
+        list($from, $to) = $this->getTimestamps($input);
+
+        $status = $input['status'] ?? null;
+
+        return $this->repo->fund_transfer_attempt
+            ->getAttemptsWithStatusBetweenTimestamps(
+                static::$channel,
+                $status,
+                $from,
+                $to,
+                $batchSize
+            );
+
+        throw new LogicException('Invalid input', null, ['input' => $input]);
     }
 }

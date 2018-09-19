@@ -165,6 +165,11 @@ class Validator extends Base\Validator
         Entity::EMAIL => 'required|email',
     ];
 
+    protected static $editMethodsRules = [
+        //only this method editing is allowed for now
+        Methods\Entity::EMI => 'required|bool',
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];
@@ -827,6 +832,23 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT);
+        }
+    }
+
+    public function validateLinkedAccountDashboardAccess(bool $dashboardAccess, Entity $merchant)
+    {
+        $merchantUsersCount = $merchant->users->count();
+
+        if ($dashboardAccess === true and $merchantUsersCount > 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_DASHBOARD_ACCESS_ALREADY_GIVEN);
+        }
+
+        if ($dashboardAccess === false and $merchantUsersCount === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS);
         }
     }
 }
