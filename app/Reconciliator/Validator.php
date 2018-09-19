@@ -105,7 +105,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::AIRTEL                  => ["/PFA your merchant txn report for Yesterday/"],
         RequestProcessor\Base::CARD_FSS_HDFC           => [
                                                             "/Please find attached All transaction Report & Settlement Report "
-                                                            . "for transactions done on FSSPaY/"
+                                                            . "for transactions done/"
                                                           ],
     ];
 

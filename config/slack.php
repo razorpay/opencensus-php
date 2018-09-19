@@ -144,6 +144,8 @@ return array(
         'risky'                => 'C0RL2C917',
         // settlements
         'settlements'          => 'C02LBK2D7',
+        // settlement_logs
+        'settlement_logs'      => 'CCMFGFCG0',
         // tech_logs
         'tech_logs'            => 'C0E2Q6MJM',
         // tech_logs_verify

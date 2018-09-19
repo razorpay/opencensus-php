@@ -24,6 +24,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Models\NodalBeneficiary\Status;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Mail\Merchant\Activation as ActivationMail;
