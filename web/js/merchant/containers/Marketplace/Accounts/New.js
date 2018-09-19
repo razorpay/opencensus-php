@@ -140,10 +140,7 @@ export default class AddAccount extends Component {
             </div>
 
             {!accountData && (
-              <ShowWhen
-                myRole="owner admin manager"
-                featureEnabled="enable_la_dashboard"
-              >
+              <ShowWhen myRole="owner admin manager">
                 <div class="form-group">
                   <EnableDashboardField isDisabled={noLAEmail}>
                     <div class="rzpCheckbox">

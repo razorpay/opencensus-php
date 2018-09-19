@@ -203,15 +203,10 @@ export default class AccountsListContainer extends ListContainer {
         <AccountsList
           accounts={accounts}
           isLoading={loading}
-          showEditAccountModal={
-            showWhenUtil({ featureEnabled: 'enable_la_dashboard' })
-              ? this.showEditAccountModal
-              : undefined
-          }
+          showEditAccountModal={this.showEditAccountModal}
           onEdit={this.showAccountDetailsModal}
           onToggleDashboardAccess={
             showWhenUtil({
-              featureEnabled: 'enable_la_dashboard',
               myRole: 'owner admin manager',
             })
               ? this.onToggleDashboardAccess
