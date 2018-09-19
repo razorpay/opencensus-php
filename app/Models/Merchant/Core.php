@@ -1128,16 +1128,12 @@ class Core extends Base\Core
      *
      * @param Entity      $partner
      * @param string      $submerchantId
-     * @param bool        $fetchAppDetails
      * @param string|null $inputAppId
      *
      * @return Entity
      * @throws BadRequestException
      */
-    public function getSubmerchant(Entity $partner,
-                                   string $submerchantId,
-                                   bool $fetchAppDetails = true,
-                                   string $inputAppId = null): Entity
+    public function getSubmerchant(Entity $partner, string $submerchantId, string $inputAppId = null): Entity
     {
         $partnerAppIds = $this->getPartnerApplicationIds($partner);
 
@@ -1191,7 +1187,7 @@ class Core extends Base\Core
 
         $partnerUser = $partner->primaryOwner();
 
-        $merchant = $this->getPartnerSubmerchantData($partner, $merchant, $partnerUser, $fetchAppDetails);
+        $merchant = $this->getPartnerSubmerchantData($merchant, $partnerUser);
 
         return $merchant;
     }
@@ -1212,9 +1208,9 @@ class Core extends Base\Core
 
         $partnerUser = $partner->primaryOwner();
 
-        $merchants = $merchants->map(function($submerchant) use ($partner, $partnerUser)
+        $merchants = $merchants->map(function($submerchant) use ($partnerUser)
         {
-            return $this->getPartnerSubmerchantData($partner, $submerchant, $partnerUser);
+            return $this->getPartnerSubmerchantData($submerchant, $partnerUser);
         });
 
         return $merchants;
@@ -1263,18 +1259,12 @@ class Core extends Base\Core
     /**
      * Sets the partner attributes in the instance of Merchant\Entity so that toArrayPartner() can be used later.
      *
-     * @param Entity      $partner
      * @param Entity      $submerchant
      * @param User\Entity $partnerUser
-     * @param bool|false  $fetchAppDetails
      *
      * @return Entity
      */
-    protected function getPartnerSubmerchantData(
-        Entity $partner,
-        Entity $submerchant,
-        User\Entity $partnerUser,
-        bool $fetchAppDetails = false): Entity
+    protected function getPartnerSubmerchantData(Entity $submerchant, User\Entity $partnerUser): Entity
     {
         $submerchant[Entity::DETAILS] = [
             Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS),
@@ -1286,49 +1276,11 @@ class Core extends Base\Core
 
         $submerchant[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($submerchant);
 
-        list($currentApp, $connectedApps) = $this->getConnectedOauthApps($partner, $submerchant, $fetchAppDetails);
-
-        $submerchant[Entity::APPLICATION] = $currentApp;
-
-        $submerchant[Entity::CONNECTED_APPLICATIONS] = $connectedApps;
-
-        return $submerchant;
-    }
-
-    /**
-     * @param Entity     $partner
-     * @param Entity     $submerchant
-     * @param bool|false $fetchConnectedApps
-     *
-     * @return array
-     */
-    protected function getConnectedOauthApps(Entity $partner, Entity $submerchant, $fetchConnectedApps = false): array
-    {
-        $currentAppId = $submerchant->getAttribute(Constants::APPLICATION_ID);
-
-        $currentApp = [
-            OAuthApp\Entity::ID => $currentAppId,
+        $submerchant[Entity::APPLICATION] = [
+            OAuthApp\Entity::ID => $submerchant->getAttribute(Constants::APPLICATION_ID),
         ];
 
-        // Return from here if the auth service call to fetch details about the application is not required
-        if ($fetchConnectedApps === false)
-        {
-            $connectedApps = [];
-
-            return [$currentApp, $connectedApps];
-        }
-
-        // Fetch all connected app ids
-        $partnerAppIds = $this->repo
-                              ->merchant_access_map
-                              ->fetchMerchantAccessMapsOnEntityType($submerchant->getId(), AccessMap\Entity::APPLICATION)
-                              ->pluck(AccessMap\Entity::ENTITY_ID)
-                              ->toArray();
-
-        // The response from auth service is a public collection array of all the applications linked to the partner
-        $partnerApps = app('authservice')->getMultipleApplications([], $partner->getId());
-
-        return $this->spliceCurrentAppFromAllApps($partnerApps, $currentAppId, $partnerAppIds);
+        return $submerchant;
     }
 
     /**

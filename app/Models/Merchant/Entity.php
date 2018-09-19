@@ -359,7 +359,6 @@ class Entity extends Base\PublicEntity
         self::USER,
         self::DASHBOARD_ACCESS,
         self::APPLICATION,
-        self::CONNECTED_APPLICATIONS,
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
