@@ -539,7 +539,6 @@ class Gateway extends Base\Gateway
                                                                  [ResponseXmlTags::DEBTOR]
                                                                  [ResponseXmlTags::DEBTOR_IFSC],
         ];
-        sd($data);
 
         foreach($data as $key => $value)
         {
