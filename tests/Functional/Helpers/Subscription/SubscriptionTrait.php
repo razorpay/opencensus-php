@@ -90,7 +90,7 @@ trait SubscriptionTrait
         return json_decode($response->getContent(), true);
     }
 
-    public function makeSubscriptionInvoiceChargeManualRequest($invoiceId)
+    public function makeSubscriptionInvoiceChargeManualRequestOld($invoiceId)
     {
         $request = [
             'url'       => "/invoices/$invoiceId/charge",
@@ -99,6 +99,21 @@ trait SubscriptionTrait
         ];
 
         $this->ba->proxyAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
+    public function makeSubscriptionInvoiceChargeManualRequest($subscriptionId, $invoiceId)
+    {
+        $request = [
+            'url'       => "/subscriptions/$subscriptionId/invoices/$invoiceId/charge",
+            'action'    => 'post',
+            'content'   => []
+        ];
+
+        $this->ba->adminProxyAuth();
 
         $response = $this->sendRequest($request);
 
@@ -442,9 +457,16 @@ trait SubscriptionTrait
         return json_decode($response->getContent(), true);
     }
 
-    protected function chargeSubscriptionInvoiceManually($invoice)
+    protected function chargeSubscriptionInvoiceManually($invoice, $subscription = null)
     {
-        return $this->makeSubscriptionInvoiceChargeManualRequest($invoice['id']);
+        if ($subscription == null)
+        {
+            return $this->makeSubscriptionInvoiceChargeManualRequestOld($invoice['id']);
+        }
+        else
+        {
+            return $this->makeSubscriptionInvoiceChargeManualRequest($subscription['id'], $invoice['id']);
+        }
     }
 
     protected function createSubscriptionPreRequisiteEntities(array $planAttributes = [])
