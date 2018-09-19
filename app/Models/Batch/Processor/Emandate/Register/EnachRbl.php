@@ -19,7 +19,7 @@ class EnachRbl extends Base
      * {@inheritDoc}
      * @var boolean
      */
-    protected $useSpreadSheetLibrary = false;
+    protected $useSpreadSheetLibrary = true;
 
     protected $gatewayPaymentMapping = [
         self::GATEWAY_REGISTRATION_STATUS => Entity::REGISTRATION_STATUS,
@@ -90,7 +90,7 @@ class EnachRbl extends Base
         $spreadsheet = $reader->load($filePath);
         // Override 1: Asserts that it has 2 sheets (For some reason it is expected). And it returns the 2nd sheet's content.
         assertTrue($spreadsheet->getSheetCount() === 2);
-        $rows = $spreadsheet->setSheetIndex(1)->toArray();
+        $rows = $spreadsheet->setActiveSheetIndex(1)->toArray();
         // Override 2: Shifts through 1 row. 1st row in this particular file is not to be considered.
         array_shift($rows);
         // First row is always expected to be header
