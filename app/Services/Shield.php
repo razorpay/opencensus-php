@@ -144,10 +144,8 @@ class Shield
         $payloadDetails[ShieldConstants::CONTACT]       = $payment->getContact();
         $payloadDetails[ShieldConstants::INTERNATIONAL] = $payment->isInternational();
 
-        if ($payment->isCustomerMailAbsent() === false)
-        {
-            $payloadDetails[ShieldConstants::EMAIL]  = $payment->getEmail();
-        }
+        $payloadDetails[ShieldConstants::EMAIL] =
+            (($payment->isCustomerMailAbsent() === false) ? $payment->getEmail() : ShieldConstants::DEFAULT_EMAIL);
 
         // add payment method details
         $payloadDetails[ShieldConstants::METHOD] = $payment->getMethod();
@@ -174,7 +172,7 @@ class Shield
                 $card = $payment->card;
 
                 $payloadDetails[ShieldConstants::CARD_IIN]          = $card->getIin();
-                $payloadDetails[ShieldConstants::CARD_NETWORK]      = $card->getNetwork();
+                $payloadDetails[ShieldConstants::CARD_NETWORK]      = $card->getNetworkCode();
                 $payloadDetails[ShieldConstants::CARD_TYPE]         = $card->getType();
                 $payloadDetails[ShieldConstants::CARD_COUNTRY]      = $card->getCountry();
                 $payloadDetails[ShieldConstants::CARD_ISSUER]       = $card->getIssuer();
@@ -191,7 +189,8 @@ class Shield
 
     protected function populatePaymentRequestDetails(Payment\Entity $payment, array & $payloadDetails)
     {
-        $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE]  = $this->request->header('Accept-Language');
+        $payloadDetails[ShieldConstants::ACCEPT_LANGUAGE] =
+            $this->request->header('Accept-Language') ?: ShieldConstants::DEFAULT_ACCEPT_LANGUAGE;
 
         $paymentAnalytics = $payment->getMetadata("payment_analytics");
 

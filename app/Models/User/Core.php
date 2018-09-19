@@ -9,7 +9,6 @@ use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -65,6 +64,19 @@ class Core extends Base\Core
     public function changePassword(Entity $user, array $input)
     {
         $user->fill($input);
+
+        $user->setPasswordResetToken();
+
+        $this->repo->saveOrFail($user);
+
+        return $user;
+    }
+
+    public function savePasswordResetTokenAndExpiry(Entity $user, string $token, int $expiry)
+    {
+        $user->setPasswordResetToken($token);
+
+        $user->setPasswordResetExpiry($expiry);
 
         $this->repo->saveOrFail($user);
 
@@ -208,15 +220,11 @@ class Core extends Base\Core
     }
 
     /**
-     * @param $userId
-     * @param $expiryTime
-     *
      * @return string
      */
-    public function generateToken($userId, $expiryTime)
+    public function generateToken()
     {
-        // Using encryption key and combination of userid and time.
-        return hash_hmac('sha256', 'password.reset' . '_' . $userId . '_' . $expiryTime, config('app.key'));
+        return str_random(Entity::PASSWORD_TOKEN_LENGTH);
     }
 
     /**

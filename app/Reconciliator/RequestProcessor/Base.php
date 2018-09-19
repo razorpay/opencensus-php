@@ -19,6 +19,10 @@ class Base extends Core
     const FORCE_UPDATE              = 'force_update';
     const FORCE_AUTHORIZE           = 'force_authorize';
 
+    const SOURCE                  = 'source';
+    const MAILGUN                 = 'mailgun';
+    const MANUAL                  = 'manual';
+
     const FILE_DETAILS            = 'file_details';
     const INPUT_DETAILS           = 'input_details';
 
@@ -36,6 +40,7 @@ class Base extends Core
     const HDFC                   = 'HDFC';
     const AXIS                   = 'Axis';
     const KOTAK                  = 'Kotak';
+    const AIRTEL                 = 'Airtel';
     const BILLDESK               = 'BillDesk';
     const PAYZAPP                = 'PayZapp';
     const MOBIKWIK               = 'Mobikwik';
@@ -48,6 +53,7 @@ class Base extends Core
     const NETBANKING_CORPORATION = 'NetbankingCorporation';
     const NETBANKING_RBL         = 'NetbankingRbl';
     const NETBANKING_CSB         = 'NetbankingCsb';
+    const NETBANKING_IDFC        = 'NetbankingIdfc';
     const NETBANKING_INDUSIND    = 'NetbankingIndusind';
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
@@ -63,8 +69,10 @@ class Base extends Core
     const UPI_ICICI              = 'UpiIcici';
     const ADMIN                  = 'admin';
     const HITACHI                = 'Hitachi';
-    const CARD_FSS               = 'CardFss';
+    const CARD_FSS_HDFC          = 'CardFssHdfc';
+    const CARD_FSS_BOB           = 'CardFssBob';
     const ATOM                   = 'Atom';
+    const UPI_HDFC               = 'UpiHdfc';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -85,9 +93,11 @@ class Base extends Core
         self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL         => ['internetbanking@rblbank.com'],
+        self::AIRTEL                 => ['no-reply@airtelbank.com'],
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],
         self::NETBANKING_PNB         => [],
+        self::NETBANKING_IDFC        => [],
         self::NETBANKING_CSB         => ['noreply@csb.co.in'],
         self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
         self::NETBANKING_CORPORATION => ['webcenter@corpbank.co.in'],
@@ -101,11 +111,14 @@ class Base extends Core
         self::UPI_SBI                => [],
         self::PAYUMONEY              => [],
         self::HITACHI                => ['reportsmailer@hitachi-payments.com'],
-        self::CARD_FSS               => [],
+        self::CARD_FSS_HDFC          => ['merchantops@fss.co.in'],
         self::ATOM                   => [],
+        self::CARD_FSS_BOB           => [],
+        self::UPI_HDFC               => ['upi@hdfcbank.net'],
+
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN               => ['saurav.chowdhury@razorpay.com'],
+        self::ADMIN                  => ['saurav.chowdhury@razorpay.com'],
     ];
 
     /**
@@ -114,6 +127,7 @@ class Base extends Core
      */
     const CONFIG_PARAMS = [
         self::FORCE_UPDATE,
+        self::SOURCE,
         self::FORCE_AUTHORIZE
     ];
 
@@ -222,7 +236,6 @@ class Base extends Core
                 $allFilesDetails[] = $this->fileProcessor->getFileDetails($file, $fileLocationType);
             }
         }
-
         return $allFilesDetails;
     }
 

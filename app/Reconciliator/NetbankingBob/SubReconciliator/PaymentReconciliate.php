@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingBob;
+namespace RZP\Reconciliator\NetbankingBob\SubReconciliator;
 
 use RZP\Gateway\Netbanking\Bob;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const COLUMN_PAYMENT_ID          = 'fldMerchRefNbr';
     const COLUMN_PAYMENT_AMOUNT      = 'Transaction Amount';

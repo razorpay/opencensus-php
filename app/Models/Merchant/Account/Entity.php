@@ -55,6 +55,7 @@ class Entity extends Merchant\Entity
     const OPERATIONAL_ADDRESS      = 'operational_address';
     const SETTLEMENT_SCHEDULES     = 'settlement_schedules';
     const AVERAGE_TRANSACTION_SIZE = 'average_transaction_size';
+    const DASHBOARD_ACCESS         = 'dashboard_access';
 
     protected static $sign = 'acc';
 
@@ -76,6 +77,7 @@ class Entity extends Merchant\Entity
         self::ACCOUNT_DETAILS,
         self::NOTES,
         self::FUND_TRANSFER,
+        self::DASHBOARD_ACCESS,
     ];
 
     protected $publicSetters = [
@@ -89,6 +91,7 @@ class Entity extends Merchant\Entity
         self::ACCOUNT_DETAILS,
         self::SECONDARY_EMAILS,
         self::ACTIVATION_DETAILS,
+        self::DASHBOARD_ACCESS,
     ];
 
     protected static $generators = [
@@ -203,6 +206,16 @@ class Entity extends Merchant\Entity
     public function setPublicFundsOnHoldAttribute(array & $array)
     {
         $array[self::FUNDS_ON_HOLD] = $this->getHoldFunds();
+    }
+
+    public function setPublicDashboardAccessAttribute(array & $array)
+    {
+        if ($this->isLinkedAccount() === true)
+        {
+            $merchantUsersCount = $this->users()->count();
+
+            $array[self::DASHBOARD_ACCESS] = $merchantUsersCount > 0 ? true : false;
+        }
     }
 
     public function setPublicActivationDetailsAttribute(array & $array)

@@ -78,6 +78,11 @@ class Validator extends Base\Validator
         Entity::EMAIL                       => 'required|email|unique:merchants'
     ];
 
+    protected static $editPreSignupRules = [
+        Entity::NAME                        => 'required|min:4|string|max:200',
+        Entity::WEBSITE                     => 'sometimes|active_url|max:255|nullable',
+    ];
+
     protected static $editNameRules = [
         Entity::NAME                        => 'required|min:4|string|max:200',
     ];
@@ -160,6 +165,11 @@ class Validator extends Base\Validator
     protected static $createSubMerchantUserRules = [
         'merchant_id' => 'required|alpha_num|size:14',
         Entity::EMAIL => 'required|email',
+    ];
+
+    protected static $editMethodsRules = [
+        //only this method editing is allowed for now
+        Methods\Entity::EMI => 'required|bool',
     ];
 
     protected static $editConfigValidators = [
@@ -847,6 +857,23 @@ class Validator extends Base\Validator
                     'partner_app_ids'         => $partnerAppIds,
                     Constants::APPLICATION_ID => $inputAppId,
                 ]);
+        }
+    }
+
+    public function validateLinkedAccountDashboardAccess(bool $dashboardAccess, Entity $merchant)
+    {
+        $merchantUsersCount = $merchant->users->count();
+
+        if ($dashboardAccess === true and $merchantUsersCount > 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_DASHBOARD_ACCESS_ALREADY_GIVEN);
+        }
+
+        if ($dashboardAccess === false and $merchantUsersCount === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS);
         }
     }
 }

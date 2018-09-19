@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Reconciliator\BillDesk;
+namespace RZP\Reconciliator\BillDesk\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 use Razorpay\Spine\Exception\DbQueryException;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     /*******************
      * Row Header Names

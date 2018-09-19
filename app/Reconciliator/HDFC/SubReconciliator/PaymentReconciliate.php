@@ -1,7 +1,8 @@
 <?php
 
-namespace RZP\Reconciliator\HDFC;
+namespace RZP\Reconciliator\HDFC\SubReconciliator;
 
+use RZP\Reconciliator\HDFC\Reconciliate;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
@@ -10,7 +11,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\ReconciliationException;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names
@@ -246,7 +247,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getUtgst($row)
     {
         $columnUtgst = null;
-        
+
         //
         // This should be isset only and not empty
         // because utgst can be 0 also.
@@ -489,7 +490,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $columnAuthCode = $row[self::COLUMN_AUTH_CODE];
         }
 
-        if ((empty($columnAuthCode) === true))
+        if (empty($columnAuthCode) === true)
         {
             return null;
         }

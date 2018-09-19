@@ -452,6 +452,8 @@ class Header
                 self::REFERENCE_ID,
                 self::STATUS,
                 self::ACCOUNT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 
@@ -774,6 +776,8 @@ class Header
                 self::NOTES,
                 self::DIRECT_DEBIT_ORDER_ID,
                 self::DIRECT_DEBIT_PAYMENT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 

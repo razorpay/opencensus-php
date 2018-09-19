@@ -22,7 +22,6 @@ use RZP\Models\Schedule;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\User\Role;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
@@ -88,7 +87,7 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        $isLinkedAccount = (bool)($input['account'] ?? false);
+        $isLinkedAccount = (bool) ($input['account'] ?? false);
 
         $isPartner = $merchant->isPartner();
 
@@ -102,11 +101,13 @@ class Service extends Base\Service
         //
         if ($isLinkedAccount === false)
         {
-            if (($isPartner === false) and ($hasAggregatorFeature === false)) {
+            if (($isPartner === false) and ($hasAggregatorFeature === false))
+            {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
             }
-            else if ($merchant->isPurePlatformPartner() === true) {
+            else if ($merchant->isPurePlatformPartner() === true)
+            {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT);
             }
@@ -378,12 +379,18 @@ class Service extends Base\Service
         return $merchants->toArrayPublic();
     }
 
-    // This is on proxy auth
-    public function fetchConfig(): array
+    public function fetchConfig(bool $isInternal = false): array
     {
         $merchantId = $this->merchant->getId();
 
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId, Entity::CONFIG_LIST);
+        $configList = Entity::CONFIG_LIST;
+
+        if ($isInternal === true)
+        {
+            $configList = array_merge($configList, Entity::INTERNAL_CONFIG_LIST);
+        }
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId, $configList);
 
         return $merchant->toArray();
     }
@@ -730,6 +737,15 @@ class Service extends Base\Service
         return $ba->toArray();
     }
 
+    public function editBankAccount($id, $input)
+    {
+        $bankAccount = $this->repo->bank_account->findOrFailPublic($id);
+
+        $bankAccount = (new BankAccount\Core)->editBankAccount($bankAccount, $input);
+
+        return $bankAccount->toArray();
+    }
+
     /**
      * This function returns if there any open workflow actions associated with the current bank account entity of a
      * merchant. @todo: Replace this with a more generic approach based on primary entity
@@ -761,7 +777,6 @@ class Service extends Base\Service
         }
 
         return false;
-
     }
 
     public function getBankAccount($id)
@@ -863,6 +878,26 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         return (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input);
+    }
+
+    public function editMethods($input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            [
+                'merchant_id' => $this->merchant->getId(),
+                'input' => $input,
+            ]);
+
+        if($this->merchant->isFeatureEnabled(Feature\Constants::EDIT_METHODS) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        (new Validator)->validateInput('edit_methods', $input);
+
+        return (new Merchant\Methods\Core)->editMethods($input);
     }
 
     public function getMerchantWebhooks($id)
@@ -1756,12 +1791,11 @@ class Service extends Base\Service
      * @param Entity             $merchant
      * @param OAuthClient\Entity $client
      */
-    protected function sendCompetitorAppAuthorizedEmail(
-        Merchant\Entity $merchant,
-        OAuthClient\Entity $client)
+    protected function sendCompetitorAppAuthorizedEmail(Merchant\Entity $merchant, OAuthClient\Entity $client)
     {
-        // Do not send the email if the application is not a competitor to us
-        if (in_array($client->application->getId(), Feature\Type::S2S_APPLICATION_IDS) === false)
+        $application = $client->application;
+
+        if ($this->shouldSendCompetitorAppAuthorizedEmail($merchant, $application) === false)
         {
             return;
         }
@@ -1778,11 +1812,42 @@ class Service extends Base\Service
                 Entity::BILLING_LABEL => $merchant->getBillingLabel(),
             ],
             'application' => [
-                OAuthApplication\Entity::NAME => $client->application->getName(),
+                OAuthApplication\Entity::NAME => $application->getName(),
             ]
         ];
 
         Mail::queue((new $mailer($data)));
+    }
+
+    /**
+     * @param Entity                  $merchant
+     * @param OAuthApplication\Entity $app
+     *
+     * @return bool
+     */
+    protected function shouldSendCompetitorAppAuthorizedEmail(
+        Merchant\Entity $merchant,
+        OAuthApplication\Entity $app): bool
+    {
+        // Do not send the email if the application is not a competitor to us
+        if (in_array($app->getId(), Feature\Type::S2S_APPLICATION_IDS) === false)
+        {
+            return false;
+        }
+
+        // Do not send the email if the merchant has already authorized the app before
+        $appAuthorized = $this->repo
+                              ->merchant_access_map
+                              ->findMerchantAccessMapOnEntityId($merchant->getId(),
+                                                                $app->getId(),
+                                                                AccessMap\Entity::APPLICATION);
+
+        if ($appAuthorized !== null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -1986,6 +2051,10 @@ class Service extends Base\Service
             $ownerId
         )
         {
+            $enableDashboardAccess = (bool) ($input['dashboard_access'] ?? false);
+
+            unset($input['dashboard_access']);
+
             $merchantCore = new Merchant\Core;
 
             $subMerchant = $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount);
@@ -2005,16 +2074,27 @@ class Service extends Base\Service
                 $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
             }
 
-            list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
+            // Users will be created and given access to the account in partners flow, irrespective of enable
+            // dashboard access. users will be created and given access in linked accounts case only when enable
+            // dashboard access is true.
+            if ((($enableDashboardAccess === true) and ($isLinkedAccount === true)) or ($isLinkedAccount === false))
+            {
+                list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant);
+            }
 
             $this->repo->saveOrFail($subMerchant);
+
+            $subMerchantAdditionType = ($isLinkedAccount === true) ? Metric::MARKETPLACE : Metric::PARTNER;
+
+            $dimensions = [Metric::SUB_MERCHANT_ADD_TYPE => $subMerchantAdditionType];
+
+            $this->trace->count(Metric::ADD_SUB_MERCHANT, $dimensions);
 
             return [$subMerchant, $newUser, $createdNew];
         });
 
         // Sends email to marketplace LA dashboard enabled users.
-        if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true) and
-            ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true))
+        if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true))
         {
             (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
         }
@@ -2060,10 +2140,7 @@ class Service extends Base\Service
         $subMerchantUser = null;
         $createdNew      = false;
 
-        $isMarketplaceWithLADashTag = (($merchant->isMarketplace() === true) and
-                                       ($merchant->isTagAdded(Entity::ENABLE_LA_DASHBOARD) === true));
-
-        if ((($merchant->isPartner() === true) or ($isMarketplaceWithLADashTag === true)) and
+        if ((($merchant->isPartner() === true) or ($merchant->isMarketplace() === true)) and
             ($subMerchant->getEmail() !== $merchant->getEmail()))
         {
             list($subMerchantUser, $createdNew) =
@@ -2294,5 +2371,55 @@ class Service extends Base\Service
         $this->core()->handleLinkedAccountMerchantsUsers($merchant);
 
         return $merchant->toArrayPublic();
+    }
+
+    public function registerBeneficiaryThroughApi(array $input, string $channel): array
+    {
+        $response = (new BankAccount\Beneficiary)->registerBeneficiaryThroughApi($input, $channel);
+
+        return $response;
+    }
+
+    /**
+     * Function to provide dashboard access to linked accounts.
+     * @param array $input
+     *
+     * @return array
+     * @throws \RZP\Exception\BadRequestException
+     *
+     */
+    public function updateLinkedAccountDashboardAccess(array $input): array
+    {
+        $merchant = $this->auth->getMerchant();
+
+        (new Validator)->validateLinkedAccount($merchant);
+
+        $parentMerchant = $merchant->parent;
+
+        $dashboardAccess = (bool) ($input['dashboard_access'] ?? false);
+
+        (new Validator)->validateLinkedAccountDashboardAccess($dashboardAccess, $merchant);
+
+        if (($dashboardAccess === true) and ($parentMerchant->isMarketplace() === true))
+        {
+            if ($parentMerchant->getEmail() === $merchant->getEmail())
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS);
+            }
+
+            list($newUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($merchant, $parentMerchant);
+
+            if (empty($newUser) === false)
+            {
+                (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $merchant, $createdNew);
+            }
+        }
+        else
+        {
+            $this->repo->sync($merchant,  'users', []);
+        }
+
+        return ['success' => true];
     }
 }

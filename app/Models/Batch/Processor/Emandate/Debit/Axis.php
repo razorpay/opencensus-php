@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Netbanking;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
@@ -44,7 +45,7 @@ class Axis extends Base
         $error = null;
 
         // If the payment fails, set the error message
-        if (strtolower($row[self::GATEWAY_RESPONSE_CODE]) !== self::STATUS_SUCCESS)
+        if ($this->isAuthorized($row) === false)
         {
             $error = $row[self::GATEWAY_ERROR_MESSAGE] ?? null;
         }
@@ -64,8 +65,8 @@ class Axis extends Base
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                '',
-                ''
+                $status,
+                'Gateway response status is invalid'
             );
         }
     }

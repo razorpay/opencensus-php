@@ -125,6 +125,46 @@ class BladeGatewayTest extends TestCase
         $this->assertNull($payment['verify_bucket']);
     }
 
+    public function testInvalidPares()
+    {
+        $this->mockSignatureNotFound();
+
+        $this->runRequestResponseFlow(
+            $data = $this->testData['testInvalidMessage'],
+            function()
+            {
+                $payment = $this->defaultAuthPayment([
+                    'card' => [
+                        'number'       => CardNumber::INVALID_PARES,
+                        'expiry_month' => '02',
+                        'expiry_year'  => '21',
+                        'cvv'          => 123,
+                        'name'         => 'Test Card'
+                    ]
+                ]);
+            });
+    }
+
+    public function testSignatureMissingFromValidPARes()
+    {
+        $this->mockSignatureNotFound();
+
+        $this->runRequestResponseFlow(
+            $data = $this->testData['testSignatureMissing'],
+            function()
+            {
+                $payment = $this->defaultAuthPayment([
+                    'card' => [
+                        'number'       => CardNumber::VALID_ENROLL_NUMBER,
+                        'expiry_month' => '02',
+                        'expiry_year'  => '21',
+                        'cvv'          => 123,
+                        'name'         => 'Test Card'
+                    ]
+                ]);
+            });
+    }
+
     public function testBlankMessage()
     {
         $this->runRequestResponseFlow(
@@ -229,6 +269,19 @@ class BladeGatewayTest extends TestCase
             function(& $content, $action = null) use ($response)
             {
                 $content['Message']['VERes']['IReq'] = $response;
+            }
+        );
+    }
+
+    public function mockSignatureNotFound()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'acs')
+                {
+                    unset($content['Message']['Signature']);
+                }
             }
         );
     }

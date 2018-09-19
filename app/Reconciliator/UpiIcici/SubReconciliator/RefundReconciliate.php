@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Reconciliator\UpiIcici;
+namespace RZP\Reconciliator\UpiIcici\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     const REFUND_ID            = 'merchanttranid';
     const COLUMN_REFUND_AMOUNT = 'refund_amount';
@@ -90,6 +90,6 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getReconRefundAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_REFUND_AMOUNT]);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_REFUND_AMOUNT]);
     }
 }

@@ -913,6 +913,56 @@ return [
         ]
     ],
 
+    'testGetGstin' => [
+        'request'  => [
+            'url'    => '/merchant/gst',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'gstin'   => '29AAGCR4375J1ZU',
+                'p_gstin' => null
+            ],
+        ],
+    ],
+
+    'testEditGstin' => [
+        'request'  => [
+            'url'     => '/merchant/gst',
+            'method'  => 'PATCH',
+            'content' => [
+                'gstin'   => '29AAGCR4375J1ZP',
+                'p_gstin' => '29AAGCR4375J1ZU'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'gstin'   => '29AAGCR4375J1ZP',
+                'p_gstin' => '29AAGCR4375J1ZU'
+            ],
+        ],
+    ],
+
+    'testEditGstinInvalidRole' => [
+        'request'  => [
+            'url'     => '/merchant/gst',
+            'method'  => 'PATCH',
+            'content' => [
+                'gstin'   => '29AAGCR4375J1ZP',
+                'p_gstin' => '29AAGCR4375J1ZU'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testDeleteLogoUrl' => [
         'request' => [
             'content' => [],
@@ -1451,6 +1501,26 @@ return [
         ],
     ],
 
+
+    'testGetCheckoutPreferencesForPaidOrder' => [
+        'request' => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithSharedMerchantOffer' => [
         'request' => [
             'url'    => '/preferences',
@@ -1900,7 +1970,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 15,
+                'count' => 13,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1941,13 +2011,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'IDFB',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'JSBP',
                         ],
                     ],
@@ -1956,13 +2019,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SCBL',
                         ],
                     ],
                     [
@@ -2020,7 +2076,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 16,
+                'count' => 14,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -2068,13 +2124,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'IDFB',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'JSBP',
                         ],
                     ],
@@ -2083,13 +2132,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'NKGS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'SCBL',
                         ],
                     ],
                     [
@@ -2332,10 +2374,8 @@ return [
                                 'BKDN',
                                 'COSB',
                                 'DBSS',
-                                'IDFB',
                                 'JSBP',
                                 'NKGS',
-                                'SCBL',
                                 'SVCB',
                                 'SYNB',
                                 'TNSC',

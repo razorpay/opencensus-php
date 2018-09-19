@@ -57,7 +57,7 @@ class Gateway extends Base\Gateway
 
     public function otpResend(array $input)
     {
-        parent::authorize($input);
+        parent::action($input, Base\Action::OTP_RESEND);
 
         $mpiEntity = $this->app['repo']
                           ->mpi
@@ -70,7 +70,7 @@ class Gateway extends Base\Gateway
             throw new Exception\LogicException(
                 'Gateway does not support OTP resend',
                 null,
-                ['payment_id' => $id]);
+                ['payment_id' => $input['payment']['id']]);
         }
 
         $authenticationGateway = $mpiEntity->getGateway();
@@ -519,13 +519,13 @@ class Gateway extends Base\Gateway
         $content[RequestFields::XID]         = $authResponse[Mpi\Base\Entity::XID];
         $content[RequestFields::ALGORITHM]   = $authResponse[Mpi\Base\Entity::CAVV_ALGORITHM];
 
-        $network = Network::getCode($this->input['card']['network']);
+        $networkCode = $this->input['card']['network_code'];
 
-        if ($network === Card\Network::VISA)
+        if ($networkCode === Card\Network::VISA)
         {
             $content[RequestFields::CAVV2] = $authResponse[Mpi\Base\Entity::CAVV];
         }
-        else if (($network === Card\Network::MC) or ($network === Card\Network::MAES))
+        else if (($networkCode === Card\Network::MC) or ($networkCode === Card\Network::MAES))
         {
             $content[RequestFields::UCAF] = $authResponse[Mpi\Base\Entity::CAVV];
         }
@@ -545,9 +545,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
-                'request'    => $traceRequest,
-                'gateway'    => 'hitachi',
-                'payment_id' => $input['payment']['id'],
+                'request'     => $traceRequest,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
             ]);
 
         return $request;
@@ -559,12 +560,12 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::TRANSACTION_TYPE] = 'SI';
 
-        $network = Network::getCode($input['card']['network']);
+        $networkCode = $input['card']['network_code'];
 
-        if (($network === Card\Network::VISA) or
-            ($network === Card\Network::MC))
+        if (($networkCode === Card\Network::VISA) or
+            ($networkCode === Card\Network::MC))
         {
-            $content[RequestFields::ECI] = Eci::SI;
+            $content[RequestFields::ECI] = Eci::getEciValueforSI($networkCode);
         }
         else
         {
@@ -582,9 +583,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_RECURRING_AUTH_REQUEST,
             [
-                'request'    => $traceRequest,
-                'gateway'    => 'hitachi',
-                'payment_id' => $input['payment']['id'],
+                'request'     => $traceRequest,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
             ]);
 
         return $request;
@@ -596,7 +598,9 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::TRANSACTION_TYPE] = TransactionType::MOTO;
 
-        $content[RequestFields::ECI] = Eci::MOTO;
+        $networkCode = $input['card']['network_code'];
+
+        $content[RequestFields::ECI] = Eci::getEciValueForMoto($networkCode);
 
         $content[RequestFields::AUTH_STATUS] = Mpi\Base\AuthenticationStatus::N;
 
@@ -610,9 +614,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_MOTO_AUTH_REQUEST,
             [
-                'request'    => $traceRequest,
-                'gateway'    => 'hitachi',
-                'payment_id' => $input['payment']['id'],
+                'request'     => $traceRequest,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
             ]);
 
         return $request;
@@ -622,7 +627,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
 
-        $networkCode  = Network::getCode($input['card']['network']);
+        $networkCode = $input['card']['network_code'];
 
         $eciValues = [
             Card\Network::VISA => '07',
@@ -642,12 +647,27 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
-                'request'    => $traceRequest,
-                'gateway'    => 'hitachi',
-                'payment_id' => $input['payment']['id'],
+                'request'     => $traceRequest,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
             ]);
 
         return $request;
+    }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
+    {
+        $this->trace->info($traceCode,
+            [
+                'request'     => $request,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
     }
 
     protected function traceGatewayPaymentResponse(
@@ -659,9 +679,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info($traceCode,
             [
-                'response'   => $response,
-                'gateway'    => 'hitachi',
-                'payment_id' => $input['payment']['id'],
+                'response'    => $response,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
             ]);
     }
 

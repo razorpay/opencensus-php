@@ -340,14 +340,9 @@ class Gateway extends Base\Gateway
     {
         $url = parent::getUrl($type);
 
-        if ($this->action === Action::VERIFY)
-        {
-            // We don't need to use different URLs for different merchants from now on.
-            // Main parent MID can be appended instead of specific merchant MID
-            return sprintf($url, self::PARENT_GATEWAY_MERCHANT_ID);
-        }
-
-        return sprintf($url, $this->getMerchantId());
+        // We don't need to use different URLs for different merchants from now on.
+        // Main parent MID can be appended instead of specific merchant MID
+        return sprintf($url, self::PARENT_GATEWAY_MERCHANT_ID);
     }
 
     /**
@@ -607,7 +602,7 @@ class Gateway extends Base\Gateway
 
         $data = [
             'merchantId'        => $this->getMerchantId(),
-            'merchantTranId'    => $gatewayPayment['merchant_reference'] ?? $input['payment']['id'],
+            'merchantTranId'    => $gatewayPayment['merchant_reference'] ?: $input['payment']['id'],
             'subMerchantId'     => $this->getSubMerchantId($input),
             'terminalId'        => '1234',
         ];

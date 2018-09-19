@@ -10,6 +10,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\User;
 use RZP\Models\Batch;
 use RZP\Models\Pricing;
@@ -31,6 +32,7 @@ use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Merchant\Request as MerchantRequest;
@@ -110,6 +112,14 @@ class Core extends Base\Core
         }
 
         $subMerchant = $entity->build($input);
+
+        $has24x7SettlementFeature = $aggregatorMerchant->isFeatureEnabled(Feature::SETTLEMENT_24X7);
+
+        if (($has24x7SettlementFeature === true) and
+            ($linkedAccount === true))
+        {
+            $subMerchant->setChannel(Channel::YESBANK);
+        }
 
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
@@ -769,16 +779,20 @@ class Core extends Base\Core
      */
     public function postPartnerSubmissions(MerchantRequest\Entity $request, array $submissions)
     {
-        $parterType = $submissions[Entity::PARTNER_TYPE];
+        $partnerType = $submissions[Entity::PARTNER_TYPE];
 
-        $data[Entity::PARTNER_TYPE] = $parterType;
+        $data[Entity::PARTNER_TYPE] = $partnerType;
 
         $this->trace->info(
             TraceCode::PARTNER_REQUEST_SUBMITTED,
             [
-                Entity::PARTNER_TYPE       => $parterType,
+                Entity::PARTNER_TYPE       => $partnerType,
                 MerchantRequest\Entity::ID => $request->getId(),
             ]);
+
+        $dimensions = [Entity::PARTNER_TYPE => $partnerType];
+
+        $this->trace->count(Metric::PARTNER_MARK_REQUEST, $dimensions);
 
         Accessor::for ($request, Constants::PARTNER)
             ->upsert($data)
@@ -886,6 +900,10 @@ class Core extends Base\Core
 
             $this->createPartnerApp($merchant);
         });
+
+        $dimensions = [Entity::PARTNER_TYPE => $merchant->getPartnerType()];
+
+        $this->trace->count(Metric::PARTNER_MARKED_TOTAL, $dimensions);
 
         return $merchant;
     }

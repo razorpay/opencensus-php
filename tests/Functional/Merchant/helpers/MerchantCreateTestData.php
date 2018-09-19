@@ -175,6 +175,27 @@ return [
         ],
     ],
 
+    'testCreateSubMerchantFor24x7Settlement' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => 'NewSubmerchant',
+                'name'    => 'Submerchant',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
+                // Email is same as the test merchant
+                'email' => 'test@razorpay.com',
+            ],
+        ],
+    ],
+
+
     'testCreateSubMerchantWithoutFeatureMarketplaceOrPartner' => [
         'request'   => [
             'url'     => '/submerchants',
@@ -506,10 +527,11 @@ return [
             'url'     => '/submerchants',
             'method'  => 'POST',
             'content' => [
-                'id'      => '7gcKngYfqyDMjN',
-                'name'    => 'Linked Account 2',
-                'email'   => 'linkedaccount@razorpay.com',
-                'account' => true,
+                'id'               => '7gcKngYfqyDMjN',
+                'name'             => 'Linked Account 2',
+                'email'            => 'linkedaccount@razorpay.com',
+                'account'          => true,
+                'dashboard_access' => true,
             ],
         ],
         'response' => [
@@ -526,9 +548,10 @@ return [
             'url'     => '/submerchants',
             'method'  => 'POST',
             'content' => [
-                'id'      => '7gcKngYfqyDMjN',
-                'name'    => 'Linked Account Name',
-                'account' => true,
+                'id'               => '7gcKngYfqyDMjN',
+                'name'             => 'Linked Account Name',
+                'account'          => true,
+                'dashboard_access' => true,
             ],
         ],
         'response' => [
@@ -712,4 +735,104 @@ return [
             ],
         ],
     ],
+
+    'testCreateLinkedAccountDashboardAccess' => [
+        'request' => [
+            'url' => '/la-merchants/dashboard-access',
+            'method' => 'post',
+            'content' => [
+                'dashboard_access' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testCreateLinkedAccountDashboardAccessNoEmail' => [
+        'request' => [
+            'url' => '/la-merchants/dashboard-access',
+            'method' => 'post',
+            'content' => [
+                'dashboard_access' => true,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_EMAIL_LINKED_ACCOUNT_DASHBOARD_ACCESS,
+        ],
+    ],
+
+    'testCreateLinkedAccountDashboardAccessRevoke' => [
+        'request' => [
+            'url' => '/la-merchants/dashboard-access',
+            'method' => 'post',
+            'content' => [
+                'dashboard_access' => false,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testLinkedAccountDashboardAccessRevokeNoUsers' => [
+        'request' => [
+            'url' => '/la-merchants/dashboard-access',
+            'method' => 'post',
+            'content' => [
+                'dashboard_access' => false,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS,
+        ],
+    ],
+
+    'testLinkedAccountDashboardAccessAlreadyGiven' => [
+        'request' => [
+            'url' => '/la-merchants/dashboard-access',
+            'method' => 'post',
+            'content' => [
+                'dashboard_access' => true,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_DASHBOARD_ACCESS_ALREADY_GIVEN,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_DASHBOARD_ACCESS_ALREADY_GIVEN,
+        ],
+    ],
+
 ];

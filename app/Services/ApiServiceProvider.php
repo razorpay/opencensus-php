@@ -194,6 +194,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new BeamService($app);
         });
 
+        $this->app->singleton('module', function($app)
+        {
+            return new RZP\Modules\Manager($app);
+        });
+
         $this->registerShield();
 
         $this->registerApiMutex();
@@ -201,6 +206,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMaxMind();
 
         $this->registerRaven();
+
+        $this->registerScrooge();
 
         $this->registerElfin();
 
@@ -245,6 +252,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'mailgun',
             'maxmind',
             'raven',
+            'scrooge',
             'repo',
             'elfin',
             'segment',
@@ -283,6 +291,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.raven.mock');
 
             $implementation = $mock ? Mock\Raven::class : Raven::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerScrooge()
+    {
+        $this->app->bind('scrooge', function($app)
+        {
+            $mock = $app['config']->get('applications.scrooge.mock');
+
+            $implementation = $mock ? Mock\Scrooge::class : Scrooge::class;
 
             return new $implementation($app);
         });

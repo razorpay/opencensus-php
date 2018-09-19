@@ -120,7 +120,8 @@ class Repository extends Base\Repository
                           $transactionFee,
                           $transactionFeeCredits,
                           $transactionCreditsType,
-                          $transactionCreatedAt
+                          $transactionCreatedAt,
+                          $transactionChannel
                       )
                       ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                       ->where(Entity::SETTLED_AT, '<', $timestamp)

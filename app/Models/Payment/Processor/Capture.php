@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Throwable;
 use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency;
@@ -337,11 +339,11 @@ trait Capture
 
         $payment->getValidator()->captureValidate($payment, $captureAmount, $currency);
 
-        $data = array(
+        $data = [
             'payment'   => $payment->toArrayGateway(),
             'amount'    => $captureAmount,
             'currency'  => $payment->getCurrency()
-        );
+        ];
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -355,7 +357,7 @@ trait Capture
             $data['currency'] = Currency\Currency::INR;
         }
 
-        $this->captureOnGateway($data);
+        $this->captureOnGateway($data, $autoCaptured);
 
         return $payment;
     }
@@ -389,22 +391,23 @@ trait Capture
      * and push it into a queue. We continue with the normal flow afterwards.
      *
      * @param $data
-     * @throws Exception\BaseException
      */
-    protected function captureOnGateway($data)
+    protected function captureOnGateway($data, $autoCaptured = false)
     {
         $this->verifyOrderUnpaid($this->payment);
 
         $this->mutex->acquireAndRelease(
             $this->payment->getId(),
-            function() use ($data)
+            function() use ($data, $autoCaptured)
             {
+                $this->repo->reload($this->payment);
+
                 $this->callAndHandleCaptureOnGateway($data);
 
                 // In case of a failure (marking the payment as failed),
                 // we won't record this capture since we throw the exception
                 // after marking the payment as failed.
-                $this->recordCapture();
+                $this->recordCapture($autoCaptured);
             });
 
         $this->triggerPaymentCapturedEvents();
@@ -427,28 +430,50 @@ trait Capture
                 $this->repo->saveOrFail($this->payment);
             }
         }
-        catch (Exception\GatewayTimeoutException $ex)
+        catch (Throwable $ex)
         {
-            $this->handleGatewayTimeoutOnCapture($data, $ex);
+            $this->handleExceptionOnCapture($data, $ex);
         }
     }
 
-    protected function handleGatewayTimeoutOnCapture(array $data, Exception\GatewayTimeoutException $ex)
+    /**
+     * If the feature is enabled, we will always mark it as captured on our end.
+     * If the feature is not enabled, we will mark it as captured on our based on some conditions.
+     *
+     * @param           $data
+     * @param Throwable $ex
+     *
+     * @throws Throwable
+     */
+    protected function handleExceptionOnCapture(array $data, Throwable $ex)
     {
-        $paymentGateway = $this->payment->getGateway();
-
-        //
-        // If the capture times out for HDFC, we mark it as captured on API and add the captureOnGateway
-        // to a queue. We then try to capture on HDFC.
-        // We do a similar thing for Cybersource. But, right now, we are not adding to the queue. We will
-        // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
-        // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
-        //
-        if ($paymentGateway !== Payment\Gateway::HDFC)
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CAPTURE_QUEUE) === true)
         {
-            throw $ex;
+            $this->dispatchCaptureFailure($ex, $data);
         }
+        else
+        {
+            //
+            // If the capture times out for HDFC, we mark it as captured on API and add the captureOnGateway
+            // to a queue. We then try to capture on HDFC.
+            // We do a similar thing for Cybersource. But, right now, we are not adding to the queue. We will
+            // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
+            // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
+            //
+            if ((($ex instanceof Exception\GatewayTimeoutException) === true) and
+                ($this->payment->getGateway() === Payment\Gateway::HDFC))
+            {
+                $this->dispatchCaptureFailure($ex, $data);
+            }
+            else
+            {
+                throw $ex;
+            }
+        }
+    }
 
+    protected function dispatchCaptureFailure(Throwable $ex, array $data)
+    {
         $this->trace->traceException($ex);
 
         $data['mode'] = $this->mode;
@@ -493,14 +518,12 @@ trait Capture
         });
     }
 
-    protected function recordCapture()
+    protected function recordCapture($autoCaptured = false)
     {
         $payment = $this->payment;
 
-        $this->repo->transaction(function() use ($payment)
+        $this->repo->transaction(function() use ($payment, $autoCaptured)
         {
-            $autoCaptured = $payment->getAutoCaptured();
-
             $this->lockForUpdateAndReload($payment);
 
             if ($payment->hasBeenCaptured() === true)
@@ -514,6 +537,8 @@ trait Capture
             $this->createTransactionFromCapturedPayment($payment);
 
             $this->updateOrderAfterCapture($payment);
+
+            $this->updateVirtualAccountStatusIfApplicable($payment);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
@@ -688,6 +713,15 @@ trait Capture
                 throw new Exception\BadRequestValidationFailureException(
                     'Corresponding order already has a captured payment.');
             }
+
+            $amount = $payment->getAdjustedAmountWrtCustFeeBearer();
+
+            if (($amount > $order->getAmountDue()) and
+                ($this->merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE);
+            }
         }
     }
 
@@ -736,6 +770,66 @@ trait Capture
             $this->updateInvoiceAfterCapture($invoice, $payment);
         }
     }
+
+    protected function updateVirtualAccountStatusForBankTransfer(Payment\Entity $payment)
+    {
+        $virtualAccountCore = new VirtualAccount\Core;
+
+        $virtualAccount = $payment->bankTransfer->virtualAccount;
+
+        if (($virtualAccount->hasAmountExpected() === true) and
+            ($virtualAccount->getAmountPaid() >= $virtualAccount->getAmountExpected()))
+        {
+            $virtualAccountCore->updateStatus($virtualAccount, VirtualAccount\Status::PAID);
+        }
+
+        /*
+         *  If amount paid is lesser than amount expected, then
+         *  we will leave the virtual account in active state
+         *  which will be refunded later by cron.
+         */
+    }
+
+    protected function updateVirtualAccountStatusForOrder(Payment\Entity $payment)
+    {
+        $virtualAccountCore = new VirtualAccount\Core;
+
+        $order = $payment->order;
+
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->findActiveVirtualAccountByOrder($order);
+
+        if ($virtualAccount !== null)
+        {
+            $virtualAccountCore->updateStatus($virtualAccount, VirtualAccount\Status::CLOSED);
+        }
+    }
+
+    protected function updateVirtualAccountStatusIfApplicable(Payment\Entity $payment)
+    {
+        if ($payment->isBankTransfer() === true)
+        {
+            /*
+             *  If any payment is a Bank Transfer and If amount
+             *  paid is not lesser than amount expected, then
+             *  we will mark the Virtual Account as paid.
+             */
+
+            $this->updateVirtualAccountStatusForBankTransfer($payment);
+        }
+        else if ($payment->hasOrder() === true)
+        {
+            /*
+             *  If payment is not a Bank Transfer, then we will close
+             *  the Virtual Account that was created for the order.
+             */
+
+            $this->updateVirtualAccountStatusForOrder($payment);
+        }
+
+    }
+
 
     protected function updateOrderStatusPaidIfApplicable(Order\Entity $order, Payment\Entity $payment)
     {

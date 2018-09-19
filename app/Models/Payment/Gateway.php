@@ -34,6 +34,7 @@ class Gateway
     const MOBIKWIK               = 'mobikwik';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
+    const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_FEDERAL     = 'netbanking_federal';
     const NETBANKING_BOB         = 'netbanking_bob';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
@@ -49,6 +50,7 @@ class Gateway
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
+    const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
     const UPI_HULK               = 'upi_hulk';
     const AEPS_ICICI             = 'aeps_icici';
@@ -78,6 +80,11 @@ class Gateway
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
     const NODAL_YESBANK      = 'nodal_yesbank';
+
+    //
+    // Constant used to store the response of various refund functions
+    //
+    const SUCCESS            = 'success';
 
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
@@ -147,8 +154,13 @@ class Gateway
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
         self::NETBANKING_OBC,
+        self::NETBANKING_IDFC,
         self::NETBANKING_ICICI,
         self::WALLET_OPENWALLET,
+
+        // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
+        //If you are seeing this after Sep'18, Please report to gateway payments team
+        self::UPI_HULK,
     ];
 
     /**
@@ -156,7 +168,7 @@ class Gateway
      * This should eventually cover all API based refund
      * gateways.
      *
-     * These gateways should have verifyRefund2 implemented.
+     * These gateways should have verifyRefund implemented.
      * and be allowed to perform it.
      * */
     const REFUND_RETRY_GATEWAYS = [
@@ -173,6 +185,7 @@ class Gateway
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_ICICI,
+        Payment\Gateway::UPI_AXIS,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::WALLET_MPESA,
         Payment\Gateway::CARD_FSS,
@@ -184,6 +197,32 @@ class Gateway
         Payment\Gateway::UPI_HULK,
         Payment\Gateway::NETBANKING_AIRTEL,
         Payment\Gateway::ATOM,
+        Payment\Gateway::SHARP
+    ];
+
+    /**
+     * Need to ensure that only those gateways which have
+     * verify implemented, are added in this array.
+     * This is only until the flow is complete from Scrooge.
+     * In the starting, we will only implement for APIs.
+     *
+     * TODO: reversal, emandate, bank transfer, netbanking etc type of gateways are not supported yet.
+     *
+     * @var array
+     */
+    public static $scroogeGateways = [
+        Payment\Gateway::SHARP,
+    ];
+
+    /**
+     * Refunds of only these merchant ids will be directed to scrooge.
+     *
+     * @var array
+     */
+    public static $scroogeMerchants = [
+        '9DZkE60krEG4wq',
+        '9ncOh0EZ8sC9z9',
+        '9hefgkvGhT18Q9',
     ];
 
     public static $channels = [
@@ -220,6 +259,7 @@ class Gateway
         self::FIRST_DATA          => Settlement\Channel::KOTAK,
         self::UPI_MINDGATE        => Settlement\Channel::KOTAK,
         self::UPI_ICICI           => Settlement\Channel::KOTAK,
+        self::UPI_AXIS            => Settlement\Channel::KOTAK,
         self::UPI_HULK            => Settlement\Channel::KOTAK,
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
@@ -252,6 +292,7 @@ class Gateway
             self::BILLDESK,
             self::EBS,
             self::ATOM,
+            self::NETBANKING_IDFC,
             self::NETBANKING_ICICI,
             self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
@@ -307,6 +348,7 @@ class Gateway
         Method::UPI => [
             self::UPI_MINDGATE,
             self::UPI_ICICI,
+            self::UPI_AXIS,
             self::UPI_SBI,
             self::UPI_HULK,
         ],
@@ -364,7 +406,6 @@ class Gateway
         self::HITACHI,
     ];
 
-
     /**
      * For async gateways, we mark the payment as created and return
      * the response immediately. The payment is authorized over a webhook
@@ -378,6 +419,7 @@ class Gateway
         self::UPI_HULK,
         self::UPI_SBI,
         self::SHARP,
+        self::UPI_AXIS,
     ];
 
     public static $headless = [
@@ -496,6 +538,7 @@ class Gateway
         Upi::HDFC  => Gateway::UPI_MINDGATE,
         Upi::ICIC  => Gateway::UPI_ICICI,
         Upi::SBIN  => Gateway::UPI_SBI,
+        Upi::UTIB  => Gateway::UPI_AXIS,
     ];
 
     public static $acquirerToCodeMap = [
@@ -545,7 +588,6 @@ class Gateway
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
-        self::ENACH_RBL,
         self::UPI_HULK,
     ];
 
@@ -612,6 +654,7 @@ class Gateway
             IFSC::APBL,
             IFSC::APGB,
             IFSC::BACB,
+            IFSC::BACX,
             IFSC::BCBM,
             IFSC::BGBX,
             IFSC::BHSX,
@@ -621,6 +664,7 @@ class Gateway
             IFSC::BURX,
             IFSC::CBIN,
             IFSC::CHAX,
+            IFSC::CHDX,
             IFSC::CHSX,
             IFSC::CITI,
             IFSC::CMCX,
@@ -632,14 +676,19 @@ class Gateway
             IFSC::CURX,
             IFSC::DBSS,
             IFSC::DCBL,
+            IFSC::DCDX,
+            IFSC::DCKX,
             IFSC::DDBX,
+            IFSC::DEUT,
             IFSC::DGBX,
+            IFSC::DICX,
             IFSC::DSPX,
             IFSC::ESFB,
             IFSC::FDRL,
             IFSC::FGCB,
             IFSC::GCBX,
             IFSC::GCUX,
+            IFSC::GDCX,
             IFSC::GSCB,
             IFSC::GSSX,
             IFSC::HDFC,
@@ -648,6 +697,7 @@ class Gateway
             IFSC::ICIC,
             IFSC::IDFB,
             IFSC::INDB,
+            IFSC::ITDX,
             IFSC::IUCB,
             IFSC::JANA,
             IFSC::JASB,
@@ -655,6 +705,7 @@ class Gateway
             IFSC::JSBP,
             IFSC::JSCX,
             IFSC::JUCX,
+            IFSC::KAAX,
             IFSC::KAIJ,
             IFSC::KARB,
             IFSC::KASX,
@@ -664,6 +715,7 @@ class Gateway
             IFSC::KKBK,
             IFSC::KNPX,
             IFSC::KOCX,
+            IFSC::KRDX,
             IFSC::KSCB,
             IFSC::KTBX,
             IFSC::KUNS,
@@ -690,9 +742,11 @@ class Gateway
             IFSC::PALX,
             IFSC::PATX,
             IFSC::PCUX,
+            IFSC::PJSB,
             IFSC::PLUX,
             IFSC::PMCB,
             IFSC::PRTH,
+            IFSC::PSRX,
             IFSC::RAMX,
             IFSC::RATN,
             IFSC::RCUX,
@@ -706,6 +760,7 @@ class Gateway
             IFSC::SDCB,
             IFSC::SHUX,
             IFSC::SIBL,
+            IFSC::SJSX,
             IFSC::SRCB,
             IFSC::SSDX,
             IFSC::SSLX,
@@ -716,15 +771,21 @@ class Gateway
             IFSC::SWMX,
             IFSC::SYNB,
             IFSC::TACX,
+            IFSC::TADX,
             IFSC::TBCX,
             IFSC::TCUB,
+            IFSC::TDIX,
             IFSC::TECX,
             IFSC::TEHX,
             IFSC::TGMB,
             IFSC::TKUX,
             IFSC::TMBL,
+            IFSC::TPDX,
             IFSC::TSAB,
+            IFSC::TSDX,
             IFSC::TSIX,
+            IFSC::TUOX,
+            IFSC::TVDX,
             IFSC::UBIN,
             IFSC::UCBA,
             IFSC::UCBS,
@@ -737,6 +798,7 @@ class Gateway
             IFSC::VEDX,
             IFSC::VIJX,
             IFSC::VJSX,
+            IFSC::XJKG,
             IFSC::YESB,
             IFSC::ZSGX,
             IFSC::ZSHX,
@@ -923,7 +985,8 @@ class Gateway
         Gateway::UPI_HULK,
         Gateway::WALLET_OLAMONEY,
         Gateway::NETBANKING_CORPORATION,
-        Gateway::SHARP
+        Gateway::SHARP,
+        Gateway::UPI_AXIS,
     ];
 
     /**
@@ -980,6 +1043,7 @@ class Gateway
         Netbanking::BARB_C => Gateway::NETBANKING_BOB,
 
         // retail banks
+        IFSC::IDFB         => Gateway::NETBANKING_IDFC,
         IFSC::ICIC         => Gateway::NETBANKING_ICICI,
         IFSC::HDFC         => Gateway::NETBANKING_HDFC,
         IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
@@ -1010,6 +1074,7 @@ class Gateway
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::IDFB => Gateway::NETBANKING_IDFC,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
@@ -1151,6 +1216,17 @@ class Gateway
         }
 
         return false;
+    }
+
+    /**
+     * @param $gateway
+     * @param $merchantId
+     * @return bool
+     */
+    public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
+    {
+        return ((in_array($gateway, self::$scroogeGateways, true) === true) and
+                (in_array($merchantId, self::$scroogeMerchants, true) === true));
     }
 
     /**

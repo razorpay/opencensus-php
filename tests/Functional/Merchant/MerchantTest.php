@@ -14,6 +14,7 @@ use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
+use RZP\Models\Feature\Constants;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -1650,6 +1651,17 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesForPaidOrder()
+    {
+        $order = $this->fixtures->order->createPaid();
+
+        $this->ba->publicAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer()
     {
         $this->ba->publicAuth();
@@ -2040,6 +2052,8 @@ class MerchantTest extends TestCase
 
     public function testPutEmiMethod()
     {
+        $this->fixtures->create('pricing:emi_pricing_plan');
+
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $admin = $this->ba->getAdmin();
@@ -2553,6 +2567,56 @@ class MerchantTest extends TestCase
 
         $this->assertContains('/logos/', $response['logo_url']);
         $this->assertStringStartsWith('http', $response['logo_url']);
+    }
+
+    public function testGetGstin()
+    {
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'gstin' => '29AAGCR4375J1ZU'
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditGstin()
+    {
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditGstinInvalidRole()
+    {
+        $this->fixtures->create('user');
+
+        $user = $this->getLastEntity('user', true);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => 'operations'
+        ]);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+            ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user, 'operations');
+
+        $this->startTest();
     }
 
     public function testDeleteLogoUrl()
@@ -3124,5 +3188,32 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testBeneficiaryRegisterYesbankBetweenTimestamps()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('bank_account');
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/api/yesbank',
+            'method'    => 'post',
+            'content'   => [
+                'duration' => 15
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('merchants_count', $content);
+
+        $this->assertEquals(1, $content['merchants_count']);
+
+        $this->assertEquals(Channel::YESBANK, $content['channel']);
+
+        Mail::assertQueued(BeneficiaryFileMail::class);
     }
 }

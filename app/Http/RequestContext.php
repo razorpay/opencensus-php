@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Http\BasicAuth\Type;
 use RZP\Foundation\Application;
 use RZP\Base\RepositoryManager;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\BasicAuth\AuthCreds;
 use RZP\Exception\BadRequestException;
 
@@ -69,6 +70,11 @@ final class RequestContext
      * @var array
      */
     protected $applications;
+
+    /**
+     * @var string
+     */
+    protected $authFlowType;
 
     //
     // In one request some (and not all) of below identifiers are set. Further
@@ -245,6 +251,11 @@ final class RequestContext
         return ($this->auth === Type::DIRECT_AUTH);
     }
 
+    public function getAuthFlowType(): string
+    {
+        return $this->authFlowType;
+    }
+
     public function getBearerTokenFromRequest()
     {
         return $this->isRunningUnitTests ? $this->request->bearerToken() : $this->getBearerTokenFromRequestForApache();
@@ -298,6 +309,7 @@ final class RequestContext
         $this->adminEmail         = null;
         $this->proxy              = false;
         $this->userId             = null;
+        $this->authFlowType       = BasicAuth::KEY;
     }
 
     /**
@@ -381,6 +393,7 @@ final class RequestContext
         //
         if (str_contains($this->keyId, 'partner_') === true)
         {
+            $this->authFlowType = BasicAuth::PARTNER;
             return;
         }
 
@@ -410,6 +423,7 @@ final class RequestContext
         {
             // Further excludes "oauth_" part
             $this->oauthPublicToken = substr($this->keyWithoutPrefix, 6);
+            $this->authFlowType = BasicAuth::OAUTH;
         }
         // Route belongs to one of 2 groups and accessed normally via key id
         else
@@ -433,6 +447,8 @@ final class RequestContext
             $parsed              = (new Parser)->parse($token);
             $this->oauthClientId = $parsed->getClaim('aud');
             $this->mid           = $parsed->getClaim('merchant_id');
+
+            $this->authFlowType = BasicAuth::OAUTH;
 
             return true;
         }

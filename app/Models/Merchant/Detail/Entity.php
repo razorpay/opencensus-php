@@ -99,29 +99,32 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                         = 'created_at';
     const UPDATED_AT                         = 'updated_at';
 
-    const SUBMIT                           = 'submit';
-    const ARCHIVE                          = 'archive';
-    const ARCHIVED                         = 'archived';
-    const REJECTION_REASONS                = 'rejection_reasons';
-    const ALLOWED_NEXT_ACTIVATION_STATUSES = 'allowed_next_activation_statuses';
-    const VERIFICATION                     = 'verification';
-    const CAN_SUBMIT                       = 'can_submit';
-    const REVIEWER                         = 'reviewer';
-    const MERCHANTS                        = 'merchants';
+    const SUBMIT                             = 'submit';
+    const ARCHIVE                            = 'archive';
+    const ARCHIVED                           = 'archived';
+    const REJECTION_REASONS                  = 'rejection_reasons';
+    const ALLOWED_NEXT_ACTIVATION_STATUSES   = 'allowed_next_activation_statuses';
+    const VERIFICATION                       = 'verification';
+    const CAN_SUBMIT                         = 'can_submit';
+    const REVIEWER                           = 'reviewer';
+    const MERCHANTS                          = 'merchants';
 
     // fields_pending field is used in new Account APIs.
-    const FIELDS_PENDING                   = 'fields_pending';
+    const FIELDS_PENDING                     = 'fields_pending';
 
     // required_fields is used in older APIs
-    const REQUIRED_FIELDS                  = 'required_fields';
+    const REQUIRED_FIELDS                    = 'required_fields';
 
     // Enum values used for product activation status
-    const PENDING  = 'pending';
-    const APPROVED = 'approved';
-    const REJECTED = 'rejected';
+    const PENDING                            = 'pending';
+    const APPROVED                           = 'approved';
+    const REJECTED                           = 'rejected';
 
     // For mailers
-    const ACTIVATION_DURATION = '4-5 working days';
+    const ACTIVATION_DURATION                = '4-5 working days';
+
+    // Other general use input constants
+    const FILE                               = 'file';
 
     protected $entity = 'merchant_detail';
 

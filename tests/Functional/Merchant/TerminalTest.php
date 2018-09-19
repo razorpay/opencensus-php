@@ -543,4 +543,9 @@ class TerminalTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testAddHulkTerminalWithAppAuth()
+    {
+        $this->startTest();
+    }
 }

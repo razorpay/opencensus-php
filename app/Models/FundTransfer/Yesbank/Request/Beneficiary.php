@@ -49,7 +49,11 @@ class Beneficiary extends Base
     {
         $beneName = $this->entity->getBeneficiaryName();
 
-        $normalizedName =  $this->normalizeBeneficiaryName($beneName);
+        $normalizedBeneName =  $this->normalizeBeneficiaryName($beneName);
+
+        $bankName = $this->entity->getBankName();
+
+        $normalizedBankName =  $this->normalizeBeneficiaryBankName($bankName);
 
         return '<CustId>'
              . $this->customerId
@@ -64,13 +68,13 @@ class Beneficiary extends Base
              . Constants::BENE_PAYMENT_TYPE
              . '</PaymentType>'
              . '<BeneName>'
-             . $normalizedName
+             . $normalizedBeneName
              . '</BeneName>'
              . '<BeneType>'
              . Constants::BENE_TYPE
              . '</BeneType>'
              . '<BankName>'
-             . $this->entity->getBankName()
+             . $normalizedBankName
              . '</BankName>'
              . '<IfscCode>'
              . $this->entity->getIfscCode()

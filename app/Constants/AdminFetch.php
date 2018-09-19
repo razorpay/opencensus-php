@@ -53,7 +53,11 @@ class AdminFetch
                 'ruleset'           => [
                     Fetch::LABEL        => 'ruleset',
                     Fetch::TYPE         => Fetch::TYPE_STRING
-                ]
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
             ],
             Entity::SHIELD_RULE_ANALYTICS => [
                 'entity_id'         => [
@@ -105,7 +109,84 @@ class AdminFetch
                     Fetch::LABEL        => 'rule_id',
                     Fetch::TYPE         => Fetch::TYPE_STRING
                 ]
-            ]
+            ],
+            Entity::SHIELD_LISTS => [
+                'reference'         => [
+                    Fetch::LABEL        => 'reference',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'type'            => [
+                    Fetch::LABEL        => 'type',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'string',
+                        'contact',
+                        'email',
+                        'country',
+                        'iin',
+                        'domain',
+                        'ip'
+                    ]
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+            ],
+            Entity::SHIELD_LIST_ITEMS => [
+                'list_id'         => [
+                    Fetch::LABEL        => 'list_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'reference'         => [
+                    Fetch::LABEL        => 'reference',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'type'            => [
+                    Fetch::LABEL        => 'type',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'string',
+                        'contact',
+                        'email',
+                        'country',
+                        'iin',
+                        'domain',
+                        'ip'
+                    ]
+                ],
+                'value'         => [
+                    Fetch::LABEL        => 'value',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+            ],
+            Entity::SHIELD_RISKS => [
+                'entity_id'         => [
+                    Fetch::LABEL        => 'entity_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'entity_type'       => [
+                    Fetch::LABEL        => 'entity_type',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'merchant_id'       => [
+                    Fetch::LABEL        => 'merchant_id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'action'            => [
+                    Fetch::LABEL        => 'action',
+                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES       => [
+                        'block',
+                        'review',
+                        'allow'
+                    ]
+                ],
+            ],
         ];
     }
 
@@ -1366,6 +1447,11 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'gateway' => Fetch::FIELD_GATEWAY,
+                'payment_gateway' => [
+                    Fetch::LABEL  => 'Payment Gateway',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => config('gateway.available')
+                ],
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'method' => Fetch::FIELD_METHOD,
                 'payment_id' => Fetch::FIELD_PAYMENT_ID,

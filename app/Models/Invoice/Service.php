@@ -336,9 +336,9 @@ class Service extends Base\Service
         // whole batch was already issued.
 
         $results = array_filter($results, function ($result)
-                    {
-                        return ($result['count'] > 0);
-                    });
+        {
+            return ($result['count'] > 0);
+        });
 
         $results = array_column($results, Entity::BATCH_ID);
 

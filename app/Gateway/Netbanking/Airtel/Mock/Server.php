@@ -73,7 +73,7 @@ class Server extends Base\Mock\Server
             RefundFields::MERCHANT_ID      => $request[RefundFields::MERCHANT_ID],
             RefundFields::ERROR_CODE       => '000',
             RefundFields::AMOUNT           => $request[RefundFields::AMOUNT],
-            RefundFields::TRANSACTION_ID   => $request[RefundFields::TRANSACTION_ID],
+            RefundFields::TRANSACTION_ID   => mt_rand(11111111, 99999999),
             RefundFields::TRANSACTION_DATE => $date,
             RefundFields::STATUS           => Status::SUCCESS,
             RefundFields::SESSION_ID       => $request[RefundFields::SESSION_ID],
@@ -224,7 +224,6 @@ class Server extends Base\Mock\Server
             $content[AuthFields::SERVICE],
             $this->getGatewayInstance()->getSecret()
         ];
-
 
         return $hashArray;
     }

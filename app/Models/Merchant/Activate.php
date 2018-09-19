@@ -52,7 +52,9 @@ class Activate extends Base\Core
         //
         $methods = $this->repo->methods->getMethodsForMerchant($merchant);
 
-        (new Methods\Core)->checkPricing($merchant, $methods);
+        (new Methods\Core)->checkMccAndEnableEmi($merchant, $methods);
+
+        (new Methods\Core)->checkPricing($merchant, $methods, true);
 
         // $terminal = (new Terminal\Repository)->getByMerchantId($id);
 

@@ -41,6 +41,17 @@ class Service extends Base\Service
         return $iin->toArrayPublic();
     }
 
+    public function disableIinFlow($id, $flow)
+    {
+        $iin = $this->repo->iin->findOrFail($id);
+
+        $iin->disableFlow($flow);
+
+        $this->repo->saveOrFail($iin);
+
+        return $iin->toArrayPublic();
+    }
+
     public function addIinRange($input)
     {
         $result = (new Import\RangeImporter)->import($input);

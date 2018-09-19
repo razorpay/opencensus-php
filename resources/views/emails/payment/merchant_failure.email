@@ -224,7 +224,7 @@
               </td>
             </tr>
           </table>
-          @include('emails.partials.footer', ['message'=>$message])
+          @include('emails.partials.footer', ['message'=>$message, 'type'=>'merchant_transaction'])
         </td>
       </tr>
     </table>

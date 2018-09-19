@@ -196,6 +196,11 @@ class Error extends Support\Fluent
         return $this->getAttribute(self::INTERNAL_ERROR_CODE);
     }
 
+    public function getGatewayErrorCode()
+    {
+        return $this->getAttribute(self::GATEWAY_ERROR_CODE);
+    }
+
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
@@ -287,7 +292,7 @@ class Error extends Support\Fluent
     {
         $description = $isPublicRoute ? $this->getCustomerDescription() : $this->getDescription();
 
-        $array = array(
+        $error = array(
             self::PUBLIC_ERROR_CODE => $this->getPublicErrorCode(),
             self::DESCRIPTION       => $description,
         );
@@ -295,14 +300,25 @@ class Error extends Support\Fluent
         $action = $this->getAttribute(self::ACTION);
 
         if ($action !== null)
-            $array[self::ACTION] = $action;
+            $error[self::ACTION] = $action;
 
         $field = $this->getAttribute(self::FIELD);
 
         if ($field !== null)
-            $array[self::FIELD] = $field;
+            $error[self::FIELD] = $field;
 
-        return array('error' => $array);
+        $attributes = $this->getAttribute(self::DATA);
+
+        $array = ['error' => $error];
+
+        $extra = $this->getExtraAttributes();
+
+        if ($extra !== null)
+        {
+            $array = array_merge($array, $extra);
+        }
+
+        return $array;
     }
 
     public function toDebugArray()
@@ -336,6 +352,20 @@ class Error extends Support\Fluent
         }
 
         return $this->getDescription();
+    }
+
+    protected function getExtraAttributes()
+    {
+        $attributes = $this->getAttribute(self::DATA);
+
+        // in headless otpsubmit failure we need to send next attribute.
+        if (($attributes !== null) and
+            (isset($attributes['next']) === true))
+        {
+            return ['next' => $attributes['next']];
+        }
+
+        return null;
     }
 
     protected function getErrorClassFromErrorCode($code)
