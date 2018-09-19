@@ -127,7 +127,7 @@ class Initiator extends Base\Core
 
         $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
 
-        (new SlackNotification)->success('setl_initiate', $slackData);
+        (new SlackNotification)->send('setl_initiate', $slackData);
 
         return $data;
     }

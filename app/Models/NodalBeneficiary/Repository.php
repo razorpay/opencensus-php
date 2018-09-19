@@ -30,4 +30,25 @@ class Repository extends Base\Repository
                     ->firstorFail();
     }
 
+    public function fetchNonRegisteredBeneficiaryCount(string $bankAccountId, string $channel)
+    {
+        $result =  $this->newQuery()
+                        ->where(Entity::BANK_ACCOUNT_ID, $bankAccountId)
+                        ->where(Entity::CHANNEL, $channel)
+                        ->where(Entity::REGISTRATION_STATUS, '!=', Status::REGISTERED)
+                        ->withTrashed()
+                        ->first();
+
+        return $result;
+    }
+
+    public function fetchNonRegisteredBankAccount(string $channel): array
+    {
+        return $this->newQuery()
+                    ->select(Entity::BANK_ACCOUNT_ID)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->where(Entity::REGISTRATION_STATUS, '!=', Status::REGISTERED)
+                    ->withTrashed()
+                    ->pluck(Entity::BANK_ACCOUNT_ID)->toArray();
+    }
 }

@@ -41,15 +41,12 @@ abstract class RequestProcessor extends Beneficiary
         $status = ($failureCount === 0) ? SlackNotification::GOOD : SlackNotification::BAD;
 
         $data = [
-            'message'       => 'Beneficiaries Registration status',
             'channel'       => $this->channel,
             'total'         => $this->count,
             'failure_count' => $failureCount,
         ];
 
-        (new SlackNotification())->send([
-                'status'        => $status
-            ] + $data);
+        (new SlackNotification)->send('bene_reg_status', $data, null, $failureCount);
 
         $this->trace->error(
             TraceCode::BENEFICIARY_REGISTRATION_SUMMARY,

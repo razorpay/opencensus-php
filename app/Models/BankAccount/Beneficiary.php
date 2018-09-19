@@ -11,7 +11,9 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
+use RZP\Exception\InvalidArgumentException;
 
 class Beneficiary extends Base\Core
 {
@@ -100,9 +102,12 @@ class Beneficiary extends Base\Core
      * @param array $input
      * @param string $channel
      * @return array
+     * @throws InvalidArgumentException
      */
     public function registerBeneficiaryThroughApi(array $input, string $channel): array
     {
+        $bankAccounts = new Base\PublicCollection;
+
         $this->trace->info(
             TraceCode::BENEFICIARY_REGISTER_API_INIT,
             [
@@ -113,23 +118,18 @@ class Beneficiary extends Base\Core
 
         (new Validator)->validateInput('beneficiary_register_api', $input);
 
-        $timeNow = Carbon::now(Timezone::IST);
-
-        $endTime   = $timeNow->getTimestamp();
-
-        $startTime = $timeNow->subSeconds($input['duration'])->getTimestamp();
-
-        $this->trace->info(
-            TraceCode::BENEFICIARY_REGISTER_API_FETCH,
-            [
-                'from' => $startTime,
-                'to'   => $endTime
-            ]
-        );
-
-        $bankAccounts = $this->repo->bank_account->getMerchantBankAccountsBetweenTimestamp(
-            $startTime,
-            $endTime);
+        if ((array_key_exists('all', $input) === true) and ($input['all'] === true))
+        {
+            $bankAccounts = $this->fetchNonRegisteredBankAccount($channel);
+        }
+        else if (array_key_exists('duration', $input) === true)
+        {
+            $bankAccounts = $this->fetchBankAccountBetweenTimestamps($input['duration']);
+        }
+        else
+        {
+            throw new InvalidArgumentException('Input key all or duration not specified');
+        }
 
         if ($bankAccounts->count() === 0)
         {
@@ -153,5 +153,43 @@ class Beneficiary extends Base\Core
             ]);
 
         return $result;
+    }
+
+    /**
+     * @param int $duration
+     * @return Base\PublicCollection
+     */
+    protected function fetchBankAccountBetweenTimestamps(int $duration): Base\PublicCollection
+    {
+        $timeNow = Carbon::now(Timezone::IST);
+
+        $endTime   = $timeNow->getTimestamp();
+
+        $startTime = $timeNow->subSeconds($duration)->getTimestamp();
+
+        $this->trace->info(
+            TraceCode::BENEFICIARY_REGISTER_API_FETCH,
+            [
+                'from' => $startTime,
+                'to'   => $endTime
+            ]
+        );
+
+        return $this->repo->bank_account->getMerchantBankAccountsBetweenTimestamp($startTime, $endTime);
+    }
+
+    /**
+     * @return Base\PublicCollection
+     */
+    protected function fetchNonRegisteredBankAccount($channel): Base\PublicCollection
+    {
+        $bankAccount = $this->repo->nodal_beneficiary->fetchNonRegisteredBankAccount($channel);
+
+        if (empty($bankAccount) === true)
+        {
+            return new Base\PublicCollection();
+        }
+
+        return $this->repo->bank_account->findMany($bankAccount);
     }
 }
