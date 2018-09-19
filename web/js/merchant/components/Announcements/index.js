@@ -107,9 +107,11 @@ export class EarlySettlementAnnouncement extends Component {
   }
 
   render() {
-    let className = 'settlement-anc ';
-    className += this.props.withTour ? ' with-tour ' : '';
-    className += this.props.marginBottom ? ' margin-bottom ' : '';
+    let className = classList(
+      'settlement-anc',
+      this.props.withTour && 'with-tour',
+      this.props.marginBottom && 'margin-bottom'
+    );
 
     return (
       <ShowWhen myRole="owner manager admin">

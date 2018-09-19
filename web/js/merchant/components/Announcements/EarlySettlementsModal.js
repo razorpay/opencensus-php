@@ -42,11 +42,7 @@ export default class RequestEarlyAccessForm extends Component {
     this.setState({
       saving: true,
     });
-    if (this.props.from) {
-      trackESAnnouncements.earlySettlementModalSubmit(this.props.from);
-    } else {
-      trackRequestEarlySettlementModalSubmit();
-    }
+    trackRequestEarlySettlementModalSubmit(this.props.from);
     axios({
       method: 'post',
       url: 'https://hooks.zapier.com/hooks/catch/1088429/qljsgo',
@@ -76,11 +72,7 @@ export default class RequestEarlyAccessForm extends Component {
   }
 
   closeForm() {
-    if (this.props.from) {
-      trackESAnnouncements.earlySettlementModalClose(this.props.from);
-    } else {
-      trackRequestEarlySettlementModalClose();
-    }
+    trackRequestEarlySettlementModalClose(this.props.from);
     this.props.closeModal();
   }
 

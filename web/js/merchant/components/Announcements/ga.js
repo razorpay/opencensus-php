@@ -10,8 +10,6 @@ const events = {
   earlySettlementAppear: 'Early Settlement: Appear',
   earlySettlementClickRequestAccess: 'Early Settlement: Click - Request Access',
   earlySettlementClickCloseButton: 'Early Settlement: Click - Close Button',
-  earlySettlementModalSubmit: 'Early Settlement: Modal Submit',
-  earlySettlementModalClose: 'Early Settlement: Modal Close',
 };
 
 const trackESAnnouncements = () => {
@@ -30,12 +28,32 @@ const trackESAnnouncements = () => {
 
 export default trackESAnnouncements();
 
-export const trackRequestEarlySettlementModalSubmit = setTrackData({
-  eventCategory: 'Dashboard - Settlements',
-  eventAction: 'Request Early Settlement: Modal Submit',
-});
+export const trackRequestEarlySettlementModalSubmit = fromWhere => {
+  if (fromWhere) {
+    return setTrackData({
+      eventCategory: 'Dashboard - Announcement',
+      eventAction: 'Early Settlement: Modal Submit',
+      eventLabel: fromWhere,
+    })();
+  } else {
+    return setTrackData({
+      eventCategory: 'Dashboard - Settlements',
+      eventAction: 'Request Early Settlement: Modal Submit',
+    })();
+  }
+};
 
-export const trackRequestEarlySettlementModalClose = setTrackData({
-  eventCategory: 'Dashboard - Settlements',
-  eventAction: 'Request Early Settlement: Modal Close',
-});
+export const trackRequestEarlySettlementModalClose = fromWhere => {
+  if (fromWhere) {
+    return setTrackData({
+      eventCategory: 'Dashboard - Announcement',
+      eventAction: 'Early Settlement: Modal Close',
+      eventLabel: fromWhere,
+    })();
+  } else {
+    return setTrackData({
+      eventCategory: 'Dashboard - Settlements',
+      eventAction: 'Request Early Settlement: Modal Close',
+    })();
+  }
+};
