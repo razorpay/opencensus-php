@@ -138,7 +138,7 @@ export default class User {
       : !!this.partner_type;
   }
 
-  showEarlySettlementAnnouncement() {
+  get showEarlySettlementAnnouncement() {
     return this.activated && this.findTag('announcement_early_settlements');
   }
 }
