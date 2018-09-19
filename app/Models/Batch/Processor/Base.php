@@ -821,7 +821,8 @@ class Base extends BaseModel\Core
     {
         if ($this->useSpreadSheetLibrary === true)
         {
-            // TODO: Add a trace here with batch id etc. in payload.
+            $this->trace->info(TraceCode::BATCH_FILE_PROCESS_USING_SPREADSHEET, $this->batch->toArrayTraceAll());
+
             return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath);
         }
 
