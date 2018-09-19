@@ -844,15 +844,39 @@ return [
         ],
     ],
 
-    'testFetchPartnerSubmerchantsFilters' => [
+    'testFetchPartnerSubmerchantsPurePlatform' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'application' => [
+                            'id' => '8ckeirnw84ifke',
+                        ]
+                    ],
+                    [
+                        'application' => [
+                            'id' => '10000RandomApp',
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+
+    'testFetchPartnerSubmerchantsPurePlatformFilters' => [
         'request'  => [
             'url'     => '/submerchants',
             'method'  => 'GET',
             'content' => [
-                'name'              => 'random_name_1',
-                'email'             => 'user@example.com',
-                'id'                => '10000000000009',
-                'activation_status' => 'under_review',
+                'application_id' => '10000RandomApp',
             ],
         ],
         'response' => [
@@ -861,14 +885,9 @@ return [
                 'count'  => 1,
                 'items'  => [
                     [
-                        'id'               => 'acc_10000000000009',
-                        'entity'           => 'merchant',
-                        'user'             => [],
-                        'name'             => 'random_name_1',
-                        'details'          => [
-                            'activation_status' => 'under_review',
-                        ],
-                        'dashboard_access' => false,
+                        'application' => [
+                            'id' => '10000RandomApp',
+                        ]
                     ],
                 ],
             ],

@@ -791,11 +791,128 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchantsFilters()
     {
+        $app = $this->createDummyPartnerApp([
+            'id'          => self::DUMMY_APP_ID_2,
+            'type'        => null,
+            'name'        => 'App 1',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]);
+
         $this->createPartnerAndAddMultipleSubmerchants();
 
         $this->ba->adminProxyAuth();
 
         $this->startTest();
+    }
+
+    public function testFetchPartnerSubmerchantsPurePlatform()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessSubMerchant();
+
+        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'pure_platform']);
+
+        $app = $this->createDummyPartnerApp([
+            'id'          => self::DUMMY_APP_ID_1,
+            'type'        => null,
+            'name'        => 'App 1',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]);
+
+        $app = $this->createDummyPartnerApp([
+            'id'          => self::DUMMY_APP_ID_2,
+            'type'        => null,
+            'name'        => 'App 2',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]);
+
+        $this->ba->adminProxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchPartnerSubmerchantsPurePlatformFilters()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessSubMerchant();
+
+        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'pure_platform']);
+
+        $app = $this->createDummyPartnerApp([
+            'id'          => self::DUMMY_APP_ID_1,
+            'type'        => null,
+            'name'        => 'App 1',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]);
+
+        $app = $this->createDummyPartnerApp([
+            'id'          => self::DUMMY_APP_ID_2,
+            'type'        => null,
+            'name'        => 'App 2',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]);
+
+        $this->ba->adminProxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
     }
 
     public function testFetchPartnerSubmerchantsPaginationFilters()
