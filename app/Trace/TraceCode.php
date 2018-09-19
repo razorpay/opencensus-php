@@ -894,6 +894,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_UPLOADING_FILE                          = 'BATCH_UPLOADING_FILE';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
     const BATCH_FILE_PROCESSING                         = 'BATCH_FILE_PROCESSING';
+    const BATCH_FILE_PROCESS_USING_SPREADSHEET          = 'BATCH_FILE_PROCESS_USING_SPREADSHEET';
     const BATCH_FILE_PROCESSING_ERROR                   = 'BATCH_FILE_PROCESSING_ERROR';
     const BATCH_FILE_PROCESSED                          = 'BATCH_FILE_PROCESSED';
     const BATCH_ALREADY_PROCESSED                       = 'BATCH_ALREADY_PROCESSED';
