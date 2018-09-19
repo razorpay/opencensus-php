@@ -22,7 +22,7 @@ $env = 'production';
 
 $appEnvironment = env('APP_ENV');
 
-$dockerEnvironment = true;
+$dockerEnvironment = false;
 
 if (strpos($appEnvironment, 'testing') !== false)
 {

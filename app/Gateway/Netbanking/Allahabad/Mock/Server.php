@@ -18,7 +18,7 @@ class Server extends Base\Mock\Server
 
         $sig = $input['bank_signaturte'];
 
-        $input['parameter_string'] = str_replace('|','&',$input['parameter_string']);
+        $input['parameter_string'] = str_replace('|', '&', $input['parameter_string']);
 
         parse_str($input['parameter_string'],$input);
 
