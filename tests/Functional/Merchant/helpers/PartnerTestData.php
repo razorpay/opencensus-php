@@ -711,13 +711,6 @@ return [
                 'dashboard_access'       => false,
                 'application'            => [
                     'id'   => '10000RandomApp',
-                    'name' => 'App 2',
-                ],
-                'connected_applications' => [
-                    [
-                        'id'   => '8ckeirnw84ifke',
-                        'name' => 'App 1',
-                    ],
                 ],
             ],
         ],

@@ -647,8 +647,6 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchant()
     {
-        $this->mockAuthServiceGetMultipleApps();
-
         $this->allowAdminToAccessPartnerMerchant();
 
         $submerchant = $this->allowAdminToAccessSubMerchant();
@@ -691,14 +689,9 @@ class PartnerTest extends OAuthTestCase
      * - application_id as a query param
      * - API call to Auth service
      * - presence of application key in the response for /submerchants/{id}
-     * - presence of connected_applications key in the response for /submerchants/{id}
-     * - connected_applications should only be the apps authorized by the submerchant and not all the apps created by
-     * the partner.
      */
     public function testFetchPartnerSubmerchantPurePlatform()
     {
-        $this->mockAuthServiceGetMultipleApps();
-
         $this->allowAdminToAccessPartnerMerchant();
 
         $submerchant = $this->allowAdminToAccessSubMerchant();
@@ -861,8 +854,6 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchantProxyAuth()
     {
-        $this->mockAuthServiceGetMultipleApps();
-
         $this->allowAdminToAccessPartnerMerchant();
 
         $submerchant = $this->allowAdminToAccessSubMerchant();
@@ -1202,34 +1193,5 @@ class PartnerTest extends OAuthTestCase
         $submerchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
 
         return $submerchantUser;
-    }
-
-    protected function mockAuthServiceGetMultipleApps()
-    {
-        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
-
-        $response = [
-            'entity' => 'collection',
-            'count' => 3,
-            'items' => [
-                [
-                    'id'          => self::DUMMY_APP_ID_3,
-                    'merchant_id' => self::DEFAULT_MERCHANT_ID,
-                    'name'        => 'App 3',
-                ],
-                [
-                    'id'          => self::DUMMY_APP_ID_2,
-                    'merchant_id' => self::DEFAULT_MERCHANT_ID,
-                    'name'        => 'App 2',
-                ],
-                [
-                    'id'          => self::DUMMY_APP_ID_1,
-                    'merchant_id' => self::DEFAULT_MERCHANT_ID,
-                    'name'        => 'App 1',
-                ],
-            ],
-        ];
-
-        $this->setAuthServiceMockDetail('applications', 'GET', $requestParams, 1, $response);
     }
 }
