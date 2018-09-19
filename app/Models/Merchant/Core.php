@@ -778,16 +778,20 @@ class Core extends Base\Core
      */
     public function postPartnerSubmissions(MerchantRequest\Entity $request, array $submissions)
     {
-        $parterType = $submissions[Entity::PARTNER_TYPE];
+        $partnerType = $submissions[Entity::PARTNER_TYPE];
 
-        $data[Entity::PARTNER_TYPE] = $parterType;
+        $data[Entity::PARTNER_TYPE] = $partnerType;
 
         $this->trace->info(
             TraceCode::PARTNER_REQUEST_SUBMITTED,
             [
-                Entity::PARTNER_TYPE       => $parterType,
+                Entity::PARTNER_TYPE       => $partnerType,
                 MerchantRequest\Entity::ID => $request->getId(),
             ]);
+
+        $dimensions = [Entity::PARTNER_TYPE => $partnerType];
+
+        $this->trace->count(Metric::PARTNER_MARK_REQUEST, $dimensions);
 
         Accessor::for ($request, Constants::PARTNER)
             ->upsert($data)
@@ -860,6 +864,10 @@ class Core extends Base\Core
 
             $this->createPartnerApp($merchant);
         });
+
+        $dimensions = [Entity::PARTNER_TYPE => $merchant->getPartnerType()];
+
+        $this->trace->count(Metric::PARTNER_MARKED_TOTAL, $dimensions);
 
         return $merchant;
     }

@@ -307,7 +307,6 @@ class PaymentCreateController extends Controller
         return $this->returnCallbackResponse($data);
     }
 
-    // @codingStandardsIgnoreLine
     public function postAJAXCallback($id, $hash)
     {
         $input = Request::all();
@@ -375,7 +374,10 @@ class PaymentCreateController extends Controller
                 }
                 else if ($data['request']['method'] === 'get')
                 {
-                    return $this->redirectToGatewayGetForm($data);
+                    $response = \Redirect::away($data['request']['url']);
+                    $response->headers->set('X-gateway', $data['gateway']);
+
+                    return $response;
                 }
                 else if ($data['request']['method'] === 'direct')
                 {
@@ -530,18 +532,6 @@ class PaymentCreateController extends Controller
         $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
 
         return View::make('gateway.gatewayPostForm')
-                   ->with('data', $postFormData);
-    }
-
-    protected function redirectToGatewayGetForm($data)
-    {
-        $merchant = $this->app['basicauth']->getMerchant();
-        $postFormData = $data;
-        $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
-        $postFormData['name'] = $merchant->getBillingLabel();
-        $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
-
-        return View::make('gateway.gatewayGetForm')
                    ->with('data', $postFormData);
     }
 

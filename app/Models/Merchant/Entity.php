@@ -81,7 +81,7 @@ class Entity extends Base\PublicEntity
     const ENABLE_LA_DASHBOARD      = 'Enable_la_dashboard';
 
     // Coupon Related Data for display only
-    const COUPON_CODE               = 'coupon_code';
+    const COUPON_CODE              = 'coupon_code';
 
     //
     // Followings are derived data indexed in ES and goes to

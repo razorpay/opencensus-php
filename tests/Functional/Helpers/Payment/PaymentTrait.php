@@ -1214,10 +1214,8 @@ trait PaymentTrait
 
     protected function getDefaultNetbankingPaymentArray($bank = null)
     {
-        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->getDefaultPaymentArrayNeutral();
         $payment['method'] = 'netbanking';
-
-        unset($payment['card']);
 
         if ($bank !== null)
         {

@@ -1121,6 +1121,7 @@ class DatabaseSeeder extends Seeder
         $this->createPayzappTerminals();
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
+        $this->createNetbankingIdfcTerminals();
         $this->createNetbankingKotakTerminals();
         $this->createNetbankingIciciTerminals();
         $this->createNetbankingAirtelTerminals();
@@ -1177,6 +1178,38 @@ class DatabaseSeeder extends Seeder
             ]
         );
     }
+
+    protected function createNetbankingIdfcTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => '22nP3sEf2tQco2',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_IDFC,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_idfc',
+                'gateway_secure_secret'     => Crypt::encrypt('test_account_netbanking_idfb_secret'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_IDFC_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_IDFC,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'demo_merchant_netbanking_idfc',
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_idfb_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
 
     protected function createNetbankingHdfcTerminals()
     {
