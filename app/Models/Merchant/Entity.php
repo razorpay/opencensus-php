@@ -150,7 +150,6 @@ class Entity extends Base\PublicEntity
     const DETAILS                   = 'details';
     const DASHBOARD_ACCESS          = 'dashboard_access';
     const APPLICATION               = 'application';
-    const CONNECTED_APPLICATIONS    = 'connected_applications';
 
     protected $entity = 'merchant';
 

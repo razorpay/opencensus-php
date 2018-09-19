@@ -1284,59 +1284,6 @@ class Core extends Base\Core
     }
 
     /**
-     * @param array  $partnerApps
-     * @param string $currentAppId
-     * @param array  $connectedAppIds
-     *
-     * @return array
-     */
-    protected function spliceCurrentAppFromAllApps(
-        array $partnerApps,
-        string $currentAppId,
-        array $connectedAppIds): array
-    {
-        $partnerVisibleAppColumns = [
-            OAuthApp\Entity::ID,
-            OAuthApp\Entity::NAME,
-        ];
-
-        $partnerAppItems = $partnerApps[PublicCollection::ITEMS] ?? [];
-
-        // converts the items to a collection
-        $partnerApps = collect($partnerAppItems);
-
-        // Fetch where app id = $applicationId
-        $currentApp = (array) $partnerApps->firstWhere(OAuthApp\Entity::ID, $currentAppId);
-
-        if (empty($currentApp) === false)
-        {
-            $currentApp = array_only($currentApp, $partnerVisibleAppColumns);
-        }
-
-        // Remove current app id from the list of connected app ids
-        $connectedAppIds = array_values(array_diff($connectedAppIds, [$currentAppId]));
-
-        // Reject all those apps that are not connected to (authorized by) the submerchant
-        $connectedApps = $partnerApps->reject(function($partnerApp) use ($currentAppId, $connectedAppIds)
-        {
-            return (in_array($partnerApp[OAuthApp\Entity::ID], $connectedAppIds, true) === false);
-        });
-
-        //
-        // $connectedApps is a collection. calling reject over a collection will convert the indexes of
-        // the existing elements as keys. Hence, array_values must be used.
-        //
-        $connectedApps = array_values($connectedApps->toArray());
-
-        foreach ($connectedApps as & $connectedApp)
-        {
-            $connectedApp = array_only($connectedApp, $partnerVisibleAppColumns);
-        }
-
-        return [$currentApp, $connectedApps];
-    }
-
-    /**
      * A submerchant account can have at a max of 2 users with the `owner` role -
      * One being his own user and second being the partner merchant's user linked as an owner to the submerchant.
      *

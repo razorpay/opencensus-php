@@ -686,25 +686,19 @@ class PartnerTest extends OAuthTestCase
 
     /**
      * This test asserts the following things:
-     * - application_id as a query param
-     * - API call to Auth service
      * - presence of application key in the response for /submerchants/{id}
      */
     public function testFetchPartnerSubmerchantPurePlatform()
     {
         $this->allowAdminToAccessPartnerMerchant();
 
-        $submerchant = $this->allowAdminToAccessSubMerchant();
+        $this->allowAdminToAccessSubMerchant();
 
         $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
 
         $submerchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
 
         $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
-
-        $submerchantOwners = $submerchant->owners()->get()->toArrayPublic();
-
-        $this->assertEquals(2, $submerchantOwners['count']);
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'pure_platform']);
 

@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use App;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Feature;
@@ -11,7 +12,6 @@ use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Error\PublicErrorDescription;
-use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Validator extends Base\Validator
 {
