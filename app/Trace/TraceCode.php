@@ -1227,6 +1227,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RETRY_BEAM_FILE_UPLOAD                        = 'RETRY_BEAM_FILE_UPLOAD';
     const BENEFICIARY_REGISTER_API_INIT                 = 'BENEFICIARY_REGISTER_API_INIT';
     const BENEFICIARY_REGISTER_API_FETCH                = 'BENEFICIARY_REGISTER_API_FETCH';
+    const BEAM_NOTIFIER_FAILED                          = 'BEAM_NOTIFIER_FAILED';
+    const SLACK_NOTIFICATION_SEND_FAILED                = 'SLACK_NOTIFICATION_SEND_FAILED';
     const VERIFY_FUND_TRANSFER_INIT                     = 'VERIFY_FUND_TRANSFER_INIT';
     const FTA_VERIFICATION_SKIPPED                      = 'FTA_VERIFICATION_SKIPPED';
     const VERIFY_FTA_ROW                                = 'VERIFY_FTA_ROW';
