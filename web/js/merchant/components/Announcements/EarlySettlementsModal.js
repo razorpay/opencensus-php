@@ -7,7 +7,10 @@ import InputField from 'rzp/ui/Forms/InputField';
 import { Field, reduxForm } from 'redux-form';
 import RadioButton from 'rzp/ui/Forms/RadioButton';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
-import trackESAnnouncements from './ga';
+import trackESAnnouncements, {
+  trackRequestEarlySettlementModalSubmit,
+  trackRequestEarlySettlementModalClose,
+} from './ga';
 
 @connect(
   state => ({ user: state.session.user }),
@@ -39,8 +42,7 @@ export default class RequestEarlyAccessForm extends Component {
     this.setState({
       saving: true,
     });
-    trackESAnnouncements.earlySettlementModalSubmit(this.props.from);
-
+    trackRequestEarlySettlementModalSubmit(this.props.from);
     axios({
       method: 'post',
       url: 'https://hooks.zapier.com/hooks/catch/1088429/qljsgo',
@@ -70,7 +72,7 @@ export default class RequestEarlyAccessForm extends Component {
   }
 
   closeForm() {
-    trackESAnnouncements.earlySettlementModalClose(this.props.from);
+    trackRequestEarlySettlementModalClose(this.props.from);
     this.props.closeModal();
   }
 

@@ -60,7 +60,7 @@ export class EarlySettlementAnnouncement extends Component {
       bannerKey: `early-settlement-banner-viewed-${props.user.current}`,
     };
 
-    if (props.user.findTag('announcement_early_settlements')) {
+    if (props.user.showEarlySettlementAnnouncement) {
       this.state.isHidden = LocalStorageService.getItem(this.state.bannerKey);
     } else {
       this.state.isHidden = true;
@@ -104,8 +104,11 @@ export class EarlySettlementAnnouncement extends Component {
   }
 
   render() {
-    let className = 'settlement-anc';
-    className += this.props.withTour ? ' with-tour' : '';
+    let className = classList(
+      'settlement-anc',
+      this.props.withTour && 'with-tour',
+      this.props.marginBottom && 'margin-bottom'
+    );
 
     return (
       <ShowWhen myRole="owner manager admin">
