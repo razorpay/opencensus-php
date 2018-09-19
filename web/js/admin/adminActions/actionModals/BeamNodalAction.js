@@ -1,6 +1,6 @@
 import React from 'react';
 import Form from 'ui/Form';
-import Field, { SelectMode } from 'ui/Field';
+import Field, { SelectField, SelectMode } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
 import { adminPut } from 'common/fetch';
