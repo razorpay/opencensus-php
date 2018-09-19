@@ -7,7 +7,8 @@ import { adminPut } from 'common/fetch';
 import { notifySuccess, closeModal } from 'common/modal';
 
 BeamNodalAction.title = 'Nodal Account Action via Beam';
-BeamNodalAction.title = 'settlement_bulk_update';
+BeamNodalAction.permission = 'settlement_bulk_update';
+
 export default function BeamNodalAction() {
   return (
     <Form class="full-span">
