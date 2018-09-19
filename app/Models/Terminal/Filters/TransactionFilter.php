@@ -36,6 +36,7 @@ class TransactionFilter extends Terminal\Filter
         'mcc',
         'auth_type',
         'bharat_qr',
+        'direct_settlement',
     ];
 
     public function methodFilter($terminal)
@@ -710,5 +711,33 @@ class TransactionFilter extends Terminal\Filter
         {
             return ($terminal->isBharatQr() === false);
         }
+    }
+
+    public function directSettlementFilter($terminal, $applicableTerminals)
+    {
+       if ($this->input['payment']->isNetbanking() === false)
+       {
+            return true;
+       }
+
+       $directSettlementTerminals = array_filter(
+                                    $applicableTerminals,
+                                    function ($terminal)
+                                    {
+                                        return ($terminal->isDirectSettlement() === true);
+                                    });
+
+        // if no direct settlement terminals found, return true.
+        if (empty($directSettlementTerminals) === true)
+        {
+            return true;
+        }
+
+        if (in_array($terminal, $directSettlementTerminals, true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
