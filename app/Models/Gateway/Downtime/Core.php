@@ -157,7 +157,6 @@ class Core extends Base\Core
         $params = [
             Entity::GATEWAY => $gateways,
             Entity::PARTIAL => false,
-            Entity::END     => $now,
             Entity::BEGIN   => $now,
         ];
 

@@ -22,6 +22,8 @@ class Fee extends Base\Core
 
     const DEFAULT_QR_CODE_PLAN_ID = 'A8UwvIbaL8n4Q8';
 
+    const DEFAULT_EMI_PLAN_ID     = 'ArGUUem5z3UADv';
+
     const DEFAULT_BANK_TRANSFER_PLAN_ID = '8gP5505KgDVWIh';
 
     public function __construct()
@@ -98,6 +100,13 @@ class Fee extends Base\Core
             $qrCodePricing = $this->repo->getPricingPlanById(self::DEFAULT_QR_CODE_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($qrCodePricing);
+        }
+
+        if ($pricingPlan->hasMethod(Payment\Method::EMI) === false)
+        {
+            $emiPricing = $this->repo->getPricingPlanById(self::DEFAULT_EMI_PLAN_ID);
+
+            $pricingPlan = $pricingPlan->merge($emiPricing);
         }
 
         return $pricingPlan;

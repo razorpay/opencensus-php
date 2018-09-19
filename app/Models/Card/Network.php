@@ -138,6 +138,11 @@ class Network
                 (NetworkName::isValidNetworkFullName($network)));
     }
 
+    public static function isValidNetworkCode($network)
+    {
+        return (in_array($network, self::$networks, true));
+    }
+
     public static function isValidNetworkName($network)
     {
         return (NetworkName::isValidNetworkFullName($network));
@@ -145,7 +150,7 @@ class Network
 
     public static function isUnsupportedNetwork($network)
     {
-        return (in_array($network, self::$unsupportedNetworks));
+        return (in_array($network, self::$unsupportedNetworks, true));
     }
 
     public static function getFullName($network)

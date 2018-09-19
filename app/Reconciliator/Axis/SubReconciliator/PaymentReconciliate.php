@@ -1,9 +1,10 @@
 <?php
 
-namespace RZP\Reconciliator\Axis;
+namespace RZP\Reconciliator\Axis\SubReconciliator;
 
 use Carbon\Carbon;
 
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
@@ -12,7 +13,7 @@ use RZP\Gateway\Cybersource;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names
@@ -446,7 +447,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return false;
     }
 
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
         $this->allowForceAuthorization = true;
     }

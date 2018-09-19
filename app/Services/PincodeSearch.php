@@ -105,11 +105,17 @@ class PincodeSearch
 
         $method = $request['method'];
 
-        $response = Requests::$method(
-            $request['url'],
-            $request['headers'],
-            $request['content'],
-            $request['options']);
+        $response = [];
+
+        switch($method)
+        {
+            case Requests::GET:
+                $response = Requests::$method(
+                    $request['url'],
+                    $request['headers'],
+                    $request['options']);
+                break;
+        }
 
         return $response;
     }

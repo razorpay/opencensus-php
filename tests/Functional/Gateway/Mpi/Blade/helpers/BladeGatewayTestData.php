@@ -42,7 +42,7 @@ return [
         ],
     ],
 
-    'testBlankMessage' => [
+    'testInvalidXml' => [
         'response'  => [
             'content'     => [
                 'error' => [
@@ -55,6 +55,38 @@ return [
         'exception' => [
             'class'                 => RZP\Exception\GatewayErrorException::class,
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+        ],
+    ],
+
+    'testSignatureMissing' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'Payment processing failed because of card authentication failure',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR,
+        ],
+    ],
+
+    'testBlankMessage' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => 'Payment processing failed due to error at bank or wallet gateway',
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_PARES_XML,
         ],
     ],
 
@@ -103,6 +135,22 @@ return [
         'exception' => [
             'class'                 => RZP\Exception\GatewayErrorException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testInvalidIReqCode' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => 'Payment processing failed due to error at bank or wallet gateway',
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_PARES_XML,
         ],
     ],
 ];

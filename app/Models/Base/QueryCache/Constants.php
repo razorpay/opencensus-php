@@ -9,6 +9,7 @@ class Constants
     const DEFAULT_QUERY_CACHE_TTL     = 5;
     const DEFAULT_QUERY_CACHE_VERSION = 'v1';
     const QUERY_CACHE_PREFIX          = 'rememberable';
+    const UPI_POLLING_CACHE_PREFIX    = 'upi.polling';
 
     const CACHE_HITS      = 'cache_hits';
     const CACHE_MISSES    = 'cache_misses';

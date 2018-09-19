@@ -54,6 +54,9 @@ class CreateGatewayRules extends Migration
             $table->tinyInteger(Rule::RECURRING)
                   ->nullable();
 
+            $table->string(Rule::RECURRING_TYPE, 50)
+                  ->nullable();
+
             $table->string(Rule::NETWORK, 10)
                   ->nullable();
 

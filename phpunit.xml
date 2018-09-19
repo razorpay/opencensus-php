@@ -17,14 +17,33 @@
             Following ES related tests are failing on wercker.
             To be removed asap after debug.
           -->
+          <exclude>./tests/Unit/</exclude>
+          <exclude>./tests/Functional/Payment/</exclude>
+          <exclude>./tests/Functional/Gateway/</exclude>
           <exclude>./tests/Functional/Merchant/MerchantEsCreateTest.php</exclude>
           <exclude>./tests/Functional/Merchant/MerchantEsFetchTest.php</exclude>
           <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
 
       </testsuite>
+      <testsuite name="Payment Test Suite">
+          <directory>./tests/Functional/Payment/</directory>
+          <directory>./tests/Functional/Gateway/</directory>
+          <directory>./tests/Unit/</directory>
+      </testsuite>
   </testsuites>
   <listeners>
-    <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener" />
+    <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener">
+      <arguments>
+        <array>
+          <element key="dns-sensitive">
+            <array>
+              <element key="0"><string>Illuminate\Validation\Concerns</string></element>
+              <element key="1"><string>RZP\Models\Merchant\Webhook</string></element>
+            </array>
+          </element>
+        </array>
+      </arguments>
+    </listener>
   </listeners>
   <filter>
     <whitelist>

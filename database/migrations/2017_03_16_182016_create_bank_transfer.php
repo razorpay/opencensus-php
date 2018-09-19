@@ -46,6 +46,9 @@ class CreateBankTransfer extends Migration
             $table->char(BankTransfer::VIRTUAL_ACCOUNT_ID, BankTransfer::ID_LENGTH)
                   ->nullable();
 
+            $table->string(BankTransfer::GATEWAY)
+                  ->nullable(false);
+
             $table->integer(BankTransfer::AMOUNT);
 
             $table->string(BankTransfer::MODE, 5);

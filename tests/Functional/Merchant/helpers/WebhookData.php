@@ -10,7 +10,7 @@ return [
         'request' => [
             'url' => '/webhooks',
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -19,7 +19,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => true,
                 ],
@@ -32,7 +32,7 @@ return [
         'request' => [
             'url' => '/webhooks',
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -59,7 +59,7 @@ return [
         'request' => [
             'url' => '/webhooks',
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -69,7 +69,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => true,
                 ],
@@ -82,7 +82,7 @@ return [
         'request' => [
             'url' => '/webhooks',
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -108,7 +108,7 @@ return [
         'request' => [
             'url' => '/oauth/applications/10000000000App/webhooks',
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -117,7 +117,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'url'            => 'http://example.com',
+                'url'            => 'http://webhook.com',
                 'events'         => [
                     'payment.authorized' => true,
                 ],
@@ -131,7 +131,7 @@ return [
         'request' => [
             'url' => '/webhooks',
             'content' => [
-                'url' => 'http://example.com',
+                'url' => 'http://webhook.com',
                 'secret' => 'cef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1ccef6950d4648d0257f8ea6f1198b23f2bb892d1c',
                 'events' => [
                     'payment.authorized' => '1',
@@ -151,6 +151,127 @@ return [
         'exception' => [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateAppWebhookInvalidPartnerType' => [
+        'request'   => [
+            'url'     => '/oauth/applications/10000000000Appp/webhooks',
+            'content' => [
+                'url'    => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testCreateAppWebhookPurePlatform' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'url'            => 'http://webhook.com',
+                'events'         => [
+                    'payment.authorized' => true,
+                ],
+                'active'         => true,
+                'application_id' => '10000000000App'
+            ]
+        ],
+    ],
+
+    'testCreateAppWebhookOAuthTag' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'url'            => 'http://webhook.com',
+                'events'         => [
+                    'payment.authorized' => true,
+                ],
+                'active'         => true,
+                'application_id' => '10000000000App'
+            ]
+        ],
+    ],
+
+    'testCreateAppWebhookBankWithOAuthTag' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testCreateAppWebhookFullyManagedWithOAuthTag' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://webhook.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'url'            => 'http://webhook.com',
+                'events'         => [
+                    'payment.authorized' => true,
+                ],
+                'active'         => true,
+                'application_id' => '10000000000App'
+            ]
         ],
     ],
 
@@ -266,7 +387,7 @@ return [
                 'count' => 1,
                 'items' => [
                     [
-                        'url' => 'http://example.com/v1/dummy/route',
+                        'url' => 'http://webhook.com/v1/dummy/route',
                         'events' => [
                             'payment.authorized' => true
                         ],
@@ -292,10 +413,6 @@ return [
                 'invoice.paid',
                 'invoice.partially_paid',
                 'invoice.expired',
-                'vpa.edited',
-                'p2p.created',
-                'p2p.rejected',
-                'p2p.transferred',
             ]
         ]
     ],
@@ -311,7 +428,7 @@ return [
                 'count'  => 1,
                 'items'  => [
                     [
-                        'url'            => 'http://example.com/v1/dummy/route',
+                        'url'            => 'http://webhook.com/v1/dummy/route',
                         'events'         => [
                             'payment.authorized' => true
                         ],
@@ -352,7 +469,7 @@ return [
         'request'  => [
             'url'     => '/oauth/applications/10000000000Appp/webhooks',
             'content' => [
-                'url'    => 'http://example.com',
+                'url'    => 'http://webhook.com',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -394,6 +511,28 @@ return [
                 'active' => false,
             ],
         ]
+    ],
+
+    'testEditWebhookByNonOwnerUser' => [
+        'request' => [
+            'content' => [
+                'url' => 'https://example.com',
+                'events' => [
+                    'payment.authorized' => '0',
+                ],
+                'active' => '0',
+            ],
+            'method' => 'put',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED
+                ],
+            ],
+            'status_code' => 400,
+        ],
     ],
 
     'testCreateWebhookWrongUrl' => [
@@ -491,7 +630,7 @@ return [
     ],
 
     'testAppWebhookData' => [
-        'url'     => 'http://example.com/v1/dummy/route',
+        'url'     => 'http://webhook.com/v1/dummy/route',
         'method'  => 'post',
         'content' => [
             'entity'   => 'event',
@@ -549,7 +688,7 @@ return [
     ],
 
     'testMerchantWebhookData' => [
-        'url'     => 'http://sample.com/v1/dummy/route',
+        'url'     => 'http://webhook.com/v1/dummy/route',
         'method'  => 'post',
         'content' => [
             'entity'   => 'event',
@@ -737,7 +876,7 @@ return [
     ],
 
     'testWebhookEventDataJustBeforeFiring' => [
-        'url' => 'http://example.com/v1/dummy/route',
+        'url' => 'http://webhook.com/v1/dummy/route',
         'method' => 'post',
         'content' => [
             'entity' => 'event',
@@ -771,7 +910,7 @@ return [
     ],
 
     'testExceptionOnWebhookFire' => [
-        'url' => 'http://example.com/v1/dummy/route',
+        'url' => 'http://webhook.com/v1/dummy/route',
         'method' => 'post',
         'content' => [
             'entity' => 'event',
@@ -801,7 +940,7 @@ return [
     ],
 
     'testSecretValueInWebhookEventDataJustBeforeFiring' => [
-        'url' => 'http://example.com/v1/dummy/route',
+        'url' => 'http://webhook.com/v1/dummy/route',
         'method' => 'post',
         'content' => [
             'entity' => 'event',

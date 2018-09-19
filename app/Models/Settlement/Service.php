@@ -294,4 +294,44 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    /**
+     * @param array $input
+     * @param string $channel
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
+     */
+    public function verifySettlementsThroughApi(array $input, string $channel): array
+    {
+        $this->trace->info(
+            TraceCode::VERIFY_FUND_TRANSFER_INIT,
+            [
+                'input'     => $input,
+                'channel'   => $channel
+            ]);
+
+        $apiBasedChannels = Channel::getApiBasedChannels();
+
+        if (in_array($channel, $apiBasedChannels, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Channel Does not support API based approach for verification',
+                null,
+                [
+                    'channel' => $channel
+                ]);
+        }
+
+         if (empty($input) === true)
+         {
+           throw new Exception\BadRequestValidationFailureException('Input is empty!');
+         }
+
+        (new Validator)->validateInput('settlement_verify', $input);
+
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel) . '\\Reconciliation\\Processor';
+
+        return (new $reconNamepsace)->verify($input);
+    }
 }

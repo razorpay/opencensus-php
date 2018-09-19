@@ -70,7 +70,7 @@ return [
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
                 'method'         => 'netbanking',
-                'bank'           => 'SBIN',
+                'bank'           => 'CBIN',
                 'account_number' => '04030403040304',
             ],
             'method'    => 'POST',
@@ -117,10 +117,26 @@ return [
         ],
     ],
 
+    'testInvalidResponse' =>[
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE
+        ],
+    ],
+
     'testPaymentNetbankingEntity' => [
         'bank_payment_id' => '99999999',
         'received'        => true,
-        'bank_name'       => 'SBIN',
+        'bank_name'       => 'CBIN',
         'status'          => 'Ok',
     ],
 

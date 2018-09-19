@@ -117,6 +117,7 @@
           type='email'
           required
           placeholder='Enter Email'
+          pattern="^[^@\s]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$"
           value={{ $data['request']['content']['email'] ?? "" }}>
         <label for='contact'>
           <b>Contact</b>

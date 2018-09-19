@@ -71,7 +71,7 @@ class NetbankingReconciliationTest extends TestCase
         {
             if ($action === 'claims_data')
             {
-                $content['0']['extra_row'] = 'abc';
+                unset($content[0]['Error Description']);
             }
         });
 
@@ -110,6 +110,10 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->reconcile('NetbankingRbl', $uploadedFile);
 
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals('processed', $batch['status']);
+
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity['status'], 'authorized');
@@ -142,6 +146,14 @@ class NetbankingReconciliationTest extends TestCase
         $gatewayEntity = $this->getLastEntity('netbanking', true);
 
         $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEntity['account_number']);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
     }
 
     public function testPnbManualReconciliation()
@@ -166,6 +178,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->assertEquals($netbankingentity['bank_payment_id'], 99999);
 
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
     }
 
     public function testPnbFailedPaymentReconciliation()
@@ -187,9 +202,73 @@ class NetbankingReconciliationTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity['status'], 'authorized');
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $batch = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
     }
 
-    public function testObcManualReconcilation()
+    public function testIdfcPaymentReconciliation()
+    {
+        $this->gateway = 'netbanking_idfc';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $netbanking = $this->createNetbanking($payment['id'], 'IDFB', 'S');
+
+        $input = [
+            'gateway' => $this->gateway,
+        ];
+
+        $fileContents = $this->generateFile('idfc', $input);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingIdfc', $uploadedFile);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $netbankingentity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($netbankingentity['bank_payment_id'], 99999);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+    }
+
+    public function testIdfcFailedPaymentReconciliation()
+    {
+        $this->gateway = 'netbanking_idfc';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $netbanking = $this->createNetbanking($payment['id'], 'IDFB', 'F');
+
+        $fileContents = $this->generateFile('idfc', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingIdfc', $uploadedFile);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity['status'], 'authorized');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+    }
+
+    public function testObcManualReconciliation()
     {
         $this->gateway = 'netbanking_obc';
 
@@ -313,6 +392,8 @@ class NetbankingReconciliationTest extends TestCase
         $transactionEntity = $this->getLastEntity('transaction', true);
 
         $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $this->assertBatchStatus(Status::PROCESSED);
     }
 
     public function testHdfcPaymentReconciliation()
@@ -442,6 +523,122 @@ class NetbankingReconciliationTest extends TestCase
         $this->assertTrue($transactionEntity['reconciled_at'] !== null);
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testCorporationSuccessRecon()
+    {
+        $this->gateway = 'netbanking_corporation';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'corporation', 'S');
+
+        $fileContents = $this->generateFile('corporation', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $data = $this->reconcile('NetbankingCorporation', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNotNull($gatewayEntity['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testCorporationBankAmountMismatch()
+    {
+        $this->gateway = 'netbanking_corporation';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'corporation', 'S');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = '')
+            {
+                $content[1][4] = '1.00';
+            });
+
+        $fileContents = $this->generateFile('corporation', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingCorporation', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+    }
+
+    public function testCorporationReconcileFailedPayment()
+    {
+        $this->gateway = 'netbanking_corporation';
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'corporation', 'F');
+
+        $netbankingEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNull($netbankingEntity['date']);
+
+        $fileContents = $this->generateFile('corporation', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingCorporation', $uploadedFile);
+
+        $gatewayEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNotNull($gatewayEntity['bank_payment_id']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $netbankingEntity = $this->getDbLastEntity('netbanking');
+
+        $this->assertNotNull($netbankingEntity['date']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testCorpaymentReconStatusFailedSucessApi()
+    {
+        $this->gateway = 'netbanking_corporation';
+
+        $payment = $this->createPayment($this->gateway);
+
+        $this->createNetbanking($payment['id'], 'corporation', 'S');
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = '')
+            {
+                $content[1][5] = 'F';
+            });
+
+        $fileContents = $this->generateFile('corporation', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingCorporation', $uploadedFile);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
     }
 
     protected function reconcile($gateway, $uploadedFile)

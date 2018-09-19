@@ -39,6 +39,25 @@ class RecurringPaymentTest extends TestCase
         $payment = $this->getDefaultRecurringPaymentArray();
 
         $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
+    }
+
+    public function testRecurringFirstPaymentCreatePrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
     }
 
     public function testDebitCardRecurringFirstPaymentCreatePublicAuth()
@@ -70,6 +89,10 @@ class RecurringPaymentTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature::ALLOW_ALL_DC_RECURRING]);
 
         $this->doAuthPayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
     }
 
     /**
@@ -109,6 +132,10 @@ class RecurringPaymentTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature::ALLOW_ALL_DC_RECURRING]);
 
         $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
     }
 
     public function testRecurringInternationalPaymentWhenAllowed()
@@ -124,6 +151,10 @@ class RecurringPaymentTest extends TestCase
         $payment['card']['number'] = '4012010000000007';
 
         $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
 
         $this->fixtures->merchant->disableInternational();
     }
@@ -166,8 +197,6 @@ class RecurringPaymentTest extends TestCase
 
     public function testRecurringSecondPaymentCreatePublicAuth()
     {
-        $this->markTestSkipped('We now allow second recurring on public auth');
-
         $this->ba->publicAuth();
 
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
@@ -180,6 +209,8 @@ class RecurringPaymentTest extends TestCase
 
         $tokenEntity   = $this->getLastEntity('token', true);
 
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+
         $this->assertEquals('1000CybrsTrmnl', $paymentEntity[Payment::TERMINAL_ID]);
 
         $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
@@ -190,12 +221,65 @@ class RecurringPaymentTest extends TestCase
 
         $payment[Payment::TOKEN] = $tokenId;
 
-        $data = $this->testData[__FUNCTION__];
+        $this->doAuthPayment($payment);
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->doAuthPayment($payment);
-        });
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+        $this->assertEquals('1000CybrsTrmnl', $paymentEntity[Payment::TERMINAL_ID]);
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
+    }
+
+    public function testRecurringPaymentWithNewCustomer()
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'url' => '/customers',
+            'method' => 'post',
+            'content' => [
+                'name'    => 'testc',
+                'email'   => 'test@razorpay.com',
+                'contact' => '1234567899',
+                ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['customer_id'] = $response['id'];
+
+        $this->ba->publicAuth();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenEntity   = $this->getLastEntity('token', true);
+
+        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '1000CybrsTrmnl');
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        unset($payment[Payment::CARD]);
+        unset($payment[Payment::BANK]);
+
+        $payment[Payment::TOKEN] = $tokenId;
+
+        $this->ba->privateAuth();
+
+        $content = $this->doS2SRecurringPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '2RecurringTerm');
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
+        $this->assertEquals($paymentEntity[Payment::TWO_FACTOR_AUTH], 'skipped');
     }
 
     public function testRecurringSecondPaymentCreatePublicAuthWithCard()
@@ -212,6 +296,7 @@ class RecurringPaymentTest extends TestCase
 
         $tokenEntity   = $this->getLastEntity('token', true);
 
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
         $this->assertEquals('1000CybrsTrmnl', $paymentEntity[Payment::TERMINAL_ID]);
         $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
 
@@ -219,6 +304,35 @@ class RecurringPaymentTest extends TestCase
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+        $this->assertEquals('1000CybrsTrmnl', $paymentEntity[Payment::TERMINAL_ID]);
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
+    }
+
+    public function testRecurringSecondPaymentWithCardOnPrivateAuth()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenEntity   = $this->getLastEntity('token', true);
+
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+        $this->assertEquals('1000CybrsTrmnl', $paymentEntity[Payment::TERMINAL_ID]);
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
+
+        $this->ba->privateAuth();
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
         $this->assertEquals('1000CybrsTrmnl', $paymentEntity[Payment::TERMINAL_ID]);
         $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
     }
@@ -238,7 +352,7 @@ class RecurringPaymentTest extends TestCase
         $tokenEntity   = $this->getLastEntity('token', true);
 
         $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '1000CybrsTrmnl');
-
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
         $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
 
         $tokenId = $paymentEntity[Payment::TOKEN_ID];
@@ -255,8 +369,83 @@ class RecurringPaymentTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '2RecurringTerm');
-
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
         $this->assertEquals($paymentEntity[Payment::TWO_FACTOR_AUTH], 'skipped');
+    }
+
+    public function testRecurringSecondPaymentCreatePublicAuthWithoutRecurringToken()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['save'] = 1;
+        unset($payment['recurring']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenEntity   = $this->getLastEntity('token', true);
+
+        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '1000CybrsTrmnl');
+        $this->assertEquals(false, $tokenEntity[Token::RECURRING]);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        unset($payment[Payment::CARD]);
+        unset($payment[Payment::BANK]);
+
+        $payment['recurring'] = 1;
+
+        $payment[Payment::TOKEN] = $tokenId;
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+    }
+
+    public function testRecurringSecondPaymentCreatePrivateAuthWithoutRecurringToken()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL, Feature::S2S]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['save'] = 1;
+        unset($payment['recurring']);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenEntity   = $this->getLastEntity('token', true);
+
+        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '1000CybrsTrmnl');
+        $this->assertEquals(false, $tokenEntity[Token::RECURRING]);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        unset($payment[Payment::CARD]);
+        unset($payment[Payment::BANK]);
+
+        $payment['recurring'] = 1;
+
+        $this->ba->privateAuth();
+
+        $payment[Payment::TOKEN] = $tokenId;
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+        $this->assertTrue($paymentEntity['recurring']);
     }
 
     /**
@@ -284,7 +473,7 @@ class RecurringPaymentTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
-
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
         $tokenEntity   = $this->getLastEntity('token', true);
 
         // Looks like the first one really is yours
@@ -306,21 +495,24 @@ class RecurringPaymentTest extends TestCase
 
         // OMG the second one is yours too, what is this sorcery
         $this->assertEquals('FDRcrDTrmlN3DS', $paymentEntity[Payment::TERMINAL_ID]);
-
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
         $this->assertEquals('skipped', $paymentEntity[Payment::TWO_FACTOR_AUTH]);
     }
 
     public function testRecurringPaymentCreatePrivateAuth()
     {
-        $this->markTestSkipped('Mark skipped. Fix it');
-
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL, Feature::S2S]);
+        $this->fixtures->merchant->addFeatures([Feature::S2S, Feature::CHARGE_AT_WILL]);
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $this->doS2SPrivateAuthAndCapturePayment($payment);
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+        $this->assertTrue($paymentEntity['recurring']);
     }
 
     public function testRecurringPaymentCreatePrivateAuthS2SDisabled()
@@ -418,7 +610,7 @@ class RecurringPaymentTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '2RecurringTerm');
-
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
         $this->assertEquals($paymentEntity[Payment::TWO_FACTOR_AUTH], 'skipped');
     }
 
@@ -483,6 +675,8 @@ class RecurringPaymentTest extends TestCase
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+
         $this->fixtures->terminal->disableTerminal($firstDataTerminal2['id']);
 
         $this->fixtures->create('terminal:migs_recurring_terminal_with_both_recurring_types', ['merchant_id' => '10000000000000']);
@@ -500,6 +694,7 @@ class RecurringPaymentTest extends TestCase
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals(true, $paymentEntity['recurring']);
         $this->assertEquals('MiGSRcg3DSN3DS', $paymentEntity['terminal_id']);
@@ -537,6 +732,7 @@ class RecurringPaymentTest extends TestCase
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals(true, $paymentEntity['recurring']);
         $this->assertEquals('MiGSRcg3DSN3DS', $paymentEntity['terminal_id']);
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
 
         $gatewayTokens = $this->getEntities('gateway_token', [], true);
         // There should be two gateway_tokens created for the two recurring payments
@@ -574,6 +770,7 @@ class RecurringPaymentTest extends TestCase
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals(true, $paymentEntity['recurring']);
         $this->assertEquals($firstDataTerminal2['id'], $paymentEntity['terminal_id']);
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
 
         $gatewayTokens = $this->getEntities('gateway_token', [], true);
         // There should be two gateway_tokens created for the two recurring payments

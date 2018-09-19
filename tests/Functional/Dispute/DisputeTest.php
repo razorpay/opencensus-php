@@ -9,16 +9,18 @@ use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Models\Dispute\File\Core as DisputeFileCore;
 use RZP\Mail\Dispute\Creation as DisputeCreationMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class DisputeTest extends TestCase
 {
     use WebhookTrait;
     use PaymentTrait;
+    use MocksDnsTrait;
 
     protected $payment = null;
 
@@ -96,8 +98,13 @@ class DisputeTest extends TestCase
         Mail::assertNotSent(DisputeCreationMail::class);
     }
 
+    /**
+     * @group dns-sensitive
+     */
     public function testDisputeCreatedWebhook()
     {
+        $this->setupMockDns();
+
         $this->createWebhook(['events' => ['payment.dispute.created' => '1']]);
 
         $payment = $this->doAuthAndCapturePayment();
@@ -711,18 +718,9 @@ class DisputeTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $testData = $this->updateUploadDocumentData();
+        $testData = $this->updateUploadDocumentData(['id' => '1000000dispute']);
 
-        $content = $this->runRequestResponseFlow($testData);
-
-        $this->checkUploadedFilesArray($content);
-
-        // Check dispute fetch for embedded files attribute
-        $this->ba->proxyAuth();
-
-        $fetchData = $this->testData['testDisputeFetchWithFiles'];
-
-        $this->runRequestResponseFlow($fetchData);
+        $this->startTest($testData);
     }
 
     public function testEditDisputeFileUploadSaveForLater()
@@ -738,7 +736,7 @@ class DisputeTest extends TestCase
         $testData['request']['content'][DisputeEntity::SUBMIT] = true;
 
         $this->runRequestResponseFlow($testData);
-}
+    }
 
     public function testEditDisputeMerchantAcceptDispute()
     {
@@ -796,17 +794,39 @@ class DisputeTest extends TestCase
                 'items'  => [
                     [
                         'dispute_id' => $dispute['id'],
-                        'file_id'    => $files['items'][1]['file_id'],
+                        'id'         => $files['items'][1]['id'],
                     ],
                     [
                         'dispute_id' => $dispute['id'],
-                        'file_id'    => $files['items'][0]['file_id'],
+                        'id'         => $files['items'][0]['id'],
                     ]
                 ]
             ]
         ];
 
         $this->assertArraySelectiveEquals($expected, $content);
+    }
+
+    public function testDisputeFileInvalidDelete()
+    {
+        $dispute = $this->fixtures->create('dispute', ['status' => 'closed']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId() . '/files/file_123456';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchFiles()
+    {
+        $this->fixtures->create('dispute', ['id' => '1000000dispute']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     // ---------------------------- helper methods-------------------------------
@@ -905,8 +925,8 @@ class DisputeTest extends TestCase
 
         $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
 
-        $testData['request']['content'][DisputeFileEntity::FILES][0][DisputeFileEntity::FILE] = $this->getTestFile(0);
-        $testData['request']['content'][DisputeFileEntity::FILES][1][DisputeFileEntity::FILE] = $this->getTestFile(1);
+        $testData['request']['content'][DisputeFileCore::FILES][0][DisputeFileCore::FILE] = $this->getTestFile(0);
+        $testData['request']['content'][DisputeFileCore::FILES][1][DisputeFileCore::FILE] = $this->getTestFile(1);
 
         return $testData;
     }

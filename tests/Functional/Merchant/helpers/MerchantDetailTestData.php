@@ -628,5 +628,18 @@ return [
                 'failedItems' => [],
             ],
         ],
-    ]
+    ],
+
+    'testBulkEditMerchantAttributes' => [
+        'request' => [
+            'method' => 'POST',
+            'url'    => '/merchants/bulk/attributes',
+        ],
+        'response' => [
+            'content' => [
+                'total'  => 1,
+                'failed' => 0,
+            ],
+        ],
+    ],
 ];

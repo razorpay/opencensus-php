@@ -3,7 +3,6 @@
 namespace RZP\Models\Batch\Helpers;
 
 use RZP\Models\Merchant;
-use RZP\Models\BankAccount;
 use RZP\Models\Batch\Header;
 use RZP\Models\Merchant\Detail\Entity as MDEntity;
 

@@ -29,10 +29,10 @@ class Server extends Base\Mock\Server
             'TraceNumber'         => $input['TraceNumber'],
             'Amount'              => $input['Amount'],
             'AuthorizationStatus' => 'Y',
-            'BankReference'       => random_integer(6),
+            'BankReference'       => '123456',
         );
 
-        $this->content($content);
+        $this->content($content, Base\Action::CALLBACK);
 
         $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
 
@@ -51,7 +51,7 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $input = $this->getContentFromInput($input);
+        $input = $this->getContentFromInput($input, Base\Action::VERIFY);
 
 //        $this->validateActionInput($input,'verify');
         $id = $input['TraceNumber'];
@@ -66,8 +66,10 @@ class Server extends Base\Mock\Server
             'TraceNumber'         => $input['TraceNumber'],
             'Amount'              => $payment['Amount'],
             'AuthorizationStatus' => 'Y',
-            'BankReference'       => random_integer(6),
+            'BankReference'       => '123456',
         );
+
+        $this->content($content, Base\Action::VERIFY);
 
         $content = ['msg' => $this->getGatewayInstance()->getMessageStringWithHash($content)];
 

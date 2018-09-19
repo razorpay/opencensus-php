@@ -9,6 +9,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Settlement\CriticalFailure;
+use RZP\Models\FundTransfer\Axis\Reconciliation\Status;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationMail;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
@@ -73,6 +74,16 @@ class AttemptReconcileTest extends TestCase
     protected function verifySettlementReconProcessForRbl($failureTest = false)
     {
         $channel = Channel::RBL;
+
+        $this->createDataAndAssertInitiateOnlineTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT, $failureTest);
+
+        $this->assertReconProcessSuccessForChannel($channel, Attempt\Type::SETTLEMENT, $failureTest);
+    }
+
+    protected function verifySettlementReconProcessForYesbank($failureTest = false)
+    {
+        $channel = Channel::YESBANK;
 
         $this->createDataAndAssertInitiateOnlineTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT, $failureTest);
@@ -198,6 +209,15 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
 
+    public function testSettlementReconcileEntitiesSuccessForYesbank()
+    {
+        $this->verifySettlementReconProcessForYesbank();
+
+        $this->reconcileEntitiesForChannel(Channel::YESBANK);
+
+        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+    }
+
     public function testSettlementReconcileEntitiesFailureForRbl()
     {
         $this->verifySettlementReconProcessForRbl(true);
@@ -205,6 +225,15 @@ class AttemptReconcileTest extends TestCase
         $content = $this->reconcileEntitiesForChannel(Channel::RBL);
 
         $this->assertOnlineReconcileEntitiesFailure($content, Channel::RBL);
+    }
+
+    public function testSettlementReconcileEntitiesFailureForYesbank()
+    {
+        $this->verifySettlementReconProcessForYesbank(true);
+
+        $content = $this->reconcileEntitiesForChannel(Channel::YESBANK);
+
+        $this->assertOnlineReconcileEntitiesFailure($content, Channel::YESBANK);
     }
 
     public function testPayoutReconcileEntitiesForKotak()
@@ -257,34 +286,25 @@ class AttemptReconcileTest extends TestCase
         //Validate settlement entities
         $settlement = $this->getLastEntity('settlement', true);
 
-//        foreach ($settlements['items'] as $settlement)
-//        {
-            $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
-            $this->assertEquals(
-                $batch['id'], $settlement[Settlement\Entity::BATCH_FUND_TRANSFER_ID]);
+        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
+        $this->assertEquals(
+            $batch['id'], $settlement[Settlement\Entity::BATCH_FUND_TRANSFER_ID]);
 
-            $this->assertNotNull($settlement[Settlement\Entity::UTR]);
-//        }
+        $this->assertNotNull($settlement[Settlement\Entity::UTR]);
 
         // Validate settlement attempt entities
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $testKey = 'matchSettlementAttemptForReconFailure' . ucfirst($channel);
 
-//        foreach ($ftas['items'] as $settlementAttempt)
-//        {
-            $this->assertTestResponse($settlementAttempt, $testKey);
-            $this->assertNotNull($settlementAttempt['utr']);
-//        }
+        $this->assertTestResponse($settlementAttempt, $testKey);
+        $this->assertNotNull($settlementAttempt['utr']);
 
         // Validate settlement-transaction entity
         $setlTxn = $this->getLastEntity('transaction', true);
-//s($setlTxns['count']);
-//        foreach ($setlTxns['items'] as $txn)
-//        {
-            $this->assertEquals('settlement', $setlTxn['type']);
-            $this->assertNotNull($setlTxn['reconciled_at']);
-//        }
+
+        $this->assertEquals('settlement', $setlTxn['type']);
+        $this->assertNotNull($setlTxn['reconciled_at']);
     }
 
     protected function assertOnlineReconcileEntitiesFailure(array $content, string $channel)
@@ -486,4 +506,64 @@ class AttemptReconcileTest extends TestCase
     {
         return 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\Status';
     }
+
+    public function testSettlementReconcileEntitiesFailureForAxis()
+    {
+        $this->verifySettlementReconForAxisReturnSettled();
+    }
+
+    protected function verifySettlementReconForAxisReturnSettled()
+    {
+        $channel = Channel::AXIS;
+
+        $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $setlReconciliationFile = $this->generateReconciliationFileForChannel(
+            $setlFile, $channel, false, null, true);
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt', $fta['id'],
+            [
+                'status'           => Attempt\Status::PROCESSED,
+                'bank_status_code' => Status::EXECUTED
+            ]
+        );
+
+        $this->reconcileSettlements($setlReconciliationFile, $channel);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Status::RETURNSETTLED, $fta['bank_status_code']);
+
+        $this->assertEquals(Attempt\Status::INITIATED, $fta['status']);
+
+        $this->reconcileEntitiesForChannel(Channel::AXIS);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Attempt\Status::FAILED, $fta['status']);
+    }
+
+    public function testSettlementVerificationForYesbank()
+    {
+        $this->verifySettlementReconProcessForYesbank();
+
+        $this->reconcileEntitiesForChannel(Channel::YESBANK);
+
+        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+
+        $content = $this->verifyProcessedSettlements(Channel::YESBANK, true);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($content['unprocessed_count'], 0);
+
+        $this->assertEquals(Attempt\Status::INITIATED, $fta['status']);
+
+        $this->assertEquals('FAILED', $fta['bank_status_code']);
+    }
+
 }

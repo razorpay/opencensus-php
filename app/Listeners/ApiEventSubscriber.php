@@ -10,10 +10,12 @@ use RZP\Jobs\WebHook;
 use RZP\Models\Event;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
-use RZP\Models\VirtualAccount;
 use RZP\Models\Customer\Token;
+use RZP\Models\VirtualAccount;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Jobs\SubscriptionPaymentHandler;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
 use RZP\Models\Merchant\AccessMap\Entity as AccessMapEntity;
@@ -76,6 +78,8 @@ class ApiEventSubscriber extends Base\Core
     protected static $notWebhookOnlyEvents = [
         WebhookEvent::INVOICE_PARTIALLY_PAID,
         WebhookEvent::INVOICE_PAID,
+        WebhookEvent::PAYMENT_AUTHORIZED,
+        WebhookEvent::PAYMENT_FAILED,
     ];
 
     public function __construct()
@@ -167,12 +171,30 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
+        $merchant = $this->getMerchantFromEntity($payment);
+
+        if (($payment->hasSubscription() === true) and
+            ($merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2) === true)) {
+            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+
+            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+        }
+
         $this->prepareAndDispatchWebhook($payload);
     }
 
     protected function onPaymentFailed($payment)
     {
         $payload = $this->getPaymentPayload($payment);
+
+        $merchant = $this->getMerchantFromEntity($payment);
+
+        if (($payment->hasSubscription() === true) and
+            ($merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2) === true))
+        {
+            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+        }
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -695,7 +717,7 @@ class ApiEventSubscriber extends Base\Core
     {
         $appConnections = $this->repo
                                ->merchant_access_map
-                               ->fetchMerchantAccessMapsOnEntity($merchantId, WebhookEntity::APPLICATION);
+                               ->fetchMerchantAccessMapsOnEntityType($merchantId, WebhookEntity::APPLICATION);
 
         if (count($appConnections) === 0)
         {
@@ -738,5 +760,44 @@ class ApiEventSubscriber extends Base\Core
         }
 
         return $merchant;
+    }
+
+    protected function constructPaymentPayloadForSubscriptionNotification(Payment\Entity $payment): array
+    {
+        $payload = $payment->toArrayAdmin();
+
+        $payload['merchant'] = [
+            Merchant\Entity::BILLING_LABEL => $payment->merchant->getBillingLabel(),
+            Merchant\Entity::WEBSITE       => $payment->merchant->getWebsite(),
+            Merchant\Entity::EMAIL         => $payment->merchant->getTransactionReportEmail(),
+        ];
+
+        $payload['customer'] = [
+            'email' => $payment->customer->getEmail(),
+            'phone' => $payment->customer->getContact(),
+        ];
+
+        if ($payment->hasCard() === true)
+        {
+            $card = $payment->card;
+            $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
+
+            $payload['card'] = [
+                'number'  => '**** **** **** ' . $card->getLast4(),
+                'expiry'  => $expiryMonth . '/' . $card->getExpiryYear(),
+                'network' => $card->getNetworkCode(),
+                'color'   => $card->getNetworkColorCode()
+            ];
+        }
+
+        if ($payment->hasInvoice() === true)
+        {
+            $payload['invoice'] = [
+                Invoice\Entity::BILLING_START => $payment->invoice->getBillingStart(),
+                Invoice\Entity::BILLING_END   => $payment->invoice->getBillingEnd()
+            ];
+        }
+
+        return $payload;
     }
 }

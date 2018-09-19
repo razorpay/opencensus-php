@@ -29,6 +29,7 @@ class Terminal extends Base
         $this->createSharedNetbankingAxisTerminal();
         $this->createSharedNetbankingFederalTerminal();
         $this->createSharedNetbankingBobTerminal();
+        $this->createSharedNetbankingIdfcTerminal();
         $this->createSharedNetbankingRblTerminal();
         $this->createSharedNetbankingAllahabadTerminal();
         $this->createSharedNetbankingIndusindTerminal();
@@ -42,6 +43,26 @@ class Terminal extends Base
         $this->createSharedBladeTerminal();
         $this->createSharedFssTerminal();
         $this->createSharedEmandateAxisTerminal();
+    }
+
+    public function createBharatQrIsgTerminal()
+    {
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'isg',
+            'gateway_merchant_id'       => '12345',
+            'gateway_terminal_id'       => '40120840',
+            'card'                      => 1,
+            'mc_mpan'                   => '5220240401208405',
+            'visa_mpan'                 => '4403844012084006',
+            'rupay_mpan'                => '6100030401208403',
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::BHARAT_QR => '1',
+            ],
+        ];
+
+        return parent::create($attributes);
     }
 
     public function createBharatQrTerminal()
@@ -381,6 +402,16 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createDirectEnachRblTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'                        => '1EnachRblTrmnl',
+            'merchant_id'               => '10000000000000',
+        ];
+
+        return $this->createSharedEnachRblTerminal($attributes);
     }
 
     public function createSharedPayzappTerminal(array $attributes = [])
@@ -1054,27 +1085,46 @@ class Terminal extends Base
     public function createSharedHitachiMotoTerminal()
     {
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
-        $defaultValues = [
-            'id'                        => "ShrdHitaMotTrm",
+        $attributes = [
+            'id'                        => 'ShrdHitaMotTrm',
             'merchant_id'               => $sharedMerchantAccount,
-            'gateway'                   => 'sharp',
-            'gateway_merchant_id'       => 'test_merchant_sharp',
-            'gateway_terminal_id'       => 'abcde',
-            'gateway_terminal_password' => 'abcdef',
+            'gateway'                   => 'hitachi',
             'card'                      => 1,
-            'emi'                       => 0,
-            'mc_mpan'                   => '1234560000000000',
-            'visa_mpan'                 => '1234560000000001',
-            'rupay_mpan'                => '1234560000000002',
-            'vpa'                       => 'random@razorpay',
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'rbl',
+            'gateway_merchant_id'       => 'hitachi',
+            'gateway_terminal_password' => 'hitachi',
+            'gateway_secure_secret'     => 'secret',
+            'type'                      => [
+                Type::MOTO              => '1',
+                Type::NON_RECURRING     => '1',
+            ],
         ];
-        $attributes['type'] = [
-            Type::NON_RECURRING => '1',
-            Type::RECURRING_3DS => '1',
-            Type::RECURRING_NON_3DS => '1',
-            Type::MOTO => '1'
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedHdfcMotoTerminal()
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+        $attributes = [
+            'id'                        => 'ShrdHdfcMotTrm',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'hitachi',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'rbl',
+            'gateway_merchant_id'       => 'hdfc',
+            'gateway_terminal_password' => 'hdfc',
+            'gateway_secure_secret'     => 'secret',
+            'type'                      => [
+                Type::MOTO              => '1',
+                Type::NON_RECURRING     => '1',
+            ],
         ];
-        $attributes = array_merge($defaultValues, $attributes);
+
         return parent::create($attributes);
     }
 
@@ -1478,6 +1528,24 @@ class Terminal extends Base
         return $this->createSharedNetbankingFederalTerminal($attributes);
     }
 
+    public function createSharedNetbankingIdfcTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_IDFC_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => Gateway::NETBANKING_IDFC,
+            'gateway_merchant_id'       => 'test_merchant_id',
+            'netbanking'                => 1,
+            'gateway_secure_secret'     => 'random_idfc_code',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
     public function createSharedNetbankingBobTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
@@ -1623,6 +1691,26 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiAxisTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_AXIS_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_axis',
+            'gateway_merchant_id'       => 'RAZAORPAY',
+            'gateway_terminal_id'       => 'RAZAORPAYAPP',
+            'gateway_merchant_id2'      => 'razaorpay@axis',
+            'gateway_terminal_password' => '1520',
+            'upi'                       => true,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedUpiIciciIntentTerminal(array $attributes)
     {
         $attributes = [
@@ -1645,7 +1733,7 @@ class Terminal extends Base
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'upi_hulk',
             'gateway_acquirer'          => 'hdfc',
-            'gateway_merchant_id'       => '100000Razorpay',
+            'gateway_merchant_id'       => 'vpa_merchantsVpaId',
             'gateway_secure_secret'     => 'razorpay_password',
             'gateway_terminal_password' => 'hulk_api_password',
             'upi'                       => true,
@@ -1723,7 +1811,8 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'razorpay upi mindgate',
             'gateway_terminal_id'       => 'nodal account upi hdfc',
             'gateway_merchant_id2'      => 'razorpay@hdfcbank',
-            'gateway_terminal_password' => 'razorpay_password',
+            // Sample hex for as encryption, not in used
+            'gateway_terminal_password' => '93158d5892188161a259db660ddb1d0b',
             'upi'                       => 1,
             'gateway_acquirer'          => 'hdfc',
         ];
@@ -1733,7 +1822,7 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedUpiMindgateIntentTerminal(array $attributes)
+    public function createSharedUpiMindgateIntentTerminal(array $override)
     {
         $attributes = [
             'id'                        => Shared::UPI_MINDGATE_INTENT_TERMINAL,
@@ -1743,7 +1832,24 @@ class Terminal extends Base
             ]
         ];
 
-        return $this->createSharedUpiMindgateTerminal($attributes);
+        return $this->createSharedUpiMindgateTerminal(array_merge($attributes, $override));
+    }
+
+    public function createSharedUpiMindgateSignedIntentTerminal(array $override)
+    {
+        $privateKey = 'MHQCAQEEIPk6R12xwmvV/JJDehGHSrQpNZxE3jmNXHcmgNUY2858oAcGBSuBBAAK' .
+                      'oUQDQgAES9US3XYL8yPYqqnScq2+hTmuKBnl70RMeSDEmFN/euNHoQs+7ouwI/OH' .
+                      '9sivFz/5a5n9ZEvc7aakvVauZi/rAA==';
+
+        $publicKey = 'MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAES9US3XYL8yPYqqnScq2+hTmuKBnl70RM' .
+                     'eSDEmFN/euNHoQs+7ouwI/OH9sivFz/5a5n9ZEvc7aakvVauZi/rAA==';
+
+        $attributes = [
+            'gateway_terminal_password2'    => $privateKey,
+            'gateway_access_code'           => $publicKey,
+        ];
+
+        return $this->createSharedUpiMindgateIntentTerminal(array_merge($attributes, $override));
     }
 
     public function createSharedUpiMindgateTpvTerminal(array $attributes = [])
@@ -1832,5 +1938,49 @@ class Terminal extends Base
         ];
         $attributes = array_merge($defaultValues, $attributes);
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createCsbTpvTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CSB_TPV_TERMINAL;
+
+        $defaultValues = [
+            'id'                    => $termId,
+            'merchant_id'           => '100000Razorpay',
+            'gateway'               => 'netbanking_csb',
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'tpv'                   => 1,
+            'gateway_merchant_id'   => 'razorpay',
+            'gateway_access_code'   => 'random_code',
+            'gateway_secure_secret' => 'random_secret',
+            'network_category'      => 'ecommerce',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createDirectSettlementHdfcTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => '10DirectseTmnl',
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'netbanking_hdfc',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'type'                      => [
+                Type::DIRECT_SETTLEMENT => '1',
+                Type::NON_RECURRING     => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
     }
 }

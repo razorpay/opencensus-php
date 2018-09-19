@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Hdfc\Emandate;
 
 use Mail;
+use Excel;
 use Carbon\Carbon;
 
 use RZP\Models\Payment;
@@ -15,14 +16,19 @@ use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
+use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings;
+use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
 
 class NetbankingHdfcEmandateTest extends TestCase
 {
     use ReconTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
+
+    const ROW_CHUNK_SIZE = 3000;
 
     protected $payment;
 
@@ -65,6 +71,8 @@ class NetbankingHdfcEmandateTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($data, $payment);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
 
         $token = $this->getLastEntity('token', true);
 
@@ -171,6 +179,83 @@ class NetbankingHdfcEmandateTest extends TestCase
         });
     }
 
+    public function testEmandateRegistrationForLateAuth()
+    {
+        Mail::fake();
+
+        $this->testEmandateInitialPayment();
+
+        $payment = $this->getDbLastEntity('payment')->toArray();
+
+        $this->fixtures->base->editEntity(
+            'payment',
+            $payment['id'],
+            [
+                'authorized_at' => null,
+                'status'        => 'created',
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testEmandateRegistrationForLateAuthFailure'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $dayBeforeYesterday = Carbon::now()->subDays(2)->getTimestamp();
+
+        $this->fixtures->base->editEntity(
+            'payment',
+            $payment['id'],
+            [
+                'created_at'    => $dayBeforeYesterday,
+                'authorized_at' => Carbon::now()->getTimestamp(),
+                'status'        => 'authorized',
+            ]
+        );
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull($content[File\Entity::SENT_AT]);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $token = $this->getDbLastEntity('token')->toArray();
+
+        $expectedFileContent = [
+            'mandate_id'                   => $token['id'],
+            'merchant_unique_reference_no' => $payment['id'],
+        ];
+
+        Mail::assertQueued(Email::class, function ($mail) use ($expectedFileContent)
+        {
+            $fileContents = $this->parseExcel($mail->viewData['signed_url']);
+
+            // Assert that the late auth payment actually exists in the file we send
+            $this->assertArraySelectiveEquals($expectedFileContent, $fileContents[0]);
+
+            $key = Payment\Gateway::NETBANKING_HDFC . '_register';
+
+            $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+            $expectedSubj = EmailConstants::SUBJECT_MAP[$key] . $today;
+
+            $this->assertEquals($expectedSubj, $mail->subject);
+
+            $this->assertNotNull($mail->viewData['file_name']);
+            $this->assertNotNull($mail->viewData['signed_url']);
+            $this->assertEquals(EmailConstants::BODY_MAP[$key], $mail->viewData['body']);
+
+            $this->assertNotEmpty($mail->attachments);
+
+            return ($mail->hasFrom('emandate@razorpay.com') and
+                ($mail->hasTo(EmailConstants::RECIPIENT_EMAILS_MAP[$key])));
+        });
+    }
+
     public function testEmandateRegistrationRecon()
     {
         Mail::fake();
@@ -243,7 +328,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $payment = $this->getDbEntityById('payment', $entities[1]['payment']['id'])->toArray();
 
-        $this->assertEquals(Payment\Status::AUTHORIZED, $payment['status']);
+        $this->assertEquals(Payment\Status::REFUNDED, $payment['status']);
 
         $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
 
@@ -401,6 +486,8 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $secondPayment = $this->getLastEntity('payment', true);
 
+        $this->assertEquals('auto', $secondPayment['recurring_type']);
+
         $secondPaymentId = substr($secondPayment['id'], 4);
 
         $this->fixtures->create('netbanking',
@@ -504,6 +591,8 @@ class NetbankingHdfcEmandateTest extends TestCase
 
     public function testRefundDebitPayment()
     {
+        Mail::fake();
+
         $this->doDebitPayment();
 
         $debitPayment = $this->getLastEntity('payment', true);
@@ -523,6 +612,35 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->assertEquals($debitPayment['amount'], $refund['amount']);
 
         $this->assertEquals(Payment\Status::REFUNDED, $debitPayment['status']);
+
+        $endDate = Carbon::now()->getTimestamp();
+
+        // Generate gateway file from yesterday till now.
+        $gatewayFileResponse = $this->generateGatewayFile('hdfc_emandate', 'refund', null, $endDate);
+
+        $this->assertTestResponse($gatewayFileResponse['items'][0]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        Mail::assertQueued(RefundFileMail::class, function ($mail) use ($file)
+        {
+            $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+            $expectedSubject = RefundFileMailConstants::SUBJECT_MAP['netbanking_hdfc'] . $today;
+
+            $this->assertEquals($expectedSubject, $mail->subject);
+
+            $testData = [
+                'body'        => RefundFileMailConstants::BODY_MAP['netbanking_hdfc'],
+                'file_name'   => "HDFC_Emandate_Refunds_test_$today.xlsx",
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->assertNotEmpty($mail->attachments);
+
+            return true;
+        });
     }
 
     protected function doDebitPayment(): array
@@ -787,5 +905,28 @@ class NetbankingHdfcEmandateTest extends TestCase
             'netbanking' => $netbanking,
             'token'      => $entities['token'],
         ];
+    }
+
+    protected function parseExcel($filePath)
+    {
+        $allSheetsContent = [];
+
+        Excel::filter('chunk')->selectSheetsByIndex(0)->load($filePath)->chunk(
+            self::ROW_CHUNK_SIZE,
+            function ($results) use (& $allSheetsContent)
+            {
+                foreach ($results as $row)
+                {
+                    // Currently, since it returns an array of rows, there's no
+                    // way to get the sheet names. And we cannot let it return
+                    // an array of sheets because chunk works only on a
+                    // cell collection (rows) and not on a row collection (sheets)
+                    $allSheetsContent[] = $row->all();
+                }
+            },
+            false
+        );
+
+        return $allSheetsContent;
     }
 }

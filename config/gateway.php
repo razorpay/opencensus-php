@@ -25,9 +25,11 @@ return [
         'first_data',
         'hdfc',
         'hitachi',
+        'isg',
         'kotak',
         'mobikwik',
         'netbanking_hdfc',
+        'netbanking_idfc',
         'netbanking_bob',
         'netbanking_corporation',
         'netbanking_kotak',
@@ -43,6 +45,7 @@ return [
         'netbanking_csb',
         'paytm',
         'sharp',
+        'upi_axis',
         'upi_icici',
         'upi_mindgate',
         'upi_hulk',
@@ -82,6 +85,7 @@ return [
     'mock_netbanking_airtel'      => env('NETBANKING_AIRTEL_MOCK'),
     'mock_netbanking_axis'        => env('NETBANKING_AXIS_MOCK'),
     'mock_netbanking_federal'     => env('NETBANKING_FEDERAL_MOCK'),
+    'mock_netbanking_idfc'        => env('NETBANKING_IDFC_MOCK'),
     'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
@@ -100,6 +104,7 @@ return [
     'mock_wallet_sbibuddy'        => env('SBIBUDDY_MOCK'),
     'mock_upi_mindgate'           => env('UPI_MINDGATE_MOCK'),
     'mock_upi_sbi'                => env('UPI_SBI_MOCK'),
+    'mock_upi_axis'               => env('UPI_AXIS_MOCK'),
     'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
     'mock_upi_hulk'               => env('UPI_HULK_MOCK'),
     'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
@@ -108,6 +113,7 @@ return [
     'mock_wallet_mpesa'           => env('MPESA_MOCK'),
     'mock_card_fss'               => env('FSS_MOCK'),
     'mock_mpi_enstage'            => env('ENSTAGE_MOCK'),
+    'mock_isg'                    => env('ISG_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
@@ -133,6 +139,10 @@ return [
         'test_hash_secret2'    => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
         'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
+
+    'isg' => [
+        'bharat_qr_secret' => env('ISG_GATEWAY_BHARAT_QR_SECRET'),
+     ],
 
     'first_data' => [
         // Test credentials
@@ -265,6 +275,15 @@ return [
         'live_merchant_id'       => env('UPI_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
         'live_public_key'        => env('UPI_ICICI_LIVE_PUBLIC_KEY'),
         'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
+    ],
+
+    'upi_axis' => [
+        'merchant_id'           => env('UPI_AXIS_GATEWAY_MERCHANT_ID'),
+        'merchant_channel_id'   => env('UPI_AXIS_GATEWAY_MERCHANT_CHANNEL_ID'),
+        'public_key'            => env('UPI_AXIS_GATEWAY_PUBLIC_KEY'),
+        'mobile_no'             => env('UPI_AXIS_GATEWAY_MOBILE_NUMBER'),
+        'aes_encryption_key'    => env('UPI_AXIS_GATEWAY_AES_KEY'),
+        'default_payee_vpa'     => env('UPI_AXIS_GATEWAY_PAYEE_VPA'),
     ],
 
     'aeps_icici' => [
@@ -421,6 +440,11 @@ return [
         'pooling_account_number' => env('BOB_POOLING_ACCOUNT_NUMBER'),
     ],
 
+    'netbanking_idfc' => [
+        'test_merchant_id'       => env('NETBANKING_IDFC_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_TEST_HASH_SECRET')
+    ],
+
     'netbanking_icici' => [
         //retail netbanking
         'test_hash_secret'       => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
@@ -447,8 +471,12 @@ return [
     'netbanking_axis' => [
         // retail netbanking
         'live_hash_secret'                  => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
+        'live_hash_secret_new'              => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_NEW'),
         'test_hash_secret'                  => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret_new'              => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_NEW'),
         'test_merchant_id'                  => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        'verify_live_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_VERIFY_LIVE_HASH_SECRET'),
+        'verify_test_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_VERIFY_TEST_HASH_SECRET'),
 
         // corporate netbanking
         'live_hash_secret_corporate'        => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_CORPORATE'),
@@ -508,9 +536,10 @@ return [
             'gateway_merchant_id'          => env('ENSTAGE_TEST_MERCHANT_ID'),
             'gateway_merchant_name'        => 'Test Merchant',
         ],
-        '6ZJzxyLFWrGs74' => [
-            'gateway_merchant_id'          => 'Wibmo_RYatra_Axis_Expay',
-            'gateway_merchant_name'        => 'RYatra_Axis_Expay',
+        // Hardcoding the values here.
+        'live' => [
+            'gateway_merchant_id'          => 'Wibmo_Razorpay_Axis_Expay',
+            'gateway_merchant_name'        => 'Razorpay_Axis_Expay',
         ],
         'test_acq_bin'                      => env('ENSTAGE_TEST_GATEWAY_ACQUIRER_BIN'),
         'test_secret_key'                   => env('ENSTAGE_TEST_SECRET_KEY_ID'),

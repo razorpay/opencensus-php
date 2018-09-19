@@ -16,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Lib\Formatters\Xml;
 use RZP\Models\Currency\Currency;
+use RZP\Gateway\Base as BaseGateway;
 use RZP\Gateway\Base\Action as Action;
 use RZP\Gateway\Mpi\Base\DeviceCategory;
 
@@ -87,6 +88,7 @@ class Gateway extends Base\Gateway
     protected function decideAuthStepAfterEnroll(array $input, array $response)
     {
         $enrolled = $this->processEnrollmentResponse($input, $response);
+
         //
         // Determine card enrollment status and take next action
         //
@@ -105,7 +107,9 @@ class Gateway extends Base\Gateway
                     'Invalid enroll response',
                     [
                         'enrollment_status' => $enrolled
-                    ]);
+                    ],
+                    null,
+                    BaseGateway\Action::AUTHENTICATE);
         }
     }
 
@@ -158,7 +162,9 @@ class Gateway extends Base\Gateway
                 'eci'             => $eci,
                 'network'         => $networkCode,
                 'isInternational' => $isInternational,
-            ]
+            ],
+            null,
+            BaseGateway\Action::AUTHENTICATE
         );
     }
 
@@ -172,7 +178,9 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
                 null,
                 null,
-                $response[VERes::MESSAGE]['Error']);
+                $response[VERes::MESSAGE]['Error'],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
         }
 
         $ch = $response[VERes::MESSAGE][VERes::VERES][VERes::CH];
@@ -205,11 +213,41 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function validateSignatureAndInflatePares($pares)
+    /**
+     * Decodes the Pares
+     *
+     * @param String base64 encoded PAres
+     * @return string ParesXml
+     * @throws Exception\GatewayErrorException if pares could not be inflated
+     */
+    protected function inflatePares($pares)
     {
-        $paresXml = gzinflate(substr($pares, 2));
+        $decodePares = base64_decode($pares);
 
-        $dom = $this->loadXmlViaDom($paresXml);
+        try
+        {
+            $paresXml = gzinflate(substr($decodePares, 2));
+        }
+        catch (\ErrorException $e)
+        {
+            $message = $e->getMessage();
+
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                                                      null,
+                                                      $message,
+                                                      [],
+                                                      $e,
+                                                      BaseGateway\Action::AUTHENTICATE);
+        }
+
+        return $paresXml;
+    }
+
+    protected function validateParesSignature($paresXml)
+    {
+        $dom = new DOMDocument;
+
+        $dom->loadXML($paresXml);
 
         $adapter = new XmlseclibsAdapter;
 
@@ -225,47 +263,89 @@ class Gateway extends Base\Gateway
         {
             $msg = $e->getMessage();
 
-            $this->trace->traceException($e);
-
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR;
-
-            throw new Exception\GatewayErrorException($errorCode);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
+                null,
+                $msg,
+                [],
+                $e,
+                BaseGateway\Action::AUTHENTICATE);
         }
 
         if ($ret === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR);
+                ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
+                null,
+                null,
+                [],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
         }
 
         return $paresXml;
     }
 
+    /**
+     * Validates the PARes.the Pares is first base64 decode and inflate
+     * and then converted to array .
+     *
+     * @param array $input
+     * @return mixed
+     * @throws Exception\GatewayErrorException if PARes cannot be validated
+     * @throws Exception\RuntimeException if PARES cannot be converted to json
+     */
     protected function validateAndGetPayerAuthenticationResponse(array $input)
     {
         $pares = $input['gateway'][PARes::GATEWAY_PARES];
 
-        $pares = base64_decode($pares);
-
-        $paresXml = $this->validateSignatureAndInflatePares($pares);
+        $paresXml = $this->inflatePares($pares);
 
         $paresArray = $this->xmlToArray($paresXml);
 
         // Validate Payer Authentication Response
-        $this->validatePARes($input, $paresArray);
+        $this->validatePares($input, $paresArray);
+
+        $this->validateXml($paresXml);
+
+        $this->validateParesSignature($paresXml);
 
         $paresMessage = $paresArray[PARes::MESSAGE][PARes::PARES];
 
         return $paresMessage;
     }
 
-    protected function validatePARes(array $input, array $paresArray)
+    protected function validatePares(array $input, array $paresArray)
     {
         if (empty($paresArray[PARes::MESSAGE]) === true)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                'Message element not found');
+                ErrorCode::GATEWAY_ERROR_INVALID_PARES_XML,
+                null,
+                'Message element not found',
+                [],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
+        }
+
+        if (isset($paresArray[PARes::MESSAGE][PARes::ERROR]) === true)
+        {
+            $error = $paresArray[PARes::MESSAGE][PARes::ERROR];
+            $errorCode = $error[PARes::ERROR_CODE] ?? null;
+
+            $internalCode = InvalidRequestCode::map($errorCode) ?: ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE;
+
+            throw new Exception\GatewayErrorException(
+                $internalCode,
+                $errorCode,
+                $error[PARes::ERROR_MESSAGE] ?? null,
+                [
+                   'PaRes'   => $paresArray,
+                   'payment' => $input['payment'],
+                   'network' => $input['card']['network'],
+                ],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
         }
 
         (new Validator)->rules(Validator::$paresRules)
@@ -299,10 +379,14 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 '',
-                'Credentials mismatch');
+                'Credentials mismatch',
+                [],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
         }
     }
 
+    // @codingStandardsIgnoreLine
     protected function validateVERes(array $input, array $response)
     {
         $this->trace->info(TraceCode::VERIFY_ENROLLMENT_RESPONSE, $response);
@@ -320,7 +404,9 @@ class Gateway extends Base\Gateway
                 [
                     'expected' => $input['payment']['public_id'],
                     'actual'   => $response[VERes::MESSAGE][VERes::ATTRIBUTES][VERes::ID],
-                ]);
+                ],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
         }
     }
 
@@ -339,9 +425,10 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
                 '',
-                $msg);
-
-            //TODO check if we need to trace response
+                $msg,
+                [],
+                null,
+                BaseGateway\Action::AUTHENTICATE);
         }
 
         $ch = $VERes[VERes::CH];
@@ -372,7 +459,28 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getEnrollmentRequestArray($input);
 
-        $response = $this->sendGatewayRequest($request);
+        try
+        {
+            $response = $this->sendGatewayRequest($request);
+        }
+        catch (Exception\GatewayRequestException $e)
+        {
+            $this->traceCurlErrorIfApplicable();
+
+            throw $e;
+        }
+        finally
+        {
+            if (isset($this->curlLog) === true)
+            {
+                fclose($this->curlLog);
+
+                if (file_exists($this->curlLogPath) === true)
+                {
+                    unlink($this->curlLogPath);
+                }
+            }
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_ENROLL_RESPONSE,
@@ -384,23 +492,7 @@ class Gateway extends Base\Gateway
 
         $body = $response->body;
 
-        $valid = $this->validateXml($body);
-
-        if ($valid === false)
-        {
-            $this->trace->warning(
-                TraceCode::BLADE_VERES_PARSE_FAILURE,
-                ['message' => 'Malformed xml: ' . $body]);
-
-            throw new Exception\LogicException(
-                'Unexpected response',
-                null,
-                [
-                    'payment_id'  => $input['payment']['id'],
-                    'body'        => $body
-                ]
-            );
-        }
+        $this->validateXml($body);
 
         return $this->xmlToArray($body);
     }
@@ -408,6 +500,8 @@ class Gateway extends Base\Gateway
     protected function getEnrollmentRequestArray(array $input)
     {
         $traceContent = $content = $this->getVEReqContent($input);
+
+        $this->paymentId = $input['payment']['id'];
 
         $options = $this->getRequestOptions();
 
@@ -586,6 +680,7 @@ class Gateway extends Base\Gateway
         return $year . $month;
     }
 
+    // @codingStandardsIgnoreLine
     protected function getVEReqContent(array $input)
     {
         $accept = substr($this->app['request']->header('Accept'), 0, 2048);
@@ -660,7 +755,12 @@ class Gateway extends Base\Gateway
 
             default:
                 throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID,
+                    null,
+                    null,
+                    [],
+                    null,
+                    BaseGateway\Action::AUTHENTICATE);
         }
 
         if ($this->mode === Mode::TEST)
@@ -671,18 +771,7 @@ class Gateway extends Base\Gateway
         return $merchantId;
     }
 
-    /**
-     * Validates the xml against the mpi schema.
-     * @return  bool true/false whether the xml is valid or not
-     */
     protected function validateXml($xml)
-    {
-        $dom = $this->loadXmlViaDom($xml);
-
-        return ($dom !== false);
-    }
-
-    protected function loadXmlViaDom($xml)
     {
         // XML DTD Schema file
         $file = __DIR__ . '/Schema/mpiXmlSchema.dtd';
@@ -709,24 +798,18 @@ class Gateway extends Base\Gateway
         }
 
         $dom = new DOMDocument;
+
         $dom->validateOnParse = true;
 
         try
         {
-            $ret = $dom->loadXML($xml);
-
-            if ($ret === false)
-            {
-                return $ret;
-            }
-
-            return $dom;
+            $dom->loadXML($xml);
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException($e);
-
             $error = $e->getMessage();
+
+            $internalCode = ErrorCode::GATEWAY_ERROR_INVALID_PARES_XML;
 
             switch (true)
             {
@@ -738,17 +821,18 @@ class Gateway extends Base\Gateway
                 case strpos($error, 'SignatureMethod') !== false:
                 case strpos($error, 'SignatureValue') !== false:
                 case strpos($error, 'KeyInfo') !== false:
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR,
-                        null,
-                        [
-                            'error_message' => $error
-                        ]);
+                    $internalCode = ErrorCode::BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR;
             }
-            // Throw Critical for now
+
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                'Invalid XML');
+                $internalCode,
+                null,
+                $error,
+                [
+                    'pares' => $xml,
+                ],
+                $e,
+                BaseGateway\Action::AUTHENTICATE);
         }
     }
 
@@ -805,6 +889,14 @@ class Gateway extends Base\Gateway
         curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
 
         curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientSslKey());
+
+        $this->curlLogPath = storage_path('logs/curl_' . $this->paymentId . '.log');
+
+        $this->curlLog = fopen($this->curlLogPath, 'w'); // opening a log file for curl logs
+
+        curl_setopt($curl, CURLOPT_VERBOSE, true);
+
+        curl_setopt($curl, CURLOPT_STDERR, $this->curlLog);
     }
 
     protected function getGatewayCertDirName()

@@ -16,15 +16,11 @@ class Server extends Base\Mock\Server
         // TODO: vaidate PaReq
         $paResContent = $this->getPaResContent($input);
 
-        $this->content($paResContent, 'pares');
-
         $response = [
             'MD'      => $input['MD'],
             'PaRes'   => base64_encode($this->getPaResXml($paResContent, $input)),
             'TermUrl' => $input['TermUrl']
         ];
-
-        $this->content($response, 'acs');
 
         return $response;
     }
@@ -50,7 +46,9 @@ class Server extends Base\Mock\Server
 
         $paResXml = Xml::create('ThreeDSecure', $paRes);
 
-        return $paResXml;
+        $pares = gzcompress($paResXml);
+
+        return $pares;
     }
 
     public function authorize($input)
@@ -88,10 +86,24 @@ class Server extends Base\Mock\Server
             case CardNumber::INVALID_ECI:
                 $content['Message']['PARes'] = $responseClass->invalidEci($content);
                 break;
+            case CardNumber::INVALID_PARES:
+                $content['Message']['PARes'] = $responseClass->paresWithErrorCode();
+                break;
         }
         unset($content['Message']['PAReq']);
 
+        $content['Message']['Signature'] = $this->getSignature();
+
+        $this->content($content, 'acs');
+
         return $content;
+    }
+
+    public function getSignature()
+    {
+        $signatureXml = file_get_contents(__DIR__. '/' . 'Signature.xml');
+
+        return $this->xmlToArray($signatureXml);
     }
 
     protected function getVERes(array $input)
@@ -113,6 +125,7 @@ class Server extends Base\Mock\Server
             case CardNumber::INTERNATIONAL_MASTER:
             case CardNumber::INTERNATIONAL_MAESTRO:
             case CardNumber::INVALID_ECI:
+            case CardNumber::INVALID_PARES:
                 $content['Message']['VERes'] = $responseClass->enrolledValidResponse($paymentId, $cardNo);
 
                 break;

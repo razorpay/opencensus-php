@@ -5,19 +5,31 @@ namespace RZP\Models\FundTransfer\Base\Initiator;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\Settlement\Holidays;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Batch\Entity;
+use RZP\Models\FundTransfer\Attempt\Metric;
 
 abstract class NodalAccount extends Base\Core
 {
-    const MIN_RTGS_AMOUNT       = 200000;
+    const SUCCESS                = 'success';
 
-    const RTGS_CUTOFF_HOUR      = 15;
+    const FAILED                 = 'failed';
 
-    const RTGS_CUTOFF_MINUTE    = 45;
+    const MIN_RTGS_AMOUNT        = 200000;
+
+    const MAX_IMPS_AMOUNT        = 200000;
+
+    const RTGS_CUTOFF_HOUR_MIN   = 8;
+
+    const RTGS_CUTOFF_HOUR_MAX   = 15;
+
+    const RTGS_CUTOFF_MINUTE_MAX = 45;
 
     protected $batchFundTransfer = null;
 
@@ -37,14 +49,41 @@ abstract class NodalAccount extends Base\Core
 
     protected $summary = [];
 
-    public function __construct()
+    protected $purpose = null;
+
+    protected $transferStatus = [];
+
+    protected $isWorkingDay;
+
+    protected $bankingStartTime;
+
+    protected $bankingEndTime;
+
+    public function __construct(string $purpose = null)
     {
+        $this->purpose = $purpose;
+
+        $currentTime = Carbon::now(Timezone::IST);
+
+        $this->isWorkingDay = Holidays::isWorkingDay($currentTime);
+
+        $this->bankingStartTime = Carbon::today(Timezone::IST)->hour(8)->getTimestamp();
+
+        $this->bankingEndTime = Carbon::today(Timezone::IST)->hour(18)->minute(15)->getTimestamp();
+
         $this->initSummary();
 
         parent::__construct();
     }
 
-    protected $purpose           = null;
+    public function initiateTransfer(Base\PublicCollection $attempts): array
+    {
+        $this->updateAttemptStatus($attempts);
+
+        $this->trace->info(TraceCode::FTA_UPDATE_STATUS);
+
+        return $this->process($attempts);
+    }
 
     protected function isRefund(): bool
     {
@@ -56,22 +95,40 @@ abstract class NodalAccount extends Base\Core
         return ($this->purpose === Attempt\Purpose::SETTLEMENT);
     }
 
-    protected function getTransferMode($amount): string
+    protected function getTransferMode($amount, Merchant\Entity $merchant): string
     {
-        $rtgsCutoffTime = Carbon::createFromTime(
-                                self::RTGS_CUTOFF_HOUR,
-                                self::RTGS_CUTOFF_MINUTE,
-                                0,
-                                Timezone::IST)->getTimestamp();
+        $rtgsMinCutoffTime = Carbon::createFromTime(
+            self::RTGS_CUTOFF_HOUR_MIN,
+            0,
+            0,
+            Timezone::IST
+        )->getTimestamp();
+
+        $rtgsMaxCutoffTime = Carbon::createFromTime(
+            self::RTGS_CUTOFF_HOUR_MAX,
+            self::RTGS_CUTOFF_MINUTE_MAX,
+            0,
+            Timezone::IST)->getTimestamp();
+
 
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
         $mode = Mode::NEFT;
 
-        if (($now <= $rtgsCutoffTime) and
+        if ((($now >= $rtgsMinCutoffTime) and ($now <= $rtgsMaxCutoffTime)) and
             ($amount >= self::MIN_RTGS_AMOUNT))
         {
             $mode = Mode::RTGS;
+        }
+
+        //
+        // Need this only for Piggy merchants currently. Hence
+        // the check against parentId and not the merchantId.
+        // Temporary solution. Proper solution coming soon.
+        //
+        if (in_array($merchant->getParentId(), Merchant\Preferences::ONLY_NEFT_SETTLEMENT_MIDS, true) === true)
+        {
+            $mode = Mode::NEFT;
         }
 
         return $mode;
@@ -89,7 +146,7 @@ abstract class NodalAccount extends Base\Core
 
             $this->type      = $source->getEntity();
 
-            $this->channel   = $source->getChannel();
+            $this->channel   = $attempt->getChannel();
 
             $this->tax       += $source->getTax();
 
@@ -206,6 +263,27 @@ abstract class NodalAccount extends Base\Core
         ];
     }
 
+    /**
+     * This is used to initialize the response status for the API based nodal accounts
+     */
+    protected function initStats()
+    {
+        $this->transferStatus = [
+            self::SUCCESS      => 0,
+            self::FAILED       => 0,
+        ];
+    }
+
+    /**
+     * This is used to update the response status for the API based nodal accounts
+     */
+    protected function updateTransferStatus(int $initiated)
+    {
+        $this->transferStatus[self::SUCCESS] = $initiated;
+
+        $this->transferStatus[self::FAILED] = $this->count - $initiated;
+    }
+
     protected function updateSummary($type, $amount)
     {
         $this->summary['total']['count']++;
@@ -215,4 +293,21 @@ abstract class NodalAccount extends Base\Core
         $this->summary[$type]['count']++;
     }
 
+    protected function trackAttemptsInitiatedSuccess($channel, $purpose = null, $sourceType)
+    {
+        $dimensions = Metric::getDimensionsAttemptsInitiated($channel, $purpose, $sourceType);
+
+        $this->trace->count(
+            Metric::ATTEMPTS_INITIATE_SUCCESS_TOTAL,
+            $dimensions);
+    }
+
+    protected function trackAttemptsInitiatedFailure($channel, $purpose = null, $sourceType)
+    {
+        $dimensions = Metric::getDimensionsAttemptsInitiated($channel, $purpose, $sourceType);
+
+        $this->trace->count(
+            Metric::ATTEMPTS_INITIATE_FAILURE_TOTAL,
+            $dimensions);
+    }
 }

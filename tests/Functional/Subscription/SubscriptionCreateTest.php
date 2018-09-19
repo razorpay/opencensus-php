@@ -336,6 +336,38 @@ class SubscriptionCreateTest extends TestCase
         $this->assertLessThan(time(), $scheduleTask['next_run_at']);
     }
 
+    public function testCreateInvoiceForSubscription()
+    {
+        $subscription = $this->createSubscription(true);
+
+        $this->ba->subscriptionsAuth();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['subscription_id'] = $subscription['id'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($response['id']);
+        $this->assertNotEmpty($response['line_items'][0]['id']);
+        $this->assertNotEmpty($response['order_id']);
+        $this->assertEquals($subscription['id'], $response['subscription_id']);
+    }
+
+    public function testFetchConfigInternalForSubcriptionsService()
+    {
+        $this->ba->subscriptionsAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('id', $response);
+        $this->assertArrayHasKey('transaction_report_email', $response);
+        $this->assertArrayHasKey('billing_label', $response);
+        $this->assertArrayHasKey('website', $response);
+        $this->assertArrayHasKey('receipt_email_enabled', $response);
+        $this->assertArrayHasKey('parent_id', $response);
+    }
+
     public function testCreateSubscriptionWithBlankStartAt()
     {
         $this->createSubscriptionPreRequisiteEntities();

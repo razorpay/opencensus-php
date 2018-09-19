@@ -1,20 +1,23 @@
 <?php
 
-namespace RZP\Reconciliator\Base;
+namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use App;
 
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Reconciliator\Metrics\Metric;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class RefundReconciliate extends Foundation\SubReconciliate
+class RefundReconciliate extends Base\Foundation\SubReconciliate
 {
     /*******************
      * Instance objects
@@ -79,7 +82,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
             {
                 $this->handleAlreadyReconciled($refundId);
 
-                return;
+                return null;
             }
 
             $validate = $this->validateRefundDetails($row);
@@ -123,6 +126,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             //return;
         }
+
+        return null;
     }
 
     public function resetRowProcessingAttributes()
@@ -219,12 +224,12 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $this->persistGatewaySettledAt($this->refund, $rowDetails);
 
-        $this->setRefundProcessedWithoutArn();
+        $this->setRefundProcessedWithoutArn($this->refund);
 
         return true;
     }
 
-    protected function setRefundProcessedWithoutArn()
+    protected function setRefundProcessedWithoutArn(RefundEntity $refund)
     {
         //
         // We check if refund is marked as processed already.
@@ -232,13 +237,27 @@ class RefundReconciliate extends Foundation\SubReconciliate
         // it to be marked as processed without the ARN. If ARN
         // was present, we would have already marked it as processed.
         //
-        if (($this->refund->isProcessed() === false) and
+        if (($refund->isProcessed() === false) and
             (in_array($this->gateway, self::GATEWAYS_PROCESSED_WO_ARN, true) === true))
         {
             $this->refund->setStatusProcessed();
 
-            $this->repo->saveOrFail($this->refund);
+            $this->repo->saveOrFail($refund);
+
+            $this->pushRefundProcessedMetric($refund);
         }
+    }
+
+    /**
+     * pushes the metric for refund getting marked as processed
+     * @param $refund
+     */
+    protected function pushRefundProcessedMetric(RefundEntity $refund)
+    {
+        $this->trace->histogram(
+            Metric::RECON_REFUND_CREATED_TO_PROCESSED_TIME_MINUTES,
+            $refund->getTimeFromCreatedInMinutes(),
+            Metric::getRefundMetricDimensions($refund, $this->source));
     }
 
     protected function attemptToCreateMissingRefundTransaction()
@@ -499,8 +518,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
 
     /**
-     * Checks if currency in recon file matches the actual currency in refund entity
-     * Implementation to be provided by child clasess
+     * Checks if currency in recon file matches the actual currency in
+     * refund entity. Implementation to be provided by child classes.
      *
      * @param  array $row Row data
      *
@@ -617,6 +636,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
         // This needs to be present here and not in the calling function,
         // to ensure that if any failure happens, arn still gets saved.
         $this->repo->saveOrFail($refund);
+
+        $this->pushRefundProcessedMetric($refund);
     }
 
     protected function persistGatewayData(array $rowDetails)
@@ -733,7 +754,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     protected function setGatewayTransactionId(string $gatewayTransactionId, PublicEntity $gatewayRefund)
     {
-        $dbGatewayTransactionId = $gatewayRefund->getGatewayTransactionId();
+        $dbGatewayTransactionId = (string) $gatewayRefund->getGatewayTransactionId();
 
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
@@ -743,6 +764,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'trace_code'                => TraceCode::RECON_MISMATCH,
                     'info_code'                 => 'DATA_MISMATCH',
                     'message'                   => 'Reference number in db is not same as in recon',
+                    'refund_id'                 => $this->refund->getId(),
                     'payment_id'                => $this->payment->getId(),
                     'db_reference_number'       => $dbGatewayTransactionId,
                     'recon_reference_number'    => $gatewayTransactionId,
@@ -767,7 +789,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayRefund)
     {
-        $dbReferenceNumber = $gatewayRefund->getBankPaymentId();
+        $dbReferenceNumber = (string) $gatewayRefund->getBankPaymentId();
 
         if ((empty($dbReferenceNumber) === false) and
             ($dbReferenceNumber !== $referenceNumber))
@@ -777,6 +799,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'trace_code'                => TraceCode::RECON_MISMATCH,
                     'info_code'                 => 'DATA_MISMATCH',
                     'message'                   => 'Reference number in db is not same as in recon',
+                    'refund_id'                 => $this->refund->getId(),
                     'payment_id'                => $this->payment->getId(),
                     'db_reference_number'       => $dbReferenceNumber,
                     'recon_reference_number'    => $referenceNumber,

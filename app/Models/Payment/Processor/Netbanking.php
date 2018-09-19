@@ -50,6 +50,7 @@ class Netbanking
     const ACCOUNT_NUMBER_LENGTHS = [
         IFSC::UTIB => 15,
         IFSC::FDRL => 14,
+        IFSC::CSBK => 18,
     ];
 
     protected static $self = [
@@ -60,6 +61,7 @@ class Netbanking
         IFSC::KKBK,
         IFSC::AIRP,
         IFSC::FDRL,
+        IFSC::IDFB,
         IFSC::RATN,
         IFSC::INDB,
         IFSC::ORBC,
@@ -82,7 +84,8 @@ class Netbanking
         IFSC::UTIB,
         IFSC::FDRL,
         IFSC::RATN,
-         IFSC::INDB,
+        IFSC::INDB,
+        IFSC::CSBK,
     ];
 
     protected static $paytm = array(
@@ -219,6 +222,7 @@ class Netbanking
         IFSC::SBBJ,
         IFSC::SBHY,
         IFSC::SBMY,
+        IFSC::SCBL,
         IFSC::STBP,
         IFSC::SBTR,
         IFSC::TMBL,
@@ -229,30 +233,24 @@ class Netbanking
     ];
 
     protected static $atomTPV = [
-        IFSC::UTIB,
-        IFSC::BKID,
+        IFSC::SBIN,
+        IFSC::YESB,
         IFSC::MAHB,
-        IFSC::CSBK,
-        IFSC::CIUB,
-        IFSC::DCBL,
         IFSC::DEUT,
+        IFSC::CSBK,
+        IFSC::CBIN,
+        IFSC::DCBL,
         IFSC::DLXB,
-        // IFSC::FDRL,
-        IFSC::HDFC,
-        IFSC::ICIC,
+        IFSC::FDRL,
         IFSC::IBKL,
         IFSC::IDIB,
         IFSC::INDB,
         IFSC::JAKA,
-        IFSC::KARB,
         IFSC::KVBL,
-        IFSC::KKBK,
-        IFSC::LAVB,
+        Netbanking::LAVB_R,
+        IFSC::ORBC,
         IFSC::SRCB,
-        IFSC::SIBL,
-        IFSC::SBIN,
         IFSC::TMBL,
-        IFSC::YESB,
     ];
 
     protected static $ebs = [
@@ -442,7 +440,7 @@ class Netbanking
     // @codingStandardsIgnoreLine
     public static function getSupportedBanksForTPV()
     {
-        return array_values(array_unique(array_merge(self::$billdeskTPV, self::$selfTPV)));
+        return array_values(array_unique(array_merge(self::$billdeskTPV, self::$selfTPV, self::$atomTPV)));
     }
 
     public static function isBankSupportedByGateway($bank, $gateway, $isTPV = false)

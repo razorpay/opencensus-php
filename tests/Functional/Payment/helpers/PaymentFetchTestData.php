@@ -232,6 +232,28 @@ return [
         ],
     ],
 
+    'testFetchWithExpandsTransfer' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payments',
+            'content' => [
+                'expand' => ['transfer'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
     'testFetchWithDisputes' => [
         'request'   => [
             'method'  => 'get',

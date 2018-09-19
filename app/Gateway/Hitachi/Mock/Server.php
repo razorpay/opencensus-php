@@ -8,7 +8,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hitachi\RequestFields;
 use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Gateway\Hitachi\TransactionType;
-
+use RZP\Gateway\Hitachi\TerminalFields;
 class Server extends Base\Mock\Server
 {
     public function authorize($input)
@@ -19,6 +19,8 @@ class Server extends Base\Mock\Server
     public function callback($input)
     {
         $content = json_decode($input, true);
+
+        $this->request($content, __FUNCTION__);
 
         $this->validateAuthorizeInput($content);
 
@@ -119,10 +121,23 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
+    public function merchantOnboard($input)
+    {
+        $content = json_decode($input,true);
+
+        $this->validateActionInput($content, Base\Terminal::MERCHANT_ONBOARD);
+
+        $response = $this->getOnboardResponse($content);
+
+        $this->content($response, Base\Terminal::MERCHANT_ONBOARD);
+
+        return $this->makeResponse($response);
+    }
+
     protected function getAuthorizeResponse(array $input)
     {
         $response = [
-            ResponseFields::TRANSACTION_TYPE    => TransactionType::AUTH,
+            ResponseFields::TRANSACTION_TYPE    => $input[RequestFields::TRANSACTION_TYPE],
             ResponseFields::TRANSACTION_AMOUNT  => $input[RequestFields::TRANSACTION_AMOUNT],
             ResponseFields::MERCHANT_ID         => $input[RequestFields::MERCHANT_ID],
             ResponseFields::MERCHANT_REF_NUMBER => $input[RequestFields::MERCHANT_REF_NUMBER],
@@ -189,6 +204,21 @@ class Server extends Base\Mock\Server
             ResponseFields::RETRIEVAL_REF_NUM   => $input[RequestFields::RETRIEVAL_REF_NUM],
             ResponseFields::RESPONSE_CODE       => '00',
         ];
+
+        return $response;
+    }
+
+    protected function getOnboardResponse(array $input)
+    {
+        $response = [
+            TerminalFields::S_NO                => $input[TerminalFields::S_NO],
+            TerminalFields::GATEWAY_TID         => $input[TerminalFields::TID],
+            TerminalFields::GATEWAY_MID         => $input[TerminalFields::MID],
+            TerminalFields::RESPONSE_CODE       => '00',
+            TerminalFields::RESPONSE_DESC       => 'Success',
+        ];
+
+        $this->content($response, Terminal::MERCHANT_ONBOARD);
 
         return $response;
     }

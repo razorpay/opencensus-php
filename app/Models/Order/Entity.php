@@ -100,6 +100,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::BANK,
         self::FORCE_OFFER,
+        self::PARTIAL_PAYMENT,
     ];
 
     protected $generateIdOnCreate = true;

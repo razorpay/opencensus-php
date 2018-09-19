@@ -80,6 +80,20 @@ trait SettlementTrait
 
                 $this->repo->saveOrFail($txn);
 
+                $this->trace->count(
+                    Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                    [
+                        Metric::SKIP_REASON => Metric::AUTH_PAYMENT
+                    ],
+                    1);
+
+                $this->trace->count(
+                    Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                    [
+                        Metric::SKIP_REASON => Metric::REFUND_AUTH_PAYMENT
+                    ],
+                    1);
+
                 return true;
             }
         }
@@ -105,6 +119,13 @@ trait SettlementTrait
             if (($now < $tenAm) or
                 ($now > $threePm))
             {
+                $this->trace->count(
+                    Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                    [
+                        Metric::SKIP_REASON => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                    ],
+                    1);
+
                 return true;
             }
         }
@@ -161,6 +182,13 @@ trait SettlementTrait
                 (($now < $onePm) or
                  ($now >= $twoPm)))
             {
+                $this->trace->count(
+                    Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                    [
+                        Metric::SKIP_REASON => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                    ],
+                    1);
+
                 return true;
             }
 
@@ -168,6 +196,13 @@ trait SettlementTrait
             if (($now < $onePm) or
                 ($now > $twoThirtyPm))
             {
+                $this->trace->count(
+                    Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                    [
+                        Metric::SKIP_REASON => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                    ],
+                    1);
+
                 return true;
             }
         }
@@ -228,6 +263,15 @@ trait SettlementTrait
 
         if (($setlAmount < 100) or ($setlAmount > $balance))
         {
+            $skipReason = ($setlAmount < 100) ? Metric::MIN_SETTLEMENT_AMOUNT_BLOCK : Metric::SETTLEMENT_AMOUNT_LESS_THAN_BALANCE;
+
+            $this->trace->count(
+                Metric::MERCHANTS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                [
+                    Metric::SKIP_REASON => $skipReason
+                ],
+                1);
+
             $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
                 [
                     'balance'    => $balance,
@@ -341,6 +385,8 @@ trait SettlementTrait
 
             $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
 
+            $this->traceSettlementDelayOfTransactions($setlTxns);
+
             $settlement = $merchantSettler->settle(
                                 $setlTxns,
                                 $setlAmount,
@@ -390,14 +436,26 @@ trait SettlementTrait
         return [$settlement, $bankTransferAtpt];
     }
 
+    protected function traceSettlementDelayOfTransactions($setlTxns)
+    {
+        foreach ($setlTxns as $txn)
+        {
+            $timeTaken = intval(($this->setlTime - $txn->getSettledAt()) / 60);
+
+            $this->trace->histogram(
+                Metric::TRANSACTION_SETTLEMENT_INITIATION_DELAY_MINUTES,
+                $timeTaken,
+                [Metric::CHANNEL => $txn->getChannel()]
+            );
+        }
+    }
+
     /**
      * Settlement is done only bank account change is not recent as we need some
      * time till beneficiary is updated in kotak
      *
      * @param Transaction\Entity $txn
-     *
      * @return bool
-     * @throws Exception\LogicException
      */
     protected function shouldSettle(Transaction\Entity $txn): bool
     {
@@ -411,6 +469,13 @@ trait SettlementTrait
         if (($merchant->getParentId() === Preferences::MID_WEALTHY) and
             ($today->dayOfWeek === Carbon::SATURDAY))
         {
+            $this->trace->count(
+                Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                [
+                    Metric::SKIP_REASON => Metric::BLOCK_WEALTHY_ON_SATURDAY
+                ],
+                1);
+
             return false;
         }
 
@@ -422,15 +487,36 @@ trait SettlementTrait
 
         if ($bankAccount === null)
         {
-            throw new Exception\LogicException(
-                'No bank account mapped for merchant settlement',
-                null,
-                ['merchant_id' => $merchant->getId()]);
+            $this->trace->error(
+                TraceCode::SETTLEMENT_MERCHANT_BANK_ACCOUNT_NOT_MAPPED,
+                [
+                    'merchant_id'    => $merchant->getId(),
+                    'transaction_id' => $txn->getId()
+                ]
+            );
+
+            return false;
+        }
+
+        $channel = $txn->getChannel();
+
+        $allowedChannelFor24x7Settlement = Channel::get24x7Channels();
+
+        if (($this->env !== 'testing') and
+            (in_array($channel, $allowedChannelFor24x7Settlement, true) === true))
+        {
+            return true;
         }
 
         if (($this->env !== 'testing') and
             ($bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
         {
+            $this->trace->count(
+                Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                [
+                    Metric::SKIP_REASON => Metric::BANK_ACCOUNT_CREATED_YESTERDAY
+                ]);
+
             $shouldSettle = false;
         }
 

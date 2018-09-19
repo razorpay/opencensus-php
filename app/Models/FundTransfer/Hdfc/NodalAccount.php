@@ -77,7 +77,7 @@ class NodalAccount extends NodalBase\FileProcessor
         }
         else
         {
-            $mode = $this->getTransferMode($amount);
+            $mode = $this->getTransferMode($amount, $bankAccount->merchant);
         }
 
         return [
@@ -185,7 +185,7 @@ class NodalAccount extends NodalBase\FileProcessor
     {
         return [
             'gid'   => '10000',
-            'uid'   => '10001',
+            'uid'   => '10007',
             'mtime' => Carbon::now(Timezone::IST)->getTimestamp(),
             'mode'  => '33188',
         ];

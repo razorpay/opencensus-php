@@ -98,6 +98,18 @@ class TransactionTest extends TestCase
         return $payment;
     }
 
+    public function testFetchAuthPaymentTransaction()
+    {
+        $payment = $this->doAuthPayment();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/'.$payment['razorpay_payment_id'].'/transaction';
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+    }
+
     public function testTransactionCreateForOldPayment()
     {
         $this->markTestSkipped();

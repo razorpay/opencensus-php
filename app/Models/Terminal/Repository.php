@@ -270,6 +270,19 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findByGatewayMpan(string $mpan, string $gateway)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->where(function ($query) use ($mpan)
+                    {
+                        $query->where(Entity::VISA_MPAN, '=', $mpan)
+                              ->orWhere(Entity::MC_MPAN, '=', $mpan)
+                              ->orWhere(Entity::RUPAY_MPAN, '=', $mpan);
+                    })
+                    ->first();
+    }
+
     public function deleteOrFail($entity)
     {
         $count = $this->repo->payment->getTotalUsedCountForTerminal(

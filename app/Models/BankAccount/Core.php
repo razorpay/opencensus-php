@@ -71,6 +71,22 @@ class Core extends Base\Core
         return $newBankAccount;
     }
 
+    public function editBankAccount(Entity $bankAccount, array $input)
+    {
+        $this->trace->info(
+            TraceCode::BANK_ACCOUNT_EDIT,
+            [
+                'edit_input' => $input,
+                'bank_account' => $bankAccount->toArray()
+            ]);
+
+        $bankAccount = $bankAccount->edit($input);
+
+        $this->repo->saveOrFail($bankAccount);
+
+        return $bankAccount;
+    }
+
     /**
      * This takes the oldBank Account as it's last parameter
      *
@@ -158,7 +174,7 @@ class Core extends Base\Core
 
     protected function uploadAddressProof($merchant, $input)
     {
-        (new Validator)->validateAddressProofUploadOverProxyAuth($input);
+        (new Validator)->validateAddressProofUploadOverProxyAuth();
 
         $merchantDetailService = new Detail\Service();
 
@@ -218,6 +234,22 @@ class Core extends Base\Core
         );
 
         $ba = $this->createBankAccount($input, $merchant, Mode::TEST);
+
+        return $ba;
+    }
+
+
+    public function createBankAccountForSource($input, $merchant, $source, $sourceType, $addRule)
+    {
+        $ba = new BankAccount\Entity;
+
+        $ba = $ba->build($input, $addRule);
+
+        $ba->merchant()->associate($merchant);
+
+        $ba->associateSource($source, $sourceType);
+
+        $this->repo->saveOrFail($ba);
 
         return $ba;
     }

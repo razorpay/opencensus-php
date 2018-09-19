@@ -9,6 +9,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as EnachRblDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
+use RZP\Gateway\Netbanking\Axis\EMandateDebitReconFileHeadings as AxisEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
 class Header
@@ -174,6 +175,23 @@ class Header
     const HDFC_EM_DEBIT_NARRATION           = HdfcEMDebitHeadings::NARRATION;
 
     //
+    // AXIS Emandate Debit Response File Headers
+    //
+    const AXIS_EM_DEBIT_HEADING_PAYMENT_ID         = AxisEMDebitHeadings::HEADING_PAYMENT_ID;
+    const AXIS_EM_DEBIT_HEADING_DEBIT_DATE         = AxisEMDebitHeadings::HEADING_DEBIT_DATE;
+    const AXIS_EM_DEBIT_HEADING_MERCHANT_ID        = AxisEMDebitHeadings::HEADING_MERCHANT_ID;
+    const AXIS_EM_DEBIT_HEADING_BANK_REF_NUMBER    = AxisEMDebitHeadings::HEADING_BANK_REF_NUMBER;
+    const AXIS_EM_DEBIT_HEADING_CUSTOMER_NAME      = AxisEMDebitHeadings::HEADING_CUSTOMER_NAME;
+    const AXIS_EM_DEBIT_HEADING_DEBIT_ACCOUNT      = AxisEMDebitHeadings::HEADING_DEBIT_ACCOUNT;
+    const AXIS_EM_DEBIT_HEADING_DEBIT_AMOUNT       = AxisEMDebitHeadings::HEADING_DEBIT_AMOUNT;
+    const AXIS_EM_DB_HEADING_MIS_INFO3             = AxisEMDebitHeadings::HEADING_MIS_INFO3;
+    const AXIS_EM_DEBIT_HEADING_MIS_INFO4          = AxisEMDebitHeadings::HEADING_MIS_INFO4;
+    const AXIS_EM_DEBIT_HEADING_FILE_REF           = AxisEMDebitHeadings::HEADING_FILE_REF;
+    const AXIS_EM_DEBIT_HEADING_STATUS             = AxisEMDebitHeadings::HEADING_STATUS;
+    const AXIS_EM_DEBIT_HEADING_REMARK             = AxisEMDebitHeadings::HEADING_REMARK;
+    const AXIS_EM_DEBIT_HEADING_RECORD_IDENTIFIER  = AxisEMDebitHeadings::HEADING_RECORD_IDENTIFIER;
+
+    //
     // eNach Acknowledgement Response File Headers
     //
     const ENACH_ACK_MANDATE_DATE    = 'MANDATE_DATE';
@@ -287,8 +305,21 @@ class Header
     const DIRECT_DEBIT_PAYMENT_ID      = 'payment_id';
     const DIRECT_DEBIT_REMARKS         = 'remarks';
 
-    const ELFIN_LONG_URL             = 'Long Url';
-    const ELFIN_SHORT_URL            = 'Short Url';
+    const ELFIN_LONG_URL               = 'Long Url';
+    const ELFIN_SHORT_URL              = 'Short Url';
+
+    //
+    // OAuth Migration Token
+    // Also uses MERCHANT_ID declared above
+    //
+    const ACCESS_TOKEN                 = 'access_token';
+    const PUBLIC_TOKEN                 = 'public_token';
+    const REFRESH_TOKEN                = 'refresh_token';
+
+    // Partner submerchant headers
+    const PARTNER_TYPE         = 'partner_type';
+    const SUBMERCHANT_ID       = 'submerchant_id';
+    const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
 
     /**
      * Input and output file headers
@@ -421,6 +452,8 @@ class Header
                 self::REFERENCE_ID,
                 self::STATUS,
                 self::ACCOUNT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 
@@ -461,6 +494,24 @@ class Header
                 self::HDFC_EM_DEBIT_STATUS,
                 self::HDFC_EM_DEBIT_REJECTION_REMARKS,
                 self::HDFC_EM_DEBIT_NARRATION,
+            ]
+        ],
+
+        'emandate_debit_axis' => [
+            self::INPUT => [
+                self::AXIS_EM_DEBIT_HEADING_PAYMENT_ID,
+                self::AXIS_EM_DEBIT_HEADING_DEBIT_DATE,
+                self::AXIS_EM_DEBIT_HEADING_MERCHANT_ID,
+                self::AXIS_EM_DEBIT_HEADING_BANK_REF_NUMBER,
+                self::AXIS_EM_DEBIT_HEADING_CUSTOMER_NAME,
+                self::AXIS_EM_DEBIT_HEADING_DEBIT_ACCOUNT,
+                self::AXIS_EM_DEBIT_HEADING_DEBIT_AMOUNT,
+                self::AXIS_EM_DB_HEADING_MIS_INFO3,
+                self::AXIS_EM_DEBIT_HEADING_MIS_INFO4,
+                self::AXIS_EM_DEBIT_HEADING_FILE_REF,
+                self::AXIS_EM_DEBIT_HEADING_STATUS,
+                self::AXIS_EM_DEBIT_HEADING_REMARK,
+                self::AXIS_EM_DEBIT_HEADING_RECORD_IDENTIFIER,
             ]
         ],
 
@@ -725,6 +776,8 @@ class Header
                 self::NOTES,
                 self::DIRECT_DEBIT_ORDER_ID,
                 self::DIRECT_DEBIT_PAYMENT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 
@@ -737,6 +790,42 @@ class Header
             self::OUTPUT => [
                 self::ELFIN_LONG_URL,
                 self::ELFIN_SHORT_URL,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::OAUTH_MIGRATION_TOKEN => [
+
+            self::INPUT => [
+                self::MERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::ACCESS_TOKEN,
+                self::PUBLIC_TOKEN,
+                self::REFRESH_TOKEN,
+
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::PARTNER_SUBMERCHANTS => [
+
+            self::INPUT => [
+                self::PARTNER_MERCHANT_ID,
+                self::PARTNER_TYPE,
+                self::SUBMERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::PARTNER_MERCHANT_ID,
+                self::PARTNER_TYPE,
+                self::SUBMERCHANT_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

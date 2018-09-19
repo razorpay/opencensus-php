@@ -208,4 +208,13 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postSettlementVerifyThroughApi(string $channel)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifySettlementsThroughApi($input, $channel);
+
+        return ApiResponse::json($data);
+    }
 }

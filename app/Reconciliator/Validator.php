@@ -3,10 +3,12 @@
 namespace RZP\Reconciliator;
 
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Reconciliator\RequestProcessor;
 
-class Validator
+class Validator extends Base\Core
 {
     const ACCEPTED_EXTENSIONS_MAP = [
         'csv'  => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
@@ -38,10 +40,13 @@ class Validator
         RequestProcessor\Base::OLAMONEY           => ["/^Merchant Settlement File/"],
         RequestProcessor\Base::FREECHARGE         => ["/^Merchant (Transaction|Settlement) Report/"],
         RequestProcessor\Base::NETBANKING_AXIS    => [
-                                                        "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
+                                                        "/^MIS file for (0[1-9]|[12][0-9]|3[01])[\/-](0[1-9]|1[0-2])[\/-]20[0-9]{2}, "
                                                         . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/"
                                                      ],
-        RequestProcessor\Base::NETBANKING_BOB     => ["/^(RE: )?Razorpay_Scroll_ of /"],
+        RequestProcessor\Base::NETBANKING_BOB     => [  "/^(RE: )?Razorpay_Scroll_ of /",
+                                                        "/^Bank of Baroda RazorPay Internet Banking payment recon file for\s*date "
+                                                        . "\([0-9]{2}-[0-9]{2}-20[0-9]{2}\)/"
+                                                     ],
         RequestProcessor\Base::NETBANKING_CSB     => ["/^RAZORPAY_Recon File/"],
         RequestProcessor\Base::NETBANKING_ICICI   => ["/^Payment Through Internet Banking Center Razorpay/"],
         RequestProcessor\Base::NETBANKING_FEDERAL => [
@@ -60,36 +65,48 @@ class Validator
         RequestProcessor\Base::UPI_ICICI          => [
                                                          "/Eazypay app\s*sales summary-[0-9]{2}-"
                                                          . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-                                                         "/Refund MIS for 116798_RAZORPAY_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"
+                                                         "/Refund MIS for [0-9]{6}_RAZORPAY/"
                                                      ],
-    ];
+        RequestProcessor\Base::AIRTEL             => ["/Ecom Merchant Transaction_Report for [0-9]+/"],
+        RequestProcessor\Base::UPI_HDFC           => [ "/Merchant Payout Report/"],
+        RequestProcessor\Base::CARD_FSS_HDFC           => ["/^Settlement Report FSSPaY - Razorpay/"],
+
+
+        ];
 
     const GATEWAY_BODY_REGEX = [
-        RequestProcessor\Base::OLAMONEY           => ["/^Please find settlement report for /"],
-        RequestProcessor\Base::FREECHARGE         => ["/Please view your (transaction|settlement) report/"],
-        RequestProcessor\Base::NETBANKING_AXIS    => [
-                                                        "/Kindly find attached below the MIS for "
-                                                        . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
-                                                     ],
-        RequestProcessor\Base::NETBANKING_ICICI   => ["/Please find below the payment report for the day./"],
-        RequestProcessor\Base::NETBANKING_FEDERAL => [
-                                                        "/^MIS Report File Dated "
-                                                        . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
-                                                     ],
-        RequestProcessor\Base::AXIS               => [
-                                                        "/Please find attached the settlement file for today."
-                                                        . " You net amount settled is/"
-                                                     ],
-        RequestProcessor\Base::NETBANKING_CSB     => ["/Please find attached, the recon file for the date/"],
-        RequestProcessor\Base::FIRST_DATA         => ["/the statement of transactions for MID (.)*razorpay/"],
-        RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => ["/Please find the hourly report of Virtual Accounts./"],
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> ["/Please find attached subject scheduled reports./"],
-        RequestProcessor\Base::HITACHI            => ["/Please find the attached RAZORPAY RBL Settled Transaction report./"],
-        RequestProcessor\Base::UPI_ICICI          => [
-                                                        "/Please find attached the UPI Transaction Report MIS as on"
-                                                        ."\s*[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-                                                         "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
-                                                     ],
+        RequestProcessor\Base::OLAMONEY               => ["/^Please find settlement report for /"],
+        RequestProcessor\Base::FREECHARGE             => ["/Please view your (transaction|settlement) report/"],
+        RequestProcessor\Base::NETBANKING_AXIS        => [
+                                                            "/Kindly find attached below the MIS for "
+                                                            . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
+                                                         ],
+        RequestProcessor\Base::NETBANKING_ICICI       => ["/Please find below the payment report for the day./"],
+        RequestProcessor\Base::NETBANKING_FEDERAL     => [
+                                                            "/^MIS Report File Dated "
+                                                            . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/"
+                                                         ],
+        RequestProcessor\Base::AXIS                   => [
+                                                            "/Please find attached the settlement file for today."
+                                                            . " You net amount settled is/"
+                                                         ],
+        RequestProcessor\Base::NETBANKING_CSB         => ["/Please find attached, the recon file for the date/"],
+        RequestProcessor\Base::FIRST_DATA             => ["/the statement of transactions for MID (.)*razorpay/"],
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK      => ["/Please find the hourly report of Virtual Accounts./"],
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK    => ["/Please find attached subject scheduled reports./"],
+        RequestProcessor\Base::HITACHI                => ["/Please find the attached RAZORPAY RBL Settled Transaction report./"],
+        RequestProcessor\Base::UPI_ICICI              => [
+                                                            "/Please find attached the UPI Transaction Report MIS as on"
+                                                            ."\s*[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
+                                                             "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
+                                                         ],
+        RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached Recon Data File of Online Transaction/"],
+        RequestProcessor\Base::UPI_HDFC                => ["/Please Find Attachment For Merchant Payout Report/"],
+        RequestProcessor\Base::AIRTEL                  => ["/PFA your merchant txn report for Yesterday/"],
+        RequestProcessor\Base::CARD_FSS_HDFC           => [
+                                                            "/Please find attached All transaction Report & Settlement Report "
+                                                            . "for transactions done on FSSPaY/"
+                                                          ],
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -100,7 +117,8 @@ class Validator
         RequestProcessor\Base::FIRST_DATA         => 1,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => 1,
         RequestProcessor\Base::HITACHI            => 1,
-        RequestProcessor\Base::UPI_ICICI          => 1
+        RequestProcessor\Base::UPI_ICICI          => 1,
+        RequestProcessor\Base::AIRTEL             => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -116,9 +134,11 @@ class Validator
     ];
 
     const MANUAL_INPUT_RULES = [
-        RequestProcessor\Base::ATTACHMENT_COUNT    => 'required|integer|min:0|max:10',
-        RequestProcessor\Base::GATEWAY             => 'required|custom',
-        RequestProcessor\Base::FORCE_UPDATE        => 'sometimes|custom',
+        RequestProcessor\Base::ATTACHMENT_COUNT         => 'required|integer|min:0|max:10',
+        RequestProcessor\Base::GATEWAY                  => 'required|custom',
+        RequestProcessor\Base::FORCE_UPDATE             => 'sometimes|custom',
+        RequestProcessor\Base::FORCE_AUTHORIZE          => 'sometimes',
+        RequestProcessor\Base::FORCE_AUTHORIZE . '.*'   => 'sometimes|public_id'
     ];
 
     public function filterEmails(array $emailDetails)
@@ -156,6 +176,23 @@ class Validator
         return $this->validateEmailSubject(
                     $emailDetails[RequestProcessor\Mailgun::SUBJECT],
                     RequestProcessor\Base::KOTAK);
+    }
+
+    public function validateAirtelEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::AIRTEL);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            RequestProcessor\Base::AIRTEL);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::AIRTEL);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
     }
 
     public function validateFreechargeEmail(array $emailDetails)
@@ -349,6 +386,41 @@ class Validator
         return ($validSubject and $validAttachmentCount and $validBody);
     }
 
+    public function validateUpiHdfcEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::UPI_HDFC);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
+            RequestProcessor\Base::UPI_HDFC);
+
+        return ($validSubject and $validBody);
+    }
+
+    public function validateNetbankingCorporationEmail(array $emailDetails)
+    {
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
+            RequestProcessor\Base::NETBANKING_CORPORATION);
+
+        return ($validBody);
+    }
+
+    public function validateCardFssHdfcEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::CARD_FSS_HDFC);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY_HTML_TEXT],
+            RequestProcessor\Base::CARD_FSS_HDFC);
+
+        return ($validSubject and $validBody);
+    }
+
     /**
      * For emails without attachments, but links, we allow
      * zero attachments during the initial validation.
@@ -522,6 +594,15 @@ class Validator
                 return true;
             }
         }
+
+        $this->trace->debug(
+            TraceCode::RECON_EMAIL_VALIDATION_FAILED,
+            [
+                'subject'       => $subject,
+                'regex_array'   => $regexArray,
+                'gateway'       => $gateway,
+            ]);
+
         return false;
     }
 
@@ -536,6 +617,15 @@ class Validator
                 return true;
             }
         }
+
+        $this->trace->debug(
+            TraceCode::RECON_EMAIL_VALIDATION_FAILED,
+            [
+                'email_body'    => $body,
+                'regex_array'   => $regexArray,
+                'gateway'       => $gateway,
+            ]);
+
         return false;
     }
 

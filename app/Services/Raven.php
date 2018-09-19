@@ -157,7 +157,9 @@ class Raven
 
         $decodedResponse = json_decode($response->body, true);
 
-        $this->trace->info(TraceCode::RAVEN_RESPONSE, $decodedResponse ?? []);
+        $decodedResponse = $decodedResponse ?? [];
+
+        $this->trace->info(TraceCode::RAVEN_RESPONSE, $decodedResponse);
 
         //check if $response is a valid json
         if (json_last_error() !== JSON_ERROR_NONE)

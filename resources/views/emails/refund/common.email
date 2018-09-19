@@ -260,7 +260,7 @@ depends on your payment cycle with your bank.
               </td>
             </tr>
           </table>
-          @include('emails.partials.footer', ['message'=>$message, 'showContact' => false])
+          @include('emails.partials.footer', ['message'=>$message, 'showContact' => false, 'type'=>'customer'])
         </td>
       </tr>
     </table>

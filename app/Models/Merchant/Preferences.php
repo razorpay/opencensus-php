@@ -22,10 +22,14 @@ class Preferences
     const MID_SHELL            = '9LMdTQdjgMJ6uR';
     const MID_SHELL_2          = '9R0AsTqocyuP1W';
     const MID_PAISABAZAAR      = '9dhe2WRR0XCQz6';
+    const MID_PAISABAZAAR_GOLD = 'AiWdjAyyF4RKBa';
     const MID_BPCL             = '9C04GG1wPzKCUP';
     const MID_SRI_CHAITANYA    = '8f9o3YjPGZEcdU';
     const MID_UBER             = '82LK42BGTN2bOe';
     const MID_AMIT_MAHBUBANI   = '7SVOQZGZuwHr4I';
+    const MID_ICICI_LOMBARD    = 'AXRuIp5uiz5Jsp';
+    const MID_KARVY            = 'AmReTNPu1KFKBn';
+
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [
         '9YAQd3b47mdIQY', '9ZO8jNaR0OORNH', '9Y9m9XscC6Kh4W',
@@ -34,8 +38,18 @@ class Preferences
         'A0GNi6PHlqy5zX', 'A0HuEfx39zhjr9', 'A5ONBRrNJ7dS1K',
         'A5MmRVEM3qf6QJ', 'A5OZ1qi9tgwnZB', 'A5OeZOCaeyQQ8Q',
     ];
+    const MID_IRCTC = [
+        '8byazTDARv4Io0',
+        'AEPXwjSlJJhfUl',
+        '9m4CChGex4ENkR',
+        'AEsxERLbWiBuUG',
+        '8ST00QgEPT14cE',
+        '8YPFnW5UOM91H7',
+        '90xVmQJTCEJ6GH'
+    ];
     const MID_CLEARTAX         = 'AGQJfLbWcmjxDX';
     const MID_APARTMENTADDA    = '9NVPPQuTqF4cYx';
+    const MID_INVEZTA          = '8YQygO7pzP3Gut';
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here
@@ -100,10 +114,17 @@ class Preferences
         self::MID_WEALTHY,
         self::MID_PIGGY,
         self::MID_PAISABAZAAR,
+        self::MID_PAISABAZAAR_GOLD,
         self::MID_BPCL,
         self::MID_SRI_CHAITANYA,
         self::MID_CLEARTAX,
         self::MID_APARTMENTADDA,
+        self::MID_INVEZTA,
+        self::MID_KARVY,
+    ];
+
+    const ONLY_NEFT_SETTLEMENT_MIDS = [
+        self::MID_PIGGY,
     ];
 
     public static function checkZohoHeaders(Headers $headers)

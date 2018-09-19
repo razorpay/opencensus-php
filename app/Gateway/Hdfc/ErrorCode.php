@@ -59,6 +59,7 @@ class ErrorCode
     const GW00456   = 'GW00456';
     const GW00458   = 'GW00458';
     const GW00850   = 'GW00850';
+    const GW00852   = 'GW00852';
     const GW00854   = 'GW00854';
     const GW00856   = 'GW00856';
     const GW00874   = 'GW00874';
@@ -97,12 +98,14 @@ class ErrorCode
     const GV00103   = 'GV00103';
     const GV00104   = 'GV00104';
 
+    const CM00030   = 'CM00030';
     const CM90000   = 'CM90000';
     const CM90001   = 'CM90001';
     const CM90002   = 'CM90002';
     const CM90003   = 'CM90003';
     const CM90004   = 'CM90004';
     const CM90005   = 'CM90005';
+    const CM900000  = 'CM900000';
 
     const PY20001   = 'PY20001';
     const PY20002   = 'PY20002';
@@ -270,6 +273,7 @@ class ErrorCode
         self::GW00456     => 'Invalid TranPortal Id',
         self::GW00458     => 'Invalid Payment Attempt',
         self::GW00850     => 'Missing Required data',
+        self::GW00852     => 'Invalid card number',
         self::GW00854     => 'Invalid Expiration Date',
         self::GW00856     => 'Invalid cvv',
         self::GW00874     => 'Transaction denied due to expiration date.',
@@ -302,19 +306,21 @@ class ErrorCode
         self::PY20007     => 'Invalid Order status',
         self::PY20085     => 'Invalid payment status',
 
+        self::CM00030     => '(HDFC internal error) Problem occured while getting external connection details',
         self::CM90000     => 'Database error',
         self::CM90001     => 'Database configuration error',
         self::CM90002     => 'Data format error',
         self::CM90003     => 'No records found',
         self::CM90004     => 'Duplicate records found',
         self::CM90005     => 'Timestamp mismatch error',
+        self::CM900000    => '(HDFC internal error) Problem occurred while getting terminal.',
 
         self::RP00001     => 'Invalid Error Code. The error code returned is not recognized',
         self::RP00002     => 'Invalid Result Code. The result code returned is not recognized',
         self::RP00003     => 'Gateway request timeout. Request actually timed out with no result returned.',
         self::RP00004     => 'Gateway request timeout. Response returned but response result code is "HOST TIMEOUT"',
         self::RP00005     => 'Denied by risk. Response result code is "DENIED BY RISK"',
-        self::RP00006     => 'Authorization not approved. Response result code is "NOT APPROVED"',
+        self::RP00006     => 'Authentication not approved. Response result code is "NOT APPROVED"',
         self::RP00007     => 'Purchase/Capture/Refund not done. Response result code is "NOT CAPTURED"',
         self::RP00008     => 'Gateway server error. Wrong response http status_code, > than 500 signifying gateway server error',
         self::RP00009     => 'Wrong response content-type, not application/xml',
@@ -373,6 +379,7 @@ class ErrorCode
         self::GW00456     => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
         self::GW00458     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::GW00850     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        self::GW00852     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
         self::GW00854     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
         self::GW00856     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         self::GW00874     => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
@@ -404,12 +411,14 @@ class ErrorCode
         self::PY20007     => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         self::PY20085     => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
 
+        self::CM00030     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90000     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90001     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90002     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90003     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90004     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::CM90005     => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        self::CM900000    => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
 
         self::RP00001     => Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         self::RP00002     => Error\ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,

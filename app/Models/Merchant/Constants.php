@@ -14,6 +14,12 @@ final class Constants
     const DATE                                    = 'date';
     const SIGNUP_DATE                             = 'signup_date';
 
+    // Used for pagination in submerchant listing for partners
+    const TO                                      = 'to';
+    const FROM                                    = 'from';
+    const SKIP                                    = 'skip';
+    const COUNT                                   = 'count';
+
     // Partner constants
     const BANK                                    = 'bank';
     const PARTNER                                 = 'partner';
@@ -27,6 +33,28 @@ final class Constants
         self::RESELLER,
         self::AGGREGATOR,
         self::FULLY_MANAGED,
+        self::PURE_PLATFORM,
+    ];
+
+    /**
+     * Partner types that are allowed to view and manage
+     * partner settings like client creds.
+     *
+     * @var array
+     */
+    public static $settingsAccessPartnerTypes = [
+        self::FULLY_MANAGED,
+        self::AGGREGATOR,
+    ];
+
+    /**
+     * Partner types that are allowed to view and manage webhooks.
+     *
+     * @var array
+     */
+    public static $webhooksAccessPartnerTypes = [
+        self::FULLY_MANAGED,
+        self::AGGREGATOR,
         self::PURE_PLATFORM,
     ];
 
@@ -105,5 +133,6 @@ final class Constants
         Detail\Entity::CONTACT_NAME,
         Detail\Entity::BUSINESS_NAME,
         Detail\Entity::CONTACT_MOBILE,
+        Detail\Entity::BUSINESS_WEBSITE,
     ];
 }

@@ -25,6 +25,7 @@ class Name
     const VIEW_MERCHANT_AGGREGATIONS          = 'view_merchant_aggregations';
     const VIEW_MERCHANT_TAGS                  = 'view_merchant_tags';
     const CREATE_PRICING_PLAN                 = 'create_pricing_plan';
+    const UPDATE_PRICING_PLAN                 = 'update_pricing_plan';
     const SET_PRICING_RULES                   = 'set_pricing_rules';
     const DELETE_PRICING_PLAN_RULES           = 'delete_pricing_plan_rules';
     const DELETE_EMI_PLAN                     = 'delete_emi_plan';
@@ -162,12 +163,14 @@ class Name
     const VIEW_MERCHANT_PRICING               = 'view_merchant_pricing';
     const CREATE_DISPUTE                      = 'create_dispute';
     const EDIT_DISPUTE                        = 'edit_dispute';
+    const FETCH_DISPUTE_FILES                 = 'fetch_dispute_files';
     const VIEW_WALLET_CONFIG                  = 'view_wallet_config';
     const CREATE_WALLET_CONFIG                = 'create_wallet_config';
     const EDIT_WALLET_CONFIG                  = 'edit_wallet_config';
     const MERCHANT_BATCH_UPLOAD               = 'merchant_batch_upload';
     const CREATE_DISPUTE_REASON               = 'create_dispute_reason';
     const MANAGE_ONBOARDING_SUBMISSIONS       = 'manage_onboarding_submissions';
+    const MANAGE_RAZORX_OPERATIONS            = 'manage_razorx_operations';
     const EDIT_MERCHANT_RISK_THRESHOLD        = 'edit_merchant_risk_threshold';
     const RETRY_BATCH                         = 'retry_batch';
     const VIEW_SHIELD_RULES                   = 'view_shield_rules';
@@ -180,6 +183,11 @@ class Name
     const DB_META_QUERY                       = 'db_meta_query';
     const OAUTH_SYNC_MERCHANT_MAP             = 'oauth_sync_merchant_map';
     const ADMIN_BATCH_CREATE                  = 'admin_batch_create';
+    const EDIT_PARTNERS                       = 'edit_partners';
+    const VIEW_PARTNERS                       = 'view_partners';
+    const EDIT_REFUND                         = 'edit_refund';
+    const RETRY_REFUND                        = 'retry_refund';
+    const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

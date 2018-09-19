@@ -19,6 +19,7 @@ class Core extends Base\Core
      * @param boolean         $partialPayment
      *
      * @return Entity
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function create(
         array $input,
@@ -73,7 +74,7 @@ class Core extends Base\Core
             return;
         }
 
-        foreach ($input[Entity::OFFERS] as $offerId)
+        foreach (array_unique($input[Entity::OFFERS]) as $offerId)
         {
             $this->validateAndAssociateOffer($order, $offerId);
         }
@@ -109,6 +110,16 @@ class Core extends Base\Core
         Entity $order,
         Merchant\Entity $merchant): array
     {
+        if ($order->getStatus() === Status::PAID)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID,
+                null,
+                [
+                    'order_id' => $order->getId(),
+                ]);
+        }
+
         $data = [
             Entity::PARTIAL_PAYMENT => $order->isPartialPaymentAllowed(),
             Entity::AMOUNT          => $order->getAmount(),

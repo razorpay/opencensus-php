@@ -22,6 +22,9 @@ class Validator extends Base\Validator
     const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
     const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
 
+    // Constant representing operations for which Validation rules exists
+    const BULK_EDIT                                     = 'bulkEdit';
+
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255',
@@ -30,7 +33,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
         Entity::BUSINESS_NAME                   => 'sometimes|string|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|string|max:255',
-        Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|url',
+        Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
@@ -56,7 +59,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
         Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|alpha_num|between:5,20',
-        Entity::BANK_ACCOUNT_NAME               => 'sometimes|alpha_space_num|max:120',
+        Entity::BANK_ACCOUNT_NAME               => 'sometimes|string|max:120',
         Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                     => 'sometimes|max:255',
         Entity::BANK_BRANCH_IFSC                => 'sometimes|alpha_num|max:11|custom',
@@ -98,7 +101,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
         Entity::BUSINESS_NAME                   => 'filled|max:255',
         Entity::BUSINESS_DBA                    => 'sometimes|max:255',
-        Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|url',
+        Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
         Entity::BUSINESS_INTERNATIONAL          => 'sometimes|in:0,1',
         Entity::BUSINESS_PAYMENTDETAILS         => 'sometimes|max:2000',
         Entity::BUSINESS_MODEL                  => 'sometimes|max:255',
@@ -124,7 +127,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
         Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|alpha_num|between:5,22',
-        Entity::BANK_ACCOUNT_NAME               => 'sometimes|alpha_space_num|max:120',
+        Entity::BANK_ACCOUNT_NAME               => 'sometimes|string|max:120',
         Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                     => 'sometimes|max:255',
         Entity::BANK_BRANCH_IFSC                => 'sometimes|alpha_num|max:11|custom',
@@ -171,6 +174,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_NAME                   => 'sometimes|max:255',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
+        Entity::BUSINESS_WEBSITE                => 'sometimes|active_url|max:255|nullable',
     ];
 
     protected static $archiveFormRules = [
@@ -181,6 +185,10 @@ class Validator extends Base\Validator
         Entity::ACTIVATION_STATUS               => 'required|string|max:30',
         Entity::CLARIFICATION_MODE              => 'filled|string|max:15',
         Entity::REJECTION_REASONS               => 'filled|array',
+    ];
+
+    protected  static $bulkEditRules = [
+        Entity::FILE                            => 'required|file|max:1024|mime_types:text/csv,text/plain|mimes:csv,txt',
     ];
 
     protected static $activationStatusValidators = [

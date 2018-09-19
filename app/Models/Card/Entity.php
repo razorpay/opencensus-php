@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Bank\IFSC;
 
 /**
  * @property Merchant\Entity    $merchant
@@ -529,8 +530,10 @@ class Entity extends Base\PublicEntity
 
         // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
         // https://razorpay.slack.com/archives/C3GF5LWJK/p1525965476000128
-        $allowed = (($auth->isPrivilegeAuth() === false) and
-                    (in_array($cardMerchant, Merchant\Preferences::MID_ENDURANCE, true) === true));
+        $allowed = (($auth->isAdminAuth() === true) or
+                    (($auth->isPrivilegeAuth() === false) and
+                     (($auth->getMerchant() !== null) and
+                      ($auth->getMerchant()->isExposeCardExpiryEnabled() === true))));
 
         return $allowed;
     }
@@ -636,11 +639,22 @@ class Entity extends Base\PublicEntity
 
         $isSupportedDebitBank = in_array($issuer, Payment\Gateway::getIssuersSupportedForDebitCardRecurring(), true);
 
-        $debitCheck = (($type === Type::DEBIT) and
-                       ($isSupportedNetwork === true) and
-                       ((($isSupportedDebitBank === true) and
-                         ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true)) or
-                        ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true)));
+        $debitCheck = false;
+
+        if (($type === Type::DEBIT) and
+            ($isSupportedNetwork === true))
+        {
+            if ($issuer === IFSC::HDFC)
+            {
+                $debitCheck = (($merchant->isFeatureEnabled(Feature\Constants::HDFC_DEBIT_SI) === true) or
+                               ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
+            }
+            else if ($isSupportedDebitBank === true)
+            {
+                $debitCheck = (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true) or
+                               ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
+            }
+        }
 
         $creditCheck = (($type === Type::CREDIT) and
                         ($isSupportedNetwork === true));
@@ -657,19 +671,7 @@ class Entity extends Base\PublicEntity
             return false;
         }
 
-        $iin = $this->getIin();
-
-        $last4 = $this->getLast4();
-
         if ($this->iinRelation->isEnabled() === false)
-        {
-            return true;
-        }
-
-        $blackList = Card\BlackList::BLOCKED_IIN_LAST4;
-
-        if ((isset($blackList[$iin]) === true) and
-            (in_array($last4, $blackList[$iin])))
         {
             return true;
         }

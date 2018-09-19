@@ -40,6 +40,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findByGatewayPaymentId($gatewayPaymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY_PAYMENT_ID, '=', $gatewayPaymentId)
+                    ->firstOrFail();
+    }
+
     public function findByGatewayRefundId($gatewayRefundId)
     {
         return $this->newQuery()

@@ -3,16 +3,24 @@
 namespace RZP\Models\Payment\Processor;
 
 use Mail;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\BankTransfer;
+use RZP\Models\Bank;
 use RZP\Models\Batch;
-use RZP\Models\Currency;
-use RZP\Models\Merchant\RefundSource;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Refund\Entity as RefundEntity;
-use RZP\Models\Transaction;
+use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Transaction;
+use RZP\Jobs\ScroogeRefund;
+use RZP\Models\BankTransfer;
+use RZP\Models\Merchant\RefundSource;
+use RZP\Models\Customer;
+use RZP\Models\BankAccount;
+use RZP\Models\Customer\Token;
+use RZP\Models\Card\NetworkName;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Payment\Refund\Metric as RefundMetric;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 trait Refund
 {
@@ -50,7 +58,42 @@ trait Refund
 
         $this->processRefund();
 
+        $this->pushMetrics();
+
         return $refund;
+    }
+
+    protected function pushMetrics()
+    {
+        $dimensions = RefundMetric::getDimensions($this->refund);
+
+        $this->trace->count(RefundMetric::REFUND_CREATED_TOTAL, $dimensions);
+
+        if ($this->payment->hasBeenCaptured() === true)
+        {
+            $this->trace->histogram(
+                RefundMetric::REFUND_CREATED_FROM_CAPTURED_MINUTES,
+                $this->refund->getCapturedToCreateTimeInMinutes(),
+                $dimensions
+            );
+        }
+        else
+        {
+            $this->trace->histogram(
+                RefundMetric::REFUND_CREATED_FROM_AUTHORIZED_MINUTES,
+                $this->refund->getAuthorizedToCreateTimeInMinutes(),
+                $dimensions
+            );
+        }
+
+        if ($this->refund->isBatch() === true)
+        {
+            $this->trace->histogram(
+                RefundMetric::REFUND_CREATION_TIME_FOR_BATCH_MINUTES,
+                $this->refund->getTimeFromCreatedInMinutes(),
+                $dimensions
+            );
+        }
     }
 
     public function createRefundOnApiFromRecon(
@@ -130,7 +173,133 @@ trait Refund
         return ['verify_refund' => $msg];
     }
 
-    public function manualGatewayRefund(Payment\Refund\Entity $refund)
+    public function scroogeGatewayRefund(RefundEntity $refund, array $input)
+    {
+        $payment = $refund->payment;
+
+        //
+        // Refunds are typically retried in groups using long-running
+        // loops. This ensures that if a refund has been updated by a
+        // different process, it is processed accordingly here.
+        //
+        $this->repo->reload($refund);
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $refundValidator = $refund->getValidator();
+
+        $refundValidator->validateInput('scrooge_gateway_refund', $input);
+
+        $refundValidator->validateScroogeGatewayRefund($payment);
+
+        $gatewayVerifyRefundResponse = $this->verifyRefund($refund);
+
+        //
+        // `verifyRefund` always returns back the response in the key
+        // `success`. For scrooge, this key contains much more data
+        // than just the value of success. It's an object.
+        // For non-scrooge gateways, this is just a boolean value.
+        // But since this function is called only for scrooge gateways,
+        // we take the verifyRefundResponse['success'] and then go ahead
+        // with the normal flow; i.e., reading the "actual" success flag
+        //
+        $gatewayVerifyRefundResponse = $gatewayVerifyRefundResponse[Payment\Gateway::SUCCESS];
+
+        if ($gatewayVerifyRefundResponse[Payment\Gateway::SUCCESS] !== true)
+        {
+            $data = $this->getGatewayDataForRefund($refund, $payment);
+            $data['refund'] = $input;
+
+            $gatewayRefundResponse = $this->mutex->acquireAndRelease(
+                 $payment->getId(),
+
+                 function() use ($data, $payment)
+                 {
+                     return $this->callRefundFunction($payment, $data);
+                 });
+
+            //
+            // For non-scrooge gateways, this would generally be null.
+            // We would be only reading `success` key and returning that back.
+            // For scrooge gateways, we would get the `success` key along with
+            // along with other keys like `gateway_refund_id`, etc
+            // `gateway_refund_id` and other keys are present under `gateway_response`.
+            // `gateway_response` ALSO contains the `success` key in it.
+            //
+            // Going forward, even non-scrooge gateways should be responding back
+            // with whether the refund is success or not, instead of API relying on
+            // "if exception, refund not successful. if no exception, refund successful"
+            //
+
+            $this->traceScroogeResponse(TraceCode::REFUND_SCROOGE_RESPONSE,
+                                        $refund,
+                                        $gatewayRefundResponse);
+
+            return $gatewayRefundResponse['gateway_response'] ?? [];
+        }
+
+        $this->traceScroogeResponse(TraceCode::REFUND_SCROOGE_RESPONSE,
+                                    $refund,
+                                    $gatewayVerifyRefundResponse);
+
+        return $gatewayVerifyRefundResponse;
+
+        //
+        // Note that we don't save any refund attributes when we call refund
+        // via Scrooge. There's a different API which Scrooge will call to
+        // update the refund attributes on successful processing.
+        //
+    }
+
+    public function scroogeGatewayVerifyRefund(RefundEntity $refund)
+    {
+        $payment = $refund->payment;
+
+        //
+        // Refunds are typically retried in groups using long-running
+        // loops. This ensures that if a refund has been updated by a
+        // different process, it is processed accordingly here.
+        //
+        $this->repo->reload($refund);
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $refundValidator = $refund->getValidator();
+
+        $refundValidator->validateScroogeGatewayRefund($payment);
+
+        //
+        // Scrooge gateways return back an object in the `success` key
+        // non-scrooge gateways return back a boolean
+        // Scrooge gateways return back lot of data like `status_code`,
+        // `gateway_refund_id`, `success` etc in the object.
+        //
+        $gatewayVerifyRefundResponse = $this->verifyRefund($refund);
+
+        $this->traceScroogeResponse(TraceCode::REFUND_SCROOGE_VERIFY_RESPONSE,
+                                    $refund,
+                                    $gatewayVerifyRefundResponse);
+
+        return $gatewayVerifyRefundResponse[Payment\Gateway::SUCCESS];
+    }
+
+    /**
+     * Traces response sent to scrooge
+     *
+     * @param string $traceCode
+     * @param RefundEntity $refund
+     * @param array $data
+     */
+    protected function traceScroogeResponse(string $traceCode, RefundEntity $refund, array $data)
+    {
+        $this->trace->info($traceCode, [
+                'refund_id' => $refund->getId(),
+                'gateway'   => $refund->getGateway(),
+                'response'  => $data
+        ]);
+    }
+
+    public function manualGatewayRefund(RefundEntity $refund)
     {
         $payment = $refund->payment;
 
@@ -198,29 +367,42 @@ trait Refund
      *
      * @param Payment\Refund\Entity $refund
      *
-     * @return bool
-     * @throws Exception\BadRequestException
+     * @return array
      */
     public function verifyRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
-        if ($payment->isBankTransfer() === true)
+        if (($payment->isBankTransfer() === true) or
+            ($this->isFundTransferAttemptRefund($payment) === true))
         {
-            return false;
+            $verifyRefundResult = false;
+        }
+        else
+        {
+            $this->setPaymentAndRefundInfo($refund, $payment);
+
+            $gateway = $payment->getGateway();
+
+            Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
+
+            $data = $this->getGatewayDataForRefund($refund, $payment);
+
+            //
+            // In case of scrooge gateways, `verifyRefundResult` contains
+            // a key `success` with true/false, along with some other
+            // keys like `gateway_response`. We return back the whole
+            // thing to Scrooge as it is.
+            // In case of non-scrooge gateways, `verifyRefundResult` is
+            // a plain true or false and nothing else.
+            //
+            // This is handled in the respective (scrooge/non-scrooge) callers.
+            //
+            $verifyRefundResult = $this->callGatewayForVerifyRefund($data);
         }
 
-        $this->setPaymentAndRefundInfo($refund, $payment);
-
-        $gateway = $payment->getGateway();
-
-        Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
-
-        $data = $this->getGatewayDataForRefund($refund, $payment);
-
-        $verifyRefundResult = $this->callGatewayForVerifyRefund($data);
-
-        return $verifyRefundResult;
+        // TODO: Return proper gateway response for the gateway
+        return [Payment\Gateway::SUCCESS => $verifyRefundResult];
     }
 
     public function createGatewayRefundRecord(Payment\Refund\Entity $refund)
@@ -295,6 +477,12 @@ trait Refund
     {
         $payment = $this->retrieve($paymentId);
 
+        // From subscription service we will always refund authorized payments
+        if ($this->ba->isSubscriptionsApp() === true)
+        {
+            return $this->refundAuthorizedPayment($payment, $input);
+        }
+
         return $this->refundCapturedPayment($payment, $input);
     }
 
@@ -302,8 +490,6 @@ trait Refund
      * Process refund on a payment that has Marketplace transfers
      *
      * @param array $input
-     *
-     * @throws Exception\BadRequestValidationFailureException
      */
     public function processRefundWithTransfers(array $input)
     {
@@ -441,7 +627,6 @@ trait Refund
      * @param $data
      *
      * @return bool
-     * @throws Exception\LogicException
      */
     protected function callGatewayForVerifyRefund($data)
     {
@@ -524,22 +709,38 @@ trait Refund
     {
         $gatewayRefunded = false;
 
+        //
+        // For scrooge gateways, we will get a proper gateway response back
+        // For non-scrooge gateways, we will not receive anything in the response (null).
+        //
+        $gatewayResponse = [];
+
         try
         {
             // This has already been refunded on Billdesk.
             // We'll run create record later after this is refunded.
-            $paymentId = $data['payment']['id'];
-            $refAmount = $data['amount'];
+            $paymentId = $data['payment'][Payment\Entity::ID];
+
+            // `null` because if this function is called by Scrooge, `amount`
+            // will not be set at root level, but inside `refunds` array.
+            // TODO: Remove for Scrooge
+            $refAmount = $data['amount'] ?? null;
 
             if (($paymentId === '6pHu2RnPzTeI51') and ($refAmount === 784000))
             {
-                return true;
+                return [
+                    Payment\Gateway::SUCCESS    => true,
+                    'gateway_response'          => $gatewayResponse
+                ];
             }
 
             // HDFC refund which got timed out on HDFC end, but was successful.
             if (($paymentId === '7V6tmkxLdC4xyd') and ($refAmount === 18500))
             {
-                return true;
+                return [
+                    Payment\Gateway::SUCCESS    => true,
+                    'gateway_response'          => $gatewayResponse
+                ];
             }
 
             //
@@ -551,10 +752,22 @@ trait Refund
             //
             if ($this->refund->getAmount() !== 0)
             {
-                $this->callGatewayFunction(Payment\Action::REFUND, $data);
+                $gatewayResponse = $this->callGatewayFunction(Payment\Action::REFUND, $data);
             }
 
-            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+            //
+            // For refunds on Scrooge-enabled gateways, Scrooge
+            // make an API call to mark it as processed, later.
+            //
+
+            $gateway = $data['payment'][Payment\Entity::GATEWAY];
+            $merchantId = $data['payment'][Payment\Entity::MERCHANT_ID];
+
+            // TODO: Remove for Scrooge
+            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === false)
+            {
+                $this->refund->setStatusProcessed();
+            }
 
             $gatewayRefunded = true;
         }
@@ -563,6 +776,8 @@ trait Refund
             $this->tracePaymentFailed(
                 $e->getError(),
                 TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->updateRefundFailed($e);
         }
         catch (\Throwable $e)
         {
@@ -579,7 +794,10 @@ trait Refund
             }
         }
 
-        return $gatewayRefunded;
+        return [
+                Payment\Gateway::SUCCESS    => $gatewayRefunded,
+                'gateway_response'          => $gatewayResponse
+        ];
     }
 
     protected function reverseOnGateway($data)
@@ -593,7 +811,7 @@ trait Refund
                 $this->callGatewayFunction(Payment\Action::REVERSE, $data);
             }
 
-            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+            $this->refund->setStatusProcessed();
 
             $reversed = true;
         }
@@ -602,6 +820,8 @@ trait Refund
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REVERSE_FAILURE);
+
+            $this->updateRefundFailed($e);
         }
         catch (\Throwable $e)
         {
@@ -618,7 +838,20 @@ trait Refund
             }
         }
 
-        return $reversed;
+        return [Payment\Gateway::SUCCESS => $reversed];
+    }
+
+    protected function updateRefundFailed($exception)
+    {
+        $error = $exception->getError();
+
+        $code = $error->getPublicErrorCode();
+
+        $desc = $error->getDescription();
+
+        $internalCode = $error->getInternalErrorCode();
+
+        $this->refund->setError($code, $desc, $internalCode);
     }
 
     protected function recordTransactionForRefund()
@@ -700,18 +933,21 @@ trait Refund
                 $this->updatePaymentRefunded();
             });
 
-            $refunded = $this->callRefundFunction($payment, $data);
+            $gateway = $this->refund->getGateway();
+            $merchantId = $this->refund->merchant->getId();
 
-            $this->refund->setGatewayRefunded($refunded);
-
-            $this->refund->incrementAttempts();
-
-            // We don't want the transaction to fail if this
-            // save fails that's why keeping it outside.
-            $this->repo->saveOrFail($this->refund);
+            // TODO: Remove for Scrooge
+            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === true)
+            {
+                $this->callRefundFunctionOnScrooge($this->refund);
+            }
+            else
+            {
+                $this->callRefundFunctionOnApi($payment, $data);
+            }
 
             // send notification to merchant/customer, this is outside transaction
-            // as we dont want to to reverse the actions if mail sending fails
+            // as we don't want to reverse the actions if mail sending fails
             $this->sendRefundNotification($payment);
         }, 120);
 
@@ -725,9 +961,42 @@ trait Refund
         return $this->refund;
     }
 
+    public function callRefundFunctionOnScrooge($refund)
+    {
+        $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment);
+
+        $data['mode'] = $this->mode;
+
+        $this->trace->info(
+            TraceCode::REFUND_QUEUE_SCROOGE_DISPATCH,
+            $data
+        );
+
+        ScroogeRefund::dispatch($data);
+    }
+
+    protected function callRefundFunctionOnApi($payment, $data)
+    {
+        $refunded = $this->callRefundFunction($payment, $data);
+
+        $this->refund->setGatewayRefunded($refunded[Payment\Gateway::SUCCESS]);
+
+        $this->refund->incrementAttempts();
+
+        // We don't want the transaction to fail if this
+        // save fails that's why keeping it outside.
+        $this->repo->saveOrFail($this->refund);
+    }
+
     protected function callRefundFunction($payment, $data)
     {
-        if ($this->shouldHitGatewayForRefund($payment) === true)
+        // TODO: Handle FTAs, Bank Transfers in Scrooge enabled gateways
+
+        if ($this->isFundTransferAttemptRefund($payment) === true)
+        {
+            return $this->refundEmandateRblOrTpvPayment($payment);
+        }
+        else if ($this->shouldHitGatewayForRefund($payment) === true)
         {
             return $this->callGatewayRefundFunction($payment, $data);
         }
@@ -748,20 +1017,21 @@ trait Refund
 
     protected function callGatewayRefundFunction($payment, $data)
     {
-        $refunded = false;
+        $refundData = [Payment\Gateway::SUCCESS => false];
 
         // refund/reverse on gateway
         if (($payment->getTransactionId() !== null) or
             ($payment->isGatewayCaptured() === true))
         {
-            $refunded = $this->refundOnGateway($data);
+            $refundData = $this->refundOnGateway($data);
         }
+        // TODO: Handle reversal gateways in Scrooge
         else if ($this->gatewaySupportsReversal($payment) === true)
         {
-            $refunded = $this->reverseOnGateway($data);
+            $refundData = $this->reverseOnGateway($data);
         }
 
-        return $refunded;
+        return $refundData;
     }
 
     /**
@@ -788,10 +1058,14 @@ trait Refund
     {
         $payment = $refund->payment;
 
+        //
         // Refunds are typically retried in groups using long-running
         // loops. This ensures that if a refund has been updated by a
         // different process, it is processed accordingly here.
+        //
         $this->repo->reload($refund);
+
+        $refund->setErrorNull();
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
@@ -808,7 +1082,7 @@ trait Refund
         // false if not refunded
         $refundedOnGateway = $this->verifyRefund($refund);
 
-        if ($refundedOnGateway === false)
+        if ($refundedOnGateway[Payment\Gateway::SUCCESS] === false)
         {
             $refundedOnGateway = $this->mutex->acquireAndRelease(
                 $payment->getId(),
@@ -821,10 +1095,10 @@ trait Refund
         }
         else
         {
-            $refund->setStatus(Payment\Refund\Status::PROCESSED);
+            $refund->setStatusProcessed();
         }
 
-        $refund->setGatewayRefunded($refundedOnGateway);
+        $refund->setGatewayRefunded($refundedOnGateway[Payment\Gateway::SUCCESS]);
 
         $this->repo->saveOrFail($refund);
 
@@ -914,7 +1188,9 @@ trait Refund
                 null,
                 $traceData);
         }
-        else if ($balance->getBalance() < $refund->getBaseAmount())
+
+        if (($merchant->getRefundSource() === RefundSource::BALANCE) and
+            ($balance->getBalance() < $refund->getBaseAmount()))
         {
             if ($type === 'refund')
             {
@@ -977,6 +1253,33 @@ trait Refund
         }
 
         return $data;
+    }
+
+    protected function getGatewayDataForScroogeRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
+    {
+        $refundData = $refund->toArrayGateway();
+
+        $extraData = [
+            'method'                    => $payment->getMethod(),
+            'payment_amount'            => $payment->getAmount(),
+            'payment_base_amount'       => $payment->getBaseAmount(),
+            'payment_created_at'        => $payment->getCreatedAt(),
+            'payment_gateway_captured'  => $payment->getGatewayCaptured()
+        ];
+
+        $scroogeData = array_merge($refundData, $extraData);
+
+        if ($payment->isNetbanking() === true)
+        {
+            $scroogeData['bank'] = $payment->getBank();
+        }
+
+        //
+        // These attributes are already in scrooge, need to be reset before sending scrooge request
+        //
+        unset($scroogeData['status']);
+
+        return $scroogeData;
     }
 
     protected function findExistingRefundForBatch(Batch\Entity $batch, Payment\Entity $payment)
@@ -1179,8 +1482,118 @@ trait Refund
                     TraceCode::PAYMENT_REFUND_FAILURE);
 
             $this->refund->setStatus(Payment\Refund\Status::FAILED);
+
+            $this->updateRefundFailed($e);
         }
 
-        return $refunded;
+        return [Payment\Gateway::SUCCESS => $refunded];
+    }
+
+    protected function refundEmandateRblOrTpvPayment(Payment\Entity $payment)
+    {
+        if ($this->refund->getAmount() === 0)
+        {
+            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+
+            return [Payment\Gateway::SUCCESS => true];
+        }
+
+        $refunded = false;
+
+        try
+        {
+            if ($this->refund->bankAccount === null)
+            {
+                $input = $this->getBankAccountInput($payment);
+
+                $this->createBankAccountForRefund($input);
+            }
+
+            (new FundTransferAttempt\Core)->createFundTransferAttempt($this->refund);
+
+            $this->refund->setStatus(Payment\Refund\Status::INITIATED);
+
+            $this->refund->setBatchFundTransferId(null);
+
+            $this->refund->setGateway(Payment\Gateway::NODAL_YESBANK);
+
+            $refunded = true;
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->app['segment']->trackPayment(
+                $this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->tracePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->refund->setStatus(Payment\Refund\Status::FAILED);
+        }
+
+        return [Payment\Gateway::SUCCESS => $refunded];
+    }
+
+    protected function isFundTransferAttemptRefund(Payment\Entity $payment)
+    {
+        if (($this->isPaymentEmandateAndRblGateway($payment) === true) or
+            ($this->isPaymentTpvAndBankTransferRefund($payment) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getBankAccountInput(Payment\Entity $payment)
+    {
+        $input = [];
+
+        if ($this->isPaymentTpvAndBankTransferRefund($payment) === true)
+        {
+            $order = $payment->order;
+
+            $ifscCode = Bank\BankCodes::getIfscForBankCode($order->getBank());
+
+            $input[BankAccount\Entity::IFSC_CODE]          = $ifscCode;
+            $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $order->getAccountNumber();
+            $input[BankAccount\Entity::BENEFICIARY_NAME]   = '';
+        }
+
+        if ($this->isPaymentEmandateAndRblGateway($payment) === true)
+        {
+            $customer = $payment->customer;
+            $customerName = preg_replace('/[^a-zA-Z0-9 ]+/', '', $customer->getName());
+            $customerName = substr($customerName, 0, 35);
+
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            $input[BankAccount\Entity::IFSC_CODE]          = $token->getIfsc();
+            $input[BankAccount\Entity::ACCOUNT_NUMBER]     = $token->getAccountNumber();
+            $input[BankAccount\Entity::BENEFICIARY_NAME]   = $customerName;
+        }
+
+        if ((isset($input[BankAccount\Entity::IFSC_CODE]) === true) and
+            ($input[BankAccount\Entity::IFSC_CODE] === null))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'ifsc code is null while creating FTA entity'
+            );
+        }
+
+        return $input;
+    }
+
+    protected function createBankAccountForRefund(array $bankAccountInput)
+    {
+        $bankAccount = (new BankAccount\Core)->createBankAccountForSource(
+                    $bankAccountInput,
+                    $this->merchant,
+                    $this->refund,
+                    BankAccount\Type::REFUND,
+                    'addBankTransfer'
+                );
+
+        $this->refund->bankAccount()->associate($bankAccount);
     }
 }

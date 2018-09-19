@@ -4,7 +4,6 @@ namespace RZP\Http\Throttle;
 
 use App;
 use Predis\Pipeline\Pipeline;
-use Illuminate\Routing\Router;
 use Razorpay\Hodor\LeakyBucket;
 use Illuminate\Redis\RedisManager;
 use Razorpay\Trace\Logger as Trace;
@@ -12,48 +11,30 @@ use Illuminate\Support\Facades\Redis;
 
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestContext;
 use RZP\Foundation\Application;
-use RZP\Base\RepositoryManager;
 use RZP\Exception\BlockException;
 use RZP\Exception\ThrottleException;
 use RZP\Http\Throttle\Constant as K;
-use RZP\Exception\BadRequestException;
 
 /**
  * Throttle requests to API
  *
  * Approach:
- * 1. Extract needed vars from requests. E.g. mode, route name, authentication
- * mode, merchant id, key id, oauth application id etc.
- * 2. Get settings from redis. These includes global settings, per route
- * settings and per identifier (e.g. specific merchant, specific oauth
- * application, specific admin email and other various combinations).
- * 3. From settings above and available requests context vars, prepare throttle
- * key and limits (leak rate, duration and burst) and call throttle package.
  *
- * Caveats:
- * 1. Because we get key id instead of mid(merchant id) in public and private
- * authentication mode we do a translation (redis hit else db call). This is
- * a decision taken considering pros/cons(details in spec). We use mid to have
- * all the settings(if any) and also it's easy to deal with one identifier than
- * two.
+ * 1. Get settings from redis. These includes global settings, per route
+ *    settings and per identifier (e.g. specific merchant, specific oauth
+ *    application, specific admin email and other various combinations).
+ * 2. From settings above and available requests context vars, prepare throttle
+ *    key and limits (leak rate, duration and burst) and call throttle package.
  *
- * Redis: In the whole process we end up making 3 redis call(all the time). In
- * case of cache miss for key id to mid remap there is 1 db call involved.
  */
 class Throttler
 {
-    use HasRequestContext;
-
     /**
      * @var array
      */
     protected $config;
-
-    /**
-     * @var array
-     */
-    protected $applications;
 
     /**
      * @var Trace
@@ -61,14 +42,9 @@ class Throttler
     protected $trace;
 
     /**
-     * @var Router
+     * @var RequestContext
      */
-    protected $router;
-
-    /**
-     * @var RepositoryManager
-     */
-    protected $repo;
+    protected $reqCtx;
 
     /**
      * @var RedisManager
@@ -80,25 +56,17 @@ class Throttler
      */
     protected $settings;
 
-    /**
-     * @var bool
-     */
-    protected $isRunningUnitTests;
-
     public function __construct()
     {
         /** @var $app Application */
         $app = App::getFacadeRoot();
 
-        $this->config             = $app['config']->get('throttle');
-        $this->applications       = $app['config']->get('applications');
-        $this->trace              = $app['trace'];
-        $this->router             = $app['router'];
-        $this->repo               = $app['repo'];
-        $this->isRunningUnitTests = $app->runningUnitTests();
+        $this->config = $app['config']->get('throttle');
+        $this->trace  = $app['trace'];
+        $this->reqCtx = $app['request.ctx'];
     }
 
-    public function throttle($request)
+    public function throttle()
     {
         // For local and test env, we skip basis local configuration
         if ($this->config['skip'] === true)
@@ -108,17 +76,14 @@ class Throttler
 
         try
         {
-            $this->initRequestContextVars($request);
             $this->initRedisConnection();
-            $this->setMidIfApplicable();
             $this->initThrottleSettings();
             $this->blockIfApplicable();
             $this->attemptThrottleIfApplicable();
         }
         catch (\Throwable $e)
         {
-            if (($e instanceof ThrottleException) or
-                ($e instanceof BadRequestException))
+            if ($e instanceof ThrottleException)
             {
                 throw $e;
             }
@@ -161,6 +126,57 @@ class Throttler
         {
             throw new BlockException(null, ['key' => $this->getThrottleKey()]);
         }
+
+        $this->blockByIpIfApplicable();
+        $this->blockByUserAgentIfApplicable();
+    }
+
+    /**
+     * Blocks current request if IP exclusion rule exists for the same in redis config.
+     */
+    protected function blockByIpIfApplicable()
+    {
+        $ip         = $this->reqCtx->getRequest()->ip();
+        $blockedIPs = $this->getBlockedIPs();
+
+        if (empty($blockedIPs) === true)
+        {
+            return;
+        }
+
+        // For IP, do exact match
+        $wrappedIp  = str_wrap($ip, K::LIST_DELIMITER);
+        $blockedIPs = str_wrap($blockedIPs, K::LIST_DELIMITER);
+
+        if (str_contains($blockedIPs, $wrappedIp) === true)
+        {
+            throw new BlockException(null, ['key' => $this->getThrottleKey()]);
+        }
+
+    }
+
+    /**
+     * Blocks current request if UA exclusion rule exists for the same in redis config.
+     */
+    protected function blockByUserAgentIfApplicable()
+    {
+        $userAgent = $this->reqCtx->getRequest()->userAgent();
+        $blockedUserAgents = $this->getBlockedUserAgents();
+
+        if (empty($blockedUserAgents) === true)
+        {
+           return;
+        }
+
+        // For user agents, match just the beginning
+        $wrappedUserAgent  = str_start($userAgent, K::LIST_DELIMITER);
+        $blockedUserAgents = str_wrap($blockedUserAgents, K::LIST_DELIMITER);
+
+        if (str_contains($blockedUserAgents, $wrappedUserAgent) === true)
+        {
+            throw new BlockException(null, ['key' => $this->getThrottleKey()]);
+        }
+
     }
 
     protected function attemptThrottleIfApplicable()
@@ -197,59 +213,103 @@ class Throttler
 
     protected function getIdSettingsKey(): string
     {
-        return $this->internalAppName ?:
-                $this->adminEmail ?:
-                $this->oauthClientId ?:
-                $this->mid ?:
-                '';
+        return $this->reqCtx->getOAuthClientId() ?:
+               $this->reqCtx->getAdminEmail() ?:
+               $this->reqCtx->getMid() ?:
+               $this->reqCtx->getInternalAppName() ?:
+               '';
     }
 
     protected function getThrottleKey(): string
     {
-        $id = $this->internalAppName ?:
-                $this->adminEmail ?:
-                $this->mid ?:
-                $this->oauthPublicToken;
+        $id = $this->reqCtx->getMid() ?:
+              $this->reqCtx->getAdminEmail() ?:
+              $this->reqCtx->getOAuthPublicToken() ?:
+              $this->reqCtx->getInternalAppName();
 
-        // Only use ip address for public and direct routes
-        $ip = ($this->isPublicAuth() or $this->isDirectAuth()) ? $this->request->ip() : '';
+        // Only use ip address for 1) api's public, direct group routes, 2) dashboard_guest(internal) group routes
+        $ip = (($this->reqCtx->isPublicAuth() === true) or
+               ($this->reqCtx->isDirectAuth() === true) or
+               ($this->reqCtx->isDashboardGuest() === true)) ? $this->reqCtx->getRequest()->ip() : '';
 
         // E.g.: payments_create:live:private:0::10000000000000:
-        $args = [$this->route, $this->mode, $this->auth, (int) $this->proxy, $this->oauthClientId, $id, $ip];
+        $args = [
+            $this->reqCtx->getRoute(),
+            $this->reqCtx->getMode(),
+            $this->reqCtx->getAuth(),
+            (int) $this->reqCtx->getProxy(),
+            $this->reqCtx->getOAuthClientId(),
+            $id,
+            $this->reqCtx->getUserId(),
+            $ip,
+        ];
+
+        $extraArgs = $this->getExtraThrottleKeyArgsFromConfig();
+        if (count($extraArgs) > 0)
+        {
+            array_push($args, ...$extraArgs);
+        }
+
         return implode(':', $args);
     }
 
     protected function isBlocked(): bool
     {
-        return $this->getThrottleValue(K::BLOCK, K::DEFAULT_BLOCK);
+        return $this->getThrottleValueAsInt(K::BLOCK, K::DEFAULT_BLOCK);
     }
 
     protected function isThrottleSkipped(): bool
     {
-        return $this->getThrottleValue(K::SKIP, K::DEFAULT_SKIP);
+        return $this->getThrottleValueAsInt(K::SKIP, K::DEFAULT_SKIP);
     }
 
     protected function isThrottleMocked(): bool
     {
-        return $this->getThrottleValue(K::MOCK, K::DEFAULT_MOCK);
+        return $this->getThrottleValueAsInt(K::MOCK, K::DEFAULT_MOCK);
     }
 
     protected function getThrottleLeakRateValue(): int
     {
-        return $this->getThrottleValue(K::LEAK_RATE_VALUE, K::DEFAULT_LEAK_RATE_VALUE);
+        return $this->getThrottleValueAsInt(K::LEAK_RATE_VALUE, K::DEFAULT_LEAK_RATE_VALUE);
     }
 
     protected function getThrottleLeakRateDuration(): int
     {
-        return $this->getThrottleValue(K::LEAK_RATE_DURATION, K::DEFAULT_LEAK_RATE_DURATION);
+        return $this->getThrottleValueAsInt(K::LEAK_RATE_DURATION, K::DEFAULT_LEAK_RATE_DURATION);
     }
 
     protected function getThrottleMaxBucketSize(): int
     {
-        return $this->getThrottleValue(K::MAX_BUCKET_SIZE, K::DEFAULT_MAX_BUCKET_SIZE);
+        return $this->getThrottleValueAsInt(K::MAX_BUCKET_SIZE, K::DEFAULT_MAX_BUCKET_SIZE);
     }
 
-    protected function getThrottleValue(string $key, int $default): int
+    protected function getBlockedIPs(): string
+    {
+        return $this->getThrottleValueAsString(K::BLOCKED_IPS, K::DEFAULT_BLOCKED_IPS);
+    }
+
+    protected function getBlockedUserAgents(): string
+    {
+        return $this->getThrottleValueAsString(K::BLOCKED_USER_AGENTS, K::DEFAULT_BLOCKED_USER_AGENTS);
+    }
+
+    protected function getThrottleValueAsInt(string $key, int $default): int
+    {
+        return $this->getThrottleValue($key, $default);
+    }
+
+    protected function getThrottleValueAsString(string $key, string $default): string
+    {
+        return $this->getThrottleValue($key, $default);
+    }
+
+    /**
+     * Gets configuration value for given key from redis config cascadingly.
+     * @param  string     $key
+     * @param  int|string $default
+     * @return int|string
+     */
+    protected function getThrottleValue(string $key, $default)
     {
         //
         // Redis data structures which is used in cascading fashion to get
@@ -279,6 +339,9 @@ class Throttler
         //      <mode>:<auth>:<proxy>:lrd:           1
         //      <mode>:<auth>:<proxy>:mbs:           30
         //
+        //      <mode>:<auth>:<proxy>:blocked_ips:         ip1||ip2||ip3
+        //      <mode>:<auth>:<proxy>:blocked_user_agents: ua1||ua2||ua3
+        //
         //      // Per auth, per route
         //      <mode>:<auth>:<proxy>:<route>:skip:  0
         //      <mode>:<auth>:<proxy>:<route>:mock:  0
@@ -300,64 +363,70 @@ class Throttler
         // }
         //
 
-        // Boolean value doesn't get type-casted to string properly
-        $proxy = (int) $this->proxy;
         // If mode is not available at this layer just pick live mode settings
-        $mode  = $this->mode ?: Mode::LIVE;
+        $mode  = $this->reqCtx->getMode() ?: Mode::LIVE;
+        // Boolean value doesn't get type-casted to string properly
+        $auth  = $this->reqCtx->getAuth();
+        $proxy = (int) $this->reqCtx->getProxy();
+        $route = $this->reqCtx->getRoute();
 
                 // Value for given mid/application id, mode, auth & route
-        return $this->settings[K::ID_LEVEL]["{$mode}:{$this->auth}:{$proxy}:{$this->route}:{$key}"] ??
-                // Value for given mid/application id, mode & auth
-                $this->settings[K::ID_LEVEL]["{$mode}:{$this->auth}:{$proxy}:{$key}"] ??
-                // Value for given mid/application id & mode
-                $this->settings[K::ID_LEVEL]["{$mode}:{$key}"] ??
-                // Value for given mid/application id
-                $this->settings[K::ID_LEVEL]["{$key}"] ??
-                // Value for given mode, auth & route
-                $this->settings[K::GLOBAL]["{$mode}:{$this->auth}:{$proxy}:{$this->route}:{$key}"] ??
-                // Value for given mode & auth
-                $this->settings[K::GLOBAL]["{$mode}:{$this->auth}:{$proxy}:{$key}"] ??
-                // Value for given mode
-                $this->settings[K::GLOBAL]["{$mode}:{$key}"] ??
-                // Finally, global default value
-                $this->settings[K::GLOBAL]["{$key}"] ??
-                // Again finally, the default by callee :)
-                $default;
+        return $this->settings[K::ID_LEVEL]["{$mode}:{$auth}:{$proxy}:{$route}:{$key}"] ??
+               // Value for given mid/application id, mode & auth
+               $this->settings[K::ID_LEVEL]["{$mode}:{$auth}:{$proxy}:{$key}"] ??
+               // Value for given mid/application id & mode
+               $this->settings[K::ID_LEVEL]["{$mode}:{$key}"] ??
+               // Value for given mid/application id
+               $this->settings[K::ID_LEVEL]["{$key}"] ??
+               // Value for given mode, auth & route
+               $this->settings[K::GLOBAL]["{$mode}:{$auth}:{$proxy}:{$route}:{$key}"] ??
+               // Value for given mode & auth
+               $this->settings[K::GLOBAL]["{$mode}:{$auth}:{$proxy}:{$key}"] ??
+               // Value for given mode
+               $this->settings[K::GLOBAL]["{$mode}:{$key}"] ??
+               // Finally, global default value
+               $this->settings[K::GLOBAL]["{$key}"] ??
+               // Again finally, the default by callee :)
+               $default;
     }
 
     /**
-     * Sets mid if key id is available so only mid gets used
-     * to retrieve settings and further in throttle key.
+     * Returns extra arguments to be used for throttle identifier for specific route as configured
+     * @return array
      */
-    protected function setMidIfApplicable()
+    protected function getExtraThrottleKeyArgsFromConfig(): array
     {
-        // Skipping this for partner auth for now. We have to fix on whether the client's
-        // merchant should be throttled or the account passed in the input/header i.e.
-        // the submerchant.
-        if (str_contains($this->keyId, 'partner_') === true)
+        $route  = $this->reqCtx->getRoute();
+        $config = $this->config['throttle_key'][$route] ?? null;
+
+        if ($config === null)
         {
-            return;
+            return [];
         }
 
-        if ((empty($this->keyId) === true) or (empty($this->mode) === true))
+        $routeParams   = $config['route_params'] ?? [];
+        $requestParams = $config['request_params'] ?? [];
+        $headerParams  = $config['header_params'] ?? [];
+
+        $args = [];
+
+        $request = $this->reqCtx->getRequest();
+
+        foreach ($routeParams as $k)
         {
-            return;
+            $args[] = $request->route()->parameter($k);
         }
 
-        $key = K::KEYID_MID_KEY_PREFIX . $this->keyId;
-        $mid = $this->redis->get($key);
-
-        if (empty($mid) === true)
+        foreach ($requestParams as $k)
         {
-            $mid = $this->getMidForKeyIdFromDb();
-            $this->redis->setex($key, K::NUM_SECONDS_IN_WEEK, $mid);
+            $args[] = $request->input($k);
         }
 
-        $this->mid = $mid;
-    }
+        foreach ($headerParams as $k)
+        {
+            $args[] = $request->headers->get($k);
+        }
 
-    protected function getMidForKeyIdFromDb()
-    {
-        return $this->repo->key->connection($this->mode)->findOrFailPublic($this->keyId)->getMerchantId();
+        return $args;
     }
 }

@@ -2,12 +2,14 @@
 
 namespace RZP\Tests\Functional\BasicAuth;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factory;
+
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
-use Illuminate\Database\Eloquent\Factory;
 
 class BasicAuthTest extends TestCase
 {
@@ -175,7 +177,7 @@ class BasicAuthTest extends TestCase
 
         foreach ($internalRoutes as $routeName => $routeInfo)
         {
-            $testData['request']['method'] = $routeInfo[0];
+            $testData['request']['method'] = ($routeInfo[0] === 'any' ? 'post' : $routeInfo[0]);
             $testData['request']['url']    = $routeInfo[1];
 
             $this->startTest($testData);
@@ -190,7 +192,7 @@ class BasicAuthTest extends TestCase
 
         foreach ($internalRoutes as $routeName => $routeInfo)
         {
-            $testData['request']['method'] = $routeInfo[0];
+            $testData['request']['method'] = ($routeInfo[0] === 'any' ? 'post' : $routeInfo[0]);
             $testData['request']['url']    = $routeInfo[1];
 
             $this->startTest($testData);
@@ -317,6 +319,25 @@ class BasicAuthTest extends TestCase
         $this->fixtures->create('emi_plan');
 
         $this->ba->publicAuth('rzp_test_partner_' . 'wrongClient123');
+
+        $this->startTest();
+    }
+
+    public function testPartnerAuthOnJsonpRouteAppMissing()
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', ['deleted_at' => Carbon::now()->timestamp]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $this->fixtures->create('emi_plan');
+
+        $this->ba->publicAuth('rzp_test_partner_' . $client->getId());
 
         $this->startTest();
     }
@@ -469,9 +490,9 @@ class BasicAuthTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
-    protected function setUpPartnerMerchantAppAndGetClient(string $env = 'dev')
+    protected function setUpPartnerMerchantAppAndGetClient(string $env = 'dev', array $attributes = [])
     {
-        $client = $this->createPartnerApplicationAndGetClientByEnv($env);
+        $client = $this->createPartnerApplicationAndGetClientByEnv($env, $attributes);
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
 

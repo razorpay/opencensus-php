@@ -101,7 +101,7 @@ class Processor extends Base\Core
     {
         $this->preSettlementProcessing($input);
 
-        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
+        list($shouldProcess, $data) = $this->shouldProcessSettlements($input, $channel);
 
         if ($shouldProcess === true)
         {
@@ -386,11 +386,29 @@ class Processor extends Base\Core
             }
         }
 
-        return [
+        $response = [
             'settlement_count'  => $settlements->count(),
             'attempt_count'     => $setlAttempts->count(),
             'txn_count'         => $txnsSettledCount,
         ];
+
+        $this->trace->count(
+            Metric::SETTLEMENTS_CREATED_TOTAL,
+            [
+                Metric::CHANNEL => $channel
+            ],
+            $response['settlement_count']
+        );
+
+        $this->trace->count(
+            Metric::TRANSACTIONS_PICKED_FOR_SETTLEMENT_TOTAL,
+            [
+                Metric::CHANNEL => $channel
+            ],
+            $response['txn_count']
+        );
+
+        return $response;
     }
 
     protected function groupTransactionsByDay($txns): array
@@ -475,11 +493,18 @@ class Processor extends Base\Core
         $this->input = $input;
     }
 
-    protected function shouldProcessSettlements($input)
+    protected function shouldProcessSettlements($input, string $channel = null)
     {
         $isTestMode = $this->isTestMode();
 
         if ($isTestMode === true)
+        {
+            return [true, null];
+        }
+
+        $channelWith24x7Settlement = Channel::get24x7Channels();
+
+        if (in_array($channel, $channelWith24x7Settlement, true) === true)
         {
             return [true, null];
         }

@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Reconciliator\Mobikwik;
+namespace RZP\Reconciliator\Mobikwik\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names
@@ -51,7 +51,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getReconPaymentAmount($row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
     }
 
     /**
@@ -65,7 +65,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $igst = $this->getIgst($row);
 
         // Convert service tax into paise
-        $serviceTax = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_SERVICE_TAX]);
+        $serviceTax = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_SERVICE_TAX]);
 
         $serviceTax += $igst;
 
@@ -85,7 +85,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $columnIgst = $row[self::COLUMN_IGST];
         }
 
-        $igst = Base\Helper::getIntegerFormattedAmount($columnIgst);
+        $igst = Base\SubReconciliator\Helper::getIntegerFormattedAmount($columnIgst);
 
         return $igst;
     }
@@ -100,7 +100,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getGatewayFee($row)
     {
         // Convert fee into basic unit of currency (ex: paise)
-        $fee = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
+        $fee = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
 
         // Already in basic unit of currency. Hence, no conversion needed
         $serviceTax = $this->getGatewayServiceTax($row);

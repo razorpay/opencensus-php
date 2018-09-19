@@ -39,6 +39,7 @@ class Validator extends Base\Validator
         ConfigKey::SKIP_SLAVE                           => 'filled|boolean',
         ConfigKey::BLOCK_BANK_TRANSFERS_FOR_CRYPTO      => 'filled|boolean',
         ConfigKey::DISABLE_MAGIC                        => 'filled|boolean',
+        ConfigKey::NPCI_UPI_DEMO                        => 'filled|array',
     ];
 
     protected static $scorecardRules = [

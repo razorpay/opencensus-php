@@ -35,7 +35,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
 use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Payment\TwoFactorAuth;
+use RZP\Models\Payment\RecurringType;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action as BaseAction;
 use App;
@@ -79,6 +79,8 @@ class Gateway extends Base\Gateway
     const TIMEOUT = 60;
 
     const VERIFY_TIMEOUT = 60;
+
+    protected $secondDebitRecurringFlag = null;
 
     /**
      * Parameters required to construct request
@@ -337,7 +339,27 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $this->supportPayment($input, 'capture');
+        $shouldRetry = function ($e)
+        {
+            $errorCodes =[
+                ErrorCode::CM00030,
+                ErrorCode::CM90000,
+                ErrorCode::CM90001,
+                ErrorCode::CM90002,
+                ErrorCode::CM90003,
+                ErrorCode::CM90004,
+                ErrorCode::CM90005,
+                ErrorCode::CM900000,
+            ];
+
+            return in_array($e->getError()->getGatewayErrorCode(), $errorCodes, true);
+        };
+
+        $this->retryHandler(
+            [$this, 'supportPayment'],
+            [$input,'capture'],
+            $shouldRetry,
+            2);
     }
 
     /**
@@ -604,7 +626,7 @@ class Gateway extends Base\Gateway
                 ]);
 
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED, null, null, [], null, Base\Action::AUTHENTICATE);
         }
     }
 
@@ -628,11 +650,16 @@ class Gateway extends Base\Gateway
 
         if ($this->shouldMigrateToIpay() === true)
         {
-            $domain = ($this->mode === Mode::LIVE) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN;
+            $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN;
+
+            if ($this->secondDebitRecurringFlag === true)
+            {
+                $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN_V2 : Urls::TEST_DOMAIN_V2;
+            }
         }
         else
         {
-            $domain = ($this->mode === Mode::LIVE) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
+            $domain = ($this->isLiveMode() === true) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
         }
 
         $request['url'] = $domain . $request['url'];
@@ -838,7 +865,7 @@ class Gateway extends Base\Gateway
 
     // -------------------------Exceptions -----------------------------------------
 
-    protected function throwException($error, $safeRetry = false)
+    protected function throwException($error, $safeRetry = false, $verifyAction = null)
     {
         // Mark error as false now to remove the stale state for future function calls.
         // @todo: refactor and remove this completely.
@@ -895,8 +922,11 @@ class Gateway extends Base\Gateway
             default:
 
                 $exception = new Exception\GatewayErrorException($apiErrorCode);
+
                 break;
         }
+
+        $exception->setAction($verifyAction);
 
         $exception->setGatewayErrorCodeAndDesc($gatewayErrorCode, $gatewayErrorDesc);
 
@@ -957,6 +987,22 @@ class Gateway extends Base\Gateway
         $this->checkValidParesStatus($PaRes);
     }
 
+    protected function setDebitSecondRecurringPayment(array $input)
+    {
+        $payment = $input['payment'];
+
+        $this->secondDebitRecurringFlag = false;
+
+        // For second recurring payment, recurring type has to be auto
+        if ((isset($payment[PaymentEntity::RECURRING_TYPE]) === true) and
+            ($payment[PaymentEntity::RECURRING_TYPE] === RecurringType::AUTO) and
+            ($payment['method'] === 'card') and
+            ($input['card']['type'] === Card\Type::DEBIT))
+        {
+            $this->secondDebitRecurringFlag = true;
+        }
+    }
+
     protected function checkForErrorInPares(array $PaRes, array $input)
     {
         if (empty($PaRes['Message']['Error']['errorCode']) === false)
@@ -972,7 +1018,9 @@ class Gateway extends Base\Gateway
                 [
                     'issuer' => $input['card']['issuer'],
                     'iin'    => $input['card']['iin']
-                ]
+                ],
+                null,
+                Base\Action::AUTHENTICATE
             );
         }
     }
@@ -985,7 +1033,12 @@ class Gateway extends Base\Gateway
             ($PaRes['Message']['PARes']['TX']['status'] === 'N'))
         {
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED);
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+                null,
+                null,
+                [],
+                null,
+                Base\Action::AUTHENTICATE);
         }
     }
 }

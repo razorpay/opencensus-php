@@ -34,15 +34,7 @@ spec:
           preStop:
             exec:
               command:
-              - /bin/rm
-              - -f
-              - /app/public/commit.txt
-              - ;
-              - sleep
-              - "5"
-              - ;
-              - /usr/sbin/apachectl
-              - stop
+                - bash -c "/bin/rm -f /app/public/commit.txt && sleep 5 && /usr/sbin/apachectl -k graceful-stop"
         livenessProbe:
           httpGet:
             path: /commit.txt

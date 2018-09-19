@@ -81,11 +81,16 @@ class RowProcessor extends BaseRowProcessor
                 ]);
         }
 
-        $this->reconEntity->setUtr($this->parsedData[self::UTR]);
+        $this->updateUtrOnReconEntity();
         $this->reconEntity->setRemarks($this->parsedData[self::REMARKS]);
         $this->reconEntity->setBankStatusCode($newBankStatusCode);
         $this->reconEntity->setCmsRefNo($this->parsedData[self::CMS_REF_NO]);
 
         $this->reconEntity->saveOrFail();
+    }
+
+    protected function getUtrToUpdate()
+    {
+        return $this->parsedData[self::UTR];
     }
 }
