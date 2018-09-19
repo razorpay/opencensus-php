@@ -3,9 +3,8 @@
 namespace RZP\Gateway\AxisMigs;
 
 use RZP\Error;
-use RZP\Gateway\Base\ErrorCodes;
 
-class TxnResponseCode extends ErrorCodes
+class TxnResponseCode
 {
     public static $errorDescriptionMap = [
         '0' => 'Transaction Successful',
@@ -97,39 +96,4 @@ class TxnResponseCode extends ErrorCodes
 
         'Aborted' => Error\ErrorCode::BAD_REQUEST_PAYMENT_ABORTED,
     ];
-
-    public static function isErrorCodeMapped($code)
-    {
-        return (isset(self::$map[$code]) === true);
-    }
-
-    public static function getErrorCodeMapped($code)
-    {
-        if (isset(self::$map[$code]) === true)
-        {
-            if (is_array(self::$map[$code]) === true)
-            {
-                return self::$map[$code]['default'];
-            }
-
-            return self::$map[$code];
-        }
-
-        return;
-    }
-
-    public static function getGatewayErrorDescription($code)
-    {
-        if (isset(self::$errorDescriptionMap[$code]) === true)
-        {
-            if (is_array(self::$errorDescriptionMap[$code]) === true)
-            {
-                return self::$errorDescriptionMap[$code]['default'];
-            }
-
-            return self::$errorDescriptionMap[$code];
-        }
-
-        return;
-    }
 }

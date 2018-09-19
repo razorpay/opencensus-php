@@ -42,18 +42,21 @@ class Fields
 
     const VPC_MESSAGE         = 'vpc_Message';
 
-    public static $fieldClassMap = [
-        self::VPC_CSCRESULTCODE     => CscResponseCode::class,
-        self::VPC_AVSRESPONSECODE   => AvsResponseCode::class,
-        self::VPC_TXNRESPONSECODE   => TxnResponseCode::class,
-        self::VPC_MESSAGE           => VpcMessageCode::class,
-        self::VPC_ACQRESPONSECODE   => Base\ErrorCodes::class,
+    public static $errorCodeMap = [
+        self::VPC_CSCRESULTCODE     => 'cscErrorCodeMap',
+        self::VPC_AVSRESPONSECODE   => 'avsErrorCodeMap',
+        self::VPC_TXNRESPONSECODE   => 'txnErrorCodeMap',
+        self::VPC_MESSAGE           => 'vpcErrorCodeMap',
+        self::VPC_ACQRESPONSECODE   => 'errorCodeMap',
     ];
 
-    public static function getFieldClass($fieldName)
-    {
-        return self::$fieldClassMap[$fieldName];
-    }
+    public static $errorDescriptionMap = [
+        self::VPC_CSCRESULTCODE     => 'cscErrorDescriptionMap',
+        self::VPC_AVSRESPONSECODE   => 'avsErrorDescriptionMap',
+        self::VPC_TXNRESPONSECODE   => 'txnErrorDescriptionMap',
+        self::VPC_MESSAGE           => 'vpcErrorDescriptionMap',
+        self::VPC_ACQRESPONSECODE   => 'errorDescriptionMap',
+    ];
 
     public static function getErrorCodeFields()
     {

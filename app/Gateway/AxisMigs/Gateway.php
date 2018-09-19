@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\AxisMigs;
 
-use RZP\Gateway\Mpi\Enstage\Field;
 use Str;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
@@ -14,7 +13,6 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment;
 use RZP\Gateway\AxisMigs;
-use RZP\Gateway\AxisMigs\Fields;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Trace\TraceCode;
 
@@ -1127,11 +1125,9 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        $code = $this->getInternalErrorCode($content);
+        $code = AxisMigs\ErrorCodes\ErrorCodes::getInternalErrorCode($content);
 
-        $msg = $this->getGatewayErrorDescription($content);
-
-        $gatewayErrorCode = $this->gatewayErrorCode;
+        $msg = AxisMigs\ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($content);
 
         if ($this->action === Base\Action::REFUND)
         {
@@ -1152,7 +1148,7 @@ class Gateway extends Base\Gateway
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException(
             $code,
-            $gatewayErrorCode,
+            $txnResponseCode,
             $msg);
     }
 }

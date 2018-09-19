@@ -383,7 +383,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_FAILED,
-            'gateway_error_code'  => '5415',
+            'gateway_error_code'  => '5145',
         ],
     ],
 
