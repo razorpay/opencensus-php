@@ -5,6 +5,7 @@ import AsyncButton from 'ui/AsyncButton';
 
 import { adminPut } from 'common/fetch';
 import { notifySuccess, closeModal } from 'common/modal';
+import { titleCase } from 'common/util';
 
 BeamNodalAction.title = 'Nodal Account Action via Beam';
 BeamNodalAction.permission = 'settlement_bulk_update';
@@ -12,38 +13,34 @@ BeamNodalAction.permission = 'settlement_bulk_update';
 export default function BeamNodalAction() {
   return (
     <Form class="full-span">
-      <Field label="File ID" type="text" name="file_id" required/>
+      <Field label="File ID" type="text" name="file_id" required />
 
-        <SelectField label="File Type" name="file_type" required={true}>
-            {Object.keys(filetypes).map(opt => (
-                <option value={opt} key={opt}>
-                    {filetypes[opt]}
-                </option>
-            ))}
-        </SelectField>
+      <SelectField label="File Type" name="file_type" required>
+        {fileTypes.map(opt => (
+          <option value={opt} key={opt}>
+            {titleCase(opt)}
+          </option>
+        ))}
+      </SelectField>
 
-        <SelectField label="Channel" name="channel" required={true}>
-            {Object.keys(options).map(opt => (
-                <option value={opt} key={opt}>
-                    {options[opt]}
-                </option>
-            ))}
-        </SelectField>
+      <SelectField label="Channel" name="channel" required>
+        {Object.keys(options).map(opt => (
+          <option value={opt} key={opt}>
+            {options[opt]}
+          </option>
+        ))}
+      </SelectField>
 
-      <SelectMode defaultValue="live" />
+      <SelectMode defaultValue="live" required />
       <AsyncButton
         text="Send File"
         class="btn"
         pendingClass="small spinner"
         type="submit"
-        onSubmit={body => {
+        onSubmit={({ mode, ...data }) => {
           return adminPut({
-            url: `${body.mode}/nodal_file_upload/retry`,
-            data: {
-                file_id: body.file_id || undefined,
-                file_type: body.file_type || undefined,
-                channel: body.channel || undefined,
-            },
+            url: `${mode}/nodal_file_upload/retry`,
+            data,
           }).then(response => {
             if (response) {
               notifySuccess('File-send request sent!');
@@ -57,12 +54,9 @@ export default function BeamNodalAction() {
 }
 
 const options = {
-    icici: 'ICICI',
-    axis: 'Axis',
-    hdfc: 'HDFC',
+  icici: 'ICICI',
+  axis: 'Axis',
+  hdfc: 'HDFC',
 };
 
-const filetypes = {
-    settlement: 'Settlement',
-    beneficiary: 'Beneficiary',
-};
+const fileTypes = ['settlement', 'beneficary'];
