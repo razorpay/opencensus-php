@@ -49,6 +49,7 @@ return [
         'rzp_oauth_client_id'   =>  'none',
         'rzp_auth'              =>  'private',
         'rzp_internal_app_name' =>  'none',
+        'rzp_auth_flow_type'    =>  'key',
     ],
 
     'testCreateInvoiceAndAssertMetricsSentExpectedMetricTags' => [
@@ -61,5 +62,6 @@ return [
         'rzp_oauth_client_id'   =>  'none',
         'rzp_auth'              =>  'private',
         'rzp_internal_app_name' =>  'none',
+        'rzp_auth_flow_type'    =>  'key',
     ],
 ];

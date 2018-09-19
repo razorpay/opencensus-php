@@ -1501,6 +1501,26 @@ return [
         ],
     ],
 
+
+    'testGetCheckoutPreferencesForPaidOrder' => [
+        'request' => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithSharedMerchantOffer' => [
         'request' => [
             'url'    => '/preferences',
@@ -1950,7 +1970,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 14,
+                'count' => 13,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1985,13 +2005,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'DBSS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'IDFB',
                         ],
                     ],
                     [
@@ -2063,7 +2076,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 15,
+                'count' => 14,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -2105,13 +2118,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'DBSS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'IDFB',
                         ],
                     ],
                     [
@@ -2368,7 +2374,6 @@ return [
                                 'BKDN',
                                 'COSB',
                                 'DBSS',
-                                'IDFB',
                                 'JSBP',
                                 'NKGS',
                                 'SVCB',

@@ -61,6 +61,7 @@ class Netbanking
         IFSC::KKBK,
         IFSC::AIRP,
         IFSC::FDRL,
+        IFSC::IDFB,
         IFSC::RATN,
         IFSC::INDB,
         IFSC::ORBC,

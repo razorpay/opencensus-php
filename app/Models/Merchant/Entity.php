@@ -79,7 +79,7 @@ class Entity extends Base\PublicEntity
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
 
     // Coupon Related Data for display only
-    const COUPON_CODE               = 'coupon_code';
+    const COUPON_CODE              = 'coupon_code';
 
     //
     // Followings are derived data indexed in ES and goes to
