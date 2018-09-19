@@ -155,11 +155,12 @@ class Beneficiary extends Base
     /**
      * dummy implementation as per the interface.
      * we wont be doing anything on successful bene registration
+     * @param array $response
+     * @return array
      */
     protected function extractSuccessfulData(array $response): array
     {
-        // do nothing here as we are not doing anything with this data
-        return [];
+        return $response;
     }
 
     /**
