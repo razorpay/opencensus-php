@@ -146,7 +146,7 @@ abstract class NodalAccount extends Base\Core
 
             $this->type      = $source->getEntity();
 
-            $this->channel   = $source->getChannel();
+            $this->channel   = $attempt->getChannel();
 
             $this->tax       += $source->getTax();
 

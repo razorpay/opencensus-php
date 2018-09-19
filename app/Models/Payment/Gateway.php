@@ -1132,6 +1132,7 @@ class Gateway
                 IFSC::SURY,
                 IFSC::UCBA,
                 IFSC::ICIC,
+                IFSC::IDFB,
             ]
         ],
     ];
