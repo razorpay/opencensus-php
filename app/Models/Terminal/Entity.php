@@ -61,6 +61,7 @@ class Entity extends Base\PublicEntity
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
     const BANKING_TYPES                 = 'banking_types';
+    const ENABLED_BANKS                 = 'enabled_banks';
 
     //
     // Currenly being used to handle 'unexpected' BharatQR payments.
@@ -125,7 +126,8 @@ class Entity extends Base\PublicEntity
         self::VISA_MPAN,
         self::RUPAY_MPAN,
         self::VPA,
-        self::ENABLED
+        self::ENABLED,
+        self::ENABLED_BANKS
     ];
 
     protected $public = [
@@ -164,6 +166,7 @@ class Entity extends Base\PublicEntity
         self::DELETED_AT,
         self::ENABLED,
         self::SUB_MERCHANTS,
+        self::ENABLED_BANKS,
     ];
 
     protected $hidden = [
@@ -233,6 +236,7 @@ class Entity extends Base\PublicEntity
         self::CORPORATE                 => 'int',
         self::EXPECTED                  => 'boolean',
         self::USED                      => 'boolean',
+        self::ENABLED_BANKS             => 'array',
     ];
 
     protected $appends = [
