@@ -26,6 +26,7 @@ export default class EditNotes extends React.Component {
       })
       .then(resp => {
         if (resp && resp.data) {
+          this.props.trackerFn('Edit Notes (Saved)');
           // Handle failed case..
           this.setState({
             notes,
@@ -43,7 +44,7 @@ export default class EditNotes extends React.Component {
           name="notes"
           saveAndUpdate={this.saveAndUpdate}
           defaultValue={this.state.notes}
-          trackerFn={this.props.trackerFn.bind(null, this.props.entityId)}
+          trackerFn={this.props.trackerFn}
         />
       </React.Fragment>
     );

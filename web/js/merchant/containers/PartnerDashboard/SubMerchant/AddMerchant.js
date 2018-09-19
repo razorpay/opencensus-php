@@ -13,6 +13,8 @@ import InputField from 'rzp/ui/Forms/InputField';
 import { required } from 'rzp/utils/validators';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 
+import { trackAddNewMerchantEvents } from '../ga';
+
 @connect(state => ({ ...state.session }), {
   create,
   showNotification,
@@ -31,6 +33,8 @@ export default class AddMerchant extends Component {
           message: 'Submerchant created successfully',
         });
         this.props.closeModal();
+
+        trackAddNewMerchantEvents('Submit Form');
       })
       .catch(({ errors }) => {
         this.props.showNotification({
@@ -39,6 +43,10 @@ export default class AddMerchant extends Component {
         });
       });
   };
+
+  componentDidMount() {
+    trackAddNewMerchantEvents('Open Form');
+  }
 
   render() {
     const { handleSubmit, user } = this.props;
@@ -99,6 +107,10 @@ export default class AddMerchant extends Component {
         </div>
       </div>
     );
+  }
+
+  componentWillUnmount() {
+    trackAddNewMerchantEvents('Close Form');
   }
 }
 
