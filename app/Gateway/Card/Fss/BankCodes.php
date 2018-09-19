@@ -22,6 +22,7 @@ class BankCodes
         Bank::SURY => 1117,
         Bank::UCBA => 1118,
         Bank::ICIC => 1119,
+        Bank::IDFB => 1126,
     ];
 
     /**

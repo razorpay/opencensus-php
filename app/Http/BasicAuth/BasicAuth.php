@@ -75,6 +75,10 @@ class BasicAuth
     const PUBLIC_KEY              = 'public_key';
     const AUTH_TYPE               = 'auth_type';
 
+    // Used in requestContext for request metrics
+    const OAUTH                 = 'oauth';
+    const PARTNER               = 'partner';
+
     /**
      * The application instance.
      *
