@@ -7,7 +7,7 @@ metadata:
   namespace: api
 spec:
   progressDeadlineSeconds: 600
-  replicas: 10
+  replicas: 0
   revisionHistoryLimit: 10
   selector:
     matchLabels:

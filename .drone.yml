@@ -272,6 +272,13 @@ pipeline:
       - api-sqs-invoice-email
       - api-sqs-invoice-reports
       - api-sqs-webhooks-test
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-gen-live
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
     repo: razorpay/api
     namespace: echo
     tag:
@@ -325,6 +332,13 @@ pipeline:
       - api-sqs-invoice-email
       - api-sqs-invoice-reports
       - api-sqs-webhooks-test
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-gen-live
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
     repo: razorpay/api
     namespace: delta
     tag:
@@ -378,6 +392,13 @@ pipeline:
       - api-sqs-invoice-email
       - api-sqs-invoice-reports
       - api-sqs-webhooks-test
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-gen-live
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
     repo: razorpay/api
     namespace: charlie
     tag:
@@ -431,6 +452,13 @@ pipeline:
       - api-sqs-invoice-email
       - api-sqs-invoice-reports
       - api-sqs-webhooks-test
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-gen-live
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
     repo: razorpay/api
     namespace: beta
     tag:

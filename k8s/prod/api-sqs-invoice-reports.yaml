@@ -7,7 +7,7 @@ metadata:
   namespace: api
 spec:
   progressDeadlineSeconds: 600
-  replicas: 10
+  replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -36,7 +36,7 @@ spec:
             configMapKeyRef:
               key: APP_MODE
               name: api
-        image: razorpay/api:4bbdf122142a64c40565ebd1337af51d66ea75bc
+        image: razorpay/api:3b5df79f9782773bcac4a237cd870372fc5a539e
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
