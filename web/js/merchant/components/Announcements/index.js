@@ -60,10 +60,7 @@ export class EarlySettlementAnnouncement extends Component {
       bannerKey: `early-settlement-banner-viewed-${props.user.current}`,
     };
 
-    if (
-      props.user.activated &&
-      props.user.findTag('announcement_early_settlements')
-    ) {
+    if (props.user.showEarlySettlementAnnouncement()) {
       this.state.isHidden = LocalStorageService.getItem(this.state.bannerKey);
     } else {
       this.state.isHidden = true;

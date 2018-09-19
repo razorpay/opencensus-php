@@ -106,7 +106,7 @@ export default class SettlementsListContainer extends ListContainer {
             <div class="content-wrapper">
               <HeaderAction>
                 <React.Fragment>
-                  {this.props.user.findTag('announcement_early_settlements') ? (
+                  {this.props.user.showEarlySettlementAnnouncement() ? (
                     <a
                       class="btn btn-link req-es-btn"
                       onClick={this.showRequestEarySettlementForm}
