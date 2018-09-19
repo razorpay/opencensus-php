@@ -187,6 +187,7 @@ class Validator extends Base\Validator
         Entity::NAME                     => 'sometimes|string',
         Entity::ID                       => 'sometimes|alpha_num|size:14',
         Entity::EMAIL                    => 'sometimes|email',
+        Constants::APPLICATION_ID        => 'sometimes|string|size:14',
         Detail\Entity::ACTIVATION_STATUS => 'sometimes|string|max:30',
         Constants::FROM                  => 'integer',
         Constants::TO                    => 'integer',
@@ -824,6 +825,28 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ACCOUNT_IS_NOT_LINKED_ACCOUNT);
+        }
+    }
+
+    /**
+     * Validate if the input application is
+     *
+     * @param string $inputAppId
+     * @param array  $partnerAppIds
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validatePartnerApplicationId(string $inputAppId, array $partnerAppIds)
+    {
+        if (in_array($inputAppId, $partnerAppIds, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_APPLICATION_ID,
+                Constants::APPLICATION_ID,
+                [
+                    'partner_app_ids'         => $partnerAppIds,
+                    Constants::APPLICATION_ID => $inputAppId,
+                ]);
         }
     }
 }

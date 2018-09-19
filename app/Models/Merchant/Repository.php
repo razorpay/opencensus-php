@@ -511,11 +511,11 @@ class Repository extends Base\Repository
 
         $accessMapsMerchantId = $this->repo->merchant_access_map->dbColumn(AccessMap\Entity::MERCHANT_ID);
 
-        $query = $this->buildQueryToFetchSubmerchantsByAppIds($appIds)
-                      ->where($accessMapsMerchantId, $submerchantId)
-                      ->firstOrFail();
+        $submerchant = $this->buildQueryToFetchSubmerchantsByAppIds($appIds)
+                            ->where($accessMapsMerchantId, $submerchantId)
+                            ->firstOrFail();
 
-        return $query;
+        return $submerchant;
     }
 
     /**
@@ -533,7 +533,9 @@ class Repository extends Base\Repository
         $query->orderBy(Table::MERCHANT . '.' . Entity::CREATED_AT, 'desc')
               ->orderBy(Table::MERCHANT . '.' . Entity::ID, 'desc');
 
-        return $query->get();
+        $submerchants = $query->get();
+
+        return $submerchants;
     }
 
     /**

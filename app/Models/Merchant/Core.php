@@ -1165,17 +1165,7 @@ class Core extends Base\Core
         //
         if (($partner->isPurePlatformPartner() === true) and (empty($inputAppId) === false))
         {
-            if (in_array($inputAppId, $partnerAppIds, true) === false)
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_APPLICATION_ID,
-                    Constants::APPLICATION_ID,
-                    [
-                        Entity::ID                => $partner->getId(),
-                        Entity::PARTNER_TYPE      => $partner->getPartnerType(),
-                        Constants::APPLICATION_ID => $inputAppId,
-                    ]);
-            }
+            (new Validator)->validatePartnerApplicationId($inputAppId, $partnerAppIds);
 
             // Since the app id in the input is valid, update $appId and proceed for to query the db
             $appId = $inputAppId;
@@ -1201,6 +1191,19 @@ class Core extends Base\Core
     public function listSubmerchants(Entity $partner, array $params): Base\PublicCollection
     {
         $appIds = $this->getPartnerApplicationIds($partner);
+
+        if (empty($params[Constants::APPLICATION_ID]) === false)
+        {
+            $inputAppId = $params[Constants::APPLICATION_ID];
+
+            (new Validator)->validatePartnerApplicationId($inputAppId, $appIds);
+
+            // Filter with only the input app id
+            $appIds = [$inputAppId];
+
+            // Filters will be applied based on $params. Since app id is already handled above, unsetting it here.
+            unset($params[Constants::APPLICATION_ID]);
+        }
 
         $merchants = $this->repo
                           ->merchant
