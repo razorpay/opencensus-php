@@ -8,7 +8,12 @@ import CreditDetails from './CreditDetails';
 
 const isCreditsDataEmpty = ({ balanceData, creditItems }) => {
   const { credits, fee_credits, refund_credits } = balanceData;
-  if (!credits && !fee_credits && !refund_credits && !creditItems.length) {
+  if (
+    !credits &&
+    !fee_credits &&
+    !refund_credits &&
+    !Object.keys(creditItems).length
+  ) {
     return true;
   }
   return false;
