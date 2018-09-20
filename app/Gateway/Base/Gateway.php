@@ -170,8 +170,6 @@ class Gateway
 
     protected $externalMockDomain;
 
-    protected $gatewayErrorCode = null;
-
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -1199,14 +1197,5 @@ class Gateway
     protected function getExternalMockUrl(string $type)
     {
         return $this->externalMockDomain . '/' . $this->gateway . $this->getRelativeUrl($type);
-    }
-
-    protected function getGatewayFieldClass()
-    {
-        $gatewayPath = $this->getGatewayNamespace();
-
-        $fieldClass = $gatewayPath.'\Fields';
-
-        return $fieldClass;
     }
 }
