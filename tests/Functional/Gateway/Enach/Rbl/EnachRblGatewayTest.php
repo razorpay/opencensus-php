@@ -119,6 +119,80 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('confirmed', $token['recurring_status']);
     }
 
+    public function testPaymentNpciRejectResponse()
+    {
+        $payment                 = $this->getEmandatePaymentArray('HDFC', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockRejectCallbackResponse();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(0, $payment['amount']);
+
+        //$this->assertEquals('failed', $payment['status']);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertEquals('false', $enach['registration_status']);
+
+        //$this->assertNotNull($enach['registration_date']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('netbanking', $token['auth_type']);
+
+        $this->assertEquals('rejected', $token['recurring_status']);
+    }
+
+    public function testPaymentNpciErrorResponse()
+    {
+        $payment                 = $this->getEmandatePaymentArray('HDFC', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'utib0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockFailedCallbackResponse();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(0, $payment['amount']);
+
+        //$this->assertEquals('failed', $payment['status']);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertEquals('false', $enach['registration_status']);
+
+        //$this->assertNotNull($enach['registration_date']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('netbanking', $token['auth_type']);
+
+        $this->assertEquals('rejected', $token['recurring_status']);
+    }
+
     public function testSuccessfulEsignGenerationWithVid()
     {
         $payment                 = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
@@ -1283,5 +1357,30 @@ class EnachRblGatewayTest extends TestCase
         ];
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function mockFailedCallbackResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content = 'ErrorXML';
+            }
+        });
+    }
+
+    protected function mockRejectCallbackResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize_get_secure_data')
+            {
+                $content['Accptd'] = 'false';
+                $content['ReasonCode'] = '1022';
+                $content['ReasonDesc'] = 'Invalid Authentication';
+                $content['RejectBy'] = 'Bank';
+            }
+        });
     }
 }
