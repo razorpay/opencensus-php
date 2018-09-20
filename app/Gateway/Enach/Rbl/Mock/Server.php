@@ -35,9 +35,18 @@ class Server extends Base\Mock\Server
 
         $this->content($respType, 'authorize');
 
-        $secureData = $this->getSecureData();
+        $content = [];
 
-        $checksum = $this->generateHash($secureData);
+        $secureData = [];
+
+        if($respType === 'RespXml')
+        {
+            $secureData = $this->getSecureData();
+
+            $checksum = $this->generateHash($secureData);
+
+            $content['CheckSumVal'] = $checksum;
+        }
 
         $responseData = $this->getResponseData($requestArray, $respType, $secureData);
 
@@ -47,11 +56,9 @@ class Server extends Base\Mock\Server
 
         $callbackUrl = $input['callback'];
 
-        $content = [
-            'CheckSumVal'     => $checksum,
-            'MandateRespDoc'  => $responseXml,
-            'RespType'        => $respType,
-        ];
+        $content['MandateRespDoc'] = $responseXml;
+
+        $content['RespType'] = $respType;
 
         $request = [
             'url'     => $callbackUrl,
@@ -93,7 +100,7 @@ class Server extends Base\Mock\Server
             $data = [
                 'GrpHdr'       => [
                     'MsgId'          => '000f0f29dc27f00000101b09c5227457f17',
-                    'CreDtTm'        => Carbon::now()->toIso8601String(),
+                    'CreDtTm'        => Carbon::now(Timezone::IST)->toIso8601String(),
                 ],
                 'OrigReqInfo'   => [
                     'MndtReqId'      => $requestArray['MndtAuthReq']['Mndt']['MndtReqId'],
@@ -164,7 +171,7 @@ class Server extends Base\Mock\Server
         $document = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>'
             .'<Document xmlns="http://npci.org/onmags/schema"/>');
 
-        $mandateroot = $document->addChild('MndtAccptResp');
+        $mandateroot = $document->addChild('MndtRejResp');
 
         $grp = $mandateroot->addChild( 'GrpHdr');
 
