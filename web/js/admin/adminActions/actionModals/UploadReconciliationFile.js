@@ -14,6 +14,8 @@ import { adminFormUpload3 } from 'common/fetch';
 const gateWayOptions = [
   'HDFC',
   'BillDesk',
+  'Airtel',
+  'Amazonpay',
   'Axis',
   'Ebs',
   'PayZapp',
@@ -28,6 +30,7 @@ const gateWayOptions = [
   'SBI Buddy',
   'UpiSbi',
   'UpiIcici',
+  'Mpesa',
   'Netbanking Axis',
   'Netbanking Icici',
   'Netbanking Corporation',
