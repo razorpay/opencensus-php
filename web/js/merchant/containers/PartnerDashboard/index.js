@@ -22,13 +22,6 @@ export default function PartnerDashboard() {
         >
           <NavLink to="/submerchants/settings">Settings</NavLink>
         </ShowWhen>
-        <ShowWhen
-          additionalCondition={user =>
-            user.isPartner('aggregator', 'fully_managed')
-          }
-        >
-          <NavLink to="/submerchants/settings">Settings</NavLink>
-        </ShowWhen>
         <ShowWhen additionalCondition={user => user.isPartner('pure_platform')}>
           <NavLink to="/submerchants/applications">Applications</NavLink>
         </ShowWhen>
