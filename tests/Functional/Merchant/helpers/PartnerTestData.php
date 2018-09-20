@@ -739,6 +739,27 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantPurePlatformMissingAppId' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MISSING_APPLICATION_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MISSING_APPLICATION_ID,
+        ],
+    ],
+
     'testFetchPartnerSubmerchantPurePlatformInvalidAppId' => [
         'request'  => [
             'url'     => '/submerchants/acc_10000000000009',
@@ -900,7 +921,6 @@ return [
             ],
         ],
     ],
-
 
     'testFetchPartnerSubmerchantsPurePlatformFilters' => [
         'request'  => [

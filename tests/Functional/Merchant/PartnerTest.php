@@ -762,6 +762,24 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchPartnerSubmerchantPurePlatformMissingAppId()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'pure_platform']);
+
+        $this->createDummyPartnerApp([
+            'id'          => self::DUMMY_APP_ID_1,
+            'type'        => null,
+            'name'        => 'App 1',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+        ]);
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchPartnerSubmerchantPurePlatformInvalidAppId()
     {
         $this->allowAdminToAccessPartnerMerchant();
