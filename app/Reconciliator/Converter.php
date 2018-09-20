@@ -20,11 +20,16 @@ class Converter extends Base\Core
     const NORMALIZED_HEADER_GATEWAYS = [
         RequestProcessor\Base::ATOM,
         RequestProcessor\Base::HDFC,
+        RequestProcessor\Base::MPESA,
+        RequestProcessor\Base::AIRTEL,
         RequestProcessor\Base::PAYZAPP,
         RequestProcessor\Base::BILLDESK,
         RequestProcessor\Base::MOBIKWIK,
         RequestProcessor\Base::OLAMONEY,
+        RequestProcessor\Base::AMAZONPAY,
         RequestProcessor\Base::FREECHARGE,
+        RequestProcessor\Base::CARD_FSS_BOB,
+        RequestProcessor\Base::NETBANKING_IDFC,
     ];
 
     const MAX_SHEETS_ALLOWED = 3;
@@ -57,25 +62,26 @@ class Converter extends Base\Core
     }
 
     /**
-     * Convers excel sheet to in memory array, by using spout or maatwebsite excel parser
+     * Converts excel sheet to in memory array, by using spout or maatwebsite excel parser
      * depending on the extension of the excel file
      *
-     * @param  array  $fileDetails details of the file being processed
-     * @param  array  $sheetNames  sheet names to be considered
-     * @param  int    $startRow
+     * @param array $fileDetails details of the file being processed
+     * @param array $sheetNames  sheet names to be considered
+     * @param int   $startRow
+     * @param array $keyColumnsNames
      *
      * @return array
      */
-    public function convertExcelToArray(array $fileDetails, $sheetNames, int $startRow)
+    public function convertExcelToArray(array $fileDetails, $sheetNames, int $startRow, $keyColumnsNames = [])
     {
         if ($this->shouldUseSpoutLib($fileDetails[FileProcessor::EXTENSION]) === true)
         {
             // getting contents using spout library for xlsx
-            $sheetsContents = $this->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames);
+            $sheetsContents = $this->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames, $startRow, $keyColumnsNames);
         }
         else
         {
-            $sheetsContents = $this->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames, $startRow);
+            $sheetsContents = $this->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames, $startRow, $keyColumnsNames);
         }
 
         $fileContents = [];
@@ -94,7 +100,7 @@ class Converter extends Base\Core
         return $fileContents;
     }
 
-    public function getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames = [], $startRow = 1)
+    public function getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames = [], $startRow = 1, $keyColumnNames)
     {
         $timeStarted = microtime(true);
 
@@ -105,18 +111,31 @@ class Converter extends Base\Core
                 'gateway' => get_called_class(),
         ]);
 
-        $this->setConfigOptions($startRow);
-
-        $allSheetsContent = [];
-
-        if (empty($sheetNames) === false)
+        if (empty($keyColumnNames) === false)
         {
-            $allSheetsContent = $this->getRowsFromExcelSheetsOptimizedWithSheetNames($fileDetails, $sheetNames);
+            // here we want to read raw data rows, don't make first row as header
+            $this->setConfigOptions($startRow, false);
         }
         else
         {
-            $allSheetsContent = $this->getRowsFromExcelSheetsOptimizedWithSheetIndices($fileDetails);
+            $this->setConfigOptions($startRow);
         }
+
+        if (empty($sheetNames) === false)
+        {
+            $allSheetsContent = $this->getRowsFromExcelSheetsOptimizedWithSheetNames(
+                                                            $fileDetails, $sheetNames, $keyColumnNames);
+        }
+        else
+        {
+            $allSheetsContent = $this->getRowsFromExcelSheetsOptimizedWithSheetIndices($fileDetails, $keyColumnNames);
+        }
+
+        //
+        // Needs to be reset so that the custom `startRow` and `heading`
+        // configs don't affect the other messages in the queue
+        //
+        $this->setConfigOptions(1);
 
         $this->trace->debug(
             TraceCode::RECON_INFO,
@@ -134,11 +153,12 @@ class Converter extends Base\Core
      * This function uses Spout library to read data from Excel sheets
      *
      * @param $fileDetails
-     * @param $sheetNames
-     * @param $startRow
+     * @param array $sheetNames
+     * @param int $startRow
+     * @param array $keyColumnNames
      * @return array excel sheet content of mentioned file
      */
-    public function getRowsFromExcelSheetsSpout($fileDetails, $sheetNames = [], int $startRow = 1)
+    public function getRowsFromExcelSheetsSpout($fileDetails, $sheetNames = [], int $startRow = 1, $keyColumnNames)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -149,10 +169,10 @@ class Converter extends Base\Core
 
         if (empty($sheetNames) === false)
         {
-            return $this->getRowsFromExcelSheetsWithSheetNamesSpout($reader, $sheetNames, $startRow);
+            return $this->getRowsFromExcelSheetsWithSheetNamesSpout($reader, $sheetNames, $startRow, $keyColumnNames);
         }
 
-        return $this->getRowsFromExcelSheetsWithIndicesSpout($reader, $startRow);
+        return $this->getRowsFromExcelSheetsWithIndicesSpout($reader, $startRow, $keyColumnNames);
     }
 
     public function convertExcelSheetToArray($sheet)
@@ -218,7 +238,7 @@ class Converter extends Base\Core
                 }
                 else
                 {
-                    if ($columnHeadersCount !== count($row))
+                    if ($columnHeadersCount > count($row))
                     {
                         //
                         // This can happen if any row in the file has dummy data.
@@ -235,18 +255,17 @@ class Converter extends Base\Core
                         continue;
                     }
 
-                    /**
-                     * Enabling header normalization for limited gateways for now.
-                     * Will migrate other gateways gradually.
-                     */
+                    // Enabling header normalization for limited gateways for now.
+                    // Will migrate other gateways gradually.
                     if(in_array($gateway,self::NORMALIZED_HEADER_GATEWAYS, true) === true)
                     {
                         //Normalizes the header values of file
                         $columnHeaders = $this->normalizeHeaders($columnHeaders);
                     }
 
-                    // Combines the columnHeaders(keys) with the row(values).
-                    $data[] = array_combine($columnHeaders, $row);
+                    // Combines the columnHeaders(keys) with the row(values)
+                    $data[] = array_combine_pad_headers($columnHeaders, $row);
+
                 }
 
                 $currentLineNumber++;
@@ -266,18 +285,25 @@ class Converter extends Base\Core
      * function does not get any sheet name at all.
      *
      * @param array $fileDetails
+     * @param $keyColumnNames
      * @return array
      */
-    protected function getRowsFromExcelSheetsOptimizedWithSheetIndices(array $fileDetails)
+    protected function getRowsFromExcelSheetsOptimizedWithSheetIndices(array $fileDetails, $keyColumnNames)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
-        $allSheetsContent = [];
+        // Initializing sheet content variables
+        $sheetContent = [
+            'all_sheets_content'     => [],
+            'column_headers'         => [],
+            'column_headers_count'   => null,
+            'key_columns'            => $keyColumnNames
+        ];
 
         foreach (range(0, self::MAX_SHEETS_ALLOWED) as $index)
         {
             $randomSheetName = 'sheet' . $index;
-            $allSheetsContent[$randomSheetName] = [];
+            $sheetContent['all_sheets_content'][$randomSheetName] = [];
 
             $timeStarted = microtime(true);
 
@@ -292,15 +318,14 @@ class Converter extends Base\Core
 
             Excel::filter('chunk')->selectSheetsByIndex($index)->load($filePath)->chunk(
                 self::ROW_CHUNK_SIZE,
-                function ($results) use ($randomSheetName, & $allSheetsContent)
-                {
-                    foreach ($results as $row)
+                function ($results) use ($randomSheetName, & $sheetContent, $keyColumnNames) {
+                    if (empty($keyColumnNames) === false)
                     {
-                        // Currently, since it returns an array of rows, there's no
-                        // way to get the sheet names. And we cannot let it return
-                        // an array of sheets because chunk works only on a
-                        // cell collection (rows) and not on a row collection (sheets)
-                        $allSheetsContent[$randomSheetName][] = $row->all();
+                        $this->setExcelSheetContentWithKeyColumnNames($results, $randomSheetName, $sheetContent);
+                    }
+                    else
+                    {
+                        $this->setExcelSheetContent($results, $randomSheetName, $sheetContent);
                     }
                 },
                 false
@@ -317,18 +342,27 @@ class Converter extends Base\Core
                     ]);
         }
 
-        return $allSheetsContent;
+        return $sheetContent['all_sheets_content'];
     }
 
-    protected function getRowsFromExcelSheetsOptimizedWithSheetNames(array $fileDetails, array $sheetNames)
+    protected function getRowsFromExcelSheetsOptimizedWithSheetNames(
+        array $fileDetails,
+        array $sheetNames,
+        array $keyColumnNames)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
-        $allSheetsContent = [];
+        // Initializing sheet content variables
+        $sheetContent = [
+            'all_sheets_content'     => [],
+            'column_headers'         => [],
+            'column_headers_count'   => null,
+            'key_columns'            => $keyColumnNames
+        ];
 
         foreach ($sheetNames as $sheetName)
         {
-            $allSheetsContent[$sheetName] = [];
+            $sheetContent['all_sheets_content'][$sheetName] = [];
 
             $timeStarted = microtime(true);
 
@@ -345,11 +379,15 @@ class Converter extends Base\Core
             {
                 Excel::filter('chunk')->selectSheets($sheetName)->load($filePath)->chunk(
                     self::ROW_CHUNK_SIZE,
-                    function ($results) use ($sheetName, & $allSheetsContent)
+                    function ($results) use ($sheetName, & $sheetContent, $keyColumnNames)
                     {
-                        foreach ($results as $row)
+                        if (empty($keyColumnNames) === false)
                         {
-                            $allSheetsContent[$sheetName][] = $row->all();
+                            $this->setExcelSheetContentWithKeyColumnNames($results, $sheetName, $sheetContent);
+                        }
+                        else
+                        {
+                            $this->setExcelSheetContent($results, $sheetName, $sheetContent);
                         }
                     },
                     false
@@ -377,7 +415,7 @@ class Converter extends Base\Core
             }
 
             $this->trace->debug(
-            TraceCode::RECON_INFO,
+                TraceCode::RECON_INFO,
                 [
                     'info_code'     => 'PROCESS_EXCEL_SHEET_END',
                     'file_details'  => $fileDetails,
@@ -387,7 +425,7 @@ class Converter extends Base\Core
                 ]);
         }
 
-        return $allSheetsContent;
+        return $sheetContent['all_sheets_content'];
     }
 
     protected function shouldUseSpoutLib(string $extension): bool
@@ -395,7 +433,7 @@ class Converter extends Base\Core
         return ($extension === Format::XLSX);
     }
 
-    protected function getRowsFromExcelSheetsWithIndicesSpout($reader, int $startRow = 1)
+    protected function getRowsFromExcelSheetsWithIndicesSpout($reader, int $startRow = 1, $keyColumnNames)
     {
         $allSheetsContent = [];
 
@@ -405,13 +443,24 @@ class Converter extends Base\Core
 
             $sheetName = 'sheet' . $index;
 
-            $this->setSheetContentForSpout($allSheetsContent, $sheet, $sheetName, $startRow);
+            if (empty($keyColumnNames) === false)
+            {
+                $this->setExcelSheetContentForSpoutWithKeyColumns($allSheetsContent, $sheet, $sheetName, $startRow, $keyColumnNames);
+            }
+            else
+            {
+                $this->setExcelSheetContentForSpout($allSheetsContent, $sheet, $sheetName, $startRow);
+            }
         }
 
         return $allSheetsContent;
     }
 
-    protected function getRowsFromExcelSheetsWithSheetNamesSpout($reader, array $sheetNames, int $startRow = 1)
+    protected function getRowsFromExcelSheetsWithSheetNamesSpout(
+        $reader,
+        array $sheetNames,
+        int $startRow = 1,
+        $keyColumnNames)
     {
         $allSheetsContent = [];
 
@@ -424,13 +473,21 @@ class Converter extends Base\Core
                 continue;
             }
 
-            $this->setSheetContentForSpout($allSheetsContent, $sheet, $sheetName, $startRow);
+            if (empty($keyColumnNames) === false)
+            {
+                $this->setExcelSheetContentForSpoutWithKeyColumns(
+                    $allSheetsContent, $sheet, $sheetName, $startRow, $keyColumnNames);
+            }
+            else
+            {
+                $this->setExcelSheetContentForSpout($allSheetsContent, $sheet, $sheetName, $startRow);
+            }
         }
 
         return $allSheetsContent;
     }
 
-    protected function setSheetContentForSpout(array & $allSheetsContent, $sheet, string $sheetName, int $startRow = 1)
+    protected function setExcelSheetContentForSpout(array & $allSheetsContent, $sheet, string $sheetName, int $startRow = 1)
     {
         $sheetHeaders = [];
 
@@ -475,6 +532,150 @@ class Converter extends Base\Core
                     continue;
                 }
             }
+        }
+    }
+
+    protected function setExcelSheetContentForSpoutWithKeyColumns(
+        array & $allSheetsContent,
+        $sheet,
+        string $sheetName,
+        int $startRow = 1,
+        $keyColumnNames)
+    {
+        $sheetHeaders = [];
+
+        $allSheetsContent[$sheetName] = [];
+
+        $rowIterator = $sheet->getRowIterator();
+
+        foreach ($rowIterator as $row)
+        {
+            if ($rowIterator->key() < $startRow)
+            {
+                continue;
+            }
+
+            // this deals with the empty rows
+            if (count(array_filter($row)) === 0)
+            {
+                continue;
+            }
+
+            // for each row, we check if it is header
+            $probableSheetHeaders = $this->normalizeHeaders($row);
+
+            $commonColumn = array_intersect($probableSheetHeaders, array_keys($keyColumnNames));
+
+            if (empty($commonColumn) === false)
+            {
+                $sheetHeaders = $probableSheetHeaders;
+
+                continue;
+            }
+
+            if (empty($sheetHeaders) === true)
+            {
+                // sheet headers not encountered till now and thus not set
+                continue;
+            }
+
+            // if headers are set, count of row must be same
+            if (count($sheetHeaders) === count($row))
+            {
+                $allSheetsContent[$sheetName][] = array_combine($sheetHeaders, $row);
+            }
+            // breaking case when header count is not same as row.
+            else
+            {
+                $this->trace->debug(
+                    TraceCode::RECON_ALERT,
+                    [
+                        'message'       => 'The number of columns in the row does not match the column headers count',
+                        'file_details'  => ['column_headers' => $sheetHeaders, 'row' => $row],
+                        'info_code'     => 'COLUMN_HEADER_MISMATCH'
+                    ]);
+
+                continue;
+            }
+        }
+    }
+
+    protected function setExcelSheetContent($results, string $sheetName, & $sheetContent)
+    {
+        foreach ($results as $row)
+        {
+            // Currently, since it returns an array of rows, there's no
+            // way to get the sheet names. And we cannot let it return
+            // an array of sheets because chunk works only on a
+            // cell collection (rows) and not on a row collection (sheets)
+            $sheetContent['all_sheets_content'][$sheetName][] = $row->all();
+        }
+    }
+
+    protected function setExcelSheetContentWithKeyColumnNames($results, string $sheetName, array & $sheetContent)
+    {
+        foreach ($results as $index => $row)
+        {
+            // for each row, check if it is a recon row or header
+            if ($this->setColumnHeaderIfApplicable($row->all(), $sheetContent) === true)
+            {
+                // Header encountered
+                $sheetContent['column_headers_count'] = count($sheetContent['column_headers']);
+            }
+            else
+            {
+                // check if the column header is set
+                if (empty($sheetContent['column_headers']) === true)
+                {
+                    continue;
+                }
+
+                if ($sheetContent['column_headers_count'] !== count($row->all()))
+                {
+                    //
+                    // This happens sometimes, when column header was set in previous excel chunk,
+                    // and this current chunk starts reading next chunk of rows, but the last few
+                    // columns are blank in the row.
+                    // In this case, chunk reads columns up-to last non null value and thus
+                    // count($row) becomes less than that of the column header.
+                    // So, here we need to slice the header to the size of the row and then do array_combine()
+                    //
+                    $sheetContent['all_sheets_content'][$sheetName][] = array_combine_slice($sheetContent['column_headers'], $row->all());
+
+                    continue;
+                }
+
+                $sheetContent['all_sheets_content'][$sheetName][] = array_combine($sheetContent['column_headers'], $row->all());
+            }
+        }
+    }
+
+    /**
+     * For each row, we check if it is a header, if it is header
+     * then update the columnHeaders and name
+     *
+     * @param $row
+     * @param $sheetContent
+     * @return bool : returns true if we encounter a header and thus
+     * columnHeaders and sheetName are changed
+     */
+    protected function setColumnHeaderIfApplicable($row, & $sheetContent)
+    {
+        $tempHeader = $this->normalizeHeaders($row);
+
+        $keyColumnNames = $sheetContent['key_columns'];
+
+        $commonColumn = array_intersect($tempHeader, array_keys($keyColumnNames));
+
+        if (empty($commonColumn) === false)
+        {
+            $sheetContent['column_headers'] = $tempHeader;
+
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
@@ -543,8 +744,9 @@ class Converter extends Base\Core
     /**
      * Sets the config for Maatwebsite Excel reader
      * @param int $startRow
+     * @param string $heading when heading is set to 'false' , it should not treat the first row as heading
      */
-    protected function setConfigOptions(int $startRow)
+    protected function setConfigOptions(int $startRow, $heading = 'slugged')
     {
         //
         // For the current implementation to work the way it is expected to,
@@ -562,7 +764,7 @@ class Converter extends Base\Core
         // with the error of unable to find expected headers in the file.
         // This is temporary fix. TODO : Fix the same with refactored code (https://razorpay.atlassian.net/browse/PP-36)
         //
-        Config::set('excel.import.heading', 'slugged');
+        Config::set('excel.import.heading', $heading);
 
         Config::set('excel.import.startRow', $startRow);
 

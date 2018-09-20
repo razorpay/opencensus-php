@@ -1,14 +1,15 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingCorporation;
+namespace RZP\Reconciliator\NetbankingCorporation\SubReconciliator;
 
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Status;
-use RZP\Gateway\Netbanking\Corporation\ReconcilationFields;
+use RZP\Gateway\Netbanking\Corporation\ReconciliationFields;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     public function __construct(string $gateway = null)
     {
@@ -19,7 +20,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
-        return $row[ReconcilationFields::MERCHANT_TXN_ID];
+        return $row[ReconciliationFields::MERCHANT_TXN_ID];
     }
 
     protected function getGatewayPayment($paymentId)
@@ -29,7 +30,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReferenceNumber($row)
     {
-        return $row[ReconcilationFields::BANK_TXN_ID] ?? null;
+        return $row[ReconciliationFields::BANK_TXN_ID] ?? null;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
@@ -54,15 +55,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReconPaymentAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[ReconcilationFields::TXN_ORG_AMOUNT]);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TXN_ORG_AMOUNT]);
     }
 
     protected function getGatewayPaymentDate($row)
     {
-        return $row[ReconcilationFields::TXN_EXECUTED_DATE] ?? null;
+        return $row[ReconciliationFields::TXN_EXECUTED_DATE] ?? null;
     }
 
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
         return true;
     }
@@ -70,12 +71,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getInputForForceAuthorize($row)
     {
         return [
-            'gateway_payment_id' => $row[ReconcilationFields::BANK_TXN_ID],
+            'gateway_payment_id' => $row[ReconciliationFields::BANK_TXN_ID],
         ];
     }
 
     protected function getReconPaymentStatus(array $row)
     {
-        return (strtolower($row[ReconcilationFields::STATUS]) === 's') ? Status::AUTHORIZED : Status::FAILED;
+        return (strtolower($row[ReconciliationFields::STATUS]) === 's') ? Status::AUTHORIZED : Status::FAILED;
     }
 }

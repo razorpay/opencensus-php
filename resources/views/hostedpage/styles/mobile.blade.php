@@ -139,6 +139,7 @@
 
     #mobile-container .form-group .form-control {
         width: 100%;
+        height: 40px;
     }
 
     #mobile-container #success-section {

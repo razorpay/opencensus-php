@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Base;
+namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use App;
 
@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use Rzp\Trace\TraceCode;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
+use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
@@ -17,7 +18,7 @@ use RZP\Exception\ReconciliationException;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-class PaymentReconciliate extends Foundation\SubReconciliate
+class PaymentReconciliate extends Base\Foundation\SubReconciliate
 {
     const GATEWAY_FEES_ABSENT_GATEWAYS = [
         RequestProcessor\Base::KOTAK,
@@ -27,6 +28,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_RBL,
         RequestProcessor\Base::NETBANKING_INDUSIND,
         RequestProcessor\Base::NETBANKING_CORPORATION,
+        RequestProcessor\Base::NETBANKING_IDFC,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
@@ -37,6 +39,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_CSB,
         RequestProcessor\Base::NETBANKING_HDFC,
         RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::UPI_HDFC,
+        RequestProcessor\Base::UPI_ICICI,
+        RequestProcessor\Base::AIRTEL,
     ];
 
     /**
@@ -102,7 +107,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if (empty($rowDetails) === true)
         {
-            return $this->handleUnprocessedRow($row);
+            $this->handleUnprocessedRow($row);
+
+            return;
         }
 
         $paymentId = $rowDetails[BaseReconciliate::PAYMENT_ID];
@@ -571,10 +578,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->setPaymentAndTransaction($row, $paymentId);
 
         //
-        // Setting allowForceAuthorization after setting payment instance
-        // because this attribute can be dependent on payment instance's attributes. For eg. payment's created_at
+        // Have to set allowForceAuthorization AFTER setting payment instance because this
+        // attribute can be dependent on payment instance's attributes. For eg. payment's created_at
         //
-        $this->setAllowForceAuthorization();
+        $this->setAllowForceAuthorization($this->payment);
 
         $cardDetails = $this->getCardDetails($row);
 
@@ -1618,22 +1625,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * @param array $row
-     * @param string $columnName
-     */
-    protected function reportMissingColumn(array $row, string $columnName)
-    {
-        $this->trace->info(
-            TraceCode::RECON_INFO_ALERT,
-            [
-                'message'           => 'Unable to get the expected column.',
-                'column_name'       => $columnName,
-                'row'               => $row,
-                'gateway'           => $this->gateway
-            ]);
-    }
-
-    /**
      * For wallets and netbanking, there will be no card, hence we
      * send an empty array for these payment methods.
      *
@@ -1768,13 +1759,42 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * This function should be implemented in the child class
-     * It tells whether we should attempt force authorize on
-     * the gateway. Default is false.
+     * This function should be implemented in the child class if we ALWAYS
+     * want to force authorize or NEVER want to force authorize or if there
+     * are any custom requirements for force authorization like in nb_icici
+     *
+     * This base function will be used if we want to force authorize
+     * only specific payments. This will be used only for the gateways
+     * where force_authorize has been implemented already.
+     *
+     * @param Payment\Entity $payment
      */
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
-        $this->allowForceAuthorization = false;
+        if (in_array($payment->getGateway(), Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS, true) === true)
+        {
+            $this->allowForceAuthorization = $this->shouldForceAuthorize($payment);
+        }
+        else
+        {
+            $this->allowForceAuthorization = false;
+        }
+    }
+
+    /**
+     * Checks if given payment id is in input array of force authorize payments
+     *
+     * @param PaymentEntity $payment
+     *
+     * @return bool
+     */
+    protected function shouldForceAuthorize(Payment\Entity $payment) : bool
+    {
+        $forceAuthorizePayments = $this->extraDetails
+            [RequestProcessor\Base::INPUT_DETAILS]
+            [RequestProcessor\Base::FORCE_AUTHORIZE] ?? [];
+
+        return in_array($payment->getPublicId(), $forceAuthorizePayments, true);
     }
 
     /**

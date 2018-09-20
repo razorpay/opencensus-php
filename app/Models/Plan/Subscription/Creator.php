@@ -44,6 +44,11 @@ class Creator extends Base\Core
                 //
                 $subscription->associateEntities($plan, $customer);
 
+                if ($customer !== null)
+                {
+                    $subscription->setGlobalCustomer(false);
+                }
+
                 //
                 // This needs to be done after associating the entities
                 // since create validations need to access the

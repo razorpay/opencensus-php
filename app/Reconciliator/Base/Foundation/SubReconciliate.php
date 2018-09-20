@@ -6,12 +6,10 @@ use App;
 use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Models\Batch;
-use RZP\Reconciliator\Metrics\Metric;
-use RZP\Reconciliator\Metrics\Dimensions;
-use RZP\Tests\Functional\Assertion\Validator\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\Metrics\Metric;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -58,6 +56,11 @@ class SubReconciliate extends Base\Core
 
     protected $gateway;
 
+    /**
+     * Indicates whether the Recon file uploaded via mailgun or manual
+     */
+    protected $source;
+
     public function __construct(string $gateway = null)
     {
         parent::__construct();
@@ -82,7 +85,7 @@ class SubReconciliate extends Base\Core
 
     /**
      * Contains details for files, email or manual details
-     * Manual details is being used to check for force_update
+     * Manual details is being used to check for force_update and force_authorize payments
      *
      * @var array
      */
@@ -139,10 +142,16 @@ class SubReconciliate extends Base\Core
         {
             foreach ($fileContents as $row)
             {
-                $this->repo->transactionOnLiveAndTest(function() use ($row)
+                try
                 {
-                    $this->runReconciliate($row);
-                });
+                    $this->repo->transactionOnLiveAndTest(function () use ($row) {
+                        $this->runReconciliate($row);
+                    });
+                }
+                finally
+                {
+                    $batch->incrementProcessedCount();
+                }
             }
         }
         finally
@@ -200,7 +209,7 @@ class SubReconciliate extends Base\Core
         $this->trace->histogram(
             Metric::RECON_PAYMENT_CREATE_TO_RECONCILED_TIME_MINUTES,
             $payment->transaction->getReconTimeFromTransactionCreationInMinutes(),
-            Metric::getPaymentMetricDimensions($payment)
+            Metric::getPaymentMetricDimensions($payment, $this->source)
         );
     }
 
@@ -209,7 +218,7 @@ class SubReconciliate extends Base\Core
         $this->trace->histogram(
             Metric::RECON_REFUND_CREATE_TO_RECONCILED_TIME_MINUTES,
             $refund->transaction->getReconTimeFromTransactionCreationInMinutes(),
-            Metric::getRefundMetricDimensions($refund)
+            Metric::getRefundMetricDimensions($refund, $this->source)
         );
     }
 
@@ -370,14 +379,17 @@ class SubReconciliate extends Base\Core
         $this->failUnprocessedRow = $failUnprocessedRow;
     }
 
+    public function setSource(string $source)
+    {
+        $this->source = $source;
+    }
+
     /**
      * For certain rows, where we are not able to successfully identify the payment
      * or refund entity to reconcile, we mark the row processing as success or failure
      * depending on the specific gateway's reconciliator.
      *
      * @param  array $row
-     *
-     * @throws LogicException
      */
     protected function handleUnprocessedRow(array $row)
     {
@@ -399,9 +411,27 @@ class SubReconciliate extends Base\Core
 
         if ($this->failUnprocessedRow === true)
         {
-            return $this->setSummaryCount(self::FAILURES_SUMMARY, $identifier);
+            $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
         }
+        else
+        {
+            $this->setSummaryCount(self::SUCCESSES_SUMMARY, head($row));
+        }
+    }
 
-        return $this->setSummaryCount(self::SUCCESSES_SUMMARY, $identifier);
+    /**
+     * @param array $row
+     * @param string $columnName
+     */
+    protected function reportMissingColumn(array $row, string $columnName)
+    {
+        $this->trace->info(
+            TraceCode::RECON_INFO_ALERT,
+            [
+                'message'           => 'Unable to get the expected column.',
+                'column_name'       => $columnName,
+                'row'               => $row,
+                'gateway'           => $this->gateway
+            ]);
     }
 }

@@ -1506,6 +1506,8 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceWithPayments()
     {
+        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
+
         $this->createOrder();
 
         $invoice = $this->createIssuedInvoice();
@@ -1521,6 +1523,8 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceWithPaymentsCard()
     {
+        $this->fixtures->merchant->addFeatures(['expose_arn_payment']);
+
         $this->createOrder();
 
         $invoice = $this->createIssuedInvoice();
@@ -1779,6 +1783,19 @@ class InvoiceTest extends TestCase
         $this->assertEquals(1, count($response['items']));
         $this->assertEquals($payment['id'], $response['items'][0]['payment_id']);
         $this->assertEquals($invoice['id'], $payment['invoice_id']);
+    }
+
+    public function testGetInvoicesLineItemsWithTaxableAmount()
+    {
+        $order = $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice', ['order_id' => '100000000order']);
+
+        $this->fixtures->create('item');
+
+        $this->fixtures->create('line_item', ['entity_id' => $invoice->getId()]);
+
+        $this->startTest();
     }
 
     public function testGetInvoicesAfterCreatingMultipleInvoicesAndPaying()

@@ -125,21 +125,31 @@ class Entity extends Base\Entity
         $this->setAttribute(self::WALLET, $wallet);
     }
 
+    public function setGatewayPaymentId($gatewayPaymentId)
+    {
+        $this->setAttribute(self::GATEWAY_PAYMENT_ID, $gatewayPaymentId);
+    }
+
+    public function setGatewayRefundId(string $gatewayRefundId)
+    {
+        $this->setAttribute(self::GATEWAY_REFUND_ID, $gatewayRefundId);
+    }
+
     public function setDate(string $date)
     {
         $this->setAttribute(self::DATE, $date);
     }
 
-	  public function getErrorMessage()
-	  {
-		  return $this->getAttribute(self::ERROR_MESSAGE);
-	  }
+    public function getErrorMessage()
+    {
+        return $this->getAttribute(self::ERROR_MESSAGE);
+    }
 
-	  protected function setErrorMessageAttribute($message)
-	  {
-		  //to reduce the length of error message in case it extends database column field size.
-		  $this->attributes[self::ERROR_MESSAGE] = substr($message, 0, 255);
-	  }
+    protected function setErrorMessageAttribute($message)
+    {
+        //to reduce the length of error message in case it extends database column field size.
+        $this->attributes[self::ERROR_MESSAGE] = substr($message, 0, 255);
+    }
 
     public function setEmail(string $email)
     {

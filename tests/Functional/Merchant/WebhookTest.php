@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
+use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
@@ -61,8 +62,12 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
+    /*
+     * Partner type fully managed, can create webhook
+     */
     public function testCreateAppWebhook()
     {
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
         $this->startTest();
     }
 
@@ -102,14 +107,86 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
+    /*
+     * Invalid app id, cannot create webhook
+     */
     public function testCreateAppWebhookInvalidAppId()
     {
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+        $this->startTest();
+    }
+
+    /*
+     * Partner type reseller, cannot create webhook
+     */
+    public function testCreateAppWebhookInvalidPartnerType()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'reseller']);
+        $this->startTest();
+    }
+
+    /*
+     * Partner type pure platform, can create webhook
+     */
+    public function testCreateAppWebhookPurePlatform()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'pure_platform']);
+        $this->startTest();
+    }
+
+    /*
+     * Not partner yet but tagged OAuth, can create webhook
+     */
+    public function testCreateAppWebhookOAuthTag()
+    {
+        $this->addOAuthTag();
+        $this->startTest();
+    }
+
+    /*
+     * Partner type bank, also tagged OAuth, cannot create webhook
+     * as this should ideally not happen and we should prevent by default
+     */
+    public function testCreateAppWebhookBankWithOAuthTag()
+    {
+        $this->addOAuthTag();
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'bank']);
+        $this->startTest();
+    }
+
+    /*
+     * Partner type fully managed, can create webhook irrespective
+     * of the oauth tag
+     */
+    public function testCreateAppWebhookFullyManagedWithOAuthTag()
+    {
+        $this->addOAuthTag();
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
         $this->startTest();
     }
 
     public function testEditWebhook()
     {
         $webhook = $this->createWebhook();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
+
+        $this->startTest();
+    }
+
+    public function testEditWebhookByNonOwnerUser()
+    {
+        $webhook = $this->createWebhook();
+
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user->id,
+            'merchant_id' => '10000000000000',
+            'role'        => 'support',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->toArrayPublic(), 'support');
 
         $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
 
@@ -976,5 +1053,12 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
 
         $this->verifyRequestsData($client, $eventDataKeys);
+    }
+
+    protected function addOAuthTag(string $merchantId = '10000000000000')
+    {
+        $merchant = Merchant\Entity::find($merchantId);
+        $merchant->reTag(["oauth"]);
+        $merchant->saveOrFail();
     }
 }

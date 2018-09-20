@@ -3,7 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
-
+use Slack;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -21,6 +21,7 @@ class Capture extends Job
 
     protected $data;
 
+    protected $slack;
 
     public function __construct(array $data)
     {
@@ -32,6 +33,8 @@ class Capture extends Job
     public function handle()
     {
         parent::handle();
+
+        $this->slack = Slack::getFacadeRoot();
 
         $this->trace->info(
             TraceCode::PAYMENT_QUEUE_CAPTURE_REQUEST,
@@ -96,14 +99,7 @@ class Capture extends Job
     {
         if ($this->attempts() > self::MAX_JOB_ATTEMPTS)
         {
-            $this->trace->error(
-                TraceCode::PAYMENT_QUEUE_CAPTURE_DELETE,
-                [
-                    'data'         => $this->data,
-                    'job_attempts' => $this->attempts(),
-                    'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
-                ]
-            );
+            $this->raiseAlerts();
 
             $this->delete();
         }
@@ -111,7 +107,40 @@ class Capture extends Job
         {
             // When queue_driver is sync, there's no release and
             // hence it's as good as deleting the job.
-            $this->release(self::JOB_RELEASE_WAIT);
+            $this->release($this->getRetryTime());
         }
+    }
+
+    protected function getRetryTime()
+    {
+        return self::JOB_RELEASE_WAIT;
+    }
+
+    protected function raiseAlerts()
+    {
+        $this->trace->error(TraceCode::PAYMENT_QUEUE_CAPTURE_DELETE, [
+            'data'         => $this->data,
+            'job_attempts' => $this->attempts(),
+            'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
+        ]);
+
+        $settings = [
+            'channel' => config('slack.channels.tech_logs'),
+            'color'   => 'danger'
+        ];
+
+        $this->slack->queue(
+            'Payment couldn\'t be captured via queue',
+            [
+                'payment_id' => $this->data['payment']['id'],
+                'gateway'    => $this->data['payment']['gateway'],
+                'attempts'   => $this->attempts(),
+            ],
+            $settings);
+    }
+
+    public function getData()
+    {
+        return $this->data;
     }
 }

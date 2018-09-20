@@ -411,13 +411,19 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    public function getTokenAndExpiry(string $userId): array
+    public function getTokenWithExpiry(string $userId, int $expiry): string
     {
-        $expiryTime = Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME;
+        $userCore = (new User\Core);
 
-        $token = (new User\Core)->generateToken($userId, $expiryTime);
+        $expiryTime = Carbon::now()->timestamp + $expiry;
 
-        return [$token, $expiryTime];
+        $token = $userCore->generateToken();
+
+        $user = $this->repo->user->findOrFailPublic($userId);
+
+        $userCore->savePasswordResetTokenAndExpiry($user, $token, $expiryTime);
+
+        return $token;
     }
 
     /**
@@ -433,14 +439,24 @@ class Service extends Base\Service
 
         $email = mb_strtolower($input['email']);
 
+        /** @var Entity $user */
         $user = $this->repo->user->findByEmail($email);
 
-        $token = (new Core)->generateToken($user->getId(), $input[Entity::EXPIRY_TIME]);
+        $expiry = $user->getPasswordResetExpiry();
 
-        if (hash_equals($token, $input['token']) === false)
+        $now = Carbon::now()->getTimestamp();
+
+        if ($expiry < $now)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID);
+        }
+
+        $token = $user->getPasswordResetToken();
+
+        if ((empty($token) === true) or (hash_equals($token, $input['token']) === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
+                ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID);
         }
         else
         {

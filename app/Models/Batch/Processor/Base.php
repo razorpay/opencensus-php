@@ -23,7 +23,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends BaseModel\Core
 {
-    use FileHandlerTrait;
+    use FileHandlerTrait { parseExcelSheets as parentParseExcelSheets; }
 
     /**
      * Lock wait timeout for batch entity
@@ -85,7 +85,7 @@ class Base extends BaseModel\Core
      * They are re-used in the flow.
      * E.g.
      * - sending mails with attachment,
-     * - unlinking post processing etc..
+     * - un-linking post processing etc..
      */
     protected $inputFileLocalPath;
     protected $outputFileLocalPath;
@@ -95,6 +95,12 @@ class Base extends BaseModel\Core
      */
     protected $inputFileType;
     protected $outputFileType;
+
+    /**
+     * Override from child processor to use new spreadsheet library.
+     * @var boolean
+     */
+    protected $useSpreadSheetLibrary = false;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -325,6 +331,8 @@ class Base extends BaseModel\Core
             $this->performPreProcessingActions();
 
             $this->parseAndProcessEntries();
+
+            $this->setStatusAfterSuccessfulProcessing();
         }
         catch (\Throwable $ex)
         {
@@ -344,37 +352,30 @@ class Base extends BaseModel\Core
 
         $this->batch->incrementAttempts();
 
-        $this->repo->saveOrFail($this->batch);
-
-        //
-        // Note:
-        // We are not saving batch entity's status after resetting. It is a temporary reset and after current
-        // processing the actual values would be saved. Additionally, notice that in below method we set status to null,
-        // which is not allowed at database layer and so even if we attempt saving it'll fail or else need to figure
-        // out what the temporary status should be.
-        //
         $this->resetBatchAttributes();
 
         $this->downloadAndSetInputFile();
     }
 
-    /**
-     * Resets batch attributes conditionally for processing to happen
-     */
     protected function resetBatchAttributes()
     {
         //
-        // If in the previous run the batch has been failed, we reset the status and failure reason here.
-        // Status and reason will be set again in current run based on processing result.
+        // We need to do this since sometimes we might re-run (retry) a batch.
+        // The success_count and failure_count should be 0 since these will be
+        // filled again on retry run of the batch. The idempotency needs to be
+        // handled by the individual batch types for retries.
         //
-        if ($this->batch->isFailed() === true)
-        {
-            $this->batch->setStatusNull();
-            $this->batch->unsetFailureReason();
-            $this->batch->unsetProcessedCount();
-            $this->batch->setSuccessCount(0);
-            $this->batch->setFailureCount(0);
-        }
+
+        $this->batch->setSuccessCount(0);
+        $this->batch->setFailureCount(0);
+        $this->batch->unsetFailureReason();
+        $this->batch->unsetProcessedCount();
+
+        //
+        // We are saving batch here, because in case batch is retried,
+        // we need to set processed_count to 0 in db also, so that incrementing will start from 0.
+        //
+        $this->batch->saveOrFail();
     }
 
     protected function parseAndProcessEntries()
@@ -400,11 +401,15 @@ class Base extends BaseModel\Core
 
         foreach ($entries as $index => & $entry)
         {
+            $entryTracePayload = $entry;
+
+            $this->removeCriticalDataFromTracePayload($entryTracePayload);
+
             $tracePayload = $this->batch->toArrayTrace(
                 [],
                 [
                     'row_index' => $index,
-                    'row'       => $entry,
+                    'row'       => $entryTracePayload,
                 ]);
 
             try
@@ -440,8 +445,6 @@ class Base extends BaseModel\Core
             finally
             {
                 $this->batch->incrementProcessedCount();
-
-                $this->repo->saveOrFail($this->batch);
             }
         }
     }
@@ -455,6 +458,16 @@ class Base extends BaseModel\Core
     protected function processEntry(array & $entry)
     {
         throw new \BadMethodCallException();
+    }
+
+    /**
+     * This method can be implemented by the child classes if some data
+     * needs to be removed from tracing.
+     *
+     */
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        return;
     }
 
     /**
@@ -541,48 +554,38 @@ class Base extends BaseModel\Core
 
         $this->batch->setProcessedAt($now);
 
+        $this->batch->setProcessing(false);
+    }
+
+    protected function setStatusAfterSuccessfulProcessing()
+    {
         //
-        // We set the batch status to processed unless it failed because of some
-        // unhandled error in the current run.
+        // In some cases, we want to mark the batch as partially_processed if there is even 1 failure.
+        // We also want to mark it as partially_processed if BOTH success count and failure count is 0.
+        // This case occurs when the file has been processed but before processing the first row, something
+        // fails or the first row fails and we are not able to update the failure count also.
         //
-        $status = ($this->batch->isFailed() === true) ?
-                    Batch\Status::FAILED :
-                    Batch\Status::PROCESSED;
 
         //
-        // If we were able to successfully parse the file the total_count will be
-        // greater than 0. We only want to mark the file as processed / partially_processed
-        // in such a case
+        // Earlier, there was a total_count check here. But, now, this function is being called whenever
+        // an exception is not getting thrown during the processing. If there is no error thrown, we can
+        // either mark the batch as processed or partially_processed and we don't have to worry about
+        // setting the batch as failed at all.
         //
-        if ($this->batch->getTotalCount() > 0)
+
+        $status = Batch\Status::PROCESSED;
+
+        if ($this->shouldMarkProcessedOnFailures() === false)
         {
-            //
-            // But if we were able to process the file and there were failures, we
-            // mark it as partially_processed or processed depending on the type of
-            // the file.
-            //
             if (($this->batch->getFailureCount() > 0) or
                 (($this->batch->getSuccessCount() === 0) and
                  ($this->batch->getFailureCount() === 0)))
             {
-                $status = ($this->shouldMarkProcessedOnFailures() === true) ?
-                            Batch\Status::PROCESSED :
-                            Batch\Status::PARTIALLY_PROCESSED;
+                $status = Batch\Status::PARTIALLY_PROCESSED;
             }
         }
 
-        //
-        // If in the current run the batch has been processed, we reset the failure
-        // reason to maintain consistency
-        //
-        if ($status === Batch\Status::PROCESSED)
-        {
-            $this->batch->unsetFailureReason();
-        }
-
         $this->batch->setStatus($status);
-
-        $this->batch->setProcessing(false);
     }
 
     protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
@@ -638,7 +641,7 @@ class Base extends BaseModel\Core
                     {
                         foreach ($value as $k => $v)
                         {
-                            $dict["Notes[{$k}]"] = $v;
+                            $dict["notes[{$k}]"] = $v;
                         }
                     }
                     // Else just put the key value in dictionary
@@ -806,6 +809,26 @@ class Base extends BaseModel\Core
                 throw new LogicException("Extension not handled: {$ext}");
         }
     }
+
+    /**
+     * Parses excel sheet at given path. By default uses FileHandlerTrait's parseExcelSheets() method(existing flow).
+     * But for specific batch where the flag is overridden and made true, uses new phpoffice/phpspreadsheet library.
+     * We intend to move fully to this new library uses but is being done incrementally.
+     * @param  string $filePath
+     * @return array
+     */
+    protected function parseExcelSheets($filePath): array
+    {
+        if ($this->useSpreadSheetLibrary === true)
+        {
+            $this->trace->info(TraceCode::BATCH_FILE_PROCESS_USING_SPREADSHEET, $this->batch->toArrayTraceAll());
+
+            return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath);
+        }
+
+        return $this->parentParseExcelSheets($filePath);
+    }
+
 
     protected function parseFileAndCleanEntries(string $filePath): array
     {
@@ -1194,7 +1217,11 @@ class Base extends BaseModel\Core
         //
         // In case of any unhandled exceptions we set the status to failed,
         // only if it wasn't partially_processed previously and we weren't able
-        // to parse the file. In all other cases the old status will continue.
+        // to parse the file. In all other cases the status will be set to `failed`.
+        //
+        // We don't set it to failed in case of partially processed because some
+        // rows have already been processed and hence does not make sense to
+        // mark the next attempt as failed even though this failed.
         //
         if ($this->batch->isPartiallyProcessed() === false)
         {

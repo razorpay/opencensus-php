@@ -4,29 +4,21 @@ namespace RZP\Models\Dispute\File;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Services\UfhService;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Core extends Base\Core
 {
-    public function create(DisputeEntity $dispute, array $input)
-    {
-        $this->trace->info(
-            TraceCode::DISPUTE_FILE_CREATE,
-            [
-                'input'      => $input,
-                'dispute_id' => $dispute->getId(),
-            ]);
+    const FILE_ID             = 'file_id';
+    const NAME                = 'name';
+    const CATEGORY            = 'category';
 
-        $file = (new Entity)->build($input);
+    // Keys for array name of uploaded documents
+    const FILES               = 'upload_files';
 
-        $file->dispute()->associate($dispute);
-
-        $this->repo->saveOrFail($file);
-
-        return $file;
-    }
+    const FILE                = 'file';
+    const ALL_FILES           = 'files';
 
     protected function uploadAndCreateFile(DisputeEntity $dispute, array $fileInput)
     {
@@ -34,26 +26,16 @@ class Core extends Base\Core
             TraceCode::DISPUTE_FILES_UPLOAD,
             [
                 'id'   => $dispute->getId(),
-                'file' => array_except($fileInput, Entity::FILE),
+                'file' => array_except($fileInput, self::FILE),
             ]);
 
-        $file = $fileInput[Entity::FILE];
+        $file = $fileInput[self::FILE];
 
-        $uploadedFileDetails = $this->app['ufh.service']->uploadFileAndGetUrl(
+        $this->app['ufh.service']->uploadFileAndGetUrl(
             $file,
             $this->getStorageFileName($dispute, $file),
-            $fileInput[Entity::CATEGORY],
+            $fileInput[self::CATEGORY],
             $dispute);
-
-        $input = [
-            Entity::FILE_ID  => $uploadedFileDetails[UfhService::FILE_ID],
-            Entity::NAME     => $fileInput[Entity::NAME],
-            Entity::CATEGORY => $fileInput[Entity::CATEGORY],
-        ];
-
-        $file = $this->create($dispute, $input);
-
-        return $file;
     }
 
     public function checkFilesInput(array $files): array
@@ -85,6 +67,21 @@ class Core extends Base\Core
         }
     }
 
+    public function getFilesForEntity(PublicEntity $entity): array
+    {
+        $queryParams = [
+            'entity_type'   => $entity->getEntityName(),
+            'entity_id'     => $entity->getId(),
+        ];
+
+        return $this->getFiles($queryParams);
+    }
+
+    public function getFiles(array $queryParams): array
+    {
+        return $this->app['ufh.service']->fetchFiles($queryParams);
+    }
+
     protected function getStorageFileName(DisputeEntity $dispute, UploadedFile $file): string
     {
         $nameWithoutExtension = str_replace('.' . $file->getClientOriginalExtension(),
@@ -93,5 +90,12 @@ class Core extends Base\Core
 
         return $dispute->getEntityName() . '/' . $dispute->merchant->getPublicId() . '/' .
                $dispute->getPublicId() . '/' . $nameWithoutExtension;
+    }
+
+    public function deleteFile(DisputeEntity $dispute, string $fileId)
+    {
+        (new Validator)->validateDisputeForFileDelete($dispute);
+
+        $this->app['ufh.service']->deletefile($fileId);
     }
 }

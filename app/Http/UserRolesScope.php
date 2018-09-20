@@ -35,6 +35,13 @@ class UserRolesScope
             'payment_fetch_multiple' => Role::allExceptPaymentLinkRoles(),
             'payment_refund'         => Role::WRITER_ROLES,
 
+            // refund routes
+            'refund_create'              => Role::WRITER_ROLES,
+            'refund_fetch_by_id'         => Role::allExceptPaymentLinkRoles(),
+            'refund_fetch_multiple'      => Role::allExceptPaymentLinkRoles(),
+            'payment_fetch_refunds'      => Role::allExceptPaymentLinkRoles(),
+            'payment_fetch_refund_by_id' => Role::allExceptPaymentLinkRoles(),
+
             // order routes
             'order_fetch'       => Role::allExceptPaymentLinkRoles(),
             'order_fetch_by_id' => Role::allExceptPaymentLinkRoles(),
@@ -45,6 +52,11 @@ class UserRolesScope
             'invitation_delete' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
             'invitation_edit'   => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
             'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+            'invitation_fetch'  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+
+            // profile routes
+            'merchant_gst_fetch' => [Role::OWNER, Role::FINANCE],
+            'merchant_gst_edit'  => [Role::OWNER, Role::FINANCE],
 
             // merchant routes
             'balance_fetch'                       => array_merge(
@@ -62,6 +74,7 @@ class UserRolesScope
             ],
             'merchant_edit_email_la'              => [Role::OWNER, Role::ADMIN],
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],
+            'merchant_fetch_keys'                 => [Role::OWNER, Role::ADMIN],
             'merchant_edit_config_logo'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_fetch_config'               => Role::allExceptPaymentLinkRoles(),
             'merchant_fetch_referrals'            => Role::allExceptPaymentLinkRoles(),
@@ -69,6 +82,10 @@ class UserRolesScope
             'merchant_replace_key'                => [Role::OWNER, Role::ADMIN],
             'merchant_add_bank_account'           => [Role::OWNER, Role::ADMIN],
             'merchant_bank_account_change_status' => [Role::OWNER, Role::ADMIN],
+            'create_submerchant_user'             => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+
+            // Merchant user routes
+            'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
 
             // webhook routes
             'webhook_create'         => [Role::OWNER, Role::MANAGER, Role::ADMIN],
@@ -79,15 +96,18 @@ class UserRolesScope
             'setl_fetch_multiple' => array_merge(Role::READER_ROLES, Role::LINKED_ACCOUNT_ROLES),
             'setl_fetch_by_id'    => array_merge(Role::READER_ROLES, Role::LINKED_ACCOUNT_ROLES),
 
-            // invoice routes
-            'invoice_create'         => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
-            'invoice_delete'         => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
-            'invoice_edit'           => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
-            'invoice_fetch'          => Role::ALL_ROLES,
-            'invoice_fetch_multiple' => Role::ALL_ROLES,
-            'invoice_issue_by_batch' => Role::WRITER_ROLES,
+            // Invoice routes
+            'invoice_create'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
+            'invoice_delete'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
+            'invoice_update'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
+            'invoice_issue'                     => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
+            'invoice_send_notification_private' => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
+            'invoice_cancel'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
+            'invoice_fetch'                     => Role::ALL_ROLES,
+            'invoice_fetch_multiple'            => Role::ALL_ROLES,
+            'invoice_issue_by_batch'            => Role::WRITER_ROLES,
 
-            // payment link routes
+            // Payment link routes
             'payment_link_get'        => Role::WRITER_ROLES,
             'payment_link_list'       => Role::WRITER_ROLES,
             'payment_link_create'     => Role::WRITER_ROLES,
@@ -107,7 +127,8 @@ class UserRolesScope
             'item_update'         => Role::WRITER_ROLES,
 
             // marketplace
-            'transfer_fetch_multiple' => Role::READER_ROLES,
+            'transfer_fetch_multiple'      => Role::READER_ROLES,
+            'merchant_dashboard_access_la' => [Role::OWNER, Role::ADMIN, Role::MANAGER],
 
             // TODO change the role to LA dashboard admin and owner after launch.
             'transfer_fetch_multiple_la'  => Role::LINKED_ACCOUNT_ROLES,

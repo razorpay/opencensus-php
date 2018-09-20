@@ -137,10 +137,11 @@ class Reconciliate extends Base\Core
      * The logic here is exactly the same as in startReconciliate, except that we
      * pass the batch entity to the individual subreconciliators
      *
-     * @param array         $allFilesContents
-     * @param Batch\Entity  $batch
+     * @param array $allFilesContents
+     * @param Batch\Entity $batch
+     * @param string $source
      */
-    public function startReconciliationV2(array $allFilesContents, Batch\Entity $batch)
+    public function startReconciliationV2(array $allFilesContents, Batch\Entity $batch, string $source)
     {
         foreach ($allFilesContents as $fileContents)
         {
@@ -159,6 +160,8 @@ class Reconciliate extends Base\Core
 
             $this->setSubReconciliator($reconciliationType);
 
+            $this->subReconciliator->setSource($source);
+
             $this->subReconciliator->startReconciliationV2($fileContents, $batch);
         }
 
@@ -170,6 +173,15 @@ class Reconciliate extends Base\Core
      * look at only certain sheets present in the excel file and not all of them.
      */
     public function getSheetNames(array $fileDetails = [])
+    {
+        return [];
+    }
+
+    /**
+     * This should be implemented in the child class if the gateway needs to
+     * look at certain columns to identify whether the row is payment or refund row/header.
+     */
+    public function getKeyColumnNames(array $fileDetails = [])
     {
         return [];
     }
@@ -338,7 +350,8 @@ class Reconciliate extends Base\Core
         $parentNamespace = $this->getParentNamespace();
 
         // SubReconciliator class name should be something like - Reconciliator/Axis/PaymentReconciliate
-        $subReconciliatorClassName = $parentNamespace . '\\'
+
+        $subReconciliatorClassName = $parentNamespace . '\\' . 'SubReconciliator' . '\\'
                                     . ucfirst($reconciliationType)
                                     . 'Reconciliate';
 

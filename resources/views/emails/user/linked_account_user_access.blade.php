@@ -10,12 +10,11 @@
 
     {{$routeMerchantName}} has added you as their associate account on {{$org['business_name']}}.
     <br/>
-    You can set your password <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='
-    .$expiryTime .'&email='.$email }}" target="_blank"> here</a> and proceed to view your transactions.<br/><br/>
+    You can set your password <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='.$email }}" target="_blank"> here</a> and proceed to view your transactions.<br/><br/>
 
     You can also open the following link in your browser: <br/>
-    <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&email='.$email }}" target="_blank">
-        {{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&email='.$email }}
+    <a href="{{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='.$email }}" target="_blank">
+        {{ 'https://' . $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='.$email }}
     </a>
 
 </div>
@@ -24,7 +23,7 @@
     <p>
         --<br/>
         {{$org['display_name']}} <br/>
-        <a href="mailto:support@razorpay.com">support@razorpay.com</a>
+        For queries, contact <a href="https://dashboard.razorpay.com/#/app/dashboard#request">here</a>
     </p>
     <div>
         <img style="width:200px; height:auto;" src="{{$org['login_logo_url']}}">

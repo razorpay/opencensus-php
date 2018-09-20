@@ -69,7 +69,7 @@ class OAuthMailTest extends OAuthTestCase
         Mail::fake();
 
         $appData = [
-            Application\Entity::ID   => Feature\Type::JUSPAY_APP_ID,
+            Application\Entity::ID   => Feature\Type::TEST_APP_ID,
             Application\Entity::NAME => 'Test App'
         ];
 
@@ -108,5 +108,50 @@ class OAuthMailTest extends OAuthTestCase
 
             return true;
         });
+    }
+
+    public function testOAuthBlockResendingCompetitorAppAuthorizedMail()
+    {
+        Mail::fake();
+
+        $appData = [
+            Application\Entity::ID   => Feature\Type::TEST_APP_ID,
+            Application\Entity::NAME => 'Test App'
+        ];
+
+        $application = $this->createOAuthApplication($appData);
+
+        $clients = $application->clients()->get()->all();
+
+        $user = $this->getDbLastEntity('user', 'test');
+
+        $merchant = $this->getDbLastEntity('merchant', 'test');
+
+        $this->fixtures->create('merchant_access_map', [
+            'merchant_id' => $merchant->getId(),
+            'entity_type' => 'application',
+            'entity_id'   => $application->getId(),
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['client_id'] = $clients[0]->id;
+
+        $testData['request']['content']['user_id'] = $user->id;
+
+        $testData['request']['content']['merchant_id'] = $merchant->id;
+
+        $this->startTest();
+
+        Mail::assertQueued(OAuthAppAuthorizedMail::class, function ($mail) use ($user, $application)
+        {
+            $this->assertEquals($user->getPublicId(), $mail->viewData['user']['id']);
+
+            $this->assertEquals($application->id, $mail->viewData['application']['id']);
+
+            return true;
+        });
+
+        Mail::assertNotQueued(OAuthCompetitorAuthorizedMail::class);
     }
 }

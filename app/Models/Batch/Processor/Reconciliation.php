@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Reconciliator\Metrics\Metric;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 use Symfony\Component\HttpFoundation\File\MimeType\FileBinaryMimeTypeGuesser;
@@ -136,28 +137,26 @@ class Reconciliation extends Base
     }
 
     /**
-     * We call the gateway's reconciliator class with the file entries obtained
-     * by parsing the file
+     * We call the gateway's reconciliator class with
+     * the file entries obtained by parsing the file
      *
      * @param   array       $entries
      */
     protected function processEntries(array & $entries)
     {
-        $this->resetReconBatchAttributes();
+        $start = time();
 
-        $this->gatewayReconciliator->startReconciliationV2($entries, $this->batch);
-    }
+        $source = $this->settingsAccessor->get(RequestProcessor\Base::SOURCE);
 
-    /**
-     * We are setting existing success count and failure count to 0.
-     * This is important in case when a failed batch retried, batch will have non-zero success count
-     * and failure count. We are resetting because batch file gets processed again and
-     * success count and failure count will be set again.
-     */
-    protected function resetReconBatchAttributes()
-    {
-        $this->batch->setSuccessCount(0);
-        $this->batch->setFailureCount(0);
+        $this->gatewayReconciliator->startReconciliationV2($entries, $this->batch, $source);
+
+        $processingTime = (time() - $start);
+
+        $gateway = $this->batch->getGateway();
+
+        $dimensions = Metric::getFileProcessingMetricDimension($gateway, $source);
+
+        $this->trace->histogram(Metric::RECON_MIS_FILE_PROCESSING_TIME_SECONDS, $processingTime, $dimensions);
     }
 
     protected function postProcessEntries(array & $entries)
@@ -187,7 +186,7 @@ class Reconciliation extends Base
     /**
      * Parses the file and converts the contents into an in memory array
      *
-     * @param  string   $filePath  Path of the file to be parsed
+     * @param  string $filePath  Path of the file to be parsed
      *
      * @return array parsed contents of the recon file
      *
@@ -195,6 +194,8 @@ class Reconciliation extends Base
      */
     protected function parseFile(string $filePath): array
     {
+        $start = time();
+
         $inputFileDetails = $this->getInputFileDetails($filePath);
 
         $fileType = $inputFileDetails[FileProcessor::FILE_TYPE];
@@ -211,9 +212,19 @@ class Reconciliation extends Base
         {
             throw new Exception\ReconciliationException(
                 'File is neither an Excel nor a CSV type.',
-                [self::FILE_DETAILS => $inputFileDetails]
-            );
+                [
+                    self::FILE_DETAILS => $inputFileDetails
+                ]);
         }
+
+        $fileParseTime = (time() - $start);
+
+        $source = $this->settingsAccessor->get(RequestProcessor\Base::SOURCE);
+        $gateway = $this->batch->getGateway();
+
+        $dimensions = Metric::getFileProcessingMetricDimension($gateway, $source);
+
+        $this->trace->histogram(Metric::RECON_MIS_FILE_PARSING_TIME_SECONDS, $fileParseTime, $dimensions);
 
         return $fileContent;
     }
@@ -223,6 +234,7 @@ class Reconciliation extends Base
         $fileContents = [];
 
         $totalCount = 0;
+
         //
         // Gets the sheet names which need to be collected for the given gateway.
         // Returns empty if there is no restriction on which sheets to collect.
@@ -233,7 +245,9 @@ class Reconciliation extends Base
 
         $startRow = $this->gatewayReconciliator->getStartRow($inputFileDetails);
 
-        $excelArray = $this->converter->convertExcelToArray($inputFileDetails, $sheetNames, $startRow);
+        $keyColumnNames = $this->gatewayReconciliator->getKeyColumnNames($inputFileDetails);
+
+        $excelArray = $this->converter->convertExcelToArray($inputFileDetails, $sheetNames, $startRow, $keyColumnNames);
 
         $sheetCount = count(array_keys($excelArray));
 
@@ -266,7 +280,11 @@ class Reconciliation extends Base
 
         $delimiter = $this->gatewayReconciliator->getDelimiter();
 
-        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $delimiter, $this->batch->getGateway());
+        $csvArray = $this->converter->convertCsvToArray($fileDetails,
+                                                        $columnHeaders,
+                                                        $linesToSkip,
+                                                        $delimiter,
+                                                        $this->batch->getGateway());
 
         $totalCount += count($csvArray);
 
@@ -304,12 +322,15 @@ class Reconciliation extends Base
 
         $forceUpdateFields = $this->settingsAccessor->get(RequestProcessor\Base::FORCE_UPDATE)->toArray();
 
+        $forceAuthorizePayments = $this->settingsAccessor->get(RequestProcessor\Base::FORCE_AUTHORIZE)->toArray();
+
         //
         // In some cases, like when batch is retried, there are no additional input_details
         // set, in the request. So we set input_details as an empty array.
         //
         $arrayContent[self::EXTRA_DETAILS][RequestProcessor\Base::INPUT_DETAILS] = [
-            RequestProcessor\Base::FORCE_UPDATE => $forceUpdateFields
+            RequestProcessor\Base::FORCE_UPDATE     => $forceUpdateFields,
+            RequestProcessor\Base::FORCE_AUTHORIZE  => $forceAuthorizePayments
         ];
     }
 

@@ -16,9 +16,11 @@ use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings;
+use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
 
 class NetbankingHdfcEmandateTest extends TestCase
 {
@@ -326,7 +328,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $payment = $this->getDbEntityById('payment', $entities[1]['payment']['id'])->toArray();
 
-        $this->assertEquals(Payment\Status::AUTHORIZED, $payment['status']);
+        $this->assertEquals(Payment\Status::REFUNDED, $payment['status']);
 
         $netbanking = $this->getDbEntityById('netbanking', $entities[1]['netbanking']['id'])->toArray();
 
@@ -589,6 +591,8 @@ class NetbankingHdfcEmandateTest extends TestCase
 
     public function testRefundDebitPayment()
     {
+        Mail::fake();
+
         $this->doDebitPayment();
 
         $debitPayment = $this->getLastEntity('payment', true);
@@ -608,6 +612,35 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->assertEquals($debitPayment['amount'], $refund['amount']);
 
         $this->assertEquals(Payment\Status::REFUNDED, $debitPayment['status']);
+
+        $endDate = Carbon::now()->getTimestamp();
+
+        // Generate gateway file from yesterday till now.
+        $gatewayFileResponse = $this->generateGatewayFile('hdfc_emandate', 'refund', null, $endDate);
+
+        $this->assertTestResponse($gatewayFileResponse['items'][0]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        Mail::assertQueued(RefundFileMail::class, function ($mail) use ($file)
+        {
+            $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+            $expectedSubject = RefundFileMailConstants::SUBJECT_MAP['netbanking_hdfc'] . $today;
+
+            $this->assertEquals($expectedSubject, $mail->subject);
+
+            $testData = [
+                'body'        => RefundFileMailConstants::BODY_MAP['netbanking_hdfc'],
+                'file_name'   => "HDFC_Emandate_Refunds_test_$today.xlsx",
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->assertNotEmpty($mail->attachments);
+
+            return true;
+        });
     }
 
     protected function doDebitPayment(): array

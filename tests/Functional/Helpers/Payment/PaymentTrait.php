@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
+use RZP\Models\Risk;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Account;
@@ -40,8 +41,8 @@ trait PaymentTrait
     use PaymentAxisGeniusTrait;
     use PaymentNetbankingTrait;
     use PaymentFreechargeTrait;
-    use PaymentCybersourceTrait;
     use PaymentTraitMpiEnstage;
+    use PaymentCybersourceTrait;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
 
@@ -1213,10 +1214,8 @@ trait PaymentTrait
 
     protected function getDefaultNetbankingPaymentArray($bank = null)
     {
-        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->getDefaultPaymentArrayNeutral();
         $payment['method'] = 'netbanking';
-
-        unset($payment['card']);
 
         if ($bank !== null)
         {
@@ -1727,5 +1726,33 @@ trait PaymentTrait
             });
 
         $this->app->instance('card.tokenex', $tokenex);
+    }
+
+    protected function mockShield()
+    {
+        $shield = Mockery::mock('RZP\Services\Mock\Shield')->makePartial();
+
+        $shield->shouldReceive('getRiskAssessment')
+                ->with(Mockery::type('RZP\Models\Payment\Entity'))
+                ->andReturnUsing(function ($payment)
+                {
+                    $bin = $payment->card->getIin();
+
+                    $binRiskMapping = [
+                        '401201',
+                    ];
+
+                    if (in_array($bin, $binRiskMapping) === true)
+                    {
+                        return [
+                            Risk\Entity::FRAUD_TYPE => Risk\Type::CONFIRMED,
+                            Risk\Entity::REASON     => Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD,
+                        ];
+                    }
+
+                    return null;
+                });
+
+        $this->app->instance('shield.service', $shield);
     }
 }

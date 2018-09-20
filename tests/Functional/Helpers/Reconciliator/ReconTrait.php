@@ -101,7 +101,7 @@ trait ReconTrait
                 []);
     }
 
-    private function createPayment()
+    private function createPayment($content = [])
     {
         $attributes = [
             'terminal_id'       => $this->sharedTerminal->getId(),
@@ -124,8 +124,6 @@ trait ReconTrait
         );
 
         $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
-
-        $this->fixtures->create($this->method, ['payment_id' => $payment->getId()]);
 
         return $payment->getId();
     }
@@ -151,4 +149,28 @@ trait ReconTrait
 
         return $excel->string('xlsx');
     }
+
+    protected function getNewUpiEntity($merchantId, $gateway)
+    {
+        $this->fixtures->merchant->enableMethod($merchantId, 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray($gateway);
+
+        $payment = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->gateway = 'upi_mindgate';
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $gatewayPayment = $this->getDbLastEntityToArray('upi');
+
+        return $gatewayPayment;
+    }
+
 }

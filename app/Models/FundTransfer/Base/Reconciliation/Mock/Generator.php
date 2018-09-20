@@ -28,6 +28,8 @@ class Generator extends Base
 
     protected $generateFailedReconciliations = false;
 
+    protected $generateReturnSettledReconciliation = false;
+
     public function reconcileSettlements(array $input)
     {
         $this->validateRequest();
@@ -98,6 +100,9 @@ class Generator extends Base
 
         $this->generateFailedReconciliations = ((isset($input['failed_recons']) === true) and
                                                 ($input['failed_recons'] === '1'));
+
+        $this->generateReturnSettledReconciliation= ((isset($input['return_settled']) === true) and
+                                                     ($input['return_settled'] === '1'));
     }
 
     /**

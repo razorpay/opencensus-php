@@ -61,6 +61,7 @@ class Netbanking
         IFSC::KKBK,
         IFSC::AIRP,
         IFSC::FDRL,
+        IFSC::IDFB,
         IFSC::RATN,
         IFSC::INDB,
         IFSC::ORBC,
@@ -195,6 +196,7 @@ class Netbanking
         IFSC::MAHB,
         IFSC::CNRB,
         IFSC::CBIN,
+        IFSC::CIUB,
         IFSC::CORP,
         IFSC::DCBL,
         IFSC::DEUT,
@@ -220,6 +222,7 @@ class Netbanking
         IFSC::SBBJ,
         IFSC::SBHY,
         IFSC::SBMY,
+        IFSC::SCBL,
         IFSC::STBP,
         IFSC::SBTR,
         IFSC::TMBL,
@@ -230,30 +233,25 @@ class Netbanking
     ];
 
     protected static $atomTPV = [
-        IFSC::UTIB,
-        IFSC::BKID,
+        IFSC::SBIN,
+        IFSC::YESB,
         IFSC::MAHB,
+        IFSC::DEUT,
         IFSC::CSBK,
+        IFSC::CBIN,
         IFSC::CIUB,
         IFSC::DCBL,
-        IFSC::DEUT,
         IFSC::DLXB,
-        // IFSC::FDRL,
-        IFSC::HDFC,
-        IFSC::ICIC,
+        IFSC::FDRL,
         IFSC::IBKL,
         IFSC::IDIB,
         IFSC::INDB,
         IFSC::JAKA,
-        IFSC::KARB,
         IFSC::KVBL,
-        IFSC::KKBK,
-        IFSC::LAVB,
+        Netbanking::LAVB_R,
+        IFSC::ORBC,
         IFSC::SRCB,
-        IFSC::SIBL,
-        IFSC::SBIN,
         IFSC::TMBL,
-        IFSC::YESB,
     ];
 
     protected static $ebs = [
@@ -443,7 +441,7 @@ class Netbanking
 
     public static function getSupportedBanksForTPV()
     {
-        return array_values(array_unique(array_merge(self::$billdeskTPV, self::$selfTPV)));
+        return array_values(array_unique(array_merge(self::$billdeskTPV, self::$selfTPV, self::$atomTPV)));
     }
 
     public static function isBankSupportedByGateway($bank, $gateway, $isTPV = false)

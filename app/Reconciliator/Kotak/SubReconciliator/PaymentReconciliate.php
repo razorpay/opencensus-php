@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Reconciliator\Kotak;
+namespace RZP\Reconciliator\Kotak\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names

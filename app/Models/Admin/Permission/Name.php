@@ -163,12 +163,14 @@ class Name
     const VIEW_MERCHANT_PRICING               = 'view_merchant_pricing';
     const CREATE_DISPUTE                      = 'create_dispute';
     const EDIT_DISPUTE                        = 'edit_dispute';
+    const FETCH_DISPUTE_FILES                 = 'fetch_dispute_files';
     const VIEW_WALLET_CONFIG                  = 'view_wallet_config';
     const CREATE_WALLET_CONFIG                = 'create_wallet_config';
     const EDIT_WALLET_CONFIG                  = 'edit_wallet_config';
     const MERCHANT_BATCH_UPLOAD               = 'merchant_batch_upload';
     const CREATE_DISPUTE_REASON               = 'create_dispute_reason';
     const MANAGE_ONBOARDING_SUBMISSIONS       = 'manage_onboarding_submissions';
+    const MANAGE_RAZORX_OPERATIONS            = 'manage_razorx_operations';
     const EDIT_MERCHANT_RISK_THRESHOLD        = 'edit_merchant_risk_threshold';
     const RETRY_BATCH                         = 'retry_batch';
     const VIEW_SHIELD_RULES                   = 'view_shield_rules';

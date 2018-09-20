@@ -16,6 +16,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
+use RZP\Gateway\Base\Metric;
 use RZP\Models\Payment\Status;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Constants\Entity as ConstantsEntity;
@@ -170,6 +171,12 @@ class Gateway
 
     protected $externalMockDomain;
 
+    protected $paymentId;
+
+    protected $curlLogPath;
+
+    protected $curlLog;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -194,6 +201,29 @@ class Gateway
         $this->cache = $this->app['cache'];
 
         $this->externalMockDomain = env('EXTERNAL_MOCK_GATEWAY_DOMAIN');
+    }
+
+    public function call($action, $input)
+    {
+        try
+        {
+            $response = $this->$action($input);
+
+            $this->pushDimensions($action, $input, Metric::SUCCESS);
+
+            return $response;
+        }
+        catch (\Throwable $exc)
+        {
+            if (property_exists($exc, 'isPropagatedException') === false)
+            {
+                $this->pushDimensions($action, $input, Metric::FAILED);
+
+                $exc->isPropagatedException = true;
+            }
+
+            throw $exc;
+        }
     }
 
     public function authorize(array $input)
@@ -600,6 +630,47 @@ class Gateway
         return $response;
     }
 
+    /**
+     * @param callable $callable -- this contains the class object and the function name as indexed array
+     * @param array $arguments -- this contains the function params to be passed to the function name passed
+     * in $objFunc
+     * @param callable $checkRetryNeeded -- closure to check if retry is needed
+     * @param int $retryCount -- max number of retries we want and then throw exception after $maxRetryCount attempts
+     * @return $response -- return the response of the closure $callable
+     * @throws \Exception
+     */
+    protected function retryHandler(callable $callable,
+                                    array $arguments,
+                                    callable $checks,
+                                    int $retryCount = 1)
+    {
+        $currentRetryCount = 1;
+
+        while (true)
+        {
+            try
+            {
+                $response = call_user_func_array($callable, $arguments);
+
+                return $response;
+            }
+            catch (\Exception $exc)
+            {
+                if ((call_user_func($checks, $exc) === true) and
+                    ($currentRetryCount < $retryCount))
+                {
+                    $currentRetryCount++;
+
+                    $this->trace->traceException($exc);
+
+                    continue;
+                }
+
+                throw $exc;
+            }
+        }
+    }
+
     protected function validateResponse(\Requests_Response $response)
     {
         if (in_array($response->status_code, [503, 504], true) === true)
@@ -966,7 +1037,11 @@ class Gateway
         $request = [
             'url' => $input['otpSubmitUrl'],
             'method' => 'post',
-            'content' => []
+            'content' => [
+                'next' => [
+                    'resend_otp'
+                ]
+            ]
         ];
 
         return $request;
@@ -1197,5 +1272,45 @@ class Gateway
     protected function getExternalMockUrl(string $type)
     {
         return $this->externalMockDomain . '/' . $this->gateway . $this->getRelativeUrl($type);
+    }
+
+    protected function pushDimensions($action, $input, $status)
+    {
+        $gatewayMetric = new Metric;
+
+        $gatewayMetric->pushGatewayDimensions($action, $input, $status);
+    }
+
+    //
+    // This is a temporary function for debugging the curl issue
+    //
+    protected function traceCurlErrorIfApplicable()
+    {
+        try
+        {
+            if ((isset($this->exception) === true) and
+                ($this->exception instanceof \Requests_Exception) and
+                ($this->exception->getType() === 'curlerror'))
+            {
+                $curlData = file_get_contents($this->curlLogPath);
+
+                $dataToTrace = [
+                    'gateway'   => $this->gateway,
+                    'curl_data' => $curlData,
+                ];
+
+                $this->trace->info(TraceCode::GATEWAY_UNKNOWN_CURL_ERROR, $dataToTrace);
+
+                $message = 'Curl error @vv @vivek @viv @kranti';
+
+                // #tech_curl_error
+                $this->app['slack']->queue(
+                    $message, $dataToTrace, ['color' => 'bad', 'channel' => 'GCRJYQEP6']);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
+        }
     }
 }

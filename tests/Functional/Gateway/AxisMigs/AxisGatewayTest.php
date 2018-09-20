@@ -156,8 +156,12 @@ class AxisGatewayTest extends TestCase
         $payment['card']['number'] = '5081597022059105';
 
         $this->fixtures->on('live')->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1, 'live' => 1, 'pricing_plan_id' => '1hDYlICobzOCYt']);
-        // $merchant = $this->fixtures->merchant->activate();
+        $this->fixtures->merchant->edit('10000000000000',
+                                        [
+                                            'activated' => 1,
+                                            'live' => 1,
+                                            'pricing_plan_id' => '1hDYlICobzOCYt'
+                                        ]);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -389,6 +393,7 @@ class AxisGatewayTest extends TestCase
                 $content['vpc_Amount']          = '0';
                 $content['vpc_BatchNo']         = '0';
                 $content['vpc_Currency']        = 'INR';
+                // @codingStandardsIgnoreLine
                 $content['vpc_Message']         = 'E5414-08311437: Capture Error : Field in error: \'transaction.amount\', value \'INR 500.00\' - reason: Requested capture amount exceeds outstanding authorized amount';
                 $content['vpc_TransactionNo']   = '0';
                 $content['vpc_TxnResponseCode'] = '7';
@@ -403,6 +408,24 @@ class AxisGatewayTest extends TestCase
         {
             $this->doAuthAndCapturePayment($testData['request']['content']);
         });
+    }
+
+    public function testCaptureGatewayRequestExceptionRetry()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->getGatewayRequestExceptionInCapture();
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $this->i);
+
+        $this->assertEquals('captured', $payment['status']);
     }
 
     public function testFailedPaymentWithProperError()
@@ -478,6 +501,7 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals($payment['vpc_TransactionNo'], $txnNoNew);
     }
 
+    // @codingStandardsIgnoreLine
     public function testFailureWhen3DSFailsForDomesticMerchant()
     {
         $this->fixtures->merchant->disableInternational();
@@ -500,6 +524,7 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'failed');
     }
 
+    // @codingStandardsIgnoreLine
     public function testFailureWhen3DSFailsForRiskyMerchant()
     {
         $this->fixtures->merchant->enableInternational();

@@ -178,4 +178,19 @@ class Service extends Base\Service
 
         return $data;
     }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function nodalFileUploadThroughBeam(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::RETRY_BEAM_FILE_UPLOAD,
+            [
+                'input'     => $input
+            ]);
+
+        return $this->core()->nodalFileUploadThroughBeam($input);
+    }
 }

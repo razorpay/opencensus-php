@@ -615,6 +615,7 @@ return [
                     'hide_downtimes',
                     'old_credits_flow',
                     'charge_at_will',
+                    'settlement_24x7',
                     'emi_merchant_subvention',
                     'fss_risk_udf',
                     'rule_filter',

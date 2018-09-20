@@ -64,6 +64,14 @@ trait Inquiry
 
             return true;
         }
+        else if (($data['result'] === 'FAILURE(SUSPECT)') and
+                 ($data['trackid'] === $input['refund']['id']) and
+                 ((int) ($data['amt'] * 100) === $input['refund']['amount']) and
+                 (empty($data['authRespCode']) === false) and
+                 (Hdfc\AuthRespCode::shouldRetryRefund($data['authRespCode']) === true))
+        {
+            return false;
+        }
 
         $this->trace->critical(
             TraceCode::GATEWAY_REFUND_VERIFY_UNEXPECTED,

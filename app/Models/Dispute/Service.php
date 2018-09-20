@@ -34,9 +34,7 @@ class Service extends Base\Service
         else if (($this->auth->isPrivateAuth() === true) or
                  ($this->auth->isProxyAuth() === true))
         {
-            $dispute = $this->core()->updateFilesAndInputForMerchant($dispute, $input);
-
-            return $dispute->toArrayPublic();
+            return $this->core()->updateFilesAndInputForMerchant($dispute, $input);
         }
     }
 
@@ -66,5 +64,19 @@ class Service extends Base\Service
         $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $dispute->toArrayPublic();
+    }
+
+    public function deleteFile(string $id, string $fileId)
+    {
+        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
+
+        (new File\Core)->deleteFile($dispute, $fileId);
+    }
+
+    public function getFiles(string $id)
+    {
+        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return (new File\Core)->getFilesForEntity($dispute);
     }
 }

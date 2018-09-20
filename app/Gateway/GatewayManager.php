@@ -38,8 +38,7 @@ class GatewayManager extends \Illuminate\Support\Manager
         // Laravel helper function converts snake case to camel case
         $action = camel_case($action);
 
-        // Call function on actual gateway instance
-        return $gateway->$action($input);
+        return $gateway->call($action, $input);
     }
 
     protected function registerMocks($gatewayConfig)
@@ -89,13 +88,37 @@ class GatewayManager extends \Illuminate\Support\Manager
     {
         $mode = $this->getMode();
 
-        if (($mode === Mode::TEST) and
+        $runningTests = $this->checkRunningTests();
+
+        //
+        // In case of direct auth, the mode is not set at this point,
+        // it is derived later from the payment. This causes it to
+        // default to live mode which calls actual gateway instead
+        // of mock which is not desirable in tests. Hence we are checking
+        // if tests are running. This used to work before since the tests
+        // didn't clear headers before setting any auth and the ones
+        // with direct auth that would land here had some setup flows
+        // which were setting mode as part of setting other auth (like proxy)
+        // before reaching the direct auth part. These tests broke with
+        // some recent changes in auth wherein we added the authCreds class PR #8320.
+        //
+        if ((($mode === Mode::TEST) or ($runningTests === true)) and
             (in_array($driver, $this->getMockDrivers())))
         {
             return true;
         }
 
         return false;
+    }
+
+    protected function checkRunningTests(): bool
+    {
+        if (empty($this->app) === true)
+        {
+            return false;
+        }
+
+        return ($this->app->runningUnitTests() === true);
     }
 
     public function getDefaultDriver()

@@ -40,5 +40,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $otpResendRules = [
-        ];
+        'version'                     => 'required|string|in:v.0.0',
+        'merchantTxnId'               => 'required|string|max:30',
+        'acsTxnId'                    => 'required|string|max:30',
+        'resendCount'                 => 'required|numeric|in:0,1,2,3',
+        'messageHash'                 => 'required|string',
+    ];
 }

@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\FundTransfer;
 
 use Mail;
+use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationMail;
 
@@ -14,7 +16,8 @@ trait AttemptReconcileTrait
         $setlFile,
         string $channel,
         $generateFailedReconciliations = false,
-        $prevAttemptId = null)
+        $prevAttemptId = null,
+        $generateReturnSettledReconciliation = false)
     {
         $uploadedFile = $this->createUploadedFile($setlFile);
 
@@ -26,6 +29,7 @@ trait AttemptReconcileTrait
             'content' => [
                 'failed_recons'     => $generateFailedReconciliations,
                 'prev_attempt_id'   => $prevAttemptId,
+                'return_settled'    => $generateReturnSettledReconciliation,
             ]
         ];
 
@@ -141,7 +145,6 @@ trait AttemptReconcileTrait
         {
             $dataKey = 'matchAttemptForReconFailure' . ucfirst($channel);
         }
-
         $this->assertTestResponse($attempt, $dataKey);
 
         $this->assertEquals($channel, $attempt[Attempt\Entity::CHANNEL]);
@@ -213,5 +216,28 @@ trait AttemptReconcileTrait
         $key = substr($url, $ix + 1);
 
         return $key;
+    }
+
+    protected function verifyProcessedSettlements(string $channel, $failureTest)
+    {
+        $from = Carbon::today(Timezone::IST)->getTimestamp();
+
+        $to = Carbon::tomorrow(Timezone::IST)->getTimestamp() - 1;
+
+        $request = [
+            'url'       => '/settlements/verify/' . $channel,
+            'content'   => [
+                'status'            => Attempt\Status::PROCESSED,
+                'failed_response'   => (int) $failureTest,
+                'from'              => $from,
+                'to'                => $to
+            ]
+        ];
+
+        $this->ba->cronAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
     }
 }

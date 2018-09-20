@@ -5,7 +5,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testSuccessful1yEnrolledCard' => [
+    'testSuccessfullyEnrolledCard' => [
         'entity'               => 'mpi',
         'action'               => 'authorize',
         'amount'               => 50000,

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Axis\Reconciliation;
 
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Axis\Headings;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
 
@@ -32,9 +33,23 @@ class RowProcessor extends BaseRowProcessor
     {
         $this->updateUtrOnReconEntity();
 
+        $currentBankStatusCode = $this->reconEntity->getBankStatusCode();
+
+        $newBankStatusCode = $this->parsedData[self::BANK_STATUS_CODE];
+
+        $successStatus = Status::EXECUTED;
+
+        $flipStatus = Status::getFlipStatus();
+
+        if (($currentBankStatusCode === $successStatus) and
+            (in_array($newBankStatusCode, $flipStatus, true) === true))
+        {
+            $this->reconEntity->setStatus(Attempt\Status::INITIATED);
+        }
+
         $this->reconEntity->setRemarks($this->parsedData[self::REMARKS]);
 
-        $this->reconEntity->setBankStatusCode($this->parsedData[self::BANK_STATUS_CODE]);
+        $this->reconEntity->setBankStatusCode($newBankStatusCode);
 
         $this->reconEntity->setDateTime($this->parsedData[self::SETTLEMENT_DATE]);
 

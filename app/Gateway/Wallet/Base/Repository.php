@@ -40,6 +40,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findByGatewayPaymentId($gatewayPaymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY_PAYMENT_ID, '=', $gatewayPaymentId)
+                    ->firstOrFail();
+    }
+
     public function findByGatewayRefundId($gatewayRefundId)
     {
         return $this->newQuery()
@@ -78,7 +85,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::GATEWAY_PAYMENT_ID, '=', $gatewayPaymentId)
-                    ->where(Entity::ACTION, '=', Base\Action::AUTHORIZE)
+                    ->where(Entity::ACTION, '=', $action)
                     ->where(Entity::WALLET, '=', $wallet)
                     ->firstOrFail();
     }

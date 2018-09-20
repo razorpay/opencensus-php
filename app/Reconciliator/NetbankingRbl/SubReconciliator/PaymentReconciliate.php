@@ -1,13 +1,14 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingRbl;
+namespace RZP\Reconciliator\NetbankingRbl\SubReconciliator;
 
+use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Rbl\Status;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     protected $netbankingRepo;
 
@@ -92,7 +93,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return null;
     }
 
-    protected function setAllowForceAuthorization()
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
         $this->allowForceAuthorization = true;
     }

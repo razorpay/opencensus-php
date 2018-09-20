@@ -120,7 +120,8 @@ class Repository extends Base\Repository
                           $transactionFee,
                           $transactionFeeCredits,
                           $transactionCreditsType,
-                          $transactionCreatedAt
+                          $transactionCreatedAt,
+                          $transactionChannel
                       )
                       ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                       ->where(Entity::SETTLED_AT, '<', $timestamp)
@@ -543,6 +544,23 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setl->getId())
                     ->get();
+    }
+
+    /**
+     * Updated reconciled_at to current time for given entities
+     *
+     * @param $entityIds
+     * @return mixed
+     */
+    public function bulkReconciliationUpdate($entityIds)
+    {
+        $time = time();
+
+        $attributes = [Entity::RECONCILED_AT => $time];
+
+        return $this->newQuery()
+                    ->whereIn(Entity::ENTITY_ID, $entityIds)
+                    ->update($attributes);
     }
 
     public function getCancelledBilldeskTransactions()

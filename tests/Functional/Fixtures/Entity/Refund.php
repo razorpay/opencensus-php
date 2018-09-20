@@ -21,6 +21,12 @@ class Refund extends Base
         $attributes['payment_id'] = $payment->getId();
         $attributes['merchant_id'] = $payment->merchant->getId();
         $attributes['base_amount'] = $attributes['amount'];
+
+        if (isset($attributes['gateway']) === false)
+        {
+            $attributes['gateway']     = $payment->getGateway();
+        }
+
         if (isset($attributes['status']) === false)
         {
             $attributes['status'] = 'processed';

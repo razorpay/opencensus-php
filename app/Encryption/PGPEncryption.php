@@ -27,6 +27,10 @@ class PGPEncryption extends Encryption
 
     public function encrypt(string $data) : string
     {
+        $user = posix_getpwuid(posix_getuid());
+
+        putenv("GNUPGHOME=" . $user['dir']  . "/.gnupg");
+
         $res = gnupg_init();
 
         $imp = gnupg_import($res, $this->publicKey);

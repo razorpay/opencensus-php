@@ -3,8 +3,12 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\FileStore;
 
+/**
+ * @property Merchant\Entity    $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     const NAME                      = 'name';
@@ -529,9 +533,7 @@ class Entity extends Base\PublicEntity
 
     public function incrementProcessedCount()
     {
-        $attempts = $this->getAttribute(self::PROCESSED_COUNT);
-
-        $this->setAttribute(self::PROCESSED_COUNT, $attempts + 1);
+        $this->increment(self::PROCESSED_COUNT);
     }
 
     public function unsetProcessedCount()

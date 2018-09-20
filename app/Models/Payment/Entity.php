@@ -1059,6 +1059,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECEIVER_TYPE, $receiverType);
     }
 
+    public function setSubscriptionId(string $subscriptionId)
+    {
+        $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
+    }
+
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------
@@ -1936,6 +1941,31 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function getIssuer()
+    {
+        $issuer = null;
+
+        if ($this->hasCard() === true)
+        {
+            $issuer = $this->card->getIssuer();
+        }
+        else if (($this->isNetbanking() === true) or
+                ($this->isEmandate() === true))
+        {
+            $issuer = $this->getBank();
+        }
+        else if ($this->isWallet() == true)
+        {
+            $issuer = $this->getWallet();
+        }
+        else if ($this->isUpi() === true)
+        {
+            $issuer = $this->getPspFromVpa();
+        }
+
+        return $issuer;
+    }
+
     public function getErrorDetails()
     {
         return [
@@ -2214,19 +2244,12 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        // Adding test merchants PolicyBazaar, DSP Blackrock, Yatra, Zomato merchant ID's
-        $merchantIds = [
-            '10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f',
-            '7thBRSDflu7NHL', '87qTXzFTBLFN7i', '9sOd4xwUKox63N',
-            '9fI2f7tNoAmVhu', '6H7N6hlcv29OMG', '8tiqrk8Qpc47l9',
-            '6ZLE5BE57SExGF', 'AaHmTPyOrH1ivc',
-        ];
+        $app = \App::getFacadeRoot();
 
-        $currentMerchantId = $this->getMerchantId();
+        $auth = $app['basicauth'];
 
-        // We are hardcoding the merchant ids for now.
-        // Will move this to feature flag.
-        if (in_array($currentMerchantId, $merchantIds, true) === false)
+        if (($auth->getMerchant() !== null) and
+            ($auth->getMerchant()->isExposeARNPaymentEnabled() === false))
         {
             unset($array[self::ACQUIRER_DATA]);
         }
@@ -2450,7 +2473,7 @@ class Entity extends Base\PublicEntity
 
     public function receiver()
     {
-        return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID);
+        return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID)->withTrashed();
     }
 
     public function netbanking()

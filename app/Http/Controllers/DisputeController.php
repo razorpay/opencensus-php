@@ -53,4 +53,18 @@ class DisputeController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function deleteFile(string $id, string $fileId)
+    {
+        $this->service()->deleteFile($id, $fileId);
+
+        return ApiResponse::json([], 204);
+    }
+
+    public function getFiles(string $id)
+    {
+        $data = $this->service()->getFiles($id);
+
+        return ApiResponse::json($data);
+    }
 }

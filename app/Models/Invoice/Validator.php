@@ -67,6 +67,7 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
+        Entity::INTERNAL_REF        => 'filled|string|min:1|max:64',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::VIEW_LESS           => 'filled|in:1',
         Entity::SOURCE              => 'filled|string|max:32|custom',
@@ -128,6 +129,7 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable|custom',
+        Entity::INTERNAL_REF        => 'filled|string|min:1|max:64',
         Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
         Entity::VIEW_LESS           => 'filled|in:1',
         Entity::SOURCE              => 'filled|string|max:32|custom',
@@ -385,8 +387,10 @@ class Validator extends Base\Validator
 
     /**
      * For non empty receipt, validates that it's unique for given merchant across it's NON cancelled & expired items
+     *
      * @param  string $attribute
      * @param  string $receipt
+     *
      * @throws BadRequestValidationFailureException
      */
     public function validateReceipt(string $attribute, string $receipt)
@@ -407,8 +411,6 @@ class Validator extends Base\Validator
      * allowed to be created or not.
      *
      * @return null
-     *
-     * @throws BadRequestException
      */
     public function validateMerchantSpecificData()
     {

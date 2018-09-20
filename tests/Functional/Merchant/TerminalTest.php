@@ -524,4 +524,28 @@ class TerminalTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testAssignIsgBharatQrTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testAddIsgBharatQrTerminalWithExpected()
+    {
+        $request = $this->testData['testAssignIsgBharatQrTerminal'];
+
+        $request['request']['content']['expected'] = true;
+
+        $this->startTest($request);
+    }
+
+    public function testAddIsgBharatQrTerminalFailed()
+    {
+        $this->startTest();
+    }
+
+    public function testAddHulkTerminalWithAppAuth()
+    {
+        $this->startTest();
+    }
 }

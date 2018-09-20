@@ -3,27 +3,31 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Axis\EMandate;
 
 use Carbon\Carbon;
-use  Mail;
+use Mail;
+use Excel;
 
+use RZP\Models\Payment;
 use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File;
+use RZP\Models\FileStore\Type;
+use RZP\Models\FileStore\Format;
+use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Mail\Gateway\EMandate\Base as Email;
-use RZP\Constants\Timezone;
-use RZP\Gateway\Netbanking\Axis\Emandate;
+use RZP\Models\Customer\Token\RecurringStatus;
+use Illuminate\Http\Testing\File as TestingFile;
+use RZP\Models\Customer\Token\Entity as TokenEntity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\EMandate\Constants as EmailConstants;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
-use RZP\Models\Customer\Token\Entity as TokenEntity;
-use RZP\Models\Customer\Token\RecurringStatus;
-use RZP\Models\FileStore\Type;
-use RZP\Models\Gateway\File;
-use RZP\Models\Payment;
-use RZP\Models\FileStore\Format;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\TestCase;
 
 class NetbankingAxisEMandateTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $payment;
 
@@ -507,6 +511,79 @@ class NetbankingAxisEMandateTest extends TestCase
         });
     }
 
+    public function testEmandateDebitRecon()
+    {
+        $payment = $this->createInitialPayment();
+
+        $entities = [];
+
+        $entities[] = [
+            'payment' => $this->createSecondReccuringPayment($payment),
+            'status'  => 'Success'
+        ];
+
+        $entities[] = [
+            'payment' => $this->createSecondReccuringPayment($payment),
+            'status'  => 'Failure'
+        ];
+
+        $entities[] = [
+            'payment' => $this->createSecondReccuringPayment($payment),
+            'status'  => 'Rejected'
+        ];
+
+        $this->createAndSendDebitFile();
+
+        $file = $this->createMockExcelFIle($entities);
+
+        $url = '/emandate/debit/reconcile/' . $this->gateway;
+
+        $this->ba->appAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $file);
+
+        $this->assertDebitReconEntities($entities);
+    }
+
+    public function testEmandateDebitReconBatch()
+    {
+        // TODO: Debug and Find why this test fails with new PHPSpreadSheet Library
+        $this->markTestSkipped();
+        $payment = $this->createInitialPayment();
+
+        $entities = [];
+
+        $entities[] = [
+            'payment' => $this->createSecondReccuringPayment($payment),
+            'status'  => 'Success'
+        ];
+
+        $entities[] = [
+            'payment' => $this->createSecondReccuringPayment($payment),
+            'status'  => 'Failure'
+        ];
+
+        $entities[] = [
+            'payment' => $this->createSecondReccuringPayment($payment),
+            'status'  => 'Rejected'
+        ];
+
+        $this->createAndSendDebitFile();
+
+        $file = $this->createMockExcelFIle($entities);
+
+        $this->makeBatchRequest(
+            [
+                'type'     => 'emandate',
+                'sub_type' => 'debit',
+                'gateway'  => 'axis',
+            ],
+            $file
+        );
+
+        $this->assertDebitReconEntities($entities);
+    }
+
     protected function assertEmandateEntities()
     {
         $netbanking = $this->getLastEntity('netbanking', true);
@@ -527,5 +604,160 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token[Token\Entity::RECURRING_STATUS]);
         $this->assertEquals(self::ACCOUNT_NUMBER, $token[Token\Entity::ACCOUNT_NUMBER]);
+    }
+
+    protected function assertDebitReconEntities($entities)
+    {
+        $payment = $this->getDbEntityById('payment', $entities[0]['payment']['id'])->toArray();
+
+        $this->assertEquals(Payment\Status::CAPTURED, $payment['status']);
+
+        $this->assertEquals('3000', $payment['amount']);
+
+        $payment = $this->getDbEntityById('payment', $entities[1]['payment']['id'])->toArray();
+
+        $this->assertEquals(Payment\Status::FAILED, $payment['status']);
+
+        $payment = $this->getDbEntityById('payment', $entities[2]['payment']['id'])->toArray();
+
+        $this->assertEquals(Payment\Status::FAILED, $payment['status']);
+
+    }
+
+    protected function createInitialPayment()
+    {
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['amount'] = 0;
+
+        $this->doAuthPayment($payment);
+
+        return $payment;
+    }
+
+    protected function createSecondReccuringPayment($payment)
+    {
+        $token = $this->getLastEntity('token', true);
+
+        $payment[Payment\Entity::TOKEN] = $token['id'];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
+
+        $payment['amount'] = 3000;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doS2SRecurringPayment($payment);
+
+        return $this->getDbLastEntityToArray('payment');
+    }
+
+    protected function createAndSendDebitFile()
+    {
+        $this->ba->adminAuth();
+
+        Mail::fake();
+
+        $testData = $this->testData['testEmandateDebit'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    protected function createMockExcelFile($entities)
+    {
+        $items = [];
+
+        foreach ($entities as $entity)
+        {
+            if($entity['payment']['recurring_type'] === 'auto')
+            {
+                $items[] = [
+                    'Txn Reference'           => $entity['payment']['id'],
+                    'Execution Date'          => Carbon::today()->format('d-m-Y'),
+                    'Originator ID'           => 'RAZORPA',
+                    'Mandate Ref/UMR'         => '111118156255274',
+                    'Customer Name'           => 'Random Name',
+                    'Customer Bank Account'   => '914010009305862',
+                    'Paid In Amount'          => 30,
+                    'MIS_INFO3'               => '111118156255274',
+                    'MIS_INFO4'               => '3533',
+                    'File_Ref'                => 'RAZOR06082018',
+                    'Status'                  => $entity['status'],
+                    'Return reason'           => 'random reason',
+                    'Record Identifier'       => 'D',
+                ];
+            }
+        }
+
+        $sheets = [
+            'sheet1' => [
+                'config' => [
+                    'start_cell' => 'A1',
+                ],
+                'items' => $items
+            ]
+        ];
+
+        $data = $this->getExcelString('Axis Debit Recon Emandate', $sheets);
+
+        $handle = tmpfile();
+        fwrite($handle, $data);
+        fseek($handle, 0);
+        $file = (new TestingFile('Axis-Debit-Recon-Emandate.xls', $handle));
+
+        return $file;
+    }
+
+    protected function getExcelString($name, $sheets)
+    {
+        $excel = Excel::create(
+            $name,
+            function($excel) use ($sheets) {
+                foreach ($sheets as $sheetName => $data)
+                {
+                    $excel->sheet(
+                        $sheetName,
+                        function($sheet) use ($data) {
+                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
+                        }
+                    );
+                }
+            }
+        );
+
+        return $excel->string('xls');
+    }
+
+    protected function makeBatchRequest($content, $file)
+    {
+        $request = [
+            'url' => '/admin/batches',
+            'method' => 'POST',
+            'content' => $content,
+            'files' => [
+                'file' => $file,
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function makeRequestWithGivenUrlAndFile($url, $file)
+    {
+        $request = [
+            'url'     => $url,
+            'method'  => 'POST',
+            'content' => [],
+            'files'   => [
+                'file' => $file,
+            ],
+        ];
+        return $this->makeRequestAndGetContent($request);
     }
 }

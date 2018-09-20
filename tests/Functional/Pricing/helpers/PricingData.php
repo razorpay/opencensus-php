@@ -293,7 +293,7 @@ return [
             'content' => [
                 'payment_method' => 'card',
                 'payment_method_type'  => 'credit',
-                'payment_network' => 'MAES',
+                'payment_network' => 'DICL',
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000,
                 'international' => 0,
@@ -309,7 +309,7 @@ return [
                 'plan_name' => 'TestPlan1',
                 'payment_method' => 'card',
                 'payment_method_type' => 'credit',
-                'payment_network' => 'MAES',
+                'payment_network' => 'DICL',
                 'payment_issuer' => 'HDFC',
                 'percent_rate' => 1000,
                 'international' => false,
@@ -320,6 +320,39 @@ return [
             ],
         ],
     ],
+
+
+    'testDuplicateReceiverRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => 'credit',
+                'payment_network' => 'DICL',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => 0,
+                'receiver_type' => 'qr_code',
+                'amount_range_active' => '0',
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ]
+    ],
+
+
 
     'testAddPricingPlanNBRule' => [
         'request' => [
@@ -667,9 +700,17 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 5,
+                'count' => 6,
                 'entity' => 'collection',
                 'items' => [
+                    [
+                        'name' => 'testDefaultEmiPlan',
+                        'entity' => 'pricing',
+                        'count' => 1,
+                        'rules' => [
+                            [],
+                        ],
+                    ],
                     [
                         'name' => 'testDefaultQrPlan',
                         'entity' => 'pricing',
@@ -748,7 +789,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 17,
+                        'count' => 16,
                         'rules' => [
                             [],
                         ],
@@ -766,6 +807,10 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'testDefaultEmiPlan',
+                    'rules_count' => 1,
+                ],
+                [
                     'plan_name'   => 'testDefaultQrPlan',
                     'rules_count' => 2,
                 ],
@@ -779,7 +824,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 17,
+                    'rules_count' => 16,
                 ],
             ],
         ],
