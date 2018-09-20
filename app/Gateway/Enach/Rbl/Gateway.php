@@ -283,7 +283,7 @@ class Gateway extends Base\Gateway
 
         $mid = $this->getMerchantId();
 
-        $mcc = $input['terminal']['category'];
+        $mcc = $input['terminal']['category'];  //TODO find what are all the possible values here
 
         $currentDate = Carbon::now()->setTimezone(Timezone::IST)->format('Y-m-d\TH:i:s');
 
@@ -295,9 +295,9 @@ class Gateway extends Base\Gateway
 
             NpciXmlHeaderTags::INFO              => [
                 RequestNpciTags::MID                   => $mid,
-                RequestNpciTags::CATEGORY_CODE         => CategoryCode::getCategoryCodeFromMcc($mcc),
+                RequestNpciTags::CATEGORY_CODE         => 'U006',
                 RequestNpciTags::UTILITY_CODE          => $mid,
-                RequestNpciTags::CATEGORY_DESCRIPTION  => 'Api Mandate', //Todo have to add mapping for this
+                RequestNpciTags::CATEGORY_DESCRIPTION  => 'Utility Bill payment water', //Todo have to add mapping for this
                 RequestNpciTags::NAME                  => 'Razorpay software pvt ltd', //Todo check if this ok
             ],
 
@@ -319,7 +319,7 @@ class Gateway extends Base\Gateway
 
             NpciXmlHeaderTags::CREDITOR            => [
                 RequestNpciTags::CREDITOR_NAME         => 'Razorpay software pvt ltd',
-                RequestNpciTags::CREDITOR_ACCOUNT      => '123456789012345', //TODO find this value
+                RequestNpciTags::CREDITOR_ACCOUNT      => 'NACH00000000013149', //TODO find this value
                 RequestNpciTags::IFSC_SPONSOR          => 'RATN0000057', // TODO insert proper value
             ]
         ];
@@ -366,17 +366,18 @@ class Gateway extends Base\Gateway
 
         $xmlString = $document->asXml();
 
+        $xmlString = str_replace("\n", '', $xmlString); // remove new lines
+        $xmlString = str_replace("\r", '', $xmlString);
+        $xmlString = preg_replace('/\s\s+/', '', $xmlString);
+        //$xmlString = str_replace("\t", '', $xmlString);
+
         $xmlDoc = new DOMDocument('1.0', 'UTF-8');
-
-        $xmlDoc->preserveWhiteSpace = false;
-
-        $xmlDoc->formatOutput = true;
 
         $xmlDoc->loadXML($xmlString);
 
-        $xmlString = $xmlDoc->saveXML();
+        //$xmlString = $xmlDoc->saveXML();
 
-        $signedxml = $this->crypto->addSignature($xmlString);
+        $signedxml = $this->crypto->addSignature($xmlDoc);
 
         return $signedxml;
     }
@@ -422,6 +423,8 @@ class Gateway extends Base\Gateway
             $mid = $this->getTestMerchantId();
         }
 
+        $mid = 'NACH00000000013149';
+
         return $mid;
     }
 
@@ -446,12 +449,12 @@ class Gateway extends Base\Gateway
     {
         $id = $this->getUniqueId();
 
-        return 'msg' . '_' . $id;
+        return 'msg' . $id;
     }
 
     protected function getMandateId($id)
     {
-        return 'mandate' . '_' . $id;
+        return 'mandate' . $id;
     }
 
     protected function callAuthenticationGateway(array $input)
@@ -567,17 +570,14 @@ class Gateway extends Base\Gateway
             [ResponseXmlTags::RESPONSE_PARTY],
 
             ResponseXmlTags::MANDATE_REQUEST_ID => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::ACCEPT_DETAILS]
             [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
             [ResponseXmlTags::MANDATE_REQUEST_ID],
 
             ResponseXmlTags::ORIGINGAL_MSG_ID   => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::ACCEPT_DETAILS]
             [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
             [ResponseXmlTags::ORIGINGAL_MSG_ID],
 
             'Mandate_Creation_Date_Time' => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::ACCEPT_DETAILS]
             [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
             [ResponseXmlTags::MANDATE_REQUEST_CREATION_DATE_TIME],
 
@@ -585,7 +585,7 @@ class Gateway extends Base\Gateway
             [ResponseXmlTags::MANDATE_ERROR_DETAILS]
             [ResponseXmlTags::ERROR_CODE],
 
-            ResponseXmlTags::ERROR_CODE => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+            ResponseXmlTags::ERROR_DESCRIPTION => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
             [ResponseXmlTags::MANDATE_ERROR_DETAILS]
             [ResponseXmlTags::ERROR_DESCRIPTION],
 
@@ -669,6 +669,7 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $this->crypto->setPrivateKeyPath(__DIR__ . '/keys/key.pem');
+            //$this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/onmag_cert.cer');
             $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/mock_cert.pem');
             $this->crypto->setSigningCertificatePath(__DIR__ . '/keys/cert.pem');
         }
