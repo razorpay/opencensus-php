@@ -76,7 +76,11 @@ const switchMerchantActionBtn = handleSwitchMerchant => ({
 
 const appId = {
   title: 'App Id',
-  value: item => item.application.id,
+  value: item => (
+    <Link to={`/submerchants/applications/${item.application.id}`}>
+      {item.application.id}
+    </Link>
+  ),
 };
 
 @connect(
