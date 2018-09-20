@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { Link } from 'react-router-dom';
 
 import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
@@ -69,12 +70,15 @@ export default props => {
                 <ShowWhen
                   additionalCondition={user => user.isPartner('pure_platform')}
                 >
-                  <EntityDetailRow
-                    label="Application Id"
-                    value={
-                      submerchant.application && submerchant.application.id
-                    }
-                  />
+                  <EntityDetailRow label="Application Id">
+                    <Link
+                      to={`/submerchants/applications/${
+                        submerchant.application.id
+                      }`}
+                    >
+                      {submerchant.application.id}
+                    </Link>
+                  </EntityDetailRow>
                 </ShowWhen>
 
                 <ShowWhen
