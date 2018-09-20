@@ -22,10 +22,11 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findByGatewayPaymentId($gatewayPaymentId)
+    public function findByGatewayPaymentIdAndAction($gatewayPaymentId, $action)
     {
         return $this->newQuery()
                     ->where(Entity::BANK_PAYMENT_ID, '=', $gatewayPaymentId)
+                    ->where(Entity::ACTION, '=', $action)
                     ->firstOrFail();
     }
 }

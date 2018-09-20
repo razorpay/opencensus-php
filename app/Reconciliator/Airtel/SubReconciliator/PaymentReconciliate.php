@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\Airtel\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Models\Payment\Method;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
@@ -35,7 +36,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'message'         => 'Payment amount mismatch',
                     'payment_id'      => $this->payment->getId(),
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'actual_amount'   => $this->getReconPaymentAmount($row),
@@ -61,17 +61,13 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        $payment = $this->repo->payment->findOrFail($paymentId);
-
-        $this->method = $payment['gateway'];
-
-        if ($payment['gateway'] === 'wallet_airtelmoney')
+        if ($this->payment->getMethod() === Method::WALLET)
         {
-            $gatewayPayment = $this->app['repo']->wallet->fetchWalletByPaymentId($paymentId);
+            $gatewayPayment = $this->repo->wallet->fetchWalletByPaymentId($paymentId);
         }
         else
         {
-            $gatewayPayment = $this->app['repo']->netbanking->findByPaymentIdAndAction($paymentId, 'authorize');
+            $gatewayPayment = $this->repo->netbanking->findByPaymentIdAndAction($paymentId, 'authorize');
         }
 
         return $gatewayPayment;
@@ -91,7 +87,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $func = 'BankPaymentId';
 
-        if($this->method === 'wallet_airtelmoney')
+        if ($this->payment->getMethod() === Method::WALLET)
         {
             $func = 'GatewayPaymentId';
         }
