@@ -87,7 +87,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $beneficiaryRegisterApiRules = [
-        Entity::DURATION                => 'required|integer',
+        Entity::ALL                     => 'sometimes|boolean',
+        Entity::DURATION                => 'sometimes|integer',
     ];
 
     protected function validateBeneficiaryState($input)

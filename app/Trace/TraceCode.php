@@ -894,6 +894,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_UPLOADING_FILE                          = 'BATCH_UPLOADING_FILE';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
     const BATCH_FILE_PROCESSING                         = 'BATCH_FILE_PROCESSING';
+    const BATCH_FILE_PROCESS_USING_SPREADSHEET          = 'BATCH_FILE_PROCESS_USING_SPREADSHEET';
     const BATCH_FILE_PROCESSING_ERROR                   = 'BATCH_FILE_PROCESSING_ERROR';
     const BATCH_FILE_PROCESSED                          = 'BATCH_FILE_PROCESSED';
     const BATCH_ALREADY_PROCESSED                       = 'BATCH_ALREADY_PROCESSED';
@@ -1227,6 +1228,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RETRY_BEAM_FILE_UPLOAD                        = 'RETRY_BEAM_FILE_UPLOAD';
     const BENEFICIARY_REGISTER_API_INIT                 = 'BENEFICIARY_REGISTER_API_INIT';
     const BENEFICIARY_REGISTER_API_FETCH                = 'BENEFICIARY_REGISTER_API_FETCH';
+    const BEAM_NOTIFIER_FAILED                          = 'BEAM_NOTIFIER_FAILED';
+    const SLACK_NOTIFICATION_SEND_FAILED                = 'SLACK_NOTIFICATION_SEND_FAILED';
     const VERIFY_FUND_TRANSFER_INIT                     = 'VERIFY_FUND_TRANSFER_INIT';
     const FTA_VERIFICATION_SKIPPED                      = 'FTA_VERIFICATION_SKIPPED';
     const VERIFY_FTA_ROW                                = 'VERIFY_FTA_ROW';

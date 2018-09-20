@@ -7,6 +7,8 @@ use Config;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class SlackNotification extends Base\Core
 {
@@ -19,53 +21,82 @@ class SlackNotification extends Base\Core
         'setl_reconciled');
 
     protected $messages = array(
+        'setl_skipped'            => 'Settlement Skipped. Check for Retry.',
         'setl_initiate'           => 'Settlements initiated.',
         'setl_reconciliation'     => 'Settlements reconciled. ',
         'reconcile_file'          => 'Reconciliation file processed.',
         'setl_return'             => 'Settlements returns occurred. ',
         'fta_recon_report'        => 'Settlement Potential Failures',
+        'bene_reg_status'         => 'Beneficiaries Registration status',
+        'critical_failure'        => 'Critical failure summary',
         'setl_verify'             => 'Settlement verification complete',);
 
-    public function success($operation, $data)
+    /**
+     * Used to send slack notifications
+     * A failure notification is triggered when either failureCount > 0 or an exception(e) is raised
+     * In all other cases, considered as success.
+     *
+     * @param $operation
+     * @param $data
+     * @param $e
+     * @param int $failureCount
+     */
+    public function send(string $operation, array $data, $e = null, $failureCount = 0)
     {
-        $data = [
-            'message' => $this->messages[$operation],
-            'status'  => self::GOOD
-        ] + $data;
-
-        $this->send($data);
-    }
-
-    public function failure($operation, $e)
-    {
-        $data = [
-            'message'           => 'Failed operation: ' . $operation,
-            'exception_class'   => get_class($e),
-            'exception_message' => $e->getMessage(),
-            'status'            => self::BAD
-        ];
-
-        $this->send($data);
-    }
-
-    public function send($data)
-    {
-        // Send Slack Notification only for Live mode in Production
-        if ($this->mode === Mode::LIVE)
+        try
         {
-            $message = $data['message'];
-            $color   = $data['status'];
+            $info = $this->messages[$operation] ?? 'Operation:: '.$operation;
 
-            unset($data['message'], $data['status']);
+            if (($failureCount === 0) and ($e === null))
+            {
+                $color = self::GOOD;
 
-            $this->app['slack']->queue(
-                $message,
-                $data,
+                $username =  'Settlements Logs';
+
+                $channel = Config::get('slack.channels.settlements');
+            }
+            else
+            {
+                $color = self::BAD;
+
+                $username =  'Settlements';
+
+                $channel = Config::get('slack.channels.settlement_logs');
+            }
+
+            if ($e !== null)
+            {
+                $data += [
+                    'exception_class'   => get_class($e),
+                    'exception_message' => $e->getMessage(),
+                ];
+            }
+
+            // Send Slack Notification only for Live mode in Production
+            if ($this->mode === Mode::LIVE)
+            {
+                $this->app['slack']->queue(
+                    $info,
+                    $data,
+                    [
+                        'color'     => $color,
+                        'icon'      => ':boom:',
+                        'username'  => $username,
+                        'channel'   => $channel,
+                    ]);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SLACK_NOTIFICATION_SEND_FAILED,
                 [
-                    'channel'   => Config::get('slack.channels.settlements'),
-                    'username'  => 'settlements',
-                    'color'     => $color
+                    'operation' => $operation,
+                    'data'      => $data,
                 ]);
         }
+
     }
 }

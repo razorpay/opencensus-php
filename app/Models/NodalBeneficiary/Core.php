@@ -40,15 +40,12 @@ class Core extends Base\Core
     /**
      * @param array $input
      * @return mixed
+     * @throws \RZP\Exception\BadRequestValidationFailureException
      * @throws \RZP\Exception\LogicException
      */
     public function update(array $input)
     {
-        $channel = $input[Entity::CHANNEL];
-
         $bankAccountId = $input[Entity::BANK_ACCOUNT_ID];
-
-        unset($input[Entity::CHANNEL]);
 
         unset($input[Entity::BANK_ACCOUNT_ID]);
 
@@ -56,11 +53,15 @@ class Core extends Base\Core
 
         $validator->validateInput('edit', $input);
 
+        $channel = $input[Entity::CHANNEL];
+
         $nodalBeneficiary = $this->repo->nodal_beneficiary
                                  ->fetchBeneficiaryDetailsForChannel(
                                      $bankAccountId,
                                      $channel
                                  );
+
+        $validator->validateBankAccount($nodalBeneficiary, $bankAccountId);
 
         $validator->validateNewRegistrationStatus(
                         $input[Entity::REGISTRATION_STATUS],

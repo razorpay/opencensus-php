@@ -20,11 +20,13 @@ class Converter extends Base\Core
     const NORMALIZED_HEADER_GATEWAYS = [
         RequestProcessor\Base::ATOM,
         RequestProcessor\Base::HDFC,
+        RequestProcessor\Base::MPESA,
         RequestProcessor\Base::AIRTEL,
         RequestProcessor\Base::PAYZAPP,
         RequestProcessor\Base::BILLDESK,
         RequestProcessor\Base::MOBIKWIK,
         RequestProcessor\Base::OLAMONEY,
+        RequestProcessor\Base::AMAZONPAY,
         RequestProcessor\Base::FREECHARGE,
         RequestProcessor\Base::CARD_FSS_BOB,
         RequestProcessor\Base::NETBANKING_IDFC,
