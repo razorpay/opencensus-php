@@ -1160,7 +1160,9 @@ class Core extends Base\Core
         // the partner manually creates and deletes the oauth applications.
         // If the partner tries to access the submerchant detail api without creating an app, throw an error.
         //
-        if (count($partnerAppIds) === 0)
+        $appId = current($partnerAppIds);
+
+        if ($appId === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_OAUTH_APP_NOT_FOUND,
@@ -1170,9 +1172,6 @@ class Core extends Base\Core
                     Entity::PARTNER_TYPE      => $partner->getPartnerType(),
                 ]);
         }
-
-        // 0th index will always be accessible here. Set the default value for $appId as the first available app id.
-        $appId = $partnerAppIds[0];
 
         if ($partner->isPurePlatformPartner() === true)
         {
