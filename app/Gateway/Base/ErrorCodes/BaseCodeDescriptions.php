@@ -40,6 +40,11 @@ class BaseCodeDescriptions
             }
         }
 
+        if (empty($errorDescription) === true)
+        {
+            $errorDescription = "Unknown Error";
+        }
+
         return $errorDescription;
     }
 

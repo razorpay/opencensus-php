@@ -32,7 +32,10 @@ class BaseCodes
 
             $internalErrorMap = $errorFieldsClass::$errorCodeMap[$fieldName];
 
-            s($internalErrorMap);
+            if (isset(static::$$internalErrorMap[$gatewayErrorCode]) === false)
+            {
+                continue;
+            }
 
             $errorCode = static::$$internalErrorMap[$gatewayErrorCode];
 
@@ -40,6 +43,11 @@ class BaseCodes
             {
                 break;
             }
+        }
+
+        if (empty($errorCode) === true)
+        {
+            $errorCode = ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
         }
 
         return $errorCode;
