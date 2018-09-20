@@ -55,6 +55,7 @@ const entityDetailsMap = {
   '/route/transfers/:id': { component: TransferDetails },
   '/route/reversals/:id': { component: ReversalDetails },
 
+  '/submerchants/:id(acc_.+)/:appId': { component: SubmerchantDetails },
   '/submerchants/:id(acc_.+)': { component: SubmerchantDetails },
   '/disputes/:id(disp_.+)': { component: DisputeDetails },
 };
