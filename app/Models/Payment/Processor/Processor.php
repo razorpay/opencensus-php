@@ -1850,6 +1850,13 @@ class Processor
             return false;
         }
 
+        if (($payment->isNetbanking() === true) and
+            ($payment->hasTerminal() === true) and
+            ($payment->terminal->isDirectSettlement() === true))
+        {
+            return true;
+        }
+
         //
         // We do an auto capture only if payment is associated with an order.
         //

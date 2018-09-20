@@ -1726,7 +1726,7 @@ return [
                         'methods' => [
                             'entity'     => 'methods',
                             'wallet' => [
-                                'airtelmoney'
+                                'airtelmoney' => true,
                             ]
                         ],
                         'offers' => [

@@ -116,7 +116,7 @@ class BulkRecon extends Base\Core
             }
             catch (\Throwable $e)
             {
-                (new SlackNotification)->failure('setl_reconciliation', $e);
+                (new SlackNotification)->send('setl_reconciliation', [], $e);
 
                 throw $e;
             }
@@ -124,7 +124,7 @@ class BulkRecon extends Base\Core
 
         $summary = $this->getSummary();
 
-        (new SlackNotification)->success('setl_reconciliation', $summary);
+        (new SlackNotification)->send('setl_reconciliation', $summary, null, $summary['failures_count']);
 
         // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
         try
@@ -162,12 +162,7 @@ class BulkRecon extends Base\Core
 
         unset($this->notificationSummary['ids']);
 
-        $data = [
-            'message' => 'Critical failure summary',
-            'status'  => SlackNotification::BAD,
-        ] + $this->notificationSummary;
-
-        (new SlackNotification)->send($data);
+        (new SlackNotification)->send('critical_failure', $this->notificationSummary, null, 1);
 
         $mail = new CriticalFailureEmail($this->notificationSummary);
 

@@ -57,6 +57,19 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('10BillDirTrmnl', $payment['terminal_id']);
     }
 
+    public function testChooseGatewayWithDirectSettlementTerminals()
+    {
+        $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+    }
+
     /**
      * Assign Direct Terminal To Another Merchant
      * Assign That Direct Terminal to Test Merchant also

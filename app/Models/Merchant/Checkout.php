@@ -690,7 +690,7 @@ class Checkout
                     $wallet = $offer->getIssuer();
 
                     $data['methods']['wallet'] = [
-                        $wallet
+                        $wallet => true,
                     ];
                 }
 

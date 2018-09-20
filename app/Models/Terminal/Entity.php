@@ -1009,6 +1009,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::MOTO) === true);
     }
 
+    public function isDirectSettlement()
+    {
+        return ($this->isTypeApplicable(Type::DIRECT_SETTLEMENT) === true);
+    }
+
     public function isInternational()
     {
         return $this->getAttribute(self::INTERNATIONAL);

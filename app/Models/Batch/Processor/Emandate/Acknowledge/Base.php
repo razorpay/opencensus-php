@@ -9,6 +9,11 @@ class Base extends BaseProcessor
 {
     protected $gateway;
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $useSpreadSheetLibrary = true;
+
     protected function shouldMarkProcessedOnFailures(): bool
     {
         return false;
