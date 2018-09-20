@@ -256,13 +256,16 @@ class NewApplicationForm extends Component {
   };
 
   render() {
-    const { handleSubmit } = this.props;
+    const { handleSubmit, location: { pathname } } = this.props;
     const { webhook, webhookLoading } = this.state;
 
     return (
       <div class="content-box new-application-form">
         <div class="content-header">
-          <Link to="/applications" class="breadcrumb__backNav--link ">
+          <Link
+            to={pathname.substring(0, pathname.lastIndexOf('/new'))}
+            class="breadcrumb__backNav--link "
+          >
             <i class="i i-arrow-back" />
             <span> Back&nbsp;</span>
           </Link>
