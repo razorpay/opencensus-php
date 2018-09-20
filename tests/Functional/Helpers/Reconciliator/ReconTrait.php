@@ -101,7 +101,7 @@ trait ReconTrait
                 []);
     }
 
-    private function createPayment()
+    private function createPayment($content = [])
     {
         $attributes = [
             'terminal_id'       => $this->sharedTerminal->getId(),

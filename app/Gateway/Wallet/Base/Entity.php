@@ -130,6 +130,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::GATEWAY_PAYMENT_ID, $gatewayPaymentId);
     }
 
+    public function setGatewayRefundId(string $gatewayRefundId)
+    {
+        $this->setAttribute(self::GATEWAY_REFUND_ID, $gatewayRefundId);
+    }
+
     public function setDate(string $date)
     {
         $this->setAttribute(self::DATE, $date);
