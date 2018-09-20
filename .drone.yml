@@ -512,7 +512,11 @@ pipeline:
       - api-sqs-gen-test
       - api-sqs-invoice-email
       - api-sqs-invoice-reports
+      - api-sqs-subscription-charge
+      - api-sqs-emails
       - api-sqs-webhooks-test
+      - api-sqs-webhooks-live
+      - api-sqs-webhooks-failure
     repo: razorpay/api
     namespace: api
     tag:
