@@ -40,6 +40,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchWalletByGatewayPaymentId2($gatewayPayment2)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY_PAYMENT_ID2 , '=', $gatewayPayment2)
+                    ->first();
+    }
+
     public function findByGatewayPaymentId($gatewayPaymentId)
     {
         return $this->newQuery()
