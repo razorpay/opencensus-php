@@ -45,6 +45,8 @@ class SlackNotification extends Base\Core
     {
         try
         {
+            $icon = ':thumbsup:';
+
             $info = $this->messages[$operation] ?? 'Operation:: '.$operation;
 
             if (($failureCount === 0) and ($e === null))
@@ -53,15 +55,17 @@ class SlackNotification extends Base\Core
 
                 $username =  'Settlements Logs';
 
-                $channel = Config::get('slack.channels.settlements');
+                $channel = Config::get('slack.channels.settlement_logs');
             }
             else
             {
                 $color = self::BAD;
 
+                $icon = ':boom:';
+
                 $username =  'Settlements';
 
-                $channel = Config::get('slack.channels.settlement_logs');
+                $channel = Config::get('slack.channels.settlements');
             }
 
             if ($e !== null)
@@ -80,7 +84,7 @@ class SlackNotification extends Base\Core
                     $data,
                     [
                         'color'     => $color,
-                        'icon'      => ':boom:',
+                        'icon'      => $icon,
                         'username'  => $username,
                         'channel'   => $channel,
                     ]);
