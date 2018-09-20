@@ -1098,7 +1098,7 @@ class Gateway extends Base\Gateway
 
         $message = $input['gateway']['vpc_Message'];
 
-        if ((isset(TxnResponseCode::$map[$txnResponseCode])) and
+        if ((isset(AxisMigs\ErrorCodes\ErrorCodes::$txnErrorCodeMap[$txnResponseCode])) and
             ($txnResponseCode === 'Aborted') and
             ($message === 'Your Session has expired'))
         {
@@ -1165,9 +1165,9 @@ class Gateway extends Base\Gateway
     {
         $msg = $txnResponseCode = null;
 
-        if (isset($content[Fields::VPC_TXNRESPONSECODE]) === true)
+        if (isset($content[AxisMigs\ErrorCodes\ErrorFields::VPC_TXNRESPONSECODE]) === true)
         {
-            $txnResponseCode = $content[Fields::VPC_TXNRESPONSECODE];
+            $txnResponseCode = $content[AxisMigs\ErrorCodes\ErrorFields::VPC_TXNRESPONSECODE];
         }
 
         if ($txnResponseCode === '0')
