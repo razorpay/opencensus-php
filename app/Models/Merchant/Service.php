@@ -2258,11 +2258,9 @@ class Service extends Base\Service
     {
         Account\Entity::verifyIdAndSilentlyStripSign($submerchantId);
 
-        $appId = $input[Merchant\AccessMap\Entity::APPLICATION_ID] ?? null;
-
         $partner = $this->fetchPartner();
 
-        $submerchant = $this->core()->getSubmerchant($partner, $submerchantId, $appId);
+        $submerchant = $this->core()->getSubmerchant($partner, $submerchantId, $input);
 
         return $submerchant->toArrayPartner();
     }

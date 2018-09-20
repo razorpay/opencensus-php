@@ -1144,14 +1144,14 @@ class Core extends Base\Core
     /**
      * Returns the submerchant with the partner context set.
      *
-     * @param Entity      $partner
-     * @param string      $submerchantId
-     * @param string|null $inputAppId
+     * @param Entity $partner
+     * @param string $submerchantId
+     * @param array  $input
      *
      * @return Entity
      * @throws BadRequestException
      */
-    public function getSubmerchant(Entity $partner, string $submerchantId, string $inputAppId = null): Entity
+    public function getSubmerchant(Entity $partner, string $submerchantId, array $input = []): Entity
     {
         $partnerAppIds = $this->getPartnerApplicationIds($partner);
 
@@ -1168,24 +1168,34 @@ class Core extends Base\Core
                 [
                     Entity::ID                => $partner->getId(),
                     Entity::PARTNER_TYPE      => $partner->getPartnerType(),
-                    Constants::APPLICATION_ID => $inputAppId,
                 ]);
         }
 
         // 0th index will always be accessible here. Set the default value for $appId as the first available app id.
         $appId = $partnerAppIds[0];
 
-        //
-        // If the partner is a pure platform partner -
-        //      raise an exception if the input app id does not belong to the list of oauth apps created by him.
-        // If the partner is a non pure platform partner -
-        //      ignore the input application id, as there should only be one associated (internal) partner app created.
-        //
-        if (($partner->isPurePlatformPartner() === true) and (empty($inputAppId) === false))
+        if ($partner->isPurePlatformPartner() === true)
         {
+            //
+            // For pure platforms, a submerchant could have authorized multiple oauth applications.
+            // Hence, throw an error if the application id is missing.
+            //
+            if (empty($input[AccessMap\Entity::APPLICATION_ID]) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_MISSING_APPLICATION_ID,
+                    AccessMap\Entity::APPLICATION_ID,
+                    [
+                        Entity::ID                => $partner->getId(),
+                        Entity::PARTNER_TYPE      => $partner->getPartnerType(),
+                    ]);
+            }
+
+            $inputAppId = $input[AccessMap\Entity::APPLICATION_ID];
+
+            // raise an exception if the input app id does not belong to the list of oauth apps created by the partner.
             (new Validator)->validatePartnerApplicationId($inputAppId, $partnerAppIds);
 
-            // Since the app id in the input is valid, update $appId and proceed for to query the db
             $appId = $inputAppId;
         }
 
