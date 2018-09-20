@@ -3,6 +3,8 @@
 namespace RZP\Gateway;
 
 use Config;
+
+use RZP\Trace;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Constants\Entity;
@@ -38,6 +40,8 @@ class GatewayManager extends \Illuminate\Support\Manager
         // Laravel helper function converts snake case to camel case
         $action = camel_case($action);
 
+        $this->registerTraceProcessors($input, $action);
+
         return $gateway->call($action, $input);
     }
 
@@ -51,6 +55,13 @@ class GatewayManager extends \Illuminate\Support\Manager
                 $this->mocks[] = $gateway;
             }
         }
+    }
+
+    protected function registerTraceProcessors(array  $input, $action)
+    {
+        $gatewayTraceProcessor = new Trace\GatewayTraceProcessor($this->app, $input, $action);
+
+        $this->app['trace']->pushProcessor($gatewayTraceProcessor);
     }
 
     protected function createDriver($driver)
