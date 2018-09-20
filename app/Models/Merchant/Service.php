@@ -19,7 +19,6 @@ use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Schedule;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
@@ -29,13 +28,11 @@ use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
-use RZP\Models\Merchant\Webhook;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
-use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
 class Service extends Base\Service
@@ -76,7 +73,8 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
-        $merchant = (new Merchant\Core)->create($input);
+        /** @var Entity $merchant */
+        $merchant = $this->core()->create($input);
 
         $merchantData = $this->saveMerchantAndApplyCoupon($merchant, $input);
 
@@ -147,7 +145,7 @@ class Service extends Base\Service
             (($isOptionalEmailAllowed === true) and ($subMerchantEmailIsSame === true)) or
             (($isPartner === false) and ($hasAggregatorFeature === true)))
         {
-            (new Core)->attachSubMerchantOwner($ownerId, $subMerchant);
+            $this->core()->attachSubMerchantOwner($ownerId, $subMerchant);
         }
     }
 
@@ -216,7 +214,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $input)
         {
-            $merchant = (new Merchant\Core)->edit($merchant, $input);
+            $merchant = $this->core()->edit($merchant, $input);
 
             if (isset($input[Entity::FEE_BEARER]) === true)
             {
@@ -322,11 +320,11 @@ class Service extends Base\Service
 
         $orignalEmail = $merchant->getEmail();
 
-        $merchant = (new Merchant\Core)->editEmail($merchant, $input);
+        $merchant = $this->core()->editEmail($merchant, $input);
 
         $newEmail = $merchant->getEmail();
 
-        (new Merchant\Core)->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
+        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
 
         return $merchant->toArrayPublic();
     }
@@ -336,7 +334,7 @@ class Service extends Base\Service
         // Adds uploaded logo's url to the input.
         $this->uploadLogoIfFound($input);
 
-        (new Merchant\Core)->editConfig($this->merchant, $input);
+        $this->core()->editConfig($this->merchant, $input);
 
         return $this->merchant->toArrayConfig();
     }
@@ -356,7 +354,7 @@ class Service extends Base\Service
         if (isset($input['logo']))
         {
             // Store the logos in AWS
-            $logoUrl = (new Merchant\Logo)->setUpMerchantLogo($input);
+            $logoUrl = (new Logo)->setUpMerchantLogo($input);
 
             $input['logo_url'] = $logoUrl;
             unset($input['logo']);
@@ -426,7 +424,7 @@ class Service extends Base\Service
 
     public function editAmountCredits($merchantId, $input)
     {
-        (new Merchant\Validator)->validateInput('edit_credits', $input);
+        (new Validator)->validateInput('edit_credits', $input);
 
         $amountCredits = $input['credits'];
 
@@ -462,7 +460,7 @@ class Service extends Base\Service
 
         $methods = $this->repo->methods->getMethodsForMerchant($merchant);
 
-        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
+        (new Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
 
         $originalPricingPlan = null;
 
@@ -720,7 +718,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchant = (new Merchant\Core)->action($merchant, $input);
+        $merchant = $this->core()->action($merchant, $input);
 
         return $merchant->toArrayPublic();
     }
@@ -845,7 +843,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $enabledDisabledBanks = (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
+        $enabledDisabledBanks = (new Methods\Core)->setPaymentBanksForMerchant(
             $merchant, $input);
 
         $this->logActionToSlack($merchant, SlackActions::ASSIGN_BANKS);
@@ -877,7 +875,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        return (new Merchant\Methods\Core)->setPaymentMethods($merchant, $input);
+        return (new Methods\Core)->setPaymentMethods($merchant, $input);
     }
 
     public function editMethods($input)
@@ -897,7 +895,7 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('edit_methods', $input);
 
-        return (new Merchant\Methods\Core)->editMethods($input);
+        return (new Methods\Core)->editMethods($input);
     }
 
     public function getMerchantWebhooks($id)
@@ -1047,7 +1045,7 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY);
 
-        $response = (new Merchant\HolidayNotification)->send($input);
+        $response = (new HolidayNotification)->send($input);
 
         $this->trace->info(TraceCode::MERCHANT_NOTIFY_HOLIDAY, $response);
 
@@ -1429,7 +1427,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $merchant = (new Core)->updateKeyAccess($merchant, $input);
+        $merchant = $this->core()->updateKeyAccess($merchant, $input);
 
         return $merchant->toArrayPublic();
     }
@@ -1448,7 +1446,7 @@ class Service extends Base\Service
 
         $failedIds = [];
 
-        $merchantCore = (new Merchant\Core);
+        $merchantCore = $this->core();
 
         foreach ($merchantIds as $merchantId)
         {
@@ -1484,7 +1482,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $users = (new Merchant\Core)->getUsers($merchant);
+        $users = $this->core()->getUsers($merchant);
 
         return $users;
     }
@@ -1493,7 +1491,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $batches = (new Merchant\Core)->createBatches($merchant, $input);
+        $batches = $this->core()->createBatches($merchant, $input);
 
         return $batches;
     }
@@ -1791,7 +1789,7 @@ class Service extends Base\Service
      * @param Entity             $merchant
      * @param OAuthClient\Entity $client
      */
-    protected function sendCompetitorAppAuthorizedEmail(Merchant\Entity $merchant, OAuthClient\Entity $client)
+    protected function sendCompetitorAppAuthorizedEmail(Entity $merchant, OAuthClient\Entity $client)
     {
         $application = $client->application;
 
@@ -1826,7 +1824,7 @@ class Service extends Base\Service
      * @return bool
      */
     protected function shouldSendCompetitorAppAuthorizedEmail(
-        Merchant\Entity $merchant,
+        Entity $merchant,
         OAuthApplication\Entity $app): bool
     {
         // Do not send the email if the application is not a competitor to us
@@ -1903,7 +1901,7 @@ class Service extends Base\Service
 
         $this->validateAggregatorSubMerchantRelation($subMerchant, $this->merchant);
 
-        (new Merchant\Validator)->validateInput('createSubMerchantUser', $input);
+        (new Validator)->validateInput('createSubMerchantUser', $input);
 
         unset($input[User\Entity::MERCHANT_ID]);
 
@@ -2006,7 +2004,7 @@ class Service extends Base\Service
             PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_MERCHANT_USER);
     }
 
-    public function formatUserCreationData(string $email, Merchant\Entity $subMerchant)
+    public function formatUserCreationData(string $email, Entity $subMerchant)
     {
         $dummyPass = bin2hex(random_bytes(20));
 
@@ -2055,7 +2053,7 @@ class Service extends Base\Service
 
             unset($input['dashboard_access']);
 
-            $merchantCore = new Merchant\Core;
+            $merchantCore = $this->core();
 
             $subMerchant = $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount);
 

@@ -10,7 +10,6 @@ use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Emi;
 use RZP\Models\Base;
-use RZP\Models\Settlement\Channel;
 use RZP\Models\User;
 use RZP\Models\Batch;
 use RZP\Models\Pricing;
@@ -24,11 +23,11 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Action;
-use RZP\Services\AuthService;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Settings\Accessor;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\Payout as PayoutMail;
@@ -1168,15 +1167,16 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_OAUTH_APP_NOT_FOUND,
                 null,
                 [
-                    Entity::ID                => $partner->getId(),
-                    Entity::PARTNER_TYPE      => $partner->getPartnerType(),
+                    Entity::ID           => $partner->getId(),
+                    Entity::PARTNER_TYPE => $partner->getPartnerType(),
                 ]);
         }
 
         if ($partner->isPurePlatformPartner() === true)
         {
             //
-            // For pure platforms, a submerchant could have authorized multiple oauth applications.
+            // For pure platforms, a submerchant could have authorized multiple oauth applications
+            // and we need to know which app mapping is being requested.
             // Hence, throw an error if the application id is missing.
             //
             if (empty($input[AccessMap\Entity::APPLICATION_ID]) === true)
