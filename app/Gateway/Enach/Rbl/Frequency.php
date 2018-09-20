@@ -4,7 +4,7 @@ namespace RZP\Gateway\Enach\Rbl;
 
 class Frequency
 {
-    const ADHOC         = 'Adho';
+    const ADHOC         = 'ADHO';
     const INTRA_DAY     = 'INDA';
     const DAILY         = 'DAIL';
     const WEEKLY        = 'Week';
