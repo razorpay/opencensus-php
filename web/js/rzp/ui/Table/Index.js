@@ -38,7 +38,7 @@ export default ({
         return false;
       }
       rowItems.push(
-        <EntityItemRow key={index} id={item.id}>
+        <EntityItemRow key={`${item.id}_${index}`} id={item.id}>
           {columns.map((column, index) => (
             <td
               class={column.columnClass ? column.columnClass : ''}
