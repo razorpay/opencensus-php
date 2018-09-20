@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
+use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
@@ -246,6 +247,70 @@ class GatewayController extends Controller
         $url = $url . '?' . $inputMsg;
 
         return Redirect::to($url);
+    }
+
+    public function callbackEmandateNpciNb()
+    {
+        $input = Request::all();
+
+        /*$this->app['trace']->info(
+            TraceCode::,
+            [ 'input' => $input ]
+        );*/
+
+        //TODO add supprot for error xml
+
+        $responseXml = (array) simplexml_load_string(trim($input['MandateRespDoc']));
+
+        $json = json_encode($responseXml);
+
+        $responseArray = json_decode($json,true);
+
+        if($input['RespType'] === 'RespXml')
+        {
+            $mandateId = $responseArray['MndtAccptResp']['UndrlygAccptncDtls']['OrgnlMsgInf']['MndtReqId'];
+        }
+        else
+        {
+            $mandateId = $responseArray['MndtRejResp']['OrigReqInfo']['MndtReqId'];
+        }
+
+        $paymentId = str_replace('mandate', '', $mandateId);
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $this->app['config']->set('database.default', $mode);
+
+        $gateway = $this->app['repo']->enach->findByPaymentIdAndAction(
+            $paymentId,
+            \RZP\Gateway\Base\Action::AUTHORIZE
+        );
+
+        if ($gateway === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed to find requisite payment id: ' . $paymentId);
+        }
+
+        $publicPaymentId = $gateway->getPublicPaymentId();
+
+        /*$payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
+
+        $publicKey = $keys->first()->getPublicKey($mode);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+
+        $inputMsg = http_build_query($input);
+
+        $url = $url . '?' . $inputMsg;
+
+        return Redirect::to($url);*/
+
+        $hash = $this->route->getHashOf($publicPaymentId);
+
+        return (new Payment\Service)->npciCallback($publicPaymentId, $hash,  $input);
     }
 
     public function callbackAmazonpay()
