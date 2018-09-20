@@ -179,7 +179,9 @@ class Crypto
 
     protected function getRzpSigningKey()
     {
-        $key =  (file_get_contents($this->privateKey));
+        //$key =  (file_get_contents($this->privateKey));
+
+        $key = $this->config['test_emandate_private_key'];
 
         $key = trim(str_replace('\n', "\n", $key));
 
@@ -192,7 +194,9 @@ class Crypto
 
     protected function getRzpPrivateKey()
     {
-        $key =  (file_get_contents($this->privateKey));
+        //$key =  (file_get_contents($this->privateKey));
+
+        $key = $this->config['test_emandate_private_key'];
 
         $key = trim(str_replace('\n', "\n", $key));
 
