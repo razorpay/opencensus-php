@@ -311,7 +311,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PERMISSIONS_USAGE,
-            'gateway_error_code'  => '5426',
+            'gateway_error_code'  => '7',
         ],
     ],
 
@@ -335,7 +335,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
-            'gateway_error_code'  => '5414',
+            'gateway_error_code'  => '7',
         ],
     ],
 
@@ -359,7 +359,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_NO_RESPONSE_RECEIVED_FROM_BANK,
-            'gateway_error_code'  => 'Timed out',
+            'gateway_error_code'  => '3',
         ],
     ],
 
@@ -383,7 +383,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_FAILED,
-            'gateway_error_code'  => '5145',
+            'gateway_error_code'  => '3',
         ],
     ],
 
@@ -407,7 +407,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE,
-            'gateway_error_code'  => '91',
+            'gateway_error_code'  => 'E',
         ],
     ],
 
@@ -455,7 +455,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_AVS_FAILED,
-            'gateway_error_code'  => 'Z',
+            'gateway_error_code'  => '',
         ],
     ],
 
@@ -479,7 +479,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_ISSUER_INVALID,
-            'gateway_error_code'  => 'U',
+            'gateway_error_code'  => '',
         ],
     ],
 

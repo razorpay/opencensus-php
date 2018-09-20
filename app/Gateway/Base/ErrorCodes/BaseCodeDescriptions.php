@@ -28,11 +28,14 @@ class BaseCodeDescriptions
 
             $gatewayErrorCode = static::getRelevantGatewayErrorCode($fieldName, $content);
 
-
             $internalErrorMap = $errorFieldsClass::$errorDescriptionMap[$fieldName];
 
-            $errorDescription = static::$$internalErrorMap[$gatewayErrorCode];
+            if (isset(static::$$internalErrorMap[$gatewayErrorCode]) === false)
+            {
+                continue;
+            }
 
+            $errorDescription = static::$$internalErrorMap[$gatewayErrorCode];
 
             if (empty($errorDescription) === false)
             {
