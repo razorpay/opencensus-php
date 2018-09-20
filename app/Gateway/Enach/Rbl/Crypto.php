@@ -86,11 +86,13 @@ class Crypto
         return $rsa;
     }
 
-    public function addSignature($xmlString)
+    public function addSignature($xmlDoc)
     {
-        $xmlDoc = $this->makeDomDocument($xmlString);
+        //$xmlDoc = $this->makeDomDocument($xmlString);
 
-        $sign = new XMLSecLibs\XMLSecurityDSig(null);
+        //$sign = new XMLSecLibs\XMLSecurityDSig(null);
+
+        $sign = new Sign(null);
 
         $sign->setCanonicalMethod(XMLSecLibs\XMLSecurityDSig::C14N);
 
@@ -109,22 +111,28 @@ class Crypto
 
         $sign->appendSignature($xmlDoc->documentElement);
 
+        $xmlDoc->preserveWhiteSpace = false;
+
         $signedxml = $xmlDoc->saveXML();
 
         //$xmlDoc->save('request.xml');
+
+        $signedxml = str_replace("\n", '', $signedxml);
+
+        $signedxml = str_replace("\r", '', $signedxml);
 
         assertTrue($this->verifySignature($signedxml));
 
         return $signedxml;
     }
 
-    protected function verifySignature(string $xml)
+    protected function verifySignature($xml)
     {
         $sign = new XMLSecLibs\XMLSecurityDSig(null);
 
         $xmlDoc = new DOMDocument('1.0', 'UTF-8');
 
-        $xmlDoc->loadXML($xml);
+        $xmlDoc->loadXml($xml);
 
         assertTrue($sign->locateSignature($xmlDoc));
 
@@ -194,6 +202,8 @@ class Crypto
     protected function makeDomDocument(string $xml)
     {
         $xmlDoc = new DOMDocument('1.0', 'UTF-8');
+
+        $xmlDoc->preserveWhiteSpace = false;
 
         $xmlDoc->loadXML($xml);
 
