@@ -70,9 +70,9 @@ export default props => {
                   additionalCondition={user => user.isPartner('pure_platform')}
                 >
                   <EntityDetailRow
-                    label="Application"
+                    label="Application Id"
                     value={
-                      submerchant.application && submerchant.application.name
+                      submerchant.application && submerchant.application.id
                     }
                   />
                 </ShowWhen>
