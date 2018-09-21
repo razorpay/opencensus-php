@@ -17,42 +17,51 @@ class Crypto
 
     protected $privateKey;
 
-    protected $encryptionCertificate;
+    protected $encryptionCertificatePath;
 
-    protected $signingCertificate;
+    protected $signingCertificatePath;
 
     public function __construct(array $config = null)
     {
         $this->config = $config;
     }
 
-    public function setPrivateKeyPath($path)
+    public function setPrivateKey($key = null)
     {
-        $this->privateKey = $path;
+        if(isset($key) === true)
+        {
+            $key = trim(str_replace('\n', "\n", $key));
+        }
+        else
+        {
+            $key = trim(str_replace('\n', "\n", $this->config['test_emandate_private_key']));
+        }
+
+        $this->privateKey = $key;
     }
 
     public function setEncryptionCertificatePath($path)
     {
-        $this->encryptionCertificate = $path;
+        $this->encryptionCertificatePath = $path;
     }
 
     public function setSigningCertificatePath($path)
     {
-        $this->signingCertificate = $path;
+        $this->signingCertificatePath = $path;
     }
 
     public function decrypt($data)
     {
         $data = base64_decode($data);
 
-        $rsa = $this->getRSAInstance('response');
+        $rsa = $this->getRSAInstance('decrypt');
 
         return $rsa->decrypt($data);
     }
 
     public function encrypt($data)
     {
-        $rsa = $this->getRsaInstance('request');
+        $rsa = $this->getRsaInstance('encrypt');
 
         $encrypted = $rsa->encrypt($data);
 
@@ -68,13 +77,13 @@ class Crypto
         switch ($mode)
         {
 
-            case 'response':
-                $key = $this->getRzpPrivateKey();
+            case 'decrypt':
+                $key = $this->getPrivateKey();
                 $rsa->loadKey($key);
                 break;
 
-            case 'request':
-                $key = $this->getNpciPublicKey();
+            case 'encrypt':
+                $key = $this->getEncryptionPublicKey();
                 $rsa->loadKey($key);
                 break;
         }
@@ -103,9 +112,9 @@ class Crypto
             ['force_uri' => true]
         );
 
-        $sign->add509Cert($this->getRzpCert(),true, false, ['subjectName' => true ]);
+        $sign->add509Cert($this->getSigningCert(),true, false, ['subjectName' => true ]);
 
-        $sign->sign($this->getRzpSigningKey());
+        $sign->sign($this->getSigningPrivateKey());
 
         $sign->appendSignature($xmlDoc->documentElement);
 
@@ -115,12 +124,12 @@ class Crypto
 
         $signedxml = str_replace("\r", '', $signedxml);
 
-        assertTrue($this->verifySignature($signedxml));
+        assertTrue($this->verifySignature($signedxml, $this->getSigningPublicKey()));
 
         return $signedxml;
     }
 
-    protected function verifySignature($xmlString)
+    public function verifySignature($xmlString, $key)
     {
         $sign = new XMLSecLibs\XMLSecurityDSig(null);
 
@@ -134,7 +143,7 @@ class Crypto
 
         $objKey = $sign->locateKey();
 
-        $objKey->loadKey($this->getRzpPublicKey());
+        $objKey->loadKey($key);
 
         $verify = $sign->verify($objKey);
 
@@ -142,14 +151,14 @@ class Crypto
         return ($verify === 1);
     }
 
-    protected function getRzpCert()
+    protected function getSigningCert()
     {
-        return (file_get_contents($this->signingCertificate));
+        return (file_get_contents($this->signingCertificatePath));
     }
 
-    protected function getRzpPublicKey()
+    public function getSigningPublicKey()
     {
-        $cert = $this->getRzpCert();
+        $cert = $this->getSigningCert();
 
         $publicKeyResource = openssl_pkey_get_public($cert);
 
@@ -158,9 +167,9 @@ class Crypto
         return $pubkeyInfo['key'];
     }
 
-    protected function getNpciPublicKey()
+    public function getEncryptionPublicKey()
     {
-        $cert = (file_get_contents($this->encryptionCertificate));
+        $cert = (file_get_contents($this->encryptionCertificatePath));
 
         $publicKeyResource = openssl_pkey_get_public($cert);
 
@@ -169,11 +178,9 @@ class Crypto
         return $pubkeyInfo['key'];
     }
 
-    protected function getRzpSigningKey()
+    protected function getSigningPrivateKey()
     {
-        //$key =  (file_get_contents($this->privateKey));
-
-        $key = $this->config['test_emandate_private_key'];
+        $key = $this->privateKey;
 
         $key = trim(str_replace('\n', "\n", $key));
 
@@ -184,11 +191,9 @@ class Crypto
         return $objKey;
     }
 
-    protected function getRzpPrivateKey()
+    protected function getPrivateKey()
     {
-        //$key =  (file_get_contents($this->privateKey));
-
-        $key = $this->config['test_emandate_private_key'];
+        $key = $this->privateKey;
 
         $key = trim(str_replace('\n', "\n", $key));
 
