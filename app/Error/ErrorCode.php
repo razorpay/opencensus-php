@@ -60,6 +60,7 @@ class ErrorCode
     const GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED                         = 'GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED';
     const GATEWAY_ERROR_TIMED_OUT                                                   = 'GATEWAY_ERROR_TIMED_OUT';
     const GATEWAY_ERROR_INVALID_DATE_FORMAT                                         = 'GATEWAY_ERROR_INVALID_DATE_FORMAT';
+    const GATEWAY_ERROR_INVALID_TIME_FORMAT                                         = 'GATEWAY_ERROR_INVALID_TIME_FORMAT';
     const GATEWAY_ERROR_SYSTEM_BUSY                                                 = 'GATEWAY_ERROR_SYSTEM_BUSY';
     const GATEWAY_ERROR_COMMUNICATION_ERROR                                         = 'GATEWAY_ERROR_COMMUNICATION_ERROR';
     const GATEWAY_ERROR_INVALID_CONFIGURATION                                       = 'GATEWAY_ERROR_INVALID_CONFIGURATION';
@@ -159,7 +160,11 @@ class ErrorCode
     const GATEWAY_ERROR_SQL_ERROR                                                   = 'GATEWAY_ERROR_SQL_ERROR';
     const GATEWAY_ERROR_DELETING_TERMINAL                                           = 'GATEWAY_ERROR_CREATING_TERMINAL';
     const GATEWAY_ERROR_CREATING_TERMINAL                                           = 'GATEWAY_ERROR_CREATING_TERMINAL';
-    const GATEWAY_ERROR_INVALID_ACKNOWLEDGMENT                                     = 'GATEWAY_ERROR_INVALID_ACKNOWLEDGMENT';
+    const GATEWAY_ERROR_INVALID_ACKNOWLEDGMENT                                      = 'GATEWAY_ERROR_INVALID_ACKNOWLEDGMENT';
+    const GATEWAY_ERROR_URL_DECODE_ERROR                                            = 'GATEWAY_ERROR_URL_DECODE_ERROR';
+    const GATEWAY_ERROR_INVALID_CARD_TYPE                                           = 'GATEWAY_ERROR_INVALID_CARD_TYPE';
+    const GATEWAY_ERROR_NOT_AUTHORIZED_EXCESSIVE_REFUNDS                            = 'GATEWAY_ERROR_NOT_AUTHORIZED_EXCESSIVE_REFUNDS';
+
 
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
@@ -560,6 +565,7 @@ class ErrorCode
     const BAD_REQUEST_LOGO_NOT_PRESENT                                              = 'BAD_REQUEST_LOGO_NOT_PRESENT';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                       = 'BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL';
     const BAD_REQUEST_MERCHANT_INVALID                                              = 'BAD_REQUEST_MERCHANT_INVALID';
+    const GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION                            = 'GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION';
 
     // Features
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                                   = 'BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE';
@@ -900,4 +906,9 @@ class ErrorCode
     const GATEWAY_ERROR_TRANSPORT_ERROR                                             = 'GATEWAY_ERROR_TRANSPORT_ERROR';
     const GATEWAY_ERROR_SOCKET_ERROR                                                = 'GATEWAY_ERROR_SOCKET_ERROR';
     const GATEWAY_ERROR_CONNECTION_ERROR                                            = 'GATEWAY_ERROR_CONNECTION_ERROR';
+    const GATEWAY_ERROR_SHOPPING_TRANSACTIONS_REFUND_EXCEEDED                       = 'GATEWAY_ERROR_SHOPPING_TRANSACTIONS_REFUND_EXCEEDED';
+    const GATEWAY_ERROR_MERCHANT_CREATION_ERROR                                     = 'GATEWAY_ERROR_MERCHANT_CREATION_ERROR';
+    const GATEWAY_ERROR_SEND_EMAIL_ERROR                                            = 'GATEWAY_ERROR_SEND_EMAIL_ERROR';
+    const GATEWAY_ERROR_FAILED_DATA_UPDATE                                          = 'GATEWAY_ERROR_FAILED_DATA_UPDATE';
+    const GATEWAY_ERROR_ACQUIRER_UNAVAILABLE                                        = 'GATEWAY_ERROR_ACQUIRER_UNAVAILABLE';
 }
