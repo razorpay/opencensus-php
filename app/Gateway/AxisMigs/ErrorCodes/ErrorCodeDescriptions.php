@@ -442,7 +442,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
 
         $isMatched = preg_match('/[0-9]{4}/', $code, $matches);
 
-        if ($isMatched == 1)
+        if ($isMatched === 1)
         {
             $gatewayCode = $matches[0];
         }

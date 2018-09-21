@@ -104,17 +104,17 @@ class ErrorCodes extends Cards\ErrorCodes
         '5133' => ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY,
         '5134' => ErrorCode::GATEWAY_ERROR_RSA_DECRYPTION_FAILED,
         '5135' => ErrorCode::GATEWAY_ERROR_RSA_ENCRYPTION_FAILED,
-        '5136' => ErrorCode::BAD_REQUEST_SECURE_CGI_PARAM_KEY_CORRUPT_INVALID,
-        '5137' => ErrorCode::BAD_REQUEST_SECURE_CGI_PARAM_PRIVATE_KEY_CORRUPT_INVALID,
-        '5138' => ErrorCode::BAD_REQUEST_SECURE_CGI_PARAM_PUBLIC_KEY_CORRUPT_INVALID,
+        '5136' => ErrorCode::GATEWAY_ERROR_SECURE_CGI_PARAM_KEY_CORRUPT_INVALID,
+        '5137' => ErrorCode::GATEWAY_ERROR_SECURE_CGI_PARAM_PRIVATE_KEY_CORRUPT_INVALID,
+        '5138' => ErrorCode::GATEWAY_ERROR_SECURE_CGI_PARAM_PUBLIC_KEY_CORRUPT_INVALID,
         '5140' => ErrorCode::GATEWAY_ERROR_UNSUPPORTED_ACQUIRER,
         '5141' => ErrorCode::BAD_REQUEST_ERROR,
         '5142' => ErrorCode::BAD_REQUEST_RECONCILIATION,
         '5143' => ErrorCode::BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED,
-        '5144' => ErrorCode::BAD_REQUEST_SHARED_TERMINAL_ERROR,
-        '5145' => ErrorCode::BAD_REQUEST_TERMINAL_ERROR,
-        '5146' => ErrorCode::BAD_REQUEST_TERMINAL_ERROR,
-        '5147' => ErrorCode::BAD_REQUEST_TERMINAL_ERROR,
+        '5144' => ErrorCode::GATEWAY_ERROR_SHARED_TERMINAL_ERROR,
+        '5145' => ErrorCode::GATEWAAY_ERROR_TERMINAL_ERROR,
+        '5146' => ErrorCode::GATEWAAY_ERROR_TERMINAL_ERROR,
+        '5147' => ErrorCode::GATEWAAY_ERROR_TERMINAL_ERROR,
         '5148' => ErrorCode::BAD_REQUEST_RECON_NOT_IN_PROGRESS,
         '5150' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
         '5151' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID,
@@ -130,7 +130,7 @@ class ErrorCodes extends Cards\ErrorCodes
         '5170' => ErrorCode::GATEWAY_ERROR_DELETING_TERMINAL,
         '5171' => ErrorCode::GATEWAY_ERROR_CREATING_TERMINAL,
         '5161' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_REFERENCE_NO,
-        '5176' => ErrorCode::BAD_REQUEST_INVALID_CARD_DETAILS,
+        '5176' => ErrorCode::BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE,
         '5185' => ErrorCode::GATEWAY_ERROR_INVALID_ACKNOWLEDGMENT,
         '5200' => ErrorCode::GATEWAY_ERROR_PAYMENT_CREATION_FAILED,
         '5201' => ErrorCode::GATEWAY_ERROR_ORDER_CREATION_FAILED,
@@ -400,7 +400,7 @@ class ErrorCodes extends Cards\ErrorCodes
 
         $isMatched = preg_match('/[0-9]{4}/', $code, $matches);
 
-        if ($isMatched == 1)
+        if ($isMatched === 1)
         {
             $gatewayCode = $matches[0];
         }
