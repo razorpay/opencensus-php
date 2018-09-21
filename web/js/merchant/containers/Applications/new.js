@@ -118,17 +118,17 @@ class NewApplicationForm extends Component {
   };
 
   fetchWebhooks(mode) {
-    const setState = this.setWebhookState(mode);
-    setState({ webhookLoading: false });
+    const changeWebhookState = this.setWebhookState(mode);
+    changeWebhookState({ webhookLoading: false });
     // Fetch call getting app's webhook
     let appId = this.props.match.params.id;
     ApplicationActions.fetchAppWebhooks(appId, mode)
       .then(data => {
         let webhook = data.data.items.length ? data.data.items[0] : null;
-        setState({ webhookLoading: false, webhook });
+        changeWebhookState({ webhookLoading: false, webhook });
       })
       .catch(e => {
-        setState({ webhookLoading: false, webhook: null });
+        changeWebhookState({ webhookLoading: false, webhook: null });
       });
   }
 
@@ -256,9 +256,9 @@ class NewApplicationForm extends Component {
   };
 
   onWebhookSave = mode => webhook => {
-    const setState = this.setWebhookState(mode);
+    const changeWebhookState = this.setWebhookState(mode);
     this.props.closeModal();
-    setState({ webhook: webhook.data });
+    changeWebhookState({ webhook: webhook.data });
   };
 
   showWebhookModal = (mode = '') => () => {
