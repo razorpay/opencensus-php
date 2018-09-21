@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
 use RZP\Models\Gateway\Rule;
