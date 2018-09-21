@@ -640,6 +640,20 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals(true, $paymentEntity['recurring']);
     }
 
+    public function testDirectSettlementPayment()
+    {
+        $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('netbanking_hdfc', $payment['gateway']);
+        $this->assertEquals('10DirectseTmnl', $payment['terminal_id']);
+    }
+
     protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC', $amount = 2000)
     {
         $this->mockTokenex();

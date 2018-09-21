@@ -57,4 +57,13 @@ class TransactionController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function markTransactionPostpaid()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->markTransactionPostpaid($input);
+
+        return ApiResponse::json($response);
+    }
 }
