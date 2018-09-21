@@ -251,7 +251,6 @@ class Gateway extends Base\Gateway
             RequestFields::REQUEST_XML => $xml,
             RequestFields::CHECKSUM => $encryptedChecksum,
             RequestFields::BANK_ID => $bank,
-            'callback' => $input['callbackUrl']        //TODO remove this and implement callback route
         ];
 
         $request = $this->getStandardRequestArray($content, 'post', 'npciauth');

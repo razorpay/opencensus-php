@@ -52,9 +52,9 @@ class Server extends Base\Mock\Server
 
         $responseXml = $this->getResponseOrErrorXml($responseData, $respType);
 
-        //$callbackUrl = $this->route->getUrl('gateway_emandate_callback_npci_nb');
+        $callbackUrl = $this->route->getUrl('gateway_emandate_callback_npci_nb');
 
-        $callbackUrl = $input['callback'];
+        //$callbackUrl = $input['callback'];
 
         $content['MandateRespDoc'] = $responseXml;
 
