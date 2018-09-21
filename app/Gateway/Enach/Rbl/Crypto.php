@@ -92,7 +92,7 @@ class Crypto
 
         //$sign = new XMLSecLibs\XMLSecurityDSig(null);
 
-        $sign = new Sign(null);
+        $sign = new XMLSecurityDSig(null);
 
         $sign->setCanonicalMethod(XMLSecLibs\XMLSecurityDSig::C14N);
 
