@@ -173,6 +173,11 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::GLOBAL_CARD_ID);
     }
 
+    public function hasIinRelation(): bool
+    {
+        return $this->isAttributeNotNull(self::IIN);
+    }
+
     protected function generateLast4($input)
     {
         $last4 = substr($input['number'], -4);
