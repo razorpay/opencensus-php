@@ -129,7 +129,7 @@ class Server extends Base\Mock\Server
 
         $content = implode('|', $data);
 
-        $content = strtoupper(bin2hex($this->encrypt($content)));
+        $content = $this->encrypt($content);
 
         $response = parent::makeResponse($content);
 
@@ -403,15 +403,6 @@ class Server extends Base\Mock\Server
             $response['bank_reference'],
         ];
 
-        $finalResponse = $this->makeResponse($res, Action::VALIDATE_PUSH);
-
-        $finalResponseBody = [
-            'pgMerchantId' => $input[1],
-            'meRes'        => $finalResponse->getContent(),
-        ];
-
-        $finalResponse->setContent($finalResponseBody);
-
-        return $finalResponse;
+        return $this->makeResponse($res, Action::VALIDATE_PUSH);
     }
 }
