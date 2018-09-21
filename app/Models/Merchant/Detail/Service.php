@@ -436,6 +436,19 @@ class Service extends Base\Service
         return BusinessCategory::SUBCATEGORY_MAP;
     }
 
+    /**
+     * This function is used for getting business categories subcategories list
+     * mcc code , activation category
+     *
+     * @return array
+     */
+    public function getBusinessCategoriesDetails(): array
+    {
+        return BusinessCategory::BUSINESS_CATEGORIES;
+    }
+
+
+
     public function getRejectionReasons()
     {
         return RejectionReasons::REJECTION_REASONS_MAPPING;

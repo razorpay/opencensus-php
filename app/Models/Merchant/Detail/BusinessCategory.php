@@ -36,7 +36,7 @@ class BusinessCategory
         self::EDUCATION               => 'Education',
         self::HEALTHCARE              => 'Healthcare',
         self::UTILITIES               => 'Utilities',
-        self::GOVERNMENT              => 'Government',
+        self::GOVERNMENT              => 'Government Bodies',
         self::LOGISTICS               => 'Logistics',
         self::TOURS_AND_TRAVEL        => 'Tours and Travel',
         self::TRANSPORT               => 'Transport',
@@ -53,6 +53,7 @@ class BusinessCategory
     ];
 
     // Business Category to Subcategories Mapping
+    // will be removed once dashboard will start using new api
     const SUBCATEGORY_MAP = [
         self::FINANCIAL_SERVICES => [
             self::DESCRIPTION   => self::DESCRIPTIONS[self::FINANCIAL_SERVICES],
@@ -71,6 +72,8 @@ class BusinessCategory
                 Sub::FINANCIAL_ADVISOR             => Sub::DESCRIPTIONS[Sub::FINANCIAL_ADVISOR],
                 Sub::CROWDFUNDING                  => Sub::DESCRIPTIONS[Sub::CROWDFUNDING],
                 Sub::TRADING                       => Sub::DESCRIPTIONS[Sub::TRADING],
+                Sub::BETTING                       => Sub::DESCRIPTIONS[Sub::BETTING],
+                Sub::GET_RICH_SCHEMES              => Sub::DESCRIPTIONS[Sub::GET_RICH_SCHEMES],
             ],
         ],
 
@@ -175,6 +178,11 @@ class BusinessCategory
                 Sub::PET_PRODUCTS                  => Sub::DESCRIPTIONS[Sub::PET_PRODUCTS],
                 Sub::SPORTS_PRODUCTS               => Sub::DESCRIPTIONS[Sub::SPORTS_PRODUCTS],
                 Sub::ARTS_AND_COLLECTIBLES         => Sub::DESCRIPTIONS[Sub::ARTS_AND_COLLECTIBLES],
+                Sub::SEXUAL_WELLNESS_PRODUCT       => Sub::DESCRIPTIONS[Sub::SEXUAL_WELLNESS_PRODUCT],
+                Sub::DROP_SHIPPING                 => Sub::DESCRIPTIONS[Sub::DROP_SHIPPING],
+                Sub::CRYPTO_MACHINERY              => Sub::DESCRIPTIONS[Sub::CRYPTO_MACHINERY],
+                Sub::TOBACCO                       => Sub::DESCRIPTIONS[Sub::TOBACCO],
+                Sub::WEAPONS_AND_AMMUNITIONS       => Sub::DESCRIPTIONS[Sub::WEAPONS_AND_AMMUNITIONS],
             ],
         ],
 
@@ -198,6 +206,7 @@ class BusinessCategory
                 Sub::IAAS                          => Sub::DESCRIPTIONS[Sub::IAAS],
                 Sub::CONSULTING_AND_OUTSOURCING    => Sub::DESCRIPTIONS[Sub::CONSULTING_AND_OUTSOURCING],
                 Sub::WEB_DEVELOPMENT               => Sub::DESCRIPTIONS[Sub::WEB_DEVELOPMENT],
+                Sub::TECHNICAL_SUPPORT             => Sub::DESCRIPTIONS[Sub::TECHNICAL_SUPPORT],
             ],
         ],
 
@@ -236,6 +245,7 @@ class BusinessCategory
                 Sub::CONSULTING                    => Sub::DESCRIPTIONS[Sub::CONSULTING],
                 Sub::AD_AND_MARKETING              => Sub::DESCRIPTIONS[Sub::AD_AND_MARKETING],
                 Sub::SERVICES_CLASSIFIEDS          => Sub::DESCRIPTIONS[Sub::SERVICES_CLASSIFIEDS],
+                Sub::MULTI_LEVEL_MARKETING         => sub::DESCRIPTIONS[Sub::MULTI_LEVEL_MARKETING],
             ],
         ],
 
@@ -276,5 +286,237 @@ class BusinessCategory
             self::DESCRIPTION   => self::DESCRIPTIONS[self::OTHERS],
             self::SUBCATEGORIES => [],
         ],
+    ];
+
+
+
+    // Business Category to Subcategories Details mapping
+    const BUSINESS_CATEGORIES = [
+        self::FINANCIAL_SERVICES => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::FINANCIAL_SERVICES],
+            self::SUBCATEGORIES => [
+                Sub::MUTUAL_FUND                   => Sub::SUB_CATEGORY_METADATA[Sub::MUTUAL_FUND],
+                Sub::LENDING                       => Sub::SUB_CATEGORY_METADATA[Sub::LENDING],
+                Sub::CRYPTOCURRENCY                => Sub::SUB_CATEGORY_METADATA[Sub::CRYPTOCURRENCY],
+                Sub::INSURANCE                     => Sub::SUB_CATEGORY_METADATA[Sub::INSURANCE],
+                Sub::NBFC                          => Sub::SUB_CATEGORY_METADATA[Sub::NBFC],
+                Sub::COOPERATIVES                  => Sub::SUB_CATEGORY_METADATA[Sub::COOPERATIVES],
+                Sub::PENSION_FUND                  => Sub::SUB_CATEGORY_METADATA[Sub::PENSION_FUND],
+                Sub::FOREX                         => Sub::SUB_CATEGORY_METADATA[Sub::FOREX],
+                Sub::SECURITIES                    => Sub::SUB_CATEGORY_METADATA[Sub::SECURITIES],
+                Sub::COMMODITIES                   => Sub::SUB_CATEGORY_METADATA[Sub::COMMODITIES],
+                Sub::ACCOUNTING                    => Sub::SUB_CATEGORY_METADATA[Sub::ACCOUNTING],
+                Sub::FINANCIAL_ADVISOR             => Sub::SUB_CATEGORY_METADATA[Sub::FINANCIAL_ADVISOR],
+                Sub::CROWDFUNDING                  => Sub::SUB_CATEGORY_METADATA[Sub::CROWDFUNDING],
+                Sub::TRADING                       => Sub::SUB_CATEGORY_METADATA[Sub::TRADING],
+                Sub::BETTING                       => Sub::SUB_CATEGORY_METADATA[Sub::BETTING],
+                Sub::GET_RICH_SCHEMES              => Sub::SUB_CATEGORY_METADATA[Sub::GET_RICH_SCHEMES],
+            ],
+        ],
+
+        self::EDUCATION => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::EDUCATION],
+            self::SUBCATEGORIES => [
+                Sub::COLLEGE                       => Sub::SUB_CATEGORY_METADATA[Sub::COLLEGE],
+                Sub::SCHOOLS                       => Sub::SUB_CATEGORY_METADATA[Sub::SCHOOLS],
+                Sub::UNIVERSITY                    => Sub::SUB_CATEGORY_METADATA[Sub::UNIVERSITY],
+                Sub::PROFESSIONAL_COURSES          => Sub::SUB_CATEGORY_METADATA[Sub::PROFESSIONAL_COURSES],
+                Sub::DISTANCE_LEARNING             => Sub::SUB_CATEGORY_METADATA[Sub::DISTANCE_LEARNING],
+                Sub::COACHING                      => Sub::SUB_CATEGORY_METADATA[Sub::COACHING],
+                Sub::ELEARNING                     => Sub::SUB_CATEGORY_METADATA[Sub::ELEARNING],
+            ],
+        ],
+
+        self::HEALTHCARE => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::HEALTHCARE],
+            self::SUBCATEGORIES => [
+                Sub::PHARMACY                      => Sub::SUB_CATEGORY_METADATA[Sub::PHARMACY],
+                Sub::CLINIC                        => Sub::SUB_CATEGORY_METADATA[Sub::CLINIC],
+                Sub::HOSPITAL                      => Sub::SUB_CATEGORY_METADATA[Sub::HOSPITAL],
+                Sub::LAB                           => Sub::SUB_CATEGORY_METADATA[Sub::LAB],
+                Sub::DIETICIAN                     => Sub::SUB_CATEGORY_METADATA[Sub::DIETICIAN],
+                Sub::FITNESS                       => Sub::SUB_CATEGORY_METADATA[Sub::FITNESS],
+                Sub::HEALTH_COACHING               => Sub::SUB_CATEGORY_METADATA[Sub::HEALTH_COACHING],
+                Sub::HEALTH_PRODUCTS               => Sub::SUB_CATEGORY_METADATA[Sub::HEALTH_PRODUCTS],
+                Sub::HEALTHCARE_MARKETPLACE        => Sub::SUB_CATEGORY_METADATA[Sub::HEALTHCARE_MARKETPLACE],
+            ],
+        ],
+
+        self::UTILITIES => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::UTILITIES],
+            self::SUBCATEGORIES => [
+                Sub::ELECTRICITY                   => Sub::SUB_CATEGORY_METADATA[Sub::ELECTRICITY],
+                Sub::GAS                           => Sub::SUB_CATEGORY_METADATA[Sub::GAS],
+                Sub::TELECOM                       => Sub::SUB_CATEGORY_METADATA[Sub::TELECOM],
+                Sub::WATER                         => Sub::SUB_CATEGORY_METADATA[Sub::WATER],
+                Sub::CABLE                         => Sub::SUB_CATEGORY_METADATA[Sub::CABLE],
+                Sub::BROADBAND                     => Sub::SUB_CATEGORY_METADATA[Sub::BROADBAND],
+                Sub::DTH                           => Sub::SUB_CATEGORY_METADATA[Sub::DTH],
+                Sub::INTERNET_PROVIDER             => Sub::SUB_CATEGORY_METADATA[Sub::INTERNET_PROVIDER],
+                Sub::BILL_AND_RECHARGE_AGGREGATORS => Sub::SUB_CATEGORY_METADATA[Sub::BILL_AND_RECHARGE_AGGREGATORS],
+            ],
+        ],
+
+        self::GOVERNMENT => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::GOVERNMENT],
+            self::SUBCATEGORIES => [
+                Sub::CENTRAL                       => Sub::SUB_CATEGORY_METADATA[Sub::CENTRAL],
+                Sub::STATE                         => Sub::SUB_CATEGORY_METADATA[Sub::STATE],
+            ],
+        ],
+
+        self::LOGISTICS => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::LOGISTICS],
+            self::SUBCATEGORIES => [
+                Sub::FREIGHT                       => Sub::SUB_CATEGORY_METADATA[Sub::FREIGHT],
+                Sub::COURIER                       => Sub::SUB_CATEGORY_METADATA[Sub::COURIER],
+                Sub::WAREHOUSING                   => Sub::SUB_CATEGORY_METADATA[Sub::WAREHOUSING],
+                Sub::DISTRIBUTION_MANAGEMENT       => Sub::SUB_CATEGORY_METADATA[Sub::DISTRIBUTION_MANAGEMENT],
+                Sub::END_TO_END_LOGISTICS          => Sub::SUB_CATEGORY_METADATA[Sub::END_TO_END_LOGISTICS],
+            ],
+        ],
+
+        self::TOURS_AND_TRAVEL => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::TOURS_AND_TRAVEL],
+            self::SUBCATEGORIES => [
+                Sub::AVIATION                      => Sub::SUB_CATEGORY_METADATA[Sub::AVIATION],
+                Sub::ACCOMMODATION                 => Sub::SUB_CATEGORY_METADATA[Sub::ACCOMMODATION],
+                Sub::OTA                           => Sub::SUB_CATEGORY_METADATA[Sub::OTA],
+                Sub::TRAVEL_AGENCY                 => Sub::SUB_CATEGORY_METADATA[Sub::TRAVEL_AGENCY],
+            ],
+        ],
+
+        self::TRANSPORT => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::TRANSPORT],
+            self::SUBCATEGORIES => [
+                Sub::CAB_HAILING                   => Sub::SUB_CATEGORY_METADATA[Sub::CAB_HAILING],
+                Sub::BUS                           => Sub::SUB_CATEGORY_METADATA[Sub::BUS],
+                Sub::TRAIN_AND_METRO               => Sub::SUB_CATEGORY_METADATA[Sub::TRAIN_AND_METRO],
+            ],
+        ],
+
+        self::ECOMMERCE => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::ECOMMERCE],
+            self::SUBCATEGORIES => [
+                Sub::ECOMMERCE_MARKETPLACE         => Sub::SUB_CATEGORY_METADATA[Sub::ECOMMERCE_MARKETPLACE],
+                Sub::AGRICULTURE                   => Sub::SUB_CATEGORY_METADATA[Sub::AGRICULTURE],
+                Sub::BOOKS                         => Sub::SUB_CATEGORY_METADATA[Sub::BOOKS],
+                Sub::ELECTRONICS_AND_FURNITURE     => Sub::SUB_CATEGORY_METADATA[Sub::ELECTRONICS_AND_FURNITURE],
+                Sub::COUPONS                       => Sub::SUB_CATEGORY_METADATA[Sub::COUPONS],
+                Sub::RENTAL                        => Sub::SUB_CATEGORY_METADATA[Sub::RENTAL],
+                Sub::FASHION_AND_LIFESTYLE         => Sub::SUB_CATEGORY_METADATA[Sub::FASHION_AND_LIFESTYLE],
+                Sub::GIFTING                       => Sub::SUB_CATEGORY_METADATA[Sub::GIFTING],
+                Sub::GROCERY                       => Sub::SUB_CATEGORY_METADATA[Sub::GROCERY],
+                Sub::BABY_PRODUCTS                 => Sub::SUB_CATEGORY_METADATA[Sub::BABY_PRODUCTS],
+                Sub::OFFICE_SUPPLIES               => Sub::SUB_CATEGORY_METADATA[Sub::OFFICE_SUPPLIES],
+                Sub::WHOLESALE                     => Sub::SUB_CATEGORY_METADATA[Sub::WHOLESALE],
+                Sub::RELIGIOUS_PRODUCTS            => Sub::SUB_CATEGORY_METADATA[Sub::RELIGIOUS_PRODUCTS],
+                Sub::PET_PRODUCTS                  => Sub::SUB_CATEGORY_METADATA[Sub::PET_PRODUCTS],
+                Sub::SPORTS_PRODUCTS               => Sub::SUB_CATEGORY_METADATA[Sub::SPORTS_PRODUCTS],
+                Sub::ARTS_AND_COLLECTIBLES         => Sub::SUB_CATEGORY_METADATA[Sub::ARTS_AND_COLLECTIBLES],
+                Sub::SEXUAL_WELLNESS_PRODUCT       => Sub::SUB_CATEGORY_METADATA[Sub::SEXUAL_WELLNESS_PRODUCT],
+                Sub::DROP_SHIPPING                 => Sub::SUB_CATEGORY_METADATA[Sub::DROP_SHIPPING],
+                Sub::CRYPTO_MACHINERY              => Sub::SUB_CATEGORY_METADATA[Sub::CRYPTO_MACHINERY],
+                Sub::TOBACCO                       => Sub::SUB_CATEGORY_METADATA[Sub::TOBACCO],
+                Sub::WEAPONS_AND_AMMUNITIONS       => Sub::SUB_CATEGORY_METADATA[Sub::WEAPONS_AND_AMMUNITIONS],
+
+            ],
+        ],
+
+        self::FOOD => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::FOOD],
+            self::SUBCATEGORIES => [
+                Sub::ONLINE_FOOD_ORDERING          => Sub::SUB_CATEGORY_METADATA[Sub::ONLINE_FOOD_ORDERING],
+                Sub::RESTAURANT                    => Sub::SUB_CATEGORY_METADATA[Sub::RESTAURANT],
+                Sub::FOOD_COURT                    => Sub::SUB_CATEGORY_METADATA[Sub::FOOD_COURT],
+                Sub::CATERING                      => Sub::SUB_CATEGORY_METADATA[Sub::CATERING],
+                Sub::ALCOHOL                       => Sub::SUB_CATEGORY_METADATA[Sub::ALCOHOL],
+                Sub::RESTAURANT_SEARCH_AND_BOOKING => Sub::SUB_CATEGORY_METADATA[Sub::RESTAURANT_SEARCH_AND_BOOKING],
+            ],
+        ],
+
+        self::IT_AND_SOFTWARE => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::IT_AND_SOFTWARE],
+            self::SUBCATEGORIES => [
+                Sub::SAAS                          => Sub::SUB_CATEGORY_METADATA[Sub::SAAS],
+                Sub::PAAS                          => Sub::SUB_CATEGORY_METADATA[Sub::PAAS],
+                Sub::IAAS                          => Sub::SUB_CATEGORY_METADATA[Sub::IAAS],
+                Sub::CONSULTING_AND_OUTSOURCING    => Sub::SUB_CATEGORY_METADATA[Sub::CONSULTING_AND_OUTSOURCING],
+                Sub::WEB_DEVELOPMENT               => Sub::SUB_CATEGORY_METADATA[Sub::WEB_DEVELOPMENT],
+                Sub::TECHNICAL_SUPPORT             => Sub::SUB_CATEGORY_METADATA[Sub::TECHNICAL_SUPPORT],
+            ],
+        ],
+
+        self::GAMING => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::GAMING],
+            self::SUBCATEGORIES => [
+                Sub::GAME_DEVELOPER                => Sub::SUB_CATEGORY_METADATA[Sub::GAME_DEVELOPER],
+                Sub::ESPORTS                       => Sub::SUB_CATEGORY_METADATA[Sub::ESPORTS],
+                Sub::ONLINE_CASINO                 => Sub::SUB_CATEGORY_METADATA[Sub::ONLINE_CASINO],
+                Sub::FANTASY_SPORTS                => Sub::SUB_CATEGORY_METADATA[Sub::FANTASY_SPORTS],
+                Sub::GAMING_MARKETPLACE            => Sub::SUB_CATEGORY_METADATA[Sub::GAMING_MARKETPLACE],
+            ],
+        ],
+
+        self::MEDIA_AND_ENTERTAINMENT => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::MEDIA_AND_ENTERTAINMENT],
+            self::SUBCATEGORIES => [
+                Sub::VIDEO_ON_DEMAND               => Sub::SUB_CATEGORY_METADATA[Sub::VIDEO_ON_DEMAND],
+                Sub::MUSIC_STREAMING               => Sub::SUB_CATEGORY_METADATA[Sub::MUSIC_STREAMING],
+                Sub::MULTIPLEX                     => Sub::SUB_CATEGORY_METADATA[Sub::MULTIPLEX],
+                Sub::CONTENT_AND_PUBLISHING        => Sub::SUB_CATEGORY_METADATA[Sub::CONTENT_AND_PUBLISHING],
+                Sub::TICKETING                     => Sub::SUB_CATEGORY_METADATA[Sub::TICKETING],
+                Sub::NEWS                          => Sub::SUB_CATEGORY_METADATA[Sub::NEWS],
+            ],
+        ],
+
+        self::SERVICES => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::SERVICES],
+            self::SUBCATEGORIES => [
+                Sub::REPAIR_AND_CLEANING           => Sub::SUB_CATEGORY_METADATA[Sub::REPAIR_AND_CLEANING],
+                Sub::INTERIOR_DESIGN_AND_ARCHITECT => Sub::SUB_CATEGORY_METADATA[Sub::INTERIOR_DESIGN_AND_ARCHITECT],
+                Sub::MOVERS_AND_PACKERS            => Sub::SUB_CATEGORY_METADATA[Sub::MOVERS_AND_PACKERS],
+                Sub::LEGAL                         => Sub::SUB_CATEGORY_METADATA[Sub::LEGAL],
+                Sub::EVENT_PLANNING                => Sub::SUB_CATEGORY_METADATA[Sub::EVENT_PLANNING],
+                Sub::SERVICE_CENTRE                => Sub::SUB_CATEGORY_METADATA[Sub::SERVICE_CENTRE],
+                Sub::CONSULTING                    => Sub::SUB_CATEGORY_METADATA[Sub::CONSULTING],
+                Sub::AD_AND_MARKETING              => Sub::SUB_CATEGORY_METADATA[Sub::AD_AND_MARKETING],
+                Sub::SERVICES_CLASSIFIEDS          => Sub::SUB_CATEGORY_METADATA[Sub::SERVICES_CLASSIFIEDS],
+                Sub::MULTI_LEVEL_MARKETING         => sub::SUB_CATEGORY_METADATA[Sub::MULTI_LEVEL_MARKETING],
+            ],
+        ],
+
+        self::HOUSING => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::HOUSING],
+            self::SUBCATEGORIES => [
+                Sub::DEVELOPER                     => Sub::SUB_CATEGORY_METADATA[Sub::DEVELOPER],
+                Sub::FACILITY_MANAGEMENT           => Sub::SUB_CATEGORY_METADATA[Sub::FACILITY_MANAGEMENT],
+                Sub::RWA                           => Sub::SUB_CATEGORY_METADATA[Sub::RWA],
+                Sub::COWORKING                     => Sub::SUB_CATEGORY_METADATA[Sub::COWORKING],
+                Sub::REALESTATE_CLASSIFIEDS        => Sub::SUB_CATEGORY_METADATA[Sub::REALESTATE_CLASSIFIEDS],
+                Sub::SPACE_RENTAL                  => Sub::SUB_CATEGORY_METADATA[Sub::SPACE_RENTAL],
+            ],
+        ],
+
+        self::NOT_FOR_PROFIT => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::NOT_FOR_PROFIT],
+            self::SUBCATEGORIES => [
+                Sub::CHARITY                       => Sub::SUB_CATEGORY_METADATA[Sub::CHARITY],
+                Sub::EDUCATIONAL                   => Sub::SUB_CATEGORY_METADATA[Sub::EDUCATIONAL],
+                Sub::RELIGIOUS                     => Sub::SUB_CATEGORY_METADATA[Sub::RELIGIOUS],
+                Sub::PERSONAL                      => Sub::SUB_CATEGORY_METADATA[Sub::PERSONAL],
+            ],
+        ],
+
+        self::SOCIAL => [
+            self::DESCRIPTION   => self::DESCRIPTIONS[self::SOCIAL],
+            self::SUBCATEGORIES => [
+                Sub::MATCHMAKING                   => Sub::SUB_CATEGORY_METADATA[Sub::MATCHMAKING],
+                Sub::SOCIAL_NETWORK                => Sub::SUB_CATEGORY_METADATA[Sub::SOCIAL_NETWORK],
+                Sub::MESSAGING                     => Sub::SUB_CATEGORY_METADATA[Sub::MESSAGING],
+                Sub::PROFESSIONAL_NETWORK          => Sub::SUB_CATEGORY_METADATA[Sub::PROFESSIONAL_NETWORK],
+                Sub::NEIGHBOURHOOD_NETWORK         => Sub::SUB_CATEGORY_METADATA[Sub::NEIGHBOURHOOD_NETWORK],
+            ],
+        ]
     ];
 }
