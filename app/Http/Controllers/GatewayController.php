@@ -279,22 +279,14 @@ class GatewayController extends Controller
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
-        $this->app['config']->set('database.default', $mode);
+        //$this->app['config']->set('database.default', $mode);
+        \Database\DefaultConnection::set($mode);
 
-        $gateway = $this->app['repo']->enach->findByPaymentIdAndAction(
-            $paymentId,
-            \RZP\Gateway\Base\Action::AUTHORIZE
-        );
+        $this->app['basicauth']->setMode($mode);
 
-        if ($gateway === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Failed to find requisite payment id: ' . $paymentId);
-        }
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $publicPaymentId = $gateway->getPublicPaymentId();
-
-        /*$payment = $this->repo->payment->findOrFailPublic($paymentId);
+        $publicPaymentId = $payment->getPublicId();
 
         $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
 
@@ -306,11 +298,11 @@ class GatewayController extends Controller
 
         $url = $url . '?' . $inputMsg;
 
-        return Redirect::to($url);*/
+        return Redirect::to($url);
 
-        $hash = $this->route->getHashOf($publicPaymentId);
+        /*$hash = $this->route->getHashOf($publicPaymentId);
 
-        return (new Payment\Service)->npciCallback($publicPaymentId, $hash,  $input);
+        return (new Payment\Service)->npciCallback($publicPaymentId, $hash,  $input);*/
     }
 
     public function callbackAmazonpay()
