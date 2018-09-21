@@ -17,15 +17,13 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
-        $this->crypto = new Crypto();
+        $this->setCryptoAttributes();
 
-        $this->crypto->setPrivateKeyPath(__DIR__ . '/keys/mock_key.pem');
+        $requestXmlString = $input['MandateReqDoc'];
 
-        $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/cert.pem');
+        $this->crypto->verifySignature($requestXmlString, $this->crypto->getEncryptionPublicKey());
 
-        $this->crypto->setSigningCertificatePath(__DIR__ . '/keys/mock_cert.pem');
-
-        $requestXml = (array) simplexml_load_string(trim($input['MandateReqDoc']));
+        $requestXml = (array) simplexml_load_string(trim($requestXmlString));
 
         $json = json_encode($requestXml);
 
@@ -52,11 +50,13 @@ class Server extends Base\Mock\Server
 
         $responseXml = $this->getResponseOrErrorXml($responseData, $respType);
 
+        $signedResponseXml = $this->crypto->addSignature($responseXml);
+
         $callbackUrl = $this->route->getUrl('gateway_emandate_callback_npci_nb');
 
         //$callbackUrl = $input['callback'];
 
-        $content['MandateRespDoc'] = $responseXml;
+        $content['MandateRespDoc'] = $signedResponseXml;
 
         $content['RespType'] = $respType;
 
@@ -243,5 +243,18 @@ class Server extends Base\Mock\Server
         $this->content($data, 'authorize_get_secure_data');
 
         return $data;
+    }
+
+    protected function setCryptoAttributes()
+    {
+        $this->crypto = new Crypto();
+
+        $key = file_get_contents(__DIR__ . '/keys/mock_key.pem');
+
+        $this->crypto->setPrivateKey($key);
+
+        $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/cert.pem');
+
+        $this->crypto->setSigningCertificatePath(__DIR__ . '/keys/mock_cert.pem');
     }
 }

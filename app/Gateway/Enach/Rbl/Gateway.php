@@ -133,11 +133,11 @@ class Gateway extends Base\Gateway
     {
         $this->setCryptoAttribute();
 
-        $xmlData = [];
+        $responseXmlString = $input['gateway'][ResponseFields::RESPONSE_XML];
 
-        //$attributes = [];
+        $this->crypto->verifySignature($responseXmlString, $this->crypto->getEncryptionPublicKey());
 
-        $responseXml = (array) simplexml_load_string(trim($input['gateway'][ResponseFields::RESPONSE_XML]));
+        $responseXml = (array) simplexml_load_string(trim($responseXmlString));
 
         $json = json_encode($responseXml);
 
@@ -660,7 +660,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $this->crypto->setPrivateKeyPath(__DIR__ . '/keys/key.pem');
+            $this->crypto->setPrivateKey();
             //$this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/onmag_cert.cer');
             $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/mock_cert.pem');
             $this->crypto->setSigningCertificatePath(__DIR__ . '/keys/cert.pem');
