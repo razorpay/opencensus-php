@@ -366,17 +366,10 @@ class Gateway extends Base\Gateway
         $xmlString = $document->asXml();
 
         $xmlString = str_replace("\n", '', $xmlString); // remove new lines
-        $xmlString = str_replace("\r", '', $xmlString);
-        $xmlString = preg_replace('/\s\s+/', '', $xmlString);
-        //$xmlString = str_replace("\t", '', $xmlString);
+        $xmlString = str_replace("\r", '', $xmlString); // remove carraige return
+        $xmlString = preg_replace('/\s\s+/', '', $xmlString); // remove consecutive spaces
 
-        $xmlDoc = new DOMDocument('1.0', 'UTF-8');
-
-        $xmlDoc->loadXML($xmlString);
-
-        //$xmlString = $xmlDoc->saveXML();
-
-        $signedxml = $this->crypto->addSignature($xmlDoc);
+        $signedxml = $this->crypto->addSignature($xmlString);
 
         return $signedxml;
     }
