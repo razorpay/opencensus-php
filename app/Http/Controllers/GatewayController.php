@@ -54,13 +54,15 @@ class GatewayController extends Controller
             }
             catch (\Throwable $ex)
             {
-                throw new Exception\LogicException(
-                    $ex->getMessage(),
-                    null,
+                $this->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
                     [
                         'gateway'    => $gatewayDriver,
                         'payment_id' => $paymentId
-                    ]);
+                    ]
+                );
 
                 return ['success' => false];
             }
