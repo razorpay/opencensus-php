@@ -66,7 +66,8 @@ class Gateway extends Base\Gateway
             [
                 'gateway'          => $this->gateway,
                 'gateway_response' => $content,
-                'payment_id'       => $input['payment']['id']
+                'payment_id'       => $input['payment']['id'],
+                'terminal_id'      => $input['terminal']['id']
             ]
         );
 
@@ -174,9 +175,10 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'gateway'    => $this->gateway,
-                'request'    => $request,
-                'payment_id' => $verify->input['payment']['id'],
+                'gateway'     => $this->gateway,
+                'request'     => $request,
+                'payment_id'  => $verify->input['payment']['id'],
+                'terminal_id' => $verify->input['terminal']['id'],
             ]
         );
 
