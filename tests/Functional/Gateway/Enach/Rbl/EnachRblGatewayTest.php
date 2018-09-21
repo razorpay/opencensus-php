@@ -1135,6 +1135,22 @@ class EnachRblGatewayTest extends TestCase
                 $url, $method, $content);
         }
 
+        if($this->isNpciEmandateFlow($content) === true)
+        {
+            $response = $this->sendRequest($request);
+
+            $this->assertEquals($response->getStatusCode(), '302');
+
+            $data = array(
+                'url' => $response->headers->get('location'),
+                'method' => 'post');
+
+            if (filter_var($data['url'], FILTER_VALIDATE_URL))
+            {
+                return $this->submitPaymentCallbackRedirect($data['url']);
+            }
+        }
+
         return $this->submitPaymentCallbackRequest($request);
     }
 
@@ -1382,5 +1398,17 @@ class EnachRblGatewayTest extends TestCase
                 $content['RejectBy'] = 'Bank';
             }
         });
+    }
+
+    protected function isNpciEmandateFlow($content)
+    {
+        $keys = array_keys($content);
+
+        $result = in_array('MerchantID', $keys) and
+                  in_array('MandateReqDoc', $keys) and
+                  in_array('CheckSumVal', $keys) and
+                  in_array('BankID', $keys);
+
+        return $result;
     }
 }

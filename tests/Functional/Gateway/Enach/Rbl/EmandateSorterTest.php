@@ -18,7 +18,7 @@ class EmandateSorterTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_enach_rbl_terminal');
+        //$this->sharedTerminal =
 
         $this->fixtures->create(Entity::CUSTOMER);
 
@@ -30,7 +30,11 @@ class EmandateSorterTest extends TestCase
 
     public function testEmandateSorter()
     {
+        $this->fixtures->create('terminal:shared_enach_rbl_terminal');
+
         $this->fixtures->create('terminal:emandate_icici_terminal');
+
+        $this->fixtures->create('terminal:shared_emandate_icici_terminal');
 
         $payment                 = $this->getEmandatePaymentArray('ICIC', 'netbanking', 0);
         $payment['bank_account'] = [
@@ -51,6 +55,7 @@ class EmandateSorterTest extends TestCase
 
     public function testEmandateSorterShared()
     {
+        $this->fixtures->create('terminal:shared_enach_rbl_terminal');
 
         $this->fixtures->create('terminal:shared_emandate_icici_terminal');
 
@@ -71,7 +76,31 @@ class EmandateSorterTest extends TestCase
         $this->assertEquals(Gateway::ENACH_RBL, $payment['gateway']);
     }
 
-    protected function runPaymentCallbackFlowEnachRbl($response, &$callback = null)  //TODO move this to paymentEnachTrait
+    public function testEmandateSorterDirectAndShared()
+    {
+        $this->fixtures->create('terminal:emandate_icici_terminal');
+
+        $this->fixtures->create('terminal:shared_emandate_icici_terminal');
+
+        $payment                 = $this->getEmandatePaymentArray('ICIC', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'ICIC0002766',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Gateway::NETBANKING_ICICI, $payment['gateway']);
+    }
+
+
+    protected function runPaymentCallbackFlowEnachRbl($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
 
@@ -83,6 +112,34 @@ class EmandateSorterTest extends TestCase
                 $url, $method, $content);
         }
 
+        if($this->isNpciEmandateFlow($content) === true)
+        {
+            $response = $this->sendRequest($request);
+
+            $this->assertEquals($response->getStatusCode(), '302');
+
+            $data = array(
+                'url' => $response->headers->get('location'),
+                'method' => 'post');
+
+            if (filter_var($data['url'], FILTER_VALIDATE_URL))
+            {
+                return $this->submitPaymentCallbackRedirect($data['url']);
+            }
+        }
+
         return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function isNpciEmandateFlow($content)
+    {
+        $keys = array_keys($content);
+
+        $result = in_array('MerchantID', $keys) and
+        in_array('MandateReqDoc', $keys) and
+        in_array('CheckSumVal', $keys) and
+        in_array('BankID', $keys);
+
+        return $result;
     }
 }
