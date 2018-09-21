@@ -14,6 +14,8 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
+        parent::authorize($input);
+
         $stringForValidation = $input['parameter_string'];
 
         $sig = $input['bank_signaturte'];
@@ -23,14 +25,6 @@ class Server extends Base\Mock\Server
         parse_str($input['parameter_string'],$input);
 
         $input['bank_signaturte'] = $sig;
-
-        parent::authorize($input);
-
-        if (isset($input['Action_ShoppingMall_Login_Init']) === true)
-        {
-            $input[RequestFields::ACTION] = 'Y';
-            unset($input['Action_ShoppingMall_Login_Init']);
-        }
 
         $this->validatechecksum($stringForValidation, $input);
 
