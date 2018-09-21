@@ -1315,6 +1315,28 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createEmandateIciciTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'netbanking_icici',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_terminal_password' => 'abcdef',
+            'netbanking'                => 0,
+            'emandate'                  => 1,
+        ];
+
+        $defaultValues['type'] = [
+            Type::RECURRING_NON_3DS => '1',
+            Type::RECURRING_3DS     => '1'
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
     public function createSharedEmandateHdfcTerminal(array $attributes = [])
     {
         $defaultValues = [
