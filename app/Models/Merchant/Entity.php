@@ -147,6 +147,7 @@ class Entity extends Base\PublicEntity
     const USER                      = 'user';
     const DETAILS                   = 'details';
     const DASHBOARD_ACCESS          = 'dashboard_access';
+    const APPLICATION               = 'application';
 
     protected $entity = 'merchant';
 
@@ -360,6 +361,7 @@ class Entity extends Base\PublicEntity
         self::DETAILS,
         self::USER,
         self::DASHBOARD_ACCESS,
+        self::APPLICATION,
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;

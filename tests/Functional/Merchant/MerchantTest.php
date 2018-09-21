@@ -1229,6 +1229,8 @@ class MerchantTest extends TestCase
 
     public function testGetCheckoutPreferencesForMagicDisabledMerchant()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $this->startTest();
@@ -3216,5 +3218,34 @@ class MerchantTest extends TestCase
         $this->assertEquals(Channel::YESBANK, $content['channel']);
 
         Mail::assertQueued(BeneficiaryFileMail::class);
+    }
+
+    public function testFailedBeneficiaryRegistrationWithYesbank()
+    {
+        $ba = $this->fixtures->create('bank_account');
+
+        $this->fixtures->create('nodal_beneficiary',
+            [
+                'bank_account_id'     => $ba->getId(),
+                'merchant_id'         => $ba->merchant->getId(),
+                'registration_status' => 'registered'
+            ]
+        );
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/api/yesbank',
+            'method'    => 'post',
+            'content'   => [
+                'duration' => 120
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
+
+        $this->assertEquals('registered', $nodalBeneficiary['registration_status']);
     }
 }

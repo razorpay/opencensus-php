@@ -14,6 +14,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Exception\InvalidArgumentException;
+use RZP\Models\Settlement\SlackNotification;
 
 class Beneficiary extends Base\Core
 {
@@ -71,14 +72,7 @@ class Beneficiary extends Base\Core
         $message = "Merchant Beneficiary file generated. Beneficiary added since".
             " last report is ". $newBeneficiaryCount;
 
-        $this->app['slack']->queue(
-            $message,
-            [
-                'channel' => $channel,
-            ],
-            [
-                'channel' => Config::get('slack.channels.settlements')
-            ]);
+        (new SlackNotification)->send($message, ['channel' => $channel]);
 
         return $result;
     }
@@ -141,16 +135,9 @@ class Beneficiary extends Base\Core
         $beneficiaryCount = $bankAccounts->count();
 
         $message = "Merchant Beneficiary api executed. Beneficiary added since ".
-                   "last report is ". $beneficiaryCount; ;
+                   "last report is ". $beneficiaryCount;
 
-        $this->app['slack']->queue(
-            $message,
-            [
-                'channel' => $channel
-            ],
-            [
-                'channel' => Config::get('slack.channels.settlements')
-            ]);
+        (new SlackNotification)->send($message, ['channel' => $channel]);
 
         return $result;
     }
