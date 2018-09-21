@@ -7,7 +7,7 @@ use RZP\Gateway\Upi\Mindgate\Gateway;
 
 class UpiMindgateCryptoTest extends TestCase
 {
-    const CIPHERTEXT = '8F3574160C3FD2AE704E5A9412FCB387';
+    const CIPHERTEXT = 'BDB5D6B2AA68B4F91AAD6DB2BDD4713B';
     const PLAINTEXT  = 'HELLO WORLD';
     public function setUp()
     {
