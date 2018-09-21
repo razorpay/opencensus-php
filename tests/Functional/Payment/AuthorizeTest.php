@@ -59,6 +59,8 @@ class AuthorizeTest extends TestCase
 
     public function testMagicKeyFalseMerchantDisabled()
     {
+        $this->markTestSkipped();
+
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
