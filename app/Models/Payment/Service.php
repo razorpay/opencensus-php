@@ -1430,8 +1430,7 @@ class Service extends Base\Service
                 Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT
             );
 
-            $merchant = $this->repo->merchant->findByIdAndOrgId(
-                $merchantAccount, Org\Entity::RAZORPAY_ORG_ID);
+            $merchant = $this->repo->merchant->findOrFail($merchantAccount);
 
             $paymentProcessor = $this->getNewProcessor($merchant);
 
