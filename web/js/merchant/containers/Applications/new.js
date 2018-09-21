@@ -255,20 +255,22 @@ class NewApplicationForm extends Component {
     this.setState({ showProdSecret: true });
   };
 
-  onWebhookSave = webhook => {
+  onWebhookSave = mode => webhook => {
+    const setState = this.setWebhookState(mode);
     this.props.closeModal();
-    this.setState({ webhook: webhook.data });
+    setState({ webhook: webhook.data });
   };
 
-  showWebhookModal = () => {
+  showWebhookModal = (mode = '') => () => {
     this.props.openModal({
       component: (
         <AppWebhook
-          webhook={this.state.webhook}
-          loading={this.state.webhookLoading}
+          webhook={this.state[`${mode}webhook`]}
+          loading={this.state[`${mode}webhookLoading`]}
           appId={this.props.match.params.id}
-          isApplication={true}
-          onSave={this.onWebhookSave}
+          onSave={this.onWebhookSave(mode)}
+          mode={mode}
+          isApplication
         />
       ),
     });
@@ -378,31 +380,31 @@ class NewApplicationForm extends Component {
             {this.state.edit && (
               <div class="form-group">
                 <label class="col-md-2 control-label">Webhooks:</label>
-                {user.isPartner('pure_platform')
-                  ? ['live', 'test'].map(mode => {
-                      const webhook = this.state[`${mode}webhook`];
-                      const webhookLoading = this.state[
-                        `${mode}webhookLoading`
-                      ];
-                      return (
-                        <div class="col-md-5">
-                          <WebhookDetail
-                            webhook={webhook}
-                            webhookLoading={webhookLoading}
-                            mode={mode}
-                            key={mode}
-                          />
-                        </div>
-                      );
-                    })
-                  : console.log(this.state) || (
-                      <div class="col-md-10">
+                {user.isPartner('pure_platform') ? (
+                  ['live', 'test'].map(mode => {
+                    const webhook = this.state[`${mode}webhook`];
+                    const webhookLoading = this.state[`${mode}webhookLoading`];
+                    return (
+                      <div class="col-md-5">
                         <WebhookDetail
-                          webhook={this.state.webhook}
-                          webhookLoading={this.state.webhookLoading}
+                          webhook={webhook}
+                          webhookLoading={webhookLoading}
+                          mode={mode}
+                          key={mode}
+                          showWebhookModal={this.showWebhookModal(mode)}
                         />
                       </div>
-                    )}
+                    );
+                  })
+                ) : (
+                  <div class="col-md-10">
+                    <WebhookDetail
+                      webhook={this.state.webhook}
+                      webhookLoading={this.state.webhookLoading}
+                      showWebhookModal={this.showWebhookModal()}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
@@ -413,6 +415,7 @@ class NewApplicationForm extends Component {
                   <AsyncButton
                     class="btn btn-primary pull-right"
                     text="Save"
+                    type="submit"
                     pendingText="Saving..."
                     onClick={handleSubmit(
                       this.state.edit ? this.update : this.create
@@ -547,6 +550,7 @@ function WebhookDetail({
       <button
         class="btn btn-default webhook-btn m-t"
         onClick={showWebhookModal}
+        type="button"
       >
         Manage {mode && titleCase(mode)} Webhook
       </button>
