@@ -17,7 +17,7 @@ export default class EditReceipt extends React.Component {
       isEditableMode: true,
     });
     setTimeout(() => document.getElementsByName('receipt_no')[0].focus(), 10);
-    this.props.trackerFn(this.props.entityId, 'Edit Receipt');
+    this.props.trackerFn('Edit Receipt');
   };
 
   render() {
@@ -64,8 +64,6 @@ export default class EditReceipt extends React.Component {
               class="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
               onClick={() => {
-                this.props.trackerFn(this.props.entityId, 'Save Receipt');
-
                 return this.props
                   .editFn({
                     receipt: this.state.receipt,
@@ -73,6 +71,8 @@ export default class EditReceipt extends React.Component {
                   .then(resp => {
                     if (resp && resp.data) {
                       this.setState(this.resetState());
+
+                      this.props.trackerFn('Edit Receipt (Saved)');
                     }
                   });
               }}

@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import Duplex from 'ui/Duplex';
 import fetch, { adminFetch, adminDelete, adminPost } from 'common/fetch';
+import { getURLQueryParams } from 'rzp/utils/rzp-utils';
 import { Link } from 'react-router-dom';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyDone, notifyError, notifySuccess } from 'common/modal';
@@ -43,10 +44,12 @@ export default class GenericEntity extends Component {
 
   fetchEntity(mode, suppressDefaultError) {
     let { type, id } = this.params;
+    const params = getURLQueryParams(document.location.href);
 
     fetch(
       {
         url: `/admin/api/${mode}/admin/${type}/${id}`,
+        params,
       },
       suppressDefaultError
     ).then(data => {

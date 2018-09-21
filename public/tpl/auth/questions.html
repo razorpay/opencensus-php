@@ -11,7 +11,7 @@
       {{signup.details.business_type[signup.merchantData.business_type]}}
     </strong> -->
     <i class="fa fa-angle-left question-back-arrow" ng-click="goToSignupStep(1, 0)"></i>
-    <span class="highlight-clickable-text" ng-click="goToSignupStep(1, 0)">Back to Business Type</span>
+    <span class="highlight-clickable-text" ng-click="goToSignupStep(1, 0);trackBackClick('Business Type');">Back to Business Type</span>
   </div>
   <div class="auth-text" ng-if="signup.currentSubStep == 2">
     <!-- Expected Monthly Transaction Volume (INR)
@@ -19,7 +19,7 @@
       {{signup.details.transaction_volume[signup.merchantData.transaction_volume]}}
     </strong> -->
     <i class="fa fa-angle-left question-back-arrow" ng-click="goToSignupStep(1, 1)"></i>
-    <span class="highlight-clickable-text" ng-click="goToSignupStep(1, 1)">Back to Estimated Monthly Revenue (INR)</span>
+    <span class="highlight-clickable-text" ng-click="goToSignupStep(1, 1);trackBackClick('Estimated Monthly Revenue');">Back to Estimated Monthly Revenue (INR)</span>
   </div>
   <div class="auth-text" ng-if="signup.currentSubStep == 3">
     <!-- Your Role
@@ -27,7 +27,7 @@
       {{signup.details.role[signup.merchantData.role]}}
     </strong> -->
     <i class="fa fa-angle-left question-back-arrow" ng-click="goToSignupStep(1, 2)"></i>
-    <span class="highlight-clickable-text" ng-click="goToSignupStep(1, 2)">Back to Role</span>
+    <span class="highlight-clickable-text" ng-click="goToSignupStep(1, 2);trackBackClick('Role');">Back to Role</span>
   </div>
   <div class="auth-text" ng-if="signup.currentSubStep == 4">
     <!-- Your Department
@@ -35,7 +35,7 @@
       {{signup.details.department[signup.merchantData.department]}}
     </strong> -->
     <i class="fa fa-angle-left question-back-arrow" ng-click="goToSignupStep(1, 3)"></i>
-    <span class="highlight-clickable-text" ng-click="goToSignupStep(1, 3)">Back to Department</span>
+    <span class="highlight-clickable-text" ng-click="goToSignupStep(1, 3);trackBackClick('Department');">Back to Department</span>
   </div>
 </div>
 <div class="signup-detail-form">
@@ -53,21 +53,21 @@
         </div>
         <div class="select-one">
           <div class="select-one-option" ng-repeat="key in toArray(signup.details.business_type)" ng-show='$index < 5 || signup.showMore === true'>
-            <input override-tab ng-click="quickSendDetails('business_type', signup.details.business_type[key].value)" type="radio" name="business_type" value="{{signup.details.business_type[key].value}}" id="{{'business_type_'+signup.details.business_type[key].value}}" ng-model="signup.merchantData.business_type"/>
+            <input override-tab ng-click="quickSendDetails('business_type', signup.details.business_type[key].value);trackStepClicksOnMore('Step - Select Business Type', signup.details.business_type[key].name);" type="radio" name="business_type" value="{{signup.details.business_type[key].value}}" id="{{'business_type_'+signup.details.business_type[key].value}}" ng-model="signup.merchantData.business_type"/>
             <label for="{{'business_type_'+signup.details.business_type[key].value}}">
               {{signup.details.business_type[key].name}}
               <i class="pull-right fa fa-check"></i>
             </label>
           </div>
           <div class="select-one-option" ng-show="signup.showMore === false">
-            <input override-tab type="checkbox" name="business_type" value="true" id="more" ng-model="signup.showMore" />
+            <input override-tab type="checkbox" name="business_type" value="true" id="more" ng-model="signup.showMore" ng-change="trackStepClicksOnMore('Step - Select Business Type', 'More')" />
             <label for="more">
               More
               <i class="pull-right fa fa-ellipsis-h"></i>
             </label>
           </div>
         </div>
-        <button override-tab ng-disabled="!signup.merchantData.business_type" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails()">
+        <button override-tab ng-disabled="!signup.merchantData.business_type" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails(); trackStepClicksOnMore('Step - Select Business Type', 'Next');">
           Next
         </button>
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -79,14 +79,14 @@
 
         <div class="select-one">
           <div class="select-one-option" ng-repeat="key in toArray(signup.details.transaction_volume)" >
-            <input override-tab ng-click="quickSendDetails('transaction_volume', key)" type="radio" name="transaction_volume" value="{{key}}" id="{{'transaction_volume_'+key}}" ng-model="signup.merchantData.transaction_volume"/>
+            <input override-tab ng-click="quickSendDetails('transaction_volume', key); trackStepClicksOnMore('Step - Monthly Revenue', signup.details.transaction_volume[key]);" type="radio" name="transaction_volume" value="{{key}}" id="{{'transaction_volume_'+key}}" ng-model="signup.merchantData.transaction_volume"/>
             <label for="{{'transaction_volume_'+key}}">
               {{signup.details.transaction_volume[key]}}
               <i class="pull-right fa fa-check"></i>
             </label>
           </div>
         </div>
-        <button override-tab ng-disabled="!signup.merchantData.transaction_volume" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails()">
+        <button override-tab ng-disabled="!signup.merchantData.transaction_volume" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails(); trackStepClicksOnMore('Step - Monthly Revenue', 'Next');">
           Next
         </button>
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -98,14 +98,14 @@
 
         <div class="select-one">
           <div class="select-one-option" ng-repeat="key in toArray(signup.details.role)" >
-            <input override-tab ng-click="quickSendDetails('role', key)" type="radio" name="role" value="{{key}}" id="{{'role_'+key}}" ng-model="signup.merchantData.role"/>
+            <input override-tab ng-click="quickSendDetails('role', key); trackStepClicksOnMore('Step - Your Role', signup.details.role[key])" type="radio" name="role" value="{{key}}" id="{{'role_'+key}}" ng-model="signup.merchantData.role"/>
             <label for="{{'role_'+key}}">
               {{signup.details.role[key]}}
               <i class="pull-right fa fa-check"></i>
             </label>
           </div>
         </div>
-        <button override-tab ng-disabled="!signup.merchantData.role" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails()">
+        <button override-tab ng-disabled="!signup.merchantData.role" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails(); trackStepClicksOnMore('Step - Your Role', 'Next')">
           Next
         </button>
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -117,14 +117,14 @@
 
         <div class="select-one">
           <div class="select-one-option" ng-repeat="key in toArray(signup.details.department)" >
-            <input override-tab ng-click="quickSendDetails('department', key)" type="radio" name="department" value="{{key}}" id="{{'department_'+key}}" ng-model="signup.merchantData.department"/>
+            <input override-tab ng-click="quickSendDetails('department', key); trackStepClicksOnMore('Step - Your Department', signup.details.department[key])" type="radio" name="department" value="{{key}}" id="{{'department_'+key}}" ng-model="signup.merchantData.department"/>
             <label for="{{'department_'+key}}">
               {{signup.details.department[key]}}
               <i class="pull-right fa fa-check"></i>
             </label>
           </div>
         </div>
-        <button override-tab ng-disabled="!signup.merchantData.department" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails()">
+        <button override-tab ng-disabled="!signup.merchantData.department" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails(); trackStepClicksOnMore('Step - Your Role', 'Next')">
           Next
         </button>
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>

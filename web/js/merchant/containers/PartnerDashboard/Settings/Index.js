@@ -10,6 +10,8 @@ import DetailRow from 'merchant/components/DetailRow';
 import ManageWebhook from './ManageWebhook';
 import ViewCredentials from './ViewCredentials';
 
+import { trackSettingsEvents } from '../ga';
+
 @connect(
   state => ({
     isLoading: state.applications.loading,
@@ -24,6 +26,10 @@ import ViewCredentials from './ViewCredentials';
 export default class SettingsContainer extends Component {
   componentWillMount() {
     this.props.fetchPartnerApplication();
+  }
+
+  componentDidMount() {
+    trackSettingsEvents();
   }
 
   handleManageWebhookClick = mode => () => {

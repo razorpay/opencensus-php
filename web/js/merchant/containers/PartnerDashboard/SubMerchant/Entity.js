@@ -8,7 +8,9 @@ import { openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
 import Entity from 'merchant/components/PartnerDashboard/Submerchant/Entity';
+
 import InviteMerchant from './Invite';
+import { trackListEvents } from '../ga';
 
 const fullDetailsAccessMap = {
   fully_managed: true,
@@ -28,6 +30,12 @@ const fullDetailsAccessMap = {
 export default class SubmerchantEntityContainer extends Component {
   componentWillMount() {
     this.props.fetchSubmerchant(this.props.id, this.props.appId);
+  }
+
+  componentDidMount() {
+    if (!!this.props.closeUrl) {
+      trackListEvents('Open Details');
+    }
   }
 
   componentWillReceiveProps(nextProps) {
