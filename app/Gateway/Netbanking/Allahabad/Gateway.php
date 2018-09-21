@@ -18,9 +18,9 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
-    protected $gateway = 'netbanking_allahabad';
+    protected $gateway = Constants::GATEWAY;
 
-    protected $bank = 'allahabad';
+    protected $bank = Constants::BANK;
 
     protected $map = [
          RequestFields::MERCHANT_CODE         => NetbankingEntity::MERCHANT_CODE,
@@ -77,7 +77,7 @@ class Gateway extends Base\Gateway
 
         $expectedAmount = $this->formatAmount($input['payment']['amount'] / 100);
 
-        $actualAmount   = $this->formatAmount($content[ResponseFields::AMOUNT]);
+        $actualAmount = $this->formatAmount($content[ResponseFields::AMOUNT]);
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
@@ -108,7 +108,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAYEE_ID             => Constants::PAYEE_ID,
             RequestFields::ITEM_CODE            => $input['payment']['id'],
             RequestFields::PRODUCT_REF_NUMBER   => $input['payment']['id'],
-            RequestFields::AMOUNT               => $this->formatAmount($input['payment']['amount']/100),
+            RequestFields::AMOUNT               => $this->formatAmount($input['payment']['amount'] / 100),
             RequestFields::CURRENCY             => Currency::INR,
             RequestFields::RETURN_URL           => $input['callbackUrl'],
             RequestFields::CG                   => Status::YES,
@@ -158,7 +158,7 @@ class Gateway extends Base\Gateway
     {
         $content[NetbankingEntity::RECEIVED] = true;
 
-        $gatewayPayment = $this->getRepository()
+        $gatewayPayment = $this->repo
                                ->findByPaymentIdAndActionOrFail(
                                    $content[ResponseFields::PRODUCT_REF_NUMBER],
                                    Action::AUTHORIZE);
@@ -187,9 +187,10 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'gateway'    => $this->gateway,
-                'response'   => $response->body,
-                'payment_id' => $verify->input['payment']['id'],
+                'gateway'     => $this->gateway,
+                'response'    => $response->body,
+                'payment_id'  => $verify->input['payment']['id'],
+                'terminal_id' => $verify->input['terminal']['id'],
             ]
         );
 
@@ -209,7 +210,7 @@ class Gateway extends Base\Gateway
             RequestFields::MODE_OF_PAYMENT        => Constants::MODE_OF_PAYMENT_VERIFY,
             RequestFields::ITEM_CODE              => $input['payment']['id'],
             RequestFields::PRODUCT_REF_NUMBER     => $input['payment']['id'],
-            RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount']/ 100),
+            RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount'] / 100),
             RequestFields::CURRENCY               => Currency::INR,
             RequestFields::LANGUAGE_ID            => Constants::USER_LANG_ID,
             RequestFields::USER_TYPE              => Constants::USER_TYPE,
@@ -222,7 +223,7 @@ class Gateway extends Base\Gateway
 
         $str = http_build_query($data,null,'|');
 
-        $sigStr = $this->getHashOfString($str, '|');
+        $sigStr = $this->getHashOfString($str);
 
         $request['url'] .= '?bank_signaturte=' . $sigStr . '&parameter_string=' . $str;
 
@@ -281,7 +282,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->fill($attributes);
 
-        $this->getRepository()->saveOrFail($gatewayPayment);
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }

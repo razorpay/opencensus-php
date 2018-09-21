@@ -13,4 +13,6 @@ class Constants
     const STATFLG                   = 'H';
     const RETAIL                    = 'retail';
     const PAYEE_ID                  = 'RAZOR';
+    const GATEWAY                   = 'netbanking_allahabad';
+    const BANK                      = 'allahabad';
 }
