@@ -447,8 +447,6 @@ class Service extends Base\Service
         return BusinessCategory::BUSINESS_CATEGORIES;
     }
 
-
-
     public function getRejectionReasons()
     {
         return RejectionReasons::REJECTION_REASONS_MAPPING;
