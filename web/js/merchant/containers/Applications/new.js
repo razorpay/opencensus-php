@@ -1,23 +1,29 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Field, formValueSelector, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import { Link, withRouter } from 'react-router-dom';
+
+import { autoPrefixUrls, checkIfHTTPS } from 'rzp/utils/rzp-utils';
+import { titleCase } from 'common/util';
+
 import {
   required,
   lenientUrl,
   isUrlLenient,
   flexibleDevUrl,
 } from 'rzp/utils/validators';
-import InputField from 'rzp/ui/Forms/InputField';
-import TaggedInput from 'rzp/ui/Forms/TaggedInput';
-import Fieldset from 'rzp/ui/Forms/Fieldset';
-import { autoPrefixUrls, checkIfHTTPS } from 'rzp/utils/rzp-utils';
+
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as ApplicationActions from 'merchant/modules/applications';
 import { openModal, closeModal } from 'rzp/modules/modals';
-import AppWebhook from './AppWebhook';
+
+import InputField from 'rzp/ui/Forms/InputField';
+import TaggedInput from 'rzp/ui/Forms/TaggedInput';
+import Fieldset from 'rzp/ui/Forms/Fieldset';
 import LoaderDots from 'rzp/ui/LoaderDots';
+
+import AppWebhook from './AppWebhook';
 
 const INFO = {
   icon:
@@ -68,15 +74,20 @@ class NewApplicationForm extends Component {
   state = {
     edit: false,
     details: {},
-    showDevSecret: false,
-    showProdSecret: false,
   };
+
   componentWillMount() {
     let id = this.props.match.params.id;
     if (!id) return;
     this.setState({ edit: true });
 
-    this.fetchWebhooks();
+    if (this.props.user.isPartner('pure_platform')) {
+      // since partner users need not be activated
+      this.fetchWebhooks('live');
+      this.fetchWebhooks('test');
+    } else {
+      this.fetchWebhooks();
+    }
 
     var appDetails = this.props.applications.filter(app => app.id === id);
     if (appDetails.length) {
@@ -98,17 +109,26 @@ class NewApplicationForm extends Component {
       });
   }
 
-  fetchWebhooks() {
-    this.setState({ webhookLoading: true });
+  setWebhookState = mode => ({ webhookLoading, webhook }) => {
+    mode = mode || '';
+    this.setState({
+      [`${mode}webhookLoading`]: webhookLoading,
+      [`${mode}webhook`]: webhook,
+    });
+  };
+
+  fetchWebhooks(mode) {
+    const changeWebhookState = this.setWebhookState(mode);
+    changeWebhookState({ webhookLoading: false });
     // Fetch call getting app's webhook
     let appId = this.props.match.params.id;
-    ApplicationActions.fetchAppWebhooks(appId)
+    ApplicationActions.fetchAppWebhooks(appId, mode)
       .then(data => {
         let webhook = data.data.items.length ? data.data.items[0] : null;
-        this.setState({ webhookLoading: false, webhook });
+        changeWebhookState({ webhookLoading: false, webhook });
       })
       .catch(e => {
-        this.setState({ webhookLoading: false, webhook: null });
+        changeWebhookState({ webhookLoading: false, webhook: null });
       });
   }
 
@@ -150,7 +170,6 @@ class NewApplicationForm extends Component {
     return this.props
       .createApplication(data, 'logo')
       .then(application => {
-        // this.setState({edit: true});
         this.initForm(application);
         this.props.history.replace(`/applications/${application.id}`);
         this.props.showNotification({
@@ -236,29 +255,29 @@ class NewApplicationForm extends Component {
     this.setState({ showProdSecret: true });
   };
 
-  onWebhookSave = webhook => {
+  onWebhookSave = mode => webhook => {
+    const changeWebhookState = this.setWebhookState(mode);
     this.props.closeModal();
-    this.setState({ webhook: webhook.data });
+    changeWebhookState({ webhook: webhook.data });
   };
 
-  showWebhookModal = _ => {
+  showWebhookModal = (mode = '') => () => {
     this.props.openModal({
       component: (
         <AppWebhook
-          webhook={this.state.webhook}
-          loading={this.state.webhookLoading}
+          webhook={this.state[`${mode}webhook`]}
+          loading={this.state[`${mode}webhookLoading`]}
           appId={this.props.match.params.id}
-          isApplication={true}
-          onSave={this.onWebhookSave}
+          onSave={this.onWebhookSave(mode)}
+          mode={mode}
+          isApplication
         />
       ),
     });
   };
 
   render() {
-    const { handleSubmit, location: { pathname } } = this.props;
-    const { webhook, webhookLoading } = this.state;
-
+    const { handleSubmit, location: { pathname }, user } = this.props;
     return (
       <div class="content-box new-application-form">
         <div class="content-header">
@@ -351,170 +370,41 @@ class NewApplicationForm extends Component {
 
             {this.state.edit && (
               <div class="edit-details">
-                <div className="section-divide" />
-                <div class="col-md-offset-2 col-md-10">
-                  <h4 class="form-header text-left">Development:</h4>
-                </div>
-
-                <div class="form-group">
-                  <label class="col-md-2 control-label">Client ID</label>
-                  <div class="col-md-4">
-                    <Field
-                      name="client_details.dev.id"
-                      component={InputField}
-                      disabled={true}
-                      class="form-control copy-field"
-                      placeholder="Client ID"
-                    />
-                  </div>
-                  <label class="col-md-2 control-label">Client Secret</label>
-                  <div class="col-md-4">
-                    <Field
-                      name="client_details.dev.secret"
-                      disabled={true}
-                      type={this.state.showDevSecret ? 'text' : 'password'}
-                      component={InputField}
-                      class="form-control copy-field"
-                      placeholder="Client Secret"
-                    />
-                    {!this.state.showDevSecret && (
-                      <button
-                        class="btn btn-default btn-show-secret"
-                        onClick={this.showDevSecret}
-                      >
-                        <i class="fa fa-eye" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="col-md-2 control-label">Redirect URIs</label>
-                  <div class="col-md-10">
-                    <Field
-                      name="client_details.dev.redirect_url"
-                      component={TaggedInput}
-                      class="form-control tagged-input"
-                      placeholder="http://test-app.com/"
-                      validator={flexibleDevUrl}
-                    />
-                  </div>
-                  <div class="clearfix" />
-                  <small class="col-md-offset-2 col-md-10 help-block">
-                    <i class="i i-info-circle" />
-                    <span>{INFO.dev}</span>
-                  </small>
-                </div>
-
-                <div className="section-divide" />
-
-                <div class="col-md-offset-2 col-md-10">
-                  <h4 class="form-header text-left">Production:</h4>
-                </div>
-
-                <div class="form-group">
-                  <label class="col-md-2 control-label">Client ID</label>
-                  <div class="col-md-4">
-                    <Field
-                      name="client_details.prod.id"
-                      component={InputField}
-                      disabled={true}
-                      class="form-control copy-field"
-                      placeholder="Client ID"
-                    />
-                  </div>
-                  <label class="col-md-2 control-label">Client Secret</label>
-                  <div class="col-md-4">
-                    <Field
-                      name="client_details.prod.secret"
-                      disabled={true}
-                      component={InputField}
-                      type={this.state.showProdSecret ? 'text' : 'password'}
-                      class="form-control copy-field"
-                      placeholder="Client Secret"
-                    />
-                    {!this.state.showProdSecret && (
-                      <button
-                        class="btn btn-default btn-show-secret"
-                        onClick={this.showProdSecret}
-                      >
-                        <i class="fa fa-eye" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="col-md-2 control-label">Redirect URIs</label>
-                  <div class="col-md-10">
-                    <Field
-                      name="client_details.prod.redirect_url"
-                      component={TaggedInput}
-                      class="form-control tagged-input"
-                      placeholder="https://test-app.com/"
-                      validators={[isUrlLenient, checkIfHTTPS]}
-                      handleBlur={this.handleBlurOnProdURI}
-                    />
-                  </div>
-                  <div class="clearfix" />
-                  <small class="col-md-offset-2 col-md-10 help-block">
-                    <i class="i i-info-circle" />
-                    <span>{INFO.prod}</span>
-                  </small>
-                </div>
+                <div class="section-divide" />
+                <AppDetails type="dev" />
+                <div class="section-divide" />
+                <AppDetails type="prod" />
               </div>
             )}
 
             {this.state.edit && (
               <div class="form-group">
                 <label class="col-md-2 control-label">Webhooks:</label>
-                <div class="col-md-10" style={{ paddingTop: '7px' }}>
-                  {webhookLoading ? (
-                    <LoaderDots customClass={'loader-dots'} />
-                  ) : (
-                    <div>
-                      <div>
-                        {webhook ? (
-                          <div>
-                            <div>
-                              <b>Url: </b> {webhook.url}
-                            </div>
-                            <div>
-                              <b>Active: </b>{' '}
-                              <i
-                                class={`fa ${
-                                  webhook.active
-                                    ? 'fa-check text-success'
-                                    : 'fa-close text-danger'
-                                }`}
-                              />
-                            </div>
-                            <div>
-                              <b>Total Events: </b>
-                              {
-                                Object.keys(webhook.events).filter(
-                                  i => webhook.events[i]
-                                ).length
-                              }
-                            </div>
-                          </div>
-                        ) : (
-                          'No webhook created'
-                        )}
+                {user.isPartner('pure_platform') ? (
+                  ['live', 'test'].map(mode => {
+                    const webhook = this.state[`${mode}webhook`];
+                    const webhookLoading = this.state[`${mode}webhookLoading`];
+                    return (
+                      <div class="col-md-5">
+                        <WebhookDetail
+                          webhook={webhook}
+                          webhookLoading={webhookLoading}
+                          mode={mode}
+                          key={mode}
+                          showWebhookModal={this.showWebhookModal(mode)}
+                        />
                       </div>
-                      <button
-                        class="btn btn-default webhook-btn m-t"
-                        onClick={e => {
-                          e.preventDefault();
-                          this.showWebhookModal();
-                        }}
-                      >
-                        Manage Webhook
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div class="clearfix" />
+                    );
+                  })
+                ) : (
+                  <div class="col-md-10">
+                    <WebhookDetail
+                      webhook={this.state.webhook}
+                      webhookLoading={this.state.webhookLoading}
+                      showWebhookModal={this.showWebhookModal()}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
@@ -525,6 +415,7 @@ class NewApplicationForm extends Component {
                   <AsyncButton
                     class="btn btn-primary pull-right"
                     text="Save"
+                    type="submit"
                     pendingText="Saving..."
                     onClick={handleSubmit(
                       this.state.edit ? this.update : this.create
@@ -547,6 +438,124 @@ class NewApplicationForm extends Component {
       </div>
     );
   }
+}
+
+class AppDetails extends Component {
+  state = { showSecret: false };
+
+  showSecret = () => {
+    this.setState({ showSecret: true });
+  };
+
+  render() {
+    const { type } = this.props;
+    return (
+      <Fragment>
+        <div class="col-md-offset-2 col-md-10">
+          <h4 class="form-header text-left">
+            {type === 'dev' ? 'Development' : 'Production'}:
+          </h4>
+        </div>
+
+        <div class="form-group">
+          <label class="col-md-2 control-label">Client ID</label>
+          <div class="col-md-4">
+            <Field
+              name={`client_details.${type}.id`}
+              component={InputField}
+              disabled={true}
+              class="form-control copy-field"
+              placeholder="Client ID"
+            />
+          </div>
+          <label class="col-md-2 control-label">Client Secret</label>
+          <div class="col-md-4">
+            <Field
+              name={`client_details.${type}.secret`}
+              disabled={true}
+              type={this.state.showSecret ? 'text' : 'password'}
+              component={InputField}
+              class="form-control copy-field"
+              placeholder="Client Secret"
+            />
+            {!this.state.showSecret && (
+              <button
+                class="btn btn-default btn-show-secret"
+                onClick={this.showSecret}
+              >
+                <i class="fa fa-eye" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="col-md-2 control-label">Redirect URIs</label>
+          <div class="col-md-10">
+            <Field
+              name={`client_details.${type}.redirect_url`}
+              component={TaggedInput}
+              class="form-control tagged-input"
+              placeholder="http://test-app.com/"
+              validator={flexibleDevUrl}
+            />
+          </div>
+          <div class="clearfix" />
+          <small class="col-md-offset-2 col-md-10 help-block">
+            <i class="i i-info-circle" />
+            <span>{INFO[type]}</span>
+          </small>
+        </div>
+      </Fragment>
+    );
+  }
+}
+
+function WebhookDetail({
+  webhookLoading,
+  webhook,
+  mode = '',
+  showWebhookModal,
+}) {
+  return webhookLoading ? (
+    <LoaderDots customClass={'loader-dots'} />
+  ) : (
+    <div>
+      {webhook ? (
+        <Fragment>
+          <div>
+            <strong>Url: </strong> {webhook.url}
+          </div>
+          <div>
+            <strong>Active: </strong>{' '}
+            <i
+              class={`fa ${
+                webhook.active
+                  ? 'fa-check text-success'
+                  : 'fa-close text-danger'
+              }`}
+            />
+          </div>
+          <div>
+            <strong>Total Events: </strong>
+            {
+              Object.keys(webhook.events).filter(i => !!webhook.events[i])
+                .length
+            }
+          </div>
+        </Fragment>
+      ) : (
+        <p>No {mode} webhook created</p>
+      )}
+      <button
+        class="btn btn-default webhook-btn m-t"
+        onClick={showWebhookModal}
+        type="button"
+      >
+        Manage {mode && titleCase(mode)} Webhook
+      </button>
+    </div>
+  );
 }
 
 export default NewApplicationForm;

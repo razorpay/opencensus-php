@@ -16,13 +16,17 @@ export default function PartnerDashboard() {
           Affiliated Accounts
         </NavLink>
         <ShowWhen
+          myRole="owner manager admin"
           additionalCondition={user =>
             user.isPartner('aggregator', 'fully_managed')
           }
         >
           <NavLink to="/submerchants/settings">Settings</NavLink>
         </ShowWhen>
-        <ShowWhen additionalCondition={user => user.isPartner('pure_platform')}>
+        <ShowWhen
+          myRole="owner manager admin"
+          additionalCondition={user => user.isPartner('pure_platform')}
+        >
           <NavLink to="/submerchants/applications">Applications</NavLink>
         </ShowWhen>
       </header>

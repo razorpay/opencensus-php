@@ -19,6 +19,7 @@ export default class AppWebhook extends Component {
           webhook={this.props.webhook}
           appId={this.props.appId}
           onSave={this.props.onSave}
+          mode={this.props.mode}
         />
       );
     }
