@@ -358,6 +358,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANKING_TYPES);
     }
 
+    public function getCorporate()
+    {
+        return $this->getAttribute(self::CORPORATE);
+    }
+
+    public function getTpv()
+    {
+        return $this->getAttribute(self::TPV);
+    }
+
+    public function getEnabledBanks()
+    {
+        return $this->getAttribute(self::ENABLED_BANKS);
+    }
+
     // ---------------------- END GETTERS ----------------------
 
     public function isEnabled()
@@ -484,6 +499,11 @@ class Entity extends Base\PublicEntity
     public function setMode($mode)
     {
         $this->setAttribute(self::MODE, $mode);
+    }
+
+    public function setEnabledBanks(array $banksToEnable)
+    {
+        $this->setAttribute(self::ENABLED_BANKS, $banksToEnable);
     }
 
     // ---------------------- END SETTERS ----------------------
