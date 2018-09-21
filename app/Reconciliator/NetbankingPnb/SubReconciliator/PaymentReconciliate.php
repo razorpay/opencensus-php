@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingPnb;
+namespace RZP\Reconciliator\NetbankingPnb\SubReconciliator;
 
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -9,7 +9,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Pnb\Status;
 use RZP\Models\Payment\Status as PaymentStatus;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const COLUMN_PRN                 = 'prn';
     const COLUMN_PAYMENT_ID          = 'payment_id';

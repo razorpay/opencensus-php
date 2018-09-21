@@ -265,6 +265,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function putBankAccount($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editBankAccount($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getBankAccountChangeStatus($id)
     {
         $input = Request::all();
@@ -328,6 +337,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function editMethods()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editMethods($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getAccountBalance()
     {
         $data = $this->service()->fetchBalance();
@@ -339,6 +357,13 @@ class MerchantController extends Controller
     public function getAccountConfig()
     {
         $data = $this->service()->fetchConfig();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAccountConfigInternal()
+    {
+        $data = $this->service()->fetchConfig($isInternal = true);
 
         return ApiResponse::json($data);
     }
@@ -1045,7 +1070,9 @@ class MerchantController extends Controller
 
     public function getSubmerchant(string $submerchantId)
     {
-        $response = $this->service()->getSubmerchant($submerchantId);
+        $input = Request::all();
+
+        $response = $this->service()->getSubmerchant($submerchantId, $input);
 
         return ApiResponse::json($response);
     }
@@ -1057,5 +1084,23 @@ class MerchantController extends Controller
         $response = $this->service()->listSubmerchants($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function postMerchantBeneficiaryThroughApi($channel)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->registerBeneficiaryThroughApi($input, $channel);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateLinkedAccountDashboardAccess()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateLinkedAccountDashboardAccess($input);
+
+        return ApiResponse::json($data);
     }
 }

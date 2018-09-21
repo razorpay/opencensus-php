@@ -543,4 +543,139 @@ class TerminalTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testAddHulkTerminalWithAppAuth()
+    {
+        $this->startTest();
+    }
+
+    public function testGetTerminalBanks()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetTerminalBanksForDirectNetbankingTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetTpvTerminalBanks()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_atom_tpv_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCorpTerminalBanks()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetTerminalBanksForNonNetbankingTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_fss_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetBanksForTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetBanksForDirectNetbankingTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetUnsupportedBankForTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetBanksForNonNetbankingGateway()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_fss_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetBanksWithIncorrectInput()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }

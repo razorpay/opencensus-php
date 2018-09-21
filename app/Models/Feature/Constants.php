@@ -42,6 +42,7 @@ class Constants
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
     const OLD_CREDITS_FLOW                = 'old_credits_flow';
     const CHARGE_AT_WILL                  = 'charge_at_will';
+    const SETTLEMENT_24X7                 = 'settlement_24x7';
     const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
     const FSS_RISK_UDF                    = 'fss_risk_udf';
     const RULE_FILTER                     = 'rule_filter';
@@ -79,20 +80,25 @@ class Constants
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
     const SUBSCRIPTION_V2                 = 'subscription_v2';
+    const SUBSCRIPTION_AUTH_V2            = 'subscription_auth_v2';
     const EXPOSE_ARN_PAYMENT              = 'expose_arn_payment';
     const EXPOSE_ARN_REFUND               = 'expose_arn_refund';
     const OFFERS                          = 'offers';
     const OTP_AUTH_DEFAULT                = 'otp_auth_default';
+    const CAPTURE_QUEUE                   = 'capture_queue';
+    const TRANSACTION_V2                  = 'transaction_v2';
 
     // Orders
-    const ORDER_ID_MANDATORY            = 'order_id_mandatory';
-    const ORDER_RECEIPT_UNIQUE          = 'order_receipt_unique';
+    const ORDER_ID_MANDATORY              = 'order_id_mandatory';
+    const ORDER_RECEIPT_UNIQUE            = 'order_receipt_unique';
 
     // Payment authentication
-    const ATM_PIN_AUTH                  = 'atm_pin_auth';
+    const ATM_PIN_AUTH                    = 'atm_pin_auth';
 
     // Pre-Auth Shield Integration
     const PRE_AUTH_SHIELD_INTG          = 'pre_auth_shield_intg';
+
+    const EDIT_METHODS                  = 'edit_methods';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -153,6 +159,7 @@ class Constants
         self::HIDE_DOWNTIMES                  => true,
         self::OLD_CREDITS_FLOW                => true,
         self::CHARGE_AT_WILL                  => true,
+        self::SETTLEMENT_24X7                 => true,
         self::EMI_MERCHANT_SUBVENTION         => true,
         self::FSS_RISK_UDF                    => true,
         self::RULE_FILTER                     => true,
@@ -194,10 +201,14 @@ class Constants
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
         self::SUBSCRIPTION_V2                 => true,
+        self::SUBSCRIPTION_AUTH_V2            => true,
         self::EXPOSE_ARN_PAYMENT              => true,
         self::EXPOSE_ARN_REFUND               => true,
         self::OFFERS                          => true,
         self::OTP_AUTH_DEFAULT                => true,
+        self::EDIT_METHODS                    => true,
+        self::CAPTURE_QUEUE                   => true,
+        self::TRANSACTION_V2                  => true,
     ];
 
     // Entity type constants

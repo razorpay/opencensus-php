@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\Settlement\Holidays;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Batch\Entity;
@@ -16,17 +17,19 @@ use RZP\Models\FundTransfer\Attempt\Metric;
 
 abstract class NodalAccount extends Base\Core
 {
-    const SUCCESS               = 'success';
+    const SUCCESS                = 'success';
 
-    const FAILED                = 'failed';
+    const FAILED                 = 'failed';
 
-    const MIN_RTGS_AMOUNT       = 200000;
+    const MIN_RTGS_AMOUNT        = 200000;
 
-    const MAX_IMPS_AMOUNT       = 200000;
+    const MAX_IMPS_AMOUNT        = 200000;
 
-    const RTGS_CUTOFF_HOUR      = 15;
+    const RTGS_CUTOFF_HOUR_MIN   = 8;
 
-    const RTGS_CUTOFF_MINUTE    = 45;
+    const RTGS_CUTOFF_HOUR_MAX   = 15;
+
+    const RTGS_CUTOFF_MINUTE_MAX = 45;
 
     protected $batchFundTransfer = null;
 
@@ -50,9 +53,23 @@ abstract class NodalAccount extends Base\Core
 
     protected $transferStatus = [];
 
+    protected $isWorkingDay;
+
+    protected $bankingStartTime;
+
+    protected $bankingEndTime;
+
     public function __construct(string $purpose = null)
     {
         $this->purpose = $purpose;
+
+        $currentTime = Carbon::now(Timezone::IST);
+
+        $this->isWorkingDay = Holidays::isWorkingDay($currentTime);
+
+        $this->bankingStartTime = Carbon::today(Timezone::IST)->hour(8)->getTimestamp();
+
+        $this->bankingEndTime = Carbon::today(Timezone::IST)->hour(18)->minute(15)->getTimestamp();
 
         $this->initSummary();
 
@@ -80,17 +97,25 @@ abstract class NodalAccount extends Base\Core
 
     protected function getTransferMode($amount, Merchant\Entity $merchant): string
     {
-        $rtgsCutoffTime = Carbon::createFromTime(
-                                self::RTGS_CUTOFF_HOUR,
-                                self::RTGS_CUTOFF_MINUTE,
-                                0,
-                                Timezone::IST)->getTimestamp();
+        $rtgsMinCutoffTime = Carbon::createFromTime(
+            self::RTGS_CUTOFF_HOUR_MIN,
+            0,
+            0,
+            Timezone::IST
+        )->getTimestamp();
+
+        $rtgsMaxCutoffTime = Carbon::createFromTime(
+            self::RTGS_CUTOFF_HOUR_MAX,
+            self::RTGS_CUTOFF_MINUTE_MAX,
+            0,
+            Timezone::IST)->getTimestamp();
+
 
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
         $mode = Mode::NEFT;
 
-        if (($now <= $rtgsCutoffTime) and
+        if ((($now >= $rtgsMinCutoffTime) and ($now <= $rtgsMaxCutoffTime)) and
             ($amount >= self::MIN_RTGS_AMOUNT))
         {
             $mode = Mode::RTGS;
@@ -121,7 +146,7 @@ abstract class NodalAccount extends Base\Core
 
             $this->type      = $source->getEntity();
 
-            $this->channel   = $source->getChannel();
+            $this->channel   = $attempt->getChannel();
 
             $this->tax       += $source->getTax();
 

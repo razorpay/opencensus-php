@@ -14,7 +14,7 @@ use RZP\Models\Currency\Currency;
 class Terminal extends Base\Terminal
 {
     const TEST = 'https://electronix.hitachi-payments.com:8443/PGMerchantBoarding/MerchantBoarding';
-    const LIVE = ''; // TODO: get Url after testing on UAT
+    const LIVE = 'https://172.16.18.40:8443/PGBoarding/MerchantBoarding';
 
     protected $gateway = 'hitachi';
 

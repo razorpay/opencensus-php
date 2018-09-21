@@ -16,11 +16,14 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <title>{{$payment_page_data['title']}}</title>
+        <title>Swiggy - Kodagu Flood Relief Campaign</title>
         <meta charset="utf-8">
         <meta name="robots" content="noindex">
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
         <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
+
+        <meta name="description" content="Swiggy campaign for Contribution towards Kodagu Flood Relief via Razorpay Payment Pages.">
+        @include('hostedpage.partials.robot')
 
         @if (isset($payment_page_data))
             <meta property="og:title" content="Swiggy Cares for Kerala and Karnataka Flood Relief">

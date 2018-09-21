@@ -915,5 +915,16 @@ final class FactoryData
             'short_url'   => 'abc.com',
             'qr_string'   => 'kdsfjsfndsmndjksnfsdnsmdns',
         ]);
+
+        $factory(\RZP\Gateway\Mpi\Base\Entity::class, [
+        ]);
+
+        $factory(\RZP\Models\NodalBeneficiary\Entity::class, [
+            'channel'             => 'yesbank',
+            'beneficiary_code'    => 'abc123459',
+            'registration_status' => 'created',
+            'merchant_id'         => $faker->uniqueid,
+            'bank_account_id'     => $faker->uniqueid,
+        ]);
     }
 }

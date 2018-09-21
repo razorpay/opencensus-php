@@ -12,6 +12,7 @@ class Constants
     const KOTAK            = 'kotak';
     const FEDERAL          = 'federal';
     const BOB              = 'bob';
+    const IDFC             = 'idfc';
     const INDUSIND         = 'indusind';
     const RBL              = 'rbl';
     const SCBL             = 'scbl';
@@ -23,6 +24,7 @@ class Constants
     const ICIC_FIRST_DATA  = 'icic_first_data';
     const HDFC_CYBERSOURCE = 'hdfc_cybersource';
     const AXIS_CYBERSOURCE = 'axis_cybersource';
+    const HDFC_EMANDATE    = 'hdfc_emandate';
     const HDFC_FSS         = 'hdfc_fss';
     const ENACH_RBL        = 'enach_rbl';
     const OBC              = 'obc';
@@ -36,7 +38,8 @@ class Constants
             self::HDFC,
             self::ICICI,
             self::CSB,
-            self::ISG
+            self::ISG,
+            self::HDFC_EMANDATE,
         ],
         Type::CLAIM => [
         ],
@@ -55,7 +58,8 @@ class Constants
             self::RBL,
             self::INDUSIND,
             self::OBC,
-            self::CSB
+            self::CSB,
+            self::IDFC,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -91,9 +95,11 @@ class Constants
 
     const RECIPIENTS_MAP = [
         Type::REFUND => [
-            self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
-            self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
-            self::ISG   => ['settlements@razorpay.com'],
+            self::HDFC          => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
+            // todo: Fix the receipients
+            self::HDFC_EMANDATE => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
+            self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::ISG           => ['settlements@razorpay.com'],
         ],
 
         Type::COMBINED => [
@@ -105,6 +111,7 @@ class Constants
             self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
             self::OBC      => ['obc.netbanking.refunds@razorpay.com'],
             self::CSB      => ['csb.netbanking.refunds@razorpay.com'],
+            self::IDFC     => ['settlements@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

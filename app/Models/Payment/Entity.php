@@ -1059,6 +1059,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECEIVER_TYPE, $receiverType);
     }
 
+    public function setSubscriptionId(string $subscriptionId)
+    {
+        $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
+    }
+
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------
@@ -1343,6 +1348,11 @@ class Entity extends Base\PublicEntity
     public function hasPaymentLink(): bool
     {
         return ($this->isAttributeNotNull(self::PAYMENT_LINK_ID));
+    }
+
+    public function hasTerminal()
+    {
+        return $this->isAttributeNotNull(self::TERMINAL_ID);
     }
 
     public function getPaymentLinkId()
@@ -2468,7 +2478,7 @@ class Entity extends Base\PublicEntity
 
     public function receiver()
     {
-        return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID);
+        return $this->morphTo('receiver', self::RECEIVER_TYPE, self::RECEIVER_ID)->withTrashed();
     }
 
     public function netbanking()

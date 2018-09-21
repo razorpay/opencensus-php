@@ -72,6 +72,19 @@ class HdfcGatewayCaptureTest extends TestCase
         $this->assertEquals($refund['entity'], 'refund');
     }
 
+    // @codingStandardsIgnoreLine
+    public function testCaptureCM90000()
+    {
+        $payment = $this->doAuthPayment();
+        $payment = $this->getLastEntity('payment', true);
+
+        // @codingStandardsIgnoreLine
+        $payment = $this->captureErrorReturnCM90000();
+        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
     public function testCaptureTimeout()
     {
         $this->defaultAuthPayment();

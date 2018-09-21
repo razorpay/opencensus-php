@@ -35,6 +35,10 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'required|numeric|digits_between:10,12',
     ];
 
+    protected static $editRules = [
+        Entity::BENEFICIARY_NAME    => 'required|between:4,120|string|custom',
+    ];
+
     protected static $addVirtualBankAccountRules = [
         Entity::IFSC_CODE             => 'sometimes|alpha_num|nullable|max:13',
         Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
@@ -82,6 +86,11 @@ class Validator extends Base\Validator
         Entity::RECIPIENT_EMAILS . '*'  => 'sometimes|email',
     ];
 
+    protected static $beneficiaryRegisterApiRules = [
+        Entity::ALL                     => 'sometimes|boolean',
+        Entity::DURATION                => 'sometimes|integer',
+    ];
+
     protected function validateBeneficiaryState($input)
     {
         if ((isset($input[Entity::BENEFICIARY_STATE]) === true) and
@@ -89,6 +98,22 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid state code');
+        }
+    }
+
+    protected function validateBeneficiaryName(string $attribute, string $value)
+    {
+        $currentBeneficiaryName = $this->entity->getBeneficiaryName();
+
+        if (empty($currentBeneficiaryName) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Can edit only empty beneficiary names',
+                Entity::BENEFICIARY_NAME,
+                [
+                    'current_beneficiary_name'  => $currentBeneficiaryName,
+                    'new_beneficiary_name'      => $value
+                ]);
         }
     }
 

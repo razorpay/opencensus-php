@@ -120,7 +120,8 @@ class Repository extends Base\Repository
                           $transactionFee,
                           $transactionFeeCredits,
                           $transactionCreditsType,
-                          $transactionCreatedAt
+                          $transactionCreatedAt,
+                          $transactionChannel
                       )
                       ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                       ->where(Entity::SETTLED_AT, '<', $timestamp)
@@ -997,6 +998,13 @@ class Repository extends Base\Repository
                                            ->toArray();
 
         return $unreconciledEntities;
+    }
+
+    public function fetchMultipleTransactionsFromIds(array $transactionIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $transactionIds)
+                    ->get();
     }
 
     protected function getSelectQueryForUnreconciledEntites(array $paymentParams = [], array $refundParams = [])

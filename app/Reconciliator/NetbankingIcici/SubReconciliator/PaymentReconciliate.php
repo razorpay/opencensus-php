@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingIcici;
+namespace RZP\Reconciliator\NetbankingIcici\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
@@ -9,7 +9,7 @@ use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Icici;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const COLUMN_PAYMENT_REF_NO  = 'PRN';
     const COLUMN_BANK_PAYMENT_ID = 'BID';

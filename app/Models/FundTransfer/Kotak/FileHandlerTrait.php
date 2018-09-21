@@ -15,6 +15,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
+use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
+
 
 trait FileHandlerTrait
 {
@@ -795,6 +797,36 @@ trait FileHandlerTrait
     }
 
     /**
+     * Parses excel sheets at given path and returns array content.
+     * Uses new phpoffice/phpspreadsheet package instead of maatwebsite/excel.
+     * @param  string $filePath
+     * @return array
+     */
+    protected function parseExcelSheetsUsingPhpSpreadSheet($filePath): array
+    {
+        $fileType = SpreadsheetIOFactory::identify($filePath);
+        $reader = SpreadsheetIOFactory::createReader($fileType);
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($filePath);
+        assertTrue($spreadsheet->getSheetCount() === 1);
+        $rows = $spreadsheet->getActiveSheet()->toArray();
+        // First row is always expected to be header
+        $headers = array_values(array_shift($rows) ?? []);
+        // No rows exists
+        if (empty($headers) === true)
+        {
+            return [];
+        }
+        // Format rows as "heading key => value" kind of associative array
+        foreach ($rows as & $row)
+        {
+            $row = array_combine($headers, array_values($row));
+        }
+
+        return $rows;
+    }
+
+    /**
      * Traces excel reader configuration, helps with debugging
      */
     protected function traceExcelReaderConfig()
@@ -802,11 +834,9 @@ trait FileHandlerTrait
         $reader = app('excel.reader');
 
         $config = [
-            'heading'                 => config('excel.import.heading'),
-            'startRow'                => config('excel.import.startRow'),
-            'force_sheets_collection' => config('excel.import.force_sheets_collection'),
-            'sheetsSelected'          => $reader->selectedSheets,
-            'selectedSheetIndices'    => $reader->selectedSheetIndices,
+            'import_configs'       => config('excel.import'),
+            'sheetsSelected'       => $reader->selectedSheets,
+            'selectedSheetIndices' => $reader->selectedSheetIndices,
         ];
 
         $this->trace()->debug(TraceCode::EXCEL_READER_IMPORT_CONFIG, $config);

@@ -21,12 +21,15 @@ use RZP\Models\Customer\Token;
 use RZP\Gateway\Enach\Base\Entity;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Enach\Base\CategoryCode;
 use RZP\Exception\GatewayErrorException;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 class Gateway extends Base\Gateway
 {
+    use AuthorizeFailed;
+
     protected $gateway = 'enach_rbl';
 
     protected $crypto;
@@ -116,6 +119,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+
     protected function netbankingAuthorize($input)
     {
         $this->setCryptoAttribute();
@@ -181,6 +185,13 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $recurringData);
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        return $this->callAuthenticationGateway($input);
+    }
+
     protected function getRecurringData()
     {
         $recurringData = [
@@ -222,12 +233,6 @@ class Gateway extends Base\Gateway
     {
         throw new Exception\RuntimeException(
             'Refund is not implemented');
-    }
-
-    public function verify(array $input)
-    {
-        throw new Exception\RuntimeException(
-            'Verify is not implemented');
     }
 
     protected function getRequest($input)
@@ -665,5 +670,22 @@ class Gateway extends Base\Gateway
             $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/mock_cert.pem');
             $this->crypto->setSigningCertificatePath(__DIR__ . '/keys/cert.pem');
         }
+    }
+
+    protected function extractPaymentsProperties($gatewayPayment)
+    {
+        $response = [];
+
+        // For api based emandate initial payments, if late authorized,
+        // we need to update the token status to confirmed
+        if (($this->input['payment']['method'] === Payment\Method::EMANDATE) and
+            ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL))
+        {
+            $recurringData = $this->getRecurringData($gatewayPayment);
+
+            $response = array_merge($response, $recurringData);
+        }
+
+        return $response;
     }
 }

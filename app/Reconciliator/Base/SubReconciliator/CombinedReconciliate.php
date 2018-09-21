@@ -1,16 +1,17 @@
 <?php
 
-namespace RZP\Reconciliator\Base;
+namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use App;
 
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Exception\ReconciliationException;
 
-class CombinedReconciliate extends Foundation\SubReconciliate
+class CombinedReconciliate extends Base\Foundation\SubReconciliate
 {
     const NA = 'not_applicable';
 
@@ -172,6 +173,9 @@ class CombinedReconciliate extends Foundation\SubReconciliate
                     }
 
                     $subReconciliatorObject = $this->getSubReconciliatorObject($entityType);
+
+                    // As we are creating subRecon object again here, need to set the source for it
+                    $subReconciliatorObject->setSource($this->source);
 
                     $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
                     {

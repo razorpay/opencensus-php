@@ -425,12 +425,7 @@ trait SettlementTrait
                 TraceCode::SETTLEMENT_SKIPPED,
                 $traceData);
 
-            $data = [
-                    'message' => 'Settlement Skipped. Check for Retry.',
-                    'status'  => SlackNotification::BAD,
-                ] + $traceData;
-
-            (new SlackNotification)->send($data);
+            (new SlackNotification)->send('setl_skipped', $traceData, $ex);
         }
 
         return [$settlement, $bankTransferAtpt];
@@ -498,6 +493,16 @@ trait SettlementTrait
             return false;
         }
 
+        $channel = $txn->getChannel();
+
+        $allowedChannelFor24x7Settlement = Channel::get24x7Channels();
+
+        if (($this->env !== 'testing') and
+            (in_array($channel, $allowedChannelFor24x7Settlement, true) === true))
+        {
+            return true;
+        }
+
         if (($this->env !== 'testing') and
             ($bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
         {
@@ -530,7 +535,7 @@ trait SettlementTrait
     {
         $this->trace->info($traceCode, $data);
 
-        (new SlackNotification)->success('setl_initiate', $data);
+        (new SlackNotification)->send('setl_initiate', $data);
     }
 
     protected function settlementFailure($channel, $e, $traceCode)
@@ -544,7 +549,7 @@ trait SettlementTrait
 
     protected function failureNotification($exception)
     {
-        (new SlackNotification)->failure('setl_initiate', $exception);
+        (new SlackNotification)->send('setl_initiate', [], $exception);
     }
 
     /**

@@ -22,7 +22,6 @@ class Service extends Base\Service
         RequestProcessor\Base::EBS,
         RequestProcessor\Base::PAYTM,
         RequestProcessor\Base::PAYUMONEY,
-        RequestProcessor\Base::PAYZAPP,
     ];
 
     /**
@@ -39,7 +38,9 @@ class Service extends Base\Service
 
         try
         {
-            $summary = $this->processReconciliationRequest($input);
+            $source = $this->getRequestSource($input);
+
+            $summary = $this->processReconciliationRequest($input, $source);
         }
         catch (\Throwable $e)
         {
@@ -109,18 +110,30 @@ class Service extends Base\Service
         return $data;
     }
 
+    protected function getRequestSource(array $input): string
+    {
+        if ($this->isManualRequest($input) === true)
+        {
+            return RequestProcessor\Base::MANUAL;
+        }
+
+        return RequestProcessor\Base::MAILGUN;
+    }
+
     /**
      * Determines whether the reconciliation request is manual or
      * via MailGun and gets the files details accordingly.
      *
-     * @param array $input The input received from the route.
+     * @param array  $input The input received from the route.
+     * @param string $source
+     *
      * @return array Summary of reconciliation
      * @throws Exception\ReconciliationException Raised when there are no
      *                                           files to reconcile.
      */
-    protected function processReconciliationRequest(array $input)
+    protected function processReconciliationRequest(array $input, string $source)
     {
-        $requestProcessor = $this->getRequestProcessor($input);
+        $requestProcessor = $this->getRequestProcessor($source);
 
         //
         // Sets the gateway reconciliator object and
@@ -182,22 +195,17 @@ class Service extends Base\Service
      * Initializes the request processor to be used to handle the request
      * based on the source of the request i.e manual | mailgun
      *
-     * @param  array                        $input
+     * @param string $source
+     *
      * @return RequestProcessor\Base
      */
-    protected function getRequestProcessor(array $input): RequestProcessor\Base
+    protected function getRequestProcessor(string $source): RequestProcessor\Base
     {
-        // Checks if it's manual call or mailgun call
-        if ($this->isManualRequest($input) === true)
-        {
-            $requestProcessor = new RequestProcessor\Manual;
-        }
-        else
-        {
-            $requestProcessor = new RequestProcessor\Mailgun;
-        }
+        $source = studly_case($source);
 
-        return $requestProcessor;
+        $requestProcessor = __NAMESPACE__ . "\\RequestProcessor\\$source";
+
+        return new $requestProcessor;
     }
 
     /**

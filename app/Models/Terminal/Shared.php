@@ -7,6 +7,7 @@ use RZP\Models\Terminal;
 
 class Shared
 {
+    const NETBANKING_IDFC_TERMINAL           = '100NbIdfcTrmnl';
     const AMEX_RAZORPAY_TERMINAL             = '1000AmexShared';
     const ATOM_RAZORPAY_TERMINAL             = '1000AtomShared';
     const ATOM_RAZORPAY_TPV_TERMINAL         = '1000AtomTpvtml';
@@ -57,6 +58,7 @@ class Shared
     const UPI_MINDGATE_TPV_TERMINAL          = '100UPIMndgtTpv';
     const UPI_MINDGATE_SBI_RAZORPAY_TERMINAL = '100UPIMgateSbi';
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
+    const UPI_AXIS_RAZORPAY_TERMINAL         = '100UPIAXISTmnl';
     const UPI_HULK_RAZORPAY_TERMINAL         = '100UPIHulkTrml';
     const UPI_HULK_RAZORPAY_INTENT_TERMINAL  = '1UPIInHulkTrml';
     const UPI_HULK_RAZORPAY_TPV_TERMINAL     = '1UPITpvHulkTml';
@@ -86,6 +88,7 @@ class Shared
         self::MOBIKWIK_RAZORPAY_TERMINAL,
         self::OLAMONEY_RAZORPAY_TERMINAL,
         self::PAYTM_RAZORPAY_TERMINAL,
+        self::NETBANKING_IDFC_TERMINAL,
         self::NETBANKING_HDFC_TERMINAL,
         self::NETBANKING_BOB_TERMINAL,
         self::NETBANKING_KOTAK_TERMINAL,
@@ -107,6 +110,7 @@ class Shared
         self::UPI_MINDGATE_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_TPV_TERMINAL,
         self::UPI_ICICI_RAZORPAY_TERMINAL,
+        self::UPI_AXIS_RAZORPAY_TERMINAL,
         self::UPI_HULK_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL,
         self::AEPS_ICICI_RAZORPAY_TERMINAL,
@@ -135,6 +139,7 @@ class Shared
         self::HDFC_RAZORPAY_TERMINAL             => Gateway::HDFC,
         self::HITACHI_TERMINAL                   => Gateway::HITACHI,
         self::MOBIKWIK_RAZORPAY_TERMINAL         => Gateway::MOBIKWIK,
+        self::NETBANKING_IDFC_TERMINAL           => Gateway::NETBANKING_IDFC,
         self::NETBANKING_HDFC_TERMINAL           => Gateway::NETBANKING_HDFC,
         self::NETBANKING_BOB_TERMINAL            => Gateway::NETBANKING_BOB,
         self::NETBANKING_CORPORATION_TERMINAL    => Gateway::NETBANKING_CORPORATION,
@@ -161,6 +166,7 @@ class Shared
         self::UPI_MINDGATE_RAZORPAY_TERMINAL     => Gateway::UPI_MINDGATE,
         self::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL => Gateway::UPI_SBI,
         self::UPI_ICICI_RAZORPAY_TERMINAL        => Gateway::UPI_ICICI,
+        self::UPI_AXIS_RAZORPAY_TERMINAL         => Gateway::UPI_AXIS,
         self::UPI_HULK_RAZORPAY_TERMINAL         => Gateway::UPI_HULK,
         self::OPENWALLET_RAZORPAY_TERMINAL       => Gateway::WALLET_OPENWALLET,
         self::MPESA_RAZORPAY_TERMINAL            => Gateway::WALLET_MPESA,

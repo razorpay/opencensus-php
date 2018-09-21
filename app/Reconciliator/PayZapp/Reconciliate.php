@@ -3,6 +3,8 @@
 namespace RZP\Reconciliator\PayZapp;
 
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\FileProcessor;
+use RZP\Gateway\Wallet\Payzapp\ReconHeaders;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -30,5 +32,54 @@ class Reconciliate extends Base\Reconciliate
         }
 
         return false;
+    }
+
+    public function getNumLinesToSkip(array $fileDetails)
+    {
+        return [
+            FileProcessor::LINES_FROM_TOP    => 1,
+            FileProcessor::LINES_FROM_BOTTOM => 0
+        ];
+    }
+
+    public function getColumnHeadersForType($type)
+    {
+        return [
+            ReconHeaders::TERMINAL_ID,
+            ReconHeaders::MERCHANT_NAME,
+            ReconHeaders::TRANSACTION_TYPE,
+            ReconHeaders::CARD_NUMBER,
+            ReconHeaders::GROSS_AMT,
+            ReconHeaders::COMMISSION_AMT,
+            ReconHeaders::CGST,
+            ReconHeaders::SGST,
+            ReconHeaders::IGST,
+            ReconHeaders::UTGST,
+            ReconHeaders::NET_AMT,
+            ReconHeaders::TRAN_DATE,
+            ReconHeaders::AUTH_CODE,
+            ReconHeaders::TRACK_ID,
+            ReconHeaders::PG_TXN_ID,
+            ReconHeaders::PG_SALE_ID,
+            ReconHeaders::CREDIT_DEBIT_CARD_FLAG,
+            ReconHeaders::GSTN,
+            ReconHeaders::INVOICE_NUMBER,
+            ReconHeaders::CGST_PERCENTAGE_RENAME,
+            ReconHeaders::SGST_PERCENTAGE_RENAME,
+            ReconHeaders::IGST_PERCENTAGE_RENAME,
+            ReconHeaders::UTGST_PERCENTAGE_RENAME,
+            ReconHeaders::CGSTCESS1,
+            ReconHeaders::CGSTCESS2,
+            ReconHeaders::CGSTCESS2,
+            ReconHeaders::SGSTCESS1,
+            ReconHeaders::SGSTCESS2,
+            ReconHeaders::SGSTCESS3,
+            ReconHeaders::IGSTCESS1,
+            ReconHeaders::IGSTCESS2,
+            ReconHeaders::IGSTCESS3,
+            ReconHeaders::UTGSTCESS1,
+            ReconHeaders::UTGSTCESS2,
+            ReconHeaders::UTGSTCESS3,
+        ];
     }
 }

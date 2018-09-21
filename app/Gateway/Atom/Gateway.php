@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use Requests_Hooks;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
@@ -27,6 +28,8 @@ class Gateway extends Base\Gateway
 
     const CHECKSUM_ATTRIBUTE = AuthResponseFields::SIGNATURE;
 
+    const TIME_WINDOW = 600;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -43,6 +46,8 @@ class Gateway extends Base\Gateway
 
         $request['url'] = $this->createRedirectUrl($request['content']);
         $request['content'] = [];
+
+        $request['options'] = $this->getRequestOptions();
 
         $request = $this->makeRequestAndGetFormData($request);
 
@@ -167,13 +172,35 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    public function getRequestOptions()
+    {
+        $hooks = new Requests_Hooks();
+
+        $hooks->register('curl.before_send', [$this, 'setCurlOpts']);
+
+        $options['hooks'] = $hooks;
+
+        return $options;
+    }
+
+    public function setCurlOpts($curl)
+    {
+        curl_setopt($curl, CURLOPT_REFERER, null);
+    }
+
     protected function sendPaymentVerifyRequest($verify)
     {
         $content = $this->getVerifyRequestData($verify);
 
         $request = $this->getStandardRequestArray($content, 'get');
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $request);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'gateway'     => $this->gateway,
+                'payment_id'  => $verify->input['payment']['id'],
+                'request'     => $request,
+            ]);
 
         $request['url'] = $this->createRedirectUrl($request['content']);
 
@@ -181,15 +208,54 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'gateway'    => $this->gateway,
-                'response'   => $response->body,
-                'payment_id' => $verify->input['payment']['id'],
-            ]);
-
         $responseArray = $this->verifyResponseXmlToArray($response->body);
+
+        $paymentCreatedAt = $verify->input['payment'][Payment\Entity::CREATED_AT];
+
+        $gatewayPayment = $verify->payment;
+
+        if (($responseArray['VERIFIED'] === 'NODATA') and
+            ($this->isEarlyDayTransaction($paymentCreatedAt) === true) and
+            (isset($gatewayPayment['date']) === false))
+        {
+            $originalDate = $content[VerifyRequestFields::TRANSACTION_DATE];
+
+            $content[VerifyRequestFields::TRANSACTION_DATE] = $this->getPreviousDate($originalDate);
+
+            $request = $this->getStandardRequestArray($content, 'get');
+
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+                [
+                    'gateway'     => $this->gateway,
+                    'payment_id'  => $verify->input['payment']['id'],
+                    'request'     => $request,
+                ]);
+
+            $request['url'] = $this->createRedirectUrl($request['content']);
+
+            $request['content'] = [];
+
+            $response = $this->sendGatewayRequest($request);
+
+            $responseArray = $this->verifyResponseXmlToArray($response->body);
+        }
+
+        if (($responseArray['VERIFIED'] !== 'NODATA') and
+            (isset($gatewayPayment['date']) === false))
+        {
+            $date = $content[VerifyRequestFields::TRANSACTION_DATE];
+
+            $dateTimestamp = Carbon::createFromFormat('Y-m-d', $date , Timezone::IST)->timestamp;
+            
+            $data = [
+                Entity::DATE => $dateTimestamp,
+            ];
+            
+            $verify->payment->fill($data);
+
+            $verify->payment->saveOrFail();
+        }
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -331,12 +397,15 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestContent(Entity $gatewayPayment, array $input)
     {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'], Action::AUTHORIZE);
+
         $content = [
             RefundRequestFields::MERCHANT_ID            => $this->getMerchantId(),
             RefundRequestFields::PASSWORD               => base64_encode($this->getSecureSecret()),
             RefundRequestFields::GATEWAY_TRANSACTION_ID => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
             RefundRequestFields::REFUND_AMOUNT          => $this->getFormattedAmount($input['refund']['amount']),
-            RefundRequestFields::TRANSACTION_DATE       => $this->getFormattedDate($input['payment'][Payment\Entity::CREATED_AT]),
+            RefundRequestFields::TRANSACTION_DATE       => $this->getFormattedDate($gatewayPayment['date']),
             RefundRequestFields::REFUND_ID              => $input['refund']['id'],
         ];
 
@@ -395,11 +464,15 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        $gatewayPayment = $verify->payment;
+
+        $date = isset($gatewayPayment['date']) ? $gatewayPayment['date'] : $input['payment']['created_at'];
+
         $data = [
             VerifyRequestFields::MERCHANT_ID      => $this->getMerchantId(),
             VerifyRequestFields::TRANSACTION_ID   => $input['payment']['id'],
             VerifyRequestFields::AMOUNT           => $this->getFormattedAmount($input['payment']['amount']),
-            VerifyRequestFields::TRANSACTION_DATE => $this->getFormattedDate($input['payment']['created_at']),
+            VerifyRequestFields::TRANSACTION_DATE => $this->getFormattedDate($date),
         ];
 
         return $data;
@@ -554,6 +627,10 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackAttributes(array $content)
     {
+        $content['date'] = Carbon::parse($content['date'])->format('d-m-Y');
+
+        $timestamp = Carbon::createFromFormat('d-m-Y', $content['date'], Timezone::IST)->timestamp;
+
         $attributes = [
             Entity::ERROR_DESCRIPTION  => 'NA',
             Entity::GATEWAY_PAYMENT_ID => $content[AuthResponseFields::GATEWAY_PAYMENT_ID],
@@ -561,6 +638,7 @@ class Gateway extends Base\Gateway
             Entity::STATUS             => $content[AuthResponseFields::STATUS_CODE],
             Entity::RECEIVED           => true,
             Entity::BANK_NAME          => $content[AuthResponseFields::BANK_NAME],
+            Entity::DATE               => $timestamp,
         ];
 
         if ($attributes[Entity::STATUS] === Status::SUCCESS)
@@ -714,5 +792,17 @@ class Gateway extends Base\Gateway
                 $responseCode,
                 $desc);
         }
+    }
+
+    protected function isEarlyDayTransaction($paymentCreatedAt) : bool
+    {
+        $paymentTime = Carbon::createFromTimestamp($paymentCreatedAt, Timezone::IST);
+
+        return ($paymentTime->secondsSinceMidnight() <= self::TIME_WINDOW);
+    }
+
+    protected function getPreviousDate($originalDate)
+    {
+        return date('Y-m-d', strtotime('-1 day',strtotime($originalDate)));
     }
 }

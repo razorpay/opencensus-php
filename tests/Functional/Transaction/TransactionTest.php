@@ -98,6 +98,18 @@ class TransactionTest extends TestCase
         return $payment;
     }
 
+    public function testFetchAuthPaymentTransaction()
+    {
+        $payment = $this->doAuthPayment();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/'.$payment['razorpay_payment_id'].'/transaction';
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+    }
+
     public function testTransactionCreateForOldPayment()
     {
         $this->markTestSkipped();
@@ -161,6 +173,45 @@ class TransactionTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $txn);
 
         return $dispute;
+    }
+
+    public function testMarkTransactionPostpaid()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment:captured');
+        $payment2 = $this->fixtures->create('payment:captured');
+
+        $txn = $this->getEntityById('transaction', $payment->getTransactionId(), true);
+        $txn2 = $this->getEntityById('transaction', $payment2->getTransactionId(), true);
+
+        $txnIds = [$payment->getTransactionId(), $payment2->getTransactionId()];
+
+        $transaction = [
+            'transaction_ids' => $txnIds,
+        ];
+
+        $request = [
+            'content' => $transaction,
+            'url'     => '/transactions/postpaid',
+            'method'  => 'POST',
+        ];
+
+        $this->assertEquals('prepaid', $txn['fee_model']);
+        $this->assertEquals('prepaid', $txn2['fee_model']);
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($txnIds, $response['success_ids']);
+        $this->assertEmpty($response['failed_ids']);
+
+        $txn = $this->getEntityById('transaction', $payment->getTransactionId(), true);
+        $txn2 = $this->getEntityById('transaction', $payment2->getTransactionId(), true);
+
+        $this->assertEquals('postpaid', $txn['fee_model']);
+        $this->assertEquals('postpaid', $txn2['fee_model']);
     }
 
     protected function startTest($testDataToReplace = array())

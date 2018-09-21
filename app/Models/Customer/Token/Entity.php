@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
     const BANK                      = 'bank';
     const WALLET                    = 'wallet';
     const ACCOUNT_NUMBER            = 'account_number';
+    const ACCOUNT_TYPE              = 'account_type';
     const GATEWAY_TOKEN             = 'gateway_token';
     const GATEWAY_TOKEN2            = 'gateway_token2';
     const RECURRING                 = 'recurring';
@@ -55,6 +56,12 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
     const DELETED_AT                = 'deleted_at';
+
+    //
+    // These values goes in the account_type field
+    //
+    const ACCOUNT_TYPE_SAVINGS = 'savings';
+    const ACCOUNT_TYPE_CURRENT = 'current';
 
     //
     // These keys will be under recurring_details
@@ -90,6 +97,7 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::METHOD,
         self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
         self::BENEFICIARY_NAME,
         self::IFSC,
         self::TOKEN,
@@ -109,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::WALLET,
         self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
         self::BENEFICIARY_NAME,
         self::IFSC,
         self::TOKEN,
@@ -159,6 +168,7 @@ class Entity extends Base\PublicEntity
         self::WALLET                    => null,
         self::CARD_ID                   => null,
         self::ACCOUNT_NUMBER            => null,
+        self::ACCOUNT_TYPE              => null,
         self::IFSC                      => null,
         self::BENEFICIARY_NAME          => null,
         self::BANK                      => null,
@@ -239,6 +249,11 @@ class Entity extends Base\PublicEntity
     public function getAccountNumber()
     {
         return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
     }
 
     public function getBeneficiaryName()
@@ -466,12 +481,18 @@ class Entity extends Base\PublicEntity
      * It needs to be in fillable because
      * merchant can send its value too.
      *
+     * In case of aadhaar auth type, we will have to keep
+     * the expiry as null.
+     *
      * @param $expiredAt
      */
     protected function setExpiredAtAttribute($expiredAt)
     {
+        // todo: Change token's expired_at value based on response from gateway
         if ((empty($expiredAt) === true) and
-            ($this->getMethod() === Payment\Method::EMANDATE))
+            ($this->getMethod() === Payment\Method::EMANDATE) and
+            ($this->getAuthType() !== Payment\AuthType::AADHAAR)
+        )
         {
             $expiredAt = Carbon::now(Timezone::IST)
                                ->addYears(self::DEFAULT_EXPIRY_YEARS)

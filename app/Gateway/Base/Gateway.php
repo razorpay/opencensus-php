@@ -171,6 +171,12 @@ class Gateway
 
     protected $externalMockDomain;
 
+    protected $paymentId;
+
+    protected $curlLogPath;
+
+    protected $curlLog;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -625,15 +631,17 @@ class Gateway
     }
 
     /**
-     * @param array $objFunc -- this contains the class object and the function name as indexed array
-     * @param array $funcParams -- this contains the function params to be passed to the function name passed
+     * @param callable $callable -- this contains the class object and the function name as indexed array
+     * @param array $arguments -- this contains the function params to be passed to the function name passed
      * in $objFunc
-     * @param array $exceptionClassList -- list of exceptions to catch and retry on
-     * @param int $maxRetryCount -- max number of retries we want and then throw exception after $maxRetryCount attempts
-     * @return $response -- return the response of the closure $objFunc
-     * @throws Exception\GatewayRequestException
+     * @param callable $checkRetryNeeded -- closure to check if retry is needed
+     * @param int $retryCount -- max number of retries we want and then throw exception after $maxRetryCount attempts
+     * @return $response -- return the response of the closure $callable
+     * @throws \Exception
      */
-    protected function retryHandler(callable $callable, array $arguments, array $exceptionClasses = [],
+    protected function retryHandler(callable $callable,
+                                    array $arguments,
+                                    callable $checks,
                                     int $retryCount = 1)
     {
         $currentRetryCount = 1;
@@ -648,16 +656,14 @@ class Gateway
             }
             catch (\Exception $exc)
             {
-                if (in_array(get_class($exc), $exceptionClasses, true) === true)
+                if ((call_user_func($checks, $exc) === true) and
+                    ($currentRetryCount < $retryCount))
                 {
-                    if ($currentRetryCount < $retryCount)
-                    {
-                        $currentRetryCount++;
+                    $currentRetryCount++;
 
-                        $this->trace->traceException($exc);
+                    $this->trace->traceException($exc);
 
-                        continue;
-                    }
+                    continue;
                 }
 
                 throw $exc;
@@ -1273,5 +1279,38 @@ class Gateway
         $gatewayMetric = new Metric;
 
         $gatewayMetric->pushGatewayDimensions($action, $input, $status);
+    }
+
+    //
+    // This is a temporary function for debugging the curl issue
+    //
+    protected function traceCurlErrorIfApplicable()
+    {
+        try
+        {
+            if ((isset($this->exception) === true) and
+                ($this->exception instanceof \Requests_Exception) and
+                ($this->exception->getType() === 'curlerror'))
+            {
+                $curlData = file_get_contents($this->curlLogPath);
+
+                $dataToTrace = [
+                    'gateway'   => $this->gateway,
+                    'curl_data' => $curlData,
+                ];
+
+                $this->trace->info(TraceCode::GATEWAY_UNKNOWN_CURL_ERROR, $dataToTrace);
+
+                $message = 'Curl error @vv @vivek @viv @kranti';
+
+                // #tech_curl_error
+                $this->app['slack']->queue(
+                    $message, $dataToTrace, ['color' => 'bad', 'channel' => 'GCRJYQEP6']);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
+        }
     }
 }

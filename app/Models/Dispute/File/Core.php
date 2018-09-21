@@ -71,7 +71,7 @@ class Core extends Base\Core
     {
         $queryParams = [
             'entity_type'   => $entity->getEntityName(),
-            'entity_id'     => $entity->getPublicId(),
+            'entity_id'     => $entity->getId(),
         ];
 
         return $this->getFiles($queryParams);

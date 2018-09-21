@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Reconciliator\Mobikwik;
+namespace RZP\Reconciliator\Mobikwik\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 
-class RefundReconciliate extends Base\RefundReconciliate
+class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     /*******************
      * Row Header Names

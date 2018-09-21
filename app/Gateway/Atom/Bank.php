@@ -18,6 +18,7 @@ class Bank
         IFSC::CNRB         => 1030,     // Canara Bank NB
         IFSC::CSBK         => 1031,     // Catholic Syrian Bank
         IFSC::CBIN         => 1028,     // Central Bank of India
+        IFSC::CIUB         => 1020,     // City Union Bank
         IFSC::CORP         => 1004,     // Corporation Bank
         IFSC::DCBL         => 1027,     // DCB Bank, Development Credit Bank
         IFSC::DEUT         => 1024,     // Deustche Bank
@@ -53,6 +54,7 @@ class Bank
         IFSC::SBBJ         => 1014,
         IFSC::SBHY         => 1014,
         IFSC::SBMY         => 1014,
+        IFSC::SCBL         => 1051,
         IFSC::STBP         => 1014,
         IFSC::SBTR         => 1014,
         IFSC::YESB         => 1005,

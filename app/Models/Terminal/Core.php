@@ -4,11 +4,14 @@ namespace RZP\Models\Terminal;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Core extends Base\Core
 {
@@ -306,6 +309,70 @@ class Core extends Base\Core
 
             return false;
         }
+    }
+
+    public function getBanksForTerminal(Entity $terminal): array
+    {
+        $gateway = $terminal->getGateway();
+
+        if (($terminal->isNetbankingEnabled() === false) or
+            (in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException('Banks available only for netbanking gateways');
+        }
+
+        $enabledBanks = (array) $terminal->getEnabledBanks();
+
+        $corporate = $terminal->getCorporate();
+        $tpv       = $terminal->getTpv();
+
+        $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
+        $disabledBanks  = array_values(array_diff($supportedBanks, $enabledBanks));
+
+        $enabledBanks  = Netbanking::getNames($enabledBanks);
+        $disabledBanks = Netbanking::getNames($disabledBanks);
+
+        return [
+            'enabled'  => $enabledBanks,
+            'disabled' => $disabledBanks,
+        ];
+    }
+
+    public function setBanksForTerminal(Entity $terminal, $banksToEnable): array
+    {
+        $gateway = $terminal->getGateway();
+
+        if (($terminal->isNetbankingEnabled() === false) or
+            (in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException('Banks available only for netbanking gateways');
+        }
+
+        if (empty($banksToEnable) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException('enabled_banks is required and needs to be sent.');
+        }
+
+        if (is_array($banksToEnable) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('enabled_banks should be an array');
+        }
+
+        $corporate = $terminal->getCorporate();
+        $tpv       = $terminal->getTpv();
+
+        $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
+
+        if (empty(array_diff($banksToEnable, $supportedBanks)) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('banks not supported by gateway');
+        }
+
+        $terminal->setEnabledBanks($banksToEnable);
+
+        $this->repo->saveOrFail($terminal);
+
+        return $this->getBanksForTerminal($terminal);
     }
 
     protected function validateExistingTerminalGatewayMerchantId($terminal)

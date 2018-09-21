@@ -34,7 +34,20 @@ class CreateSubscription extends Migration
             $table->char(Entity::SCHEDULE_ID, Entity::ID_LENGTH);
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
                   ->nullable();
+
+            $table->tinyInteger(Entity::GLOBAL_CUSTOMER)
+                  ->default(1);
             $table->char(Entity::TOKEN_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Entity::CURRENT_PAYMENT_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Entity::CURRENT_INVOICE_ID, 18)
+                  ->nullable();
+
+            $table->integer(Entity::CURRENT_INVOICE_AMOUNT)
+                  ->unsigned()
                   ->nullable();
 
             $table->string(Entity::STATUS, 16)
@@ -49,6 +62,9 @@ class CreateSubscription extends Migration
             $table->integer(Entity::TOTAL_COUNT);
 
             $table->integer(Entity::PAID_COUNT)
+                  ->default(0);
+
+            $table->integer(Entity::ISSUED_INVOICES_COUNT)
                   ->default(0);
 
             $table->integer(Entity::AUTH_ATTEMPTS)

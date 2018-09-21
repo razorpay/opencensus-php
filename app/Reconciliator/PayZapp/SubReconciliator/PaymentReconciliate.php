@@ -1,74 +1,169 @@
 <?php
 
-namespace RZP\Reconciliator\PayZapp;
+namespace RZP\Reconciliator\PayZapp\SubReconciliator;
 
+use Carbon\Carbon;
+
+use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID  = 'track_id';
-    const COLUMN_CARD_TYPE   = 'creditdebit_card_flag';
-    const COLUMN_SERVICE_TAX = 'service_tax';
-    const COLUMN_SB_CESS     = 'swach_bharat_cess';
-    const COLUMN_KK_CESS     = 'krishi_kalyan_cess';
-    const COLUMN_EDU_CESS    = 'educess';
-    const COLUMN_FEE         = 'commission_amt';
+    const COLUMN_GATEWAY_PAYMENT_ID2 = 'pg_sale_id';
+    const COLUMN_SERVICE_TAX         = ['cgst', 'igst', 'sgst', 'utgst'];
+    const COLUMN_FEE                 = 'commission_amt';
+    const COLUMN_AMOUNT              = 'gross_amt';
+    const COLUMN_PAYMENT_DATE        = 'tran_date';
+    const GATEWAY_PAYMENT_DATE_FORMAT= 'Y-m-d H:i:s.u';
+
 
     protected function getPaymentId(array $row)
     {
-        $paymentId = $row[self::COLUMN_PAYMENT_ID];
+        if (isset($row[self::COLUMN_GATEWAY_PAYMENT_ID2]) === false)
+        {
+            return null;
+        }
+
+        $gatewayPaymentId2 = $row[self::COLUMN_GATEWAY_PAYMENT_ID2];
+
+        $payzappRepo = $this->app['repo']->wallet;
+
+        $gatewayPayment = $payzappRepo->fetchWalletByGatewayPaymentId2($gatewayPaymentId2);
+
+        if ($gatewayPayment === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::PAYMENT_ABSENT ,
+                    'row'             => $row,
+                    'gateway'         => $this->gateway,
+                ]
+            );
+
+            return null;
+        }
+
+        $paymentId = $gatewayPayment->getPaymentId();
+
         return $paymentId;
     }
 
     protected function getGatewayServiceTax($row)
     {
-        // Convert service tax into paise
-        $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
+        // Convert service tax and GST into paise
+        $serviceTax = 0;
 
-        if (empty($row[self::COLUMN_SB_CESS]) === false)
+        foreach (self::COLUMN_SERVICE_TAX as $tax)
         {
-            // Convert sb cess into basic unit of currency. (ex: paise)
-            $sbCess = floatval($row[self::COLUMN_SB_CESS]) * 100;
+            if (isset($row[$tax]) === false)
+            {
+                $this->reportMissingColumn($row, $tax);
 
-            // PayZapp reconciliation files have service tax and cess separately
-            $serviceTax += $sbCess;
+                return null;
+            }
+
+            $serviceTax += Helper::getIntegerFormattedAmount($row[$tax]);
         }
 
-        if (empty($row[self::COLUMN_KK_CESS]) === false)
-        {
-            // Convert kk cess into basic unit of currency. (ex: paise)
-            $kkCess = floatval($row[self::COLUMN_KK_CESS]) * 100;
-
-            // PayZapp reconciliation files have service tax and cess separately
-            $serviceTax += $kkCess;
-        }
-
-        if (empty($row[self::COLUMN_EDU_CESS]) === false)
-        {
-            // Convert edu cess into basic unit of currency. (ex: paise)
-            $eduCess = floatval($row[self::COLUMN_EDU_CESS]) * 100;
-
-            // PayZapp reconciliation files have service tax and cess separately
-            $serviceTax += $eduCess;
-        }
-
-        return round($serviceTax);
+        return $serviceTax;
     }
 
     protected function getGatewayFee($row)
     {
         // Convert fee into basic unit of currency (ex: paise)
-        $fee = floatval($row[self::COLUMN_FEE]) * 100;
+        $fee = 0;
+
+        if (isset($row[self::COLUMN_FEE]) === false)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_FEE);
+        }
+
+        $fee += Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
 
         // Already in basic unit of currency. Hence, no conversion needed
         $serviceTax = $this->getGatewayServiceTax($row);
+
+        if ($serviceTax === null)
+        {
+            return null;
+        }
 
         // PayZapp reconciliation files have fee and service tax separately
         $fee += $serviceTax;
 
         return round($fee);
+    }
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'row'             => $row,
+                    'gateway'         => $this->payment->getGateway(),
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function getReconPaymentAmount(array $row)
+    {
+        if (isset($row[self::COLUMN_AMOUNT]) === false)
+        {
+            return 0;
+        }
+        return Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT]);
+    }
+
+    protected function getGatewayPayment($paymentId)
+    {
+        $gatewayPayment = $this->repo->wallet->fetchWalletByPaymentId($paymentId);
+
+        return $gatewayPayment;
+    }
+
+    protected function getGatewayPaymentDate($row)
+    {
+        if (empty($row[self::COLUMN_PAYMENT_DATE]) === true)
+        {
+            return null;
+        }
+
+        $gatewayPaymentDate = null;
+
+        try
+        {
+            $gatewayPaymentDate = Carbon::createFromFormat(
+                self::GATEWAY_PAYMENT_DATE_FORMAT,
+                $row[self::COLUMN_PAYMENT_DATE],
+                Timezone::IST);
+        }
+        catch (\Exception $ex)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
+                    'message'       => 'Unable to parse gateway payment date -> ' . $ex->getMessage(),
+                    'row'           => $row,
+                    'gateway'       => $this->gateway,
+                ]);
+
+            $this->app['trace']->traceException($ex);
+        }
+
+        return $gatewayPaymentDate;
     }
 }

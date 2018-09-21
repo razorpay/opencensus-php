@@ -2,16 +2,17 @@
 
 namespace RZP\Tests\Functional\FundTransfer;
 
-use Carbon\Carbon;
 use Mail;
+use Queue;
+use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Batch;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 trait AttemptTrait
 {

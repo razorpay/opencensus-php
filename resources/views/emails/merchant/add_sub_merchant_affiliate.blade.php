@@ -76,7 +76,7 @@
   <br>
   To get started with your Razorpay account, please create a password. After that, you will need to submit the activation form with KYC details to start transacting.
   <br>
-  <a href="{{ $org['hostname'] . '/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&amp;email='.$subMerchant['email'] }}" target="_blank" style="color: #24bbea; text-decoration: none !important;">Create a Password</a>
+  <a href="{{ $org['hostname'] . '/#/access/resetpwd/'.$token.'?email='.$subMerchant['email'] }}" target="_blank" style="color: #24bbea; text-decoration: none !important;">Create a Password</a>
   @else
   You can {{$token}} login to your account with your existing credentials and submit the activation form with KYC details to start transacting.
   @endif
@@ -176,9 +176,7 @@
               <td class="center" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: center; color: #aaa; font-size: 12px; line-height: 18px; padding: 0px 0px 10px;">
                 <center style="width: 100%; min-width: 330px;">
                   This message was sent to <a href="mailto:{{$subMerchant['email']}}" style="display: inline-block; color: #aaa !important; text-decoration: none;">
-                  {{{$subMerchant['email']}}}</a>. Reach out to us by replying
-                  to this email or at <a href="mailto:support@razorpay.com" style="display: inline-block; color: #aaa !important; text-decoration: none;">
-                  support@razorpay.com</a>
+                  {{{$subMerchant['email']}}}</a>. @include('emails.partials.support')
                 </center>
               </td>
               <td class="expander" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; visibility: hidden; width: 0px; padding: 0 !important; color: #aaa; font-size: 12px; line-height: 18px;"></td>

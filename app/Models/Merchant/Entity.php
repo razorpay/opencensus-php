@@ -78,10 +78,8 @@ class Entity extends Base\PublicEntity
     const NOTES                    = 'notes';
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
 
-    const ENABLE_LA_DASHBOARD      = 'Enable_la_dashboard';
-
     // Coupon Related Data for display only
-    const COUPON_CODE               = 'coupon_code';
+    const COUPON_CODE              = 'coupon_code';
 
     //
     // Followings are derived data indexed in ES and goes to
@@ -149,6 +147,7 @@ class Entity extends Base\PublicEntity
     const USER                      = 'user';
     const DETAILS                   = 'details';
     const DASHBOARD_ACCESS          = 'dashboard_access';
+    const APPLICATION               = 'application';
 
     protected $entity = 'merchant';
 
@@ -220,8 +219,13 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+    ];
+
+    const INTERNAL_CONFIG_LIST = [
         self::BILLING_LABEL,
         self::WEBSITE,
+        self::RECEIPT_EMAIL_ENABLED,
+        self::PARENT_ID
     ];
 
     protected $public = [
@@ -357,6 +361,7 @@ class Entity extends Base\PublicEntity
         self::DETAILS,
         self::USER,
         self::DASHBOARD_ACCESS,
+        self::APPLICATION,
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
@@ -1132,6 +1137,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EMAIL] =  $formattedEmail;
     }
 
+    public function setChannel(string $channel)
+    {
+        $this->attributes[self::CHANNEL] = $channel;
+    }
+
     public function setWebsiteAttribute($website)
     {
         $this->attributes[self::WEBSITE] = $website;
@@ -1682,6 +1692,15 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * @return bool
+     */
+    public function isPartnerWithWebhooksAccess(): bool
+    {
+        return (($this->isPartner() === true) and
+            (in_array($this->getPartnerType(), Constants::$webhooksAccessPartnerTypes, true) === true));
+    }
+
+    /**
      * Appends the merchant id with the Account entity's sign
      *
      * @param array $array
@@ -1704,5 +1723,35 @@ class Entity extends Base\PublicEntity
         $this->setSignedId($array);
 
         return $array;
+    }
+
+    /**
+     * Checks if the merchant has 24/7 settlement enabled
+     *
+     * @return bool
+     */
+    public function isMerchantWith24x7SettlementFeature(): bool
+    {
+        $channelWith24x7Settlement =  Settlement\Channel::get24x7Channels();
+
+        $merchantChannel = $this->getChannel();
+
+        if (in_array($merchantChannel, $channelWith24x7Settlement, true) === false)
+        {
+            return false;
+        }
+
+        if ($this->isFeatureEnabled(Feature\Constants::SETTLEMENT_24X7) === true)
+        {
+            return true;
+        }
+        else if ($this->isLinkedAccount() === true)
+        {
+            $parentHas24x7Feature = $this->parent->isFeatureEnabled(Feature\Constants::SETTLEMENT_24X7);
+
+            return $parentHas24x7Feature;
+        }
+
+        return false;
     }
 }

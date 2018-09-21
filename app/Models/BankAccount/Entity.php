@@ -54,7 +54,9 @@ class Entity extends Base\PublicEntity
     // Beneficiary registration constants
     //
     const ON                = 'on';
+    const ALL               = 'all';
     const RECIPIENT_EMAILS  = 'recipient_emails';
+    const DURATION          = 'duration';
 
     protected static $sign      = 'ba';
 

@@ -21,4 +21,12 @@ class Repository extends Base\Repository
                     ->where(Entity::INT_PAYMENT_ID, '=', $intPaymentId)
                     ->firstOrFail();
     }
+
+    public function findByGatewayPaymentIdAndAction($gatewayPaymentId, $action)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BANK_PAYMENT_ID, '=', $gatewayPaymentId)
+                    ->where(Entity::ACTION, '=', $action)
+                    ->firstOrFail();
+    }
 }

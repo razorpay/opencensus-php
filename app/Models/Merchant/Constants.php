@@ -28,6 +28,9 @@ final class Constants
     const FULLY_MANAGED                           = 'fully_managed';
     const PURE_PLATFORM                           = 'pure_platform';
 
+    // Used in partners flows
+    const APPLICATION_ID                          = 'application_id';
+
     public static $partnerTypes = [
         self::BANK,
         self::RESELLER,
@@ -38,13 +41,24 @@ final class Constants
 
     /**
      * Partner types that are allowed to view and manage
-     * partner settings like client creds and webhooks.
+     * partner settings like client creds.
      *
      * @var array
      */
     public static $settingsAccessPartnerTypes = [
         self::FULLY_MANAGED,
         self::AGGREGATOR,
+    ];
+
+    /**
+     * Partner types that are allowed to view and manage webhooks.
+     *
+     * @var array
+     */
+    public static $webhooksAccessPartnerTypes = [
+        self::FULLY_MANAGED,
+        self::AGGREGATOR,
+        self::PURE_PLATFORM,
     ];
 
     /**

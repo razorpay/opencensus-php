@@ -91,10 +91,10 @@ class UfhService
             self::FILE          => fopen($movedFile->getPathname(), 'r'),
             self::NAME          => $storageFileName,
             self::TYPE          => $type,
-            self::ENTITY_ID     => $entity->getPublicId(),
+            self::ENTITY_ID     => $entity->getId(),
             self::ENTITY_TYPE   => $entity->getEntityName(),
             self::STORE         => $this->getStoreForEnv(),
-            self::DISPLAY_NAME  => $file->getClientOriginalName(),
+            self::DISPLAY_NAME  => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
         ];
 
         $this->trace->info(

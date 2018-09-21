@@ -3,14 +3,18 @@
 namespace RZP\Models\Terminal;
 
 use Crypt;
-use Illuminate\Database\Eloquent\SoftDeletes;
-
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
+use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
-use RZP\Models\Payment;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Terminal\BankingType;
+use RZP\Models\Payment\Processor\Netbanking;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class Entity extends Base\PublicEntity
@@ -61,6 +65,7 @@ class Entity extends Base\PublicEntity
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
     const BANKING_TYPES                 = 'banking_types';
+    const ENABLED_BANKS                 = 'enabled_banks';
 
     //
     // Currenly being used to handle 'unexpected' BharatQR payments.
@@ -125,7 +130,8 @@ class Entity extends Base\PublicEntity
         self::VISA_MPAN,
         self::RUPAY_MPAN,
         self::VPA,
-        self::ENABLED
+        self::ENABLED,
+        self::ENABLED_BANKS
     ];
 
     protected $public = [
@@ -164,6 +170,7 @@ class Entity extends Base\PublicEntity
         self::DELETED_AT,
         self::ENABLED,
         self::SUB_MERCHANTS,
+        self::ENABLED_BANKS,
     ];
 
     protected $hidden = [
@@ -181,6 +188,7 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = [
         'method',
+        self::ENABLED_BANKS,
     ];
 
     protected static $modifiers = [
@@ -233,6 +241,7 @@ class Entity extends Base\PublicEntity
         self::CORPORATE                 => 'int',
         self::EXPECTED                  => 'boolean',
         self::USED                      => 'boolean',
+        self::ENABLED_BANKS             => 'array',
     ];
 
     protected $appends = [
@@ -347,6 +356,21 @@ class Entity extends Base\PublicEntity
     public function getBankingTypes()
     {
         return $this->getAttribute(self::BANKING_TYPES);
+    }
+
+    public function getCorporate()
+    {
+        return $this->getAttribute(self::CORPORATE);
+    }
+
+    public function getTpv()
+    {
+        return $this->getAttribute(self::TPV);
+    }
+
+    public function getEnabledBanks()
+    {
+        return $this->getAttribute(self::ENABLED_BANKS);
     }
 
     // ---------------------- END GETTERS ----------------------
@@ -475,6 +499,11 @@ class Entity extends Base\PublicEntity
     public function setMode($mode)
     {
         $this->setAttribute(self::MODE, $mode);
+    }
+
+    public function setEnabledBanks(array $banksToEnable)
+    {
+        $this->setAttribute(self::ENABLED_BANKS, $banksToEnable);
     }
 
     // ---------------------- END SETTERS ----------------------
@@ -795,6 +824,25 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function generateEnabledBanks(array $input)
+    {
+        $netbanking = intval($input[self::NETBANKING] ?? 0);
+        $gateway = $input[self::GATEWAY];
+
+        if (($netbanking !== 1) or (in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false))
+        {
+            return;
+        }
+
+        $corporate = $input[self::CORPORATE] ?? BankingType::RETAIL_ONLY;
+
+        $tpv = $input[self::TPV] ?? TpvType::NON_TPV_ONLY;
+
+        $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
+
+        $this->setAttribute(self::ENABLED_BANKS, $supportedBanks);
+    }
+
     public function edit(array $input = [], $operation = 'edit')
     {
         if ($this->isUsed() === false)
@@ -1003,6 +1051,11 @@ class Entity extends Base\PublicEntity
     public function isMoto()
     {
         return ($this->isTypeApplicable(Type::MOTO) === true);
+    }
+
+    public function isDirectSettlement()
+    {
+        return ($this->isTypeApplicable(Type::DIRECT_SETTLEMENT) === true);
     }
 
     public function isInternational()

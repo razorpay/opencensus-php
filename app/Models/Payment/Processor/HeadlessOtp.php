@@ -45,6 +45,7 @@ trait HeadlessOtp
             (Payment\Flow::isFeatureBasedFlowEnabled($this->merchant, Payment\Flow::HEADLESS_OTP) === true))
         {
             if ((Payment\Gateway::supportsHeadlessBrowser($payment->getGateway()) === true) and
+                ($payment->card->iinRelation !== null) and
                 ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true))
             {
                 return true;
@@ -75,6 +76,8 @@ trait HeadlessOtp
             return;
         }
 
+        $originalTermUrl = $request['content']['TermUrl'];
+
         $this->setHeadlessDummyCallbackUrl($request['content']);
 
         $data = [
@@ -85,15 +88,24 @@ trait HeadlessOtp
         $response = $this->app['card.otpelf']->otpSend($data);
 
         if ((empty($response) === false) and
-            ($response['success'] === true) and
-            ($response['data']['action'] === 'page_resolved') and
-            ($response['data']['data']['type'] === 'otp'))
+            ($response['success'] === true))
         {
-            $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
+            if (($response['data']['action'] === 'page_resolved') and
+               ($response['data']['data']['type'] === 'otp'))
+            {
+                $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
 
-            $content = $response['data']['data'];
+                $content = $response['data']['data'];
 
-            return ['url' => $this->getOtpSubmitUrl(), 'content' => $content, 'method' => 'POST'];
+                return ['url' => $this->getOtpSubmitUrl(), 'content' => $content, 'method' => 'POST'];
+            }
+
+            if ($response['data']['action'] === 'submit_otp')
+            {
+                $content = $response['data']['data'];
+
+                return ['url' => $this->getCallbackUrl(), 'content' => $content, 'method' => 'POST'];
+            }
         }
 
         $traceInput = [
@@ -128,6 +140,11 @@ trait HeadlessOtp
                 null,
                 true);
         }
+
+        /*
+         * If elf fail for unknow reason we are setting original termurl for fallback
+        */
+        $request['content']['TermUrl'] = $originalTermUrl;
 
         return $request;
     }

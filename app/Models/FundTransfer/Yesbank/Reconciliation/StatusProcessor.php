@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 
+use RZP\Models\FundTransfer\Attempt\Status as FundTransferStatus;
 use RZP\Models\FundTransfer\Yesbank\Request\Status as StatusRequest;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
 
@@ -93,5 +94,19 @@ class StatusProcessor extends BaseRowProcessor
     protected function getUtrToUpdate()
     {
         return $this->parsedData[self::UTR];
+    }
+
+    protected function updateVerifyReconEntity()
+    {
+        $currentStatus = $this->reconEntity->getBankStatusCode();
+
+        if ($this->parsedData[self::BANK_STATUS_CODE] === $currentStatus)
+        {
+           return;
+        }
+
+        $this->reconEntity->setStatus(FundTransferStatus::INITIATED);
+
+        $this->updateReconEntity();
     }
 }

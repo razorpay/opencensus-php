@@ -72,6 +72,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::RECEIVED);
     }
 
+    public function getGatewayReferenceId()
+    {
+        return $this->getAttribute(self::GATEWAY_REFERENCE_ID);
+    }
+
     public function getSignedXml()
     {
         return $this->getAttribute(self::SIGNED_XML);

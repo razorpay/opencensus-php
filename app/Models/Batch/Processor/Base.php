@@ -23,7 +23,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends BaseModel\Core
 {
-    use FileHandlerTrait;
+    use FileHandlerTrait { parseExcelSheets as parentParseExcelSheets; }
 
     /**
      * Lock wait timeout for batch entity
@@ -85,7 +85,7 @@ class Base extends BaseModel\Core
      * They are re-used in the flow.
      * E.g.
      * - sending mails with attachment,
-     * - unlinking post processing etc..
+     * - un-linking post processing etc..
      */
     protected $inputFileLocalPath;
     protected $outputFileLocalPath;
@@ -95,6 +95,12 @@ class Base extends BaseModel\Core
      */
     protected $inputFileType;
     protected $outputFileType;
+
+    /**
+     * Override from child processor to use new spreadsheet library.
+     * @var boolean
+     */
+    protected $useSpreadSheetLibrary = false;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -395,11 +401,15 @@ class Base extends BaseModel\Core
 
         foreach ($entries as $index => & $entry)
         {
+            $entryTracePayload = $entry;
+
+            $this->removeCriticalDataFromTracePayload($entryTracePayload);
+
             $tracePayload = $this->batch->toArrayTrace(
                 [],
                 [
                     'row_index' => $index,
-                    'row'       => $entry,
+                    'row'       => $entryTracePayload,
                 ]);
 
             try
@@ -448,6 +458,16 @@ class Base extends BaseModel\Core
     protected function processEntry(array & $entry)
     {
         throw new \BadMethodCallException();
+    }
+
+    /**
+     * This method can be implemented by the child classes if some data
+     * needs to be removed from tracing.
+     *
+     */
+    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    {
+        return;
     }
 
     /**
@@ -621,7 +641,7 @@ class Base extends BaseModel\Core
                     {
                         foreach ($value as $k => $v)
                         {
-                            $dict["Notes[{$k}]"] = $v;
+                            $dict["notes[{$k}]"] = $v;
                         }
                     }
                     // Else just put the key value in dictionary
@@ -789,6 +809,26 @@ class Base extends BaseModel\Core
                 throw new LogicException("Extension not handled: {$ext}");
         }
     }
+
+    /**
+     * Parses excel sheet at given path. By default uses FileHandlerTrait's parseExcelSheets() method(existing flow).
+     * But for specific batch where the flag is overridden and made true, uses new phpoffice/phpspreadsheet library.
+     * We intend to move fully to this new library uses but is being done incrementally.
+     * @param  string $filePath
+     * @return array
+     */
+    protected function parseExcelSheets($filePath): array
+    {
+        if ($this->useSpreadSheetLibrary === true)
+        {
+            $this->trace->info(TraceCode::BATCH_FILE_PROCESS_USING_SPREADSHEET, $this->batch->toArrayTraceAll());
+
+            return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath);
+        }
+
+        return $this->parentParseExcelSheets($filePath);
+    }
+
 
     protected function parseFileAndCleanEntries(string $filePath): array
     {

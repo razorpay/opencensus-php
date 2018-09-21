@@ -1714,7 +1714,7 @@ ALTER TABLE netbanking
 ALTER TABLE payments
     ADD COLUMN amount_paidout INTEGER UNSIGNED DEFAULT 0 AFTER base_amount_refunded;
 
-# payout reconcilation remarks
+# payout reconciliation remarks
 ALTER TABLE payouts
     ADD COLUMN remarks VARCHAR(255) DEFAULT NULL AFTER return_utr;
 
@@ -4183,3 +4183,124 @@ ALTER TABLE subscriptions
     ADD COLUMN current_invoice_id CHAR(14) DEFAULT NULL AFTER current_payment_id,
     ADD COLUMN current_invoice_amount INTEGER UNSIGNED DEFAULT NULL AFTER current_invoice_id,
     ADD COLUMN issued_invoices_count INTEGER DEFAULT 0 AFTER paid_count;
+
+ALTER TABLE atom
+    ADD COLUMN `date` INTEGER DEFAULT NULL AFTER callback_data;
+
+# Nodal beneficiary schema changes
+ALTER TABLE nodal_beneficiaries
+    DROP COLUMN status,
+    DROP COLUMN nodal_bank,
+    ADD COLUMN channel VARCHAR(8) NOT NULL AFTER bank_account_id,
+    ADD COLUMN registration_status VARCHAR(40) NULL AFTER channel,
+    ADD INDEX nodal_beneficiaries_channel_index(channel),
+    ADD INDEX nodal_beneficiaries_merchant_id_index(merchant_id),
+    ADD INDEX nodal_beneficiaries_registration_status_index(registration_status),
+    ADD UNIQUE nodal_beneficiaries_bank_account_id_channel_unique(bank_account_id, channel);
+
+ALTER TABLE users
+    ADD COLUMN password_reset_token VARCHAR(255) DEFAULT NULL AFTER confirm_token,
+    ADD COLUMN password_reset_expiry INTEGER UNSIGNED DEFAULT NULL AFTER password_reset_token;
+
+ALTER TABLE tokens
+    ADD COLUMN account_type VARCHAR(255) DEFAULT NULL AFTER account_number;
+
+ALTER TABLE subscriptions
+    ADD COLUMN global_customer TINYINT(1) DEFAULT 1 AFTER customer_id;
+
+-- For M021
+update tokens
+set recurring_failure_reason="Payment processing failed due to error at bank or wallet gateway"
+where id in
+("AJBiRiu7tRqGta", "AJJ6EWZ3G8SRaN", "AKlYO3tVGdkv63", "ASgtYovDs0pFQ9", "ASlnLdh6nmJtxD", "AXu1dhOwaTIe2F", "AXvFUqofZQfXpS", "AXvU9gUQXBErJL", "AXwPZVoZzrNHMh", "AZ5gkHeNOPrzN1", "AaBsTjV2n9x7Ie", "AaCRiKF0D6Wj9E", "AaGQgh5qp3ZNox", "AaGh7H1u9xUTiQ", "AaI8jcFPf1B7ei");
+
+-- For M025
+update tokens
+set recurring_failure_reason="Payment processing failed due to error at bank or wallet gateway"
+where id in
+( "ANuO7gt4V61AM5", "AT5gSn7iNGZuv5");
+
+-- For M093
+update tokens
+set recurring_failure_reason="EMandate aadhaar not mapped"
+where id in
+("ACSOrXpEraKmsf", "ACVTweuRA5mI9D", "ACVlwYTaHkFfs4", "ACWIEyXXXOnagX", "ACWuCxfeRBOOIA", "ACX2c7oFIfOjWr", "ACX914czS8CrhX", "ACaBo4S1bvj0p6", "AEnWwRuUsDcqY6", "AEnkVUoklTMK20", "AEoYXaIe1qYVAl", "AEoedsf4Iyl0oS", "AEpmJFUJBdriF5", "AEqOUMnZrlu4HS", "AEs2cloUJITFke", "AEtcNCoBtN5UJA", "AEv0STAz0EIgit", "AExlMhgXBXUDGY", "AEz0JTCCgicUx1", "AF2323ly5em2GY", "AF2cSFDoeT2nzF", "AFDmba1AKVte73", "AFGX3qv1xTxeS8", "AFHH42A1dWM1Ab", "AFHugtTudFeLiG", "AFIYwenFh6mbTr", "AFIf8cdy0ehLJy", "AFJx8fUGWV3WDm", "AFKbScoqk9qrkY", "AFL9AfKVpxJ0Lk", "AFQWd7UbN987A0", "AFbbm5uXBhJRr0", "AFbdaLvVhirMX4", "AFdQRhbuTRgVN1", "AFfhsBTYmMrmTj", "AFhZXEibKjwF0A", "AG2N8udro4UVTH", "AG3XFsA2GjNW7r", "AG4UE6asdOjOLi", "AG65Eey3iDyqru", "AG75byVuJqD73o", "AGBVXo2QZvJF3k", "AGOvWihQXEE9Xr", "AGR7wmubEatZpF", "AGRgS1yHMOlyh4", "AGUEhanPFehERa", "AGWKKWqU3oNrhi", "AGYzAdh01vA3q0", "AGmflZKNSuWp7q", "AGnniHLsLAuNkV", "AGnnsZdLyK81ds", "AGpQhTMAqsOyM1", "AGpjSvHby4tYWh", "AGpqjy6OhDio1h", "AGtoW8yrnLANy2", "AGuvIksaN1076b", "AGvbSm1CVAmkWT", "AGwWqBySwyGMGG", "AHBmr15YR8YsjL", "AHCBOKrnXhSE90", "AHCCZUJLfUdVs2", "AHDC1gwx6Mjf4l", "AHE6SMlGW6A5C9", "AHERxTRLra8mL1", "AHFA9WWa8u5qA4", "AHFoe3JnMPblmY", "AHFuKeQDTkBNKl", "AHJEMIhAz0pQdl", "AHORt57yeH3ssP", "AHWx512Qku4RSi", "AHZEyzBmv03Ic1", "AHZyrFrWeWx7W1", "AHaGiDvtqgxfIq", "AHb8eqYg9Qx7U4", "AHbVJq10G6MDif", "AHcytDQZlIG2nn", "AHeN2DqFqky6Mm", "AHefD7R3dGsFyu", "AHekpOxsezIdX8", "AHg1lTy58R2CMJ", "AHgGhWlR0q0ZEr", "AHgPxOY4ReEOvy", "AHi3hbxccFjn0v", "AHiI6Rr2wtvDFi", "AHiptjlM99ka1d", "AHlsmQI1EaNeF7", "AHmmrb2dlkDOUX", "AHt1qmzvzAjUOi", "AHuokvrk22RBNO", "AHvV8NeJPwDQw9", "AHy9wGifWJHzj3", "AHzWTwzWv6pUmJ", "AI00NLni1nBxgX", "AI0F7vKnTxqb3w", "AI0IY7K3CRy7jZ", "AI0nGtD5jhomvF", "AI0r4TOmYfno8s", "AI14uI449sDDAA", "AI1xQ0zt9qwbNk", "AI4CfVShBXrgV0", "AI4EfyRI0jthsD", "AI57rQWZEWjvTE", "AI6DyWESVqIG3y", "AI6V4nEpZjwcnG", "AIKnYVngKd1w5z", "AILCZJzew5CryQ", "AIN4cXlmiXkYI0", "AINLTzVN7c9PBN", "AIOIvtnxd2d27Z", "AIOSKyhSBcLP4W", "AIOuIy7WQTaSMR", "AIQmYxZdIt7gl6", "AIRkyQguY9xLeL", "AIRtMwZVYGxIOy", "AIS4WUBd0vIEJh", "AITs7X7DATtTAj", "AIWDiKM4eKBsqE", "AIf0LmDZz5J5Ae", "AImNqSuv8oUGke", "AInWbSzyjqvCbL", "AIsnBGjSnz7ywo", "AIswXRWQ1zksSc", "AItAOj1OvQFLHO");
+
+-- For M092
+update tokens
+set recurring_failure_reason="Payment processing failed due to error at bank or wallet gateway"
+where id in
+("AI2bvqvh5I5Mtd", "AJI5G65jW6kTLJ", "AJekJkcJygSMHF", "ALJM1BIqSRblav", "ALeGgv4NDYZEpA", "ANBavR0jfQRxkQ", "ANWobdOcKD7osc", "AP89l1gwmAbukm", "APW7YPjmci1Bjd", "APWDTcCGl8IFRw", "APWXiwG3ArjeMG", "APWYGI0HlUW7dH", "APaNdjvmq1CI8K", "APxBYllBn8Rmca", "APy3k5mBACDoG4", "AXSnNp1TqZYVJu", "AYM4wNaU32NpUT", "AYdhBODbajU2BS", "AaIe5hw3zzSypk", "AahZjwlgWUviHR", "AbPcunnvrViRuR", "AcJPxAUIKymyut", "AffdnMZV3cd8JC", "AfjOgm9pw5i0fi", "AfjcYgHxzbZQLb", "AflSsSqbfEspOm", "AfnCHpIoUiOzBi", "AfnXkyAGTormO2", "AfpZK8RRf2Ck5K", "AfvcXWA3UpgGmx", "Afvda1la02xau9", "Afvdx6UbIpY4oB", "AfvmNYmX4myVt0", "AfvofOM2R3rXo0", "AfvykA9F5VZ1Ty", "Afw8PP79xfunxh", "AfwEaQyh4gkK7V", "AfwIMDOZLyDdBu", "AfwQG6lHB3axjM", "AfyKVUSPiir3vD", "Afyc1d9nSRki4f", "Ag12n2KybPV069", "Ag1oqMCflKPxF2", "Ag3uTzwCTGJc03", "Ag459rN6ppm31t", "Ag5iOmTBwVdKAL", "Ag6XKoG351RxOS", "Ag7DDCpcQHLoto", "Ag7W8ReZUTMOm2", "Ag8xqmUoYs3azM", "Ag9ALROVPn5LJZ", "Ag9B7M6m2PDBSQ", "Ag9ESlf8oPswMM", "Ag9k4BeTeACWuj", "Ag9rJgZbjPWu9k", "AgA6VKC9pxpp27", "AgA8SLC3oNHc3f", "AgBZGIlZJ2eHFK", "AgBfeK68Fex0Lg", "AgC4HTzfnAwAjv", "AgFYMsu2q1pmfD", "AgFYTLENIwx341", "AgG6Sz7hYtrQKN", "AgG7BDiySr1g4B", "AgGgqTaXbIV8s3", "AgHHb4Gf0e6LN5", "AgHL3yuoy9rxpq", "AgHVtZvRURawB4", "AgHZGM5LKSuS0y", "AgIcdajE4nh3eZ", "AgJbNZVbYqSXIV");
+
+-- For M055
+update tokens
+set recurring_failure_reason="Payment failed because account withdrawal are frozen"
+where id in
+("9z0eH2sHwiifM0", "ATYlxN3qf7qj8t", "ATsNMdsEAw0p4G", "AUfXV7c2UbsPfG", "AUfoNA1rIfhKB7", "AVuKphpur1TBIZ", "AWi5OMWecYkxuw", "AX3ndYr209YOhg", "AX4RMVsR0h51Yr", "AX8Siw2jmGMOeM", "AXufDKT7bo4Alw", "AXusmNM1O0Q6u3", "AXxSdKtcBezQe8", "AYFdrpPpVp2Os2");
+
+-- For M038
+update tokens
+set recurring_failure_reason="Payment failed because of invalid account"
+where id in
+("ACPu8WNq26HJb2", "ACW6ceGPvZkjpu", "AEoHrHrBdREuGl", "AEtGPTGo2GwHQ8", "AFDGd6vBhdfTYe", "AFGsN5KmsmpQvp", "AFGwzUuMmDlHd8", "AFaa1lCTyEJ6mK", "AG4Uv4eaIg75i6", "AGPYkKaR0fxZFv", "AGTi4iuNkOlJj7", "AGmoHphASGfoAl", "AHKmSdnwtW4KUG", "AHZth0L6bAx5bo", "AHf9SceGhpP5Kw", "AHfkRyZBcIQJXe", "AHfwOEwFXxCVpe", "AHfz9HrgoyLY0o", "AI11jsrLh8pxK1", "AI2ukCS7iyRqhq", "AI7NDU5Y8T2f9h", "AIBFRCLJcJCiwm", "AIRGQO89mZEko9", "AITbULmHZujoq1", "AIbVzAAyvID8fZ", "AIsBtor8b0VolG");
+
+-- For M091
+update tokens
+set recurring_failure_reason="Payment processing failed due to error at bank or wallet gateway"
+where id in
+("ACSaVCnd7fcPmp", "AF0BeDJAR4ikdm", "AG2MKBa3tuU7Yp", "AG3PlauxxwUpQ4", "AGnYyJw2xaxj6a", "AGojEY4lm4VeEe", "AHGNMCGFvUqSil", "AHhFiyH9N9cXVW", "AHhPsS0nm6dIIK", "AHhvqnhHMunNIO", "AISCogQ96cbyfa", "AISdoXCDXTqabR", "AIT3dwoFSmyMAt", "AIuXe82Z8TwRai", "AJDsKgVniEbWQe", "AJeMIa2FoweenZ", "AJxxgoSTic15Vj", "AK45Lj9sAOuq87", "AK4Enitnqd6jq8", "AKOTTWGZ1VZ5Ps", "AKVzx9sCb5bmgp", "ANAPTl8aHjeA74", "ANAZ1N8F8CmtYD", "ANAecbN17syrMP", "ANAq0NMGSjVVeW", "ANB6y9FhLCAACe", "ANBC6qN5n5pLf0", "ANBE9o3VRGnZ5w", "ANBFlZGTlXGlOf", "ANBQfYM0jq8IK8", "ANBephSQ4EZTgp", "ANBhzch4MT4ftg", "ANBoxgVzIdcZ1v", "ANBqchYSxZVkQI", "ANBtROLCmxNswF", "ANBxuLUXsPTM5Q", "ANCCzkyeTAvP7G", "ANCG1HLb629WsH", "ANCMXMoctzzX72", "ANCPILQPTLS7lM", "ANCVxQufB4GrQE", "ANCaIJcJeSUKtl", "ANCcJjwI2MBhBA", "ANClCoPc8CLrlx", "ANCliSx21fB4UJ", "ANCx5ObKlRiZIX", "ANCxViyXL4EKZx", "AND2McTLKz3mKl", "ANDAaGGS7V2zBr", "ANDUpdC1eOn0Mr", "ANDYUhFJD9zDGU", "ANDfZCmx2hzIzx", "ANDvgQjzgcXL7m", "ANEKFrfFcMoGpu", "ANEOeHfy8xJAIa", "ANEhcdrNGtNYDa", "ANEnVHkMNhos04", "ANExJWcGDjOfv8", "ANF57ngyYMj9in", "ANFUxEAy8VgwTQ", "ANFcVw6upRDJo0", "ANFsD0DFGn3dtK", "ANFt1OnHSag0Q8", "ANFuRFdzTSOx8W", "ANG4JnnRMC1gHs", "ANGniD5jtVNdDX", "ANGzNOJd7FZ7iz", "ANH0bXQsdPuyES", "ANHTbUzhmS0MBX", "ANIQhmBSRh5xxg", "ANK72ayUHjzeGO", "ANKw5Lb2gVUZhv", "ANSb9oiXCSqYN0", "ANZc9R2oxrHgwa", "ANZk0GyrItkzwt", "ANaZdVoYRtc7nJ", "ANcrZ6ayS0gm4R", "ANe6qES2xJAtlN", "ANeIK6iGjxDugT", "ANeYCQluOXwCeJ", "ANenSsMTkvoslY", "ANevd3SDTZwDXW", "ANeyTWt8ECrpT8", "ANf4D7kwCQtX1E", "ANfSVWGXFryDZ4", "ANfm5nxsxuKtNW", "ANftBxHczDkJeI", "ANfu8J5hY0WCbX", "ANfx5VK4BZLC4P", "ANg65KAYl0z1Ir", "ANgHhQvdMTpbQm", "ANgJrEeU8oRHp5", "ANgMozGlIB61Xr", "ANgm8H9FrhIDH3", "ANh0RFKvpFyLSf", "ANhnoOi9zstodJ", "ANk8Fj6yTblDwU", "ANmnRmW0h7tCVn", "ANqz3LzpBHvwIO", "ANtM3WGQ26OcFI", "ANtPbl1WWcnmFD", "ANtSqmd3aZFXeO", "ANuCaPTMARSxqJ", "ANuW9EHw74rKmX", "ANujJvs3XoVOxv", "ANv0FjWF16kk1Y", "ANvPP6u3t3oDee", "ANvTiaiVClBboV", "ANvml7IcqwfVyc", "ANw1cLRcWQ9ESn", "ANwFNRIe6QhWSF", "ANwIq04yH9YtmZ", "ANwgDaxDaUqjid", "ANwhxqpNhrpRtl", "ANwsmjak7thDFh", "ANwspbyBLoufWh", "ANx3zefSoil0jG", "ANxAyJYg5dgtBY", "ANxo1N4CXITI1C", "ANxoAyly8W2Dss", "ANy2h6hYTKvK5i", "ANy4X6WrETllwq", "ANy5BK0loU8bIh", "ANyhIyeXW7UIGa", "ANyirbUToODoc7", "ANynOCyKc4F8dB", "ANz1kZGhDuMocW", "ANz2BnIzixCnC9", "ANz9TnkRfw1AjE", "ANzMLVbbdnwbuR", "ANzP2MoaDX2gF5", "ANzS8iVw3gFYL7", "AO03eRuz00MIxP", "AO0Hzw5OBxzKRr", "AO0YaReVfAUoHu", "AO0sxuHngMwIA3", "AO1DeMYNVTeczH", "AO1KLf3FVgvz8G", "AO1X0fjmPNpyb7", "AO1Z6PA3GpKS7u", "AO1b598xIW4Kmf", "AO2PLfX5pB0XmL", "AO5TnFWIJDfNhV", "AO5VsKQt27TMdC", "AO5XoDfoEGn6h1", "AO80W8c0h4V6Lg", "AO8EsLJhkeRo2v", "AO8VP9b4u5MwLU", "AOFMM1qntIdILP", "AOGrGQfI4ikefv", "AOHUuQXiskKVDm", "AOHgv4mCvLpAYN", "AOHjA1buhp2TvL", "AOI4K3V6yVy1lQ", "AOII6tIa6wZz99", "AOIJ9cBHt9BlW4", "AOItq0vq6ZIjfM", "AOJ0uwS5d4JwR9", "AOKGWxrDAZlmOI", "AOKR84li7J5Fdm", "AOKcUiPd6fn4R2", "AOKdbRsyQGhBYx", "AOKoVxFAzrfN9B", "AOL6CgL18ey1Ql", "AOLRsYJOrFhgam", "AOLfU8t35i8AQW", "AOLm8S0EuOg4i1", "AOM56ePZIHnIFT", "AOMVihzxmKiG9O", "AOOMCgYBQjTFjU", "AOOnntwapAaR4Z", "AOOwZ9xnSqc2Ph", "AOOy7vz2o06uRH", "AOP58820T049jD", "AOPOGLeFTbyBfz", "AOPcQwuPfYXkl8", "AOPo1hKEDnLmxm", "AOR6VTz6Ne2hwg", "AOREN2C5MQJqtX", "AORbC0qU9QGjwq", "AOS1RhdcK1RxGJ", "AOT3c7VNmuP8TG", "AOU9TkdPKYyLq8", "AOUvb7rU2pSDAC", "AOVvBBTr5QyscJ", "AOVxHQxBQP0Lk4", "AOVzJMHSl1VZyU", "AOYBtCTMZfurBq", "AOZlOa10vaV0qr", "AOdZs4eWNqTSew", "AOgDewSRold7F8", "AOhMckORWXpQKl", "AOhfSSQW5wUuOF", "AOhi3iMhDTufJn", "AOhkh22D7gtbSZ", "AOhojLMaCbWf8d", "AOhtuyig6BeDHk", "AOi2CMyQM5evJG", "AOi9DbpGu4B3X2", "AOiGZi4LISgNVK", "AOiGxMjgHVLO8T", "AOiMmoskC7Y9uy", "AOiNKmLvzU9dQz", "AOiNzGeFn6Siua", "AOiZw2AHzx4ScG", "AOitTzp4lzNKc8", "AOjDG3WSWbSi40", "AOjDwkJaWZeVTb", "AOjMeIr1fl2Gun", "AOjP7RtypiygDM", "AOjWPVdQMYbnjq", "AOja75CUszRdAC", "AOjf3psBhWu1xX", "AOjgZbWsHFFWOO", "AOjoIT72dYwRyq", "AOjtqyycJPsAz0", "AOkC1gBtq2Hyzb", "AOkCGG9NqDULsQ", "AOkhizHnY2idBX", "AOki5zmahuqjA7", "AOkw5CsQRzE2jQ", "AOl6mltQ5n7hHI", "AOlOr7ek25y2sl", "AOlow40c3NBZSy", "AOlsxh0cAYcb0t", "AOm8yAq64Mn3ga", "AOmFHG1CgBIaM9", "AOmO9b4ONCVKIR", "AOmQaQpIdW2RmF", "AOmWVR7MuX0o6D", "AOmXsv9wo4DYET", "AOmZgJBP1ujroV", "AOmceguKT0lCdL", "AOmtMPhW6uCjU5", "AOmzcK7oMdXJDM", "AOn1nHCC4fyPYY", "AOnKNW5yzPgjzi", "AOnM83EAxmsnhh", "AOnNhlA4BLOJkd", "AOnW0lA48uyBRY", "AOnWgyF5yG1FvE", "AOnX55JXdS8iKR", "AOnbirXzI9zGLr", "AOnwY9j9yIzLgm", "AOnxwREOSkXXp1", "AOoFZOBzuTERqO", "AOoFdZtGlOTqWO", "AOoXt8KaMAcJjF", "AOobrVo4s2v6iC", "AOomkPiisQcH5g", "AOopKieNLGoBTi", "AOp66bZRFmG6Ye", "AOp9BaRnxKlzvL", "AOp9hSddTi2wE6", "AOpbbUgKfnxOye", "AOpf5MtjKqmKvx", "AOpyNtdV4Y36go", "AOqPod8iGtTRs7", "AOqcTkGIV1GI80", "AOqxPRJQQpfeor", "AOrMRPgkLjvdG3", "AOrXtMicrEqL85", "AOrcLF51U20Kpz", "AOrq7QmryQ5NGV", "AOrwAolYXWSjEQ", "AOs9zObXaFDSDe", "AOsRhcfswe6sG8", "AOtIO6PvyTnDeu", "AOtUKM4RzeKAHI", "AP4adAcFtasgjE", "AP6LjUWQZKq2Ob", "AP7cHnIFhZhRsG", "AP7kj4ZNsjmQ6V", "APBqtc5DJHvYzI", "APD669mJYmBJJI", "APEBwMypGhwdJ2", "APH0BDePAtsYxp", "APVrgKZnx1R4Pm", "APcawD1f7Tq9B9", "APx7FPeb0JC63I", "AQ0c8nZ0xq3PPN", "AQ1D3901IY5LdC", "AQGUrNXsKTVZKh", "AQHkJcmKTYp55d", "AQLDVgCe17kgHX", "AQLpZG7LwyPbZR", "AQMQmp2mLcZLOe", "AQMeLj63yyHUeG", "AQMeqDhUfkWIRN", "AQPIPgCNVRRXuu", "AQPxBXWIYRgnhL", "AQQImNpK5nkgYO", "AQRSm9q5ZmWgYR", "AQRZwiC1nEoevk", "AQTXDYYoP1O5Iu", "AQi3As76ZFcwS6", "AQlCDLtatQQHnn", "AQm0gqinuKD0Gy", "AQm2zUvIzUN8OO", "AQoBh82Q2zGAp8", "AQp9sZQvzbhLMc", "AQs5BI3QwxPRPH", "AR4ohs8JkBFpgf", "AR8QsZekAITPIB", "AR9TshPf8Vyr8x", "ARALTGP5IgV2tN", "ARCRZXDwGd6r9w", "ARFOkgWGXEL1cy");
+
+-- For M090
+update tokens
+set recurring_failure_reason="EMandate aadhaar not mapped"
+where id in
+("ACTTO4CxqLhDjN", "ACTyQH0SOusl8m", "ACZfZS2JUmvNzm", "AFGROMb6kz26Rt", "AFOUDJNsBr0IoH", "AFlgcITsrSptCX", "AG1PZXvgPDWzgA", "AGN93dhXsuTtmn", "AGNndtTg6qbuBV", "AGolVCHIWUsy0M", "AGr5PUbY8eZS44", "AHHM55Kbd0rSLI", "AHXBdN6wCj8BTH", "AHXgEVThGB6p06", "AHisGTPlK3yrcU", "AHl432ncIx9wja", "AI2vOdk4u8QI5I", "AI5V3EgKbOrPnS", "AIR8kMtn8xlCn0");
+
+-- For M057
+update tokens
+set recurring_failure_reason="The account holder name is invalid"
+where id in
+("ACaICOw7Xri2bY", "AGUl8GlEAT7RxI", "AGtQVzHgX4twWA", "AHGHoEiV0ORJ10", "AHX6FOqgWkLGYu", "AHd22ziAp0j2Fv", "AHgcehiJ8rMCrx", "AHi8TtmJv9f3ow", "AHizvVCWs8VCDi", "AHjAHRbgEWat0L", "AI5920faYnBDEB", "AI74yAUD8PkPin");
+
+-- For M089
+update tokens
+set recurring_failure_reason="Payment processing failed due to error at bank or wallet gateway"
+where id in
+("AEuAJPeFRHOoNF", "AKfW7ygPvTZgDO", "ANHX4vkSxgt7Pn", "ARpv0XEvJXNt78", "AaYLPyfs3pwVi7", "Afwjqk0N3YiLig", "Ag8AW3XjoPEkjI", "Ag8ExxLZVeCRpT");
+
+-- For M026
+update tokens
+set recurring_failure_reason="Payment failed because account withdrawal are frozen"
+where id in
+("AExZS9nM3kmDZg");
+
+-- For M088
+update tokens
+set recurring_failure_reason="Payment processing failed due to error at bank or wallet gateway"
+where id in
+("AHZdtvGcSulRqm", "AISx6h5azlYs61", "AJfNye5l4dDcIt", "AMTwwn0Z1r341W", "AMlXGnmO0Gr4kW", "ARTy3mpgIufEBl", "ASifriEZ6BPn8j", "ASmXwXJauhAjnE", "AUHgMuMnTSS6IR", "AUdK72zU2UEu7b", "AUetQbYDbq5zLY", "AUifq3M2Rs42WF", "AVjVOv79nTk8E7", "AX3dLycR3faf8V", "AXCWgwjnqkaz6u", "AXS5LOMvSoMOKn");
+
+-- For M034
+update tokens
+set recurring_failure_reason="Payment failed because account limit exceeded"
+where id in
+("AX8axVc1Sh8uga", "AZq9Gx5YhyTi8k", "AaJOx3z5PzXSSi", "AbSIf1IMHbqDQ8", "AdiimIYloqhGt5", "AeWUW1Qa3rHZvn");
+
+ALTER TABLE terminals
+    ADD COLUMN enabled_banks json DEFAULT NULL AFTER network_category;
+
+# adds dummy columns to transactions
+ALTER TABLE transactions
+    ADD COLUMN reference1 VARCHAR(255) DEFAULT NULL AFTER reconciled_at,
+    ADD COLUMN reference2 CHAR(14) DEFAULT NULL AFTER reference1,
+    ADD COLUMN reference3 CHAR(14) DEFAULT NULL AFTER reference2,
+    ADD COLUMN reference4 CHAR(14) DEFAULT NULL AFTER reference3,
+    ADD COLUMN reference5 TINYINT(1) NULL AFTER reference4,
+    ADD COLUMN reference6 TINYINT(1) NULL AFTER reference5,
+    ADD COLUMN reference7 BIGINT UNSIGNED NULL AFTER reference6,
+    ADD COLUMN reference8 BIGINT UNSIGNED NULL AFTER reference7,
+    ADD COLUMN reference9 BIGINT UNSIGNED NULL AFTER reference8,
+    ADD COLUMN reference10 BIGINT UNSIGNED DEFAULT NULL AFTER reference9,
+    ADD INDEX transactions_settled_channel_on_hold_merchant_id_index (settled, channel, on_hold, merchant_id),
+    DROP INDEX transactions_settled_channel_on_hold_index;
+

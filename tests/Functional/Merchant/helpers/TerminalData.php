@@ -359,6 +359,7 @@ return [
                 'gateway_terminal_id' => '12345678',
                 'category'            => 4567,
                 'enabled'             => true,
+                'enabled_banks'       => ['KKBK'],
             ]
         ]
     ],
@@ -901,5 +902,294 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
+    ],
+
+    'testAddHulkTerminalWithAppAuth' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_hulk',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => 'vpa_12345678901234',
+                'gateway_terminal_password' => '12345678',
+                'gateway_access_code'       => 'app',
+                'upi'                       => true,
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway'                   => 'upi_hulk',
+                'gateway_merchant_id'       => 'vpa_12345678901234',
+                'enabled'                   => true
+            ]
+        ]
+    ],
+
+    'testGetTerminalBanks' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                ],
+                'disabled' => [
+                    'ANDB'   => "Andhra Bank",
+                    'BKID'   => "Bank of India",
+                    'MAHB'   => "Bank of Maharashtra",
+                    'CNRB'   => "Canara Bank",
+                    'CBIN'   => "Central Bank of India",
+                    'CIUB'   => "City Union Bank",
+                    'CORP'   => "Corporation Bank",
+                    'DCBL'   =>"DCB Bank",
+                    'DEUT'   => "Deutsche Bank",
+                    'DLXB'   => "Dhanlaxmi Bank",
+                    'ESFB'   => "Equitas Small Finance Bank",
+                    'IBKL'   =>"IDBI",
+                    'IDIB'   => "Indian Bank",
+                    'IOBA'   => "Indian Overseas Bank",
+                    'JAKA'   => "Jammu and Kashmir Bank",
+                    'KARB'   => "Karnataka Bank",
+                    'KVBL'   => "Karur Vysya Bank",
+                    'LAVB_R' => "Lakshmi Vilas Bank - Retail Banking",
+                    'PMCB'   => "Punjab & Maharashtra Co-operative Bank",
+                    'PSIB'   => "Punjab & Sind Bank",
+                    'PUNB_R' => "Punjab National Bank - Retail Banking",
+                    'SRCB'   => "Saraswat Co-operative Bank",
+                    'SIBL'   => "South Indian Bank",
+                    'SCBL'   => "Standard Chartered Bank",
+                    'SBBJ'   => "State Bank of Bikaner and Jaipur",
+                    'SBHY'   => "State Bank of Hyderabad",
+                    'SBIN'   => "State Bank of India",
+                    'SBMY'   => "State Bank of Mysore",
+                    'STBP'   => "State Bank of Patiala",
+                    'SBTR'   => "State Bank of Travancore",
+                    'TMBL'   => "Tamilnadu Mercantile Bank",
+                    'UCBA'   =>"UCO Bank",
+                    'UBIN'   => "Union Bank of India",
+                    'UTBI'   => "United Bank of India",
+                    'VIJB'   => "Vijaya Bank",
+                ],
+            ],
+        ],
+    ],
+
+    'testGetTpvTerminalBanks' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                ],
+                'disabled' => [
+                    'MAHB' => "Bank of Maharashtra",
+                    'CSBK' => "Catholic Syrian Bank",
+                    'CBIN' => "Central Bank of India",
+                    'CIUB' => "City Union Bank",
+                    'DCBL' => "DCB Bank",
+                    'DEUT' => "Deutsche Bank",
+                    'DLXB' => "Dhanlaxmi Bank",
+                    'FDRL' => "Federal Bank",
+                    'IBKL' => "IDBI",
+                    'IDIB' => "Indian Bank",
+                    'INDB' => "Indusind Bank",
+                    'JAKA' => "Jammu and Kashmir Bank",
+                    'KVBL' => "Karur Vysya Bank",
+                    'LAVB_R' => "Lakshmi Vilas Bank - Retail Banking",
+                    'ORBC' => "Oriental Bank of Commerce",
+                    'SRCB' => "Saraswat Co-operative Bank",
+                    'SBIN' => "State Bank of India",
+                    'TMBL' => "Tamilnadu Mercantile Bank",
+                    'YESB' => "Yes Bank",
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCorpTerminalBanks' => [
+        'request' => [
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                ],
+                'disabled' => [
+                    'UTIB_C' => "Axis Bank - Corporate Banking",
+                ],
+            ],
+        ],
+    ],
+
+    'testGetTerminalBanksForNonNetbankingTerminal' => [
+        'request' => [
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Banks available only for netbanking gateways',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSetBanksForTerminal' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_banks' => ['SBIN'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'SBIN'   => "State Bank of India",
+                ],
+                'disabled' => [
+                    'ANDB'   => "Andhra Bank",
+                    'BKID'   => "Bank of India",
+                    'MAHB'   => "Bank of Maharashtra",
+                    'CNRB'   => "Canara Bank",
+                    'CBIN'   => "Central Bank of India",
+                    'CIUB'   => "City Union Bank",
+                    'CORP'   => "Corporation Bank",
+                    'DCBL'   =>"DCB Bank",
+                    'DEUT'   => "Deutsche Bank",
+                    'DLXB'   => "Dhanlaxmi Bank",
+                    'ESFB'   => "Equitas Small Finance Bank",
+                    'IBKL'   =>"IDBI",
+                    'IDIB'   => "Indian Bank",
+                    'IOBA'   => "Indian Overseas Bank",
+                    'JAKA'   => "Jammu and Kashmir Bank",
+                    'KARB'   => "Karnataka Bank",
+                    'KVBL'   => "Karur Vysya Bank",
+                    'LAVB_R' => "Lakshmi Vilas Bank - Retail Banking",
+                    'PMCB'   => "Punjab & Maharashtra Co-operative Bank",
+                    'PSIB'   => "Punjab & Sind Bank",
+                    'PUNB_R' => "Punjab National Bank - Retail Banking",
+                    'SRCB'   => "Saraswat Co-operative Bank",
+                    'SIBL'   => "South Indian Bank",
+                    'SCBL'   => "Standard Chartered Bank",
+                    'SBBJ'   => "State Bank of Bikaner and Jaipur",
+                    'SBHY'   => "State Bank of Hyderabad",
+                    'SBMY'   => "State Bank of Mysore",
+                    'STBP'   => "State Bank of Patiala",
+                    'SBTR'   => "State Bank of Travancore",
+                    'TMBL'   => "Tamilnadu Mercantile Bank",
+                    'UCBA'   =>"UCO Bank",
+                    'UBIN'   => "Union Bank of India",
+                    'UTBI'   => "United Bank of India",
+                    'VIJB'   => "Vijaya Bank",
+                ],
+            ],
+        ],
+    ],
+
+    'testSetUnsupportedBankForTerminal' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_banks' => ['FDRL'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'banks not supported by gateway',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSetBanksForNonNetbankingGateway' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_banks' => ['SBIN'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Banks available only for netbanking gateways',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSetBanksWithIncorrectInput' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_banks' => 'SBIN',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'enabled_banks should be an array',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetTerminalBanksForDirectNetbankingTerminal' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                ],
+                'disabled' => [
+                    'HDFC' => "HDFC Bank",
+                ],
+            ],
+        ],
+    ],
+
+    'testSetBanksForDirectNetbankingTerminal' => [
+        'request' => [
+            'method' => 'PATCH',
+            'content' => [
+                'enabled_banks' => ['HDFC'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => [
+                    'HDFC'   => "HDFC Bank",
+                ],
+                'disabled' => [
+                ],
+            ],
+        ],
     ],
 ];

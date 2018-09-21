@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingCsb;
+namespace RZP\Reconciliator\NetbankingCsb\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
@@ -8,7 +8,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Csb\Status;
 use RZP\Models\Payment\Status as PaymentStatus;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const PAYMENT_ID      = 'payment_id';
     const BANK_REF_NO     = 'bank_payment_id';
@@ -63,7 +63,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     private function getReconPaymentAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
     }
 
     private function getApiPaymentStatus(string $status)

@@ -19,7 +19,7 @@ class CompetitorAppAuthorized extends Mailable
 
     protected function addRecipients()
     {
-        $this->to(Constants::MAIL_ADDRESSES[Constants::SUPPORT], Constants::HEADERS[Constants::SUPPORT]);
+        $this->to(Constants::MAIL_ADDRESSES[Constants::FRESHDESK], Constants::HEADERS[Constants::FRESHDESK]);
 
         $this->cc(Constants::MAIL_ADDRESSES[Constants::PRODUCT_OAUTH], Constants::HEADERS[Constants::PRODUCT_OAUTH]);
 
@@ -35,7 +35,11 @@ class CompetitorAppAuthorized extends Mailable
 
     protected function addSubject()
     {
-        $this->subject('Razorpay | Competitor access granted');
+        $appName = $this->data['application']['name'] ?? '';
+
+        $merchantName = $this->data['merchant']['name'] ?? '';
+
+        $this->subject('Razorpay | Partner Oauth Grant - ' . $appName . ' - by ' . $merchantName);
 
         return $this;
     }

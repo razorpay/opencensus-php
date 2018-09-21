@@ -52,6 +52,8 @@ final class Shield
     const ATTEMPTS                = 'attempts';
     const ACCEPT_LANGUAGE         = 'accept_language';
     const CREATED_AT              = 'created_at';
+    const DEFAULT_EMAIL           = 'void@razorpay.com';
+    const DEFAULT_ACCEPT_LANGUAGE = 'en-US';
 
     // Response constants
     const ACTION_KEY              = 'action';
