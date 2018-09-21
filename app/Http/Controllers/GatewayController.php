@@ -56,7 +56,7 @@ class GatewayController extends Controller
             catch (\Throwable $ex)
             {
                 throw new Exception\LogicException(
-                    'Payment id not found in either database',
+                    $ex->getMessage(),
                     null,
                     [
                         'gateway'    => $gatewayDriver,

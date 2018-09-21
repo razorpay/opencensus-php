@@ -1465,6 +1465,8 @@ class Service extends Base\Service
                 $payment->setStatus(Payment\Status::FAILED);
 
                 $this->repo->saveOrFail($payment);
+
+                throw $e;
             }
 
             return $success;
