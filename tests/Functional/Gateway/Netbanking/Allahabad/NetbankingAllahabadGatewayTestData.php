@@ -145,4 +145,3 @@ return [
         'bank_payment_id' => null,
     ],
 ];
-
