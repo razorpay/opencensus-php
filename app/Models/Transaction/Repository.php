@@ -1000,6 +1000,13 @@ class Repository extends Base\Repository
         return $unreconciledEntities;
     }
 
+    public function fetchMultipleTransactionsFromIds(array $transactionIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $transactionIds)
+                    ->get();
+    }
+
     protected function getSelectQueryForUnreconciledEntites(array $paymentParams = [], array $refundParams = [])
     {
         $transactionsCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);

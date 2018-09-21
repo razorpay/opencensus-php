@@ -7,13 +7,12 @@ use Queue;
 use Carbon\Carbon;
 
 use RZP\Exception;
-use RZP\Jobs\BeamJob;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Batch;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 trait AttemptTrait
 {
@@ -244,30 +243,5 @@ trait AttemptTrait
         $this->createRefundFromPayments($payments);
 
         $this->initiateSettlements($channel);
-    }
-
-    public function uploadFileThroughBeam(string $channel, string $fileType, string $filename)
-    {
-        Queue::fake();
-
-        $content = [
-          'file'     => $filename,
-          'channel'  => $channel,
-          'file_type' => $fileType
-        ];
-
-        $request = [
-            'url'       => '/nodal_file_upload/retry',
-            'method'    => 'POST',
-            'content'   => $content
-        ];
-
-        $this->ba->adminAuth();
-
-        $this->makeRequestAndGetContent($request);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('general_test', BeamJob::class);
     }
 }

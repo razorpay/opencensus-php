@@ -14,6 +14,11 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
     protected function getReconciliationTypeForRow($row)
     {
+        if (isset($row[self::COLUMN_ENTITY_TYPE]) === false)
+        {
+            return null;
+        }
+
         if ($row[self::COLUMN_ENTITY_TYPE] === 'Sale')
         {
             return BaseReconciliate::PAYMENT;
@@ -24,7 +29,7 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         }
         else
         {
-            return null;
+            return self::NA;
         }
     }
 }

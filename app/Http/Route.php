@@ -228,6 +228,8 @@ final class Route
         'terminal_remove_merchant'                 => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
         'terminal_reassign_merchant'               => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
         'terminal_check_encrypted_value'           => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
+        'terminal_get_banks'                       => ['get',      'terminals/{id}/banks',                           'TerminalController@getBanks'                                       ],
+        'terminal_set_banks'                       => ['patch',    'terminals/{id}/banks',                           'TerminalController@setBanks'                                       ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_process_test'               => ['post',     'ecollect/validate/test',                         'BankTransferController@processBankTransfer'                        ],
         'bank_transfer_notify'                     => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
@@ -305,6 +307,7 @@ final class Route
         'transaction_monthly_report'               => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
         'transaction_create_fees_breakup'          => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
         'transaction_bulk_update'                  => ['put',      'transactions/bulk',                              'TransactionController@updateMultipleTransactions'                  ],
+        'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
@@ -1559,6 +1562,7 @@ final class Route
         'get_cache_counts',
         'get_config_keys',
         'gratis_postpaid_transactions',
+        'mark_transactions_postpaid',
         'iin_edit',
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
@@ -1680,6 +1684,8 @@ final class Route
         // UFH
         'ufh_get_file_signed_url_admin',
         'nodal_beneficiary_update',
+        'terminal_get_banks',
+        'terminal_set_banks',
     ];
 
     public static $routePermission = [
@@ -1903,6 +1909,7 @@ final class Route
         'get_cache_counts'                         => '*',
         'get_config_keys'                          => '*',
         'gratis_postpaid_transactions'             => '*',
+        'mark_transactions_postpaid'               => '*',
         'iin_fetch_by_iin'                         => '*',
         'iin_fetch_multiple'                       => '*',
         'iin_generate_post'                        => '*',
@@ -2023,6 +2030,8 @@ final class Route
         'submerchants_fetch_multiple'              => Permission::VIEW_PARTNERS,
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'subscription_manual_retry'                => '*',
+        'terminal_get_banks'                       => '*',
+        'terminal_set_banks'                       => '*',
     ];
 
     public static $direct = [

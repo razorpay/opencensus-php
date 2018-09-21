@@ -181,4 +181,24 @@ class Service extends Base\Service
 
         return ['match' => $flag];
     }
+
+    public function getBanks(string $id): array
+    {
+        $terminal = $this->repo->terminal->getById($id);
+
+        $banks = $this->core()->getBanksForTerminal($terminal);
+
+        return $banks;
+    }
+
+    public function setBanks(string $id, array $input): array
+    {
+        $terminal = $this->repo->terminal->getById($id);
+
+        $banksToEnable = $input[Entity::ENABLED_BANKS] ?? [];
+
+        $banks = $this->core()->setBanksForTerminal($terminal, $banksToEnable);
+
+        return $banks;
+    }
 }

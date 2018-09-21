@@ -130,6 +130,14 @@ class VirtualAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateVirtualAccountValidationFailure()
+    {
+        // This is to check that validation rules on receiver attribute should stop after the first validation failure.
+        // In this specific case custom validation will not run. Validation will bail after array validation failure.
+        // If custom validation was still running then 2nd argument passed to it would have been invalid.
+        $this->startTest();
+    }
+
     public function testCreateVirtualAccountCrypto()
     {
         $this->fixtures->merchant->edit('10000000000000', ['category2' => 'cryptocurrency']);

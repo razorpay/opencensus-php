@@ -94,15 +94,17 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput('retry_beam_file_upload', $input);
 
-        $filename = $input[Entity::FILE];
+        $fileStoreId = $input['file_id'];
+
+        $fileEntity = $this->repo->file_store->findOrFail($fileStoreId);
+
+        $filePath = $fileEntity->getLocation();
 
         $channel  = $input[Entity::CHANNEL];
 
         $fileType = $input[Entity::FILE_TYPE];
 
         $jobName  =  $this->getJobNameForBeamPush($channel, $fileType);
-
-        $filePath = $this->getRelativeFilePath($filename, $channel);
 
         $this->sendFile($filePath, $jobName, $fileType, $channel);
 
@@ -179,26 +181,5 @@ class Core extends Base\Core
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
-    }
-
-    /**
-     * @param string $filename
-     * @param string $channel
-     * @return string
-     * @throws InvalidArgumentException
-     */
-    protected function getRelativeFilePath(string $filename, string $channel): string
-    {
-        switch($channel)
-        {
-            case Settlement\Channel::ICICI:
-                return 'icici/outgoing/'.$filename;
-
-            case Settlement\Channel::AXIS:
-                return 'axis/outgoing/'.$filename;
-
-            default:
-                throw new InvalidArgumentException('Not a valid channel');
-        }
     }
 }
