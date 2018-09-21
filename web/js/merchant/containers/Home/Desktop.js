@@ -18,6 +18,7 @@ import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 import { showOrHideTour } from 'merchant/modules/session';
+import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 
 import {
   trackPresetChange,
@@ -147,6 +148,13 @@ class AnalyticsDesktop extends Component {
               )}
             </div>
           )}
+
+          <EarlySettlementAnnouncement
+            withTour={hasNewAnalyticsTour}
+            from="Home-Desktop"
+            marginBottom={!showOnboardingBanner}
+          />
+
           <div
             className={`v2-onboarding-card${
               expandOnboardingBanner ? ' expand' : ''

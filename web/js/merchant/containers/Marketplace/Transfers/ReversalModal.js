@@ -147,7 +147,7 @@ export default class ReversalModal extends Component {
           if (transformedNotes && transformedNotes.length > 0) {
             transformedNotes = transformedNotes.reduce((result, current) => {
               result[current.key] = current.value;
-              if (this.isLADashboardEnabled && current.also_linked_account) {
+              if (current.also_linked_account) {
                 linked_account_notes.push(current.key);
               }
               return result;
@@ -190,10 +190,6 @@ export default class ReversalModal extends Component {
       })
       .catch(() => {});
   };
-
-  get isLADashboardEnabled() {
-    return showWhenUtil({ featureEnabled: 'enable_la_dashboard' });
-  }
 
   render() {
     const { handleSubmit, transfer } = this.props;
@@ -244,7 +240,7 @@ export default class ReversalModal extends Component {
               <FieldArray
                 name="notes"
                 component={NotesFieldArray}
-                showLinkedAccountOpt={this.isLADashboardEnabled}
+                showLinkedAccountOpt={true}
                 customAddMsg="+ Add New"
               />
             </div>

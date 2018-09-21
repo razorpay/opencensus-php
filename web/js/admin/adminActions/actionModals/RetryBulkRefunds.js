@@ -24,7 +24,6 @@ export default function RetryBulkRefunds() {
 
       adminPost(payload).then(response => {
         if (response) {
-          console.log('response :', response);
           notifySuccess('Refund retry has been successfully initiated.');
           closeModal();
           openModal(

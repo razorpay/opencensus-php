@@ -12,6 +12,8 @@ import { PageTable } from 'ui/Table';
 import Collection, { defaultFilters } from 'model/collection';
 import { statusPill } from 'common/data';
 
+import { stringifyQueryParams } from 'rzp/utils/rzp-utils';
+
 // fetch entity columns
 var sharedData;
 
@@ -191,7 +193,12 @@ export default class EntityList extends Component {
           (this.selectedEntity === 'merchant' && key === 'id')
         ) {
           return (
-            <Link to={`/merchants/${value}`} class="link" target="_blank">
+            <Link
+              key={value}
+              to={`/merchants/${value}`}
+              class="link"
+              target="_blank"
+            >
               {value}
             </Link>
           );
@@ -201,6 +208,7 @@ export default class EntityList extends Component {
           }
           return (
             <Link
+              key={value}
               to={`/entity/payment/${
                 this.collection.extraFields.mode
               }/${value}`}
@@ -214,14 +222,17 @@ export default class EntityList extends Component {
           key === 'id' ||
           (key === 'iin' && this.selectedEntity === 'iin')
         ) {
+          let entityUrl = `/entity/${this.selectedEntity}/${
+            this.collection.extraFields.mode
+          }/${value}`;
+
+          const queryParams = _constructEntityUrl(this.selectedEntity, item);
+          if (queryParams) {
+            entityUrl += stringifyQueryParams(queryParams);
+          }
+
           return (
-            <Link
-              class="link"
-              target="_blank"
-              to={`/entity/${this.selectedEntity}/${
-                this.collection.extraFields.mode
-              }/${value}`}
-            >
+            <Link key={value} class="link" target="_blank" to={entityUrl}>
               {value}
             </Link>
           );
@@ -238,6 +249,7 @@ export default class EntityList extends Component {
           if (key === 'entity_id') {
             return (
               <Link
+                key={value}
                 class="link"
                 target="_blank"
                 to={`/entity/payment/${
@@ -252,6 +264,7 @@ export default class EntityList extends Component {
               <span>
                 {value.split(' ').map(val => (
                   <Link
+                    key={value}
                     class="link shield-rules"
                     target="_blank"
                     to={`/entity/shield.rules/${
@@ -442,3 +455,22 @@ const fieldTypes = {
     </SelectField>
   ),
 };
+
+/* Some entity needs query params to be attached with default Links */
+function _constructEntityUrl(entity, item) {
+  const MAP = {
+    'shield.rules': ['merchant_id'],
+    'shield.lists': ['merchant_id'],
+    'shield.list_items': ['merchant_id', 'list_id'],
+    'shield.risks': ['merchant_id'],
+  };
+
+  const ids = MAP[entity] || [];
+  const queryParams = {};
+
+  for (let i = 0; i < ids.length; i++) {
+    queryParams[ids[i]] = item[ids[i]];
+  }
+
+  return Object.keys(queryParams).length ? queryParams : null;
+}

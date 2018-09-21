@@ -23,7 +23,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
               <Popover
                 align="left"
                 theme="dark"
-                containerClass="switch-merchant__Tether"
+                parentQuerySelector=".switch-merchant__Tether"
               >
                 <PopoverBody>
                   <div>{option.display_name || option.name}</div>
@@ -94,7 +94,8 @@ export class SwitchMerchantTypeahead extends Component {
               <li key={item} className={`${isActive ? 'active' : ''}`}>
                 <a onClick={() => onSwitchMerchant(user.merchants[item])}>
                   <i className="i i-check" />{' '}
-                  {user.merchants[item].display_name}
+                  {user.merchants[item].display_name ||
+                    user.merchants[item].name}
                 </a>
               </li>
             );

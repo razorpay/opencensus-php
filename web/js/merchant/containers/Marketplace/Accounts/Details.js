@@ -12,7 +12,17 @@ export default function({ accountId, onSubmitSuccessCB, onClose }) {
         onClose={() => onClose(accountId)}
         accountId={accountId}
         callback={onSubmitSuccessCB}
+        defaultMsg={
+          <HelpText msg="Complete the details to Activate this account." />
+        }
       />
     </ModalMask>
   );
 }
+
+const HelpText = ({ msg, ...restProps }) => (
+  <div class="help-text" {...restProps}>
+    <i class="i i-info-outline" />
+    <div>{msg}</div>
+  </div>
+);

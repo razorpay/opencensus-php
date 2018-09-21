@@ -4,17 +4,19 @@ import Field, { SelectField } from 'ui/Field';
 import Form from 'ui/Form';
 import { notifySuccess, closeModal } from 'common/modal';
 import { adminPut } from 'common/fetch';
+import { TextAreaField } from 'ui/Field';
 
-BulkTransaction.permissions = 'edit_bulk_merchant_channel';
+BulkTransaction.permission = 'edit_bulk_merchant_channel';
 BulkTransaction.title = 'Merchant Bulk Update Channel';
 
 export default function BulkTransaction() {
   return (
-    <Form>
-      <Field
-        required
-        label="Merchand IDs (Comma Separated)"
+    <Form class="full-span bulk-transaction-action">
+      <TextAreaField
+        label="Merchant Ids (Comma Separated)"
+        type="text"
         name="merchant_ids"
+        required
       />
       <SelectField name="channel" label="Channel">
         <option value="">Select</option>

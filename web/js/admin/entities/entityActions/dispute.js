@@ -1,14 +1,16 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 
 import { openModal, closeModal, confirm } from 'common/modal';
 import fetch, { adminFetch } from 'common/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
+import { snakeToTitleCase } from 'common/util';
 
 import ShowWhen from 'admin/components/ShowWhen';
 import AsyncButton from 'ui/AsyncButton';
 import { ModalContent } from 'component/Modal';
 import Form from 'ui/Form';
 import Field, { SelectField, DateField, CheckField } from 'ui/Field';
+import Table from 'ui/Table';
 
 // Dispute Actions
 export default ({ entity, mode, updateEntity }) => {
@@ -50,18 +52,101 @@ export default ({ entity, mode, updateEntity }) => {
     );
   }
 
+  function openDisputeFiles() {
+    openModal(<DisputeFiles mode={mode} {...entity} />);
+  }
+
   return (
-    <ShowWhen permission="edit_dispute">
-      <button
-        class="btn btn-default label-pending"
-        disabled={['won', 'lost'].indexOf(entity.status) !== -1}
-        onClick={openDisputeModal}
-      >
-        Edit Dispute
-      </button>
-    </ShowWhen>
+    <Fragment>
+      <ShowWhen permission="edit_dispute">
+        <button
+          class="btn btn-default label-pending"
+          disabled={['won', 'lost'].indexOf(entity.status) !== -1}
+          onClick={openDisputeModal}
+        >
+          Edit Dispute
+        </button>
+      </ShowWhen>
+      <ShowWhen permission="fetch_dispute_files">
+        <button class="btn btn-default" onClick={openDisputeFiles}>
+          View Dispute Files
+        </button>
+      </ShowWhen>
+    </Fragment>
   );
 };
+
+class DisputeFiles extends Component {
+  state = {
+    downloading: [],
+  };
+
+  componentWillMount() {
+    adminFetch(
+      `${this.props.mode}_${this.props.merchant_id}/disputes/${
+        this.props.id
+      }/files`
+    ).then(data => {
+      this.setState({ files: data.items });
+    });
+  }
+
+  onDownload = doc => {
+    this.setState({
+      downloading: [...this.state.downloading, doc.id],
+    });
+    adminFetch(
+      `${this.props.mode}_${this.props.merchant_id}/ufh/file/${
+        doc.id
+      }/get-signed-url`
+    ).then(data => {
+      if (data) {
+        this.setState({
+          downloading: this.state.downloading.filter(id => id !== doc.id),
+        });
+        window.open(data.signed_url, '_blank');
+      }
+    });
+  };
+
+  getFields() {
+    return [
+      ['File Name', item => item.display_name],
+      ['File Id', item => <code>{item.id}</code>],
+      ['Category', item => snakeToTitleCase(item.type)],
+      [
+        'Actions',
+        item =>
+          function() {
+            const isFileDownloading =
+              this.state.downloading.indexOf(item.id) > -1;
+            return (
+              <button
+                onClick={() => {
+                  this.onDownload(item);
+                }}
+                disabled={isFileDownloading}
+              >
+                {isFileDownloading ? 'Downloading...' : 'Download'}
+              </button>
+            );
+          }.bind(this)(),
+      ],
+    ];
+  }
+
+  render() {
+    return (
+      <ModalContent header="Dispute Files">
+        <Table
+          pending={!this.state.files}
+          items={this.state.files}
+          fields={this.getFields()}
+        />
+      </ModalContent>
+    );
+  }
+}
 
 // Dispute Form
 export class DisputeForm extends Component {
