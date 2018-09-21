@@ -4286,3 +4286,21 @@ set recurring_failure_reason="Payment failed because account limit exceeded"
 where id in
 ("AX8axVc1Sh8uga", "AZq9Gx5YhyTi8k", "AaJOx3z5PzXSSi", "AbSIf1IMHbqDQ8", "AdiimIYloqhGt5", "AeWUW1Qa3rHZvn");
 
+ALTER TABLE terminals
+    ADD COLUMN enabled_banks json DEFAULT NULL AFTER network_category;
+
+# adds dummy columns to transactions
+ALTER TABLE transactions
+    ADD COLUMN reference1 VARCHAR(255) DEFAULT NULL AFTER reconciled_at,
+    ADD COLUMN reference2 CHAR(14) DEFAULT NULL AFTER reference1,
+    ADD COLUMN reference3 CHAR(14) DEFAULT NULL AFTER reference2,
+    ADD COLUMN reference4 CHAR(14) DEFAULT NULL AFTER reference3,
+    ADD COLUMN reference5 TINYINT(1) NULL AFTER reference4,
+    ADD COLUMN reference6 TINYINT(1) NULL AFTER reference5,
+    ADD COLUMN reference7 BIGINT UNSIGNED NULL AFTER reference6,
+    ADD COLUMN reference8 BIGINT UNSIGNED NULL AFTER reference7,
+    ADD COLUMN reference9 BIGINT UNSIGNED NULL AFTER reference8,
+    ADD COLUMN reference10 BIGINT UNSIGNED DEFAULT NULL AFTER reference9,
+    ADD INDEX transactions_settled_channel_on_hold_merchant_id_index (settled, channel, on_hold, merchant_id),
+    DROP INDEX transactions_settled_channel_on_hold_index;
+

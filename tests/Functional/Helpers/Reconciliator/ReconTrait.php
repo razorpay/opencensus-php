@@ -101,7 +101,7 @@ trait ReconTrait
                 []);
     }
 
-    private function createPayment()
+    private function createPayment($content = [])
     {
         $attributes = [
             'terminal_id'       => $this->sharedTerminal->getId(),
@@ -124,8 +124,6 @@ trait ReconTrait
         );
 
         $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
-
-        $this->fixtures->create($this->method, ['payment_id' => $payment->getId()]);
 
         return $payment->getId();
     }
@@ -151,7 +149,7 @@ trait ReconTrait
 
         return $excel->string('xlsx');
     }
-
+  
     protected function getNewUpiEntity($merchantId, $gateway)
     {
         $this->fixtures->merchant->enableMethod($merchantId, 'upi');
@@ -174,5 +172,4 @@ trait ReconTrait
 
         return $gatewayPayment;
     }
-
 }

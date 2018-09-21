@@ -161,6 +161,7 @@ final class Route
         'merchant_fetch_config_internal'           => ['get',      'internal/account/config',                        'MerchantController@getAccountConfigInternal'                       ],
         'merchant_edit_email'                      => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
         'merchant_edit_email_la'                   => ['put',      'la-merchants/email',                             'MerchantController@updateLinkedAccountMerchantEmail'               ],
+        'merchant_dashboard_access_la'             => ['post',     'la-merchants/dashboard-access',                  'MerchantController@updateLinkedAccountDashboardAccess'             ],
         'merchant_fetch_multiple'                  => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
         'merchant_fetch_webhooks'                  => ['get',      'merchants/{id}/webhooks',                        'MerchantController@getMerchantWebhooks'                            ],
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
@@ -516,7 +517,8 @@ final class Route
         'subscription_test_charge'                 => ['post',     'subscriptions/{id}/charge',                      'SubscriptionController@postTestChargeSubscription'                 ],
         'subscriptions_retry'                      => ['post',     'subscriptions/retry',                            'SubscriptionController@postRetrySubscriptions'                     ],
         'subscriptions_expire'                     => ['post',     'subscriptions/expire',                           'SubscriptionController@postExpireSubscriptions'                    ],
-        'subscription_manual_retry'                => ['post',     'invoices/{invoice_id}/charge',                   'SubscriptionController@postChargeSubscriptionInvoiceManually'      ],
+        'subscription_manual_retry_old'            => ['post',     'invoices/{invoice_id}/charge',                   'SubscriptionController@postChargeSubscriptionInvoiceManuallyOld'   ],
+        'subscription_manual_retry'                => ['post',     'subscriptions/{s_id}/invoices/{i_id}/charge',    'SubscriptionController@postChargeSubscriptionInvoiceManually'      ],
         'subscription_cancel'                      => ['post',     'subscriptions/{subscription_id}/cancel',         'SubscriptionController@postCancelSubscription'                     ],
         'subscription_cancel_due'                  => ['post',     'subscriptions/cancel/due',                       'SubscriptionController@postCancelDueSubscriptions'                 ],
         'subscription_create_addon'                => ['post',     'subscriptions/{subscriptionId}/addons',          'SubscriptionController@postAddonForSubscription'                   ],
@@ -1225,6 +1227,7 @@ final class Route
     ];
 
     public static $proxy = [
+        'merchant_dashboard_access_la',
         'merchant_fetch_users',
         'transaction_monthly_report',
         'transaction_fetch_by_id',
@@ -1273,6 +1276,7 @@ final class Route
         'invoice_update_line_item',
         'invoice_remove_line_item_bulk',
         'invoice_remove_line_item',
+        'subscription_manual_retry_old',
         'subscription_manual_retry',
         'subscription_test_charge',
         'subscription_fetch_due_addons',
@@ -2017,7 +2021,8 @@ final class Route
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
         'submerchants_fetch'                       => Permission::VIEW_PARTNERS,
         'submerchants_fetch_multiple'              => Permission::VIEW_PARTNERS,
-        'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE
+        'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
+        'subscription_manual_retry'                => '*',
     ];
 
     public static $direct = [
@@ -2203,6 +2208,7 @@ final class Route
             'payment_refund',
             'webhook_fire',
             'merchant_fetch_config_internal',
+            'subscription_manual_retry',
         ],
 
         'kotak' => [
@@ -2310,6 +2316,7 @@ final class Route
         'subscription_create'                  => [Feature::SUBSCRIPTIONS],
         'subscription_fetch'                   => [Feature::SUBSCRIPTIONS],
         'subscription_fetch_multiple'          => [Feature::SUBSCRIPTIONS],
+        'subscription_manual_retry_old'        => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'            => [Feature::SUBSCRIPTIONS],
         'virtual_account_create'               => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'                 => [Feature::VIRTUAL_ACCOUNTS],

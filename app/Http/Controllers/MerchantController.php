@@ -1070,7 +1070,9 @@ class MerchantController extends Controller
 
     public function getSubmerchant(string $submerchantId)
     {
-        $response = $this->service()->getSubmerchant($submerchantId);
+        $input = Request::all();
+
+        $response = $this->service()->getSubmerchant($submerchantId, $input);
 
         return ApiResponse::json($response);
     }
@@ -1089,6 +1091,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $data = $this->service()->registerBeneficiaryThroughApi($input, $channel);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateLinkedAccountDashboardAccess()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateLinkedAccountDashboardAccess($input);
 
         return ApiResponse::json($data);
     }

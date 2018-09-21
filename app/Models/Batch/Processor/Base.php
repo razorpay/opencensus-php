@@ -23,7 +23,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends BaseModel\Core
 {
-    use FileHandlerTrait;
+    use FileHandlerTrait { parseExcelSheets as parentParseExcelSheets; }
 
     /**
      * Lock wait timeout for batch entity
@@ -95,6 +95,12 @@ class Base extends BaseModel\Core
      */
     protected $inputFileType;
     protected $outputFileType;
+
+    /**
+     * Override from child processor to use new spreadsheet library.
+     * @var boolean
+     */
+    protected $useSpreadSheetLibrary = false;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -803,6 +809,26 @@ class Base extends BaseModel\Core
                 throw new LogicException("Extension not handled: {$ext}");
         }
     }
+
+    /**
+     * Parses excel sheet at given path. By default uses FileHandlerTrait's parseExcelSheets() method(existing flow).
+     * But for specific batch where the flag is overridden and made true, uses new phpoffice/phpspreadsheet library.
+     * We intend to move fully to this new library uses but is being done incrementally.
+     * @param  string $filePath
+     * @return array
+     */
+    protected function parseExcelSheets($filePath): array
+    {
+        if ($this->useSpreadSheetLibrary === true)
+        {
+            $this->trace->info(TraceCode::BATCH_FILE_PROCESS_USING_SPREADSHEET, $this->batch->toArrayTraceAll());
+
+            return $this->parseExcelSheetsUsingPhpSpreadSheet($filePath);
+        }
+
+        return $this->parentParseExcelSheets($filePath);
+    }
+
 
     protected function parseFileAndCleanEntries(string $filePath): array
     {

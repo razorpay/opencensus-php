@@ -5726,16 +5726,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.2.0",
+            "version": "1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "1a5075e4fc6971164334785e94dcf80293870e01"
+                "reference": "7d719bfc5a3b353cc4cb8120b3d42a56e25d128d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/1a5075e4fc6971164334785e94dcf80293870e01",
-                "reference": "1a5075e4fc6971164334785e94dcf80293870e01",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/7d719bfc5a3b353cc4cb8120b3d42a56e25d128d",
+                "reference": "7d719bfc5a3b353cc4cb8120b3d42a56e25d128d",
                 "shasum": ""
             },
             "require": {
@@ -5769,7 +5769,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2018-08-28T11:39:48+00:00"
+            "time": "2018-09-17T10:10:44+00:00"
         },
         {
             "name": "razorpay/metrics-php",

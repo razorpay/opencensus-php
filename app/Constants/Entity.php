@@ -162,6 +162,7 @@ class Entity
     const ENACH_RBL              = 'enach_rbl';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const NETBANKING_AXIS        = 'netbanking_axis';
+    const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_BOB         = 'netbanking_bob';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
@@ -195,6 +196,9 @@ class Entity
     const REPORTING_SCHEDULES          = 'reporting.schedules';
     const SHIELD_RULES                 = 'shield.rules';
     const SHIELD_RULE_ANALYTICS        = 'shield.rule_analytics';
+    const SHIELD_RISKS                 = 'shield.risks';
+    const SHIELD_LISTS                 = 'shield.lists';
+    const SHIELD_LIST_ITEMS            = 'shield.list_items';
 
     /**
      * Defines a map of entites which are currently
@@ -326,6 +330,7 @@ class Entity
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,
         self::WALLET_SBIBUDDY        => \RZP\Gateway\Wallet\Sbibuddy::class,
+        self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Idfc::class,
         self::NETBANKING_AXIS        => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Hdfc::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Bob::class,
@@ -385,6 +390,7 @@ class Entity
         self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Base::class,
 
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,
         self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Base::class,
@@ -419,6 +425,9 @@ class Entity
         self::REPORTING_SCHEDULES          => \RZP\Services\Reporting::class,
         self::SHIELD_RULES                 => \RZP\Services\ShieldClient::class,
         self::SHIELD_RULE_ANALYTICS        => \RZP\Services\ShieldClient::class,
+        self::SHIELD_RISKS                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LISTS                 => \RZP\Services\ShieldClient::class,
+        self::SHIELD_LIST_ITEMS            => \RZP\Services\ShieldClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [

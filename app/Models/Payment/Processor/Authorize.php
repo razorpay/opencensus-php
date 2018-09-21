@@ -1828,7 +1828,8 @@ trait Authorize
 
     protected function setPreferredAuthIfApplicable(Payment\Entity $payment)
     {
-        if ($payment->isMethodCardOrEmi() === false)
+        if (($payment->isMethodCardOrEmi() === false) or
+            ($payment->getAuthType() !== null))
         {
             return;
         }
@@ -4516,7 +4517,6 @@ trait Authorize
         }
 
         if (($magicDisabledGlobally === false) and
-            ($this->merchant->isMagicEnabled() === true) and
             ($payment->card->isMagicEnabled() === true))
         {
             return true;
