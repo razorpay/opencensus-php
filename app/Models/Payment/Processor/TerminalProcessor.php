@@ -30,13 +30,6 @@ class TerminalProcessor extends Base\Core
     {
         $this->payment = $payment;
 
-        if (isset($gatewayData["terminal_id"]) === true)
-        {
-            $terminalId = $gatewayData["terminal_id"];
-
-            return [$this->repo->terminal->find($terminalId)];
-        }
-
         // Bank transfers have no terminal
         if ($this->payment->isBankTransfer() === true)
         {
@@ -47,6 +40,14 @@ class TerminalProcessor extends Base\Core
             (empty($gatewayData) === false))
         {
             $terminalId = $gatewayData[BharatQr\Constants::RAZORPAY_TERMINAL_ID];
+
+            return [$this->repo->terminal->find($terminalId)];
+        }
+
+        if (($payment->isUpi() === true) and
+            (empty($gatewayData["terminal_id"]) === false))
+        {
+            $terminalId = $gatewayData["terminal_id"];
 
             return [$this->repo->terminal->find($terminalId)];
         }

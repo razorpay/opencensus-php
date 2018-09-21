@@ -44,10 +44,9 @@ class GatewayController extends Controller
         {
             try
             {
-                $this->app['basicauth']->setModeAndDbConnection(
-                    ($this->app->environment('production') === true)
-                    ? Mode::LIVE : Mode::TEST
-                );
+                $mode = ($this->app->environment('production') === true) ? Mode::LIVE : Mode::TEST
+
+                $this->app['basicauth']->setModeAndDbConnection($mode);
 
                 $paymentAndMerchantDetails = $gateway->getPaymentAndMerchantDetailsFromCallback($input);
 
@@ -62,6 +61,8 @@ class GatewayController extends Controller
                         'gateway'    => $gatewayDriver,
                         'payment_id' => $paymentId
                     ]);
+
+                return ['success' => false]
             }
         }
 

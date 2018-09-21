@@ -1425,10 +1425,8 @@ class Service extends Base\Service
 
             $this->app['gateway']->call($gateway, Payment\Action::VALIDATE_PUSH, $callbackData, $mode, $terminal);
 
-            $merchantAccount = (
-                $this->app->environment('production') === true ?
-                Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT
-            );
+            $merchantAccount = ($this->app->environment('production') === true) ?
+                Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
 
             $merchant = $this->repo->merchant->findOrFail($merchantAccount);
 
