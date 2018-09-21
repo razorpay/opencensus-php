@@ -54,7 +54,8 @@ class GatewayController extends Controller
             }
             catch (\Throwable $ex)
             {
-                $this->traceException(
+                $trace = $this->app['trace'];
+                $trace->traceException(
                     $ex,
                     Trace::CRITICAL,
                     TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
