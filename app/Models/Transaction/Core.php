@@ -199,23 +199,29 @@ class Core extends Base\Core
 
             $feesSplit = new Base\PublicCollection;
 
+            $this->repo->fee_breakup->deleteFeeBreakupForTransactionId($txn->getId());
+
             list($credit, $fee, $serviceTax, $feesSplit) = $this->calculatePostpaidFee($txn);
 
             $txn->setCredit($credit);
             $txn->setDebit(0);
             $txn->setFee($fee);
-            $txn->setServiceTax($serviceTax);
             $txn->setFeeModel(FeeModel::POSTPAID);
             $txn->setGratis(false);
             $txn->setCreditType(Transaction\CreditType::DEFAULT);
             $txn->setPricingRule(null);
 
-            $payment->setServiceTax($serviceTax);
-
             if ($merchant->isFeeBearerCustomer() === false)
             {
                 //set and fee values from txn
                 $payment->setFee($fee);
+            }
+
+            foreach ($feesSplit as $feeSplit)
+            {
+                $feeSplit->transaction()->associate($txn);
+
+                $this->repo->saveOrFail($feeSplit);
             }
 
             $this->repo->saveOrFail($payment);
@@ -224,6 +230,11 @@ class Core extends Base\Core
 
             (new PaymentProcessor($merchant))->saveFeeDetails($txn, $feesSplit);
         });
+    }
+
+    public function markTransactionPostpaid(Entity $txn)
+    {
+        $this->markGratisTransactionPostpaid($txn, $txn->merchant);
     }
 
     public function updateReconciliationData(Entity $transaction)

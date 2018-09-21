@@ -393,7 +393,7 @@ class Netbanking
         ]
     ];
 
-    protected static $defaultDisabled = [];
+   protected static $defaultDisabled = [];
 
     public static function isSupportedBank($bank)
     {
