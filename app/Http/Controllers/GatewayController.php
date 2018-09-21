@@ -44,7 +44,7 @@ class GatewayController extends Controller
         {
             try
             {
-                $mode = ($this->app->environment('production') === true) ? Mode::LIVE : Mode::TEST
+                $mode = ($this->app->environment('production') === true) ? Mode::LIVE : Mode::TEST;
 
                 $this->app['basicauth']->setModeAndDbConnection($mode);
 
@@ -62,7 +62,7 @@ class GatewayController extends Controller
                         'payment_id' => $paymentId
                     ]);
 
-                return ['success' => false]
+                return ['success' => false];
             }
         }
 
