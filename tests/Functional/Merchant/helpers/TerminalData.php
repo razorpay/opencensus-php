@@ -359,6 +359,7 @@ return [
                 'gateway_terminal_id' => '12345678',
                 'category'            => 4567,
                 'enabled'             => true,
+                'enabled_banks'       => ['KKBK'],
             ]
         ]
     ],

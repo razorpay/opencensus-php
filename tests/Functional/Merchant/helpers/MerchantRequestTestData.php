@@ -262,15 +262,11 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 2,
+                'count'  => 1,
                 'items'  => [
                     [
                         'status' => 'under_review',
                         'name'   => 'subscriptions',
-                    ],
-                    [
-                        'name'   => 'marketplace',
-                        'status' => 'under_review',
                     ],
                 ],
             ],

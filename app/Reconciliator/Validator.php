@@ -67,6 +67,11 @@ class Validator extends Base\Core
                                                          . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
                                                          "/Refund MIS for [0-9]{6}_RAZORPAY/"
                                                      ],
+        RequestProcessor\Base::PAYZAPP            => [
+                                                         "/Razorpay_Software Payout Detailed Report GST "
+                                                         . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9][0-9]?,"
+                                                         ."20[0-9]{2}/"
+                                                     ],
         RequestProcessor\Base::AIRTEL             => ["/Ecom Merchant Transaction_Report for [0-9]+/"],
         RequestProcessor\Base::UPI_HDFC           => [ "/Merchant Payout Report/"],
         RequestProcessor\Base::CARD_FSS_HDFC           => ["/^Settlement Report FSSPaY - Razorpay/"],
@@ -101,11 +106,16 @@ class Validator extends Base\Core
                                                              "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
                                                          ],
         RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached Recon Data File of Online Transaction/"],
+        RequestProcessor\Base::PAYZAPP                 => [
+                                                             "/Please find Merchant payout report attached for Date "
+                                                             ."(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9][0-9]?,"
+                                                             ."20[0-9]{2}/"
+                                                          ],
         RequestProcessor\Base::UPI_HDFC                => ["/Please Find Attachment For Merchant Payout Report/"],
         RequestProcessor\Base::AIRTEL                  => ["/PFA your merchant txn report for Yesterday/"],
         RequestProcessor\Base::CARD_FSS_HDFC           => [
                                                             "/Please find attached All transaction Report & Settlement Report "
-                                                            . "for transactions done on FSSPaY/"
+                                                            . "for transactions done/"
                                                           ],
     ];
 
@@ -118,6 +128,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => 1,
         RequestProcessor\Base::HITACHI            => 1,
         RequestProcessor\Base::UPI_ICICI          => 1,
+        RequestProcessor\Base::PAYZAPP            => 1,
         RequestProcessor\Base::AIRTEL             => 1,
     ];
 
@@ -221,6 +232,23 @@ class Validator extends Base\Core
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
             RequestProcessor\Base::OLAMONEY);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validatePayzappEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::PAYZAPP);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails[RequestProcessor\Mailgun::BODY],
+            RequestProcessor\Base::PAYZAPP);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::PAYZAPP);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }

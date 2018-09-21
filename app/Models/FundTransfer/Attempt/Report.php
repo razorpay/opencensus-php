@@ -229,12 +229,14 @@ class Report extends Base\Core
             return;
         }
 
-        (new SlackNotification)->success(
+        (new SlackNotification)->send(
             'fta_recon_report',
             [
                 'channel' => $this->channel,
                 'count' => $count
-            ]);
+            ],
+            null,
+            $count);
     }
 
     protected function sendEmail()

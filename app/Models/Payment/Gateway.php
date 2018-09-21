@@ -4,12 +4,14 @@ namespace RZP\Models\Payment;
 
 use App;
 use RZP\Exception;
-use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
+use RZP\Models\Terminal\TpvType;
 use Razorpay\IFSC\IFSC as BaseIFSC;
+use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -1132,6 +1134,7 @@ class Gateway
                 IFSC::SURY,
                 IFSC::UCBA,
                 IFSC::ICIC,
+                IFSC::IDFB,
             ]
         ],
     ];

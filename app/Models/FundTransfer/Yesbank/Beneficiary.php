@@ -8,6 +8,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Base;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\NodalBeneficiary\Status;
+use RZP\Models\NodalBeneficiary\Entity;
+use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Models\NodalBeneficiary\Core as NodalCore;
 use RZP\Models\FundTransfer\Base\Beneficiary\ApiProcessor;
 use RZP\Models\FundTransfer\Yesbank\Request\Beneficiary as BeneficiaryRequest;
 
@@ -20,6 +24,8 @@ class Beneficiary extends ApiProcessor
      * Slack notification will be sent as a summary
      *
      * @param PublicCollection $bankAccounts
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\LogicException
      */
     public function process(PublicCollection $bankAccounts)
     {
@@ -31,9 +37,39 @@ class Beneficiary extends ApiProcessor
         {
             try
             {
-                $request->init()
-                        ->setEntity($bankAccount)
-                        ->makeRequest();
+                $input = [
+                    Entity::CHANNEL             => Channel::YESBANK,
+                    Entity::MERCHANT_ID         => $bankAccount->merchant->getId(),
+                    Entity::BANK_ACCOUNT_ID     => $bankAccount->getId(),
+                    Entity::BENEFICIARY_CODE    => $bankAccount->getBeneficiaryCode(),
+                    Entity::REGISTRATION_STATUS => Status::CREATED
+                ];
+
+                $nodalBeneficiary = $this->repo->nodal_beneficiary
+                                         ->fetchNonRegisteredBeneficiary(
+                                             $bankAccount->getId(),
+                                             Channel::YESBANK
+                                         );
+
+                $status = $this->checkBeneficiaryStatusForRegistration($input, $nodalBeneficiary);
+
+                if($status === false)
+                {
+                    continue;
+                }
+
+                $beneRegResponse = $request->init()
+                                           ->setEntity($bankAccount)
+                                           ->makeRequest();
+
+                $beneStatus = $this->getBeneficiaryStatus($beneRegResponse);
+
+                if ($beneStatus === Status::FAILED)
+                {
+                    $this->summary[] = $bankAccount->getId();
+                }
+
+                $this->updateBeneficiaryStatus($bankAccount, $beneStatus);
             }
             catch (\Throwable $e)
             {
@@ -47,9 +83,67 @@ class Beneficiary extends ApiProcessor
                         'bank_account_id' => $bankAccount->getId(),
                         'error'           => $e->getMessage()
                     ]);
+
+                $this->updateBeneficiaryStatus($bankAccount, Status::FAILED);
             }
         }
 
         $this->notify();
+    }
+
+    /**
+     * Updates beneficiary status
+     * @param BankAccount $bankAccount
+     * @param string $beneficiaryStatus
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\LogicException
+     */
+    protected function updateBeneficiaryStatus(BankAccount $bankAccount, string $beneficiaryStatus)
+    {
+        $beneficiaryUpdateInfo = [
+            Entity::CHANNEL             => Channel::YESBANK,
+            Entity::BANK_ACCOUNT_ID     => $bankAccount->getId(),
+            Entity::REGISTRATION_STATUS => $beneficiaryStatus
+        ];
+
+        (new NodalCore)->update($beneficiaryUpdateInfo);
+    }
+
+    /**
+     * Extract beneficiary status from response
+     *
+     * @param array $response
+     * @return string
+     */
+    protected function getBeneficiaryStatus(array $response): string
+    {
+        if ((array_key_exists('RequestStatus', $response) === true) and
+            ($response['RequestStatus'] === 'SUCCESS'))
+        {
+            return Status::REGISTERED;
+        }
+        else
+        {
+            return Status::FAILED;
+        }
+    }
+
+    protected function checkBeneficiaryStatusForRegistration(array $input, $nodalBeneficiary): bool
+    {
+        if ($nodalBeneficiary === null)
+        {
+            (new NodalCore)->create($input);
+
+            return true;
+        }
+
+        $registrationStatus = $nodalBeneficiary->getRegistrationStatus();
+
+        if ($registrationStatus !== Status::REGISTERED)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -21,6 +21,11 @@ class Base extends BaseProcessor
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_MESSAGE = 'gateway_error_message';
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $useSpreadSheetLibrary = true;
+
     protected function processEntry(array & $entry)
     {
         $content = $this->getDataFromRow($entry);

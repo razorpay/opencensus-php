@@ -840,8 +840,11 @@ class ErrorCode
     const BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS                             = 'BAD_REQUEST_NO_LINKED_ACCOUNT_DASHBOARD_USERS';
 
     // Partners error codes
+    const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                           = 'BAD_REQUEST_OAUTH_APP_NOT_FOUND';
     const SERVER_ERROR_PARTNER_APP_NOT_FOUND                                        = 'SERVER_ERROR_PARTNER_APP_NOT_FOUND';
     const BAD_REQUEST_INVALID_PARTNER_ACTION                                        = 'BAD_REQUEST_INVALID_PARTNER_ACTION';
+    const BAD_REQUEST_INVALID_APPLICATION_ID                                        = 'BAD_REQUEST_INVALID_APPLICATION_ID';
+    const BAD_REQUEST_MISSING_APPLICATION_ID                                        = 'BAD_REQUEST_MISSING_APPLICATION_ID';
     const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED                             = 'BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED';
 
     const SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT                                 = 'SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT';

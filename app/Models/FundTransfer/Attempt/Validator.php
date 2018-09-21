@@ -28,9 +28,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $retryBeamFileUploadRules = [
-        Entity::FILE           =>  'required|filled|string',
-        Entity::CHANNEL        =>  'required|filled|string',
-        Entity::FILE_TYPE      =>  'required|filled|string',
+        'file_id'           =>  'required|filled|string|alpha_num|size:14',
+        Entity::CHANNEL     =>  'required|filled|string',
+        Entity::FILE_TYPE   =>  'required|filled|string',
     ];
 
     protected function validateStatus($attribute, $value)

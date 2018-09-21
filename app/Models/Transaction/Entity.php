@@ -53,6 +53,18 @@ class Entity extends Base\PublicEntity
     const SETTLED_AT          = 'settled_at';
     const SETTLEMENT_ID       = 'settlement_id';
 
+    // dummy columns usable later
+    const REFERENCE1          = 'reference1';
+    const REFERENCE2          = 'reference2';
+    const REFERENCE3          = 'reference3';
+    const REFERENCE4          = 'reference4';
+    const REFERENCE5          = 'reference5';
+    const REFERENCE6          = 'reference6';
+    const REFERENCE7          = 'reference7';
+    const REFERENCE8          = 'reference8';
+    const REFERENCE9          = 'reference9';
+    const REFERENCE10         = 'reference10';
+
     const PAYMENT_ID        = 'payment_id';
 
     const RECONCILED        = 'reconciled';
