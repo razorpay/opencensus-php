@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Allahabad\Mock;
 
 use Carbon\Carbon;
+
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
@@ -12,6 +13,7 @@ class Reconciliator extends Base\RefundFile
 {
     const PAYMENT_ENTITY = 'payment';
     const GATEWAY_ENTITY = 'gateway';
+    const BANK_ID        = '021';
 
     protected static $fileToWriteName = 'Allahabad_Netbanking_Reconciliation';
 
@@ -75,14 +77,14 @@ class Reconciliator extends Base\RefundFile
         foreach ($input as $row)
         {
             $trnxDate = Carbon::createFromTimestamp(
-                $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
-                Timezone::IST)
-                ->format('d-M-y');
+                                $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
+                                Timezone::IST)
+                                ->format('d-M-y');
 
             $amount = $this->getFormattedAmount($row['payment']['amount']);
 
             $data[] = [
-                'Bank Id'           => '021',
+                'Bank Id'           => self::BANK_ID,
                 'Txn Date'          => $trnxDate,
                 'Merchant Name'     => 'Razor',
                 'Trnx Amount'       => $amount,
@@ -96,4 +98,3 @@ class Reconciliator extends Base\RefundFile
         return [$totalAmount, $data];
     }
 }
-

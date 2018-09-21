@@ -1,13 +1,15 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingAllahabad;
+namespace RZP\Reconciliator\NetbankingAllahabad\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Status;
+use RZP\Reconciliator\Base\SubReconciliator\Helper;
+use RZP\Reconciliator\NetbankingAllahabad\Constants;
 
-class PaymentReconciliate extends Base\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     protected $netbankingRepo;
 
@@ -67,6 +69,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     private function getReconPaymentAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[Constants::TRNX_AMOUNT]);
+        return Helper::getIntegerFormattedAmount($row[Constants::TRNX_AMOUNT]);
     }
 }

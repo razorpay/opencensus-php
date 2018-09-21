@@ -1241,7 +1241,7 @@ class Gateway
      *
      * @return bool
      */
-    // @codingStandardsIgnoreLine
+
     public static function isFileBasedEMandateRegistrationGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateRegistrationGateways) === true);
@@ -1252,12 +1252,12 @@ class Gateway
      *
      * @return bool
      */
-    // @codingStandardsIgnoreLine
+
     public static function isFileBasedEMandateDebitGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
     }
-    // @codingStandardsIgnoreLine
+
     public static function getAllEMandateBanks(): array
     {
         $banks = [];

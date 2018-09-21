@@ -21,4 +21,3 @@ class Reconciliate extends Base\Reconciliate
         return self::PAYMENT;
     }
 }
-
