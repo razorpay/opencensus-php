@@ -253,12 +253,7 @@ class GatewayController extends Controller
     {
         $input = Request::all();
 
-        /*$this->app['trace']->info(
-            TraceCode::,
-            [ 'input' => $input ]
-        );*/
-
-        //TODO add supprot for error xml
+        //TODO add new trace code for emandate callback and trace here
 
         $responseXml = (array) simplexml_load_string(trim($input['MandateRespDoc']));
 
@@ -279,8 +274,7 @@ class GatewayController extends Controller
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
-        //$this->app['config']->set('database.default', $mode);
-        \Database\DefaultConnection::set($mode);
+        $this->app['config']->set('database.default', $mode);
 
         $this->app['basicauth']->setMode($mode);
 
@@ -299,10 +293,6 @@ class GatewayController extends Controller
         $url = $url . '?' . $inputMsg;
 
         return Redirect::to($url);
-
-        /*$hash = $this->route->getHashOf($publicPaymentId);
-
-        return (new Payment\Service)->npciCallback($publicPaymentId, $hash,  $input);*/
     }
 
     public function callbackAmazonpay()
