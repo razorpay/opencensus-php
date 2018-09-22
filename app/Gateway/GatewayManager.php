@@ -40,7 +40,7 @@ class GatewayManager extends \Illuminate\Support\Manager
         // Laravel helper function converts snake case to camel case
         $action = camel_case($action);
 
-        $this->registerTraceProcessors($input, $action);
+        //$this->registerTraceProcessors($input, $action);
 
         return $gateway->call($action, $input);
     }
