@@ -36,10 +36,31 @@ class GatewayController extends Controller
         //
         // Eg: gateway request needs to be decrypted
         $input = $gateway->preProcessServerCallback($input);
+        $trace = $this->app['trace'];
+        $trace->info(
+            TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+            [
+                'input' => $input,
+                'attempt' => 1,
+            ]);
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
+        $trace->info(
+            TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+            [
+                'paymentId' => $paymentId,
+                'attempt' => 2,
+            ]);
+
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $trace->info(
+            TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+            [
+                'mode' => $mode,
+                'attempt' => 3,
+            ]);
 
         if ($mode === null)
         {
@@ -50,6 +71,13 @@ class GatewayController extends Controller
                 $this->app['basicauth']->setModeAndDbConnection($mode);
 
                 $paymentAndMerchantDetails = $gateway->getPaymentAndMerchantDetailsFromCallback($input);
+
+                $trace->info(
+                    TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                    [
+                        'paymentAndMerchantDetails' => $paymentAndMerchantDetails,
+                        'attempt' => 4,
+                    ]);
 
                 return (new Payment\Service)->createPaymentFromS2SCallback($input, $gatewayDriver, $paymentAndMerchantDetails);
             }
