@@ -1419,119 +1419,50 @@ class Service extends Base\Service
         {
             $success = false;
 
-            try {
-                $mode = $this->app['basicauth']->getMode();
+            $mode = $this->app['basicauth']->getMode();
 
-                $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
+            $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
 
-                $this->trace->info(
-                    TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
-                    [
-                        'terminal_id' => $terminal->getId(),
-                        'attempt' => 6,
-                    ]);
+            $this->app['gateway']->call($gateway, Payment\Action::VALIDATE_PUSH, $callbackData, $mode, $terminal);
 
-                $this->app['gateway']->call($gateway, Payment\Action::VALIDATE_PUSH, $callbackData, $mode, $terminal);
+            $merchantAccount = ($this->app->environment('production') === true) ?
+                Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
 
-                $this->trace->info(
-                    TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
-                    [
-                        'after_validate_push' => "bole to",
-                        'attempt' => 7,
-                    ]);
+            $merchant = $this->repo->merchant->findOrFail($merchantAccount);
 
-                $merchantAccount = ($this->app->environment('production') === true) ?
-                    Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
+            $paymentProcessor = $this->getNewProcessor($merchant);
 
-                $merchant = $this->repo->merchant->findOrFail($merchantAccount);
+            $gatewayInput = [
+                'terminal_id'       => $terminal->getId(),
+                'skip_gateway_call' => true,
+            ];
 
-                $this->trace->info(
-                    TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
-                    [
-                        'merchant' => $merchant->getId(),
-                        'attempt' => 8,
-                    ]);
+            $paymentProcessor->process($paymentInput, $gatewayInput);
 
-                $paymentProcessor = $this->getNewProcessor($merchant);
+            $payment = $paymentProcessor->getPayment();
 
-                $gatewayInput = [
-                    'terminal_id'       => $terminal->getId(),
-                    'skip_gateway_call' => true,
-                ];
-
-                $this->trace->info(
-                    TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
-                    [
-                        'gatewayInput' => $gatewayInput,
-                        'attempt' => 9,
-                    ]);
-
-                $paymentProcessor->process($paymentInput, $gatewayInput);
-
-                $payment = $paymentProcessor->getPayment();
-
-                try
+            try
+            {
+                $this->repo->transaction(function() use ($payment, $gateway, $callbackData, $mode, $terminal)
                 {
-                    $this->repo->transaction(function() use ($payment, $gateway, $callbackData, $mode, $terminal)
-                    {
-                        $paymentId = $payment->getId();
+                    $paymentId = $payment->getId();
 
-                        $input = [$paymentId, $callbackData];
+                    $input = [$paymentId, $callbackData];
 
-                        $this->trace->info(
-                            TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
-                            [
-                                'before_authorize_push' => 'before_authorize_push',
-                                'attempt' => 10,
-                            ]);
-                        $this->app['gateway']->call($gateway, Payment\Action::AUTHORIZE_PUSH, $input, $mode, $terminal);
+                    $this->app['gateway']->call($gateway, Payment\Action::AUTHORIZE_PUSH, $input, $mode, $terminal);
 
-                        $this->trace->info(
-                            TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
-                            [
-                                'after_authorize_push' => 'after_authorize_push',
-                                'attempt' => 11,
-                            ]);
-
-                        $payment->setStatus(Payment\Status::AUTHORIZED);
-
-                        $this->repo->saveOrFail($payment);
-                    });
-
-                    $success = true;
-                }
-                catch (\Throwable $e)
-                {
-                    $this->trace->info(
-                        TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
-                        [
-                            'in_throwable' => 'in_throwable',
-                            'attempt' => 12,
-                        ]);
-
-                    $payment->setStatus(Payment\Status::FAILED);
+                    $payment->setStatus(Payment\Status::AUTHORIZED);
 
                     $this->repo->saveOrFail($payment);
+                });
 
-                    throw $e;
-                }
-            } catch (\Throwable $e) {
+                $success = true;
+            }
+            catch (\Throwable $e)
+            {
+                $payment->setStatus(Payment\Status::FAILED);
 
-                $this->trace->info(
-                    TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
-                    [
-                        'in_throwabl111e' => 'in_throwab11111le',
-                        'attempt' => 13,
-                    ]);
-
-                $this->trace->traceException(
-                    $e,
-                    Trace::CRITICAL,
-                    TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
-                    [
-                        'yaha' => 'asdasd'
-                    ]
-                );
+                $this->repo->saveOrFail($payment);
 
                 throw $e;
             }
