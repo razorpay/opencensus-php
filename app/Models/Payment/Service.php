@@ -1423,12 +1423,33 @@ class Service extends Base\Service
 
             $terminal = $this->repo->terminal->findByGatewayMerchantId($gatewayMerchantId, $gateway);
 
+            $this->trace->info(
+                TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                [
+                    'terminal_id' => $terminal->getId(),
+                    'attempt' => 6,
+                ]);
+
             $this->app['gateway']->call($gateway, Payment\Action::VALIDATE_PUSH, $callbackData, $mode, $terminal);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                [
+                    'after_validate_push' => "bole to",
+                    'attempt' => 7,
+                ]);
 
             $merchantAccount = ($this->app->environment('production') === true) ?
                 Merchant\Account::DEMO_PAGE_ACCOUNT : Merchant\Account::DEMO_ACCOUNT;
 
             $merchant = $this->repo->merchant->findOrFail($merchantAccount);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                [
+                    'merchant' => $merchant->getId(),
+                    'attempt' => 8,
+                ]);
 
             $paymentProcessor = $this->getNewProcessor($merchant);
 
@@ -1436,6 +1457,13 @@ class Service extends Base\Service
                 'terminal_id'       => $terminal->getId(),
                 'skip_gateway_call' => true,
             ];
+
+            $this->trace->info(
+                TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                [
+                    'gatewayInput' => $gatewayInput,
+                    'attempt' => 9,
+                ]);
 
             $paymentProcessor->process($paymentInput, $gatewayInput);
 
@@ -1449,7 +1477,20 @@ class Service extends Base\Service
 
                     $input = [$paymentId, $callbackData];
 
+                    $this->trace->info(
+                        TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                        [
+                            'before_authorize_push' => 'before_authorize_push',
+                            'attempt' => 10,
+                        ]);
                     $this->app['gateway']->call($gateway, Payment\Action::AUTHORIZE_PUSH, $input, $mode, $terminal);
+
+                    $this->trace->info(
+                        TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                        [
+                            'after_authorize_push' => 'after_authorize_push',
+                            'attempt' => 11,
+                        ]);
 
                     $payment->setStatus(Payment\Status::AUTHORIZED);
 
@@ -1460,6 +1501,13 @@ class Service extends Base\Service
             }
             catch (\Throwable $e)
             {
+                $this->trace->info(
+                    TraceCode::GATEWAY_UNEXPECTED_PAYMENT_ERROR,
+                    [
+                        'in_throwable' => 'in_throwable',
+                        'attempt' => 12,
+                    ]);
+
                 $payment->setStatus(Payment\Status::FAILED);
 
                 $this->repo->saveOrFail($payment);
