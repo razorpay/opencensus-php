@@ -6,12 +6,15 @@ use RZP\Tests\TestCase;
 
 class BusinessSubcategoryTest extends TestCase
 {
+    const TEST = 'Test';
+    const DESCRIPTIONS = 'descriptions';
+
     public function testIsValidSubcategoryForInvalidSubCategories()
     {
-        $this->assertFalse(BusinessSubcategory::isValidSubcategory("test"));
-        $this->assertFalse(BusinessSubcategory::isValidSubcategory("descriptions"));
-        $this->assertFalse(BusinessSubcategory::isValidSubcategory(BusinessSubcategory::DESCRIPTION));
-        $this->assertFalse(BusinessSubcategory::isValidSubcategory(BusinessSubcategory::MCC_CODE));
+        $this->assertFalse(BusinessSubcategory::isValidSubcategory(self::TEST));
+        $this->assertFalse(BusinessSubcategory::isValidSubcategory(self::DESCRIPTIONS));
+        $this->assertFalse(BusinessSubcategory::isValidSubcategory(BusinessSubCategoryMetaData::DESCRIPTION));
+        $this->assertFalse(BusinessSubcategory::isValidSubcategory(BusinessSubCategoryMetaData::MCC_CODE));
     }
 
     public function testIsValidSubcategoryForvalidSubCategories()
