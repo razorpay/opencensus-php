@@ -912,7 +912,7 @@ class Gateway extends Base\Gateway
                 'Duplicate Payment found',
                 null,
                 [
-                    'callbackData' => $input
+                    'callbackData' => $callbackData
                 ]
             );
         }
