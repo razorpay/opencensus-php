@@ -933,7 +933,11 @@ class Gateway extends Base\Gateway
             ],
         ];
 
+        $this->action = Action::VERIFY;
+
         $request = $this->getPaymentVerifyRequestArray($input);
+
+        $this->action = Action::VALIDATE_PUSH;
 
         $response = $this->sendGatewayRequest($request);
 
