@@ -159,19 +159,21 @@ class TransactionFilter extends Terminal\Filter
                 }
             }
         }
-
-        // @todo: Can be more cleaner
-        foreach (Gateway::$gatewaysEmandateBanksMap as $gateway => $gatewaySupportedBanks)
+        else
         {
-            if (in_array($paymentBank, $gatewaySupportedBanks, true) === true)
+            // @todo: Can be more cleaner
+            foreach (Gateway::$gatewaysEmandateBanksMap as $gateway => $gatewaySupportedBanks)
             {
-                if (($authType !== null) and
-                    (in_array($gateway, $authTypeGateways, true) === false))
+                if (in_array($paymentBank, $gatewaySupportedBanks, true) === true)
                 {
-                    continue;
-                }
+                    if (($authType !== null) and
+                        (in_array($gateway, $authTypeGateways, true) === false))
+                    {
+                        continue;
+                    }
 
-                $gateways[] = $gateway;
+                    $gateways[] = $gateway;
+                }
             }
         }
 
