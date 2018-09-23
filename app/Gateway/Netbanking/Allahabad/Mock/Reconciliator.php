@@ -11,9 +11,9 @@ use RZP\Constants\Timezone;
 
 class Reconciliator extends Base\RefundFile
 {
+    const BANK_ID        = '021';
     const PAYMENT_ENTITY = 'payment';
     const GATEWAY_ENTITY = 'gateway';
-    const BANK_ID        = '021';
 
     protected static $fileToWriteName = 'Allahabad_Netbanking_Reconciliation';
 
