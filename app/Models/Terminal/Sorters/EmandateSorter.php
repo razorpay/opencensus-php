@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
+use RZP\Models\Payment\AuthType;
 use RZP\Models\Terminal;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
@@ -25,15 +26,15 @@ class EmandateSorter extends Terminal\Sorter
     {
         $method = $this->input['payment']->getMethod();
 
-        // No need unless doing for emandate
-        if ($method !== Method::EMANDATE)
-        {
-            return $terminals;
-        }
-
         $bank = $this->input['payment']->getBank();
 
         $authType = $this->input['payment']->getAuthType();
+
+        // No need unless doing for emandate
+        if ($method !== Method::EMANDATE and $authType !== AuthType::NETBANKING)
+        {
+            return $terminals;
+        }
 
         $gateways = $this->getEmandateGatewayIfExists($bank, $authType);
 
