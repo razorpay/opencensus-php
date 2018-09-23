@@ -1093,6 +1093,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
 
+    const TRANSACTIONS_TO_POSTPAID_INPUT                = 'TRANSACTIONS_TO_POSTPAID_INPUT';
+    const TRANSACTIONS_TO_POSTPAID_FAILED               = 'TRANSACTIONS_TO_POSTPAID_FAILED';
+    const TRANSACTIONS_TO_POSTPAID_RESPONSE             = 'TRANSACTIONS_TO_POSTPAID_RESPONSE';
+
     // Trace code for Merchant Invoices
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
     const MERCHANT_INVOICE_BULK_CREATE                  = 'MERCHANT_INVOICE_BULK_CREATE';
@@ -1385,6 +1389,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::GRATIS_TO_POSTPAID_RESPONSE               => 'Gratis to postpaid response',
 
         self::GATEWAY_METRIC_DIMENSION_PUSH_FAILED      => 'Exception fetching metric dimensions',
+
+        self::TRANSACTIONS_TO_POSTPAID_INPUT            => 'Mark transactions as postpaid request',
+        self::TRANSACTIONS_TO_POSTPAID_FAILED           => 'Transaction conversion from to postpaid failed',
+        self::TRANSACTIONS_TO_POSTPAID_RESPONSE         => 'Transaction to postpaid response',
     ];
 
     /**

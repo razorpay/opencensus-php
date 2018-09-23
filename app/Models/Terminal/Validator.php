@@ -13,7 +13,6 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\BankingType;
-use RZP\Models\Payment\Processor\Netbanking;
 
 class Validator extends Base\Validator
 {
