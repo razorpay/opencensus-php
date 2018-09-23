@@ -25,7 +25,7 @@ class EmandateSorter extends Terminal\Sorter
     {
         $method = $this->input['payment']->getMethod();
 
-        // No need unless doing for netbanking
+        // No need unless doing for emandate
         if ($method !== Method::EMANDATE)
         {
             return $terminals;
@@ -37,7 +37,7 @@ class EmandateSorter extends Terminal\Sorter
 
         $gateways = $this->getEmandateGatewayIfExists($bank, $authType);
 
-        if($this->isBankSupportedByNpciEmandate($bank) === true)
+        if($this->isBankSupportedByNpciEmandate($bank, $authType) === true)
         {
             $gateways['direct_npci'] = 'direct' . '_' . Gateway::ENACH_RBL;
             $gateways['shared_npci'] = 'shared' . '_' . Gateway::ENACH_RBL;
@@ -76,9 +76,9 @@ class EmandateSorter extends Terminal\Sorter
         ];
     }
 
-    protected function isBankSupportedByNpciEmandate($bank)
+    protected function isBankSupportedByNpciEmandate($bank, $authType)
     {
-        return in_array($bank, Gateway::$gatewaysEmandateBanksMap[Gateway::ENACH_RBL]);
+        return in_array($bank, Gateway::$gatewaysEmandateBanksMapForAuthType[$authType][Gateway::ENACH_RBL]);
     }
 
     protected function getMerchantOrDefaultOrdering($gateways, $merchantID)     //TODO add logic for merchant selection of routing

@@ -465,11 +465,21 @@ class Core extends Base\Core
 
         foreach ($availableGatewaysForMerchant as $availableGateway)
         {
-            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]) === true)
+            if( $authType === Payment\AuthType::NETBANKING and
+                isset(Payment\Gateway::$gatewaysEmandateBanksMapForAuthType[$authType][$availableGateway]) === true )
             {
                 $availableEmandateBanks = array_merge(
-                                                $availableEmandateBanks,
-                                                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+                    $availableEmandateBanks,
+                    Payment\Gateway::$gatewaysEmandateBanksMapForAuthType[$authType][$availableGateway]);
+            }
+            else
+            {
+                if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]) === true)
+                {
+                    $availableEmandateBanks = array_merge(
+                        $availableEmandateBanks,
+                        Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+                }
             }
         }
 
