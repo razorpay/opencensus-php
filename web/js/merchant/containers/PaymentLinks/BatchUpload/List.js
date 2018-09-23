@@ -22,7 +22,6 @@ const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
       mode: state.session.mode,
       user: state.session.user,
       issuableIdList: state.paymentBatchIds.issuableIdList,
-      ...state.paymentlinkbatches,
     };
   },
   { fetchAll, createBatch, validateBatch, openModal }

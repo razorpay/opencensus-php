@@ -17,7 +17,6 @@ const gaEvents = setGaTrack('Dashboard - Payments - BU');
     return {
       mode: state.session.mode,
       user: state.session.user,
-      ...state.paymentBatches,
     };
   },
   { fetchAll }
