@@ -1004,7 +1004,6 @@ class Gateway
             ]
         ],
         AuthType::AADHAAR => [
-
             // This is added here just for test cases
             // We are using UTIB in test cases
             Gateway::ESIGNER_DIGIO      => [

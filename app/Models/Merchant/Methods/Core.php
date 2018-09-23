@@ -468,17 +468,19 @@ class Core extends Base\Core
             if( $authType === Payment\AuthType::NETBANKING and
                 isset(Payment\Gateway::$gatewaysEmandateBanksMapForAuthType[$authType][$availableGateway]) === true )
             {
+                $newBanks = Payment\Gateway::$gatewaysEmandateBanksMapForAuthType[$authType][$availableGateway];
+
                 $availableEmandateBanks = array_merge(
-                    $availableEmandateBanks,
-                    Payment\Gateway::$gatewaysEmandateBanksMapForAuthType[$authType][$availableGateway]);
+                                              $availableEmandateBanks,
+                                              $newBanks);
             }
             else
             {
                 if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]) === true)
                 {
                     $availableEmandateBanks = array_merge(
-                        $availableEmandateBanks,
-                        Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+                                                $availableEmandateBanks,
+                                                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
                 }
             }
         }
