@@ -11,7 +11,7 @@ import { openModal } from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
-import { batchDownload, fetchBatch } from 'merchant/modules/batches';
+import { batchDownload } from 'merchant/modules/batches';
 
 const batchStatus = {
   ...status,
@@ -23,13 +23,17 @@ const batchStatus = {
   ),
 };
 
-@connect(null, {
-  batchDownload,
-  fetchBatch,
-  openModal,
-  luminateRow,
-  ...NotificationsActions,
-})
+@connect(
+  state => ({
+    ...state.batches,
+  }),
+  {
+    batchDownload,
+    openModal,
+    luminateRow,
+    ...NotificationsActions,
+  }
+)
 export default class BatchList extends Component {
   handleDownloadClick = id => {
     let windowRef = window.open('', '_blank');
