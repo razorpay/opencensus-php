@@ -287,13 +287,15 @@ class Gateway extends Base\Gateway
 
         $mid = $this->getMerchantId();
 
+        $pid = $input['payment']['id'];
+
         $mcc = $input['terminal']['category'];  //TODO find what are all the possible values here
 
         $currentDate = Carbon::now()->setTimezone(Timezone::IST)->format('Y-m-d\TH:i:s');
 
         $data = [
             NpciXmlHeaderTags::GROUP_HEADER      => [
-                RequestNpciTags::MESSAGE_ID            => $this->getMsgId(),
+                RequestNpciTags::MESSAGE_ID            => $pid,
                 RequestNpciTags::CREATION_DATE_TIME    => $currentDate,
             ],
 
@@ -305,7 +307,7 @@ class Gateway extends Base\Gateway
                 RequestNpciTags::NAME                  => 'Razorpay software pvt ltd', //Todo check if this ok
             ],
 
-            RequestNpciTags::MANDATE_ID           => $this->getMandateId($input['payment']['id']),
+            RequestNpciTags::MANDATE_ID           => $pid,
 
             NpciXmlHeaderTags::OCCURENCE          => [
                 RequestNpciTags::SEQUENCE_TYPE         => 'RCUR',
@@ -435,23 +437,6 @@ class Gateway extends Base\Gateway
         $request['headers'] = $headers;
 
         return $request;
-    }
-
-    protected function getUniqueId()
-    {
-        return UniqueIdEntity::generateUniqueId();
-    }
-
-    protected function getMsgId()
-    {
-        $id = $this->getUniqueId();
-
-        return 'msg' . $id;
-    }
-
-    protected function getMandateId($id)
-    {
-        return 'mandate' . $id;
     }
 
     protected function callAuthenticationGateway(array $input)

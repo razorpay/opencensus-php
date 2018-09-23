@@ -311,14 +311,12 @@ class GatewayController extends Controller
 
         if($input['RespType'] === 'RespXml')
         {
-            $mandateId = $responseArray['MndtAccptResp']['UndrlygAccptncDtls']['OrgnlMsgInf']['MndtReqId'];
+            $paymentId = $responseArray['MndtAccptResp']['UndrlygAccptncDtls']['OrgnlMsgInf']['MndtReqId'];
         }
         else
         {
-            $mandateId = $responseArray['MndtRejResp']['OrigReqInfo']['MndtReqId'];
+            $paymentId = $responseArray['MndtRejResp']['OrigReqInfo']['MndtReqId'];
         }
-
-        $paymentId = str_replace('mandate', '', $mandateId);
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
