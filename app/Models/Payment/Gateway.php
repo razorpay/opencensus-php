@@ -971,6 +971,16 @@ class Gateway
     ];
 
     /**
+     * List of netbanking gateways that process emandate registration through file send
+     *
+     * @var array
+     */
+    public static $fileBasedEMandateRegistrationGatewaysForAuthType = [
+        AuthType::AADHAAR    => [Gateway::ENACH_RBL],
+        AuthType::NETBANKING => [Gateway::NETBANKING_HDFC]
+    ];
+
+    /**
      * List of gateways which give s2s callback where we do not validate
      * payment callback hash
      *
@@ -1243,6 +1253,11 @@ class Gateway
     public static function isFileBasedEMandateRegistrationGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateRegistrationGateways) === true);
+    }
+
+    public static function isFileBasedEMandateRegistrationGatewayForAuthType(string $gateway, $authType): bool
+    {
+        return (in_array($gateway, self::$fileBasedEMandateRegistrationGatewaysForAuthType[$authType]));
     }
 
     /**

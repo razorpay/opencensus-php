@@ -102,7 +102,7 @@ class EnachRblGatewayTest extends TestCase
         $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
 
-        $this->doAuthAndCapturePayment($payment);
+        $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -141,7 +141,7 @@ class EnachRblGatewayTest extends TestCase
 
         $this->mockRejectCallbackResponse();
 
-        $this->doAuthAndCapturePayment($payment);
+        $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -178,7 +178,7 @@ class EnachRblGatewayTest extends TestCase
 
         $this->mockFailedCallbackResponse();
 
-        $this->doAuthAndCapturePayment($payment);
+        $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 

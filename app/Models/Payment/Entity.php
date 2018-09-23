@@ -2111,6 +2111,12 @@ class Entity extends Base\PublicEntity
                         'method'            => $this->getMethod(),
                     ]);
             }
+            $authType = $this->getAuthType();
+
+            if($authType === 'netbanking')
+            {
+                return (Payment\Gateway::isFileBasedEMandateRegistrationGatewayForAuthType($gateway, $authType) === true);
+            }
 
             return (Payment\Gateway::isFileBasedEMandateRegistrationGateway($gateway) === true);
         }
