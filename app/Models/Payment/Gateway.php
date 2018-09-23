@@ -813,6 +813,7 @@ class Gateway
         self::UPI_ICICI,
         self::HITACHI,
         self::SHARP,
+        self::UPI_HULK,
         self::ISG,
     ];
 

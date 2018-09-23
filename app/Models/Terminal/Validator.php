@@ -411,6 +411,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
+        Entity::VPA                        => 'sometimes|string',
+        Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean'
     ];
 
     protected static $upiSbiTerminalRules = [
@@ -510,6 +512,8 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::VPA                        => 'sometimes|string',
+        Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|in:proxy,app',
     ];
 

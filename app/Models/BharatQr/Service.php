@@ -100,8 +100,8 @@ class Service extends Base\Service
                 'Terminal should not be null here',
                 null,
                 [
-                    'gateway_merchant_id' => $gatewayMerchantId,
-                    'merchant_pan'        => $gatewayMpan,
+                    'gateway_response'   => $gatewayResponse,
+                    'mode'               => $this->mode,
                 ]
             );
         }
