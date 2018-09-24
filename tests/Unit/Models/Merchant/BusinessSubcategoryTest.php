@@ -14,7 +14,6 @@ class BusinessSubcategoryTest extends TestCase
         $this->assertFalse(BusinessSubcategory::isValidSubcategory(self::TEST));
         $this->assertFalse(BusinessSubcategory::isValidSubcategory(self::DESCRIPTIONS));
         $this->assertFalse(BusinessSubcategory::isValidSubcategory(BusinessSubCategoryMetaData::DESCRIPTION));
-        $this->assertFalse(BusinessSubcategory::isValidSubcategory(BusinessSubCategoryMetaData::MCC_CODE));
     }
 
     public function testIsValidSubcategoryForvalidSubCategories()

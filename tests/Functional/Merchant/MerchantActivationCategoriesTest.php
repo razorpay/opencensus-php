@@ -18,15 +18,8 @@ class MerchantActivationCategoriesTest extends TestCase
 
     public function testMerchantActivationCategoriesResponse()
     {
-        $request = [
-            'method'    => 'GET',
-            'url'       => '/merchant/activation/business_categories_details'
-        ];
-
         $this->ba->proxyAuth();
 
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals($this->testData, $response, 'merchant activation categories response is not as expected');
+        $this->startTest();
     }
 }

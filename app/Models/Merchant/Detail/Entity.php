@@ -108,6 +108,7 @@ class Entity extends Base\PublicEntity
     const CAN_SUBMIT                         = 'can_submit';
     const REVIEWER                           = 'reviewer';
     const MERCHANTS                          = 'merchants';
+    const ACTIVATION_CATEGORY                = 'activation_category';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING                     = 'fields_pending';

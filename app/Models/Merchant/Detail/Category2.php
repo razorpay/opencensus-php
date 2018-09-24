@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-class Category
+class Category2
 {
     const MUTUAL_FUNDS          = 'Mutual funds';
     const LENDING               = 'Lending';
@@ -20,5 +20,4 @@ class Category
     const HOSPITALITY           = 'Hospitality';
     const GROCERY               = 'Grocery';
     const HOUSING               = 'Housing';
-    const CATEGORY              = 'category';
 }
