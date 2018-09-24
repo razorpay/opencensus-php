@@ -13,14 +13,4 @@ class RegistrationStatus
         self::SUCCESS => Token\RecurringStatus::CONFIRMED,
         self::FAILURE => Token\RecurringStatus::REJECTED
     ];
-
-    public static function getFailureMessage($errorCode)
-    {
-        if(isset($errorCode) === true)
-        {
-            return 'Failure'; //TODO add mapping here
-        }
-
-        return '';
-    }
 }
