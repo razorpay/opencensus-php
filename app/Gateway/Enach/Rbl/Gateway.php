@@ -648,8 +648,7 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $this->crypto->setPrivateKey();
-            //$this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/onmag_cert.cer');
-            $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/mock_cert.pem');
+            $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/onmag_cert.cer');
             $this->crypto->setSigningCertificatePath(__DIR__ . '/keys/cert.pem');
         }
     }

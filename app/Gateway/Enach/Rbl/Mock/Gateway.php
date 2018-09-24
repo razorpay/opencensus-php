@@ -52,4 +52,15 @@ class Gateway extends Rbl\Gateway
             $request['url'] = $url;
         }
     }
+
+    protected function setCryptoAttribute()
+    {
+        $this->crypto = new Rbl\Crypto($this->config);
+
+        $this->crypto->setPrivateKey();
+
+        $this->crypto->setEncryptionCertificatePath(__DIR__ . '/keys/mock_cert.pem');
+
+        $this->crypto->setSigningCertificatePath(__DIR__ . '/keys/cert.pem');
+    }
 }
