@@ -254,8 +254,8 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::MERCHANT_ID => $mid,
             RequestFields::REQUEST_XML => $xml,
-            RequestFields::CHECKSUM => $encryptedChecksum,
-            RequestFields::BANK_ID => $bank,
+            RequestFields::CHECKSUM    => $encryptedChecksum,
+            RequestFields::BANK_ID     => $bank,
         ];
 
         $request = $this->getStandardRequestArray($content, 'post', 'npciauth');
@@ -538,41 +538,41 @@ class Gateway extends Base\Gateway
     protected function getDataFromErrorResponse($responseArray)
     {
         return [
-            ResponseXmlTags::MESSAGE_ID => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::GROUP_HEADER]
-            [ResponseXmlTags::MESSAGE_ID],
+            ResponseXmlTags::MESSAGE_ID         => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+                                                                 [ResponseXmlTags::GROUP_HEADER]
+                                                                 [ResponseXmlTags::MESSAGE_ID],
 
             ResponseXmlTags::CREATION_DATE_TIME => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::GROUP_HEADER]
-            [ResponseXmlTags::CREATION_DATE_TIME],
+                                                                 [ResponseXmlTags::GROUP_HEADER]
+                                                                 [ResponseXmlTags::CREATION_DATE_TIME],
 
             ResponseXmlTags::RESPONSE_PARTY     => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::GROUP_HEADER]
-            [ResponseXmlTags::RESPONSE_PARTY],
+                                                                 [ResponseXmlTags::GROUP_HEADER]
+                                                                 [ResponseXmlTags::RESPONSE_PARTY],
 
             ResponseXmlTags::MANDATE_REQUEST_ID => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
-            [ResponseXmlTags::MANDATE_REQUEST_ID],
+                                                                 [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
+                                                                 [ResponseXmlTags::MANDATE_REQUEST_ID],
 
             ResponseXmlTags::ORIGINGAL_MSG_ID   => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
-            [ResponseXmlTags::ORIGINGAL_MSG_ID],
+                                                                 [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
+                                                                 [ResponseXmlTags::ORIGINGAL_MSG_ID],
 
-            'Mandate_Creation_Date_Time' => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
-            [ResponseXmlTags::MANDATE_REQUEST_CREATION_DATE_TIME],
+            'Mandate_Creation_Date_Time'        => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+                                                                 [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
+                                                                 [ResponseXmlTags::MANDATE_REQUEST_CREATION_DATE_TIME],
 
-            ResponseXmlTags::ERROR_CODE => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::MANDATE_ERROR_DETAILS]
-            [ResponseXmlTags::ERROR_CODE],
+            ResponseXmlTags::ERROR_CODE         => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+                                                                 [ResponseXmlTags::MANDATE_ERROR_DETAILS]
+                                                                 [ResponseXmlTags::ERROR_CODE],
 
-            ResponseXmlTags::ERROR_DESCRIPTION => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::MANDATE_ERROR_DETAILS]
-            [ResponseXmlTags::ERROR_DESCRIPTION],
+            ResponseXmlTags::ERROR_DESCRIPTION  => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+                                                                 [ResponseXmlTags::MANDATE_ERROR_DETAILS]
+                                                                 [ResponseXmlTags::ERROR_DESCRIPTION],
 
-            ResponseXmlTags::REJECTION_BY => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::MANDATE_ERROR_DETAILS]
-            [ResponseXmlTags::REJECTION_BY],
+            ResponseXmlTags::REJECTION_BY       => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
+                                                                 [ResponseXmlTags::MANDATE_ERROR_DETAILS]
+                                                                 [ResponseXmlTags::REJECTION_BY],
         ];
     }
 
