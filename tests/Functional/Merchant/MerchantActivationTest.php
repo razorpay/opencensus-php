@@ -11,7 +11,7 @@ class MerchantActivationTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/MerchantActivationCategoriesTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/MerchantActivationTestData.php';
 
         parent::setUp();
     }
