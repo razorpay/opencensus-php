@@ -39,9 +39,10 @@ class Validator extends Base\Validator
         Entity::EMANDATE                    => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::UPI                         => 'sometimes|boolean',
+        Entity::BANK_TRANSFER               => 'sometimes|boolean',
         Entity::AEPS                        => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
-        Entity::TYPE                        => 'sometimes|array',
+        Entity::TYPE                        => 'bail|sometimes|array',
         Entity::MODE                        => 'sometimes|in:1,2,3',
         Entity::TPV                         => 'sometimes|in:0,1,2',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
@@ -411,6 +412,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
+        Entity::VPA                        => 'sometimes|string',
+        Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean'
     ];
 
     protected static $upiSbiTerminalRules = [
@@ -510,6 +513,8 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::VPA                        => 'sometimes|string',
+        Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|in:proxy,app',
     ];
 
@@ -544,6 +549,57 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
     ];
+
+    protected static $banktransferYesbankTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_yesbank',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:6',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'required|array',
+        Entity::BANK_TRANSFER               => 'required|boolean|in:1',
+    ];
+
+    protected static $banktransferKotakTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_kotak',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:6',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'required|array',
+        Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+    ];
+
+    protected static $banktransferDashboardTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:bt_dashboard',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:6',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::TYPE                        => 'required|array',
+        Entity::BANK_TRANSFER               => 'required|boolean|in:1',
+    ];
+
+    public function validateType()
+    {
+        if ($this->entity->isBankTransferEnabled() === false)
+        {
+            return;
+        }
+
+        $type = $this->entity->getType();
+
+        if ( in_array(Type::NON_RECURRING, $type ) === false )
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Bank Transfer Terminal cannot be Recurring.',
+                Entity::TYPE);
+        }
+
+        if (( in_array(Type::NUMERIC_ACCOUNT, $type ) === true ) xor
+            ( in_array(Type::ALPHA_NUMERIC_ACCOUNT, $type ) === true ))
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestValidationFailureException(
+            'Bank Transfer Terminal should be either Numeric or Alpha Numeric.',
+            Entity::TYPE);
+    }
 
     protected function validateGateway($input)
     {

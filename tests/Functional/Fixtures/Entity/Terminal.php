@@ -844,6 +844,29 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createBankAccountTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => 'BANKACC3DSN3DS',
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => Gateway::BT_YESBANK,
+            'gateway_merchant_id'       => '222333',
+            'gateway_merchant_id2'      => '00',
+            'card'                      => 0,
+            'shared'                    => 0,
+            'gateway_acquirer'          => null,
+            'type'                      => [
+                Type::NON_RECURRING        => '1',
+                Type::NUMERIC_ACCOUNT => '1',
+            ],
+            'bank_transfer'             => '1',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedCybersourceAxisTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_AXIS_TERMINAL;

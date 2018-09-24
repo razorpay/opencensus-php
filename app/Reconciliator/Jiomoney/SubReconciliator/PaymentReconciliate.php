@@ -17,7 +17,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      *******************/
     const COLUMN_PAYMENT_ID             = 'merchant_ref_id';
     const COLUMN_PAYMENT_AMOUNT         = 'gross_amount';
-    const COLUMN_PAYMENT_DATE           = 'transaction_date';
     const COLUMN_GATEWAY_PAYMENT_ID     = 'transaction_id';
     const COLUMN_PAYMENT_STATUS         = 'payment_status';
 
@@ -30,6 +29,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const GATEWAY_PAYMENT_DATE_FORMAT   = 'm/d/Y H:i:s';
 
     const PROCESSED                     = 'Processed';
+    const SETTLED                       = 'Settled';
 
     protected function getPaymentId(array $row)
     {
@@ -76,7 +76,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $status = $row[self::COLUMN_PAYMENT_STATUS];
 
-        if ($status === self::PROCESSED)
+        $acceptedStatuses = [
+            self::PROCESSED,
+            self::SETTLED,
+        ];
+
+        if (in_array($status, $acceptedStatuses) === true)
         {
             return Status::AUTHORIZED;
         }
@@ -85,18 +90,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             return Status::FAILED;
         }
-    }
-
-    protected function getGatewayPaymentDate($row)
-    {
-        if (empty($row[self::COLUMN_PAYMENT_DATE]) === true)
-        {
-            return null;
-        }
-
-        $row[self::COLUMN_PAYMENT_DATE] =  Carbon::parse($row[self::COLUMN_PAYMENT_DATE])->format('YmdHis');
-
-        return $row[self::COLUMN_PAYMENT_DATE];
     }
 
     protected function getGatewayPayment($paymentId)
@@ -139,7 +132,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         return [
             'gateway_payment_id'    => $row[self::COLUMN_GATEWAY_PAYMENT_ID],
-            'gateway_payment_date'  => $row[self::COLUMN_PAYMENT_DATE],
         ];
     }
 
