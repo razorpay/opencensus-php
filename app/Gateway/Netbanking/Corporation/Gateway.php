@@ -40,9 +40,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getAuthRequestData($input);
 
-        $this->createGatewayPaymentEntity($content);
-
-        $content = http_build_query($content);
+        $content = urldecode(http_build_query($content));
 
         $request = $this->getStandardRequestArray([], 'get');
 
@@ -108,15 +106,36 @@ class Gateway extends Base\Gateway
     {
         $data = [
             // Setting this as the merchant code shared with us
-            RequestFields::CUSTOMER_ID          => $this->getMerchantId(),
             RequestFields::MERCHANT_CODE        => $this->getMerchantId(),
+            RequestFields::CUSTOMER_ID          => $this->getMerchantId(),
             RequestFields::AMOUNT               => $this->formatAmount($input['payment']['amount']),
             RequestFields::PAYMENT_ID           => $input['payment']['id'],
             RequestFields::MODE_OF_TRANSACTION  => Constants::MODE_OF_TRANSACTION_PAYMENT,
             RequestFields::FUND_TRANSFER        => Constants::FUND_TRANSFER,
         ];
 
-        return $data;
+        $this->traceGatewayPaymentRequest(
+            [
+                'before_encryption' => $data,
+                'payment_id'        => $input['payment']['id'],
+                'gateway'           => $this->gateway,
+            ],
+            $input
+        );
+
+        //
+        // Create gateway payment entity here, since the unencrypted data(base on which
+        // we create the gateway payment entity) won't be available outside this function
+        //
+        $this->createGatewayPaymentEntity($data);
+
+        $encrypted = $this->getEncryptor()->encryptData($data);
+
+        $result = [
+            RequestFields::QUERY_STRING => $encrypted
+        ];
+
+        return $result;
     }
 
     // -------------------------- Auth helper methods end --------------------------
