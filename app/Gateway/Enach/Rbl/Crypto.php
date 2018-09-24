@@ -111,7 +111,7 @@ class Crypto
             ['force_uri' => true]
         );
 
-        $sign->add509Cert($this->getSigningCert(),true, false, ['subjectName' => true ]);
+        $sign->add509Cert($this->getSigningCert(), true, false, ['subjectName' => true ]);
 
         $sign->sign($this->getSigningPrivateKey());
 
