@@ -180,6 +180,11 @@ class Gateway extends Base\Gateway
 
     public function verify(array $input)
     {
+        if ($input['payment']['auth_type'] === Payment\AuthType::NETBANKING)
+        {
+            return;
+        }
+
         parent::verify($input);
 
         return $this->callAuthenticationGateway($input);
