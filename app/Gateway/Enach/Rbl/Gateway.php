@@ -634,7 +634,7 @@ class Gateway extends Base\Gateway
 
         $errorCode = $gatewayPayment->getErrorCode();
 
-        $recurringFailureReason = RegistrationStatus::getFailureMessage($errorCode);
+        $recurringFailureReason = ErrorCodes::getEmandateRegisterErrorDescriptionFromCode($errorCode);
 
         $recurringData = [
             Token\Entity::RECURRING_STATUS         => $recurringStatus,
