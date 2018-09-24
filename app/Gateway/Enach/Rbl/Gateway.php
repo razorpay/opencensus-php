@@ -291,6 +291,8 @@ class Gateway extends Base\Gateway
 
         $mcc = $input['terminal']['category'];  //TODO find what are all the possible values here
 
+        $catCode = CategoryCode::getCategoryCodeFromMcc($mcc);
+
         $currentDate = Carbon::now()->setTimezone(Timezone::IST)->format('Y-m-d\TH:i:s');
 
         $data = [
@@ -301,9 +303,9 @@ class Gateway extends Base\Gateway
 
             NpciXmlHeaderTags::INFO              => [
                 RequestNpciTags::MID                   => $mid,
-                RequestNpciTags::CATEGORY_CODE         => 'U006',
+                RequestNpciTags::CATEGORY_CODE         => $catCode,
                 RequestNpciTags::UTILITY_CODE          => $mid,
-                RequestNpciTags::CATEGORY_DESCRIPTION  => 'Utility Bill payment water', //Todo have to add mapping for this
+                RequestNpciTags::CATEGORY_DESCRIPTION  => CategoryCode::getCategoryDescriptionFromCode($catCode),
                 RequestNpciTags::NAME                  => 'Razorpay software pvt ltd', //Todo check if this ok
             ],
 
