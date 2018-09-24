@@ -130,13 +130,7 @@ class JioMoneyReconciliationTest extends TestCase
 
     public function testJioMoneyFailedPaymentReconciliation()
     {
-        $createdAt = Carbon::yesterday(Timezone::IST)->getTimestamp();
-
-        $this->makePaymentsSince($createdAt, 1);
-
-        $paymentEntity = $this->getLastEntity('payment', true);
-
-        $this->fixtures->edit('payment', $paymentEntity['id'], ['status' => 'failed']);
+        $this->createFailedPayment();
 
         $this->ba->appAuth();
 
@@ -152,7 +146,6 @@ class JioMoneyReconciliationTest extends TestCase
 
         $gatewayEntity = $this->getLastEntity('wallet_jiomoney', true);
 
-        $this->assertNotNull($gatewayEntity['date']);
         $this->assertNotNull($gatewayEntity['gateway_payment_id']);
 
         $transactionEntity = $this->getLastEntity('transaction', true);
@@ -162,6 +155,35 @@ class JioMoneyReconciliationTest extends TestCase
         $batch = $this->getLastEntity('batch', true);
 
         $this->assertEquals(Status::PROCESSED, $batch['status']);
+    }
+
+    public function testVerifyAndRefundForAuthorizeFailedPayment()
+    {
+        $this->createFailedPayment();
+
+        $this->ba->appAuth();
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, Base::JIOMONEY);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $payment = $this->capturePayment($paymentEntity['id'], $paymentEntity['amount']);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getLastEntity('refund', true);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNotNull($wallet['refund_id']);
+        $this->assertEquals('SUCCESS', $wallet['response_code']);
+        $this->assertEquals('processed', $refundEntity['status']);
     }
 
     public function testReconAmountMismatch()
@@ -282,6 +304,21 @@ class JioMoneyReconciliationTest extends TestCase
         );
 
         return $payment->getId();
+    }
+
+    protected function createFailedPayment()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        $this->makePaymentsSince($createdAt, 1);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $gatewayEntity = $this->getLastEntity('wallet_jiomoney', true);
+
+        $this->fixtures->edit('payment', $paymentEntity['id'], ['status' => 'failed']);
+
+        $this->fixtures->edit('wallet', $gatewayEntity['id'], ['status_code' => '501']);
     }
 
     private function createUploadedFile($file)
