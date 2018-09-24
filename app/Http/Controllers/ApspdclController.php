@@ -27,24 +27,28 @@ class ApspdclController extends Controller
         $this->trace->info(TraceCode::APSPDCL_REQUEST, compact('apspdclEndpoint', 'headers', 'input', 'method'));
 
         // Default response code, body and headers for failure case.
-        $code    = Response::HTTP_INTERNAL_SERVER_ERROR;
-        $body    = '';
-        $headers = [];
+        $respCode    = Response::HTTP_INTERNAL_SERVER_ERROR;
+        $respBody    = '';
+        $respHeaders = [];
 
         try
         {
-            $resp    = Requests::request($apspdclEndpoint, $headers, $input, $method);
-            $code    = $resp->status_code;
-            $body    = $resp->body;
-            $headers = $resp->headers->getAll();
+            $resp        = Requests::request($apspdclEndpoint, $headers, json_encode($input), $method);
+            $respCode    = $resp->status_code;
+            $respBody    = $resp->body;
+            $respHeaders = $resp->headers->getAll();
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, null, TraceCode::APSPDCL_REQUEST_ERROR, compact('path', 'method', 'input'));
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::APSPDCL_REQUEST_ERROR,
+                compact('apspdclEndpoint', 'headers', 'input', 'method'));
         }
 
-        $this->trace->info(TraceCode::APSPDCL_RESPONSE, compact('code', 'body', 'headers'));
+        $this->trace->info(TraceCode::APSPDCL_RESPONSE, compact('respCode', 'respBody', 'respHeaders'));
 
-        return ResponseFactory::make($body, $code, $headers);
+        return ResponseFactory::make($respBody, $respCode, $respHeaders);
     }
 }
