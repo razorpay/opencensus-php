@@ -427,15 +427,8 @@ class Gateway extends Base\Gateway
 
     protected function isSecondRecurringPaymentRequest($input)
     {
-        if (($this->app['basicauth']->isPrivateAuth() === false) and
-            ($this->app['basicauth']->isPrivilegeAuth() === false))
-        {
-            return false;
-        }
-
         if (($input['payment']['recurring'] === true) and
-            ($input['token'] !== null) and
-            ($input['token']->isRecurring() === true))
+            ($input['payment']['recurring_type'] === 'auto'))
         {
             return true;
         }

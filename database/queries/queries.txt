@@ -4287,6 +4287,9 @@ where id in
 ("AX8axVc1Sh8uga", "AZq9Gx5YhyTi8k", "AaJOx3z5PzXSSi", "AbSIf1IMHbqDQ8", "AdiimIYloqhGt5", "AeWUW1Qa3rHZvn");
 
 ALTER TABLE terminals
+ADD COLUMN bank_transfer TINYINT(1) NOT NULL DEFAULT 0 AFTER upi;
+
+ALTER TABLE terminals
     ADD COLUMN enabled_banks json DEFAULT NULL AFTER network_category;
 
 # adds dummy columns to transactions
@@ -4303,4 +4306,3 @@ ALTER TABLE transactions
     ADD COLUMN reference10 BIGINT UNSIGNED DEFAULT NULL AFTER reference9,
     ADD INDEX transactions_settled_channel_on_hold_merchant_id_index (settled, channel, on_hold, merchant_id),
     DROP INDEX transactions_settled_channel_on_hold_index;
-

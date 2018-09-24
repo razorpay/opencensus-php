@@ -1,10 +1,10 @@
 <?php
 
-use RZP\Gateway\Hdfc;
+use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use \RZP\Models\Payment\Gateway;
 use RZP\Error\PublicErrorDescription;
-use RZP\Models\Terminal;
 
 return [
     'testAssignTerminal' => [
@@ -84,6 +84,212 @@ return [
                 'enabled'             => true
             ]
         ]
+    ],
+
+    'testAssignBankAccountTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => Gateway::BT_YESBANK,
+                'gateway_merchant_id'       => '222333',
+                'gateway_merchant_id2'      => '00',
+                'type'                      => [
+                    'non_recurring'                 => '1',
+                    Terminal\Type::NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'          => '100001Razorpay',
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => '222333',
+                'gateway_merchant_id2' => '00',
+                'type'                 => [
+                    'non_recurring',
+                    Terminal\Type::NUMERIC_ACCOUNT,
+                ],
+                'bank_transfer'             => true,
+            ]
+        ]
+    ],
+
+    'testEditUsedBankAccountTerminal' => [
+        'request' => [
+            'content' => [
+                'merchant_id'          => '100001Razorpay',
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => '222333',
+                'gateway_merchant_id2' => '00',
+                'type'    => [
+                    'non_recurring'              => '1',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => true,
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Editing not defined for used terminal of gateway: '.Gateway::BT_YESBANK,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditBankAccountTerminal' => [
+        'request' => [
+            'content' => [
+                'merchant_id'          => '100001Razorpay',
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => '222334',
+                'gateway_merchant_id2' => '01',
+                'type'    => [
+                    'non_recurring'                         => '1',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT    => '1',
+                    Terminal\Type::NUMERIC_ACCOUNT          => '0',
+                ],
+                'bank_transfer'             => true,
+            ],
+            'method' => 'PUT'
+        ],
+        'response' =>  [
+            'content' => [
+                'merchant_id'          => '100001Razorpay',
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => '222334',
+                'gateway_merchant_id2' => '01',
+                'type'                 => [
+                    'non_recurring',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT,
+                ],
+                'bank_transfer'             => true,
+            ]
+        ],
+    ],
+
+    'testCreateSameRootBankAccountTerminalWithDifferentMerchant' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => Gateway::BT_YESBANK,
+                'gateway_merchant_id'       => '222333',
+                'gateway_merchant_id2'      => '01',
+                'type'                      => [
+                    'non_recurring'               => '1',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => '222333',
+                'gateway_merchant_id2' => '01',
+                'merchant_id'          => '100002Razorpay',
+                'type'                 => [
+                    'non_recurring',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT,
+                ],
+                'bank_transfer'             => true,
+            ]
+        ]
+    ],
+
+    'testAssignDifferentTypeBankAccountTerminalForSameMerchant' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => Gateway::BT_YESBANK,
+                'gateway_merchant_id'       => 'ABCDEF',
+                'gateway_merchant_id2'      => 'RZ',
+                'type'                      => [
+                    'non_recurring'               => '1',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => 'ABCDEF',
+                'gateway_merchant_id2' => 'RZ',
+                'merchant_id'          => '100001Razorpay',
+                'type'                 => [
+                    'non_recurring',
+                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT,
+                ],
+                'bank_transfer'             => true,
+            ]
+        ]
+    ],
+
+    'testAssignSameTypeBankAccountTerminalForSameMerchant' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => Gateway::BT_YESBANK,
+                'gateway_merchant_id'       => '222334',
+                'gateway_merchant_id2'      => '01',
+                'type'                      => [
+                    'non_recurring'         => '1',
+                    Terminal\Type::NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+                'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY,
+        ],
+    ],
+
+    'testAssignSameRootAndSameTypeBankAccountTerminalAfterSharedTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => Gateway::BT_YESBANK,
+                'gateway_merchant_id'       => '222333',
+                'gateway_merchant_id2'      => '01',
+                'type'                      => [
+                    'non_recurring'         => '1',
+                    Terminal\Type::NUMERIC_ACCOUNT  => '1',
+                ],
+                'bank_transfer'             => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway'              => Gateway::BT_YESBANK,
+                'gateway_merchant_id'  => '222333',
+                'gateway_merchant_id2' => '01',
+                'merchant_id'          => '100001Razorpay',
+                'type'                 => [
+                    'non_recurring',
+                    Terminal\Type::NUMERIC_ACCOUNT,
+                ],
+                'bank_transfer'             => true,
+            ]
+        ],
     ],
 
     'testAssignHitachiTerminalWithInvalidGatewayAcquirer' => [

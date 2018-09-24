@@ -32,6 +32,9 @@ class Fields
     const DATA                  = 'data';
     const SIGNATURE             = 'signature';
     const RAW                   = 'raw';
+    const CALLBACK_DATA         = 'callback_data';
+    const QR_DATA               = 'qr_data';
+    const CONTENT               = 'content';
 
     // Error Fields
     const ERROR_CODE            = 'error_code';
