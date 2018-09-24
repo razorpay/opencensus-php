@@ -69,7 +69,7 @@ class Validator extends Base\Core
                                                      ],
         RequestProcessor\Base::PAYZAPP            => [
                                                          "/Razorpay_Software Payout Detailed Report GST "
-                                                         . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9][0-9]?,"
+                                                         . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9][0-9]?,\s*"
                                                          ."20[0-9]{2}/"
                                                      ],
         RequestProcessor\Base::AIRTEL             => ["/Ecom Merchant Transaction_Report for [0-9]+/"],
@@ -108,7 +108,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached Recon Data File of Online Transaction/"],
         RequestProcessor\Base::PAYZAPP                 => [
                                                              "/Please find Merchant payout report attached for Date "
-                                                             ."(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9][0-9]?,"
+                                                             ."(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9][0-9]?,\s*"
                                                              ."20[0-9]{2}/"
                                                           ],
         RequestProcessor\Base::UPI_HDFC                => ["/Please Find Attachment For Merchant Payout Report/"],
