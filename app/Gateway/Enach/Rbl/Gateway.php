@@ -119,7 +119,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity([], 'authorize');
 
-        $request = $this->getRequest($input);
+        $request = $this->getAuthRequest($input);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -228,7 +228,7 @@ class Gateway extends Base\Gateway
             'Refund is not implemented');
     }
 
-    protected function getRequest($input)
+    protected function getAuthRequest($input)
     {
         $secureData = $this->getSecureData($input);
 
