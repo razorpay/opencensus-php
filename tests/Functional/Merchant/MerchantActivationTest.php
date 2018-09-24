@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
-class MerchantActivationCategoriesTest extends TestCase
+class MerchantActivationTest extends TestCase
 {
     use RequestResponseFlowTrait;
 

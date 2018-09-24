@@ -442,7 +442,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function getBusinessCategoriesDetails(): array
+    public function getBusinessCategoryDetails(): array
     {
         return BusinessCategory::BUSINESS_CATEGORIES;
     }

@@ -827,9 +827,12 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getBusinessCategoriesDetails()
+    /**
+     * @return array
+     */
+    public function getBusinessCategoryDetails()
     {
-        $response = $this->service(E::MERCHANT_DETAIL)->getBusinessCategoriesDetails();
+        $response = $this->service(E::MERCHANT_DETAIL)->getBusinessCategoryDetails();
 
         return ApiResponse::json($response);
     }

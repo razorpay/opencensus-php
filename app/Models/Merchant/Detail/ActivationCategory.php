@@ -4,8 +4,8 @@ namespace RZP\Models\Merchant\Detail;
 
 class ActivationCategory
 {
-    const WHITELISTED                     = 'whitelisted';
-    const BLACKLISTED                     = 'blacklisted';
-    const GREYLISTED                      = 'greylisted';
+    const WHITELIST                     = 'whitelist';
+    const BLACKLIST                     = 'blacklist';
+    const GREYLIST                      = 'greylist';
 }
  

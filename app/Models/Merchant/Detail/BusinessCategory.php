@@ -53,8 +53,10 @@ class BusinessCategory
         self::OTHERS                  => 'Others',
     ];
 
+    //
     // Business Category to Subcategories Mapping
-    // will be removed once dashboard will start using new api
+    // @todo: remove once dashboard starts using the new api - merchant_activation_category_details
+    //
     const SUBCATEGORY_MAP = [
         self::FINANCIAL_SERVICES => [
             self::DESCRIPTION   => self::DESCRIPTIONS[self::FINANCIAL_SERVICES],
