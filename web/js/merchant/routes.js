@@ -1,5 +1,8 @@
-import { matchPath } from 'react-router-dom';
-import { showWhenUtil } from 'merchant/components/ShowWhen';
+import store from 'merchant/store';
+import {
+  matchDetail as matchDetailx,
+  matchModal as matchModalx,
+} from '../merchant_common/routes';
 
 import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
@@ -22,8 +25,8 @@ import PlanNew from 'merchant/containers/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation/new';
 
 /*
-* NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
-* */
+ * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
+ * */
 
 const entityDetailsMap = {
   '/payments/:id(pay_.+)/:entity_name(transfers)/new': {
@@ -61,9 +64,9 @@ const entityDetailsMap = {
 };
 
 /*
-* Example:
-* - '/paymentlinks/new': {component: PaymentLinksCreate, featureEnabled: "randomFeature", featureEnabled: "randomFeature"}
-* */
+ * Example:
+ * - '/paymentlinks/new': {component: PaymentLinksCreate, featureEnabled: "randomFeature", featureEnabled: "randomFeature"}
+ * */
 const entityModalsMap = {
   '/activation': { component: ActivationContainer },
   '/paymentlinks/new': { component: PaymentLinksCreate },
@@ -73,25 +76,5 @@ const entityModalsMap = {
   },
 };
 
-export function matchDetail(pathname) {
-  return matcher(entityDetailsMap, pathname);
-}
-
-export function matchModal(pathname) {
-  return matcher(entityModalsMap, pathname);
-}
-
-function matcher(routeMap, pathname) {
-  for (let route in routeMap) {
-    var match = matchPath(pathname, route);
-
-    var { component, ...rest } = routeMap[route];
-
-    if (match && showWhenUtil(rest)) {
-      return {
-        match,
-        component: component,
-      };
-    }
-  }
-}
+export const matchDetail = matchDetailx(store, entityDetailsMap);
+export const matchModal = matchModalx(store, entityModalsMap);
