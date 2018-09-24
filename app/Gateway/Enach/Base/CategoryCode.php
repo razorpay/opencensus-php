@@ -76,12 +76,7 @@ class CategoryCode
 
     public static function getCategoryDescriptionFromCode($code)
     {
-        if (isset(self::$catCodeToDescriptionMapping[$code]) === true)
-        {
-            return self::$catCodeToDescriptionMapping[$code];
-        }
-
-        return self::$catCodeToDescriptionMapping[self::A001];
+        return self::$catCodeToDescriptionMapping[$code];
     }
 
 }
