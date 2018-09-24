@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Models\Admin\Newsletter;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Settlement\SlackNotification;
 
 class HolidayNotification
 {
@@ -160,9 +161,7 @@ class HolidayNotification
 
         $slackData = ['holidays' => $holidays];
 
-        $slackSettings = ['channel' => Config::get('slack.channels.settlements')];
-
-        $this->app['slack']->queue($slackMsg, $slackData, $slackSettings);
+        (new SlackNotification)->send($slackMsg, $slackData);
     }
 
     protected function getHolidayNotificationMsg($input)

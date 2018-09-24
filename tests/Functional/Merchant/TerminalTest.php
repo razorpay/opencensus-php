@@ -49,6 +49,127 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAssignBankAccountTerminal()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '100001Razorpay']);
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateSameRootBankAccountTerminalWithDifferentMerchant()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '100001Razorpay']);
+
+        $attributes = [
+            'merchant_id' => $merchant->getKey(),
+            'used'        => true,
+        ];
+        // Create a numeric terminal
+        $this->fixtures->create(
+            'terminal:bank_account_terminal', $attributes);
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '100002Razorpay']);
+
+        // Now try creating another numeric terminal for different merchant and gateway
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditUsedBankAccountTerminal()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '100001Razorpay']);
+
+        $attributes = [
+            'merchant_id'   => $merchant->getKey(),
+            'used'          => true,
+        ];
+        $terminal   = $this->fixtures->create(
+            'terminal:bank_account_terminal', $attributes);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/'.$terminal['id'];;
+
+        $this->startTest();
+    }
+
+    public function testEditBankAccountTerminal()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '100001Razorpay']);
+
+        $attributes = [
+            'merchant_id'   => $merchant->getKey(),
+            'used'          => false,
+        ];
+
+        $terminal   = $this->fixtures->create(
+            'terminal:bank_account_terminal', $attributes);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/'.$terminal['id'];;
+
+        $this->startTest();
+    }
+
+    public function testAssignDifferentTypeBankAccountTerminalForSameMerchant()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '100001Razorpay']);
+
+        $attributes = [
+            'merchant_id' => $merchant->getKey(),
+            'used'        => true,
+        ];
+        // Create a numeric terminal
+        $this->fixtures->create(
+            'terminal:bank_account_terminal', $attributes);
+
+        // Now try creating an alpha numeric terminal for same merchant and gateway
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testAssignSameTypeBankAccountTerminalForSameMerchant()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '100001Razorpay']);
+
+        $attributes = [
+            'merchant_id' => $merchant->getKey(),
+            'used'        => true,
+        ];
+        // Create a numeric terminal
+        $this->fixtures->create(
+            'terminal:bank_account_terminal', $attributes);
+
+        // Now try creating a numeric terminal again for same merchant and gateway with different root and handle
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testAssignSameRootAndSameTypeBankAccountTerminalAfterSharedTerminal()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '100001Razorpay']);
+
+        $attributes = [
+            'shared'      => 1,
+            'used'        => true,
+        ];
+        // Create a numeric terminal with shared merchant
+        $this->fixtures->create(
+            'terminal:bank_account_terminal', $attributes);
+
+        // Now try creating the same numeric terminal against the merchant
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testAssignHitachiTerminalWithInvalidGatewayAcquirer()
     {
         $merchant = $this->fixtures->create('merchant');
@@ -546,6 +667,136 @@ class TerminalTest extends TestCase
 
     public function testAddHulkTerminalWithAppAuth()
     {
+        $this->startTest();
+    }
+
+    public function testGetTerminalBanks()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetTerminalBanksForDirectNetbankingTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetTpvTerminalBanks()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_atom_tpv_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCorpTerminalBanks()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetTerminalBanksForNonNetbankingTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_fss_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetBanksForTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetBanksForDirectNetbankingTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetUnsupportedBankForTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetBanksForNonNetbankingGateway()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_fss_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testSetBanksWithIncorrectInput()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $url = '/terminals/' . $terminal['id'] . '/banks';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 }

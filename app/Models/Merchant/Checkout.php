@@ -516,8 +516,8 @@ class Checkout
         //
         $data['mode'] = $mode;
 
-        // Magic checkout is displayed for the merchant based on true or false
-        $data['magic'] = $merchant->isFeatureEnabled(Feature\Constants::MAGIC);
+        // Magic is displayed true.
+        $data['magic'] = true;
 
         $optionalInputConfig = $merchant->getOptionalInputConfig();
 

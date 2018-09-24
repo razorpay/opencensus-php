@@ -46,14 +46,16 @@ class Beneficiary extends ApiProcessor
                 ];
 
                 $nodalBeneficiary = $this->repo->nodal_beneficiary
-                                         ->fetchNonRegisteredBeneficiaryCount(
+                                         ->fetchNonRegisteredBeneficiary(
                                              $bankAccount->getId(),
                                              Channel::YESBANK
                                          );
 
-                if ($nodalBeneficiary === null)
+                $status = $this->checkBeneficiaryStatusForRegistration($input, $nodalBeneficiary);
+
+                if($status === false)
                 {
-                    (new NodalCore)->create($input);
+                    continue;
                 }
 
                 $beneRegResponse = $request->init()
@@ -124,5 +126,24 @@ class Beneficiary extends ApiProcessor
         {
             return Status::FAILED;
         }
+    }
+
+    protected function checkBeneficiaryStatusForRegistration(array $input, $nodalBeneficiary): bool
+    {
+        if ($nodalBeneficiary === null)
+        {
+            (new NodalCore)->create($input);
+
+            return true;
+        }
+
+        $registrationStatus = $nodalBeneficiary->getRegistrationStatus();
+
+        if ($registrationStatus !== Status::REGISTERED)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

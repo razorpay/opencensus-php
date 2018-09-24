@@ -1350,6 +1350,11 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::PAYMENT_LINK_ID));
     }
 
+    public function hasTerminal()
+    {
+        return $this->isAttributeNotNull(self::TERMINAL_ID);
+    }
+
     public function getPaymentLinkId()
     {
         return $this->getAttribute(self::PAYMENT_LINK_ID);

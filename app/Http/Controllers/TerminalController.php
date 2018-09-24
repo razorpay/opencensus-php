@@ -70,4 +70,20 @@ class TerminalController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getBanks(string $id)
+    {
+        $data = $this->service()->getBanks($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function setBanks(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->setBanks($id, $input);
+
+        return ApiResponse::json($data);
+    }
 }

@@ -38,8 +38,6 @@ abstract class RequestProcessor extends Beneficiary
     {
         $failureCount = count($this->summary);
 
-        $status = ($failureCount === 0) ? SlackNotification::GOOD : SlackNotification::BAD;
-
         $data = [
             'channel'       => $this->channel,
             'total'         => $this->count,

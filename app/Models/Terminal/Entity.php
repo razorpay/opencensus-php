@@ -3,14 +3,18 @@
 namespace RZP\Models\Terminal;
 
 use Crypt;
-use Illuminate\Database\Eloquent\SoftDeletes;
-
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
+use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
-use RZP\Models\Payment;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Terminal\BankingType;
+use RZP\Models\Payment\Processor\Netbanking;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class Entity extends Base\PublicEntity
@@ -44,6 +48,7 @@ class Entity extends Base\PublicEntity
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
     const UPI                           = 'upi';
+    const BANK_TRANSFER                 = 'bank_transfer';
     const AEPS                          = 'aeps';
     const EMANDATE                      = 'emandate';
     const EMI_DURATION                  = 'emi_duration';
@@ -99,6 +104,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK_CATEGORY,
         self::NETBANKING,
         self::UPI,
+        self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
         self::EMI,
@@ -140,6 +146,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK_CATEGORY,
         self::NETBANKING,
         self::UPI,
+        self::BANK_TRANSFER,
         self::AEPS,
         self::EMANDATE,
         self::EMI,
@@ -184,6 +191,7 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = [
         'method',
+        self::ENABLED_BANKS,
     ];
 
     protected static $modifiers = [
@@ -205,6 +213,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_RECON_PASSWORD      => null,
         self::EMI                         => false,
         self::TPV                         => 0,
+        self::BANK_TRANSFER               => 0,
         self::TYPE                        => [
             Type::NON_RECURRING => '1'
         ],
@@ -226,6 +235,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING                => 'boolean',
         self::INTERNATIONAL             => 'boolean',
         self::UPI                       => 'boolean',
+        self::BANK_TRANSFER             => 'boolean',
         self::AEPS                      => 'boolean',
         self::EMANDATE                  => 'boolean',
         self::ENABLED                   => 'boolean',
@@ -353,6 +363,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANKING_TYPES);
     }
 
+    public function getCorporate()
+    {
+        return $this->getAttribute(self::CORPORATE);
+    }
+
+    public function getTpv()
+    {
+        return $this->getAttribute(self::TPV);
+    }
+
+    public function getEnabledBanks()
+    {
+        return $this->getAttribute(self::ENABLED_BANKS);
+    }
+
     // ---------------------- END GETTERS ----------------------
 
     public function isEnabled()
@@ -378,6 +403,11 @@ class Entity extends Base\PublicEntity
     public function isUpiEnabled()
     {
         return $this->getAttribute(self::UPI);
+    }
+
+    public function isBankTransferEnabled()
+    {
+        return $this->getAttribute(self::BANK_TRANSFER);
     }
 
     public function isAepsEnabled()
@@ -479,6 +509,11 @@ class Entity extends Base\PublicEntity
     public function setMode($mode)
     {
         $this->setAttribute(self::MODE, $mode);
+    }
+
+    public function setEnabledBanks(array $banksToEnable)
+    {
+        $this->setAttribute(self::ENABLED_BANKS, $banksToEnable);
     }
 
     // ---------------------- END SETTERS ----------------------
@@ -726,6 +761,16 @@ class Entity extends Base\PublicEntity
         return $query->where(Entity::MERCHANT_ID, '=', Merchant\Account::SHARED_ACCOUNT);
     }
 
+    public function build(array $input = array())
+    {
+        $terminal = parent::build($input);
+
+        // This is done here because we do this similarly after build is done in edit flow.
+        $terminal->getValidator()->validateType();
+
+        return $terminal;
+    }
+
     /**
      * Used to query by type, which is a bitwise column.
      *
@@ -799,6 +844,25 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function generateEnabledBanks(array $input)
+    {
+        $netbanking = intval($input[self::NETBANKING] ?? 0);
+        $gateway = $input[self::GATEWAY];
+
+        if (($netbanking !== 1) or (in_array($gateway, Gateway::$methodMap[Method::NETBANKING], true) === false))
+        {
+            return;
+        }
+
+        $corporate = $input[self::CORPORATE] ?? BankingType::RETAIL_ONLY;
+
+        $tpv = $input[self::TPV] ?? TpvType::NON_TPV_ONLY;
+
+        $supportedBanks = Netbanking::getSupportedBanksForGateway($gateway, $corporate, $tpv);
+
+        $this->setAttribute(self::ENABLED_BANKS, $supportedBanks);
+    }
+
     public function edit(array $input = [], $operation = 'edit')
     {
         if ($this->isUsed() === false)
@@ -810,7 +874,14 @@ class Entity extends Base\PublicEntity
             $input[Entity::GATEWAY] = $this->getGateway();
             $input[Entity::MERCHANT_ID] = $this->getMerchantId();
 
-            return parent::edit($input, 'create');
+            $terminal = parent::edit($input, 'create');
+
+            // This is done here because if we already have a type in DB
+            // which is no longer valid after new Types are added too,
+            // This will throw an error.
+            $terminal->getValidator()->validateType();
+
+            return $terminal;
         }
         else
         {

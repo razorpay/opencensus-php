@@ -4517,7 +4517,6 @@ trait Authorize
         }
 
         if (($magicDisabledGlobally === false) and
-            ($this->merchant->isMagicEnabled() === true) and
             ($payment->card->isMagicEnabled() === true))
         {
             return true;

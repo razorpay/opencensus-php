@@ -4,12 +4,14 @@ namespace RZP\Models\Payment;
 
 use App;
 use RZP\Exception;
-use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
+use RZP\Models\Terminal\TpvType;
 use Razorpay\IFSC\IFSC as BaseIFSC;
+use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -80,6 +82,10 @@ class Gateway
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
     const NODAL_YESBANK      = 'nodal_yesbank';
+
+    const BT_YESBANK         = 'bt_yesbank';
+    const BT_KOTAK           = 'bt_kotak';
+    const BT_DASHBOARD       = 'bt_dashboard';
 
     //
     // Constant used to store the response of various refund functions
@@ -811,6 +817,7 @@ class Gateway
         self::UPI_ICICI,
         self::HITACHI,
         self::SHARP,
+        self::UPI_HULK,
         self::ISG,
     ];
 

@@ -1070,7 +1070,9 @@ class MerchantController extends Controller
 
     public function getSubmerchant(string $submerchantId)
     {
-        $response = $this->service()->getSubmerchant($submerchantId);
+        $input = Request::all();
+
+        $response = $this->service()->getSubmerchant($submerchantId, $input);
 
         return ApiResponse::json($response);
     }

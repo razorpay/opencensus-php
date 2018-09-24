@@ -29,6 +29,13 @@ class BharatQrController extends Controller
 
                 break;
 
+            case 'upi_hulk':
+                $input['headers']   = Request::header();
+                $input['raw']       = Request::getContent();
+                $input['content']   = Request::all();
+
+                break;
+
             default:
                 $input = Request::all();
         }
@@ -43,5 +50,20 @@ class BharatQrController extends Controller
         $gateway = Payment\Gateway::SHARP;
 
         return $this->processBharatQrPayment($gateway);
+    }
+
+    public function processBharatQrValidatePayment()
+    {
+        $input = Request::all();
+
+        $this->trace->info(
+            TraceCode::BHARAT_QR_PAYMENT_VALIDATE_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        $response = ['success' => true];
+
+        return ApiResponse::json($response);
     }
 }
