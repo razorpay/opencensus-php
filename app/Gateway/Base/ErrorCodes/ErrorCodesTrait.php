@@ -12,7 +12,7 @@ trait ErrorCodesTrait
 
         $errorFieldsClass = static::getGatewayFieldClass();
 
-        if (isset($errorFieldsClass::$$errorType) === false)
+        if (class_exists($errorFieldsClass) === false)
         {
             return ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
         }
