@@ -2032,7 +2032,7 @@ final class Route
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'subscription_manual_retry'                => '*',
         'terminal_get_banks'                       => '*',
-        'terminal_set_banks'                       => '*',
+        'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
     ];
 
     public static $direct = [
