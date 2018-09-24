@@ -27,10 +27,7 @@ import {
   trackViewTour,
 } from './ga';
 
-@connect(
-  null,
-  { showOrHideTour }
-)
+@connect(null, { showOrHideTour })
 class AnalyticsDesktop extends Component {
   constructor(props) {
     super(props);

@@ -12,10 +12,7 @@ import trackESAnnouncements, {
   trackRequestEarlySettlementModalClose,
 } from './ga';
 
-@connect(
-  state => ({ user: state.session.user }),
-  { ...ModalActions }
-)
+@connect(state => ({ user: state.session.user }), { ...ModalActions })
 @reduxForm({
   form: 'es-access',
   initialValues: {

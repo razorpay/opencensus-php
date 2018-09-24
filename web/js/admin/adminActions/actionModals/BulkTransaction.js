@@ -4,7 +4,7 @@ import Field, { SelectField } from 'ui/Field';
 import Form from 'ui/Form';
 import { notifySuccess, closeModal } from 'common/modal';
 import { adminPut } from 'common/fetch';
-import {TextAreaField} from 'ui/Field';
+import { TextAreaField } from 'ui/Field';
 
 BulkTransaction.permission = 'edit_bulk_merchant_channel';
 BulkTransaction.title = 'Merchant Bulk Update Channel';

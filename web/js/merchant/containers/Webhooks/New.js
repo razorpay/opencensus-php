@@ -121,7 +121,6 @@ export default class AddWebhook extends Component {
                   class="form-control"
                   autoFocus={true}
                   validate={[required()]}
-                  autocomplete="off"
                 />
               </div>
             </div>
@@ -154,7 +153,8 @@ export default class AddWebhook extends Component {
                   type={this.state.showSecret ? 'text' : 'password'}
                   component={InputField}
                   class="form-control"
-                  autocomplete="off"
+                  /* autoComplete="off" doesn't work here as perfect as new-password */
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
