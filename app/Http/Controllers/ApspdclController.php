@@ -18,14 +18,13 @@ class ApspdclController extends Controller
      */
     public function any(Request $req)
     {
-        $path    = $req->getRequestUri();
-        $method  = $req->method();
-        $input   = $req->post();
-        $headers = ['Content-Type' => 'application/json'];
-
-        $this->trace->info(TraceCode::APSPDCL_REQUEST, compact('path', 'method', 'input', 'headers'));
-
+        $path            = $req->getRequestUri();
+        $method          = $req->method();
+        $input           = $req->post();
+        $headers         = ['Content-Type' => 'application/json'];
         $apspdclEndpoint = config('services.apspdcl.base_url') . str_after($req->getRequestUri(), '/v1/apspdcl');
+
+        $this->trace->info(TraceCode::APSPDCL_REQUEST, compact('apspdclEndpoint', 'headers', 'input', 'method'));
 
         // Default response code, body and headers for failure case.
         $code    = Response::HTTP_INTERNAL_SERVER_ERROR;
