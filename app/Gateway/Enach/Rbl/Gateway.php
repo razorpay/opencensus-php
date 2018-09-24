@@ -38,8 +38,8 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if (($input['payment']['method'] === 'emandate') and
-            ($input['payment']['auth_type'] === 'netbanking'))
+        if (($input['payment']['method'] === Payment\Method::EMANDATE) and
+            ($input['payment']['auth_type'] === Payment\AuthType::NETBANKING))
         {
             return $this->netbankingAuthorize($input);
         }
@@ -431,7 +431,6 @@ class Gateway extends Base\Gateway
 
     protected function addHeadersForNpciRequest($request)
     {
-        //TODO add appropriate values here below
         $headers = [
             'Content-Type'  => 'application/x-www-form-urlencoded'
         ];
