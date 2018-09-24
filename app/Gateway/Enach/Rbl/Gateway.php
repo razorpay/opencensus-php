@@ -273,11 +273,11 @@ class Gateway extends Base\Gateway
                                                       ->format('Y-m-d+05:30');
 
         return [
-            RequestNpciTags::DEBTOR_ACCOUNT => $input['token']->getAccountNumber(),
+            RequestNpciTags::DEBTOR_ACCOUNT        => $input['token']->getAccountNumber(),
             RequestNpciTags::FIRST_COLLECTION_DATE => $nextWorkingDt,
             RequestNpciTags::FINAL_COLLECTION_DATE => $finalCollection,
-            RequestNpciTags::COLLECTION_AMOUNT    => '',
-            RequestNpciTags::MAX_AMOUNT => $input['token']->getMaxAmount() / 100,
+            RequestNpciTags::COLLECTION_AMOUNT     => '',
+            RequestNpciTags::MAX_AMOUNT            => $input['token']->getMaxAmount() / 100,
         ];
     }
 
@@ -421,10 +421,8 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $mid = $this->getTestMerchantId();
+            $mid = 'NACH00000000013149'; //hardcoding this for UAT
         }
-
-        $mid = 'NACH00000000013149';
 
         return $mid;
     }
