@@ -69,12 +69,14 @@ class EmandateSorter extends Terminal\Sorter
         if (in_array($bank, Gateway::$emandateBanks[$authType]) === true)
         {
             $gateway =  Gateway::$netbankingToGatewayMap[$bank];
+
+            return [
+                'direct_gateway' => 'direct' . '_' . $gateway,
+                'shared_gateway' => 'shared' . '_' . $gateway
+            ];
         }
 
-        return [
-            'direct_gateway' => 'direct' . '_' . $gateway,
-            'shared_gateway' => 'shared' . '_' . $gateway
-        ];
+        return [];
     }
 
     protected function isBankSupportedByNpciEmandate($bank, $authType)
