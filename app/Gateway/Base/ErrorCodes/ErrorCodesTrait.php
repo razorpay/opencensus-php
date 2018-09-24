@@ -62,4 +62,9 @@ trait ErrorCodesTrait
 
         return $directory.'\\'.'ErrorFields'::class;
     }
+
+    public static function getRelevantGatewayErrorCode($errorFieldName, $content)
+    {
+        return $content[$errorFieldName];
+    }
 }

@@ -10,11 +10,6 @@ class BaseCodeDescriptions
 
     public static $errorDescriptionMap = [];
 
-    public static function getRelevantGatewayErrorCode($errorFieldName, $content)
-    {
-        return $content[$errorFieldName];
-    }
-
     public static function getGatewayErrorDescription($content)
     {
         $errorDescription = static::getInternalCode($content, 'errorDescriptionMap');
