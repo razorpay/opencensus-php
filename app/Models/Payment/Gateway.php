@@ -83,6 +83,10 @@ class Gateway
     const SUPPORTED          = 'supported';
     const NODAL_YESBANK      = 'nodal_yesbank';
 
+    const BT_YESBANK         = 'bt_yesbank';
+    const BT_KOTAK           = 'bt_kotak';
+    const BT_DASHBOARD       = 'bt_dashboard';
+
     //
     // Constant used to store the response of various refund functions
     //

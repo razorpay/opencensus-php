@@ -141,7 +141,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function edit($terminal, $input)
+    public function edit(Entity $terminal, array $input)
     {
         if ((isset($input['restore'])) and
             ($input['restore'] === '1'))
@@ -375,31 +375,17 @@ class Core extends Base\Core
         return $this->getBanksForTerminal($terminal);
     }
 
-    protected function validateExistingTerminalGatewayMerchantId($terminal)
+  
+    protected function validateExistingTerminalGatewayMerchantId(Entity $terminal)
     {
         // Check no record with same 'gateway_merchant_id' exists
-        $params = [Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId()];
+        $params = [
+            Entity::GATEWAY                 => $terminal->getGateway(),
+            Entity::GATEWAY_MERCHANT_ID     => $terminal->getGatewayMerchantId(),
+            Entity::GATEWAY_MERCHANT_ID2    => $terminal->getGatewayMerchantId2()
+        ];
 
-        $existingTerminals = $this->repo->terminal->fetch($params);
-
-        // This check if this terminal is same as what
-        // we are trying to edit
-        if ($existingTerminals->count() === 1)
-        {
-            $existingTerminal = $existingTerminals[0];
-
-            if ($existingTerminal->getGatewayMerchantId() === $terminal->getGatewayMerchantId())
-            {
-                return;
-            }
-        }
-
-        if ($existingTerminals->count() !== 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FIELD_ALREADY_EXISTS,
-                Entity::GATEWAY_MERCHANT_ID);
-        }
+        $this->checkIfExists($params, $terminal);
     }
 
     protected function validateExistingMpan(Entity $terminal)
@@ -426,7 +412,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function checkIfExists($params, Entity $terminal, string $field)
+    protected function checkIfExists($params, Entity $terminal, string $field = null)
     {
         $existingTerminals = $this->repo->terminal->fetch($params);
 
