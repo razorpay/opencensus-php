@@ -5,7 +5,6 @@ namespace RZP\Gateway\Enach\Rbl;
 use DOMDocument;
 use phpseclib\Crypt\RSA;
 use RobRichards\XMLSecLibs;
-use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 class Crypto
 {
@@ -184,7 +183,7 @@ class Crypto
 
         $key = trim(str_replace('\n', "\n", $key));
 
-        $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA256, array('type' => 'private'));
+        $objKey = new XMLSecLibs\XMLSecurityKey(XMLSecLibs\XMLSecurityKey::RSA_SHA256, array('type' => 'private'));
 
         $objKey->loadKey($key);
 
