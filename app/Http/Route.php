@@ -245,6 +245,7 @@ final class Route
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'gateway_payment_callback_bharatqr'        => ['post',     'payment/callback/bharatqr/{gateway}',            'BharatQrController@processBharatQrPayment'                         ],
         'bharat_qr_pay_test'                       => ['post',     'bharatqr/pay/test',                              'BharatQrController@processBharatQrTestPayment'                     ],
+        'gateway_payment_validate_bharatqr'        => ['post',     'payment/validate/bharatqr/{gateway}',            'BharatQrController@processBharatQrValidatePayment'                 ],
         'qr_code_download_live'                    => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
         'qr_code_download_test'                    => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
         'virtual_account_create'                   => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
@@ -2080,6 +2081,7 @@ final class Route
         'qr_code_download_live',
         'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
+        'gateway_payment_validate_bharatqr'
     ];
 
     /**

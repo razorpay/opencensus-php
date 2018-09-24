@@ -115,6 +115,63 @@ class Server extends Base\Mock\Server
         return $request;
     }
 
+    public function fillBharatQrNotification($qrCode = 'sqswq')
+    {
+        $attributes = [
+            Fields::RECEIVER => [
+                Fields::ID                  => 'vpa_TstMrchtVpaBqr',
+                Fields::ADDRESS             => 'TstMerchantVPA.bqr@hdfcbankrzp',
+            ],
+            Fields::MERCHANT_REFERENCE_ID   => 'RZP' . $qrCode,
+            Fields::TYPE                    => 'push',
+        ];
+
+        $data = $this->getP2pEntity($attributes);
+
+        $content = [
+            'type'      => 'bharat_qr_p2p_notify',
+            'data'      => $data,
+            'timestamp' => Carbon::now()->getTimestamp(),
+        ];
+
+        $raw = json_encode($content);
+
+        $request = [
+            'url'       => '/payment/callback/bharatqr/upi_hulk',
+            'method'    => 'post',
+            'raw'       => $raw,
+            'server'    => [
+                'CONTENT_TYPE'          => 'application/json',
+                'HTTP_X-Hulk-Signature' => $this->getHmac($raw),
+            ]
+        ];
+
+        return $request;
+    }
+
+    public function getBharatQrValidateData()
+    {
+        $attributes = [
+            Fields::RECEIVER => [
+                Fields::ID                  => 'vpa_TstMrchtVpaBqr',
+                Fields::ADDRESS             => 'TstMerchantVPA.bqr@hdfcbankrzp',
+            ],
+        ];
+
+        $data = $this->getP2pEntity($attributes);
+
+        $request = [
+            'url'       => '/payment/validate/bharatqr/upi_hulk',
+            'method'    => 'post',
+            'content'   => $data,
+            'server'    => [
+                'CONTENT_TYPE'          => 'application/json',
+            ]
+        ];
+
+        return $request;
+    }
+
     protected function getP2pEntity(array $override = [])
     {
         $p2p = [
@@ -164,7 +221,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function getHmac(string $content)
+    public static function getHmac(string $content)
     {
         return hash_hmac('sha256', $content, config('gateway.upi_hulk.gateway_terminal_password'));
     }
