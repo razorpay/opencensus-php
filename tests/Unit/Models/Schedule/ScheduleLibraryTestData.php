@@ -167,6 +167,37 @@ return [
         ],
     ],
 
+    'testT0WithHourSchedule' => [
+        'cases' => [
+            //Initial time is 21st September before 3pm.
+            //Expected time is same day at 3pm.
+            [
+                'initialTime'      => "2016-09-21 10:57:59",
+                'expectedNextTime' => "2016-09-21 15:00:00"
+            ],
+            //Initial time is 21st September after 3pm.
+            //Expected time is next day at 3pm.
+            [
+                'initialTime'      => "2016-09-21 20:57:59",
+                'expectedNextTime' => "2016-09-22 15:00:00"
+            ],
+            //Initial time is 30th October. Next day is Diwali.
+            //So expected time is 1st November 3pm.
+            [
+                'initialTime'      => "2016-10-30 20:57:59",
+                'expectedNextTime' => "2016-11-01 15:00:00"
+            ],
+        ],
+        'schedule' => [
+            'name'        => 'T0-3PM',
+            'period'      => 'daily',
+            'interval'    => 1,
+            'anchor'      => null,
+            'delay'       => 0,
+            'hour'        => 15,
+        ],
+    ],
+
     'testTenthOfEveryMonthSchedule' => [
         'cases' => [
             //Initial time is 21st September. Expected time
