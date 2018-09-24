@@ -2,17 +2,12 @@
 
 namespace RZP\Gateway\Enach\Rbl;
 
-use RZP\Error;
-use DOMDocument;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
-use phpseclib\Crypt\RSA;
 use RZP\Error\ErrorCode;
-use RZP\Models\Bank\IFSC;
-use RobRichards\XMLSecLibs;
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Enach\Base;
@@ -20,11 +15,9 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Enach\Base\Entity;
 use RZP\Models\Settlement\Holidays;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Enach\Base\CategoryCode;
 use RZP\Exception\GatewayErrorException;
-use RobRichards\XMLSecLibs\XMLSecurityKey;
 
 class Gateway extends Base\Gateway
 {
@@ -143,11 +136,11 @@ class Gateway extends Base\Gateway
 
         $responseXml = (array) simplexml_load_string(trim($responseXmlString));
 
-        $json = json_encode($responseXml);
+        $json = json_encode($responseXml); //TODO : FInd out why this is done
 
         $responseArray = json_decode($json,true);
 
-        if($input['gateway'][ResponseFields::RESPONSE_TYPE] === ResponseType::SUCCESS)
+        if ($input['gateway'][ResponseFields::RESPONSE_TYPE] === ResponseType::SUCCESS)
         {
             $xmlData = $this->getDataFromResponse($responseArray);
 
@@ -356,9 +349,9 @@ class Gateway extends Base\Gateway
 
         $mandate->addChild(RequestNpciTags::MANDATE_ID, $data[RequestNpciTags::MANDATE_ID]);
 
-        $occurence = $mandate->addChild(NpciXmlHeaderTags::OCCURENCE);
+        $occurrence = $mandate->addChild(NpciXmlHeaderTags::OCCURENCE);
 
-        $this->addChildren($data[NpciXmlHeaderTags::OCCURENCE], $occurence);
+        $this->addChildren($data[NpciXmlHeaderTags::OCCURENCE], $occurrence);
 
         $maxAmount = $mandate->addChild(RequestNpciTags::MAX_AMOUNT, $data[RequestNpciTags::MAX_AMOUNT]);
 
@@ -449,7 +442,8 @@ class Gateway extends Base\Gateway
 
     private function addChildren($data, $xml)
     {
-        foreach ($data as $key => $value) {
+        foreach ($data as $key => $value)
+        {
             $xml->addChild($key,$data[$key]);
         }
     }
@@ -524,7 +518,7 @@ class Gateway extends Base\Gateway
                                                                  [ResponseXmlTags::DEBTOR_IFSC],
         ];
 
-        foreach($data as $key => $value)
+        foreach ($data as $key => $value)
         {
             if (empty($data[$key]) === true)
             {
@@ -582,17 +576,16 @@ class Gateway extends Base\Gateway
 
         $accepted = $data[ResponseXmlTags::ACCEPTED];
 
-        if($accepted === RegistrationStatus::SUCCESS)
+        if ($accepted === RegistrationStatus::SUCCESS)
         {
-            $attr[Entity::REGISTRATION_STATUS] = RegistrationStatus::SUCCESS;
+            $attr[Entity::REGISTRATION_STATUS]  = RegistrationStatus::SUCCESS;
             $attr[Entity::GATEWAY_REFERENCE_ID] = $data[ResponseXmlTags::ACCEPT_REF_NO];
-            //$attr[Entity::REGISTRATION_DATE] =
         }
         else
         {
             $attr[Entity::REGISTRATION_STATUS] = RegistrationStatus::FAILURE;
-            $attr[Entity::ERROR_CODE] = $data[ResponseXmlTags::REJECTION_CODE];
-            $attr[Entity::ERROR_MESSAGE] = $data[ResponseXmlTags::REJECT_DESCRIPTION];
+            $attr[Entity::ERROR_CODE]          = $data[ResponseXmlTags::REJECTION_CODE];
+            $attr[Entity::ERROR_MESSAGE]       = $data[ResponseXmlTags::REJECT_DESCRIPTION];
         }
 
         return $attr;

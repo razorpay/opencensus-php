@@ -38,7 +38,7 @@ class EmandateSorter extends Terminal\Sorter
 
         $gateways = $this->getEmandateGatewayIfExists($bank, $authType);
 
-        if($this->isBankSupportedByNpciEmandate($bank, $authType) === true)
+        if ($this->isBankSupportedByNpciEmandate($bank, $authType) === true)
         {
             $gateways['direct_npci'] = 'direct' . '_' . Gateway::ENACH_RBL;
             $gateways['shared_npci'] = 'shared' . '_' . Gateway::ENACH_RBL;
@@ -66,7 +66,7 @@ class EmandateSorter extends Terminal\Sorter
 
     protected function getEmandateGatewayIfExists($bank, $authType)
     {
-        if(in_array($bank, Gateway::$emandateBanks[$authType]))
+        if (in_array($bank, Gateway::$emandateBanks[$authType]) === true)
         {
             $gateway =  Gateway::$netbankingToGatewayMap[$bank];
         }
@@ -82,7 +82,8 @@ class EmandateSorter extends Terminal\Sorter
         return in_array($bank, Gateway::$gatewaysEmandateBanksMapForAuthType[$authType][Gateway::ENACH_RBL]);
     }
 
-    protected function getMerchantOrDefaultOrdering($gateways, $merchantID)     //TODO add logic for merchant selection of routing
+    //TODO add logic for merchant selection of routing
+    protected function getMerchantOrDefaultOrdering($gateways, $merchantID)
     {
         return $this->getDefaultOrdering($gateways);
     }
@@ -114,18 +115,6 @@ class EmandateSorter extends Terminal\Sorter
      */
     protected function arrangePriorityByMerchantAndBank($merchant, $bank)
     {
-
         //TODO to be implemented
-        /*if ($merchant === '4izmfM9TFCAgFN')
-        {
-            $index = array_search('ebs', $gatewaysPriority);
-
-            if ($index !== false)
-            {
-                unset($gatewaysPriority[$index]);
-
-                array_unshift($gatewaysPriority, 'ebs');
-            }
-        }*/
     }
 }
