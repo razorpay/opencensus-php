@@ -5,6 +5,7 @@ import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import Input from 'component/Input';
 
 import { isEmail, isPhone } from 'rzp/utils/validators';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import { isMobileAndTablet } from 'common/util';
 
@@ -26,6 +27,7 @@ export default ({
   url,
   title,
   description,
+  ...props
 }) => {
   function onSubmit(formData) {
     const reqPayload = {};
@@ -50,6 +52,8 @@ export default ({
             type: 'success',
             message: 'URL is successfully sent via ' + msg.join(' and '),
           });
+
+          props.trackerFn('Send', getKeysSeparatedByPipe(formData));
 
           handleClose();
         }
@@ -106,6 +110,8 @@ export default ({
         break;
     }
 
+    props.trackerFn('Click Social Media', type);
+
     return false;
   }
 
@@ -129,7 +135,10 @@ export default ({
             'Share Link'
           )
         }
-        onCloseClick={handleClose}
+        onCloseClick={() => {
+          props.trackerFn('Close');
+          return handleClose();
+        }}
       />
 
       <div class="modal-body" style={{ paddingTop: 0 }}>
@@ -145,6 +154,7 @@ export default ({
                   onCopy={() => {
                     const ele = document.getElementsByName('short_url');
                     ele[0] && ele[0].focus();
+                    props.trackerFn('Click Copy URL');
                   }}
                 >
                   <Input

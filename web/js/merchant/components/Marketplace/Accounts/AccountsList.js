@@ -1,13 +1,45 @@
 import { prefixEntityValue } from 'common/data';
 
 import Time from 'rzp/ui/Time';
-import CheckIcon from 'rzp/ui/CheckIcon';
 import TableBody from 'rzp/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
+import { classList } from 'common/util';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+
+import SwitchField from 'rzp/ui/Forms/SwitchField';
 
 import store from 'merchant/store';
 
-const AccountsListItem = ({ account, showEditAccountModal, onEdit }) => {
+const ToggleField = ({ children, onEdit, isDisabled }) => {
+  if (isDisabled) {
+    return (
+      <small class="help-content">
+        {children}
+        <Popover align="top" theme="dark">
+          <PopoverBody>
+            <div>
+              Please add Email id for this linked account to grant dashboard
+              access
+              <br />
+              <button className="btn-link pull-right" onClick={onEdit}>
+                Add Email
+              </button>
+            </div>
+          </PopoverBody>
+        </Popover>
+      </small>
+    );
+  }
+
+  return children;
+};
+
+const AccountsListItem = ({
+  account,
+  showEditAccountModal,
+  onEdit,
+  onToggleDashboardAccess,
+}) => {
   let status = account.activation_details
     ? account.activation_details.status
     : account.activated;
@@ -16,6 +48,7 @@ const AccountsListItem = ({ account, showEditAccountModal, onEdit }) => {
     : account.activated_at;
 
   const user = store.getState().session.user;
+  const noLAEmail = user.merchants[user.current].email === account.email;
 
   return (
     <EntityItemRow id={account.id}>
@@ -25,8 +58,7 @@ const AccountsListItem = ({ account, showEditAccountModal, onEdit }) => {
         </a>
       </td>
       <td>
-        {showEditAccountModal &&
-        user.merchants[user.current].email === account.email ? (
+        {showEditAccountModal && noLAEmail ? (
           <button
             class="btn btn-link no-padding"
             onClick={() => showEditAccountModal(account)}
@@ -50,32 +82,78 @@ const AccountsListItem = ({ account, showEditAccountModal, onEdit }) => {
       </td>
       <td>{account.name}</td>
       <td>
-        <Time value={account.created_at} format="DD MMM YYYY, hh:mm:ss a" />
+        <small class="help-content">
+          <span>
+            <span
+              class={classList(
+                'ModeIndicator',
+                status == 'activated'
+                  ? 'ModeIndicator--live'
+                  : 'ModeIndicator--inactive'
+              )}
+            />
+            {status === 'activated' ? 'Activated' : 'Not Activated'}
+          </span>
+          <Popover align="top" theme="dark">
+            <PopoverBody>
+              {status === 'activated' ? (
+                <div>
+                  Activated on{' '}
+                  <Time value={timeStamp} format="DD MMM YYYY, hh:mm:A" />
+                </div>
+              ) : (
+                <div>
+                  Please fill the Activation form to activate this account.
+                  <br />
+                  <button className="btn-link pull-right" onClick={onEdit}>
+                    Add Details
+                  </button>
+                </div>
+              )}
+            </PopoverBody>
+          </Popover>
+        </small>
       </td>
-      <td>
-        <span data-tip={status == 'activated' ? 'Activated' : 'Not Activated'}>
-          <CheckIcon value={status == 'activated'} />
-        </span>
-      </td>
-      <td>
-        <Time value={timeStamp} format="DD MMM YYYY, hh:mm:ss a" />
-      </td>
+      {onToggleDashboardAccess && (
+        <td style={{ textAlign: 'center' }}>
+          {
+            <ToggleField
+              onEdit={() => showEditAccountModal(account)}
+              isDisabled={noLAEmail}
+            >
+              <SwitchField
+                defaultChecked={!!account.dashboard_access}
+                onChange={onToggleDashboardAccess}
+                disabled={noLAEmail}
+                type="prime"
+              />
+            </ToggleField>
+          }
+        </td>
+      )}
     </EntityItemRow>
   );
 };
 
-export default ({ accounts, isLoading, showEditAccountModal, onEdit }) => {
+export default ({
+  accounts,
+  isLoading,
+  showEditAccountModal,
+  onEdit,
+  onToggleDashboardAccess,
+}) => {
   return (
     <div class="table-responsive">
-      <table class="table table-hover">
+      <table class="table table-hover" id="accounts-list">
         <thead>
           <tr>
             <th>Account Id</th>
-            <th>Email Id</th>
+            <th>Email</th>
             <th>Name</th>
-            <th>Created At</th>
-            <th>Activated</th>
-            <th>Activated At</th>
+            <th>Account Status</th>
+            {onToggleDashboardAccess && (
+              <th style={{ textAlign: 'center' }}>Dashboard Access</th>
+            )}
           </tr>
         </thead>
         <TableBody
@@ -90,6 +168,12 @@ export default ({ accounts, isLoading, showEditAccountModal, onEdit }) => {
               account={account}
               showEditAccountModal={showEditAccountModal}
               onEdit={() => onEdit(account)}
+              onToggleDashboardAccess={
+                onToggleDashboardAccess
+                  ? (isChecked, cb) =>
+                      onToggleDashboardAccess(account, isChecked, cb)
+                  : undefined
+              }
             />
           ))}
         </TableBody>

@@ -125,6 +125,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
   let isAdminsLoading = !Object.keys(toJS(merchant.adminsMap)).length;
   const isPartnerRequestsLoading = !Object.keys(toJS(merchant.partnerRequests))
     .length;
+  const isSubmerchantsLoading = !merchant.submerchants;
 
   // If user has no permission, then don't wait for this
   if (!user.permissions.find(perm => perm === 'view_all_admin')) {
@@ -722,8 +723,11 @@ const ActionsList = ({ model, merchantId, actions }) => {
         {!isDetailsLoading &&
           !!merchant.details.partner_type && (
             <ShowWhen permission="edit_partners">
-              <div onClick={actions.LinkSubmerchant}>
+              <div
+                onClick={isSubmerchantsLoading ? null : actions.LinkSubmerchant}
+              >
                 Link Submerchant
+                {isSubmerchantsLoading && <div class="dot-loader" />}
                 <i class="pull-right i-user-plus" />
               </div>
             </ShowWhen>

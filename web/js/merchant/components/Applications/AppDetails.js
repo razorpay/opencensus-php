@@ -27,7 +27,7 @@ export default function AppDetails(props) {
   const Comp = isConnected ? 'div' : NavLink;
   return (
     <div class={`application-details-container col-lg-6`}>
-      <Comp class="application-details-inner" to={`/applications/${data.id}`}>
+      <Comp class="application-details-inner" to={props.entityDetailLink}>
         <div class="btn-container pull-right">
           <button
             onClick={e => {

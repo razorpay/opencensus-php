@@ -137,4 +137,8 @@ export default class User {
       ? partnerTypes.indexOf(this.partner_type) > -1
       : !!this.partner_type;
   }
+
+  get showEarlySettlementAnnouncement() {
+    return this.activated && this.findTag('announcement_early_settlements');
+  }
 }

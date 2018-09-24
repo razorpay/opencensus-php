@@ -189,9 +189,7 @@ export default class Sidebar extends Component {
                     icon="i i-partner text-success"
                     to="/submerchants"
                     notMyRole="sellerapp"
-                    additionalCondition={user =>
-                      user.isPartner() && !user.isPartner('pure_platform')
-                    }
+                    additionalCondition={user => user.isPartner()}
                     exact
                   />
 

@@ -8,6 +8,7 @@ import { notifySuccess, closeModal, notifyError } from 'common/modal';
 
 RetryRefund.title = 'Retry Refund to Bank Account';
 RetryRefund.permission = 'edit_payment_refund';
+
 export default function RetryRefund() {
   return (
     <Form class="full-span">
