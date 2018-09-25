@@ -67,7 +67,7 @@ build:
               mkdir -p /opt/razorpay/certs/first_data
       - script:
           name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --printer=Codedungeon\\PHPUnitPrettyResultPrinter\\Printer
+          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --printer=Codedungeon\\PHPUnitPrettyResultPrinter\\Printer --filter lalalala
       - script:
           name: create commit.txt
           code: git rev-parse HEAD > public/commit.txt
