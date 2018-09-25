@@ -416,6 +416,8 @@ return [
     'enach_rbl' => [
         'test_merchant_id'          => env('NPCI_EMANDATE_TEST_MERCHANT_ID'),
         'test_emandate_private_key' => env('NPCI_EMANDATE_TEST_PRIVATE_KEY'),
+        //TODO : Add these creds
+        'live_emandate_private_key' => ''
     ],
 
     'netbanking_obc' => [
