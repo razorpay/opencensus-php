@@ -3390,6 +3390,12 @@ trait Authorize
         // re-setting the customer later for the subscription.
         //
         $subscription->customer()->associate($paymentCustomer);
+
+        //
+        // Used for subscription fetch via dashboard
+        // Needed to rearchitect subscriptions as a separate service
+        //
+        $subscription->setCustomerEmail($paymentCustomer->getEmail());
     }
 
     protected function updateSubscriptionToken(Subscription\Entity $subscription, Payment\Entity $payment)

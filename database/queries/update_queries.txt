@@ -2095,3 +2095,10 @@ UPDATE terminals SET enabled_banks = '["ANDB", "CBIN", "CNRB", "CORP", "DLXB", "
 
 # paytm normal terminals
 UPDATE terminals SET enabled_banks = '["CITI", "CIUB", "HDFC", "ICIC", "IDIB", "IOBA", "JAKA", "KKBK", "MAHB", "PUNB_R", "UBIN", "UTIB", "VIJB", "YESB"]' WHERE gateway = 'paytm' AND tpv IN (0, 2) AND corporate = 0;
+
+# Populating customer_email
+UPDATE subscriptions
+INNER JOIN customers ON customers.id=subscriptions.customer_id
+SET customer_email=customers.email
+WHERE customers.email IS NOT NULL
+  AND customer_email IS NOT NULL;

@@ -4306,3 +4306,7 @@ ALTER TABLE transactions
     ADD COLUMN reference10 BIGINT UNSIGNED DEFAULT NULL AFTER reference9,
     ADD INDEX transactions_settled_channel_on_hold_merchant_id_index (settled, channel, on_hold, merchant_id),
     DROP INDEX transactions_settled_channel_on_hold_index;
+
+ALTER TABLE subscriptions
+    ADD COLUMN customer_email VARCHAR(100) DEFAULT NULL AFTER global_customer,
+    ADD INDEX subscriptions_customer_email_index (customer_email);
