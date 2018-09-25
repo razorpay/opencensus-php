@@ -82,7 +82,9 @@ class EmandateSorter extends Terminal\Sorter
 
     protected function isBankSupportedByNpciEmandate($bank, $authType)
     {
-        return in_array($bank, Gateway::$gatewaysEmandateBanksMapForAuthType[$authType][Gateway::ENACH_RBL]);
+        $supportedBanks = Gateway::getEmandateBanksForGatewayAndAuthType(Gateway::ENACH_RBL, $authType);
+
+        return in_array($bank, $supportedBanks);
     }
 
     //TODO add logic for merchant selection of routing

@@ -950,12 +950,13 @@ class Gateway
         ],
     ];
 
-    public static $gatewaysEmandateBanksMapForAuthType = [    //TODO add a getter instead of using this directly
+    public static $gatewaysEmandateBanksMapForAuthType = [
         AuthType::NETBANKING => [
             Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
             Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
             Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
-            Gateway::ENACH_RBL          => [   //TODO this list is not accurate
+            //TODO this list is not accurate
+            Gateway::ENACH_RBL          => [
                 IFSC::ABHY,
                 IFSC::ANDB,
                 IFSC::UTIB,
@@ -1732,5 +1733,15 @@ class Gateway
         // Currently we are only using MindGate for live and Sharp for test, later when
         // we have more gateways, we can introduce gateway selection logic here.
         return self::$upiValidateVpaGateways[$mode][0];
+    }
+
+    public static function getEmandateBanksForGatewayAndAuthType($gateway, $authType)
+    {
+        if (isset(self::$gatewaysEmandateBanksMapForAuthType[$authType][$gateway]))
+        {
+            return self::$gatewaysEmandateBanksMapForAuthType[$authType][$gateway];
+        }
+
+        return [];
     }
 }
