@@ -11,30 +11,30 @@ import {
   openModal,
 } from 'common/modal';
 import { ModalContent } from 'component/Modal';
-import {adminPut} from 'common/fetch';
+import { adminPut } from 'common/fetch';
 
 export default function EditBankAccount() {
   function onSubmit(body) {
-      let payload = {
-        url: `live/bank_accounts/${body.ba_id}`,
-        data: {
-          beneficiary_name: body.name,
-        },
-      };
+    let payload = {
+      url: `live/bank_accounts/${body.ba_id}`,
+      data: {
+        beneficiary_name: body.name,
+      },
+    };
 
-      adminPut(payload).then(response => {
-        if (response) {
-          notifySuccess('Bank account has been edited successfully');
-          closeModal();
-          openModal(
-            <ModalContent header="API Response" noPadding>
-              <div class="code" style={{ width: '650px' }}>
-                {JSON.stringify(response, null, 4)}}
-              </div>
-            </ModalContent>
-          );
-        }
-      });
+    adminPut(payload).then(response => {
+      if (response) {
+        notifySuccess('Bank account has been edited successfully');
+        closeModal();
+        openModal(
+          <ModalContent header="API Response" noPadding>
+            <div class="code" style={{ width: '650px' }}>
+              {JSON.stringify(response, null, 4)}}
+            </div>
+          </ModalContent>
+        );
+      }
+    });
   }
 
   return (

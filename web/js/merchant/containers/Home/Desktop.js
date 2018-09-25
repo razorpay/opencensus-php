@@ -27,10 +27,7 @@ import {
   trackViewTour,
 } from './ga';
 
-@connect(
-  null,
-  { showOrHideTour }
-)
+@connect(null, { showOrHideTour })
 class AnalyticsDesktop extends Component {
   constructor(props) {
     super(props);
@@ -155,6 +152,7 @@ class AnalyticsDesktop extends Component {
           <EarlySettlementAnnouncement
             withTour={hasNewAnalyticsTour}
             from="Home-Desktop"
+            marginBottom={!showOnboardingBanner}
           />
 
           <div

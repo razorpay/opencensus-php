@@ -58,7 +58,10 @@ class AnalyticsMobile extends Component {
 
     return (
       <div className="home-analytics-mobile">
-        <EarlySettlementAnnouncement from="Home-Mobile" />
+        <EarlySettlementAnnouncement
+          from="Home-Mobile"
+          marginBottom={!showOnboardingBanner}
+        />
 
         <div ref={node => onExtraContentMount(node)} className="extra-content">
           <div
@@ -124,9 +127,7 @@ class AnalyticsMobile extends Component {
                   windowWidth < 530
                     ? windowWidth > 424
                       ? 530 - windowWidth
-                      : windowWidth > 360
-                        ? 40
-                        : 57
+                      : windowWidth > 360 ? 40 : 57
                     : 0
                 }
               />

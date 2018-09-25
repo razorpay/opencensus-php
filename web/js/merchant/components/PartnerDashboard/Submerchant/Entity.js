@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { Link } from 'react-router-dom';
 
 import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
@@ -64,6 +65,19 @@ export default props => {
                     </span>
                   )}
                 </EntityDetailRow>
+
+                {/* application details for pure platform partners */}
+                {submerchant.application && (
+                  <EntityDetailRow label="Application Id">
+                    <Link
+                      to={`/submerchants/applications/${
+                        submerchant.application.id
+                      }`}
+                    >
+                      {submerchant.application.id}
+                    </Link>
+                  </EntityDetailRow>
+                )}
 
                 <ShowWhen
                   myRole="owner admin manager"

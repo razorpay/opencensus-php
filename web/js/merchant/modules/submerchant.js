@@ -13,10 +13,10 @@ export const create = payload => {
   };
 };
 
-export const fetchSubmerchant = submerchantId => {
+export const fetchSubmerchant = (submerchantId, application_id) => {
   return {
     type: SUB_MERCHANT_FETCH_DETAILS,
-    payload: new Submerchant().fetch(submerchantId),
+    payload: new Submerchant().fetch(submerchantId, { application_id }),
   };
 };
 

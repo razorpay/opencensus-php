@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
@@ -9,18 +10,16 @@ import { fetchSubmerchants as fetchAll } from 'merchant/modules/collection';
 import { switchMerchant } from 'merchant/modules/session';
 
 import DataTable from 'rzp/ui/Table/DataTable';
-import StatsCard from 'rzp/ui/StatsCard';
 import HeaderAction from 'rzp/ui/HeaderAction';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getTime } from 'rzp/ui/item';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 import {
-  submerchant as name,
+  submerchant as submerchantColumn,
   submerchantId as id,
   email as emailColumn,
 } from 'rzp/ui/item/pair';
-import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
 
 import AddMerchant from './AddMerchant';
 import ListFilter from './ListFilter';
@@ -29,6 +28,17 @@ import {
   trackSearchAnalytics,
   trackClearAnalytics,
 } from '../ga';
+
+const name = isPurePlatform => ({
+  ...submerchantColumn,
+  ...(isPurePlatform && {
+    value: item => (
+      <Link to={`/submerchants/${item.id}/${item.application.id}`}>
+        {item.name}
+      </Link>
+    ),
+  }),
+});
 
 const email = {
   title: 'Registered Email',
@@ -69,6 +79,15 @@ const switchMerchantActionBtn = handleSwitchMerchant => ({
     ),
 });
 
+const appId = {
+  title: 'App Id',
+  value: item => (
+    <Link to={`/submerchants/applications/${item.application.id}`}>
+      {item.application.id}
+    </Link>
+  ),
+};
+
 @connect(
   state => ({
     user: state.session.user,
@@ -83,8 +102,6 @@ const switchMerchantActionBtn = handleSwitchMerchant => ({
   }
 )
 export default class SubMerchantsList extends ListContainer {
-  state = {};
-
   handleAddMerchant = () => {
     this.props.openModal({
       size: 'small',
@@ -110,16 +127,28 @@ export default class SubMerchantsList extends ListContainer {
     trackListEvents('Go To');
   }
 
-  search = () => {};
   render() {
-    const user = this.props.user;
-    const switchMerchantColumn = user.isPartner('aggregator', 'fully_managed')
-      ? [switchMerchantActionBtn(this.handleSwitchMerchant)]
-      : [];
+    const { user } = this.props;
+    let appIdColumn = [],
+      switchMerchantColumn = [];
+
+    if (user.isPartner('pure_platform')) {
+      appIdColumn = [appId];
+    } else if (user.isPartner('aggregator', 'fully_managed')) {
+      switchMerchantColumn = [
+        switchMerchantActionBtn(this.handleSwitchMerchant),
+      ];
+    }
+
     return (
       <div class="sub-merchants-list">
         <div>
-          <ShowWhen myRole="owner manager admin">
+          <ShowWhen
+            myRole="owner manager admin"
+            additionalCondition={user =>
+              user.isPartner() && !user.isPartner('pure_platform')
+            }
+          >
             <HeaderAction>
               <button
                 class="btn btn-primary pull-right"
@@ -158,9 +187,10 @@ export default class SubMerchantsList extends ListContainer {
             skip={this.state.skip}
             paginate={this.paginate}
             columns={[
-              name,
+              name(user.isPartner('pure_platform')),
               id,
               email,
+              ...appIdColumn,
               addedOn,
               activationStatus,
               ...switchMerchantColumn,
