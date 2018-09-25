@@ -171,7 +171,9 @@ class NewApplicationForm extends Component {
       .createApplication(data, 'logo')
       .then(application => {
         this.initForm(application);
-        this.props.history.replace(`/applications/${application.id}`);
+        this.props.history.replace(
+          `${this.props.location.pathname.replace('new', '')}${application.id}`
+        );
         this.props.showNotification({
           type: 'success',
           message: 'Application created successfully',
@@ -282,7 +284,7 @@ class NewApplicationForm extends Component {
       <div class="content-box new-application-form">
         <div class="content-header">
           <Link
-            to={pathname.substring(0, pathname.lastIndexOf('/new'))}
+            to={pathname.substring(0, pathname.lastIndexOf('/'))}
             class="breadcrumb__backNav--link "
           >
             <i class="i i-arrow-back" />
