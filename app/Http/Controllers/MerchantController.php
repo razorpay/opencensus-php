@@ -1103,4 +1103,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function saveInstantActivationDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->saveInstantActivationDetails($input);
+
+        return ApiResponse::json($response);
+    }
 }

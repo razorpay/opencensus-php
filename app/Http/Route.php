@@ -885,6 +885,8 @@ final class Route
         // Apspdcl integration - bridge for remote endpoint access for hosted via api.
         'apspdcl_bridge'                           => ['any',      'apspdcl/{any}',                                  'ApspdclController@any'                                             ],
 
+        // Instant Activations
+        'merchant_instant_activation_post'         => ['post',     'merchant/instant_activation',                    'MerchantController@saveInstantActivationDetails'                   ],
     ];
 
     public static $public = [
@@ -1381,8 +1383,12 @@ final class Route
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'webhook_fire',
+<<<<<<< HEAD
         'merchant_methods_edit',
         'merchant_fetch_methods',
+=======
+        'merchant_instant_activation_post',
+>>>>>>> 3aac378959... [ia] adds new api to accept basic kyc form
     ];
 
     // These will run on internal auth with the assurance

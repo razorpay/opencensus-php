@@ -1269,6 +1269,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const APSPDCL_REQUEST_ERROR                         = 'APSPDCL_REQUEST_ERROR';
     const APSPDCL_RESPONSE                              = 'APSPDCL_RESPONSE';
 
+    // Instant activation traces
+    const MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS      = 'MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
