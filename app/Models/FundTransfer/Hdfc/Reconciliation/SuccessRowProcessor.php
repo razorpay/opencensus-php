@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Hdfc\Reconciliation;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Hdfc\Constants;
 use RZP\Models\FundTransfer\Hdfc\Headings;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
@@ -28,6 +29,8 @@ class SuccessRowProcessor extends BaseRowProcessor
         ];
 
         $this->reconEntityId = $this->parsedData[self::PAYMENT_REF_NO];
+
+        $this->trace->info(TraceCode::FTA_RECON_PARSED_DATA, ['parsed_data' => $this->parsedData]);
     }
 
     /**

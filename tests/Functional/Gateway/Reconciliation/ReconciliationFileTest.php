@@ -1449,7 +1449,7 @@ class ReconciliationFileTest extends TestCase
 
         $facade['Auth/Approval Code'] = $gatewayPayment['auth'];
 
-        $facade['Merchant Track ID'] = $entityId;
+        $facade['Merchant Track ID'] = "''". $entityId;
 
         $facade['Transaction Type'] =  $transactionType;
 

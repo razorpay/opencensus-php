@@ -1884,7 +1884,8 @@ trait Authorize
 
     protected function validateRecurringAndPreferredRecurring(Payment\Entity $payment, array $input)
     {
-        if (isset($input[Payment\Entity::RECURRING]) === true)
+        if ((isset($input[Payment\Entity::RECURRING]) === true) and
+            ($input[Payment\Entity::RECURRING]) === '1')
         {
             if (in_array($payment->getMethod(), Payment\Method::$recurringMethods, true) === false)
             {
@@ -3390,6 +3391,12 @@ trait Authorize
         // re-setting the customer later for the subscription.
         //
         $subscription->customer()->associate($paymentCustomer);
+
+        //
+        // Used for subscription fetch via dashboard
+        // Needed to rearchitect subscriptions as a separate service
+        //
+        $subscription->setCustomerEmail($paymentCustomer->getEmail());
     }
 
     protected function updateSubscriptionToken(Subscription\Entity $subscription, Payment\Entity $payment)
@@ -4527,6 +4534,7 @@ trait Authorize
 
     protected function isPreferredRecurring(array $input)
     {
-        return (empty($input[Payment\Entity::PREFERRED_RECURRING]) === false);
+        return ((empty($input[Payment\Entity::RECURRING]) === false) and
+                ($input[Payment\Entity::RECURRING] === 'preferred'));
     }
 }

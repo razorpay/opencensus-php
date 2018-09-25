@@ -81,18 +81,17 @@ class Core extends Base\Core
                     $processor->process($bankTransfer);
                 },
                 60,
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
-
-            $valid = true;
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+                10,
+                200,
+                400);
         }
         catch (\Throwable $ex)
         {
             $this->alertException($ex, $input);
-
-            $valid = false;
         }
 
-        return $valid;
+        return true;
     }
 
     /**

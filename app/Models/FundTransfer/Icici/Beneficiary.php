@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Mail\Base\Constants;
 use RZP\Services\Beam\Service;
@@ -45,9 +46,13 @@ class Beneficiary extends FileProcessor
     {
         $rows = $this->getData($bankAccounts);
 
+        $this->trace->info(TraceCode::BENEFICIARY_REGISTER_DATA_FETCHED);
+
         $txt = $this->getTxt($rows);
 
         $file = $this->generateFile($txt);
+
+        $this->trace->info(TraceCode::BENEFICIARY_REGISTER_FILE_CREATED);
 
         $merchantCount = count($rows);
 
@@ -59,12 +64,16 @@ class Beneficiary extends FileProcessor
 
         $this->sendEmail($mailData);
 
+        $this->trace->info(TraceCode::BENEFICIARY_REGISTER_EMAIL_SENT, ['mail_data' => $mailData]);
+
         //
         // Pushing to Beam after sending the email
         // such that current beneficiary processing
         // doesn't get affected by Beam errors.
         //
         $this->sendFile($file);
+
+        $this->trace->info(TraceCode::BENEFICIARY_REGISTER_FILE_SEND_VIA_BEAM);
 
         return $response;
     }
@@ -75,6 +84,13 @@ class Beneficiary extends FileProcessor
 
         foreach ($bankAccounts as $ba)
         {
+            $this->trace->info(
+                TraceCode::BENEFICIARY_REGISTER_BANK_ACCOUNT,
+                [
+                    'bank_account_id'   => $ba->getId(),
+                    'channel'           => $this->channel
+                ]);
+
             $address = $ba->source->merchantDetail->getBusinessRegisteredAddress();
 
             // Removes line break from the string

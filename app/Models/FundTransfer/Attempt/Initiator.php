@@ -95,7 +95,14 @@ class Initiator extends Base\Core
                                 $limit,
                                 ['source']);
 
-            $this->trace->info(TraceCode::FTA_FETCHED, ['count' => $attempts->count()]);
+            $this->trace->info(
+                TraceCode::FTA_FETCHED,
+                [
+                    'limit'         => $limit,
+                    'timestamp'     => $timestamp,
+                    'source_type'   => $sourceType,
+                    'count'         => $attempts->count()
+                ]);
 
             $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
 
@@ -187,15 +194,50 @@ class Initiator extends Base\Core
      */
     protected function isValidTime(string $channel): bool
     {
-        if (in_array($channel, Channel::get24x7Channels(), true) === true)
+        if (in_array($this->env, ['testing', 'perf', 'func'], true) === true)
         {
             return true;
         }
 
-        if (($this->mode !== Mode::TEST) and
-            ($this->env !== 'testing') and
-            (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false))
+        if (in_array($channel, Channel::get24x7Channels(), true) === true)
         {
+            $this->trace->info(TraceCode::FTA_INITIATE_247);
+
+            return true;
+        }
+
+        if (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false)
+        {
+            $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED, [
+                'channel'   => $channel,
+                'message'   => 'Holiday today!',
+            ]);
+
+            return false;
+        }
+
+        $startTime = Carbon::today(Timezone::IST)->hour(8)->getTimestamp();
+
+        $endTime = Carbon::today(Timezone::IST)->hour(18)->minute(15)->getTimestamp();
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->trace->info(
+            TraceCode::FTA_INITIATE_TIMES,
+            [
+                'banking_start_time'    => $startTime,
+                'banking_ending_time'   => $endTime,
+                'current_time'          => $currentTime
+            ]);
+
+        if (($currentTime < $startTime) or
+            ($currentTime > $endTime))
+        {
+            $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED, [
+                'channel'   => $channel,
+                'message'   => 'Outside banking hours',
+            ]);
+
             return false;
         }
 
