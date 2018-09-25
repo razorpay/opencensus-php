@@ -67,6 +67,8 @@ class Entity extends Base\PublicEntity
     const CORPORATE                     = 'corporate';
     const BANKING_TYPES                 = 'banking_types';
     const ENABLED_BANKS                 = 'enabled_banks';
+    // used for direct settlements.
+    const ACCOUNT_NUMBER                = 'account_number';
 
     //
     // Currenly being used to handle 'unexpected' BharatQR payments.
@@ -133,7 +135,8 @@ class Entity extends Base\PublicEntity
         self::RUPAY_MPAN,
         self::VPA,
         self::ENABLED,
-        self::ENABLED_BANKS
+        self::ENABLED_BANKS,
+        self::ACCOUNT_NUMBER,
     ];
 
     protected $public = [
@@ -174,6 +177,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED,
         self::SUB_MERCHANTS,
         self::ENABLED_BANKS,
+        self::ACCOUNT_NUMBER,
     ];
 
     protected $hidden = [

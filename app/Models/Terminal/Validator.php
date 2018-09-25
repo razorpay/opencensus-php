@@ -52,6 +52,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'required_if:netbanking,1|string|max:30',
         Entity::CURRENCY                    => 'sometimes|alpha|size:3',
+        Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];
 
     protected static $editTerminalGateways = [
@@ -236,12 +237,14 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD2  => 'sometimes',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];
 
     protected static $billdeskEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:billdesk',
         Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
     ];
 
     protected static $hdfcEditTerminalRules = [
@@ -252,6 +255,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::MODE                       => 'sometimes|in:3',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
     ];
 
     protected static $hitachiEditTerminalRules = [
@@ -265,6 +269,7 @@ class Validator extends Base\Validator
         Entity::MC_MPAN                    => 'sometimes|string|size:16',
         Entity::VISA_MPAN                  => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN                 => 'sometimes|string|size:16',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
     ];
 
     protected static $firstDataEditTerminalRules = [
@@ -273,6 +278,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::MODE                       => 'sometimes|in:2,3',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
     ];
 
     protected static $cybersourceEditTerminalRules = [
@@ -283,6 +289,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
     ];
 
     protected static $upiIciciEditTerminalRules = [
@@ -291,6 +298,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
         Entity::TYPE                       => 'sometimes|array',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
     ];
 
      protected static $upiMindgateEditTerminalRules = [
@@ -301,17 +309,20 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
         Entity::NETWORK_CATEGORY        => 'sometimes|string|max:30',
+        Entity::ACCOUNT_NUMBER          => 'sometimes|string|max:50',
     ];
 
     protected static $netbankingIndusindEditTerminalRules = [
         Entity::TPV                     => 'sometimes|in:0,1,2',
         Entity::NETWORK_CATEGORY        => 'sometimes|string|max:30',
+        Entity::ACCOUNT_NUMBER          => 'sometimes|string|max:50',
     ];
 
     protected static $walletPayzappTerminalRules = [
@@ -480,6 +491,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];
 
     protected static $netbankingBobEditTerminalRules = [
@@ -487,6 +499,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
         Entity::CORPORATE                   => 'sometimes|int|in:0,1,2',
+        Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];
 
     protected static $cardFssTerminalRules = [
@@ -506,6 +519,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',
+        Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];
 
     protected static $upiHulkEditTerminalRules = [
@@ -516,6 +530,7 @@ class Validator extends Base\Validator
         Entity::VPA                        => 'sometimes|string',
         Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|in:proxy,app',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
     ];
 
     protected static $enachRblTerminalRules = [
@@ -533,6 +548,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::TYPE                        => 'sometimes|array',
+        Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];
 
     protected static $editWalletAirtelmoneyTerminalRules = [
@@ -541,6 +557,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];
 
     protected static $walletAmazonpayTerminalRules = [
