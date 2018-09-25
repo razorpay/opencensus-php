@@ -11,7 +11,7 @@ moment.updateLocale('en', {
 });
 
 export function isMobileResolution() {
-  return window.outerWidth <= 768;
+  return window.innerWidth <= 768;
 }
 
 export function isFunction(value) {
@@ -90,6 +90,23 @@ export const mapBy = (array, prop) => {
   return array.map(item => {
     return item[prop];
   });
+};
+
+export const groupBy = (records, colName) => {
+  const result = {};
+
+  records.forEach((record, index) => {
+    if (!record.hasOwnProperty(colName)) {
+      return;
+    }
+
+    const colValue = record[colName],
+      colRecords = (result[colValue] = result[colValue] || []);
+
+    colRecords.push(record);
+  });
+
+  return result;
 };
 
 export const pipe = (...funcs) => {

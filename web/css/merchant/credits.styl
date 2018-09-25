@@ -1,0 +1,27 @@
+.credits
+  .credit-details
+
+    .big-font
+      font-size: 16px
+
+    .puck
+      &::after
+        content: ' '
+        width: 16px
+        height: 2px
+        background-color: $sidebar-bg-color
+        display: block
+        margin-top: 10px
+
+    button.toggle-history
+      text-decoration: none
+      i
+        vertical-align: sub
+
+    .collapsible
+      .table-responsive
+        width: 100%
+        margin-top: 20px
+
+        table.history
+          margin-bottom: unset

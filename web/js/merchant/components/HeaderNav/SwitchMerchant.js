@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { PowerSelect } from 'react-power-select';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
 const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   let merchants = user.merchants;
@@ -7,17 +8,30 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   return (
     <PowerSelect
       options={merchants}
+      className="switch-merchant"
       placeholder="Switch Merchant"
       searchIndices={['name']}
       showClear={false}
       optionComponent={({ option }) => {
         return (
-          <a class="SwitchMerchantDropdown__option">
-            {option.id === user.current ? (
-              <i class="i i-check text-success pull-right" />
-            ) : null}
-            <span>{option.display_name}</span>
-          </a>
+          <span class="help-content">
+            <span class="SwitchMerchantDropdown__option">
+              {option.id === user.current ? (
+                <i class="i i-check text-success pull-right" />
+              ) : null}
+              {option.display_name || option.name}
+              <Popover
+                align="left"
+                theme="dark"
+                parentQuerySelector=".switch-merchant__Tether"
+              >
+                <PopoverBody>
+                  <div>{option.display_name || option.name}</div>
+                  <div class="text--secondary">({option.name})</div>
+                </PopoverBody>
+              </Popover>
+            </span>
+          </span>
         );
       }}
       onChange={({ option, select }) => {
@@ -80,7 +94,8 @@ export class SwitchMerchantTypeahead extends Component {
               <li key={item} className={`${isActive ? 'active' : ''}`}>
                 <a onClick={() => onSwitchMerchant(user.merchants[item])}>
                   <i className="i i-check" />{' '}
-                  {user.merchants[item].display_name}
+                  {user.merchants[item].display_name ||
+                    user.merchants[item].name}
                 </a>
               </li>
             );

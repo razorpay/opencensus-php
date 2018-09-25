@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -9,6 +9,7 @@ import { ModalMask } from 'component/Modal';
 
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
+import PartnerDashboard from 'merchant/containers/PartnerDashboard';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
@@ -87,12 +88,17 @@ const RefundsTabbedContainer = () => {
 };
 
 @withRouter
-@connect(null, {
-  setBaseLocation,
-  setActiveEntity,
-  setSecActiveEntity,
-  openSlider,
-})
+@connect(
+  state => ({
+    user: state.session.user,
+  }),
+  {
+    setBaseLocation,
+    setActiveEntity,
+    setSecActiveEntity,
+    openSlider,
+  }
+)
 export default class Content extends Component {
   setBaseLocation = location => {
     let { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
@@ -135,12 +141,48 @@ export default class Content extends Component {
     }
   };
 
+  toggleRasieTicketModal = ({ location = {} }) => {
+    const onModalClose = function() {
+      this.props.history.push(location.pathname);
+      window.rzpTicketSystem.removeEventListener('modal-close', onModalClose);
+    }.bind(this); //so that this.props is available inside onModalClose
+
+    // For handling where url is encoded, so hash becomes part of pathname instead of hash (In gmail redirection).
+    const urlWithHash = decodeURIComponent(location.pathname);
+    const hashInUrl = urlWithHash.substring(urlWithHash.indexOf('#') + 1);
+
+    const hash = location.hash || '#' + hashInUrl;
+    if (window.rzpTicketSystem) {
+      if (
+        hash === '#request' &&
+        !!location.pathname &&
+        location.pathname !== '/'
+      ) {
+        window.rzpTicketSystem.addEventListener('modal-close', onModalClose);
+        window.rzpTicketSystem.openModal('#ticket');
+      } else if (window.rzpTicketSystem.$el.classList.contains('open')) {
+        window.rzpTicketSystem.closeModal();
+      }
+    }
+  };
+
   getBaseView = () => {
+    const { user } = this.props;
     return (
       <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
-          <Redirect from="/" exact to="/dashboard" />
+          <Redirect
+            to={user.isPartner() ? 'submerchants' : '/dashboard'}
+            from="/"
+            exact
+          />
+
+          <ShowWhenRoute
+            path="/submerchants"
+            component={PartnerDashboard}
+            additionalCondition={user => user.isPartner()}
+          />
 
           <Route path="/payments" component={Transactions} />
           <Route path="/refunds" component={Transactions} />
@@ -199,11 +241,16 @@ export default class Content extends Component {
 
   componentWillMount() {
     this.setBaseLocation(this.props.location);
+    this.toggleRasieTicketModal(this.props);
   }
 
-  componentWillReceiveProps(props) {
-    this.setBaseLocation(props.location);
+  componentWillReceiveProps(nextProps) {
+    this.setBaseLocation(nextProps.location);
     this.showSliderView();
+
+    if (nextProps.location.hash !== this.props.location.hash) {
+      this.toggleRasieTicketModal(nextProps);
+    }
   }
 
   showSliderView() {
@@ -269,7 +316,7 @@ export default class Content extends Component {
   }
 }
 
-const ShowWhenRoute = ({ component: Component, ...rest }) => (
+export const ShowWhenRoute = ({ component: Component, ...rest }) => (
   <Route
     {...rest}
     render={props =>

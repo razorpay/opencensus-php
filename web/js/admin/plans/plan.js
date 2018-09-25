@@ -128,6 +128,7 @@ export const options = {
     '200000-1000000000': '200000-1000000000',
     '0-10000000': '0 - 1 lac',
     '10000000-': '1 lac+',
+    custom: 'Custom',
   },
   emi_duration: {
     '': 'All',
@@ -148,6 +149,8 @@ export const options = {
   fixed_rate: '',
   min_fee: '',
   max_fee: '',
+  amount_range_min: '',
+  amount_range_max: '',
 };
 
 const ruleProps = Object.keys(options).reduce(function(o, key) {
@@ -179,18 +182,24 @@ class Rule extends CollectionItem {
     extendObservable(this, props);
     this['originalRule'] = {};
     this['originalRule'] = deepClone(this);
-    editableFields.forEach(elem => (this[elem] /= 100));
+    editableFields.forEach(elem => {
+      if (this[elem]) {
+        this[elem] /= 100;
+      }
+    });
   }
 
   serialize() {
     let data = toJS(this);
 
     if (data.amount_range) {
-      let range = data.amount_range.split('-');
       data.amount_range_active = 1;
-      data.amount_range_min = range[0];
-      // if the max not specified its 2cr
-      data.amount_range_max = range[1] || 1000000000;
+      if (data.amount_range !== 'custom') {
+        let range = data.amount_range.split('-');
+        data.amount_range_min = range[0];
+        // if the max not specified its 2cr
+        data.amount_range_max = range[1] || 1000000000;
+      }
     }
     delete data.amount_range;
     delete data.isEditing;
@@ -201,7 +210,11 @@ class Rule extends CollectionItem {
     data.percent_rate = Math.round(data.percent_rate * 100);
     data.fixed_rate = Math.round(data.fixed_rate * 100);
     data.min_fee = Math.round(data.min_fee * 100);
-    data.max_fee = Math.round(data.max_fee * 100);
+    data.max_fee =
+      data.max_fee || parseInt(data.max_fee) === 0
+        ? Math.round(data.max_fee * 100)
+        : undefined;
+
     return data;
   }
 
@@ -227,6 +240,8 @@ class Rule extends CollectionItem {
         if (data && !isWorkflow(data)) {
           notifySuccess(`Rule added for ${data.plan_name}`);
           data.isEditing = false;
+          this.amount_range_min = '';
+          this.amount_range = '';
           this.collection.items.splice(-1, 0, new Rule(this.collection, data));
           return data;
         }
@@ -307,14 +322,20 @@ class Rule extends CollectionItem {
   }
 
   field(Component, name, props = {}) {
-    let value,
-      isDisabled = false;
+    let value;
 
     if (name === 'amount_range') {
-      value =
-        this['amount_range_min'] != null
-          ? this['amount_range_min'] + '-' + this['amount_range_max']
-          : this[name];
+      if (
+        this['amount_range_min'] ||
+        parseInt(this['amount_range_min']) === 0
+      ) {
+        value = this['amount_range_min'] + '-' + this['amount_range_max'];
+        if (!options.amount_range[value] && !this.id) {
+          value = 'custom';
+        }
+      } else {
+        value = this[name];
+      }
     } else {
       value = this[name] || '';
     }
@@ -328,7 +349,7 @@ class Rule extends CollectionItem {
     }
 
     if (this.isEditing && editableFields.indexOf(name) === -1) {
-      isDisabled = true;
+      return value;
     }
 
     return (
@@ -336,10 +357,17 @@ class Rule extends CollectionItem {
         name={name}
         value={value}
         onChange={this.onPropChange}
-        disabled={isDisabled}
         {...props}
       />
     );
+  }
+
+  onPropChange(e) {
+    this[e.target.name] = e.target.value;
+    if (e.target.name === 'amount_range' && e.target.value !== 'custom') {
+      this.amount_range_min = '';
+      this.amount_range_max = '';
+    }
   }
 
   selectField(name, values = options[name]) {
@@ -433,6 +461,23 @@ class Rule extends CollectionItem {
       if (field) {
         return <div>Auth Type: {field}</div>;
       }
+    }
+  }
+
+  customRangeField() {
+    if (this.amount_range === 'custom') {
+      let props = {
+        placeholder: 'Paisa',
+      };
+      var minField = this.numberField('amount_range_min', props);
+      var maxField = this.numberField('amount_range_max', props);
+
+      return (
+        <div class="custom-range-cnt">
+          <div>Min {minField}</div>
+          <div>Max {maxField}</div>
+        </div>
+      );
     }
   }
 }

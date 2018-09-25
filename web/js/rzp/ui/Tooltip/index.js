@@ -210,11 +210,24 @@ class Tooltip extends Component {
       }
     }
 
+    const ele = document.querySelector(this.props.parentQuerySelector);
+
+    let parentAdjustment = { top: 0, left: 0 };
+    if (ele && this.props.parentQuerySelector) {
+      // Relative height of parent wrt to window
+      const viewportOffset = ele.getBoundingClientRect();
+      const top = viewportOffset.top;
+      const left = viewportOffset.left;
+
+      parentAdjustment.left = left;
+      parentAdjustment.top = top;
+    }
+
     if (!this.props.followPointer) {
       // when paddingBottom is present, top needs to be adjusted as
       // the box grows down
-      node.style.top = tooltipTop - paddingBottom + 'px';
-      node.style.left = tooltipLeft + 'px';
+      node.style.top = tooltipTop - parentAdjustment.top - paddingBottom + 'px';
+      node.style.left = tooltipLeft - parentAdjustment.left + 'px';
       node.style.paddingLeft = paddingLeft + 'px';
       node.style.paddingTop = paddingTop + 'px';
       node.style.paddingBottom = paddingBottom + 'px';
@@ -354,6 +367,7 @@ class Tooltip extends Component {
         onAdjustment,
         onAlignmentChange,
         theme,
+        parentQuerySelector,
         ...otherProps
       } = this.props;
 

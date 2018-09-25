@@ -43,6 +43,12 @@ export default class Application extends GenericEntity {
     });
   }
 
+  fetchPartnerApplication() {
+    return merchantFetch(`${this.resourceUrl}/partner`).then(response => {
+      return response.data;
+    });
+  }
+
   create(params = {}, fileName) {
     let formData = new FormData();
     for (let key in params) {

@@ -1,4 +1,5 @@
 import { trackLinkClick } from './ga';
+import { Link } from 'react-router-dom';
 
 export default () => {
   return (
@@ -35,9 +36,9 @@ export default () => {
       </u>{' '}
       ·{' '}
       <u>
-        <a href="mailto:contact@razorpay.com" onClick={trackLinkClick}>
+        <Link to="#request" onClick={trackLinkClick}>
           Contact Us
-        </a>
+        </Link>
       </u>
     </footer>
   );

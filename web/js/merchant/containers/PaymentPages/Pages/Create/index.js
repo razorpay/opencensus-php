@@ -19,7 +19,8 @@ import { timeCalculator } from 'component/Input/Time';
 import { onChangeNotes } from 'component/Input/PairList';
 import { createPaymentPage, sendLink } from '../model';
 
-import { trackOpenCreateForm, closePaymentLinkForm } from '../ga';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+import { trackCreateActions, trackSuccessActions } from '../ga';
 
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
@@ -160,7 +161,7 @@ export default class CreateNewContainer extends React.Component {
       window.hj('tagRecording', ['payment_links_v2_form_open']);
     }
 
-    trackOpenCreateForm(); // Refactor this on basis of condition if more tabs are there in the view
+    trackCreateActions('Intent');
   }
 
   componentDidMount() {
@@ -304,6 +305,7 @@ export default class CreateNewContainer extends React.Component {
           url={shortUrl}
           title={title}
           description={description}
+          trackerFn={trackSuccessActions}
         />
       ),
     });
@@ -360,6 +362,7 @@ export default class CreateNewContainer extends React.Component {
 
             this.props.history.push(redirectUrl);
           }
+          trackCreateActions('Create', getKeysSeparatedByPipe(reqPayload));
         } else {
           throw new Error(resp.errors);
         }
@@ -457,7 +460,6 @@ export default class CreateNewContainer extends React.Component {
           abortLabel: 'Stay',
           action: () => {
             this.props.onClose();
-            closePaymentLinkForm('Confirmed');
           },
         })
         .catch(() => {});
@@ -483,7 +485,7 @@ export default class CreateNewContainer extends React.Component {
         isModalView={IS_MODAL_VIEW}
         onFormAbruptClose={e => {
           this.onFormAbruptClose(e);
-          closePaymentLinkForm('Cancel');
+          trackCreateActions('Cancel', 'close');
         }}
         disableSubmit={this.state.disableSubmit}
       />
@@ -494,7 +496,7 @@ export default class CreateNewContainer extends React.Component {
         class={classList('PaymentLinks', content && 'animate-down')}
         onClose={e => {
           this.onFormAbruptClose(e);
-          closePaymentLinkForm('Cross');
+          trackCreateActions('Cancel', 'x');
         }}
       >
         <ModalContent>{content}</ModalContent>

@@ -10,12 +10,7 @@ export default ({ loggedInUser, loggedInUserRole }) => {
       <div class="list-group details-row-container">
         <DetailRow label="User Name" value={titleCase(loggedInUser.name)} />
 
-        <DetailRow
-          label="Login Email"
-          value={() => (
-            <a href={`mailto:${loggedInUser.email}`}>{loggedInUser.email}</a>
-          )}
-        />
+        <DetailRow label="Login Email" value={loggedInUser.email} />
 
         <DetailRow label="Role" value={ROLES[loggedInUserRole].label} />
       </div>

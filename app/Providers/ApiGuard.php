@@ -97,7 +97,7 @@ class ApiGuard implements Guard
     {
         $user = $this->user();
 
-        $this->app['session']->forget($this->sessionKey);
+        $this->app['session']->invalidate();
 
         $this->user = null;
     }

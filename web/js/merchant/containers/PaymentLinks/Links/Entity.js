@@ -133,6 +133,7 @@ export default class InvoiceDetailContainer extends Component {
         return this.props
           .cancelInvoice(invoice)
           .then(invoice => {
+            this.props.updatePLInReduxList({ data: invoice }, false);
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Submit Form - Cancel Payment Link',

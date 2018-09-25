@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="google" value="notranslate" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Razorpay">
+    <link rel="shortcut icon" href="/img/favicon.png">
+    <title>Razorpay - Admin Panel</title>
   <style>
     .sticky-content {
       top: 0 !important;

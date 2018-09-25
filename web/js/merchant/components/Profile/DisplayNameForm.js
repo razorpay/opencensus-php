@@ -22,17 +22,34 @@ export default class DisplayNameForm extends PureComponent {
     });
   }
 
+  setDisplayName = this.setDisplayName.bind(this);
+
+  setDisplayName(props) {
+    this.props.change('display_name', this.props.displayName);
+  }
+
   render() {
     const { handleSubmit } = this.props;
     return (
       <form onSubmit={handleSubmit(this.props.updateDisplayName)}>
         <ModalHeader
-          title="Update Display name"
+          title="Edit Display Name"
           onCloseClick={this.props.closeModal}
         />
         <div class="modal-body">
           <div class="form-group">
+            <label class="label-required">Display Name</label>
+            <div class="pull-right">
+              <button
+                type="button"
+                class="btn btn-link no-padding"
+                onClick={this.setDisplayName}
+              >
+                Reset
+              </button>
+            </div>
             <Field
+              label="Display Name"
               component={InputField}
               placeholder="Display Name"
               name="display_name"
@@ -40,6 +57,10 @@ export default class DisplayNameForm extends PureComponent {
               validate={required()}
               autoFocus={true}
             />
+            <small class="help-block">
+              This is the display name that will be displayed in the Switch
+              Merchant dropdown.
+            </small>
           </div>
 
           <div class="Modal__actions">

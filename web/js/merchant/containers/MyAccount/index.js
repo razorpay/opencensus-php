@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import { Route, NavLink, withRouter } from 'react-router-dom';
+import { Route, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import Profile from 'merchant/containers/Profile';
@@ -7,12 +6,13 @@ import AddFunds from 'merchant/containers/AddFunds';
 import Credits from 'merchant/containers/Credits/List';
 import Referrals from 'merchant/containers/Referrals/List';
 import TeamManagement from 'merchant/containers/Team';
+import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 
-import { trackLinkClick } from './ga';
+export default function MyAccount() {
+  return (
+    <React.Fragment>
+      <EarlySettlementAnnouncement from="MyAccount" />
 
-export default class MyAccount extends Component {
-  render() {
-    return (
       <tabbed-container>
         <header id="myaccount-header">
           <NavLink to="/profile">Profile</NavLink>
@@ -25,7 +25,13 @@ export default class MyAccount extends Component {
             <NavLink to="/addfunds">Add Funds</NavLink>
           </ShowWhen>
 
-          <ShowWhen notMyRole="sellerapp agent" featureEnabled="Referral">
+          <ShowWhen
+            notMyRole="sellerapp agent"
+            featureEnabled="Referral"
+            additionalCondition={user =>
+              !user.isPartner() || user.isPartner('pure_platform')
+            }
+          >
             <NavLink to="/referrals">Referrals</NavLink>
           </ShowWhen>
 
@@ -41,6 +47,6 @@ export default class MyAccount extends Component {
           <Route path="/team" component={TeamManagement} />
         </content>
       </tabbed-container>
-    );
-  }
+    </React.Fragment>
+  );
 }

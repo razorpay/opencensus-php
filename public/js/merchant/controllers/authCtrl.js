@@ -14,6 +14,7 @@ app
     'transformRequestAsFormPost',
     '$window',
     '$localStorage',
+    'utils',
     function(
       $scope,
       $timeout,
@@ -26,7 +27,8 @@ app
       organization,
       transformRequestAsFormPost,
       $window,
-      $localStorage
+      $localStorage,
+      utils
     ) {
       $scope.toArray = function(obj) {
         if (!obj) {
@@ -50,6 +52,11 @@ app
 
       $scope.isLoggedIn = false;
 
+      $scope.websiteRegex = RegExp(
+        '^((https?)://)?([a-z]+[.])?[a-z0-9-]+([.][a-z]{1,4}){1,2}(/.*[?].*)?$',
+        'i'
+      );
+
       // signup state container
       $scope.signup = {
         currentStep: 0, // 0, 1, 2
@@ -65,6 +72,7 @@ app
           role: null,
           department: null,
           business_name: '',
+          business_website: '',
           contact_mobile: '',
           contact_name: '',
         },
@@ -85,10 +93,6 @@ app
             4: {
               name: 'Individual',
               value: 2,
-            },
-            5: {
-              name: 'Not yet registered',
-              value: 11,
             },
             6: {
               name: 'Public Limited',
@@ -214,6 +218,8 @@ app
               $scope.lock_email = data.data.email ? true : false;
               $scope.signup.merchantData.business_name =
                 form_data.merchant_name;
+              $scope.signup.merchantData.business_website =
+                form_data.business_website;
               $scope.signup.merchantData.contact_name = form_data.contact_name;
               $scope.merchant_invitation = true;
             }
@@ -276,6 +282,14 @@ app
               : 'merchant';
             trackDrip('account_created');
             pushToDrip();
+            window.ga &&
+              window.ga(
+                'send',
+                'event',
+                'Signup - Email Password',
+                'Click - Create Account (Success)'
+              );
+
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
               if (data.user.confirmed) {
@@ -302,6 +316,15 @@ app
               trackDrip('error_email_taken');
             }
 
+            window.ga &&
+              window.ga(
+                'send',
+                'event',
+                'Signup - Email Password',
+                'Click - Create Account (Error)',
+                JSON.stringify(data.errors)
+              );
+
             angular.forEach(data.errors, function(value) {
               $scope.alerts.addAlert('danger', value);
             });
@@ -323,9 +346,22 @@ app
       };
 
       $scope.sendDetails = function() {
+        if (!$scope.forms.detailsForm.business_website.$valid) {
+          return;
+        } else if ($scope.signup.merchantData.business_website) {
+          $scope.signup.merchantData.business_website = utils.autoPrefixUrls(
+            $scope.signup.merchantData.business_website
+          );
+        }
+
+        // IMPORTANT: DO NOT REMOVE THESE (USED FOR MARKETING PURPOSES - TRACK SIGNUP ATTEMPTS)
+        window.ga && ga('send', 'event', 'sign-up-form-success');
+        window.ga && ga('old.send', 'event', 'sign-up-form-success');
+
         pushToDrip();
         invokeAdroll();
         invokeGtag();
+        invokeBing();
 
         // Fire linkedin Pixel.
         var i = new Image();
@@ -353,6 +389,8 @@ app
           if (data.success) {
             trackDrip('signup_flow_completed');
             pushToDrip();
+            window.ga && window.ga('send', 'event', 'Click - Finish');
+
             // if verification is already done, go to dashboard (call /user again to check)
             user.identity(true).then(function(userDetails) {
               // user.authorize and then if email verified
@@ -367,6 +405,26 @@ app
           } else {
             angular.forEach(data.errors, function(value) {
               $scope.alerts.addAlert('danger', value);
+
+              setTimeout(function() {
+                var alertEle = $('.pre_signup_alert');
+
+                window.ga &&
+                  ga(
+                    'send',
+                    'event',
+                    'Click - Finish',
+                    JSON.stringify(data.errors)
+                  );
+
+                alertEle[0] &&
+                  $('.auth-substep.name-substep').animate(
+                    {
+                      scrollTop: alertEle.offset().top,
+                    },
+                    500
+                  );
+              }, 100);
             });
           }
         });
@@ -485,7 +543,7 @@ app
         (function() {
           var _onload = function() {
             // Use only on prod.
-            if (window.location.hostname != 'dashboard.razorpay.com') {
+            if (window.location.hostname !== 'dashboard.razorpay.com') {
               return;
             }
 
@@ -524,10 +582,26 @@ app
       };
 
       /**
+       * Invoke Bing for conversion tracking.
+       */
+      var invokeBing = function invokeBing() {
+        if (window.location.hostname !== 'dashboard.razorpay.com') {
+          return;
+        }
+        window.uetq = window.uetq || [];
+        window.uetq.push({
+          ec: 'bing',
+          ea: 'click',
+          el: 'connecttobing',
+          ev: 1,
+        });
+      };
+
+      /**
        * Invokes GTAG for conversion tracking.
        */
       var invokeGtag = function invokeGtag() {
-        if (window.location.hostname != 'dashboard.razorpay.com') {
+        if (window.location.hostname !== 'dashboard.razorpay.com') {
           return;
         }
         gtag('event', 'conversion', {
@@ -816,6 +890,14 @@ app
               $scope.alerts.addAlert('danger', value);
             });
           }
+
+          window.ga &&
+            window.ga(
+              'send',
+              'event',
+              'Click - Resend Verification Email',
+              JSON.stringify(data.errors)
+            );
         });
       };
 
@@ -881,6 +963,7 @@ app
           $scope.signup.merchantData.role = null;
           $scope.signup.merchantData.department = null;
           $scope.signup.merchantData.business_name = '';
+          $scope.signup.merchantData.business_website = '';
           $scope.signup.merchantData.contact_mobile = '';
           $scope.signup.merchantData.contact_name = '';
           $scope.email_not_verified = false;
@@ -888,6 +971,48 @@ app
           $scope.forms.detailsForm.$setPristine();
         });
         return request;
+      };
+
+      $scope.trackContactUsClick = function(e) {
+        window.ga &&
+          window.ga('send', 'event', 'Signup - Steps', 'Click - Contact Us');
+      };
+
+      /*
+      * stepName: at which step name
+      * sourceLabel: from which CTA, step
+      * */
+      $scope.trackStepClicksOnMore = function(stepName, sourceLabel) {
+        if (!stepName || !sourceLabel) {
+          return;
+        }
+
+        window.ga &&
+          window.ga(
+            'send',
+            'event',
+            'Signup - Steps',
+            'Step - ' + stepName,
+            sourceLabel
+          );
+      };
+
+      /*
+      * toStepName: to which link the back click points
+      * */
+      $scope.trackBackClick = function(toStepName) {
+        if (!toStepName) {
+          return;
+        }
+
+        window.ga &&
+          window.ga(
+            'send',
+            'event',
+            'Signup - Steps',
+            'Click - Back',
+            toStepName
+          );
       };
     },
   ])

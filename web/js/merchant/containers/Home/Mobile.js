@@ -13,6 +13,7 @@ import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import Traffic from 'merchant/containers/Home/Traffic';
+import { EarlySettlementAnnouncement } from 'merchant/components/Announcements';
 
 import { trackPresetChange, trackSettlementsClick } from './ga';
 
@@ -57,6 +58,11 @@ class AnalyticsMobile extends Component {
 
     return (
       <div className="home-analytics-mobile">
+        <EarlySettlementAnnouncement
+          from="Home-Mobile"
+          marginBottom={!showOnboardingBanner}
+        />
+
         <div ref={node => onExtraContentMount(node)} className="extra-content">
           <div
             className={`v2-onboarding-card${

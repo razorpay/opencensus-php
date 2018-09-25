@@ -256,8 +256,8 @@ export const publicFeature = {
       virtual_accounts: 'Virtual Accounts',
     },
     partner: {
-      activation: 'Partner Activation',
-      deactivation: 'Partner Deactivation',
+      activation: 'Mark as Partner',
+      deactivation: 'Remove as Partner',
     },
   },
 };

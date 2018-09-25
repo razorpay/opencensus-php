@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 
 import ProgressBar from 'rzp/ui/ProgressBar';
+import { classList } from 'common/util';
 
 import { toggleMobileMenu } from 'merchant/modules/app';
 import MainNavLink from 'merchant/components/MainNavLink';
@@ -136,7 +137,10 @@ export default class Sidebar extends Component {
                 }
 
                 <div class="nav">
-                  <ShowWhen myRole="owner manager admin">
+                  <ShowWhen
+                    myRole="owner manager admin"
+                    additionalCondition={user => !user.isPartner()}
+                  >
                     {(!user.isSubmitted || !config.hasPersonalised) && (
                       <Link
                         className="activation-status-link"
@@ -144,11 +148,12 @@ export default class Sidebar extends Component {
                         onClick={this.onSidebarBannerClick}
                       >
                         <div
-                          className={`activation-status${
+                          className={classList(
+                            'activation-status',
                             user.isSubmitted && !config.hasPersonalised
-                              ? ' not-personalised'
+                              ? 'not-personalised'
                               : ''
-                          }`}
+                          )}
                         >
                           <div className="clearfix">
                             <div className="pull-left">{actionCopy}</div>
@@ -178,6 +183,18 @@ export default class Sidebar extends Component {
                       </Link>
                     )}
                   </ShowWhen>
+
+                  <MainNavLink
+                    label="Partner Dashboard"
+                    icon="i i-partner text-success"
+                    to="/submerchants"
+                    notMyRole="sellerapp"
+                    additionalCondition={user => user.isPartner()}
+                    exact
+                  />
+
+                  <div class="divider" />
+
                   <MainNavLink
                     label="Home"
                     icon="i i-chart text-info"

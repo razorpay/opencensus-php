@@ -81,8 +81,9 @@
 
                             if (typeof x['response']['message'] === 'string') {
                                 x['response']['message'] += '\n\nMID: ' + rzp_user.id;
-                                x['response']['message'] += '\nEmail: ' + rzp_user.email;
-                                x['response']['message'] += '\nContact: ' + rzp_user.contact_mobile;
+                                x['response']['message'] += '\nEmail: ' + ((rzp_user.user && rzp_user.user.email) || rzp_user.email);
+                                x['response']['message'] += '\nContact: ' + ((rzp_user.user && rzp_user.user.contact_mobile) || rzp_user.contact_mobile);
+                                x['response']['message'] += '\nName: ' + rzp_user.business_name;
                             }
                         }
 

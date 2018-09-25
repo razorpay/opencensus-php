@@ -168,9 +168,9 @@ const ActivationStatusInfo = data => {
   if (data.activation_status === 'under_review') {
     return (
       <div class="alert alert-info text-center">
-        Your activation form is submitted and is under review. The process may
-        take upto <b>2 working days</b>. If any clarification is needed, we will
-        contact you on your registered email address - {data.contact_email}
+        Your activation form is submitted and is under review. For all updates
+        or any further clarifications required, we will contact you on your
+        registered email address - {data.contact_email}
       </div>
     );
   } else if (data.activation_status === 'needs_clarification') {

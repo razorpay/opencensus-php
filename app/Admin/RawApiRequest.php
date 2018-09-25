@@ -15,6 +15,7 @@ use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
 use Razorpay\Api\Request as ApiRequest;
 
+
 class RawApiRequest
 {
     /**
@@ -34,7 +35,7 @@ class RawApiRequest
      * @param array $auth of auth (proxy|admin)
      * @param string $path relative path of the request
      */
-    function __construct($input, $path, $autoBuildQuery = true)
+    function __construct($input, $path, $headers = [],$autoBuildQuery = true)
     {
         // Increase the time limit
         set_time_limit(600);
@@ -44,7 +45,7 @@ class RawApiRequest
             // We already have a few headers initialized for this class
             // including the X-Dashboard and Razorpay-API Header
             'defaults' => [
-                'headers'   =>  ApiRequest::getHeaders() + [
+                'headers'   =>  ApiRequest::getHeaders() + $headers + [
                     'X-Dashboard'   => 'true',
                     'X-User-Agent'  => Request::header('User-Agent'),
                     'X-IP-Address'  => Request::ip(),
