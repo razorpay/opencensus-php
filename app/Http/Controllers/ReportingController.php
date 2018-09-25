@@ -100,6 +100,16 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function relayer($path)
+    {
+        $method = Request::method();
+        $input = Request::all();
+
+        $res = $this->reportingService()->createAndSendRequest($method, '/v1/'.$path, $input);
+
+        return ApiResponse::json($res);
+    }
+
     /**
      * Returns reporting service instance. It's not in constructor as it
      * depends on ba's vars which get set in middleware.

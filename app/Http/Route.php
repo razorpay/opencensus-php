@@ -824,6 +824,7 @@ final class Route
         'reporting_schedule_list'                  => ['get',      'reporting/schedules',                            'ReportingController@listSchedule'                                  ],
         'reporting_schedule_create'                => ['post',     'reporting/schedules',                            'ReportingController@createSchedule'                                ],
         'reporting_schedule_delete'                => ['delete',   'reporting/schedules/{id}',                       'ReportingController@deleteSchedule'                                ],
+        'reporting_relayer'                        => ['any',      'reporting/{path?}',                              'ReportingController@relayer'                                       ],
         'reporting_log_create_admin'               => ['post',     'admin-reporting/logs',                           'ReportingController@createLog'                                     ],
         'reporting_config_get_admin'               => ['get',      'admin-reporting/configs/{id}',                   'ReportingController@getConfig'                                     ],
         'reporting_config_list_admin'              => ['get',      'admin-reporting/configs',                        'ReportingController@listConfig'                                    ],
@@ -831,6 +832,7 @@ final class Route
         'reporting_log_list_admin'                 => ['get',      'admin-reporting/logs',                           'ReportingController@listLog'                                       ],
         'reporting_schedule_get_admin'             => ['get',      'admin-reporting/schedules/{id}',                 'ReportingController@getSchedule'                                   ],
         'reporting_schedule_list_admin'            => ['get',      'admin-reporting/schedules',                      'ReportingController@listSchedule'                                  ],
+        'reporting_relayer_admin'                  => ['any',      'admin-reporting/{path?}',                        'ReportingController@relayer'                                       ],
 
         // UFH Service
         // TODO: Should change to just /signed_url (No 'get' and underscore)
@@ -1348,6 +1350,7 @@ final class Route
         'reporting_schedule_list',
         'reporting_schedule_create',
         'reporting_schedule_delete',
+        'reporting_relayer',
         'ufh_get_file_signed_url',
         'pincode_get',
         'dispute_edit',
@@ -1687,6 +1690,7 @@ final class Route
         'reporting_schedule_get_admin',
         'reporting_schedule_list_admin',
         'nodal_file_upload_retry',
+        'reporting_relayer_admin',
         // UFH
         'ufh_get_file_signed_url_admin',
         'nodal_beneficiary_update',
@@ -2011,6 +2015,8 @@ final class Route
         'reporting_log_list_admin'                 => '*',
         'reporting_schedule_get_admin'             => '*',
         'reporting_schedule_list_admin'            => '*',
+        'reporting_relayer'                        => '*',
+        'reporting_relayer_admin'                  => '*',
         'ufh_get_file_signed_url'                  => '*',
         'ufh_get_file_signed_url_admin'            => '*',
         'merchant_requests_create'                 => '*',
@@ -2659,6 +2665,11 @@ final class Route
         }
 
         $route = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
+
+        if (strpos($uri, '{path?}') !== false)
+        {
+            $route->where(['path' => '.*']);
+        }
 
         // Hack: To fix by adding support for regex constraint on route parameters.
         if ($name === 'apspdcl_bridge')
