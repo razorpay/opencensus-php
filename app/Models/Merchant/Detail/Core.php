@@ -100,6 +100,36 @@ class Core extends Base\Core
         });
     }
 
+    public function saveInstantActivationDetails(array $input, Merchant\Entity $merchant): array
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS,
+            [
+                'input'       => $input,
+                'merchant_id' => $merchant->getId(),
+            ]);
+
+        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+
+        $merchantDetails->getValidator()->validateIsNotLocked();
+
+        $merchantDetails->edit($input, 'instant_activation');
+
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
+        {
+            $this->repo->saveOrFail($merchantDetails);
+
+            $response = $this->createResponse($merchantDetails);
+
+            // Todo: confirm with product
+            $activationProgress = $response['verification']['activation_progress'];
+
+            $merchantDetails->setActivationProgress($activationProgress);
+
+            return $response;
+        });
+    }
+
     public function getMerchantDetails(Merchant\Entity $merchant, array $input = []): Entity
     {
         $merchantDetails = $merchant->merchantDetail;

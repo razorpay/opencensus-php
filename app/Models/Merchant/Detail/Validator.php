@@ -204,6 +204,13 @@ class Validator extends Base\Validator
         'business_subcategory_for_category',
     ];
 
+    protected static $instantActivationRules = [
+        Entity::BUSINESS_CATEGORY    => 'required|max:255|custom',
+        Entity::BUSINESS_SUBCATEGORY => 'required|max:255|custom',
+        Entity::PROMOTER_PAN         => 'required|alpha_num|max:15',
+        Entity::PROMOTER_PAN_NAME    => 'required|max:255',
+    ];
+
     protected static $websiteDetailsRules = [
         Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
     ];
