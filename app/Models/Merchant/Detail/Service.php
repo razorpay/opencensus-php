@@ -3,20 +3,21 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Exception;
-use RZP\Models\Admin;
-use RZP\Models\Admin\Org;
 use RZP\Models\Base;
-use RZP\Models\FileStore;
+use RZP\Models\User;
+use RZP\Models\Admin;
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Admin\Org;
+use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Constants;
-use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
+use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
-use RZP\Models\User;
-use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 class Service extends Base\Service
 {
