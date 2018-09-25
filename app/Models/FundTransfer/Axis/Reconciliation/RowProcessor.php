@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Axis\Reconciliation;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Axis\Headings;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
@@ -25,6 +26,8 @@ class RowProcessor extends BaseRowProcessor
             self::REMARKS               => $this->getNullOnEmpty(Headings::RETURN_REASON),
             self::SETTLEMENT_DATE       => $this->getNullOnEmpty(Headings::SETTLEMENT_DATE),
         ];
+
+        $this->trace->info(TraceCode::FTA_RECON_PARSED_DATA, ['parsed_data' => $this->parsedData]);
 
         $this->reconEntityId = $this->parsedData[self::ATTEMPT_REFERENCE];
     }

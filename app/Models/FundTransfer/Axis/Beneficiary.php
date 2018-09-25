@@ -9,6 +9,7 @@ use phpseclib\Crypt\AES;
 
 use RZP\Models\Base;
 use RZP\Encryption\Type;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Encryption\AESEncryption;
 use RZP\Models\Settlement\Channel;
@@ -52,6 +53,13 @@ class Beneficiary extends FileProcessor
 
         foreach ($bankAccounts as $ba)
         {
+            $this->trace->info(
+                TraceCode::BENEFICIARY_REGISTER_BANK_ACCOUNT,
+                [
+                    'bank_account_id'   => $ba->getId(),
+                    'channel'           => $this->channel
+                ]);
+
             $beneName =  $this->normalizeBeneficiaryName($ba->getBeneficiaryName());
 
             $ifsc = strtoupper($ba->getIfscCode());

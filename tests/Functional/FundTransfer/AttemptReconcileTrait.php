@@ -86,6 +86,7 @@ trait AttemptReconcileTrait
         $setlReconciliationFile = $this->generateReconciliationFileForChannel(
             $setlFile, $channel, $markAttemptFailed);
 
+
         $data = $this->reconcileSettlements($setlReconciliationFile, $channel);
 
         return $data;
