@@ -31,7 +31,8 @@ class EmandateSorter extends Terminal\Sorter
         $authType = $this->input['payment']->getAuthType();
 
         // No need unless doing for emandate
-        if ($method !== Method::EMANDATE and $authType !== AuthType::NETBANKING)
+        if (($method !== Method::EMANDATE) or
+            ($method === Method::EMANDATE and $authType !== AuthType::NETBANKING))
         {
             return $terminals;
         }
