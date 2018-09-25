@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-class ActivationCategory
+class ActivationFlow
 {
     const WHITELIST                     = 'whitelist';
     const BLACKLIST                     = 'blacklist';

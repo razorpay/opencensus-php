@@ -3,22 +3,20 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
-
-use RZP\Exception;
-use RZP\Models\Base;
-use RZP\Models\User;
-use RZP\Models\Admin;
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
-use RZP\Models\Admin\Org;
-use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Constants;
+use RZP\Exception;
+use RZP\Models\Admin;
+use RZP\Models\Admin\Org;
+use RZP\Models\Base;
+use RZP\Models\FileStore;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\Constants;
+use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
-use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
+use RZP\Models\User;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -428,23 +426,50 @@ class Service extends Base\Service
 
     /**
      * This function is used for getting business categories subcategories list
+     * sub category meta fields will be depedent on auth
      *
      * @return array
      */
     public function getBusinessCategories(): array
     {
-        return BusinessCategory::SUBCATEGORY_MAP;
+        $businessCategoriesMap = BusinessCategory::SUBCATEGORY_MAP;
+        $businessCategories    = [];
+
+        foreach ($businessCategoriesMap as $businessCategory => $businessCategoryDetails)
+        {
+            $businessCategories[$businessCategory] = [];
+            $subCategoriesMetaData                 = [];
+            $subCategoriesForGivenCategory         = $businessCategoryDetails[BusinessCategory::SUBCATEGORIES];
+
+            foreach ($subCategoriesForGivenCategory as $subCategory)
+            {
+                $subCategoriesMetaData[$subCategory] =  $this->getSubCategoryMetaDataFields($subCategory);
+            }
+            $businessCategories[$businessCategory][BusinessCategory::DESCRIPTION]   = $businessCategoryDetails[BusinessCategory::DESCRIPTION];
+            $businessCategories[$businessCategory][BusinessCategory::SUBCATEGORIES] = $subCategoriesMetaData;
+        }
+
+        return $businessCategories;
     }
 
     /**
-     * This function is used for getting business categories subcategories list
-     * mcc code , activation category
+     * returns subcategories meta data as per auth
+     * for admin all meta data fields(description, category, category2, activation category) will be returned
+     * for other then admin description and category2 will be returned
+     *
+     * @param string $subCategory
      *
      * @return array
      */
-    public function getBusinessCategoryDetails(): array
+    private function getSubCategoryMetaDataFields(string $subCategory): array
     {
-        return BusinessCategory::BUSINESS_CATEGORIES;
+        if ($this->auth->isAdminAuth() === true)
+        {
+            return BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
+        }
+
+        return array_only(BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory],
+                          BusinessSubCategoryMetaData::NORMAL_AUTH_FIELDS);
     }
 
     public function getRejectionReasons()

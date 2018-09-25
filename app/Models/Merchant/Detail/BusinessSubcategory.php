@@ -40,7 +40,6 @@ class BusinessSubcategory
     const CRYPTOCURRENCY                  = 'cryptocurrency';
     const CRYPTO_MACHINERY                = 'crypto_machinery ';
 
-    const DAY_CARE                        = 'day_care';
     const DEVELOPER                       = 'developer';
     const DIETICIAN                       = 'dietician';
     const DISTANCE_LEARNING               = 'distance_learning';
@@ -126,7 +125,7 @@ class BusinessSubcategory
     const SECURITIES                      = 'securities';
     const SERVICE_CENTRE                  = 'service_centre';
     const SERVICES_CLASSIFIEDS            = 'services_classifieds';
-    const SEXUAL_WELLNESS_PRODUCT         = 'sexual_wellness_product';
+    const SEXUAL_WELLNESS_PRODUCTS        = 'sexual_wellness_products';
     const SOCIAL_NETWORK                  = 'social_network';
     const SPACE_RENTAL                    = 'space_rental';
     const SPORTS_PRODUCTS                 = 'sports_products';
@@ -184,7 +183,6 @@ class BusinessSubcategory
         self::CROWDFUNDING                    => 'Crowdfunding Platform',
         self::CRYPTOCURRENCY                  => 'Cryptocurrency',
         self::CRYPTO_MACHINERY                => 'Crypto Machinery',
-        self::DAY_CARE                        => 'Pre-School/Day Care',
         self::DEVELOPER                       => 'Developer',
         self::DIETICIAN                       => 'Dietician/Diet Services',
         self::DISTANCE_LEARNING               => 'Distance Learning',
@@ -258,7 +256,7 @@ class BusinessSubcategory
         self::SECURITIES                      => 'Securities',
         self::SERVICE_CENTRE                  => 'Service Centre',
         self::SERVICES_CLASSIFIEDS            => 'Services Classifieds',
-        self::SEXUAL_WELLNESS_PRODUCT         => 'Sexual Wellness Products',
+        self::SEXUAL_WELLNESS_PRODUCTS        => 'Sexual Wellness Products',
         self::SOCIAL_NETWORK                  => 'Social Network',
         self::SPACE_RENTAL                    => 'Home or office rentals',
         self::SPORTS_PRODUCTS                 => 'Sports goods',
@@ -285,7 +283,7 @@ class BusinessSubcategory
      * @param string $subcategory
      * @return boolean true/false
      */
-    public static function isValidSubcategory($subcategory) : bool
+    public static function isValidSubcategory(string $subcategory) : bool
     {
         // return false if subcategory is `descriptions`
         if (strtolower($subcategory) === 'descriptions')

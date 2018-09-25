@@ -827,16 +827,6 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    /**
-     * @return array
-     */
-    public function getBusinessCategoryDetails()
-    {
-        $response = $this->service(E::MERCHANT_DETAIL)->getBusinessCategoryDetails();
-
-        return ApiResponse::json($response);
-    }
-
     public function updateKeyAccess(string $id)
     {
         $input = Request::all();
