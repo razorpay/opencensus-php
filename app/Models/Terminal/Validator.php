@@ -73,6 +73,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_BOB,
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
+        Payment\Gateway::NETBANKING_EQUITAS,
     ];
 
     protected static $createValidators = [
@@ -367,6 +368,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY                 => 'required|in:netbanking_icici',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2    => 'required|string',
+        Entity::TYPE                    => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+    ];
+
+    protected static $netbankingEquitasTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_equitas',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
     ];

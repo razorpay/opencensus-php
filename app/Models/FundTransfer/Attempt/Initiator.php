@@ -194,6 +194,11 @@ class Initiator extends Base\Core
      */
     protected function isValidTime(string $channel): bool
     {
+        if (in_array($this->env, ['testing', 'perf', 'func'], true) === true)
+        {
+            return true;
+        }
+
         if (in_array($channel, Channel::get24x7Channels(), true) === true)
         {
             $this->trace->info(TraceCode::FTA_INITIATE_247);

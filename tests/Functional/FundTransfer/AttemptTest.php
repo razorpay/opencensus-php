@@ -122,6 +122,8 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationAxisFail()
     {
+        $this->markTestSkipped('test mode overrides transfer time check');
+
         $channel = Channel::AXIS;
 
         $purpose = Attempt\Purpose::SETTLEMENT;
@@ -170,6 +172,8 @@ class AttemptTest extends TestCase
 
     public function testPayoutFileCreationIciciFail()
     {
+        $this->markTestSkipped('test mode overrides transfer time check');
+
         $channel = Channel::ICICI;
 
         $purpose = Attempt\Purpose::SETTLEMENT;
