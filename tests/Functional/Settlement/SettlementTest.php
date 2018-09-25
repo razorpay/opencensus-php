@@ -133,6 +133,8 @@ class SettlementTest extends TestCase
     // Random settlement holiday - Test for live mode
     public function testSettlementOnHolidayNon247Channel()
     {
+        $this->markTestSkipped('test mode overrides holiday check');
+
         $this->createPaymentEntities(2);
 
         $now = Carbon::create(2018, 8, 15, 10, 0, 0);
@@ -1045,7 +1047,6 @@ class SettlementTest extends TestCase
         $this->assertEquals(7, $content[$channel]['txnCount']);
 
         $lastSetlAcct = $this->getLastEntity('settlement', true);
-
 
         // Assert linked account settlement
         $this->assertEquals($transfer[1]['to_id'], $lastSetlAcct['merchant_id']);

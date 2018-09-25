@@ -85,17 +85,13 @@ class Core extends Base\Core
                 10,
                 200,
                 400);
-
-            $valid = true;
         }
         catch (\Throwable $ex)
         {
             $this->alertException($ex, $input);
-
-            $valid = false;
         }
 
-        return $valid;
+        return true;
     }
 
     /**
