@@ -6,19 +6,6 @@ import { groupBy } from 'rzp/utils/rzp-utils';
 
 import CreditDetails from './CreditDetails';
 
-const isCreditsDataEmpty = ({ balanceData, creditItems }) => {
-  const { credits, fee_credits, refund_credits } = balanceData;
-  if (
-    !credits &&
-    !fee_credits &&
-    !refund_credits &&
-    !Object.keys(creditItems).length
-  ) {
-    return true;
-  }
-  return false;
-};
-
 export default props => {
   let { creditsData, balanceData, loading, currentUser } = props;
 
@@ -49,7 +36,7 @@ export default props => {
         </div>
       ) : (
         <div class="list-group details-row-container">
-          {isCreditsDataEmpty({ balanceData, creditItems }) ? (
+          {!(creditsData && creditsData.items.length) ? (
             <h3 class="empty-table text-center">No Credits</h3>
           ) : (
             <Fragment>
