@@ -135,6 +135,7 @@ class Validator extends Base\Validator
         'callback'                  => 'sometimes', // JSONP
         'iin'                       => 'required|numeric|digits:6',
         '_'                         => 'sometimes|array',
+        'order_id'                  => 'sometimes|filled',
     ];
 
     protected static $pspAmountLimit = [
