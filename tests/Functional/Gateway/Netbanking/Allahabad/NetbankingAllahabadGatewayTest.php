@@ -167,23 +167,6 @@ class NetbankingAllahabadGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testUserCancelledNetbankingEntity');
     }
 
-    public function testRefundFileGeneration()
-    {
-        Mail::fake();
-
-        $this->createRefundForFileGeneration();
-
-        $this->ba->appAuth();
-
-        $data = $this->generateGatewayFile('allahabad', 'combined');
-
-        $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
-
-        $this->checkRefundExcelData($data['items'][0], $file);
-
-        $this->checkMailQueue($file);
-    }
-
     protected function mockFailedCallbackResponse()
     {
         $this->mockServerContentFunction(function(& $content, $action = null)

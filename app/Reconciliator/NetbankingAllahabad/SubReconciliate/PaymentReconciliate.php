@@ -40,7 +40,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {   
         $bankPaymentId = $this->getReferenceNumber($row);
 
-        if ((empty($errorCode) === false) and (empty($bankPaymentId) === true))
+        if (empty($bankPaymentId) === true)
         {
             return Status::FAILED;
         }
