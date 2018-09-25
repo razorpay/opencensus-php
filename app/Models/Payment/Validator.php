@@ -56,7 +56,7 @@ class Validator extends Base\Validator
         'app_token'                     => 'sometimes',
         'token'                         => 'sometimes',
         'save'                          => 'sometimes|in:0,1',
-        'recurring'                     => 'sometimes|in:1',
+        'recurring'                     => 'sometimes|in:1,preferred',
         'fee'                           => 'sometimes|filled|integer|max:50000000',
         Entity::TAX                     => 'sometimes|filled|integer|max:50000000',
         'on_hold'                       => 'sometimes_if:method,transfer|boolean',
@@ -79,7 +79,6 @@ class Validator extends Base\Validator
         'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
         'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch',
         'offer_id'                      => 'filled|public_id|size:20',
-        'preferred_recurring'           => 'sometimes|in:1',
     ];
 
     protected static $editRules = [
@@ -157,7 +156,6 @@ class Validator extends Base\Validator
         'customer_id',
         'test_success',
         'upi_expiry_time',
-        'recurring',
         // Ideally, we should be using custom. But
         // due to dot notation, we cannot use it.
         'ifsc',
@@ -356,16 +354,6 @@ class Validator extends Base\Validator
                 [
                     'vpa' => $vpa
                 ]);
-        }
-    }
-
-    protected function validateRecurring(array $input)
-    {
-        if ((isset($input[Entity::RECURRING]) === true) and
-            (isset($input[Entity::PREFERRED_RECURRING]) === true))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Request should contain either recurring or preferred_recurring, not both');
         }
     }
 

@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\FundTransfer;
 
 use Mail;
+use Carbon\Carbon;
 
 use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
@@ -29,6 +31,8 @@ class AttemptReconcileTest extends TestCase
 
     protected function verifySettlementReconFileProcessForKotak()
     {
+        $this->markTestSkipped('Kotak is not live');
+
         $channel = Channel::KOTAK;
 
         $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
@@ -41,8 +45,10 @@ class AttemptReconcileTest extends TestCase
     {
         $channel = Channel::ICICI;
 
-        $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
+        $content = $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $setlFile = $content[$channel]['file']['local_file_path'];
 
         $fileName = basename($setlFile);
 
@@ -55,8 +61,10 @@ class AttemptReconcileTest extends TestCase
     {
         $channel = Channel::HDFC;
 
-        $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
+        $content = $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $setlFile = $content[$channel]['file']['local_file_path'];
 
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
     }
@@ -65,8 +73,10 @@ class AttemptReconcileTest extends TestCase
     {
         $channel = Channel::AXIS;
 
-        $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
+        $content = $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $setlFile = $content[$channel]['file']['local_file_path'];
 
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
     }
@@ -93,6 +103,8 @@ class AttemptReconcileTest extends TestCase
 
     protected function verifySettlementReconFileProcessFailureKotak()
     {
+        $this->markTestSkipped('Kotak is not live.');
+
         $channel = Channel::KOTAK;
 
         $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
@@ -108,6 +120,8 @@ class AttemptReconcileTest extends TestCase
         $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
 
+        $setlFile = $setlFile[$channel]['file']['local_file_path'];
+
         $this->assertReconFileProcessFailureForChannel($setlFile, $channel);
     }
 
@@ -117,6 +131,8 @@ class AttemptReconcileTest extends TestCase
 
         $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $setlFile = $setlFile[$channel]['file']['local_file_path'];
 
         $this->assertReconFileProcessFailureForChannel($setlFile, $channel);
     }
@@ -128,6 +144,8 @@ class AttemptReconcileTest extends TestCase
         $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
 
+        $setlFile = $setlFile[$channel]['file']['local_file_path'];
+
         $this->assertReconFileProcessFailureForChannel($setlFile, $channel);
     }
 
@@ -137,10 +155,14 @@ class AttemptReconcileTest extends TestCase
 
     protected function verifyPayoutReconFileProcessForKotak()
     {
+        $this->markTestSkipped('Kotak is not live.');
+
         $channel = Channel::KOTAK;
 
         $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::PAYOUT);
+
+        $setlFile = $setlFile[$channel]['file']['local_file_path'];
 
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::PAYOUT);
     }
@@ -166,6 +188,8 @@ class AttemptReconcileTest extends TestCase
 
     public function testSettlementReconcileEntitiesSuccessForKotak()
     {
+        $this->markTestSkipped('Kotak is not live.');
+
         $this->verifySettlementReconFileProcessForKotak();
 
         $this->reconcileEntitiesForChannel(Channel::KOTAK);
@@ -175,6 +199,10 @@ class AttemptReconcileTest extends TestCase
 
     public function testSettlementReconcileEntitiesSuccessForIcici()
     {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->verifySettlementReconFileProcessForIcici();
 
         $this->reconcileEntitiesForChannel(Channel::ICICI);
@@ -184,6 +212,10 @@ class AttemptReconcileTest extends TestCase
 
     public function testSettlementReconcileEntitiesSuccessForHdfc()
     {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->verifySettlementReconFileProcessForHdfc();
 
         $this->reconcileEntitiesForChannel(Channel::HDFC);
@@ -193,6 +225,10 @@ class AttemptReconcileTest extends TestCase
 
     public function testSettlementReconcileEntitiesSuccessForAxis()
     {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->verifySettlementReconFileProcessForAxis();
 
         $this->reconcileEntitiesForChannel(Channel::AXIS);
@@ -202,6 +238,10 @@ class AttemptReconcileTest extends TestCase
 
     public function testSettlementReconcileEntitiesSuccessForRbl()
     {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->verifySettlementReconProcessForRbl();
 
         $this->reconcileEntitiesForChannel(Channel::RBL);
@@ -220,6 +260,10 @@ class AttemptReconcileTest extends TestCase
 
     public function testSettlementReconcileEntitiesFailureForRbl()
     {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->verifySettlementReconProcessForRbl(true);
 
         $content = $this->reconcileEntitiesForChannel(Channel::RBL);
@@ -238,6 +282,8 @@ class AttemptReconcileTest extends TestCase
 
     public function testPayoutReconcileEntitiesForKotak()
     {
+        $this->markTestSkipped('Kotak is not live.');
+
         $this->verifyPayoutReconFileProcessForKotak();
 
         $this->reconcileEntitiesForChannel(Channel::KOTAK);
@@ -374,11 +420,17 @@ class AttemptReconcileTest extends TestCase
 
     public function testRetrySettlementKotak()
     {
+        $this->markTestSkipped('Kotak is not live.');
+
         $this->reinitiateSettlementAndAssertSuccessForChannel(Channel::KOTAK);
     }
 
     public function testRetrySettlementIcici()
     {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->reinitiateSettlementAndAssertSuccessForChannel(Channel::ICICI);
     }
 
@@ -482,11 +534,19 @@ class AttemptReconcileTest extends TestCase
 
     public function testReconciliationInTestModeForSuccess()
     {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->verifyReconciliationInTestMode(Channel::AXIS);
     }
 
     public function testReconciliationInTestModeForFailure()
     {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         // This test wont work for kotak.
         // because kotak failure transactions can not be determined by the status.
         $this->verifyReconciliationInTestMode(Channel::AXIS, true);
@@ -494,11 +554,19 @@ class AttemptReconcileTest extends TestCase
 
     public function testReconciliationInTestModeForInternalFailure()
     {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->verifyReconciliationInTestMode(Channel::AXIS, true, true);
     }
 
     public function testReconciliationInTestModeForFailureForHdfc()
     {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->verifyReconciliationInTestMode(Channel::HDFC, false, true);
     }
 
@@ -509,6 +577,10 @@ class AttemptReconcileTest extends TestCase
 
     public function testSettlementReconcileEntitiesFailureForAxis()
     {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->verifySettlementReconForAxisReturnSettled();
     }
 
@@ -516,8 +588,10 @@ class AttemptReconcileTest extends TestCase
     {
         $channel = Channel::AXIS;
 
-        $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
+        $content = $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $setlFile = $content[$channel]['file']['local_file_path'];
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 

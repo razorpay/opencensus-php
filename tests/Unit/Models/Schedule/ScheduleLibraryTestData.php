@@ -100,6 +100,15 @@ return [
                 'initialTime'      => "2016-10-21 23:01:19",
                 'expectedNextTime' => "2016-10-24 00:00:00"
             ],
+
+            // Initial is 11.01pm on a Friday, 21st October. Delay one hour,
+            // but next day is 15th Aug 2018 and is a holidays.
+            // Expected time is 17th Aug 2018.
+            [
+                'initialTime'      => "2018-08-14 23:01:19",
+                'expectedNextTime' => "2018-08-16 00:00:00",
+                'ignoreHolidays'   => true,
+            ],
         ],
         'schedule' => [
             'name'        => 'Every 2 hours',

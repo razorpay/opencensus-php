@@ -95,6 +95,8 @@ abstract class Processor extends Base\Core
             {
                 foreach ($data as $row)
                 {
+                    $this->trace->info(TraceCode::VERIFY_FTA_ROW, ['row' => $row]);
+
                     $entity = $this->reconcileEntity($row);
 
                     if ($entity === null)
@@ -116,6 +118,8 @@ abstract class Processor extends Base\Core
             }
 
             $summary = $this->getSummary();
+
+            $this->trace->info(TraceCode::FTA_RECON_SUMMARY, ['summary' => $summary]);
 
             return $summary;
         });

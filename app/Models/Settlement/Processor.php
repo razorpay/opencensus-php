@@ -566,8 +566,8 @@ class Processor extends Base\Core
      */
     protected function isTestMode(): bool
     {
-        if (($this->mode === Mode::TEST) or
-            (in_array($this->env, ['testing', 'perf', 'func'], true) === true))
+        if (in_array($this->env, ['perf', 'func'], true) === true)
+
         {
             return true;
         }

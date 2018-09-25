@@ -172,9 +172,20 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_TRANSFER_ATTEMPT_CREATED                 = 'FUND_TRANSFER_ATTEMPT_CREATED';
     const FUND_TRANSFER_ATTEMPT_BULK_UPDATE_REQUEST     = 'FUND_TRANSFER_ATTEMPT_BULK_UPDATE_REQUEST';
     const FUND_TRANSFER_ATTEMPT_UPDATED                 = 'FUND_TRANSFER_ATTEMPT_UPDATED';
+    const FUND_TRANSFER_ATTEMPT_STATUS_UPDATED          = 'FUND_TRANSFER_ATTEMPT_STATUS_UPDATED';
+    const FTA_ROWS_FETCHED_FOR_FILE                     = 'FTA_ROWS_FETCHED_FOR_FILE';
+    const FTA_DATA_CREATED_FOR_FILE                     = 'FTA_DATA_CREATED_FOR_FILE';
+    const FTA_FILE_CREATED                              = 'FTA_FILE_CREATED';
+    const FTA_FILE_EMAIL_SENT                           = 'FTA_FILE_EMAIL_SENT';
+    const FTA_FILE_SEND_VIA_BEAM                        = 'FTA_FILE_SEND_VIA_BEAM';
+    const FTA_INITIATE_247                              = 'FTA_INITIATE_247';
+    const FTA_INITIATE_TIMES                            = 'FTA_INITIATE_TIMES';
+    const FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED        = 'FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED';
     const FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED          = 'FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED';
     const FUND_TRANSFER_ATTEMPT_SKIPPED                 = 'FUND_TRANSFER_ATTEMPT_SKIPPED';
     const FUND_TRANSFER_ATTEMPT_SOURCE_UPDATED          = 'FUND_TRANSFER_ATTEMPT_SOURCE_UPDATED';
+    const BATCH_FUND_TRANSFER_CREATED                   = 'BATCH_FUND_TRANSFER_CREATED';
+    const BATCH_FUND_TRANSFER_FILE_DETAIL_UPDATED       = 'BATCH_FUND_TRANSFER_FILE_DETAIL_UPDATED';
     const PAYMENT_RECURRING_INVALID_STATUS              = 'PAYMENT_RECURRING_INVALID_STATUS';
     const GATEWAY_TOKEN_MISMATCH                        = 'GATEWAY_TOKEN_MISMATCH';
 
@@ -607,17 +618,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_PROCESS_BEGIN                         = 'FTA_PROCESS_BEGIN';
     const FTA_FETCHED                               = 'FTA_FETCHED';
     const FTA_UPDATE_STATUS                         = 'FTA_UPDATE_STATUS';
-    const FTA_FILE_CREATED                          = 'FTA_FILE_CREATED';
     const FTA_FILE_ROWS_CREATED                     = 'FTA_FILE_ROWS_CREATED';
     const FTA_FILE_CREATED_IN_S3                    = 'FTA_FILE_CREATED_IN_S3';
     const FTA_FILE_RECON_INVALID_STATUS_CHANGE      = 'FTA_FILE_RECON_INVALID_STATUS_CHANGE';
-    const FTA_FILE_EMAIL_SENT                       = 'FTA_FILE_EMAIL_SENT';
     const FTA_SAVED_TO_DB                           = 'FTA_SAVED_TO_DB';
     const FTA_BATCH_UPDATED                         = 'FTA_BATCH_UPDATED';
 
     const FTA_RECON_REPORT_FILE_CREATED             = 'FTA_RECON_REPORT_FILE_CREATED';
     const FTA_RECON_REPORT_INITIATED                = 'FTA_RECON_REPORT_INITIATED';
     const LOCKED_FUND_TRANSFER_ATTEMPTS             = 'LOCKED_FUND_TRANSFER_ATTEMPTS';
+    const SETTLEMENT_DELAYED_MF_CHECK               = 'SETTLEMENT_DELAYED_MF_CHECK';
     const SETTLEMENT_REVERSE_FILE_SKIPPED           = 'SETTLEMENT_REVERSE_FILE_SKIPPED';
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
@@ -1192,6 +1202,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SERVER_ERROR_LOG_RISK                         = 'SERVER_ERROR_LOG_RISK';
 
+    const BEAM_METHOD_CALL                              = 'BEAM_METHOD_CALL';
     const BEAM_REQUEST                                  = 'BEAM_REQUEST';
     const BEAM_RESPONSE                                 = 'BEAM_RESPONSE';
     const BEAM_PUSH                                     = 'BEAM_PUSH';
@@ -1234,12 +1245,24 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RETRY_BEAM_FILE_UPLOAD                        = 'RETRY_BEAM_FILE_UPLOAD';
     const BENEFICIARY_REGISTER_API_INIT                 = 'BENEFICIARY_REGISTER_API_INIT';
     const BENEFICIARY_REGISTER_API_FETCH                = 'BENEFICIARY_REGISTER_API_FETCH';
+    const BENEFICIARY_REGISTER_BANK_ACCOUNT             = 'BENEFICIARY_REGISTER_BANK_ACCOUNT';
+    const BENEFICIARY_REGISTER_DATA_FETCHED             = 'BENEFICIARY_REGISTER_DATA_FETCHED';
+    const BENEFICIARY_REGISTER_FILE_CREATED             = 'BENEFICIARY_REGISTER_FILE_CREATED';
+    const BENEFICIARY_REGISTER_EMAIL_SENT               = 'BENEFICIARY_REGISTER_EMAIL_SENT';
+    const BENEFICIARY_REGISTER_FILE_SEND_VIA_BEAM       = 'BENEFICIARY_REGISTER_FILE_SEND_VIA_BEAM';
+    const BENEFICIARY_REGISTER_RESPONSE                 = 'BENEFICIARY_REGISTER_RESPONSE';
     const BEAM_NOTIFIER_FAILED                          = 'BEAM_NOTIFIER_FAILED';
     const SLACK_NOTIFICATION_SEND_FAILED                = 'SLACK_NOTIFICATION_SEND_FAILED';
     const VERIFY_FUND_TRANSFER_INIT                     = 'VERIFY_FUND_TRANSFER_INIT';
     const FTA_VERIFICATION_SKIPPED                      = 'FTA_VERIFICATION_SKIPPED';
     const VERIFY_FTA_ROW                                = 'VERIFY_FTA_ROW';
+    const RECON_FTA_ROW                                 = 'RECON_FTA_ROW';
+    const FTA_RECON_SUMMARY                             = 'FTA_RECON_SUMMARY';
     const FTA_RECON_PARSED_DATA                         = 'FTA_RECON_PARSED_DATA';
+    const FTA_RECON_SOURCE_UPDATE_SKIPPED               = 'FTA_RECON_SOURCE_UPDATE_SKIPPED';
+    const FTA_RECON_SOURCE_UPDATED                      = 'FTA_RECON_SOURCE_UPDATED';
+    const FTA_STATUS_FAILED                             = 'FTA_STATUS_FAILED';
+    const FTA_STATUS_FAILED_MERCHANT_ERROR              = 'FTA_STATUS_FAILED_MERCHANT_ERROR';
 
     const APSPDCL_REQUEST                               = 'APSPDCL_REQUEST';
     const APSPDCL_REQUEST_ERROR                         = 'APSPDCL_REQUEST_ERROR';

@@ -168,6 +168,10 @@ abstract class NodalAccount extends Base\Core
             $attempt->source->batchFundTransfer()->associate($this->batchFundTransfer);
 
             $attempt->source->setStatus(Attempt\Status::INITIATED);
+
+            $this->trace->info(
+                TraceCode::FUND_TRANSFER_ATTEMPT_STATUS_UPDATED,
+                ['fta_id' => $attempt->getId()]);
         }
 
         $this->updateBatchFundTransferEntity();
@@ -197,6 +201,12 @@ abstract class NodalAccount extends Base\Core
         $this->batchFundTransfer->build($input);
 
         $this->repo->saveOrFail($this->batchFundTransfer);
+
+        $this->trace->info(
+            TraceCode::BATCH_FUND_TRANSFER_CREATED,
+            [
+                'batch_fund_transfer_id' => $this->batchFundTransfer->getId()
+            ]);
     }
 
     protected function updateBatchFundTransferEntity()
