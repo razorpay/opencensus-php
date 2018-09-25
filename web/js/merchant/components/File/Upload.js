@@ -33,6 +33,7 @@ export default class FileUpload extends React.Component {
     showFileSize: true,
     onBiggerFileSize: () => {},
     onCloseClick: () => {},
+    renderStagedChildren: () => null,
   };
 
   constructor(props) {
@@ -40,7 +41,7 @@ export default class FileUpload extends React.Component {
 
     this.state = {
       files: [],
-      isDocPreUploaded: props.defaultValue,
+      isDocPreUploaded: !!props.defaultValue,
     };
   }
 
@@ -49,9 +50,9 @@ export default class FileUpload extends React.Component {
     if (this.isFileAllowed(file)) {
       this.props.onDrop && this.props.onDrop(file);
 
-      this.setState({ files: [...this.state.files, file] }, _ =>
-        this.onFileChange(file)
-      );
+      this.setState({ files: [...this.state.files, file] }, () => {
+        this.props.onFileChange && this.onFileChange(file);
+      });
     }
   };
 
@@ -101,7 +102,7 @@ export default class FileUpload extends React.Component {
     );
 
     // Uploaded file type matches given pattern
-    const isValidFilePattern = acceptedTypes.find(aT => {
+    const isValidFilePattern = acceptedTypes.some(aT => {
       let pattern = new RegExp(aT);
       return pattern.test(type);
     });
@@ -212,23 +213,27 @@ export default class FileUpload extends React.Component {
       onFileChange,
       showStagedFileStatus,
       showAcceptInfo,
+      renderStagedChildren,
       showFileSize,
       size,
     } = this.props;
     let { isDocPreUploaded } = this.state;
 
-    const { stagedFileStatus, uploadedBytes, files = [] } = onFileChange
+    const { stagedFileStatus, uploadedBytes } = onFileChange
       ? this.state
       : this.props;
+
+    // if doc is pre-uploaded inserting one dummy file object to be provided to Staged
+    const files = isDocPreUploaded ? [{}] : this.state.files;
+
     return (
       <div
         class="Dropzone"
         id={`Dropzone-${name}`}
         onDragLeave={isDocPreUploaded ? undefined : this.toggleDragWithFile}
       >
-        {!multi &&
-          !isDocPreUploaded &&
-          !files.length && (
+        {!isDocPreUploaded &&
+          (multi || !files.length) && (
             <label
               class={classList(
                 'Dropzone-cavity',
@@ -293,18 +298,25 @@ export default class FileUpload extends React.Component {
               disabled && 'Dropzone-cavity--disabled'
             )}
           >
-            <Staged
-              file={files.length && files[0]}
-              isDocPreUploaded={isDocPreUploaded}
-              onCloseClick={this.props.showCloseBtn && this.handleCloseClick(0)}
-              isDisabled={disabled}
-              uploadedBytes={uploadedBytes}
-              stagedFileStatus={stagedFileStatus}
-              showFileSize={showFileSize && maxSize}
-              showStagedFileStatus={showStagedFileStatus}
-              name={name}
-              size={size}
-            />
+            {files.map((file, index) => (
+              <Staged
+                file={file}
+                key={index}
+                isDocPreUploaded={isDocPreUploaded}
+                onCloseClick={
+                  this.props.showCloseBtn && this.handleCloseClick(index)
+                }
+                isDisabled={disabled}
+                uploadedBytes={uploadedBytes}
+                stagedFileStatus={stagedFileStatus}
+                showFileSize={showFileSize && maxSize}
+                showStagedFileStatus={showStagedFileStatus}
+                name={`name-${index}`}
+                size={size}
+              >
+                {renderStagedChildren(index)}
+              </Staged>
+            ))}
           </div>
         )}
       </div>
@@ -342,6 +354,8 @@ const fileTypesMap = {
   pdf: 'application/pdf',
   xls: 'application/vnd.ms-excel', //Old microsoft excel sheets.
   image: 'image/*',
+  jpg: 'image/jpeg',
+  png: 'image/png',
 };
 
 // File type = docs are not safe to upload in general

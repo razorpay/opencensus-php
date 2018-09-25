@@ -60,11 +60,10 @@ export default class Staged extends React.Component {
       isDisabled,
       onCloseClick,
       showStagedFileStatus,
-      isDocPreUploaded: defaultFile,
+      isDocPreUploaded,
     } = this.props;
 
     const loader = this.getProgress();
-    const isDocPreUploaded = !file && defaultFile; // if data already has file id
 
     return (
       <div class={`Dropzone-content ${size}`} key={name}>
@@ -95,8 +94,8 @@ export default class Staged extends React.Component {
               )}
             </React.Fragment>
           )}
+          <div>{this.props.children}</div>
         </div>
-        <div>{this.props.children}</div>
         {!isDisabled &&
           onCloseClick &&
           currentStatus !== 'process' && (
