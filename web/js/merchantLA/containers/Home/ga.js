@@ -1,6 +1,6 @@
 import { setTrackData } from 'rzp/utils/googleAnalytics';
 
-const pageTitle = 'Dashboard - Home V2';
+const pageTitle = 'LA Dashboard - Home V2';
 
 export const track = setTrackData({ eventCategory: pageTitle });
 

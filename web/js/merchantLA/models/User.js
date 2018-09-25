@@ -37,45 +37,13 @@ export default class User {
     return !!this.user;
   }
 
-  get isVerified() {
-    return this.user.confirmed;
-  }
-
   get isActivated() {
     return !!parseInt(this.activated);
-  }
-
-  get needsClarification() {
-    return this.activation_status === 'needs_clarification';
   }
 
   get isSubmitted() {
     return !!parseInt(this.submitted);
   }
-
-  get isRejected() {
-    return this.activation_status === 'rejected';
-  }
-
-  get isMarketplaceEnabled() {
-    return this.isFeatureEnabled('marketplace');
-  }
-
-  get isVirtualAccountsEnabled() {
-    return this.isFeatureEnabled('virtual_accounts');
-  }
-
-  get isSubscriptionsEnabled() {
-    return this.isFeatureEnabled('subscriptions');
-  }
-
-  // TODO: Remove this code and reports v1 code when confirmed no rollbacks
-  // Enabling reportsV2 for all merchants.
-  get isReportV2Enabled() {
-    return true;
-    // return this.isFeatureEnabled('report_v2');
-  }
-
   // TODO: Remove this code when confirmed no rollbacks
   get isNewAnalyticsEnabled() {
     return true;

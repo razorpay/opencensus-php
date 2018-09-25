@@ -10,7 +10,7 @@ import ModesDropdown from 'merchant/components/HeaderNav/SwitchMode';
 
 const analytics = action => {
   window.rzpAnalytics({
-    eventCategory: 'Dashboard - Header',
+    eventCategory: 'LA Dashboard - Header',
     eventAction: action,
   });
 };
