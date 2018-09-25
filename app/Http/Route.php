@@ -544,6 +544,7 @@ final class Route
         'offer_fetch_by_id'                        => ['get',      'offers/{id}',                                    'OfferController@fetchOfferById'                                    ],
         'offer_deactivate'                         => ['patch',    'offers/deactivate',                              'OfferController@deactivateOffers'                                  ],
         'currency_update_rates'                    => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
+        'currency_update_rates_multiple'           => ['post',     'currency/rates',                                 'CurrencyController@postCurrencyRatesMultiple'                      ],
         'currency_fetch_rates'                     => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
         'reports_fetch_multiple'                   => ['get',      'reports',                                        'ReportController@getReports'                                       ],
         'reports_generate'                         => ['post',     'reports/{entity}/generate',                      'ReportController@generateReport'                                   ],
@@ -1124,6 +1125,7 @@ final class Route
         'billdesk_create_cancelled_refunds',
         'card_update_saved',
         'currency_update_rates',
+        'currency_update_rates_multiple',
         'emandate_debit_reconcile',
         'emi_generate_excel',
         'entity_tax_update',
@@ -2035,7 +2037,7 @@ final class Route
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'subscription_manual_retry'                => '*',
         'terminal_get_banks'                       => '*',
-        'terminal_set_banks'                       => '*',
+        'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
     ];
 
     public static $direct = [
@@ -2183,6 +2185,7 @@ final class Route
             'refund_create_gateway_record',
             'gateway_validate_unknown_refund',
             'currency_update_rates',
+            'currency_update_rates_multiple',
             'refund_gateway_refunded_txns',
             'merchant_activation_migrate',
             'billdesk_create_cancelled_refunds',

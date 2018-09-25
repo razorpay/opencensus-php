@@ -16,6 +16,22 @@ class CurrencyController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postCurrencyRatesMultiple()
+    {
+        $data = [];
+
+        $currencies = Currency\Currency::SUPPORTED_CURRENCIES;
+
+        foreach ($currencies as $currency)
+        {
+            $rates = (new Currency\Core)->updateRates($currency);
+
+            $data[$currency] = $rates[Currency\Currency::INR];
+        }
+
+        return ApiResponse::json($data);
+    }
+
     public function getCurrencyRates($currency)
     {
         $data = (new Currency\Core)->getRates($currency);
