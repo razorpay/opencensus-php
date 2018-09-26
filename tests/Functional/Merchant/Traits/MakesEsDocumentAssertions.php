@@ -17,8 +17,8 @@ trait MakesEsDocumentAssertions
         string $mode): array
     {
         $params = [
-            'index' => "testing_{$entity}_{$mode}",
-            'type'  => "testing_{$entity}_{$mode}",
+            'index' => env('ES_ENTITY_TYPE_PREFIX')."{$entity}_{$mode}",
+            'type'  => env('ES_ENTITY_TYPE_PREFIX')."{$entity}_{$mode}",
             'id'    => $id,
         ];
 
