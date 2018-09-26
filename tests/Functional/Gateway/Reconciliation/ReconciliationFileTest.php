@@ -462,6 +462,8 @@ class ReconciliationFileTest extends TestCase
 
     public function testVirtualAccYesBankReconFile()
     {
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
@@ -501,6 +503,8 @@ class ReconciliationFileTest extends TestCase
 
     public function testVirtualAccYesBankReconFileWithWrongValues()
     {
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
@@ -1179,6 +1183,8 @@ class ReconciliationFileTest extends TestCase
 
     public function testHitachiBharatQrRecon()
     {
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use App;
 use Config;
 use Conner\Tagging\Taggable;
 
@@ -662,6 +663,21 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Merchant\Methods\Entity', self::MERCHANT_ID);
     }
 
+     /*
+      * Because we didn't do the data migration for old Merchants.
+      * We are doing that as we try to access the methods.
+      */
+    public function getMethods()
+    {
+        if ($this->hasRelation('methods') === false)
+        {
+            $app = App::getFacadeRoot();
+            return $app['repo']->methods->getMethodsForMerchant($this);
+        }
+
+        return $this->methods;
+    }
+
     public function terminals()
     {
         return $this->hasMany(
@@ -966,11 +982,6 @@ class Entity extends Base\PublicEntity
     public function getBrandColorOrDefault(string $default = self::DEFAULT_MERCHANT_BRAND_COLOR): string
     {
         return $this->getBrandColor() ?: $default;
-    }
-
-    public function getHandle()
-    {
-        return $this->getAttribute(self::HANDLE);
     }
 
     public function getChannel()

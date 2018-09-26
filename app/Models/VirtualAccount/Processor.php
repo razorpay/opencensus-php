@@ -3,7 +3,6 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
-use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;

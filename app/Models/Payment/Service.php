@@ -1500,7 +1500,7 @@ class Service extends Base\Service
 
         $payment->merchant()->associate($this->merchant);
 
-        $paymentInput = $payment->getDummyPaymentArray(Payment\Method::CARD, $iinEntity->getNetworkCode());
+        $paymentInput = $payment->getDummyPaymentArray(Payment\Method::CARD, null, $iinEntity->getNetworkCode());
 
         $payment->fill($paymentInput);
 

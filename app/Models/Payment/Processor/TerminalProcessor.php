@@ -30,8 +30,13 @@ class TerminalProcessor extends Base\Core
     {
         $this->payment = $payment;
 
-        // Bank transfers have no terminal
-        if ($this->payment->isBankTransfer() === true)
+        /*
+         * This is added temporarily because currently
+         * we are not passing the right terminal Id.
+         * Will remove this later.
+         */
+        if (($payment->isBankTransfer() === true) and
+            (empty($gatewayData) === false))
         {
             return [];
         }
