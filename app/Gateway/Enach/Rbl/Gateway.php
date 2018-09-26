@@ -631,7 +631,7 @@ class Gateway extends Base\Gateway
 
         $errorCode = $gatewayPayment->getErrorCode();
 
-        $recurringFailureReason = ErrorCodes::getEmandateRegisterErrorDescriptionFromCode($errorCode);
+        $recurringFailureReason = NetBankingErrorCodes::getEmandateRegisterErrorDescriptionFromCode($errorCode);
 
         $recurringData = [
             Token\Entity::RECURRING_STATUS         => $recurringStatus,
