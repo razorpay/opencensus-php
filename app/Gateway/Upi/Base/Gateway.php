@@ -42,6 +42,8 @@ class Gateway extends Base\Gateway
 
         $entity->setAcquirer(static::ACQUIRER);
 
+        $entity->setGateway($this->gateway);
+
         $entity->generate($attr);
 
         $entity->fill($attr);

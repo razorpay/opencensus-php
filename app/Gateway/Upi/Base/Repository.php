@@ -12,6 +12,7 @@ class Repository extends Base\Repository
     protected $entity = 'upi';
 
     protected $appFetchParamRules = array(
+        Entity::GATEWAY                 => 'sometimes|string|max:50',
         Entity::BANK                    => 'sometimes|min:4|max:4',
         Entity::GATEWAY_PAYMENT_ID      => 'sometimes|string|max:50',
         Entity::NPCI_REFERENCE_ID       => 'sometimes|string|max:20',

@@ -342,6 +342,137 @@ class SettlementTest extends TestCase
         $this->initiateAndverifySettlementEntitiesForChannel($channel);
     }
 
+    public function testMerchantEarlySettlement()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->addFeatures([Constants::ES_AUTOMATIC]);
+
+        $dt = Carbon::create(2018, 8, 14, 6, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $attrs = [
+            'captured_at' => $dt->getTimestamp() + 1,
+            'method'      => 'card',
+            'created_at'  => $dt->getTimestamp(),
+            'amount'       => 2000,
+        ];
+
+        $payment = $this->fixtures->create('payment:captured', $attrs);
+
+        $txn = $this->getLastTransaction(true);
+
+        $this->fixtures->edit('transaction', $txn['id'], ['settled_at' => $dt->addHour()->getTimestamp()]);
+
+        $txn = $this->getLastTransaction(true);
+
+        $now = Carbon::create(
+            2018, 8, 14, 8, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(0, $setlResponse[$channel]['count']);
+
+        $dt = Carbon::create(2018, 8, 14, 9, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+
+        Carbon::setTestNow();
+
+        // Part 2
+
+        $dt = Carbon::create(2018, 8, 14, 12, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $attrs = [
+            'captured_at' => $dt->getTimestamp() + 1,
+            'method'      => 'card',
+            'created_at'  => $dt->getTimestamp(),
+            'amount'       => 2000,
+        ];
+
+        $payment = $this->fixtures->create('payment:captured', $attrs);
+
+        $txn = $this->getLastTransaction(true);
+
+        $this->fixtures->edit('transaction', $txn['id'], ['settled_at' => $dt->addHour()->getTimestamp()]);
+
+        $txn = $this->getLastTransaction(true);
+
+        $now = Carbon::create(
+            2018, 8, 14, 16, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(0, $setlResponse[$channel]['count']);
+
+        $dt = Carbon::create(2018, 8, 14, 17, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testDelayedEarlySettlement()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->addFeatures([Constants::ES_AUTOMATIC]);
+
+        $dt = Carbon::create(2018, 8, 13, 8, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $attrs = [
+            'captured_at' => $dt->getTimestamp() + 1,
+            'method'      => 'card',
+            'created_at'  => $dt->getTimestamp(),
+            'amount'       => 2000,
+        ];
+
+        $payment = $this->fixtures->create('payment:captured', $attrs);
+
+        $txn = $this->getLastTransaction(true);
+
+        $this->fixtures->edit('transaction', $txn['id'], ['settled_at' => $dt->addHour()->getTimestamp()]);
+
+        $txn = $this->getLastTransaction(true);
+
+        $now = Carbon::create(
+            2018, 8, 14, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+
+        Carbon::setTestNow();
+    }
+
     public function testMerchantSettlementV2DspSpecific()
     {
         $channel = Channel::AXIS;

@@ -434,6 +434,18 @@ class AttemptReconcileTest extends TestCase
         $this->reinitiateSettlementAndAssertSuccessForChannel(Channel::ICICI);
     }
 
+    /**
+     * This test asserts that the Settlement Failure email is sent in case of marketplace accounts as well.
+     */
+    public function testRetrySettlementKotakMarketplace()
+    {
+        $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['parent_id' => '10000000000002']);
+
+        $this->reinitiateSettlementAndAssertSuccessForChannel(Channel::KOTAK);
+    }
+
     protected function reinitiateSettlementAndAssertSuccessForChannel(string $channel)
     {
         $verifyReconEntitiesFunc = 'verifyReconcileEntitiesFailureFor' . ucfirst($channel);
