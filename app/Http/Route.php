@@ -886,7 +886,7 @@ final class Route
         'merchant_bulk_edit_attributes'            => ['post',     'merchants/bulk/attributes',                      'MerchantController@bulkEditMerchantAttributes'                     ],
 
         // Apspdcl integration - bridge for remote endpoint access for hosted via api.
-        'apspdcl_bridge'                           => ['any',      'apspdcl/{any}',                                  'ApspdclController@any'                                             ],
+        'apspdcl_bridge'                           => ['any',      'apspdcl/{path?}',                                'ApspdclController@any'                                             ],
 
     ];
 
@@ -2669,13 +2669,6 @@ final class Route
         if (strpos($uri, '{path?}') !== false)
         {
             $route->where(['path' => '.*']);
-        }
-
-        // Hack: To fix by adding support for regex constraint on route parameters.
-        if ($name === 'apspdcl_bridge')
-        {
-            // Allows any suffix on this route
-            $route->where('any', '.*');
         }
 
         // We add the web middleware group, conditionally to routes which require cookie / session access.
