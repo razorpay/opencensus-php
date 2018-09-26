@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant\helpers;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testMerchantActivationCategoriesResponseForAdminAuth' => [
@@ -948,5 +949,31 @@ return [
             ],
         ],
         'status_code' => 200,
+    ],
+
+    'testPostInstantActivationByActivatedMerchant' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'services',
+                'business_subcategory' => 'event_planning',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'promoter_pan_name'    => 'John Doe',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED,
+        ]
     ],
 ];

@@ -11,6 +11,8 @@ class ActivationTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
+    const DEFAULT_MERCHANT_ID_1 = '10000000000000';
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/ActivationTestData.php';
@@ -43,6 +45,18 @@ class ActivationTest extends TestCase
 
     public function testPostInstantActivation()
     {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * The instant activation route should not accept the request if the merchant is already activated
+     */
+    public function testPostInstantActivationByActivatedMerchant()
+    {
+        $this->fixtures->merchant->activate(self::DEFAULT_MERCHANT_ID_1);
+
         $this->ba->proxyAuth();
 
         $this->startTest();
