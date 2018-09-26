@@ -694,6 +694,8 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->assertEquals('authorize', $upiEntity['action']);
 
+        $this->assertEquals('pay', $upiEntity['type']);
+
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals('authorized', $paymentEntity['status']);

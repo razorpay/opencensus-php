@@ -202,13 +202,13 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    protected function getGatewayEntityAttributes(array $input, string $action = Action::AUTHORIZE)
+    protected function getGatewayEntityAttributes(array $input, string $action = Action::AUTHORIZE, string $type = Base\Type::COLLECT)
     {
         $attrs = [
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Entity::VPA                 => $input['payment']['vpa'],
             Entity::ACTION              => $action,
-            Entity::TYPE                => Base\Type::COLLECT,
+            Entity::TYPE                => $type,
         ];
 
         if ($action === Action::REFUND)
@@ -990,9 +990,7 @@ class Gateway extends Base\Gateway
 
         parent::action($gatewayInput, Action::AUTHORIZE);
 
-        $attributes = $this->getGatewayEntityAttributes($gatewayInput);
-
-        $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
+        $attributes = $this->getGatewayEntityAttributes($gatewayInput, Action::AUTHORIZE, Base\Type::PAY);
 
         $callbackData[Entity::RECEIVED] = 1;
 
@@ -1003,7 +1001,9 @@ class Gateway extends Base\Gateway
 
         $callbackData[Entity::MERCHANT_REFERENCE] = $merchantReference;
 
-        $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $callbackData);
+        $attributes = array_merge($attributes, $callbackData);
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
         return [
             'acquirer' => [
