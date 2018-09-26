@@ -466,14 +466,7 @@ class Gateway extends Base\Gateway
 
     protected function updateGatewayPaymentResponse($payment, array $response)
     {
-        // Unsetting as we don't want to override it
-        unset($response[Entity::TYPE]);
-
-        $attr = $this->getMappedAttributes($response);
-
-        $attr[Entity::VPA] = array_get($response, Fields::SENDER.'.'.Fields::ADDRESS);
-        // To mark that we have received a response for this request
-        $attr[Entity::RECEIVED] = 1;
+        $attr = $this->getMappedResponseToUpdate($response);
 
         $payment->fill($attr);
 
@@ -589,9 +582,28 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->verifyResponseContent = $this->getMappedAttributes($content);
+        $attr = $this->getMappedResponseToUpdate($content);
+
+        // We have to call this method explicitly as AuthorizeFailed does not
+        $verify->payment->generatePspData($attr);
+
+        $verify->verifyResponseContent = $attr;
 
         return $status;
+    }
+
+    protected function getMappedResponseToUpdate(array $response)
+    {
+        // Unsetting as we don't want to override it
+        unset($response[Entity::TYPE]);
+
+        $attr = $this->getMappedAttributes($response);
+
+        $attr[Entity::VPA] = array_get($response, Fields::SENDER.'.'.Fields::ADDRESS);
+        // To mark that we have received a response for this request
+        $attr[Entity::RECEIVED] = 1;
+
+        return $attr;
     }
 
     public function forceAuthorizeFailed(array $input)
