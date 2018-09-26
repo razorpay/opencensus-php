@@ -427,7 +427,7 @@ class Service extends Base\Service
 
     /**
      * This function is used for getting business categories subcategories list
-     * sub category meta fields will be depedent on auth
+     * sub category meta fields will be dependent on auth
      *
      * @return array
      */
