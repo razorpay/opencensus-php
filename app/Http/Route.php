@@ -36,6 +36,7 @@ final class Route
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_aeps'                      => ['post',     'payments/create/aeps',                           'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_subscriptions'             => ['post',     'payments/create/subscriptions',                  'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_recurring'                 => ['post',     'payments/create/recurring',                      'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_private_old'               => ['post',     'payments/create/redirect',                       'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_checkout'                  => ['post',     'payments/create/checkout',                       'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
@@ -1383,6 +1384,8 @@ final class Route
         'webhook_fire',
         'merchant_methods_edit',
         'merchant_fetch_methods',
+        // Only to be used via Subscriptions Service
+        'payment_create_subscriptions',
     ];
 
     // These will run on internal auth with the assurance
@@ -2217,7 +2220,9 @@ final class Route
 
         'subscriptions' => [
             'invoice_create',
+            'invoice_fetch',
             'customer_fetch_by_id',
+            'payment_create_subscriptions',
             'payment_capture',
             'payment_refund',
             'webhook_fire',
@@ -2332,6 +2337,7 @@ final class Route
         'subscription_fetch_multiple'          => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry_old'        => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'            => [Feature::SUBSCRIPTIONS],
+        'payment_create_subscriptions'         => [Feature::SUBSCRIPTION_V2],
         'virtual_account_create'               => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'                 => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_close'                => [Feature::VIRTUAL_ACCOUNTS],
