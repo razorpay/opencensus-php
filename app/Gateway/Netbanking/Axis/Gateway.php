@@ -224,8 +224,8 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content, 'post');
 
-        // hotfix
-        $request['options']['verify'] = false;
+        // Use this, till we add the correct root certificate for Digicert on our server
+        $request['options']['verify'] = $this->getCaInfo();
 
         $response = $this->sendGatewayRequest($request);
 

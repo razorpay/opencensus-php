@@ -36,6 +36,7 @@ final class Route
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_aeps'                      => ['post',     'payments/create/aeps',                           'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_subscriptions'             => ['post',     'payments/create/subscriptions',                  'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_recurring'                 => ['post',     'payments/create/recurring',                      'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_private_old'               => ['post',     'payments/create/redirect',                       'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_checkout'                  => ['post',     'payments/create/checkout',                       'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
@@ -245,6 +246,7 @@ final class Route
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'gateway_payment_callback_bharatqr'        => ['post',     'payment/callback/bharatqr/{gateway}',            'BharatQrController@processBharatQrPayment'                         ],
         'bharat_qr_pay_test'                       => ['post',     'bharatqr/pay/test',                              'BharatQrController@processBharatQrTestPayment'                     ],
+        'gateway_payment_validate_bharatqr'        => ['post',     'payment/validate/bharatqr/{gateway}',            'BharatQrController@processBharatQrValidatePayment'                 ],
         'qr_code_download_live'                    => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
         'qr_code_download_test'                    => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
         'virtual_account_create'                   => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
@@ -542,6 +544,7 @@ final class Route
         'offer_fetch_by_id'                        => ['get',      'offers/{id}',                                    'OfferController@fetchOfferById'                                    ],
         'offer_deactivate'                         => ['patch',    'offers/deactivate',                              'OfferController@deactivateOffers'                                  ],
         'currency_update_rates'                    => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
+        'currency_update_rates_multiple'           => ['post',     'currency/rates',                                 'CurrencyController@postCurrencyRatesMultiple'                      ],
         'currency_fetch_rates'                     => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
         'reports_fetch_multiple'                   => ['get',      'reports',                                        'ReportController@getReports'                                       ],
         'reports_generate'                         => ['post',     'reports/{entity}/generate',                      'ReportController@generateReport'                                   ],
@@ -821,6 +824,7 @@ final class Route
         'reporting_schedule_list'                  => ['get',      'reporting/schedules',                            'ReportingController@listSchedule'                                  ],
         'reporting_schedule_create'                => ['post',     'reporting/schedules',                            'ReportingController@createSchedule'                                ],
         'reporting_schedule_delete'                => ['delete',   'reporting/schedules/{id}',                       'ReportingController@deleteSchedule'                                ],
+        'reporting_proxy'                          => ['any',      'reporting/{path?}',                              'ReportingController@proxy'                                       ],
         'reporting_log_create_admin'               => ['post',     'admin-reporting/logs',                           'ReportingController@createLog'                                     ],
         'reporting_config_get_admin'               => ['get',      'admin-reporting/configs/{id}',                   'ReportingController@getConfig'                                     ],
         'reporting_config_list_admin'              => ['get',      'admin-reporting/configs',                        'ReportingController@listConfig'                                    ],
@@ -828,6 +832,7 @@ final class Route
         'reporting_log_list_admin'                 => ['get',      'admin-reporting/logs',                           'ReportingController@listLog'                                       ],
         'reporting_schedule_get_admin'             => ['get',      'admin-reporting/schedules/{id}',                 'ReportingController@getSchedule'                                   ],
         'reporting_schedule_list_admin'            => ['get',      'admin-reporting/schedules',                      'ReportingController@listSchedule'                                  ],
+        'reporting_proxy_admin'                    => ['any',      'admin-reporting/{path?}',                        'ReportingController@proxy'                                       ],
 
         // UFH Service
         // TODO: Should change to just /signed_url (No 'get' and underscore)
@@ -881,7 +886,7 @@ final class Route
         'merchant_bulk_edit_attributes'            => ['post',     'merchants/bulk/attributes',                      'MerchantController@bulkEditMerchantAttributes'                     ],
 
         // Apspdcl integration - bridge for remote endpoint access for hosted via api.
-        'apspdcl_bridge'                           => ['any',      'apspdcl/{any}',                                  'ApspdclController@any'                                             ],
+        'apspdcl_bridge'                           => ['any',      'apspdcl/{path?}',                                'ApspdclController@any'                                             ],
 
     ];
 
@@ -1122,6 +1127,7 @@ final class Route
         'billdesk_create_cancelled_refunds',
         'card_update_saved',
         'currency_update_rates',
+        'currency_update_rates_multiple',
         'emandate_debit_reconcile',
         'emi_generate_excel',
         'entity_tax_update',
@@ -1344,6 +1350,7 @@ final class Route
         'reporting_schedule_list',
         'reporting_schedule_create',
         'reporting_schedule_delete',
+        'reporting_proxy',
         'ufh_get_file_signed_url',
         'pincode_get',
         'dispute_edit',
@@ -1380,6 +1387,8 @@ final class Route
         'webhook_fire',
         'merchant_methods_edit',
         'merchant_fetch_methods',
+        // Only to be used via Subscriptions Service
+        'payment_create_subscriptions',
     ];
 
     // These will run on internal auth with the assurance
@@ -1681,6 +1690,7 @@ final class Route
         'reporting_schedule_get_admin',
         'reporting_schedule_list_admin',
         'nodal_file_upload_retry',
+        'reporting_proxy_admin',
         // UFH
         'ufh_get_file_signed_url_admin',
         'nodal_beneficiary_update',
@@ -2005,6 +2015,8 @@ final class Route
         'reporting_log_list_admin'                 => '*',
         'reporting_schedule_get_admin'             => '*',
         'reporting_schedule_list_admin'            => '*',
+        'reporting_proxy'                          => '*',
+        'reporting_proxy_admin'                    => '*',
         'ufh_get_file_signed_url'                  => '*',
         'ufh_get_file_signed_url_admin'            => '*',
         'merchant_requests_create'                 => '*',
@@ -2031,7 +2043,7 @@ final class Route
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'subscription_manual_retry'                => '*',
         'terminal_get_banks'                       => '*',
-        'terminal_set_banks'                       => '*',
+        'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
     ];
 
     public static $direct = [
@@ -2080,6 +2092,7 @@ final class Route
         'qr_code_download_live',
         'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
+        'gateway_payment_validate_bharatqr'
     ];
 
     /**
@@ -2178,6 +2191,7 @@ final class Route
             'refund_create_gateway_record',
             'gateway_validate_unknown_refund',
             'currency_update_rates',
+            'currency_update_rates_multiple',
             'refund_gateway_refunded_txns',
             'merchant_activation_migrate',
             'billdesk_create_cancelled_refunds',
@@ -2212,7 +2226,9 @@ final class Route
 
         'subscriptions' => [
             'invoice_create',
+            'invoice_fetch',
             'customer_fetch_by_id',
+            'payment_create_subscriptions',
             'payment_capture',
             'payment_refund',
             'webhook_fire',
@@ -2327,6 +2343,7 @@ final class Route
         'subscription_fetch_multiple'          => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry_old'        => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'            => [Feature::SUBSCRIPTIONS],
+        'payment_create_subscriptions'         => [Feature::SUBSCRIPTION_V2],
         'virtual_account_create'               => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'                 => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_close'                => [Feature::VIRTUAL_ACCOUNTS],
@@ -2649,11 +2666,9 @@ final class Route
 
         $route = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
 
-        // Hack: To fix by adding support for regex constraint on route parameters.
-        if ($name === 'apspdcl_bridge')
+        if (strpos($uri, '{path?}') !== false)
         {
-            // Allows any suffix on this route
-            $route->where('any', '.*');
+            $route->where(['path' => '.*']);
         }
 
         // We add the web middleware group, conditionally to routes which require cookie / session access.

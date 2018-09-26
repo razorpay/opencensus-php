@@ -36,4 +36,82 @@ class PaymentMiscTest extends TestCase
         $iin = $this->getEntityById('iin', $cardIin, true);
         $this->assertEquals($iin['otp_read'], true);
     }
+
+    public function testPaymentFlowsRoute()
+    {
+        $offer1 = $this->fixtures->create('offer:live_card', [
+            'name'                => 'Test Offer 1',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'VISA',
+            'issuer'              => 'HDFC',
+            'international'       => false,
+            'iins'                => [],
+        ]);
+
+        $offer2 = $this->fixtures->create('offer:live_card', [
+            'name'                => 'Test Offer 2',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'VISA',
+            'issuer'              => 'ICICI',
+            'international'       => false,
+            'iins'                => [],
+        ]);
+
+        $iin = $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICICI',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+                'otp'  => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['otpelf', 'atm_pin_auth']);
+
+        $orderData = [
+            'content' => [
+                'amount'   => 10000,
+                'currency' => 'INR',
+                'receipt'  => 'rcp123',
+                'offers'   => [$offer1->getPublicId(), $offer2->getPublicId()],
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->sendRequest($orderData);
+
+        $order = $this->getLastEntity('order', true);
+
+        $flowsData = [
+            'request' => [
+                'method'  => 'GET',
+                'url'     => '/payment/flows?iin=' . $iin->getIin() . '&order_id=' . $order['id'],
+            ],
+            'response' => [
+                'content' => [
+                    'pin' => true,
+                    'otp' => true,
+                    'flows' => [
+                        'pin' => true,
+                        'otp' => true,
+                    ],
+                ],
+                'status_code' => 200,
+            ]
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->runRequestResponseFlow($flowsData);
+
+        $this->assertEquals($response['offers'], [$offer2->getPublicId()]);
+    }
 }

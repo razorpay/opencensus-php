@@ -37,6 +37,13 @@ class Beneficiary extends ApiProcessor
         {
             try
             {
+                $this->trace->info(
+                    TraceCode::BENEFICIARY_REGISTER_BANK_ACCOUNT,
+                    [
+                        'bank_account_id'   => $bankAccount->getId(),
+                        'channel'           => $this->channel
+                    ]);
+
                 $input = [
                     Entity::CHANNEL             => Channel::YESBANK,
                     Entity::MERCHANT_ID         => $bankAccount->merchant->getId(),

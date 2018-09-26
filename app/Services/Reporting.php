@@ -441,7 +441,7 @@ class Reporting implements ExternalService
         return explode(self::SCHEDULE_PREFIX, $entityId)[1];
     }
 
-    protected function createAndSendRequest(
+    public function createAndSendRequest(
         string $method,
         string $path,
         array $input = [],

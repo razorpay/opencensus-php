@@ -94,6 +94,15 @@ trait SettlementTrait
                     ],
                     1);
 
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $txn->getMerchantId(),
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::REFUND_AUTH_PAYMENT
+                    ]);
+
                 return true;
             }
         }
@@ -125,6 +134,15 @@ trait SettlementTrait
                         Metric::SKIP_REASON => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
                     ],
                     1);
+
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $txn->getMerchantId(),
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                    ]);
 
                 return true;
             }
@@ -189,6 +207,15 @@ trait SettlementTrait
                     ],
                     1);
 
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $txn->getMerchantId(),
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                    ]);
+
                 return true;
             }
 
@@ -202,6 +229,15 @@ trait SettlementTrait
                         Metric::SKIP_REASON => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
                     ],
                     1);
+
+                $this->trace->info(
+                    TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant_id'       => $txn->getMerchantId(),
+                        'transaction_id'    => $txn->getId(),
+                        'source_id'         => $txn->getEntityId(),
+                        'reason'            => Metric::BLOCK_MF_OUTSIDE_TIME_PERIOD
+                    ]);
 
                 return true;
             }
@@ -224,6 +260,14 @@ trait SettlementTrait
         $twoPm = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
 
         $today = Carbon::today(Timezone::IST)->getTimestamp();
+
+        $this->trace->info(TraceCode::SETTLEMENT_DELAYED_MF_CHECK,
+            [
+                'now'               => $now,
+                'two_pm'            => $twoPm,
+                'today'             => $today,
+                'txn_settled_at'    => $txn->getSettledAt()
+            ]);
 
         //
         // If the transaction was due settlement before today, but wasn't
@@ -471,6 +515,15 @@ trait SettlementTrait
                 ],
                 1);
 
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant_id'       => $mid,
+                    'transaction_id'    => $txn->getId(),
+                    'source_id'         => $txn->getEntityId(),
+                    'reason'            => Metric::BLOCK_WEALTHY_ON_SATURDAY
+                ]);
+
             return false;
         }
 
@@ -510,6 +563,15 @@ trait SettlementTrait
                 Metric::TRANSACTIONS_SKIPPED_FOR_SETTLEMENT_TOTAL,
                 [
                     Metric::SKIP_REASON => Metric::BANK_ACCOUNT_CREATED_YESTERDAY
+                ]);
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant_id'       => $mid,
+                    'transaction_id'    => $txn->getId(),
+                    'source_id'         => $txn->getEntityId(),
+                    'reason'            => Metric::BANK_ACCOUNT_CREATED_YESTERDAY
                 ]);
 
             $shouldSettle = false;

@@ -126,10 +126,15 @@ abstract class EntityProcessor extends Base\Core
 
         if ($this->fta->isStatusFailed() === true)
         {
+            $this->trace->info(TraceCode::FTA_STATUS_FAILED, ['fta_id' => $this->fta->getId()]);
+
             $failureBucket = Attempt\Metric::RZP_ERROR;
 
             if ($this->isMerchantLevelError() === true)
             {
+                $this->trace->info(
+                    TraceCode::FTA_STATUS_FAILED_MERCHANT_ERROR, ['fta_id' => $this->fta->getId()]);
+
                 $this->sendFailureEmailToMerchant = true;
 
                 $failureBucket = Attempt\Metric::MERCHANT_ERROR;

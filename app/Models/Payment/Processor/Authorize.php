@@ -59,7 +59,9 @@ trait Authorize
 
     /**
      * @param Payment\Entity $payment
-     * @param array $input
+     * @param array          $input
+     * @param array          $gatewayInput
+     *
      * @return array
      */
     public function authorize(Payment\Entity $payment, array $input, array $gatewayInput = []): array
@@ -349,12 +351,23 @@ trait Authorize
             'gateway'    => $this->getEncryptedGatewayText($payment->getGateway()),
             'contact'    => $payment->getContact(),
             'amount'     => number_format(($payment->getAmount() / 100), 2),
-            'wallet'     => $payment->getWallet()
+            'wallet'     => $payment->getWallet(),
+            'merchant'   => $payment->merchant->getName(),
         ];
 
         // This is a hack to return direct method for IVR payments
         if ($payment->isCard() === true)
         {
+            $card = $payment->card;
+
+            $metaData = [
+                'issuer'     => $card->getIssuer(),
+                'network'    => $card->getNetworkCode(),
+                'last4'      => $card->getLast4(),
+            ];
+
+            $response['metadata'] = $metaData;
+
             $templateData = [
                'data' => $response,
                'cdn'  => $this->app['config']->get('url.cdn.production')
@@ -1890,7 +1903,8 @@ trait Authorize
 
     protected function validateRecurringAndPreferredRecurring(Payment\Entity $payment, array $input)
     {
-        if (isset($input[Payment\Entity::RECURRING]) === true)
+        if ((isset($input[Payment\Entity::RECURRING]) === true) and
+            ($input[Payment\Entity::RECURRING]) === '1')
         {
             if (in_array($payment->getMethod(), Payment\Method::$recurringMethods, true) === false)
             {
@@ -3396,6 +3410,12 @@ trait Authorize
         // re-setting the customer later for the subscription.
         //
         $subscription->customer()->associate($paymentCustomer);
+
+        //
+        // Used for subscription fetch via dashboard
+        // Needed to rearchitect subscriptions as a separate service
+        //
+        $subscription->setCustomerEmail($paymentCustomer->getEmail());
     }
 
     protected function updateSubscriptionToken(Subscription\Entity $subscription, Payment\Entity $payment)
@@ -4533,6 +4553,7 @@ trait Authorize
 
     protected function isPreferredRecurring(array $input)
     {
-        return (empty($input[Payment\Entity::PREFERRED_RECURRING]) === false);
+        return ((empty($input[Payment\Entity::RECURRING]) === false) and
+                ($input[Payment\Entity::RECURRING] === 'preferred'));
     }
 }

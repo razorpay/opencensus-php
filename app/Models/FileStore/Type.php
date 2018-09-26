@@ -35,6 +35,8 @@ class Type
 
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
+    const EQUITAS_NETBANKING_REFUND         = 'equitas_netbanking_refund';
+
     const ISG_REFUND                        = 'isg_refund';
     const ISG_SUMMARY                       = 'isg_summary';
 
@@ -158,6 +160,7 @@ class Type
             self::BOB_NETBANKING_REFUND,
             self::BOB_NETBANKING_CLAIMS,
             self::RBL_NETBANKING_REFUND,
+            self::EQUITAS_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
             self::IDFC_NETBANKING_REFUND,
@@ -293,6 +296,7 @@ class Type
         self::MOCK_RECONCILIATION_FILE,
         self::GATEWAY_FAILED_REFUNDS,
         self::OBC_NETBANKING_REFUND,
+        self::EQUITAS_NETBANKING_REFUND,
         self::ISG_REFUND,
         self::ISG_SUMMARY,
     ];

@@ -64,7 +64,7 @@ class NodalAccount extends NodalBase\FileProcessor
     {
         $rows = $this->getRows($entities);
 
-        $this->trace->info(TraceCode::FTA_FILE_ROWS_CREATED);
+        $this->trace->info(TraceCode::FTA_ROWS_FETCHED_FOR_FILE);
 
         list($excelFile, $rzpFile) = $this->createFile($rows);
 
@@ -74,6 +74,8 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $this->sendAxisTransferMail($fileData);
 
+        $this->trace->info(TraceCode::FTA_FILE_EMAIL_SENT);
+
         //
         // Pushing to Beam after sending the email
         // such that current settlement processing
@@ -81,7 +83,7 @@ class NodalAccount extends NodalBase\FileProcessor
         //
         $this->sendFile($excelFile);
 
-        $this->trace->info(TraceCode::FTA_FILE_EMAIL_SENT);
+        $this->trace->info(TraceCode::FTA_FILE_SEND_VIA_BEAM);
 
         return $excelFile;
     }

@@ -73,7 +73,6 @@ class Entity
     const GATEWAY_FILE          = 'gateway_file';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
-    const DISPUTE_FILE          = 'dispute_file';
     const SUBSCRIPTION          = 'subscription';
     const ENTITY_OFFER          = 'entity_offer';
     const GATEWAY_TOKEN         = 'gateway_token';
@@ -175,6 +174,7 @@ class Entity
     const NETBANKING_PNB         = 'netbanking_pnb';
     const NETBANKING_OBC         = 'netbanking_obc';
     const NETBANKING_CSB         = 'netbanking_csb';
+    const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const WALLET_JIOMONEY        = 'wallet_jiomoney';
     const WALLET_SBIBUDDY        = 'wallet_sbibuddy';
@@ -271,7 +271,6 @@ class Entity
         self::ENTITY_OFFER          => \RZP\Models\Offer\EntityOffer::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
-        self::DISPUTE_FILE          => \RZP\Models\Dispute\File::class,
         self::PAYMENT_LINK          => \RZP\Models\PaymentLink::class,
         self::GATEWAY_TOKEN         => \RZP\Models\Customer\GatewayToken::class,
         self::SCHEDULE_TASK         => \RZP\Models\Schedule\Task::class,
@@ -344,6 +343,7 @@ class Entity
         self::NETBANKING_INDUSIND    => \RZP\Gateway\Netbanking\Indusind::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Pnb::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Csb::class,
+        self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Equitas::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET      => \RZP\Gateway\Wallet\Openwallet::class,
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
@@ -390,6 +390,7 @@ class Entity
         self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_CSB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Base::class,
 
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,

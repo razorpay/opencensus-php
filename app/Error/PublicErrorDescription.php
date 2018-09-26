@@ -333,6 +333,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_EXISTS                                              = 'This order already exists in the gateway database.';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
     const BAD_REQUEST_ORDER_MULTIPLE_OFFERS                                     = 'Multiple offers cannot be applied on a single order.';
+    const BAD_REQUEST_ORDER_CURRENCY_NOT_SUPPORTED                              = 'Currency is not supported';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
     const BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN                                = 'Token expired or invalid';
@@ -656,5 +657,17 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
+    const BAD_REQUEST_CARD_ISSUER_INVALID                                       = 'Card issuer is invalid';
     const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED                         = 'The sub-merchant accessed has not been activated. Please use test credentials for testing.';
+    const BAD_REQUEST_INVALID_PASSWORD                                          = 'Invalid password';
+    const BAD_REQUEST_INVALID_LOCALE                                            = 'Issue on bank side';
+    const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                              = 'Retry attempts limit exceeded';
+    const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                       = 'Could not read card magnetic stripe';
+    const BAD_REQUEST_INVALID_CARD_DETAILS                                      = 'Invalid card details';
+
+    // Scrooge
+    const GATEWAY_VERIFY_REFUND_ABSENT                                          = 'Refund is not present at gateway';
+    const GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED                                 = 'Verification of older refunds is disabled';
+    const REFUND_MANUALLY_CONFIRMED_UNPROCESSED                                 = 'Refund is marked unprocessed manually';
+    const GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED                        = 'Verification of payment reversal is disabled';
 }

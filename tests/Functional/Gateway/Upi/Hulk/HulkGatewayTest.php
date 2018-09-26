@@ -372,7 +372,6 @@ class HulkGatewayTest extends TestCase
 
         $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
 
-        $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
         $payment = $this->authorizedFailedPayment($payment['id']);
@@ -616,5 +615,140 @@ class HulkGatewayTest extends TestCase
             });
 
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+    }
+
+    public function testVerifyFailedPayments()
+    {
+        $now  = Carbon::now();
+
+        Carbon::setTestNow(Carbon::parse('15 minutes ago'));
+
+        $auth = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        Carbon::setTestNow($now);
+
+        $this->timeoutOldPayment();
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame('failed', $payment->getStatus());
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'    => '/payments/verify/payments_failed',
+            'method' => 'post'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertSame(1, $content['verifiable_count']);
+        $this->assertSame(1, $content['authorized']);
+        $this->assertSame(1, $content['verified_payments']);
+
+        $payment->reload();
+
+        $this->assertSame('authorized', $payment->getStatus());
+    }
+
+    public function testVerifyFailedIntentPayments()
+    {
+        $now  = Carbon::now();
+
+        Carbon::setTestNow(Carbon::parse('15 minutes ago'));
+
+        $this->fixtures->create('terminal:shared_upi_hulk_intent_terminal',
+            [
+                'gateway_access_code' => 'app'
+            ]);
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        Carbon::setTestNow($now);
+
+        $this->timeoutOldPayment();
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame('failed', $payment->getStatus());
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'    => '/payments/verify/payments_failed',
+            'method' => 'post'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertSame(1, $content['verifiable_count']);
+        $this->assertSame(1, $content['authorized']);
+        $this->assertSame(1, $content['verified_payments']);
+
+        $payment->reload();
+
+        $this->assertSame('authorized', $payment->getStatus());
+
+        // Intent when failed will not have vpa details
+        // It must get updated when the gateway return in completed response
+        $this->assertSame('vishnu@icici', $payment->getVpa());
+    }
+
+    public function testVerifyFailedIntentPaymentsFailedAtGateway()
+    {
+        $now  = Carbon::now();
+
+        Carbon::setTestNow(Carbon::parse('15 minutes ago'));
+
+        $this->fixtures->create('terminal:shared_upi_hulk_intent_terminal',
+            [
+                'gateway_access_code' => 'app'
+            ]);
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        Carbon::setTestNow($now);
+
+        $this->timeoutOldPayment();
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame('failed', $payment->getStatus());
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'    => '/payments/verify/payments_failed',
+            'method' => 'post'
+        ];
+
+        $this->mockServerContentFunction(
+            function(& $content, $action)
+            {
+                // Marking transaction incomplete
+                $content['status'] = 'created';
+                $content['sender'] = [];
+            });
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertSame(1, $content['verifiable_count']);
+        $this->assertSame(1, $content['verified_payments']);
+        $this->assertSame(0, $content['authorized']);
+        $this->assertSame(1, $content['success']);
+
+        $payment->reload();
+
+        $this->assertSame('failed', $payment->getStatus());
+
+        $this->assertSame(null, $payment->getVpa());
     }
 }
