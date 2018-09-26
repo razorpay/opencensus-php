@@ -739,14 +739,6 @@ class Gateway extends Base\Gateway
             $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                 $input['payment']['id'], Action::AUTHORIZE);
 
-            $this->trace->info(
-                TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-                [
-                    'input' => $input,
-                    'gatewayPayment' => $gatewayPayment['merchant_reference'],
-                ]
-            );
-
             $merchantReference = $gatewayPayment['merchant_reference'];
         }
         else
@@ -777,8 +769,6 @@ class Gateway extends Base\Gateway
             [
                 'request' => $request,
                 'decrypted_content' => $data,
-                'input' => $input,
-                'gatewayPayment' => $gatewayPayment,
             ]);
 
         return $request;
