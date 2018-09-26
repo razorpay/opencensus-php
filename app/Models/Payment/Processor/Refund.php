@@ -1640,7 +1640,7 @@ trait Refund
 
     protected function isFundTransferAttemptRefund(Payment\Entity $payment)
     {
-        if (($this->isPaymentEmandateAndRblGateway($payment) === true) or
+        if (($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
             ($this->isPaymentTpvAndBankTransferRefund($payment) === true))
         {
             return true;
@@ -1664,7 +1664,7 @@ trait Refund
             $input[BankAccount\Entity::BENEFICIARY_NAME]   = '';
         }
 
-        if ($this->isPaymentEmandateAndRblGateway($payment) === true)
+        if ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true)
         {
             $customer = $payment->customer;
             $customerName = preg_replace('/[^a-zA-Z0-9 ]+/', '', $customer->getName());

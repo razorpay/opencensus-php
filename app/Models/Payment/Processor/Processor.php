@@ -2402,10 +2402,10 @@ class Processor
         );
     }
 
-    protected function isPaymentEmandateAndRblGateway(Payment\Entity $payment)
+    protected function isPaymentEmandateAndEmandateRefundGateway(Payment\Entity $payment)
     {
         if (($payment->isEmandate() === true) and
-            ($payment->getGateway() === Payment\Gateway::ENACH_RBL))
+            (in_array($payment->getGateway(), Payment\Gateway::BANK_TRANSFER_REFUND_GATEWAYS, true) === true))
         {
             return true;
         }
