@@ -4,9 +4,6 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Invoice;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -71,6 +68,10 @@ class EntityReportTest extends TestCase
 
     public function testSettlementReconReport()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->createPaymentEntities();
 
         $txn = $this->getLastEntity('transaction', true);

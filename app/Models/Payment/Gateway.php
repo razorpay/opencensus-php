@@ -38,6 +38,7 @@ class Gateway
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_FEDERAL     = 'netbanking_federal';
+    const NETBANKING_EQUITAS     = 'netbanking_equitas';
     const NETBANKING_BOB         = 'netbanking_bob';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
@@ -160,6 +161,7 @@ class Gateway
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
         self::NETBANKING_OBC,
+        self::NETBANKING_EQUITAS,
         self::NETBANKING_IDFC,
         self::NETBANKING_ICICI,
         self::WALLET_OPENWALLET,
@@ -476,6 +478,7 @@ class Gateway
             self::NETBANKING_PNB,
             self::NETBANKING_OBC,
             self::NETBANKING_CSB,
+            self::NETBANKING_EQUITAS,
         ],
 
         //
@@ -1017,6 +1020,7 @@ class Gateway
         IFSC::RATN         => Gateway::NETBANKING_RBL,
         IFSC::ORBC         => Gateway::NETBANKING_OBC,
         IFSC::CSBK         => Gateway::NETBANKING_CSB,
+        IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];

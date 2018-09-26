@@ -316,7 +316,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'valid' => false,
+                'valid' => true,
             ],
         ],
     ],

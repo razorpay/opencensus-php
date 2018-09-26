@@ -33,6 +33,7 @@ class Terminal extends Base
         $this->createSharedNetbankingRblTerminal();
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
+        $this->createSharedNetbankingEquitasTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
@@ -1633,6 +1634,24 @@ class Terminal extends Base
         ];
 
         return $this->createSharedNetbankingRblTerminal($attributes);
+    }
+
+    public function createSharedNetbankingEquitasTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_ESFB_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_EQUITAS,
+            'gateway_merchant_id'   => 'netbanking_equitas_merchant_id',
+            'gateway_merchant_id2'  => 'netbanking_equitas_merchant_id2',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
     }
 
     public function createSharedAmexTerminal(array $attributes = [])

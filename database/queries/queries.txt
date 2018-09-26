@@ -4292,6 +4292,9 @@ ADD COLUMN bank_transfer TINYINT(1) NOT NULL DEFAULT 0 AFTER upi;
 ALTER TABLE terminals
     ADD COLUMN enabled_banks json DEFAULT NULL AFTER network_category;
 
+ALTER TABLE terminals
+    ADD COLUMN account_number varchar(50) DEFAULT NULL AFTER enabled_banks;
+
 # adds dummy columns to transactions
 ALTER TABLE transactions
     ADD COLUMN reference1 VARCHAR(255) DEFAULT NULL AFTER reconciled_at,
@@ -4310,3 +4313,4 @@ ALTER TABLE transactions
 ALTER TABLE subscriptions
     ADD COLUMN customer_email VARCHAR(100) DEFAULT NULL AFTER global_customer,
     ADD INDEX subscriptions_customer_email_index (customer_email);
+

@@ -50,6 +50,8 @@ class RowProcessor extends BaseRowProcessor
         ];
 
         $this->reconEntityId = $this->parsedData[self::PAYMENT_REF_NO];
+
+        $this->trace->info(TraceCode::FTA_RECON_PARSED_DATA, ['parsed_data' => $this->parsedData]);
     }
 
     protected function updateReconEntity()

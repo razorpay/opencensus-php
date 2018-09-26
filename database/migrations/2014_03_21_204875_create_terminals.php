@@ -146,6 +146,9 @@ class CreateTerminals extends Migration
             $table->json(Terminal::ENABLED_BANKS)
                   ->nullable();
 
+            $table->string(Terminal::ACCOUNT_NUMBER, 50)
+                 ->nullable();
+
             $table->integer(Terminal::CREATED_AT);
 
             $table->integer(Terminal::UPDATED_AT);
