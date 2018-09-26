@@ -898,14 +898,14 @@ return [
             'content' => [
                 'business_category'    => 'services',
                 'business_subcategory' => 'event_planning',
-                'promoter_pan'         => 'DKXPK0000B',
+                'promoter_pan'         => 'ABCDE0000Z',
                 'promoter_pan_name'    => 'John Doe',
             ],
         ],
         'response'    => [
             'content' => [
                 'contact_email'                    => "test@razorpay.com",
-                'promoter_pan'                     => "DKXPK0000B",
+                'promoter_pan'                     => "ABCDE0000Z",
                 'promoter_pan_name'                => "John Doe",
                 'gstin'                            => null,
                 'p_gstin'                          => null,

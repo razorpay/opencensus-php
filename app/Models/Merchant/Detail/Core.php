@@ -735,7 +735,7 @@ class Core extends Base\Core
         return $validationFields;
     }
 
-    public function createResponse(Entity $merchantDetails)
+    public function createResponse(Entity $merchantDetails): array
     {
         $merchantDetailsArr = $merchantDetails->toArray();
 
