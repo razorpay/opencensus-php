@@ -38,7 +38,7 @@ class Selector extends Base\Core
         Sorters\NetbankingSorter::class,
 
         //Sorts emandate terminals based on gateway priorities
-        Sorters\EmandateSorter::class,
+        //Sorters\EmandateSorter::class,
 
         // Boost a gateway terminals based on load distribution of probabilities
         Sorters\TerminalLoadSorter::class,
