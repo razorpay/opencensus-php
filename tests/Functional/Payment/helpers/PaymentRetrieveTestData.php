@@ -240,8 +240,8 @@ return [
     ],
 
     'testSearchEsForNotesOnAdminAuthExpectedSearchParams' => [
-        'index' => 'testing_payment_test',
-        'type'  => 'testing_payment_test',
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -304,8 +304,8 @@ return [
     ],
 
     'testSearchEsForNotesExpectedSearchParams' => [
-        'index' => 'testing_payment_test',
-        'type'  => 'testing_payment_test',
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,

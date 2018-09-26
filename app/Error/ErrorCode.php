@@ -60,6 +60,7 @@ class ErrorCode
     const GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED                         = 'GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED';
     const GATEWAY_ERROR_TIMED_OUT                                                   = 'GATEWAY_ERROR_TIMED_OUT';
     const GATEWAY_ERROR_INVALID_DATE_FORMAT                                         = 'GATEWAY_ERROR_INVALID_DATE_FORMAT';
+    const GATEWAY_ERROR_INVALID_TIME_FORMAT                                         = 'GATEWAY_ERROR_INVALID_TIME_FORMAT';
     const GATEWAY_ERROR_SYSTEM_BUSY                                                 = 'GATEWAY_ERROR_SYSTEM_BUSY';
     const GATEWAY_ERROR_COMMUNICATION_ERROR                                         = 'GATEWAY_ERROR_COMMUNICATION_ERROR';
     const GATEWAY_ERROR_INVALID_CONFIGURATION                                       = 'GATEWAY_ERROR_INVALID_CONFIGURATION';
@@ -107,6 +108,7 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                                = 'GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR';
 
     const GATEWAY_ERROR_CARD_INVALID_NAME                                           = 'GATEWAY_ERROR_CARD_INVALID_NAME';
+    const GATEWAY_ERROR_CARD_NUMBER_INVALID_LENGTH                                  = 'GATEWAY_ERROR_CARD_NUMBER_INVALID_LENGTH';
     const GATEWAY_ERROR_CARD_INVALID_NUMBER                                         = 'GATEWAY_ERROR_CARD_INVALID_NUMBER';
     const GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE                                    = 'GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE';
     const GATEWAY_ERROR_CARD_INVALID_BRAND                                          = 'GATEWAY_ERROR_CARD_INVALID_BRAND';
@@ -115,6 +117,7 @@ class ErrorCode
     const GATEWAY_ERROR_CARD_INVALID_ZIP                                            = 'GATEWAY_ERROR_CARD_INVALID_ZIP';
     const GATEWAY_ERROR_CARD_INVALID_CVV                                            = 'GATEWAY_ERROR_CARD_INVALID_CVV';
     const GATEWAY_ERROR_CARD_MISSING_CVV                                            = 'GATEWAY_ERROR_CARD_MISSING_CVV';
+    const GATEWAY_ERROR_INVALID_CARD_NUMBER_PREFIX                                  = 'GATEWAY_ERROR_INVALID_CARD_NUMBER_PREFIX';
 
     const GATEWAY_ERROR_HEADLESS_PARSING_FAILED                                     = 'GATEWAY_ERROR_HEADLESS_PARSING_FAILED';
 
@@ -140,7 +143,28 @@ class ErrorCode
 
     const GATEWAY_ERROR_MANDATE_CREATION_FAILED                                     = 'GATEWAY_ERROR_MANDATE_CREATION_FAILED';
 
+    const GATEWAY_ERROR_CREDIT_CARD_NUMBER_DECRYPTION_FAILED                        = 'GATEWAY_ERROR_CREDIT_CARD_NUMBER_DECRYPTION_FAILED';
+    const GATEWAY_ERROR_CREDIT_CARD_ENCRYPTION_FAILED                               = 'GATEWAY_ERROR_CREDIT_CARD_ENCRYPTION_FAILED';
+    const GATEWAY_ERROR_CRYPTO_ALOGRITHM_ERROR                                      = 'GATEWAY_ERROR_CRYPTO_ALOGRITHM_ERROR';
+    const GATEWAY_ERROR_RSA_DECRYPTION_FAILED                                       = 'GATEWAY_ERROR_RSA_DECRYPTION_FAILED';
+    const GATEWAY_ERROR_RSA_ENCRYPTION_FAILED                                       = 'GATEWAY_ERROR_RSA_ENCRYPTION_FAILED';
+
     const GATEWAY_ERROR_ONBOARDING_FAILED                                           = 'GATEWAY_ERROR_ONBOARDING_FAILED';
+    const GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH                                = 'GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH';
+    const GATEWAY_ERROR_VERSION_ERROR                                               = 'GATEWAY_ERROR_VERSION_ERROR';
+    const GATEWAY_ERROR_INVALID_DIGITAL_RECEIPT                                     = 'GATEWAY_ERROR_INVALID_DIGITAL_RECEIPT';
+    const GATEWAY_ERROR_INVALID_TXN_LOG_STRING                                      = 'GATEWAY_ERROR_INVALID_TXN_LOG_STRING';
+    const GATEWAY_ERROR_UNSUPPORTED_ACQUIRER                                        = 'GATEWAY_ERROR_UNSUPPORTED_ACQUIRER';
+    const GATEWAY_ERROR_PARSE_ERROR                                                 = 'GATEWAY_ERROR_PARSE_ERROR';
+    const GATEWAY_ERROR_FILE_ERROR                                                  = 'GATEWAY_ERROR_FILE_ERROR';
+    const GATEWAY_ERROR_SQL_ERROR                                                   = 'GATEWAY_ERROR_SQL_ERROR';
+    const GATEWAY_ERROR_DELETING_TERMINAL                                           = 'GATEWAY_ERROR_CREATING_TERMINAL';
+    const GATEWAY_ERROR_CREATING_TERMINAL                                           = 'GATEWAY_ERROR_CREATING_TERMINAL';
+    const GATEWAY_ERROR_INVALID_ACKNOWLEDGMENT                                      = 'GATEWAY_ERROR_INVALID_ACKNOWLEDGMENT';
+    const GATEWAY_ERROR_URL_DECODE_ERROR                                            = 'GATEWAY_ERROR_URL_DECODE_ERROR';
+    const GATEWAY_ERROR_INVALID_CARD_TYPE                                           = 'GATEWAY_ERROR_INVALID_CARD_TYPE';
+    const GATEWAY_ERROR_NOT_AUTHORIZED_EXCESSIVE_REFUNDS                            = 'GATEWAY_ERROR_NOT_AUTHORIZED_EXCESSIVE_REFUNDS';
+
 
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
@@ -224,6 +248,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                      = 'BAD_REQUEST_PAYMENT_CARD_INVALID_CVV';
     const BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED                     = 'BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED';
     const BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE                     = 'BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE';
+    const BAD_REQUEST_CARD_ISSUER_INVALID                                           = 'BAD_REQUEST_CARD_ISSUER_INVALID';
     const BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED                                   = 'BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED';
     const BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER                                   = 'BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER';
     const BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED                          = 'BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED';
@@ -541,6 +566,7 @@ class ErrorCode
     const BAD_REQUEST_LOGO_NOT_PRESENT                                              = 'BAD_REQUEST_LOGO_NOT_PRESENT';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                       = 'BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL';
     const BAD_REQUEST_MERCHANT_INVALID                                              = 'BAD_REQUEST_MERCHANT_INVALID';
+    const GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION                            = 'GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION';
 
     // Features
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                                   = 'BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE';
@@ -645,6 +671,7 @@ class ErrorCode
     const SERVER_ERROR_UFH_FETCH_SERVICE_FAILURE                                    = 'SERVER_ERROR_UFH_FETCH_SERVICE_FAILURE';
 
     const SERVER_ERROR_HARVESTER_INVALID_RESPONSE                                   = 'SERVER_ERROR_HARVESTER_INVALID_RESPONSE';
+    const SERVER_ERROR_DUPLICATE_SESSION_ID                                          = 'SERVER_ERROR_DUPLICATE_SESSION_ID';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
@@ -738,6 +765,7 @@ class ErrorCode
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                         = 'BAD_REQUEST_OLD_PASSWORD_MISMATCH';
     const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                       = 'BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID';
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
+    const BAD_REQUEST_INVALID_PASSWORD                                              = 'BAD_REQUEST_INVALID_PASSWORD';
 
     const BAD_REQUEST_INVITATION_USER_ALREADY_INVITED                               = 'BAD_REQUEST_INVITATION_USER_ALREADY_INVITED';
     const BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER                                = 'BAD_REQUEST_INVITATION_USER_ALREADY_MEMBER';
@@ -854,4 +882,37 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                                   = 'BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                              = 'BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER';
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                                = 'BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS';
+    const BAD_REQUEST_INVALID_LOCALE                                                = 'BAD_REQUEST_INVALID_LOCALE';
+    const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                                  = 'BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED';
+    const GATEWAY_ERROR_SECURE_CGI_PARAM_KEY_CORRUPT_INVALID                        = 'GATEWAY_ERROR_SECURE_CGI_PARAM_KEY_CORRUPT_INVALID';
+    const GATEWAY_ERROR_SECURE_CGI_PARAM_PRIVATE_KEY_CORRUPT_INVALID                = 'GATEWAY_ERROR_SECURE_CGI_PARAM_PRIVATE_KEY_CORRUPT_INVALID';
+    const GATEWAY_ERROR_SECURE_CGI_PARAM_PUBLIC_KEY_CORRUPT_INVALID                 = 'GATEWAY_ERROR_SECURE_CGI_PARAM_PUBLIC_KEY_CORRUPT_INVALID';
+    const BAD_REQUEST_GENERIC_TRANSACTION_ERROR                                     = 'BAD_REQUEST_GENERIC_TRANSACTION_ERROR';
+    const BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED                                    = 'BAD_REQUEST_TRANSACTIONS_LIMIT_REACHED';
+    const GATEWAAY_ERROR_TERMINAL_ERROR                                             = 'GATEWAAY_ERROR_TERMINAL_ERROR';
+    const GATEWAY_ERROR_SHARED_TERMINAL_ERROR                                       = 'GATEWAY_ERROR_SHARED_TERMINAL_ERROR';
+    const BAD_REQUEST_RECON_NOT_IN_PROGRESS                                         = 'BAD_REQUEST_RECON_NOT_IN_PROGRESS';
+    const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                           = 'BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE';
+    const BAD_REQUEST_INVALID_CARD_DETAILS                                          = 'BAD_REQUEST_INVALID_CARD_DETAILS';
+    const GATEWAY_ERROR_PAYMENT_CREATION_FAILED                                     = 'GATEWAY_ERROR_PAYMENT_CREATION_FAILED';
+    const GATEWAY_ERROR_ORDER_CREATION_FAILED                                       = 'GATEWAY_ERROR_ORDER_CREATION_FAILED';
+    const GATEWAY_ERROR_RECEIPT_CREATION_FAILED                                     = 'GATEWAY_ERROR_RECEIPT_CREATION_FAILED';
+    const GATEWAY_ERROR_FINANCIAL_TRANSACTION_HISTORY_FAILED                        = 'GATEWAY_ERROR_FINANCIAL_TRANSACTION_HISTORY_FAILED';
+    const GATEWAY_ERROR_SHOPPING_TRANSACTION_HISTORY_FAILED                         = 'GATEWAY_ERROR_SHOPPING_TRANSACTION_HISTORY_FAILED';
+    const GATEWAY_ERROR_DIGITAL_ORDER_ERROR                                         = 'GATEWAY_ERROR_DIGITAL_ORDER_ERROR';
+    const GATEWAY_ERROR_DIGITAL_RECEIPT_ERROR                                       = 'GATEWAY_ERROR_DIGITAL_ORDER_ERROR';
+    const BAD_REQUEST_PURCHASE_ERROR                                                = 'BAD_REQUEST_PURCHASE_ERROR';
+    const GATEWAY_ERROR_DEFERRED_PAYMENT_SERVICE_UNAVAILABLE                        = 'GATEWAY_ERROR_DEFERRED_PAYMENT_SERVICE_UNAVAILABLE';
+    const BAD_REQUEST_MAX_DEFERRED_PAYMENT_REACHED                                  = 'BAD_REQUEST_MAX_DEFERRED_PAYMENT_REACHED';
+    const GATEWAY_ERROR_INSTANTIATION_ACQUIRER_CONTROLLER_FAILED                    = 'GATEWAY_ERROR_INSTANTIATION_ACQUIRER_CONTROLLER_FAILED';
+    const GATEWAY_ERROR_IO_ERROR                                                    = 'GATEWAY_ERROR_IO_ERROR';
+    const GATEWAY_ERROR_MESSAGE_ERROR                                               = 'GATEWAY_ERROR_MESSAGE_ERROR';
+    const GATEWAY_ERROR_TRANSPORT_ERROR                                             = 'GATEWAY_ERROR_TRANSPORT_ERROR';
+    const GATEWAY_ERROR_SOCKET_ERROR                                                = 'GATEWAY_ERROR_SOCKET_ERROR';
+    const GATEWAY_ERROR_CONNECTION_ERROR                                            = 'GATEWAY_ERROR_CONNECTION_ERROR';
+    const GATEWAY_ERROR_SHOPPING_TRANSACTIONS_REFUND_EXCEEDED                       = 'GATEWAY_ERROR_SHOPPING_TRANSACTIONS_REFUND_EXCEEDED';
+    const GATEWAY_ERROR_MERCHANT_CREATION_ERROR                                     = 'GATEWAY_ERROR_MERCHANT_CREATION_ERROR';
+    const GATEWAY_ERROR_SEND_EMAIL_ERROR                                            = 'GATEWAY_ERROR_SEND_EMAIL_ERROR';
+    const GATEWAY_ERROR_FAILED_DATA_UPDATE                                          = 'GATEWAY_ERROR_FAILED_DATA_UPDATE';
+    const GATEWAY_ERROR_ACQUIRER_UNAVAILABLE                                        = 'GATEWAY_ERROR_ACQUIRER_UNAVAILABLE';
 }

@@ -2801,7 +2801,7 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
     }
 
-    public function getDummyPaymentArray(string $method, string $network = null): array
+    public function getDummyPaymentArray(string $method, string $network = null, Order\Entity $orderEntity = null): array
     {
         $paymentArray =  [
             self::CURRENCY    => Currency\Currency::INR,
@@ -2821,6 +2821,13 @@ class Entity extends Base\PublicEntity
             case Method::UPI:
                 $paymentArray[self::VPA] = self::DUMMY_VPA;
 
+        }
+
+        if (is_null($orderEntity) === false)
+        {
+            $paymentArray[Payment\Entity::AMOUNT] = $orderEntity->getAmount();
+
+            $paymentArray[Payment\Entity::CURRENCY] = $orderEntity->getCurrency();
         }
 
         return $paymentArray;
