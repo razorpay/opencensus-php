@@ -76,35 +76,29 @@ export default class Sidebar extends Component {
                     icon="i i-chart text-info"
                     to="/dashboard"
                     exact
-                    notMyRole="sellerapp agent support"
                   />
 */}
                   <MainNavLink
                     label="Transfers"
                     icon="i i-transfers text-primary"
                     to={routes.transfers}
-                    notMyRole="sellerapp agent"
                   />
                   <MainNavLink
                     label="Reversals"
                     icon="i i-reversal text-warm"
                     to={routes.reversals}
-                    notMyRole="sellerapp agent"
                   />
                   <MainNavLink
                     label="Settlements"
                     icon="i i-done-all text-success"
                     to="/settlements"
-                    notMyRole="sellerapp agent support"
                   />
-                  {/* temporarily disable reports for LA */}
-                  {/* <MainNavLink
+                  <MainNavLink
                     label="Reports"
                     icon="i i-books text-danger"
                     to="/reports"
-                    notMyRole="sellerapp agent support"
                     isPending={isReportsPending}
-                  /> */}
+                  />
                   <MainNavLink
                     label="Account Settings"
                     icon="i i-account text-primary"

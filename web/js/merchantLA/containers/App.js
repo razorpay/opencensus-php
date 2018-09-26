@@ -223,7 +223,7 @@ export default class App extends Component {
 
   switchMode = mode => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Header',
+      eventCategory: 'LA Dashboard - Header',
       eventAction: 'Switch - Mode',
       eventLabel: mode,
     });

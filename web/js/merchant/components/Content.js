@@ -39,6 +39,8 @@ import {
 } from 'merchant/modules/app';
 import { openSlider } from 'rzp/modules/slider';
 
+import store from 'merchant/store';
+
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   return (
