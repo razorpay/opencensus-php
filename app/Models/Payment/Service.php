@@ -1458,21 +1458,17 @@ class Service extends Base\Service
 
             $paymentProcessor->process($paymentInput, $gatewayInput);
 
-            $payment = $paymentProcessor->getPayment();
-
             try
             {
-                $this->repo->transaction(function() use ($payment, $gateway, $callbackData, $mode, $terminal)
+                $this->repo->transaction(function() use ($paymentProcessor, $gateway, $callbackData, $mode, $terminal)
                 {
-                    $paymentId = $payment->getId();
+                    $payment = $paymentProcessor->getPayment();
 
-                    $input = [$paymentId, $callbackData];
+                    $input = [$payment->getId(), $callbackData];
 
                     $this->app['gateway']->call($gateway, Payment\Action::AUTHORIZE_PUSH, $input, $mode, $terminal);
 
-                    $payment->setStatus(Payment\Status::AUTHORIZED);
-
-                    $this->repo->saveOrFail($payment);
+                    $paymentProcessor->processAuth($payment);
                 });
 
                 $success = true;
