@@ -10,7 +10,7 @@ class Reconciliate extends Base\Reconciliate
     public function getNumLinesToSkip(array $fileDetails)
     {
         return [
-            FileProcessor::LINES_FROM_TOP    => 5,
+            FileProcessor::LINES_FROM_TOP    => 6,
             FileProcessor::LINES_FROM_BOTTOM => 0
         ];
     }
@@ -18,5 +18,10 @@ class Reconciliate extends Base\Reconciliate
     protected function getTypeName($fileName)
     {
         return self::COMBINED;
+    }
+
+    public function getColumnHeadersForType($type)
+    {
+        return ReconHeaders::COLUMN_HEADERS;
     }
 }
