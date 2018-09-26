@@ -221,11 +221,11 @@ const MODULE_PERMISSION_MAP = {
   settlements: '22211100',
 
   // Invoices
-  invoices: '22211122',
+  invoices: '22221122',
   items: '22211122',
 
   // Payment Links
-  payment_links: '22211022',
+  payment_links: '22221022',
 
   // Payment Pages
   payment_pages: '22211020',
@@ -251,7 +251,7 @@ const MODULE_PERMISSION_MAP = {
   // My Account
   profile: '22222220',
   add_funds: '22220000',
-  profile_gst: '22212112',
+  profile_gst: '22222112',
   credits: '22211000',
   activation: '22200000',
   referrals: '22211100',
