@@ -14,6 +14,8 @@ import { adminFormUpload3 } from 'common/fetch';
 const gateWayOptions = [
   'HDFC',
   'BillDesk',
+  'Airtel',
+  'Amazonpay',
   'Axis',
   'Ebs',
   'PayZapp',
@@ -28,6 +30,7 @@ const gateWayOptions = [
   'SBI Buddy',
   'UpiSbi',
   'UpiIcici',
+  'Mpesa',
   'Netbanking Axis',
   'Netbanking Icici',
   'Netbanking Corporation',
@@ -92,10 +95,7 @@ export default function UploadReconciliationFile() {
             gateway: data.gateway,
           };
           if (data.force_authorize) {
-            form.force_authorize = splitAndFilter(
-              data.force_authorize,
-              ','
-            );
+            form.force_authorize = splitAndFilter(data.force_authorize, ',');
           }
           for (let i = 0; i < files.length; i++) {
             if (files[i]) form['attachment-' + (i + 1)] = files[i];

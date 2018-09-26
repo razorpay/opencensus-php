@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router-dom';
 
-export default function NewAppLink(props) {
+export default function NewAppLink({ toNewApplication }) {
   return (
     <div class=" application-details-container col-lg-6">
-      <NavLink to="/applications/new">
+      <NavLink to={toNewApplication}>
         <div class="new-application application-details">
           <div class="app-icon-container">
             <img class="app-icon" src={'img/default-app-logo.svg'} alt="" />

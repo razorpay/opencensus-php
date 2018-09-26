@@ -31,6 +31,8 @@ import { rupeesToPaise, paiseToRupees } from 'rzp/utils/rzp-utils';
 })
 export default class SetCreditAlert extends Component {
   componentWillMount() {
+    this.props.trackForm('Open');
+
     const feeCreditsThreshold = this.props.feeCreditsThreshold || 0;
     this.props.initialize({
       feeCreditsThreshold: paiseToRupees(feeCreditsThreshold),
@@ -38,6 +40,7 @@ export default class SetCreditAlert extends Component {
   }
 
   save = body => {
+    this.props.trackForm('Submit');
     return this.props
       .updateConfig({
         fee_credits_threshold: rupeesToPaise(Number(body.feeCreditsThreshold)),
@@ -57,13 +60,18 @@ export default class SetCreditAlert extends Component {
       });
   };
 
+  handleCloseForm = () => {
+    this.props.trackForm('Close');
+    this.props.closeModal();
+  };
+
   render() {
     const { handleSubmit, formValues } = this.props;
     return (
       <div>
         <ModalHeader
           title="Manage Alerts"
-          onCloseClick={this.props.closeModal}
+          onCloseClick={this.handleCloseForm}
         />
 
         <div class="modal-body">

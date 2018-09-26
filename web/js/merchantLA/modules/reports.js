@@ -1,7 +1,6 @@
 import ajax, { merchantFetch } from 'merchantLA/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 import poll from 'rzp/utils/poll/longPoll';
-import { trackReportGenericActions } from 'merchant/containers/Reports/ReportsNew/ga';
 
 const GENERATE_REPORT = 'GENERATE_REPORT';
 

@@ -20,7 +20,7 @@ import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 export default class SettlementsListContainer extends ListContainer {
   componentDidMount() {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlements',
+      eventCategory: 'LA Dashboard - Settlements',
       eventAction: 'Go To - Settlements',
     });
   }
@@ -29,7 +29,7 @@ export default class SettlementsListContainer extends ListContainer {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
-        eventCategory: 'Dashboard - Settlements',
+        eventCategory: 'LA Dashboard - Settlements',
         eventAction: 'Search - Settlements',
         eventLabel: label,
       });
@@ -38,14 +38,14 @@ export default class SettlementsListContainer extends ListContainer {
 
   onClearAnalytics = () => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlements',
+      eventCategory: 'LA Dashboard - Settlements',
       eventAction: 'Clear Search Params - Settlements',
     });
   };
 
   settlementBreakupOnMount = id => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlements',
+      eventCategory: 'LA Dashboard - Settlements',
       eventAction: 'Show - Settlement Breakup',
       eventLabel: `settlement_id=${id}`,
     });
@@ -53,7 +53,7 @@ export default class SettlementsListContainer extends ListContainer {
 
   settlementBreakupOnUnmount = id => {
     window.rzpAnalytics({
-      eventCategory: 'Dashboard - Settlements',
+      eventCategory: 'LA Dashboard - Settlements',
       eventAction: 'Hide - Settlement Breakup',
       eventLabel: `settlement_id=${id}`,
     });

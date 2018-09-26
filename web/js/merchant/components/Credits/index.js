@@ -6,14 +6,6 @@ import { groupBy } from 'rzp/utils/rzp-utils';
 
 import CreditDetails from './CreditDetails';
 
-const isCreditsDataEmpty = ({ balanceData, creditItems }) => {
-  const { credits, fee_credits, refund_credits } = balanceData;
-  if (!credits && !fee_credits && !refund_credits && !creditItems.length) {
-    return true;
-  }
-  return false;
-};
-
 export default props => {
   let { creditsData, balanceData, loading, currentUser } = props;
 
@@ -44,7 +36,7 @@ export default props => {
         </div>
       ) : (
         <div class="list-group details-row-container">
-          {isCreditsDataEmpty({ balanceData, creditItems }) ? (
+          {!(creditsData && creditsData.items.length) ? (
             <h3 class="empty-table text-center">No Credits</h3>
           ) : (
             <Fragment>
@@ -52,7 +44,9 @@ export default props => {
                 <CreditDetails
                   totalCredits={balanceData.credits}
                   title="Amount Credits"
+                  description="Get your amounts settled in full. Transaction amount gets deducted from amount credits."
                   creditItems={creditItems.amount}
+                  trackToggleHistory={props.trackToggleHistory}
                 />
               )}
 
@@ -63,6 +57,7 @@ export default props => {
                   description="Get your amounts settled in full. Fees charged from credits."
                   creditItems={creditItems.fee}
                   onManageAlert={props.onManageAlert}
+                  trackToggleHistory={props.trackToggleHistory}
                 />
               )}
 
@@ -72,6 +67,7 @@ export default props => {
                   title="Refund Credits"
                   description="Do not want to refund from your settled amounts? Use refund credits."
                   creditItems={creditItems.refund}
+                  trackToggleHistory={props.trackToggleHistory}
                 />
               )}
             </Fragment>

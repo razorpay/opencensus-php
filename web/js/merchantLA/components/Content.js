@@ -12,7 +12,7 @@ import Home from 'merchantLA/containers/Home/Index';
 import Transfers from 'merchantLA/containers/Marketplace/Transfers/List';
 import Reversals from 'merchantLA/containers/Marketplace/Reversals/List';
 import Settlements from 'merchantLA/containers/Settlements/List';
-import Reports from 'merchant/containers/Reports';
+import Reports from 'merchantLA/containers/Reports';
 import MyAccount from 'merchantLA/containers/MyAccount';
 
 import ErrorBoundary from 'common/ErrorBoundary';
@@ -85,15 +85,13 @@ export default class Content extends Component {
           <Route path="/transfers" component={Transfers} />
           <Route path="/reversals" component={Reversals} />
           <Route path="/settlements" component={Settlements} />
-          {/* temporarily disable reports for LA */}
-          {/* <Route path="/reports" component={Reports} /> */}
+          <Route path="/reports" component={Reports} />
 
           <Route path="/profile" component={MyAccount} />
           <ShowWhenRoute
             path="/team"
             component={MyAccount}
             myRole="linked_account_owner"
-            // myRole="owner"
           />
           <Redirect to="/transfers" />
           {/*<Redirect to="/dashboard" />*/}
