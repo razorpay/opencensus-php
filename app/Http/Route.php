@@ -1383,12 +1383,9 @@ final class Route
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'webhook_fire',
-<<<<<<< HEAD
         'merchant_methods_edit',
         'merchant_fetch_methods',
-=======
         'merchant_instant_activation_post',
->>>>>>> 3aac378959... [ia] adds new api to accept basic kyc form
     ];
 
     // These will run on internal auth with the assurance
