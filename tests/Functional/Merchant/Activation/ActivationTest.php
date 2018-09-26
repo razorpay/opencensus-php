@@ -21,12 +21,27 @@ class ActivationTest extends TestCase
     public function testMerchantActivationCategoriesResponseForAdminAuth()
     {
         $this->ba->adminAuth();
+
         $this->fixtures->edit(AdminEntity::ADMIN, Org::SUPER_ADMIN, [AdminEntity::ALLOW_ALL_MERCHANTS => 1]);
 
         $this->startTest();
     }
 
     public function testMerchantActivationCategoriesResponseForNonAdminAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testPostInstantActivationRequiredField()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testPostInstantActivation()
     {
         $this->ba->proxyAuth();
 
