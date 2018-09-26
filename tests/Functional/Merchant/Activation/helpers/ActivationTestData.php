@@ -6,7 +6,7 @@ return [
     'testMerchantActivationCategoriesResponseForAdminAuth'    => [
         'request'  => [
             'method' => 'GET',
-            'url'    => '/v1/merchant/activation/business_categories'
+            'url'    => '/merchant/activation/business_categories'
         ],
         'response' => [
             'content'     => [
@@ -847,7 +847,7 @@ return [
     'testMerchantActivationCategoriesResponseForNonAdminAuth' => [
         'request'  => [
             'method' => 'GET',
-            'url'    => '/v1/merchant/activation/business_categories'
+            'url'    => '/merchant/activation/business_categories'
         ],
         'response' => [
             'content'     => [
