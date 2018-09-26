@@ -18,7 +18,7 @@ return array(
 
     'driver' => 'custom_redis',
 
-    'encrypt' => env('SESSION_ENCRYPT', true),
+    'encrypt' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -32,6 +32,28 @@ return array(
     */
 
     'lifetime' => 60*60*4,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Inactivity Time
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify the number of minutes that you wish the session
+    | to be allowed to remain idle before it asks user to login again.
+    |
+    */
+    'in_activity_time' => 1,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Inactivity Time day
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify the number of minutes that you wish the session to be allowed to login directly.
+    | Assuming the user has closed the tab.
+    |
+    */
+    'in_activity_time_day' => 60,
 
     'expire_on_close' => false,
 
