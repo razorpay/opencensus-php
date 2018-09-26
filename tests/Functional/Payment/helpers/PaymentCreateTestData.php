@@ -104,8 +104,8 @@ return [
         'body' => [
             [
                 'index' => [
-                    '_index' => 'testing_payment_test',
-                    '_type'  => 'testing_payment_test',
+                    '_index' => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
+                    '_type'  => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
                 ],
             ],
             [
