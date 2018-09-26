@@ -59,7 +59,9 @@ trait Authorize
 
     /**
      * @param Payment\Entity $payment
-     * @param array $input
+     * @param array          $input
+     * @param array          $gatewayInput
+     *
      * @return array
      */
     public function authorize(Payment\Entity $payment, array $input, array $gatewayInput = []): array

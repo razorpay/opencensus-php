@@ -75,8 +75,12 @@ trait PaymentFirstDataTrait
     {
         $this->mockServerContentFunction(function (& $content)
         {
-            $content['ApprovalCode']      = 'N:-5008:Order does not exist.';
-            $content['TransactionResult'] = 'FAILED';
+            if (is_array($content) === true)
+            {
+                $content['ApprovalCode']      = 'N:-5008:Order does not exist.';
+                $content['TransactionResult'] = 'FAILED';
+            }
+
         });
     }
 

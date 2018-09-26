@@ -261,7 +261,11 @@ class Validator extends Base\Validator
     {
         $refund = $this->entity;
 
-        if ($refund->isCreated() === false)
+        //
+        // Checking if refund is already processed, as scrooge can call API to mark processed again
+        // even if refund has been already updated by some other process (eg. recon)
+        //
+        if (($refund->isCreated() === false) and ($refund->isProcessed() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED,
