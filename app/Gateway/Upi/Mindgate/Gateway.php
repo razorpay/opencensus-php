@@ -732,8 +732,6 @@ class Gateway extends Base\Gateway
     {
         $merchantReference = NULL;
 
-        $gatewayPayment = NULL;
-
         if (isset($input['payment']['merchant_reference']) === false)
         {
             $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
