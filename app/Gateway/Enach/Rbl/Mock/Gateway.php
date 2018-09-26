@@ -16,7 +16,7 @@ class Gateway extends Rbl\Gateway
         if (($input['payment']['method'] === 'emandate') and
             ($input['payment']['auth_type'] === 'netbanking'))
         {
-            return $this->authorizeMock($input, 'mock_enach_payment');
+            return $this->authorizeMock($input, 'mock_emandate_payment');
         }
 
         return $this->authorizeMock($input, 'mock_esigner_payment');
@@ -26,7 +26,7 @@ class Gateway extends Rbl\Gateway
     {
         $gateway = $this->gateway;
 
-        if($route === 'mock_enach_payment')
+        if($route === 'mock_emandate_payment')
         {
             $url = $this->route->getUrl($route, ['bank' => 'rbl']);
 
