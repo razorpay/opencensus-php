@@ -811,8 +811,8 @@ class Merchant extends Base
                 [
                     'mode'         => 'test',
                     'entity'       => 'merchant',
-                    'index_prefix' => 'testing_',
-                    'type_prefix'  => 'testing_',
+                    'index_prefix' => env('ES_ENTITY_TYPE_PREFIX'),
+                    'type_prefix'  => env('ES_ENTITY_TYPE_PREFIX'),
                     '--reindex'    => true,
                 ]);
             Artisan::call(
@@ -820,8 +820,8 @@ class Merchant extends Base
                 [
                     'mode'         => 'live',
                     'entity'       => 'merchant',
-                    'index_prefix' => 'testing_',
-                    'type_prefix'  => 'testing_',
+                    'index_prefix' => env('ES_ENTITY_TYPE_PREFIX'),
+                    'type_prefix'  => env('ES_ENTITY_TYPE_PREFIX'),
                     '--reindex'    => true,
                 ]);
 
