@@ -365,7 +365,7 @@ class Server extends Base\Mock\Server
     {
         parent::validatePush($input);
 
-        $input = $this->parseInput($input);
+        $input = $this->parseInput($input, Action::VALIDATE_PUSH);
 
         $this->validateActionInput($input);
 
