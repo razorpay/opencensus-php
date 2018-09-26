@@ -109,7 +109,7 @@ export default function Reports(store, opts) {
         configRequest = getConfigs().catch(requestFailedFunc),
         promises = [configRequest];
 
-      const monthlyInvoiceConfig = [getCustomConfig('monthlyInvoice')];
+      const monthlyInvoiceConfig = getCustomConfig('monthlyInvoice');
       if (monthlyInvoiceConfig) {
         configs.push(monthlyInvoiceConfig);
       }
