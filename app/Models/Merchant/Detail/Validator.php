@@ -352,7 +352,7 @@ class Validator extends Base\Validator
 
         $subcategoryMap     = BusinessCategory::SUBCATEGORY_MAP;
 
-        $validSubcategories = array_values($subcategoryMap[$category][BusinessCategory::SUBCATEGORIES]);
+        $validSubcategories = array_values($subcategoryMap[$category]);
 
         $isError            = false;
 

@@ -436,17 +436,16 @@ class Service extends Base\Service
         $businessCategoriesMap = BusinessCategory::SUBCATEGORY_MAP;
         $businessCategories    = [];
 
-        foreach ($businessCategoriesMap as $businessCategory => $businessCategoryDetails)
+        foreach ($businessCategoriesMap as $businessCategory => $subCategories)
         {
             $businessCategories[$businessCategory] = [];
             $subCategoriesMetaData                 = [];
-            $subCategoriesForGivenCategory         = $businessCategoryDetails[BusinessCategory::SUBCATEGORIES];
 
-            foreach ($subCategoriesForGivenCategory as $subCategory)
+            foreach ($subCategories as $subCategory)
             {
                 $subCategoriesMetaData[$subCategory] =  $this->getSubCategoryMetaDataFields($subCategory);
             }
-            $businessCategories[$businessCategory][BusinessCategory::DESCRIPTION]   = $businessCategoryDetails[BusinessCategory::DESCRIPTION];
+            $businessCategories[$businessCategory][BusinessCategory::DESCRIPTION]   = BusinessCategory::DESCRIPTIONS[$businessCategory];
             $businessCategories[$businessCategory][BusinessCategory::SUBCATEGORIES] = $subCategoriesMetaData;
         }
 
