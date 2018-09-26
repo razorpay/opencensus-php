@@ -6,7 +6,7 @@ use RZP\Base;
 
 class Validator extends Base\Validator
 {
-    protected static $authRules = [
+    protected static $fetchTokenRules = [
         'merchId'       => 'required|alpha_num|size:9',
         'merchChanId'   => 'required|alpha_num|size:12',
         'unqTxnId'      => 'required|string|max:255',
@@ -29,4 +29,15 @@ class Validator extends Base\Validator
         'checksum'      => 'required|string|max:10000',
     ];
 
+    protected static $refundRules = [
+        'merchId'           => 'required|alpha_num|size:9',
+        'merchChanId'       => 'required|alpha_num|size:12',
+        'txnRefundId'       => 'required|alpha_num|max:255',
+        'mobNo'             => 'required|string|max:12',
+        'txnRefundAmount'   => ['required', 'regex:/^\d*(\.\d{2})$/'],
+        'unqTxnId'          => 'required|string|max:255',
+        'refundReason'      => 'required|string',
+        'sId'               => 'sometimes|string|max:255',
+        'checkSum'          => 'required|string|max:10000',
+    ];
 }
