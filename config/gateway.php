@@ -278,12 +278,12 @@ return [
     ],
 
     'upi_axis' => [
-        'merchant_id'           => env('UPI_AXIS_GATEWAY_MERCHANT_ID'),
-        'merchant_channel_id'   => env('UPI_AXIS_GATEWAY_MERCHANT_CHANNEL_ID'),
         'public_key'            => env('UPI_AXIS_GATEWAY_PUBLIC_KEY'),
         'mobile_no'             => env('UPI_AXIS_GATEWAY_MOBILE_NUMBER'),
         'aes_encryption_key'    => env('UPI_AXIS_GATEWAY_AES_KEY'),
-        'default_payee_vpa'     => env('UPI_AXIS_GATEWAY_PAYEE_VPA'),
+        'test_merchant_id'      => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2'     => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_CHANNEL_ID'),
+        'test_vpa'              => env('UPI_AXIS_GATEWAY_TEST_PAYEE_VPA'),
     ],
 
     'aeps_icici' => [
