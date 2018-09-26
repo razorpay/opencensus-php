@@ -174,8 +174,6 @@ class Entity extends Base\PublicEntity
 
     const OFFER_ID              = 'offer_id';
 
-    const PREFERRED_RECURRING   = 'preferred_recurring';
-
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -1071,6 +1069,13 @@ class Entity extends Base\PublicEntity
     public function setAmountAttribute($amount)
     {
         $this->attributes[self::AMOUNT] = (int) $amount;
+    }
+
+    public function setRecurringAttribute($recurring)
+    {
+        $intVal = intval($recurring);
+
+        $this->attributes[self::RECURRING] = boolval($intVal);
     }
 
     protected function setContactAttribute($contact)

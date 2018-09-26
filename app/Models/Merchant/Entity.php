@@ -15,6 +15,7 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use RZP\Models\Workflow\Action;
@@ -1593,8 +1594,19 @@ class Entity extends Base\PublicEntity
 
         if ($this->isFeatureEnabled(Feature\Constants::OTPELF) === true)
         {
-            $data[IIN\Constants::OTP] = (($iin->isHeadLessOtp()) or
-                                         ($iin->isOtp()));
+            $enabled = $iin->isHeadLessOtp();
+
+            if ($enabled === false)
+            {
+                $enabled = $iin->isOtp();
+
+                if ($iin->getIssuer() === IFSC::UTIB)
+                {
+                    $enabled = ($this->isAxisExpressPayEnabled() and $enabled);
+                }
+            }
+
+            $data[IIN\Constants::OTP] = $enabled;
         }
 
         return $data;

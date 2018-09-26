@@ -541,8 +541,7 @@ class PaymentCreateTest extends TestCase
 
         unset($payment['email'], $payment['contact'], $payment['notes']);
 
-        $payment['recurring'] = true;
-        $payment['preferred_recurring'] = true;
+        $payment['recurring'] = 'xyz';
 
         $this->makeRequestAndCatchException(
             function() use ($payment)
@@ -580,7 +579,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
 
-        $payment['preferred_recurring'] = true;
+        $payment['recurring'] = 'preferred';
 
         unset($payment['email'], $payment['contact'], $payment['notes']);
 
@@ -630,8 +629,7 @@ class PaymentCreateTest extends TestCase
         $payment = $this->getDefaultRecurringPaymentArray();
 
         $payment['save'] = true;
-        $payment['preferred_recurring'] = true;
-        unset($payment['recurring']);
+        $payment['recurring'] = 'preferred';
 
         $this->doAuthAndCapturePayment($payment);
 

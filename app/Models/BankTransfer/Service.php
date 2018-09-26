@@ -2,13 +2,18 @@
 
 namespace RZP\Models\BankTransfer;
 
+use Cache;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Bank\BankCodes;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\VirtualAccount\Provider;
 
 class Service extends Base\Service
 {
@@ -56,6 +61,8 @@ class Service extends Base\Service
         );
 
         $this->validateProvider();
+
+        $this->checkBlocks($input);
 
         $valid = $this->core->process($input, $this->provider);
 
@@ -198,6 +205,26 @@ class Service extends Base\Service
         }
     }
 
+    protected function checkBlocks(array & $input)
+    {
+        if (($this->areBankTransfersBlockedForYesBank() === true) and
+            ($this->provider === Provider::YESBANK))
+        {
+            throw new LogicException('Payment made via YesBank');
+        }
+
+        if ($this->areBankTransfersBlockedForAllMerchants() === true)
+        {
+            //
+            // VA va_B1zCTFrop7UWBT belongs to a test account
+            // See Account::DEMO_VA_TEST
+            //
+            $input[Entity::PAYEE_ACCOUNT] = '5432100130473700';
+
+            $this->trace->warning(TraceCode::BANK_TRANSFER_PROCESSING_REDIRECTED, $input);
+        }
+    }
+
     public function editPayerBankAccount(string $id, array $input)
     {
         $bankTransfer = $this->repo->bank_transfer->findByPublicId($id);
@@ -221,5 +248,33 @@ class Service extends Base\Service
         }
 
         return $bankTransfers->getPublicIds();
+    }
+
+    protected function areBankTransfersBlockedForAllMerchants(): bool
+    {
+        return $this->isBlockedByConfig(ConfigKey::BLOCK_SMART_COLLECT);
+    }
+
+    protected function areBankTransfersBlockedForYesBank(): bool
+    {
+        return $this->isBlockedByConfig(ConfigKey::BLOCK_YESBANK);
+    }
+
+    protected function isBlockedByConfig(string $key): bool
+    {
+        $block = false;
+
+        try
+        {
+            $block = (bool) Cache::get($key);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::CRITICAL);
+
+            $block = false;
+        }
+
+        return $block;
     }
 }

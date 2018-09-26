@@ -245,6 +245,7 @@ final class Route
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'gateway_payment_callback_bharatqr'        => ['post',     'payment/callback/bharatqr/{gateway}',            'BharatQrController@processBharatQrPayment'                         ],
         'bharat_qr_pay_test'                       => ['post',     'bharatqr/pay/test',                              'BharatQrController@processBharatQrTestPayment'                     ],
+        'gateway_payment_validate_bharatqr'        => ['post',     'payment/validate/bharatqr/{gateway}',            'BharatQrController@processBharatQrValidatePayment'                 ],
         'qr_code_download_live'                    => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
         'qr_code_download_test'                    => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
         'virtual_account_create'                   => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
@@ -544,6 +545,7 @@ final class Route
         'offer_fetch_by_id'                        => ['get',      'offers/{id}',                                    'OfferController@fetchOfferById'                                    ],
         'offer_deactivate'                         => ['patch',    'offers/deactivate',                              'OfferController@deactivateOffers'                                  ],
         'currency_update_rates'                    => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
+        'currency_update_rates_multiple'           => ['post',     'currency/rates',                                 'CurrencyController@postCurrencyRatesMultiple'                      ],
         'currency_fetch_rates'                     => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
         'reports_fetch_multiple'                   => ['get',      'reports',                                        'ReportController@getReports'                                       ],
         'reports_generate'                         => ['post',     'reports/{entity}/generate',                      'ReportController@generateReport'                                   ],
@@ -1125,6 +1127,7 @@ final class Route
         'billdesk_create_cancelled_refunds',
         'card_update_saved',
         'currency_update_rates',
+        'currency_update_rates_multiple',
         'emandate_debit_reconcile',
         'emi_generate_excel',
         'entity_tax_update',
@@ -2034,7 +2037,7 @@ final class Route
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'subscription_manual_retry'                => '*',
         'terminal_get_banks'                       => '*',
-        'terminal_set_banks'                       => '*',
+        'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
     ];
 
     public static $direct = [
@@ -2084,6 +2087,7 @@ final class Route
         'qr_code_download_live',
         'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
+        'gateway_payment_validate_bharatqr'
     ];
 
     /**
@@ -2182,6 +2186,7 @@ final class Route
             'refund_create_gateway_record',
             'gateway_validate_unknown_refund',
             'currency_update_rates',
+            'currency_update_rates_multiple',
             'refund_gateway_refunded_txns',
             'merchant_activation_migrate',
             'billdesk_create_cancelled_refunds',
