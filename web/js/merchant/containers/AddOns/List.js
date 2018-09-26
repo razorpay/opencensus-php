@@ -126,7 +126,7 @@ export default class AddOnsListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen notMyRole="support">
+          <ShowWhen additionalCondition={(user = user.isAllowedEdit('addons'))}>
             <div class="btn-toolbar">
               <button
                 class="pull-right btn btn-primary"

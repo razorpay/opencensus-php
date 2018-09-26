@@ -3,6 +3,7 @@ import { Component } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 
+import ShowWhen from 'merchant/components/ShowWhen';
 import Alert from 'rzp/ui/Forms/Alert';
 import Amount from 'rzp/ui/Amount';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
@@ -47,9 +48,15 @@ const SettlementText = ({ data, transfer, onEdit }) => {
           <span className="text-danger">On Hold</span>
         )}
         <span>&nbsp;&nbsp;</span>
-        <a href className="btn-link" onClick={onEdit}>
-          change
-        </a>
+        {
+          <ShowWhen
+            additionalCondition={user => user.isAllowedEdit('payments')}
+          >
+            <a href className="btn-link" onClick={onEdit}>
+              change
+            </a>
+          </ShowWhen>
+        }
       </div>
       {data.onHold === 'false' && (
         <div className="text-fade">

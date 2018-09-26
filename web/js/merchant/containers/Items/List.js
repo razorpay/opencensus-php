@@ -122,7 +122,7 @@ export default class ItemsListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen notMyRole="support">
+          <ShowWhen additionalCondition={user => user.isAllowedEdit('items')}>
             <div class="btn-toolbar">
               <button
                 class="pull-right btn btn-primary"

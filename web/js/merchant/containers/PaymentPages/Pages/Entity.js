@@ -52,7 +52,7 @@ const inActiveStatusReasonMap = {
   deactivated: 'You manually deactivated the link',
 };
 
-@connect(null, {
+@connect(state => ({ user: state.session.user }), {
   updatePPInReduxList,
   showNotification,
   openModal,
@@ -421,6 +421,8 @@ export default class PaymentPagesEntity extends React.Component {
       paymentsListLoading,
     } = this.state;
 
+    const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
+
     if (loading) {
       return (
         <div class="content-wrapper content-sm txn-details Entity--paymentpage">
@@ -463,9 +465,9 @@ export default class PaymentPagesEntity extends React.Component {
           <div class="panel-heading">
             <i class="i i-payment-pages text-primary icon--formal" />{' '}
             <div class="text">{paymentPageEntity.title}</div>
-            <ShowWhen notMyRole="support finance">
-              <div class="btn-toolbar pull-right">
-                {isActive && (
+            <div class="btn-toolbar pull-right">
+              {isRoleAllowedEdit &&
+                isActive && (
                   <button
                     class="btn btn-primary btn-sm"
                     onClick={this.openShareView}
@@ -473,8 +475,7 @@ export default class PaymentPagesEntity extends React.Component {
                     Share URL
                   </button>
                 )}
-              </div>
-            </ShowWhen>
+            </div>
           </div>
 
           <div class="SliderPanel__Body">
@@ -510,17 +511,19 @@ export default class PaymentPagesEntity extends React.Component {
                   value={() => (
                     <div>
                       <PaymentPagesStatusLabel status={status} />
-                      <Button.Transparent
-                        class="Button--Link"
-                        style={{ marginLeft: 12 }}
-                        onClick={
-                          isActive
-                            ? this.toggleManualActivation
-                            : this.reActivateLink
-                        }
-                      >
-                        {isActive ? 'Deactivate' : 'Activate'}
-                      </Button.Transparent>
+                      {isRoleAllowedEdit && (
+                        <Button.Transparent
+                          class="Button--Link"
+                          style={{ marginLeft: 12 }}
+                          onClick={
+                            isActive
+                              ? this.toggleManualActivation
+                              : this.reActivateLink
+                          }
+                        >
+                          {isActive ? 'Deactivate' : 'Activate'}
+                        </Button.Transparent>
+                      )}
                       <div style={{ marginTop: 4, color: '#8991ae' }}>
                         {inActiveStatusReasonMap[statusReason]}
                       </div>
@@ -539,6 +542,7 @@ export default class PaymentPagesEntity extends React.Component {
                       entityId={paymentPageEntity.id}
                       editFn={this.editPaymentPage}
                       trackerFn={trackDetailViewEdits}
+                      isRoleAllowedEdit={isRoleAllowedEdit}
                     />
                   )}
                 />
@@ -551,6 +555,7 @@ export default class PaymentPagesEntity extends React.Component {
                       entityId={paymentPageEntity.id}
                       editFn={this.editPaymentPage}
                       trackerFn={trackDetailViewEdits}
+                      isRoleAllowedEdit={isRoleAllowedEdit}
                     />
                   )}
                 />
@@ -578,6 +583,7 @@ export default class PaymentPagesEntity extends React.Component {
                       value={paymentPageEntity.expire_by}
                       editFn={this.editPaymentPage}
                       entityId={paymentPageEntity.id}
+                      isRoleAllowedEdit={isRoleAllowedEdit}
                     />
                   )}
                 />
@@ -590,6 +596,7 @@ export default class PaymentPagesEntity extends React.Component {
                       editFn={this.editPaymentPage}
                       entityId={paymentPageEntity.id}
                       trackerFn={trackDetailViewEdits}
+                      isRoleAllowedEdit={isRoleAllowedEdit}
                     />
                   )}
                 />
@@ -602,6 +609,7 @@ export default class PaymentPagesEntity extends React.Component {
                       editFn={this.editPaymentPage}
                       entityId={paymentPageEntity.id}
                       trackerFn={trackDetailViewEdits}
+                      isRoleAllowedEdit={isRoleAllowedEdit}
                     />
                   )}
                 />

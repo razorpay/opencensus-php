@@ -3,19 +3,13 @@ import Amount from 'rzp/ui/Amount';
 import Banner from 'rzp/ui/Banner';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
-import CheckIcon from 'rzp/ui/CheckIcon';
 import Alert from 'rzp/ui/Forms/Alert';
-import DataTable from 'rzp/ui/Table/DataTable';
 import { titleCase } from 'rzp/utils/rzp-utils';
-import ListToggler from 'rzp/ui/Toggler/ListToggler';
-import ListGroupToggler from 'rzp/ui/Toggler/ListGroupToggler';
 import Definition from 'rzp/ui/Definition';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
-import OtherDetail from 'merchant/components/OtherDetail';
 import { refundId, amount, createdAt } from 'rzp/ui/item/pair';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import PaymentMethod from 'merchant/components/Payments/PaymentMethod';
 import PaymentRefund from 'merchant/components/Payments/PaymentRefund';
 import PaymentTransfers from 'merchant/components/Payments/PaymentTransfers.js';
@@ -32,6 +26,7 @@ export default props => {
     openRefundModal,
     statusMsg = {},
     onRefundDetailsToggleClick = () => {},
+    isRoleAllowedEdit,
   } = props;
 
   return (
@@ -56,21 +51,19 @@ export default props => {
           </div>
 
           <div class="SliderPanel__Body">
-            <ShowWhen myRole="owner manager operations admin">
-              {payment.status === 'authorized' && (
-                <Banner
-                  cta="Capture Payment"
-                  ctaOnClick={() => {
-                    props.confirmCapture(payment);
-                  }}
-                >
-                  <span>
-                    This payment will be auto-refunded if not captured within 5
-                    days of creation.
-                  </span>
-                </Banner>
-              )}
-            </ShowWhen>
+            {payment.status === 'authorized' && (
+              <Banner
+                cta={isRoleAllowedEdit ? 'Capture Payment' : ''}
+                ctaOnClick={() => {
+                  props.confirmCapture(payment);
+                }}
+              >
+                <span>
+                  This payment will be auto-refunded if not captured within 5
+                  days of creation.
+                </span>
+              </Banner>
+            )}
 
             <div class="panel-body">
               <Alert type={statusMsg.type} message={statusMsg.message} />

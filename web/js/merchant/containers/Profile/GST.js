@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { fetchGST } from 'merchant/modules/profile';
 import { openModal } from 'rzp/modules/modals';
 import AddGST from './AddGST';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(state => state.profile, { fetchGST, openModal })
 export default class GSTDetails extends Component {
@@ -23,11 +24,15 @@ export default class GSTDetails extends Component {
       <div class="panel panel-default">
         <div class="panel-heading">
           GST Details
-          {!merchant_gst.gstin && (
+          <ShowWhen
+            additionalCondition={user =>
+              user.isAllowedEdit('profile') && !merchant_gst.gstin
+            }
+          >
             <span class="pull-right">
               <a onClick={this.openAddGSTModal}>Add your GST details</a>
             </span>
-          )}
+          </ShowWhen>
         </div>
         <div class="list-group details-row-container">
           <div class="list-group-item">

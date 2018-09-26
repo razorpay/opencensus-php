@@ -119,6 +119,8 @@ export default class EditablePairsList extends React.PureComponent {
   };
 
   render() {
+    // Since it's reusable component, isRoleAllowedEdit is default to true unless set otherwise
+    const { isRoleAllowedEdit = true } = this.props;
     return (
       <ErrorBoundary>
         <div
@@ -140,10 +142,12 @@ export default class EditablePairsList extends React.PureComponent {
                   handleSave={this.handleSave}
                   removePair={this.removePair}
                   trackerFn={this.props.trackerFn}
+                  isRoleAllowedEdit={isRoleAllowedEdit}
                 />
               ))}
 
-            {this.state.pairs.length < this.state.maxAllowedPairs ? (
+            {isRoleAllowedEdit &&
+            this.state.pairs.length < this.state.maxAllowedPairs ? (
               <Button.Transparent
                 type="button"
                 class="Btn--Link"
@@ -179,9 +183,9 @@ export default class EditablePairsList extends React.PureComponent {
 class PairDecider extends React.Component {
   // If Pair defaultValue, then show as PairView
   state = {
-    isPairInputEditable: !(
-      this.props.defaultValue['key'] || this.props.defaultValue['value']
-    ),
+    isPairInputEditable:
+      this.props.isRoleAllowedEdit &&
+      !(this.props.defaultValue['key'] || this.props.defaultValue['value']),
   };
 
   toggleEditMode = e => {
@@ -207,7 +211,7 @@ class PairDecider extends React.Component {
   };
 
   render() {
-    const { name, idx } = this.props;
+    const { name, idx, isRoleAllowedEdit } = this.props;
 
     return this.state.isPairInputEditable ? (
       <InputEditablePair
@@ -227,6 +231,7 @@ class PairDecider extends React.Component {
         deletePair={this.props.deletePair}
         makeEditable={this.toggleEditMode}
         trackerFn={this.props.trackerFn}
+        isRoleAllowedEdit={isRoleAllowedEdit}
       />
     );
   }
@@ -361,14 +366,21 @@ class PairView extends React.Component {
   state = {};
 
   render() {
-    const { name, idx, pair, makeEditable, deletePair } = this.props;
+    const {
+      name,
+      idx,
+      pair,
+      makeEditable,
+      deletePair,
+      isRoleAllowedEdit,
+    } = this.props;
 
     return (
       <div class="pair--view">
         <div class="title">{pair.key}</div>
         <div class="description">{pair.value}</div>
 
-        {makeEditable && (
+        {isRoleAllowedEdit && (
           <Button.Transparent
             type="button"
             class="Btn--Link"
@@ -380,7 +392,7 @@ class PairView extends React.Component {
             Edit
           </Button.Transparent>
         )}
-        {deletePair && (
+        {isRoleAllowedEdit && (
           <Button.Transparent
             type="button"
             class="Btn--Link"

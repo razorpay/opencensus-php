@@ -7,6 +7,7 @@ import Definition from 'rzp/ui/Definition';
 import DataTable from 'rzp/ui/Table/DataTable';
 import LoaderDots from 'rzp/ui/LoaderDots';
 import { transferId, amount, createdAt } from 'rzp/ui/item/pair';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 /*
  * Design:
@@ -96,9 +97,11 @@ export default ({ payment, transfers, onCreateTransfer }) => {
         <p>
           No transfers created{`${payment.status === 'captured' ? ' yet' : ''}`}
         </p>
-        {payment.status === 'captured' && (
-          <CreateTransferBtn onClick={onCreateTransfer} />
-        )}
+        <ShowWhen additionalCondition={user => user.isAllowedEdit('payments')}>
+          {payment.status === 'captured' && (
+            <CreateTransferBtn onClick={onCreateTransfer} />
+          )}
+        </ShowWhen>
       </div>
     );
   }
@@ -120,15 +123,18 @@ export default ({ payment, transfers, onCreateTransfer }) => {
           </span>
         </Definition>
       </div>
-      {!transfers.loading  && payment.status === 'captured' &&
-        payment.amount !== amountTransferred && (
-          <div className="m-b">
-            <CreateTransferBtn
-              text="Create another transfer"
-              onClick={onCreateTransfer}
-            />
-          </div>
-        )}
+      <ShowWhen additionalCondition={user => user.isAllowedEdit('payments')}>
+        {!transfers.loading &&
+          payment.status === 'captured' &&
+          payment.amount !== amountTransferred && (
+            <div className="m-b">
+              <CreateTransferBtn
+                text="Create another transfer"
+                onClick={onCreateTransfer}
+              />
+            </div>
+          )}
+      </ShowWhen>
       <TransfersList transfers={transfers} payment={payment} />
     </div>
   );

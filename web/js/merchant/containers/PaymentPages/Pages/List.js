@@ -5,7 +5,6 @@ import { NavLink } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Spinner from 'rzp/ui/Spinner';
-import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
 import { fetchPaymentPagesList } from './model';
@@ -106,7 +105,9 @@ export default class PaymentPagesContainer extends ListContainer {
 
   render() {
     const { loading, loadingAllList, totalPaymentPagesLength } = this.state;
-    const { paymentPages } = this.props;
+    const { paymentPages, user } = this.props;
+
+    const isRoleAllowedEdit = user.isAllowedEdit('payment_pages');
 
     let content;
 
@@ -117,6 +118,7 @@ export default class PaymentPagesContainer extends ListContainer {
         </div>
       );
     } else if (
+      isRoleAllowedEdit &&
       !loadingAllList &&
       !totalPaymentPagesLength &&
       !paymentPages.length
@@ -260,14 +262,14 @@ export default class PaymentPagesContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen notMyRole="support">
-            <div class="btn-toolbar pull-right">
+          <div class="btn-toolbar pull-right">
+            {isRoleAllowedEdit && (
               <NavLink class="btn btn-primary" to="/paymentpages/new">
                 <i class="i i-plus" />
                 <span>Create Payment Page</span>
               </NavLink>
-            </div>
-          </ShowWhen>
+            )}
+          </div>
         </HeaderAction>
 
         {content}

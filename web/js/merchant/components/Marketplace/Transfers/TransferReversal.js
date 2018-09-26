@@ -1,5 +1,6 @@
 import React from 'react';
 
+import ShowWhen from 'merchant/components/ShowWhen';
 import Amount from 'rzp/ui/Amount';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Definition from 'rzp/ui/Definition';
@@ -76,12 +77,14 @@ export default ({ transfer, reversals, openTransferReversalModal }) => {
     return (
       <div>
         <p>No reversals created</p>
-        <button
-          className="btn btn-default"
-          onClick={() => openTransferReversalModal(transfer)}
-        >
-          Create reversal
-        </button>
+        <ShowWhen additionalCondition={user => user.isAllowedEdit('payments')}>
+          <button
+            className="btn btn-default"
+            onClick={() => openTransferReversalModal(transfer)}
+          >
+            Create reversal
+          </button>
+        </ShowWhen>
       </div>
     );
   } else if (reversalStatus === 'full') {
@@ -107,12 +110,14 @@ export default ({ transfer, reversals, openTransferReversalModal }) => {
         </Definition>
       </div>
       <p>
-        <button
-          className="btn btn-default"
-          onClick={() => openTransferReversalModal(transfer)}
-        >
-          Create Another Reversal
-        </button>
+        <ShowWhen additionalCondition={user => user.isAllowedEdit('payments')}>
+          <button
+            className="btn btn-default"
+            onClick={() => openTransferReversalModal(transfer)}
+          >
+            Create Another Reversal
+          </button>
+        </ShowWhen>
       </p>
       <ReversalsList reversals={reversals} />
     </div>

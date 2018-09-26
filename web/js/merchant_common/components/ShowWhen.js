@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { findBy } from 'rzp/utils/rzp-utils';
+import { Route, Redirect } from 'react-router-dom';
 
 function convertToArray(arrayOrString) {
   if (arrayOrString) {
@@ -93,4 +94,24 @@ export function showWhenUtil(store) {
 
     return isContentVisible;
   };
+}
+
+export function ShowWhenRoute(store, defaultPath = '/dashboard') {
+  return ({ component: Component, ...rest }) => (
+    <Route
+      {...rest}
+      render={props =>
+        showWhenUtil(store)(rest) ? (
+          <Component {...rest} />
+        ) : (
+          <Redirect
+            to={{
+              pathname: defaultPath,
+              state: { from: rest.location, was404: true },
+            }}
+          />
+        )
+      }
+    />
+  );
 }

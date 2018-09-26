@@ -227,7 +227,7 @@ export default class InvoiceDetailContainer extends Component {
   };
 
   render() {
-    let { loading, invoice } = this.props;
+    let { loading, invoice, user } = this.props;
     let statusMsg = this.state.statusMsg;
 
     return (
@@ -238,6 +238,7 @@ export default class InvoiceDetailContainer extends Component {
         onIssue={this.showIssueConfirmModal}
         onCancel={this.cancelInvoice}
         editPaymentLink={this.editPaymentLink}
+        isRoleAllowedEdit={user.isAllowedEdit('payment_links')}
       />
     );
   }

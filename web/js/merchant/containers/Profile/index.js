@@ -289,7 +289,9 @@ export default class Profile extends Component {
             ) : null}
           </div>
 
-          <ShowWhen myRole="owner finance">
+          <ShowWhen
+            additionalCondition={user => user.isAllowedView('profile_gst')}
+          >
             <GST />
           </ShowWhen>
 
