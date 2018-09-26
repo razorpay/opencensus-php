@@ -24,9 +24,9 @@ return [
     ],
 
     'testFileCreationPayout' => [
-        'amount'            => 1000,
-        'fees'              => 602,
-        'tax'               => 92,
+        'amount'            => 10000000,
+        'fees'              => 118590,
+        'tax'               => 18090,
         'processed_amount'  => 0,
         'processed_count'   => 0,
         'total_count'       => 1,

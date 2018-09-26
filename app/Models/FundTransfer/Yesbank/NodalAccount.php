@@ -151,6 +151,11 @@ class NodalAccount extends NodalBase\NodalAccount
 
         if ($this->isWorkingDay === false)
         {
+            $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED, [
+                'attempt_id'=> $attempt->getId(),
+                'reason'    => 'Holiday today!',
+            ]);
+
             return false;
         }
 
@@ -162,13 +167,12 @@ class NodalAccount extends NodalBase\NodalAccount
             return true;
         }
 
-        $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_SKIPPED, [
-            'attempt_id'          => $attempt->getId(),
-            'is_holiday'          => $this->isWorkingDay,
-            'amount'              => $amount,
-            'mode'                => $mode,
-            'banking_start_time'  => $this->bankingStartTime,
-            'banking_ending_time' => $this->bankingEndTime,
+        $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_INITIATE_SKIPPED, [
+            'attempt_id'            => $attempt->getId(),
+            'amount'                => $amount,
+            'mode'                  => $mode,
+            'banking_start_time'    => $this->bankingStartTime,
+            'banking_ending_time'   => $this->bankingEndTime,
         ]);
 
         return false;

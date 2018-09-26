@@ -72,6 +72,47 @@ return [
         ],
     ],
 
+    'testInvalidCurrency' => [
+        'request'   => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'XYZ',
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Currency is not supported',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ORDER_CURRENCY_NOT_SUPPORTED
+        ],
+    ],
+
+    'testValidCurrencyForConvertSupport' => [
+        'request'   => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'USD',
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'USD',
+            ],
+        ],
+    ],
+
     'testUniqueReceiptFeatureWithDuplicateReceipt' => [
         'request'   => [
             'content' => [

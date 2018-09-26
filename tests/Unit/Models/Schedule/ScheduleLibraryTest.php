@@ -116,7 +116,10 @@ class ScheduleLibraryTest extends TestCase
 
             $nextRun = $this->getInitialNextRun($case['initialTime'], $schedule);
 
-            $nextTime = Schedule\Library::getNextApplicableTime($initialTimestamp, $schedule, $nextRun);
+            $ignoreHolidays = $case['ignoreHolidays'] ?? false;
+
+            $nextTime = Schedule\Library::getNextApplicableTime(
+                $initialTimestamp, $schedule, $nextRun, $ignoreHolidays);
 
             $calculatedTime = $this->getFormattedTimeFromTimestamp($nextTime);
 

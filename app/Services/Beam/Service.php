@@ -51,6 +51,14 @@ class Service
      */
     public function beamPush(array $pushData, array $intervalInfo, array $mailInfo)
     {
+        $this->trace->info(
+            TraceCode::BEAM_METHOD_CALL,
+            [
+                'push_data'     => $pushData,
+                'interval_info' => $intervalInfo,
+                'mail_info'     => $mailInfo
+            ]);
+
         $data[self::BEAM_PUSH_FILES]   = $pushData[self::BEAM_PUSH_FILES];
 
         $data[self::BEAM_PUSH_JOBNAME] = $pushData[self::BEAM_PUSH_JOBNAME];

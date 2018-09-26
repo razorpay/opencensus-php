@@ -60,6 +60,17 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvalidCurrency()
+    {
+        $this->startTest();
+    }
+
+    public function testValidCurrencyForConvertSupport()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
+        $this->startTest();
+    }
+
     public function testUniqueReceiptFeatureWithDuplicateReceipt()
     {
         $order = $this->fixtures->create('order', [
