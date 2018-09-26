@@ -734,6 +734,7 @@ class Gateway extends Base\Gateway
 
         if (isset($input['payment']['merchant_reference']) === false)
         {
+            // TODO: fix .. avoid duplicate load call as already retrived in getPaymentToVerify
             $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                 $input['payment']['id'], Action::AUTHORIZE);
 
