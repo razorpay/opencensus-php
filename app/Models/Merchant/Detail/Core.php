@@ -690,13 +690,9 @@ class Core extends Base\Core
         return false;
     }
 
-    public function createResponse(Entity $merchantDetails)
+    public function getValidationFields(Entity $merchantDetails): array
     {
-        $merchantDetailsArr = $merchantDetails->toArray();
-
-        $response = $merchantDetails->toArrayPublic();
-
-        $requiredFields = [];
+        // @todo: Activation flow will define its own validation fields
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
 
@@ -734,6 +730,26 @@ class Core extends Base\Core
 
                 $validationFields = array_merge($validationFields, $kycValidationFields);
             }
+        }
+
+        return $validationFields;
+    }
+
+    public function createResponse(Entity $merchantDetails)
+    {
+        $merchantDetailsArr = $merchantDetails->toArray();
+
+        $response = $merchantDetails->toArrayPublic();
+
+        $requiredFields = [];
+
+        $validationFields = $this->getValidationFields($merchantDetails);
+
+        $merchant = $merchantDetails->merchant;
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $parentMerchant = $merchant->parent;
 
             //
             // set key `need_kyc` for the client to determine where full KYC is needed
@@ -758,10 +774,16 @@ class Core extends Base\Core
 
         foreach ($validationFields as $key)
         {
+            //
+            // Add the key to the list of the required fields if:
+            // - The key that needs to be validated is not present in the merchant details array
+            // - Or, if the value for the key is null
+            // - Or, if the value is not a boolean and is empty (empty(false) => true)
+            //
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
                 (is_null($merchantDetailsArr[$key]) === true) or
-                ((is_bool($merchantDetailsArr[$key]) !== true) and
-                 (empty($merchantDetailsArr[$key]) === true)))
+                ((is_bool($merchantDetailsArr[$key]) === false) and
+                    (empty($merchantDetailsArr[$key]) === true)))
             {
                 $requiredFields[] = $key;
             }
