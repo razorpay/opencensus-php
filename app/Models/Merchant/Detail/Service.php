@@ -3,7 +3,6 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -428,12 +427,49 @@ class Service extends Base\Service
 
     /**
      * This function is used for getting business categories subcategories list
+     * sub category meta fields will be dependent on auth
      *
      * @return array
      */
     public function getBusinessCategories(): array
     {
-        return BusinessCategory::SUBCATEGORY_MAP;
+        $businessCategoriesMap = BusinessCategory::SUBCATEGORY_MAP;
+        $businessCategories    = [];
+
+        foreach ($businessCategoriesMap as $businessCategory => $subCategories)
+        {
+            $businessCategories[$businessCategory] = [];
+            $subCategoriesMetaData                 = [];
+
+            foreach ($subCategories as $subCategory)
+            {
+                $subCategoriesMetaData[$subCategory] =  $this->getSubCategoryMetaDataFields($subCategory);
+            }
+            $businessCategories[$businessCategory][BusinessCategory::DESCRIPTION]   = BusinessCategory::DESCRIPTIONS[$businessCategory];
+            $businessCategories[$businessCategory][BusinessCategory::SUBCATEGORIES] = $subCategoriesMetaData;
+        }
+
+        return $businessCategories;
+    }
+
+    /**
+     * returns subcategories meta data as per auth
+     * for admin all meta data fields(description, category, category2, activation category) will be returned
+     * for other then admin description and category2 will be returned
+     *
+     * @param string $subCategory
+     *
+     * @return array
+     */
+    private function getSubCategoryMetaDataFields(string $subCategory): array
+    {
+        if ($this->auth->isAdminAuth() === true)
+        {
+            return BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
+        }
+
+        return array_only(BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory],
+                          BusinessSubCategoryMetaData::NORMAL_AUTH_FIELDS);
     }
 
     public function getRejectionReasons()
