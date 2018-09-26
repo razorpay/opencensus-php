@@ -71,6 +71,9 @@ class Core extends Base\Core
      */
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
+        return $this->createTransactionForSource($payment);
+
+        // old code, will delete port refactoring all entites
         $this->trace->info(
             TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
             [
@@ -78,11 +81,6 @@ class Core extends Base\Core
             ]);
 
         $merchant = $payment->merchant;
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_V2) === true)
-        {
-            return $this->createTransactionForSource($payment);
-        }
 
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, false);
 
@@ -124,12 +122,10 @@ class Core extends Base\Core
 
     public function createOrUpdateFromPaymentCaptured(Payment\Entity $payment)
     {
-        $merchant = $payment->merchant;
+        return $this->createTransactionForSource($payment);
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_V2) === true)
-        {
-            return $this->createTransactionForSource($payment);
-        }
+        // old code, will delete it post refactoring of all the entities
+        $merchant = $payment->merchant;
 
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 

@@ -333,4 +333,25 @@ class Core extends Base\Core
                 "Payment method not enabled for the merchant : $method", Entity::PAYMENT_METHOD);
         }
     }
+
+    public function getApplicableOffersForPayment(Order\Entity $order, Payment\Entity $payment)
+    {
+        $applicableOffers = [];
+
+        $offers = $order->offers;
+
+        $verbose = true;
+
+        foreach ($offers as $offer)
+        {
+            $checker = new Checker($offer, $verbose);
+
+            if ($checker->checkApplicabilityForPayment($payment))
+            {
+                $applicableOffers[] = $offer->getPublicId();
+            }
+        }
+
+        return $applicableOffers;
+    }
 }

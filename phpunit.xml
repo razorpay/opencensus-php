@@ -11,24 +11,138 @@
          syntaxCheck="false">
   <testsuites>
       <testsuite name="Application Test Suite">
-           <directory>./tests/</directory>
-
-          <!--
-            Following ES related tests are failing on wercker.
-            To be removed asap after debug.
-          -->
-          <exclude>./tests/Unit/</exclude>
+          <directory>./tests/Functional/</directory>
+          <file>./tests/Functional/Merchant/PartnerTest.php</file>
+          <exclude>./tests/Functional/Currency/</exclude>
+          <exclude>./tests/Functional/Customer/</exclude>
+          <exclude>./tests/Functional/Device/</exclude>
+          <exclude>./tests/Functional/Dispute/</exclude>
+          <exclude>./tests/Functional/EMI/</exclude>
+          <exclude>./tests/Functional/FileStore/</exclude>
+          <exclude>./tests/Functional/FundTransfer/</exclude>
+          <exclude>./tests/Functional/Invitation/</exclude>
+          <exclude>./tests/Functional/Invoice/</exclude>
+          <exclude>./tests/Functional/Item/</exclude>
+          <exclude>./tests/Functional/Key/</exclude>
+          <exclude>./tests/Functional/Lambda/</exclude>
+          <exclude>./tests/Functional/Mailgun/</exclude>
+          <exclude>./tests/Functional/Merchant/</exclude>
+          <exclude>./tests/Functional/OAuth/</exclude>
+          <exclude>./tests/Functional/Offer/</exclude>
+          <exclude>./tests/Functional/Order/</exclude>
           <exclude>./tests/Functional/Payment/</exclude>
+          <exclude>./tests/Functional/PaymentLink/</exclude>
+          <exclude>./tests/Functional/Payout/</exclude>
+          <exclude>./tests/Functional/Pricing/</exclude>
+          <exclude>./tests/Functional/Promotion/</exclude>
+          <exclude>./tests/Functional/RazorX/</exclude>
+          <exclude>./tests/Functional/Refund/</exclude>
+          <exclude>./tests/Functional/Request/</exclude>
+          <exclude>./tests/Functional/Risk/</exclude>
+          <exclude>./tests/Functional/Schedule/</exclude>
+          <exclude>./tests/Functional/Setting/</exclude>
+          <exclude>./tests/Functional/Settlement/</exclude>
+          <exclude>./tests/Functional/Storage/</exclude>
+          <exclude>./tests/Functional/Subscription/</exclude>
+          <exclude>./tests/Functional/Tax/</exclude>
+          <exclude>./tests/Functional/Transaction/</exclude>
+          <exclude>./tests/Functional/Transfer/</exclude>
+          <exclude>./tests/Functional/User/</exclude>
+          <exclude>./tests/Functional/VirtualAccount/</exclude>
+          <exclude>./tests/Functional/Workflow/</exclude>
+          <exclude>./tests/Functional/Dispute/</exclude>
+          <exclude>./tests/Functional/Payment/</exclude>
+          <exclude>./tests/Unit/</exclude>
           <exclude>./tests/Functional/Gateway/</exclude>
+          <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
+      </testsuite>
+      <testsuite name="Features-1 Test Suite">
+          <directory>./tests/Functional/Currency/</directory>
+          <directory>./tests/Functional/Customer/</directory>
+          <directory>./tests/Functional/Device/</directory>
+          <directory>./tests/Functional/Dispute/</directory>
+          <directory>./tests/Functional/EMI/</directory>
+          <directory>./tests/Functional/FileStore/</directory>
+          <directory>./tests/Functional/Invoice/</directory>
+          <directory>./tests/Functional/FundTransfer/</directory>
+          <directory>./tests/Functional/Invitation/</directory>
+          <directory>./tests/Functional/Item/</directory>
+          <directory>./tests/Functional/Key/</directory>
+      </testsuite>
+      <testsuite name = "Features-2 Test Suite">
+          <directory>./tests/Functional/Merchant/</directory>
+          <!--
+          Following ES related tests are failing on wercker.
+          To be removed asap after debug.
+        -->
           <exclude>./tests/Functional/Merchant/MerchantEsCreateTest.php</exclude>
           <exclude>./tests/Functional/Merchant/MerchantEsFetchTest.php</exclude>
-          <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
-
+          <!--The long running test is added in a different suite-->
+          <exclude>./tests/Functional/Merchant/MerchantTest.php</exclude>
+          <!--Partner test using file utils to run in base suite-->
+          <exclude>./tests/Functional/Merchant/PartnerTest.php</exclude>
+      </testsuite>
+      <testsuite name = "Features-3 Test Suite">
+          <directory>./tests/Functional/Lambda/</directory>
+          <directory>./tests/Functional/Mailgun/</directory>
+          <directory>./tests/Functional/OAuth/</directory>
+          <directory>./tests/Functional/Offer/</directory>
+          <directory>./tests/Functional/Order/</directory>
+          <directory>./tests/Functional/PaymentLink/</directory>
+          <directory>./tests/Functional/Payout/</directory>
+          <directory>./tests/Functional/Pricing/</directory>
+          <directory>./tests/Functional/Promotion/</directory>
+          <directory>./tests/Functional/RazorX/</directory>
+          <directory>./tests/Functional/Request/</directory>
+          <directory>./tests/Functional/Risk/</directory>
+          <directory>./tests/Functional/Schedule/</directory>
+          <directory>./tests/Functional/Setting/</directory>
+          <directory>./tests/Functional/Settlement/</directory>
+          <directory>./tests/Functional/Storage/</directory>
+      </testsuite>
+      <testsuite name = "Features-4 Test Suite">
+          <directory>./tests/Functional/Subscription/</directory>
+      </testsuite>
+      <testsuite name = "Features-5 Test Suite">
+          <directory>./tests/Functional/Tax/</directory>
+          <directory>./tests/Functional/Transaction/</directory>
+          <directory>./tests/Functional/Transfer/</directory>
+          <directory>./tests/Functional/User/</directory>
+          <directory>./tests/Functional/VirtualAccount/</directory>
+          <directory>./tests/Functional/Workflow/</directory>
+          <directory>./tests/Functional/Dispute/</directory>
+          <directory>./tests/Unit/</directory>
+          <directory>./tests/Functional/Refund/</directory>
+          <file>./tests/Functional/Merchant/MerchantTest.php</file>
       </testsuite>
       <testsuite name="Payment Test Suite">
           <directory>./tests/Functional/Payment/</directory>
-          <directory>./tests/Functional/Gateway/</directory>
-          <directory>./tests/Unit/</directory>
+      </testsuite>
+      <testsuite name="Gateway-1 Test Suite">
+          <directory>./tests/Functional/Gateway/Aeps/</directory>
+          <directory>./tests/Functional/Gateway/Amex/</directory>
+          <directory>./tests/Functional/Gateway/Atom/</directory>
+          <directory>./tests/Functional/Gateway/AxisMigs/</directory>
+          <directory>./tests/Functional/Gateway/Billdesk/</directory>
+          <directory>./tests/Functional/Gateway/Card/</directory>
+          <directory>./tests/Functional/Gateway/Cybersource/</directory>
+          <directory>./tests/Functional/Gateway/Ebs/</directory>
+          <directory>./tests/Functional/Gateway/Enach/</directory>
+          <directory>./tests/Functional/Gateway/Esigner/</directory>
+          <directory>./tests/Functional/Gateway/Netbanking/</directory>
+          <directory>./tests/Functional/Gateway/FirstData/</directory>
+      </testsuite>
+      <testsuite name="Gateway-2 Test Suite">
+          <directory>./tests/Functional/Gateway/Mobikwik/</directory>
+          <directory>./tests/Functional/Gateway/Mpi/</directory>
+          <directory>./tests/Functional/Gateway/File/</directory>
+          <directory>./tests/Functional/Gateway/Paytm/</directory>
+          <directory>./tests/Functional/Gateway/Reconcillator/</directory>
+          <directory>./tests/Functional/Gateway/Sharp/</directory>
+          <directory>./tests/Functional/Gateway/Upi/</directory>
+          <directory>./tests/Functional/Gateway/Wallet/</directory>
+          <directory>./tests/Functional/Gateway/Hdfc/</directory>
+          <directory>./tests/Functional/Gateway/Hitachi/</directory>
       </testsuite>
   </testsuites>
   <listeners>
