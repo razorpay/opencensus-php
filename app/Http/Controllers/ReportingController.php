@@ -100,7 +100,7 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function relayer($path)
+    public function proxy($path)
     {
         $method = Request::method();
         $input = Request::all();
