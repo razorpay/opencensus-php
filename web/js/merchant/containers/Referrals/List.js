@@ -60,12 +60,13 @@ export default class ReferralsListContainer extends ListContainer {
     let user = this.props.session.user;
     let status = this.state.status;
 
+    const isEditAllowed = user.isAllowedEdit('referrals');
+
     return (
       <div class="content-wrapper">
         <HeaderAction>
           <ShowWhen
-            myRole="manager admin owner"
-            additionalCondition={user => !user.isPartner()}
+            additionalCondition={user => isEditAllowed && !user.isPartner()}
           >
             <div class="btn-toolbar">
               <button
@@ -85,8 +86,12 @@ export default class ReferralsListContainer extends ListContainer {
           referrals={referrals}
           isLoading={loading}
           user={user}
-          showCreateLoginModal={this.showCreateLoginModal}
-          showCreateMerchantModal={this.showCreateMerchantModal}
+          showCreateLoginModal={
+            isEditAllowed ? this.showCreateLoginModal : undefined
+          }
+          showCreateMerchantModal={
+            isEditAllowed ? this.showCreateMerchantModal : undefined
+          }
           switchMerchant={this.switchMerchant}
         />
       </div>

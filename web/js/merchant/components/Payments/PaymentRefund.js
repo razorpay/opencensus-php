@@ -83,7 +83,7 @@ export default ({
       </Definition>
     );
   } else if (paymentStatus === 'captured') {
-    const openNonFraudDisputes =
+    const hasOpenNonFraudDisputes =
       payment.disputes &&
       payment.disputes.items.filter(
         ({ status, phase }) =>
@@ -112,20 +112,22 @@ export default ({
           )}
         </div>
         {
-          <ShowWhen myRole="owner manager operations admin">
+          <ShowWhen additionalCondition={user => user.isAllowedEdit('refunds')}>
             <p>
               <button
                 className="btn btn-default"
                 onClick={openRefundModal}
-                disabled={openNonFraudDisputes}
+                disabled={hasOpenNonFraudDisputes}
               >
-                {`Issue${refundStatus === 'partial' ? ' another' : ''} Refund`}
+                {refundStatus === 'partial'
+                  ? 'Issue another Refund'
+                  : 'Issue Refund'}
               </button>
             </p>
-            {openNonFraudDisputes ? (
+            {hasOpenNonFraudDisputes ? (
               <span class="text-danger">
                 Refunds are disabled as there{' '}
-                {openNonFraudDisputes > 1 ? 'are ' : 'is an '} open dispute{openNonFraudDisputes >
+                {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open dispute{hasOpenNonFraudDisputes >
                   1 && 's'}{' '}
                 on this payment
               </span>

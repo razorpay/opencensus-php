@@ -2,6 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 
+import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
@@ -152,9 +153,15 @@ export default class ProfileDropdown extends Component {
                     <div className="media-body">Switch Merchant</div>
                   </div>
                 )}
-                <div className="media media-action" onClick={showGSTModal}>
-                  <div className="media-body">GST Details</div>
-                </div>
+                <ShowWhen
+                  additionalCondition={user =>
+                    !!showGSTModal && user.isAllowedView('profile_gst')
+                  }
+                >
+                  <div className="media media-action" onClick={showGSTModal}>
+                    <div className="media-body">GST Details</div>
+                  </div>
+                </ShowWhen>
                 <div class="media media-action">
                   <div class="media-body">
                     <a target="_blank" href="https://docs.razorpay.com">

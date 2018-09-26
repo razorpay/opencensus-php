@@ -45,6 +45,7 @@ export default class EditNotes extends React.Component {
           saveAndUpdate={this.saveAndUpdate}
           defaultValue={this.state.notes}
           trackerFn={this.props.trackerFn}
+          isRoleAllowedEdit={this.props.isRoleAllowedEdit}
         />
       </React.Fragment>
     );

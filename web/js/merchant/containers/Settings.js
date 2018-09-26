@@ -12,9 +12,9 @@ import ApplicationsNew from 'merchant/containers/Applications/new';
 const analyticsGoTo = name => {
   window.rzpAnalytics({
     eventCategory: 'Dashboard - Settings',
-    eventAction: `Go To - ${name}`
+    eventAction: `Go To - ${name}`,
   });
-}
+};
 
 @withRouter
 export default class Settings extends Component {
@@ -26,28 +26,37 @@ export default class Settings extends Component {
     return (
       <tabbed-container>
         <header id="settings-header">
-          <ShowWhen myRole="owner manager admin">
+          <ShowWhen
+            additionalCondition={user => user.isAllowedView('configuration')}
+          >
             <NavLink
               to="/config"
               onClick={() => analyticsGoTo('Configuration')}
-            >Configuration</NavLink>
+            >
+              Configuration
+            </NavLink>
           </ShowWhen>
 
-          <ShowWhen myRole="owner manager admin">
-            <NavLink
-              to="/webhooks"
-              onClick={() => analyticsGoTo('Webhooks')}
-            >Webhooks</NavLink>
+          <ShowWhen
+            additionalCondition={user => user.isAllowedView('webhooks')}
+          >
+            <NavLink to="/webhooks" onClick={() => analyticsGoTo('Webhooks')}>
+              Webhooks
+            </NavLink>
           </ShowWhen>
 
-          <ShowWhen myRole="owner admin">
-            <NavLink
-              to="/keys"
-               onClick={() => analyticsGoTo('API Keys')}
-            >API Keys</NavLink>
+          <ShowWhen
+            additionalCondition={user => user.isAllowedView('api_keys')}
+          >
+            <NavLink to="/keys" onClick={() => analyticsGoTo('API Keys')}>
+              API Keys
+            </NavLink>
           </ShowWhen>
 
-          <ShowWhen featureEnabled="Oauth" myRole="owner">
+          <ShowWhen
+            featureEnabled="Oauth"
+            additionalCondition={user => user.isAllowedView('applications')}
+          >
             <NavLink to="/applications">Applications</NavLink>
           </ShowWhen>
         </header>

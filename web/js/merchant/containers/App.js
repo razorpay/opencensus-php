@@ -34,6 +34,7 @@ import { resizeWindow } from 'merchant/modules/app';
     ...state.session,
     config: state.config,
     windowWidth: state.app.windowWidth,
+    merchant_gst: state.profile.merchant_gst,
   }),
   {
     ...ModalActions,
@@ -335,12 +336,15 @@ export default class App extends Component {
   showGSTModal = () => {
     this.props.openModal({
       size: 'small',
-      component: <AddGST openedFromTopbar={true} />,
+      component: <AddGST />,
     });
   };
 
   render() {
-    let { user, config, org, mode, modeFormatted } = this.props;
+    let { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
+
+    const hasGSTIN =
+      this.props.merchant_gst.p_gstin || this.props.merchant_gst.gstin;
 
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
@@ -352,7 +356,7 @@ export default class App extends Component {
           user={user}
           mode={mode}
           modeFormatted={modeFormatted}
-          showGSTModal={this.showGSTModal}
+          showGSTModal={hasGSTIN ? undefined : this.showGSTModal}
           onSwitchMode={this.switchMode}
           onSwitchMerchant={this.switchMerchant}
           showMobileNav={this.props.windowWidth < 950}

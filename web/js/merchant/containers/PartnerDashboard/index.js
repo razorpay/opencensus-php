@@ -1,7 +1,6 @@
 import { Route, Switch, NavLink } from 'react-router-dom';
 
-import ShowWhen from 'merchant/components/ShowWhen';
-import { ShowWhenRoute } from 'merchant/components/Content';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Applications from 'merchant/containers/Applications';
 import ApplicationEntity from 'merchant/containers/Applications/new';
 

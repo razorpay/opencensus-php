@@ -21,16 +21,20 @@ export default class EditReceipt extends React.Component {
   };
 
   render() {
+    const { isRoleAllowedEdit } = this.props;
+
     let content = (
       <React.Fragment>
         {this.state.receipt || '--'}
-        <Button.Transparent
-          onClick={this.makeEditable}
-          class="Button--Link"
-          style={{ marginLeft: 12 }}
-        >
-          Change
-        </Button.Transparent>
+        {isRoleAllowedEdit && (
+          <Button.Transparent
+            onClick={this.makeEditable}
+            class="Button--Link"
+            style={{ marginLeft: 12 }}
+          >
+            Change
+          </Button.Transparent>
+        )}
       </React.Fragment>
     );
 

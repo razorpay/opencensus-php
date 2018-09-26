@@ -41,20 +41,21 @@ const ReferralsListItem = props => {
       <td>
         <CheckIcon value={activated} />
       </td>
-      <td>
-        {email !== user.email && (
-          <button
-            class="btn btn-xs btn-primary"
-            onClick={() => {
-              props.showCreateLoginModal(props.referral);
-            }}
-            data-tip="Provide login to submerchant with merchant email."
-            data-place="right"
-          >
-            Invite to Login
-          </button>
+      {email !== user.email &&
+        showCreateLoginModal && (
+          <td>
+            <button
+              class="btn btn-xs btn-primary"
+              onClick={() => {
+                props.showCreateLoginModal(props.referral);
+              }}
+              data-tip="Provide login to submerchant with merchant email."
+              data-place="right"
+            >
+              Invite to Login
+            </button>
+          </td>
         )}
-      </td>
     </EntityItemRow>
   );
 };
@@ -81,7 +82,7 @@ export default props => {
               <th>Registered At</th>
               <th>Submitted</th>
               <th>Activated</th>
-              <th>Actions</th>
+              {email !== user.email && showCreateLoginModal && <th>Actions</th>}
             </tr>
           </thead>
           <TableBody
@@ -95,12 +96,16 @@ export default props => {
               return (
                 <tr>
                   <td class="text-center empty-table" colSpan={7}>
-                    <button
-                      class="btn btn-primary"
-                      onClick={showCreateMerchantModal}
-                    >
-                      Create New Merchant
-                    </button>
+                    {showCreateMerchantModal ? (
+                      <button
+                        class="btn btn-primary"
+                        onClick={showCreateMerchantModal}
+                      >
+                        Create New Merchant
+                      </button>
+                    ) : (
+                      'No Referrals Found'
+                    )}
                   </td>
                 </tr>
               );

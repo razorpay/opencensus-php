@@ -35,7 +35,9 @@ export default class TestModeBanner extends Component {
             </span>
           ) : null}
           {!user.isActivated && (
-            <ShowWhen myRole="owner manager admin">
+            <ShowWhen
+              additionalCondition={user => user.isAllowedEdit('activation')}
+            >
               <span>
                 {' '}
                 <Link

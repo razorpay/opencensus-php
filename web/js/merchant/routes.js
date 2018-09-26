@@ -31,19 +31,45 @@ import ActivationContainer from 'merchant/containers/Activation/new';
 const entityDetailsMap = {
   '/payments/:id(pay_.+)/:entity_name(transfers)/new': {
     component: PaymentsDetails,
+    additionalCondition: user => user.isAllowedEdit('payments'),
   },
-  '/payments/:id(pay_.+)/:transfer_id(trf_.+)': { component: PaymentsDetails },
-  '/payments/:id(pay_.+)': { component: PaymentsDetails },
+  '/payments/:id(pay_.+)/:transfer_id(trf_.+)': {
+    component: PaymentsDetails,
+    additionalCondition: user => user.isAllowedView('payments'),
+  },
+  '/payments/:id(pay_.+)': {
+    component: PaymentsDetails,
+    additionalCondition: user => user.isAllowedView('payments'),
+  },
 
-  '/refunds/:id(rfnd_.+)': { component: RefundDetails },
-  '/orders/:id': { component: OrderDetails },
-  '/settlements/:id': { component: SettlementDetails },
-  '/paymentlinks/:id(inv_.+)': { component: PaymentLinkEntity },
+  '/refunds/:id(rfnd_.+)': {
+    component: RefundDetails,
+    additionalCondition: user => user.isAllowedView('refunds'),
+  },
+  '/orders/:id': {
+    component: OrderDetails,
+    additionalCondition: user => user.isAllowedView('orders'),
+  },
+  '/settlements/:id': {
+    component: SettlementDetails,
+    additionalCondition: user => user.isAllowedView('settlements'),
+  },
+  '/paymentlinks/:id(inv_.+)': {
+    component: PaymentLinkEntity,
+    additionalCondition: user => user.isAllowedView('payment_links'),
+  },
   '/paymentlinks/batchuploads/:id(batch_.+)': {
     component: PaymentLinkBatchDetails,
+    additionalCondition: user => user.isAllowedView('payment_links'),
   },
-  '/paymentpages/:id(pl_.+)': { component: PaymentPages },
-  '/invoices/:id/details': { component: PaymentLinkEntity },
+  '/paymentpages/:id(pl_.+)': {
+    component: PaymentPages,
+    additionalCondition: user => user.isAllowedView('payment_pages'),
+  },
+  '/invoices/:id/details': {
+    component: PaymentLinkEntity,
+    additionalCondition: user => user.isAllowedView('invoices'),
+  },
 
   '/route/payments/:id': { component: PaymentsDetails },
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
@@ -60,7 +86,10 @@ const entityDetailsMap = {
 
   '/submerchants/:id(acc_.+)/:appId': { component: SubmerchantDetails },
   '/submerchants/:id(acc_.+)': { component: SubmerchantDetails },
-  '/disputes/:id(disp_.+)': { component: DisputeDetails },
+  '/disputes/:id(disp_.+)': {
+    component: DisputeDetails,
+    additionalCondition: user => user.isAllowedView('payments'),
+  },
 };
 
 /*
@@ -68,11 +97,18 @@ const entityDetailsMap = {
  * - '/paymentlinks/new': {component: PaymentLinksCreate, featureEnabled: "randomFeature", featureEnabled: "randomFeature"}
  * */
 const entityModalsMap = {
-  '/activation': { component: ActivationContainer },
-  '/paymentlinks/new': { component: PaymentLinksCreate },
+  '/activation': {
+    component: ActivationContainer,
+    additionalCondition: user => user.isAllowedEdit('activation'),
+  },
+  '/paymentlinks/new': {
+    component: PaymentLinksCreate,
+    additionalCondition: user => user.isAllowedEdit('payment_links'),
+  },
   '/paymentpages/new': {
     component: PaymentPagesCreate,
     featureEnabled: 'paymentpages',
+    additionalCondition: user => user.isAllowedEdit('payment_pages'),
   },
 };
 

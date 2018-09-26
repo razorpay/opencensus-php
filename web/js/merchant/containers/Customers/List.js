@@ -79,7 +79,9 @@ export default class CustomersListContainer extends ListContainer {
         <TestModeBanner />
 
         <HeaderAction>
-          <ShowWhen notMyRole="support">
+          <ShowWhen
+            additionalCondition={user => user.isAllowedEdit('customers')}
+          >
             <div class="btn-toolbar">
               <button
                 class="pull-right btn btn-primary"

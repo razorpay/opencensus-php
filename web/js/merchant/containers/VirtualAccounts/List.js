@@ -200,7 +200,11 @@ export default class VirtualAccountsListContainer extends ListContainer {
                   <span>Create Virtual Account</span>
                 </button>
               </div>
-              <ShowWhen myRole="admin owner manager operations">
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isAllowedEdit('virtual_accounts')
+                }
+              >
                 <div class="btn-toolbar">
                   <button
                     class="btn btn-primary"

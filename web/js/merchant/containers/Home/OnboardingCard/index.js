@@ -2,6 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
+import ShowWhen from 'merchant/components/ShowWhen';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import LocalStorageService from 'rzp/utils/localStorage';
 
@@ -133,9 +134,13 @@ export default class OnboardingCard extends Component {
           </div>
           <div className="onboarding-steps">
             <Group>
-              <GroupItem>
-                <ActivationStep mode={mode} user={user} config={config} />
-              </GroupItem>
+              <ShowWhen
+                additionalCondition={user => user.isAllowedView('activation')}
+              >
+                <GroupItem>
+                  <ActivationStep mode={mode} user={user} config={config} />
+                </GroupItem>
+              </ShowWhen>
               <GroupItem>
                 <Integration
                   mode={mode}

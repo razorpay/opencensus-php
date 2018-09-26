@@ -207,7 +207,7 @@ export default class AccountsListContainer extends ListContainer {
           onEdit={this.showAccountDetailsModal}
           onToggleDashboardAccess={
             showWhenUtil({
-              myRole: 'owner admin manager',
+              additionalCondition: user => user.isAllowedEdit('accounts'),
             })
               ? this.onToggleDashboardAccess
               : undefined

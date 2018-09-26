@@ -25,11 +25,9 @@ export default class PaymentLinksContainer extends Component {
           <NavLink exact to="/paymentlinks">
             Payment Links
           </NavLink>
-          <ShowWhen myRole="owner manager operations admin">
-            <NavLink exact to="/paymentlinks/batchuploads">
-              Batch Uploads
-            </NavLink>
-          </ShowWhen>
+          <NavLink exact to="/paymentlinks/batchuploads">
+            Batch Uploads
+          </NavLink>
         </header>
 
         <TestModeBanner />

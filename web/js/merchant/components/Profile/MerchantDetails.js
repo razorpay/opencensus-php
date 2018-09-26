@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Time from 'rzp/ui/Time';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import DetailRow from '../DetailRow';
+import ShowWhen from 'merchant/components/ShowWhen';
 import ProgressBar from 'rzp/ui/ProgressBar';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { openModal, closeModal } from 'rzp/modules/modals';
@@ -60,28 +61,32 @@ export default connect(null, { openModal, closeModal })(
           )}
         />
 
-        <DetailRow
-          label={() => <b>Account Activation</b>}
-          value={() => (
-            <span>
-              <Link to={'/activation'}>
-                {do {
-                  if (user.activated || user.locked || user.submitted) {
-                    ('View');
-                  } else if (
-                    user.activation_progress == 100 &&
-                    !user.submitted
-                  ) {
-                    ('Submit');
-                  } else {
-                    ('Fill');
-                  }
-                }}{' '}
-                Activation Form
-              </Link>
-            </span>
-          )}
-        />
+        <ShowWhen
+          additionalCondition={user => user.isAllowedEdit('activation')}
+        >
+          <DetailRow
+            label={() => <b>Account Activation</b>}
+            value={() => (
+              <span>
+                <Link to={'/activation'}>
+                  {do {
+                    if (user.activated || user.locked || user.submitted) {
+                      ('View');
+                    } else if (
+                      user.activation_progress == 100 &&
+                      !user.submitted
+                    ) {
+                      ('Submit');
+                    } else {
+                      ('Fill');
+                    }
+                  }}{' '}
+                  Activation Form
+                </Link>
+              </span>
+            )}
+          />
+        </ShowWhen>
 
         {!!user.activated && (
           <DetailRow

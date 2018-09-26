@@ -153,7 +153,9 @@ export default class InvoicesListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen myRole="admin operations manager owner">
+          <ShowWhen
+            additionalCondition={user => user.isAllowedEdit('invoices')}
+          >
             <div class="btn-toolbar pull-right">
               <NavLink
                 to="/invoices/new"
