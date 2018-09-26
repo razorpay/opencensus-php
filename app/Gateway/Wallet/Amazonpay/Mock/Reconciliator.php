@@ -7,6 +7,7 @@ use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Reconciliator\Amazonpay\ReconHeaders;
 
 class Reconciliator extends Base\Mock\PaymentReconciliator
 {
@@ -26,32 +27,16 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         $payment = $data['payment'];
 
         $data['wallet'] = $this->repo
-                            ->wallet
-                            ->findByPaymentIdAndAction($payment['id'], 'authorize')
-                            ->toArray();
+                               ->wallet
+                               ->findByPaymentIdAndAction($payment['id'], 'authorize')
+                               ->toArray();
     }
 
     protected function getReconciliationData(array $input)
     {
         $data = $this->getAdditionalRowsToSkip();
 
-        $keys = [
-            'TransactionPostedDate'     ,
-            'SettlementId'              ,
-            'AmazonTransactionId'       ,
-            'SellerReferenceId'         ,
-            'TransactionType'           ,
-            'AmazonOrderReferenceId'    ,
-            'SellerOrderId'             ,
-            'StoreName'                 ,
-            'CurrencyCode'              ,
-            'TransactionDescription'    ,
-            'TransactionAmount'         ,
-            'TransactionPercentageFee'  ,
-            'TransactionFixedFee'       ,
-            'TotalTransactionFee'       ,
-            'NetTransactionAmount'      ,
-        ];
+        $keys = ReconHeaders::COLUMN_HEADERS;
 
         $data[] = $keys;
 
@@ -80,7 +65,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 $this->formatAmount($row['payment']['amount'] / 100),
             ];
 
-            $col = array_combine($keys, $col);
+            $col = array_combine_pad($keys, $col);
 
             $this->content($col, 'col_payment_amazonpay_recon');
 
