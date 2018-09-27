@@ -2795,7 +2795,7 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::ACKNOWLEDGED_AT);
     }
 
-    public function getDummyPaymentArray(string $method, string $network = null, Order\Entity $orderEntity = null): array
+    public function getDummyPaymentArray(string $method, Base\PublicEntity $receiver = null, string $network = null, array $metadata = [], Order\Entity $orderEntity = null): array
     {
         $paymentArray =  [
             self::CURRENCY    => Currency\Currency::INR,
@@ -2804,6 +2804,8 @@ class Entity extends Base\PublicEntity
             self::DESCRIPTION => 'Dummy Payment',
             self::CONTACT     => self::DUMMY_PHONE,
             self::EMAIL       => self::DUMMY_EMAIL,
+            self::RECEIVER    => $receiver,
+            '_'               => $metadata,
         ];
 
         switch ($method)

@@ -191,7 +191,7 @@ class Refund extends Base\Core
 
         $bankAccount->merchant()->associate($bankTransfer->merchant);
 
-        $bankAccount->associateVirtualAccount($bankTransfer->virtualAccount);
+        $bankAccount->source()->associate($bankTransfer->virtualAccount);
 
         $this->repo->saveOrFail($bankAccount);
 
