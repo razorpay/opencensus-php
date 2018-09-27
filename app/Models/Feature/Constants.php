@@ -87,6 +87,7 @@ class Constants
     const OTP_AUTH_DEFAULT                = 'otp_auth_default';
     const CAPTURE_QUEUE                   = 'capture_queue';
     const TRANSACTION_V2                  = 'transaction_v2';
+    const HEADLESS                        = 'headless';
 
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
@@ -209,6 +210,7 @@ class Constants
         self::EDIT_METHODS                    => true,
         self::CAPTURE_QUEUE                   => true,
         self::TRANSACTION_V2                  => true,
+        self::HEADLESS                        => true,
     ];
 
     // Entity type constants
