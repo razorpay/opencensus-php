@@ -42,7 +42,7 @@ const ReferralsListItem = props => {
         <CheckIcon value={activated} />
       </td>
       {email !== user.email &&
-        showCreateLoginModal && (
+        props.showCreateLoginModal && (
           <td>
             <button
               class="btn btn-xs btn-primary"
@@ -82,7 +82,7 @@ export default props => {
               <th>Registered At</th>
               <th>Submitted</th>
               <th>Activated</th>
-              {email !== user.email && showCreateLoginModal && <th>Actions</th>}
+              {showCreateLoginModal && <th>Actions</th>}
             </tr>
           </thead>
           <TableBody
