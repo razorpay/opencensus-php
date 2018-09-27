@@ -126,6 +126,8 @@ class Core extends Base\Core
 
             $merchantDetails->setActivationProgress($activationProgress);
 
+            $this->repo->saveOrFail($merchantDetails);
+
             return $response;
         });
     }
