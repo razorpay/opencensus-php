@@ -45,6 +45,8 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateIsNotLocked();
 
+        $this->updateMerchantSubCategoryMetaDataIfApplicable($input, $merchantDetails, $merchant);
+
         $merchantDetails->edit($input);
 
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
@@ -73,8 +75,6 @@ class Core extends Base\Core
 
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
-
-            $this->updateMerchantSubCategoryMetaDataIfApplicable($input, $merchantDetails, $merchant);
 
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
 
@@ -111,7 +111,9 @@ class Core extends Base\Core
 
         $subCategory = $input[Entity::BUSINESS_SUBCATEGORY];
 
-        if ($merchantDetails->getBusinessSubcategory() !== $subCategory)
+        if (($merchantDetails->getBusinessSubcategory() !== $subCategory) or
+            ($merchant->getCategory() === null) or
+            ($merchant->getCategory2() === null))
         {
             $subCategoryMetaData = BusinessSubCategoryMetaData::getMetaDataForSubCategory($subCategory);
 
