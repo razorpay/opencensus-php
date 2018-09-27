@@ -427,7 +427,48 @@ class HulkGatewayTest extends TestCase
         $this->assertNull($payment['verified']);
         $this->assertEquals($payment['status'], 'authorized');
 
-        $upiEntities = $this->getDbEntities('upi');
+        $upiEntity = $this->getDbLastEntity('upi');
+        $this->assertNotNull($upiEntity['npci_txn_id']);
+    }
+
+    public function testIntentPaymentWithTxnId()
+    {
+        $this->fixtures->create('terminal:shared_upi_hulk_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $upiEntity = $this->getDbLastEntity('upi');
+        $payment = $this->getDbLastPayment('payment');
+
+        $this->assertEquals('HDF2C8B11D1FBDB4FC78F4E37A19AB6413D', $upiEntity['npci_txn_id']);
+
+        $newTxnId = 'HDF2C8B_RANDOM_STRING_RANDOM_STRING';
+
+        $override = [
+            'txn_id'                => $newTxnId,
+        ];
+
+        $this->mockServerContentFunction(
+            function(& $content, $action = null) use ($override)
+            {
+                if ($action === 'callback')
+                {
+                    $content['data'] = array_merge($content['data'], $override);
+                }
+            });
+
+        $callback = $this->getMockServer()->getAsyncCallbackRequest($upiEntity, $payment);
+
+        $this->sendRequest($callback);
+
+        $upiEntity->reload();
+
+        $this->assertEquals($newTxnId, $upiEntity['npci_txn_id']);
     }
 
     public function testIntentTpvPayment()
