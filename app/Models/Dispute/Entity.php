@@ -365,6 +365,12 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::WON);
     }
 
+    public function hasMerchantAcceptedStatus(bool $acceptDispute): bool
+    {
+        return (($acceptDispute === true) and
+                (in_array($this->getStatus(), Status::getMerchantAcceptedStatuses(), true) === true));
+    }
+
     public function isNonTransactional(): bool
     {
         $nonTransactionalPhases = Phase::getNonTransactionalPhases();

@@ -2,6 +2,7 @@
 
 namespace RZP\Modules\Subscriptions;
 
+use Route;
 use Config;
 
 use RZP\Constants\Mode;
@@ -23,7 +24,16 @@ class Factory
 
         if ($merchant !== null)
         {
-            $merchantFeatureCheck = $merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2);
+            if (Route::currentRouteName() === 'payment_create_subscriptions')
+            {
+                // Used for subscription service charges, eg. test_charge, manual_charge, cron, etc.
+                $merchantFeatureCheck = $merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_V2);
+            }
+            else
+            {
+                // Used for subscription authentication payment
+                $merchantFeatureCheck = $merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2);
+            }
         }
 
         return ($merchantFeatureCheck === true);

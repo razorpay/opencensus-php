@@ -36,6 +36,7 @@ final class Route
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_aeps'                      => ['post',     'payments/create/aeps',                           'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_subscriptions'             => ['post',     'payments/create/subscriptions',                  'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_recurring'                 => ['post',     'payments/create/recurring',                      'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_private_old'               => ['post',     'payments/create/redirect',                       'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_checkout'                  => ['post',     'payments/create/checkout',                       'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
@@ -823,6 +824,7 @@ final class Route
         'reporting_schedule_list'                  => ['get',      'reporting/schedules',                            'ReportingController@listSchedule'                                  ],
         'reporting_schedule_create'                => ['post',     'reporting/schedules',                            'ReportingController@createSchedule'                                ],
         'reporting_schedule_delete'                => ['delete',   'reporting/schedules/{id}',                       'ReportingController@deleteSchedule'                                ],
+        'reporting_proxy'                          => ['any',      'reporting/{path?}',                              'ReportingController@proxy'                                       ],
         'reporting_log_create_admin'               => ['post',     'admin-reporting/logs',                           'ReportingController@createLog'                                     ],
         'reporting_config_get_admin'               => ['get',      'admin-reporting/configs/{id}',                   'ReportingController@getConfig'                                     ],
         'reporting_config_list_admin'              => ['get',      'admin-reporting/configs',                        'ReportingController@listConfig'                                    ],
@@ -830,6 +832,7 @@ final class Route
         'reporting_log_list_admin'                 => ['get',      'admin-reporting/logs',                           'ReportingController@listLog'                                       ],
         'reporting_schedule_get_admin'             => ['get',      'admin-reporting/schedules/{id}',                 'ReportingController@getSchedule'                                   ],
         'reporting_schedule_list_admin'            => ['get',      'admin-reporting/schedules',                      'ReportingController@listSchedule'                                  ],
+        'reporting_proxy_admin'                    => ['any',      'admin-reporting/{path?}',                        'ReportingController@proxy'                                       ],
 
         // UFH Service
         // TODO: Should change to just /signed_url (No 'get' and underscore)
@@ -883,7 +886,7 @@ final class Route
         'merchant_bulk_edit_attributes'            => ['post',     'merchants/bulk/attributes',                      'MerchantController@bulkEditMerchantAttributes'                     ],
 
         // Apspdcl integration - bridge for remote endpoint access for hosted via api.
-        'apspdcl_bridge'                           => ['any',      'apspdcl/{any}',                                  'ApspdclController@any'                                             ],
+        'apspdcl_bridge'                           => ['any',      'apspdcl/{path?}',                                'ApspdclController@any'                                             ],
 
     ];
 
@@ -1347,6 +1350,7 @@ final class Route
         'reporting_schedule_list',
         'reporting_schedule_create',
         'reporting_schedule_delete',
+        'reporting_proxy',
         'ufh_get_file_signed_url',
         'pincode_get',
         'dispute_edit',
@@ -1383,6 +1387,8 @@ final class Route
         'webhook_fire',
         'merchant_methods_edit',
         'merchant_fetch_methods',
+        // Only to be used via Subscriptions Service
+        'payment_create_subscriptions',
     ];
 
     // These will run on internal auth with the assurance
@@ -1684,6 +1690,7 @@ final class Route
         'reporting_schedule_get_admin',
         'reporting_schedule_list_admin',
         'nodal_file_upload_retry',
+        'reporting_proxy_admin',
         // UFH
         'ufh_get_file_signed_url_admin',
         'nodal_beneficiary_update',
@@ -2008,6 +2015,8 @@ final class Route
         'reporting_log_list_admin'                 => '*',
         'reporting_schedule_get_admin'             => '*',
         'reporting_schedule_list_admin'            => '*',
+        'reporting_proxy'                          => '*',
+        'reporting_proxy_admin'                    => '*',
         'ufh_get_file_signed_url'                  => '*',
         'ufh_get_file_signed_url_admin'            => '*',
         'merchant_requests_create'                 => '*',
@@ -2217,7 +2226,9 @@ final class Route
 
         'subscriptions' => [
             'invoice_create',
+            'invoice_fetch',
             'customer_fetch_by_id',
+            'payment_create_subscriptions',
             'payment_capture',
             'payment_refund',
             'webhook_fire',
@@ -2332,6 +2343,7 @@ final class Route
         'subscription_fetch_multiple'          => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry_old'        => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'            => [Feature::SUBSCRIPTIONS],
+        'payment_create_subscriptions'         => [Feature::SUBSCRIPTION_V2],
         'virtual_account_create'               => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'                 => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_close'                => [Feature::VIRTUAL_ACCOUNTS],
@@ -2654,11 +2666,9 @@ final class Route
 
         $route = $this->router->match($methods, $uri, ['as' => $name, 'uses' => $action]);
 
-        // Hack: To fix by adding support for regex constraint on route parameters.
-        if ($name === 'apspdcl_bridge')
+        if (strpos($uri, '{path?}') !== false)
         {
-            // Allows any suffix on this route
-            $route->where('any', '.*');
+            $route->where(['path' => '.*']);
         }
 
         // We add the web middleware group, conditionally to routes which require cookie / session access.
