@@ -70,6 +70,28 @@
       background-color: #135fd9
       border-color: #0e449c
 
+.Button--secondary
+  background-color: #fff
+  color: $primary-color
+  border: 1px solid #E7E3E3
+  background-color: #FFFFFF
+  box-shadow: 1px 3px 6px 0 rgba(58,69,103,0.12)
+
+  &:disabled
+    color: #6F7691
+
+  &:not(:disabled)
+    &:hover
+      color: #497FD6
+      border: 1px solid $primary-color;
+      background-color: #F8FAFF;
+      box-shadow: 2px 5px 10px 0 rgba(58,69,103,0.12);
+
+    &:active
+      color: #4070BD
+      border: 1px solid #D5E5FF
+      background-color: #FFFFFF
+
 .Button-icon
   float: left
   margin: 0 4px 0 -4px
