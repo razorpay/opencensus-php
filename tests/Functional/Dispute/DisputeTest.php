@@ -3,9 +3,10 @@
 namespace RZP\Tests\Functional\Dispute;
 
 use Mail;
+use Illuminate\Http\UploadedFile;
+
 use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
-use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -15,6 +16,8 @@ use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
 use RZP\Mail\Dispute\Creation as DisputeCreationMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Dispute\Admin\AcceptedAdmin as DisputeAcceptedForAdminMail;
+use RZP\Mail\Dispute\Admin\SubmittedAdmin as DisputeSubmittedForAdminMail;
 
 class DisputeTest extends TestCase
 {
@@ -714,17 +717,15 @@ class DisputeTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testEditDisputeMerchantDocumentUploadByProxy()
-    {
-        $this->ba->proxyAuth();
-
-        $testData = $this->updateUploadDocumentData(['id' => '1000000dispute']);
-
-        $this->startTest($testData);
-    }
-
+    /**
+     * This test first uploads without submitting, verifies details
+     * then submits and verifies further details related to submit
+     * like mail triggers.
+     */
     public function testEditDisputeFileUploadSaveForLater()
     {
+        Mail::fake();
+
         $this->ba->proxyAuth();
 
         $testData = $this->updateUploadDocumentData();
@@ -733,13 +734,32 @@ class DisputeTest extends TestCase
 
         $testData = $this->updateUploadDocumentData([], 'testEditDisputeFileUploadSaveForLaterAfterSave');
 
+        Mail::assertNotQueued(DisputeSubmittedForAdminMail::class);
+
         $testData['request']['content'][DisputeEntity::SUBMIT] = true;
 
         $this->runRequestResponseFlow($testData);
+
+        Mail::assertQueued(DisputeSubmittedForAdminMail::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertNotEmpty($mailData['dashboard_hostname']);
+
+            $this->assertNotEmpty($mailData['payment']);
+
+            $this->assertNotEmpty($mailData['dispute']);
+
+            $this->assertTrue($mailable->hasFrom('disputes@razorpay.com'));
+
+            return true;
+        });
     }
 
     public function testEditDisputeMerchantAcceptDispute()
     {
+        Mail::fake();
+
         // Input params while creating
         $input = [
             'amount'                => 10100,
@@ -757,10 +777,27 @@ class DisputeTest extends TestCase
         $this->assertEquals(10100, $dispute['amount_deducted']);
         $this->assertEquals(0, $dispute['amount_reversed']);
         $this->assertEquals(0, $dispute['deduct_at_onset']);
+
+        Mail::assertQueued(DisputeAcceptedForAdminMail::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertNotEmpty($mailData['dashboard_hostname']);
+
+            $this->assertNotEmpty($mailData['payment']);
+
+            $this->assertNotEmpty($mailData['dispute']);
+
+            $this->assertTrue($mailable->hasFrom('disputes@razorpay.com'));
+
+            return true;
+        });
     }
 
     public function testEditDisputeMerchantAcceptDisputeForNonTransactional()
     {
+        Mail::fake();
+
         // Input params while creating
         $input = [
             'amount'                => 10100,
@@ -779,32 +816,21 @@ class DisputeTest extends TestCase
         $this->assertEquals(0, $dispute['amount_deducted']);
         $this->assertEquals(0, $dispute['amount_reversed']);
         $this->assertEquals(0, $dispute['deduct_at_onset']);
-    }
 
-    protected function checkUploadedFilesArray(array $content)
-    {
-        $dispute = $this->getLastEntity('dispute', true);
+        Mail::assertQueued(DisputeAcceptedForAdminMail::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
 
-        $files = $this->getEntities('dispute_file', [], true);
+            $this->assertNotEmpty($mailData['dashboard_hostname']);
 
-        $expected = [
-            'files' => [
-                'entity' => 'collection',
-                'count'  => 2,
-                'items'  => [
-                    [
-                        'dispute_id' => $dispute['id'],
-                        'id'         => $files['items'][1]['id'],
-                    ],
-                    [
-                        'dispute_id' => $dispute['id'],
-                        'id'         => $files['items'][0]['id'],
-                    ]
-                ]
-            ]
-        ];
+            $this->assertNotEmpty($mailData['payment']);
 
-        $this->assertArraySelectiveEquals($expected, $content);
+            $this->assertNotEmpty($mailData['dispute']);
+
+            $this->assertTrue($mailable->hasFrom('disputes@razorpay.com'));
+
+            return true;
+        });
     }
 
     public function testDisputeFileInvalidDelete()

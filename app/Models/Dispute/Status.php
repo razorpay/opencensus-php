@@ -32,6 +32,11 @@ class Status
         self::LOST,
     ];
 
+    protected static $merchantAcceptedStatuses = [
+        self::LOST,
+        self::CLOSED,
+    ];
+
     public static $webhookEventMap = [
         self::WON    => WebhookEvent::PAYMENT_DISPUTE_WON,
         self::LOST   => WebhookEvent::PAYMENT_DISPUTE_LOST,
@@ -56,5 +61,10 @@ class Status
     public static function getTransactionalStatuses(): array
     {
         return self::$transactionalStatuses;
+    }
+
+    public static function getMerchantAcceptedStatuses(): array
+    {
+        return self::$merchantAcceptedStatuses;
     }
 }
