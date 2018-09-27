@@ -184,6 +184,19 @@ class Validator extends Base\Validator
     }
 
     /**
+     * Gets the header rule name, will be used to generate output file header
+     * for emandate file entries
+     *
+     * @return string
+     */
+    public function getHeaderRule()
+    {
+        $rules = $this->getRuleNames();
+
+        return $rules['header_rule'];
+    }
+
+    /**
      * Validates entries(array) of batch input file before
      * creating the batch entity.
      *
