@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
-interface ActivationFlow
+interface ActivationFlowInterface
 {
     public function activateMerchant();
 }

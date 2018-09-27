@@ -1511,4 +1511,13 @@ class Core extends Base\Core
             (new User\Service)->sendAccountLinkedCommunicationEmail($subMerchantUser, $merchant, $createdNew);
         }
     }
+
+    public function updateSubCategoryMetaData(Entity $merchant, array $subCategoryMetaData)
+    {
+        $merchant->setCategory2($subCategoryMetaData[Entity::CATEGORY2]);
+        $merchant->setCategory($subCategoryMetaData[Entity::CATEGORY]);
+
+        $this->repo->saveOrFail($merchant);
+    }
+
 }

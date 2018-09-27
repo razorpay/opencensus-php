@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
-class WhitelistActivationFlow implements ActivationFlow
+class WhitelistActivationFlow implements ActivationFlowInterface
 {
     public function activateMerchant()
     {

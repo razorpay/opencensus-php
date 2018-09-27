@@ -74,6 +74,8 @@ class Core extends Base\Core
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
 
+            $this->updateMerchantSubCategoryMetaDataIfApplicable($input, $merchantDetails, $merchant);
+
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
@@ -98,6 +100,23 @@ class Core extends Base\Core
 
             return $response;
         });
+    }
+
+    public function updateMerchantSubCategoryMetaDataIfApplicable(array $input, Entity $merchantDetails, Merchant\Entity $merchant)
+    {
+        if (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false)
+        {
+            return;
+        }
+
+        $subCategory = $input[Entity::BUSINESS_SUBCATEGORY];
+
+        if ($merchantDetails->getBusinessSubcategory() !== $subCategory)
+        {
+            $subCategoryMetaData = BusinessSubCategoryMetaData::getMetaDataForSubCategory($subCategory);
+
+            (new Merchant\Core)->updateSubCategoryMetaData($merchant, $subCategoryMetaData);
+        }
     }
 
     public function getMerchantDetails(Merchant\Entity $merchant, array $input = []): Entity
