@@ -37,7 +37,7 @@ class Server extends Base\Mock\Server
             Fields::CODE    => '00',
             Fields::RESULT  => 'Accepted Collect Request',
             Fields::DATA    => [
-                Fields::MERCHANT_TRANSACTION_ID => 'TESTMERCHANTID:'.$token,
+                Fields::MERCHANT_TRANSACTION_ID => 'PAYMENT_ID',
                 Fields::W_COLLECT_TXN_ID        => str_random(10),
             ]
         ];
@@ -49,6 +49,10 @@ class Server extends Base\Mock\Server
 
     public function fetchToken($input)
     {
+        $input = $this->parseInput($input, Action::FETCH_TOKEN);
+
+        $this->validateActionInput($input, Action::FETCH_TOKEN);
+
         $content = [
             Fields::CODE    => '000',
             Fields::RESULT  => 'SUCCESS',
@@ -104,7 +108,7 @@ class Server extends Base\Mock\Server
             Fields::CUSTOMER_VPA                => $upiEntity['vpa'],
             Fields::MERCH_ID                    => 'RAZAORPAY',
             Fields::MERCH_CHAN_ID               => 'RAZAORPAYAPP',
-            Fields::MERCHANT_TRANSACTION_ID     => $upiEntity['payment_id'],
+            Fields::MERCHANT_TRANSACTION_ID     => $payment['id'],
             Fields::TRANSACTION_TIMESTAMP       => date('j-F-Y'),
             Fields::TRANSACTION_AMOUNT          => $this->formatAmount($upiEntity['amount']),
             Fields::GATEWAY_TRANSACTION_ID      => 'AXIS00090439839',
@@ -178,6 +182,8 @@ class Server extends Base\Mock\Server
         parent::refund($input);
 
         $input = $this->parseInput($input, Action::REFUND);
+
+        $this->validateActionInput($input, Action::REFUND);
 
         $paymentId = $input['unqTxnId'];
 

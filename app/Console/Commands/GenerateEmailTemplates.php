@@ -80,6 +80,8 @@ class GenerateEmailTemplates extends Command
             'emails/subscription/authenticated',
 
             'emails/dispute/creation',
+            'emails/dispute/accepted_admin',
+            'emails/dispute/files_submitted_admin',
 
             'emails/merchant/add_sub_merchant_mail_partner',
             'emails/merchant/add_sub_merchant_affiliate',
