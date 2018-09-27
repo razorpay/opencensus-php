@@ -18,7 +18,7 @@ return array(
 
     'driver' => 'custom_redis',
 
-    'encrypt' => false,
+    'encrypt' => env('SESSION_ENCRYPT', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -42,7 +42,7 @@ return array(
     | to be allowed to remain idle before it asks user to login again.
     |
     */
-    'in_activity_time' => 1,
+    'in_activity_time' => 15,
 
     /*
     |--------------------------------------------------------------------------

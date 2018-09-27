@@ -59,6 +59,8 @@ class SessionInActivity
         if ((empty($user) === false) and (empty($lastUsed) === false) and (
             ($currentTime - $lastUsed) > $inActivityTime) and (($currentTime - $lastUsed) < $dayInactiveTime))
         {
+            $request->session()->invalidate();
+
             $user->logout();
 
             if ($request->ajax() === true)
