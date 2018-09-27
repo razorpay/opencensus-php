@@ -249,6 +249,10 @@ export default class User {
   get isOndemandSettlementEnabled() {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }
+
+  get isPaymentPagesV2Enabled() {
+    return this.findTag('paymentpagesv2');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
