@@ -2,6 +2,7 @@ import store from 'merchant/store';
 import {
   matchDetail as matchDetailx,
   matchModal as matchModalx,
+  matchFullPageView as matchFullPageViewx,
 } from '../merchant_common/routes';
 
 import SettlementDetails from 'merchant/containers/Settlements/Details';
@@ -9,6 +10,7 @@ import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
 import PaymentPages from 'merchant/containers/PaymentPages/Pages/Entity';
 import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
 import PaymentPagesCreate from 'merchant/containers/PaymentPages/Pages/Create/index';
+import PaymentPagesWysiwyg from 'merchant/containers/PaymentPages/Pages/V2/Wysiwyg';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
 import RefundDetails from 'merchant/containers/Refunds/Details';
 import OrderDetails from 'merchant/containers/Orders/Details';
@@ -117,5 +119,20 @@ export const supportHashMapping = {
   '#ticket': '#ticket',
 };
 
+/*
+* Certain views are stand alone views with no Header or Siderbar
+* Example: payment pages
+*
+* */
+const fullPageViewsMap = {
+  '/paymentpages/new': {
+    component: PaymentPagesWysiwyg,
+    featureEnabled: 'paymentpages',
+    additionalCondition: user =>
+      user.isAllowedEdit('payment_pages') && user.isPaymentPagesV2Enabled,
+  },
+};
+
 export const matchDetail = matchDetailx(store, entityDetailsMap);
 export const matchModal = matchModalx(store, entityModalsMap);
+export const matchFullPageView = matchFullPageViewx(store, fullPageViewsMap);

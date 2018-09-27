@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import Smooch from 'smooch';
 
+import ErrorBoundary from 'common/ErrorBoundary';
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
 import LocalStorageService from 'rzp/utils/localStorage';
@@ -25,6 +26,7 @@ import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
 import { fetchConfig } from 'merchant/modules/config';
 import { resizeWindow } from 'merchant/modules/app';
+import { matchFullPageView } from 'merchant/routes';
 
 @withRouter
 @connect(
@@ -153,6 +155,7 @@ export default class App extends Component {
           user.features = setFeatures(data.success ? data.data.features : []);
 
           this.props.updateSession({ user, mode: currentMode });
+          this.renderFPView = this.getFPView(this.props.location);
 
           let $splash = document.getElementById('splash');
           if ($splash) {
@@ -168,10 +171,12 @@ export default class App extends Component {
     window.addEventListener('resize', this.handleResize);
   }
 
-  componentWillReceiveProps({ user, history }) {
+  componentWillReceiveProps({ user, history, location }) {
     if (user.isAuthenticated) {
       let role = user.userRole;
       this.redirectToRoute(role);
+
+      this.renderFPView = this.getFPView(location);
     }
   }
 
@@ -347,6 +352,23 @@ export default class App extends Component {
     });
   };
 
+  getFPView = location => {
+    const matchView = matchFullPageView(location.pathname);
+    let FPView = null;
+
+    if (matchView && matchView.match) {
+      const FPComponent = matchView.component;
+
+      FPView = (
+        <ErrorBoundary resetOnProps location={location}>
+          <FPComponent {...matchView.match.params} />
+        </ErrorBoundary>
+      );
+    }
+
+    return FPView;
+  };
+
   render() {
     let { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
 
@@ -359,23 +381,32 @@ export default class App extends Component {
 
     return (
       <div class={`layout ${this.orgCode}`}>
-        <HeaderNav
-          user={user}
-          mode={mode}
-          modeFormatted={modeFormatted}
-          showGSTModal={hasGSTIN ? undefined : this.showGSTModal}
-          onSwitchMode={this.switchMode}
-          onSwitchMerchant={this.switchMerchant}
-          showMobileNav={this.props.windowWidth < 950}
-        />
-        <Sidebar
-          user={user}
-          logoURL={org.main_logo_url}
-          config={config.config}
-          org_custom_code={org.custom_code}
-        />
-        <Content user={user} modeFormatted={modeFormatted} />
-        <Footer showMobileNav={this.props.windowWidth < 950} />
+        {this.renderFPView ? (
+          this.renderFPView
+        ) : (
+          <React.Fragment>
+            <HeaderNav
+              user={user}
+              mode={mode}
+              modeFormatted={modeFormatted}
+              showGSTModal={hasGSTIN ? undefined : this.showGSTModal}
+              onSwitchMode={this.switchMode}
+              onSwitchMerchant={this.switchMerchant}
+              showMobileNav={this.props.windowWidth < 950}
+            />
+            <Sidebar
+              user={user}
+              logoURL={org.main_logo_url}
+              config={config.config}
+              org_custom_code={org.custom_code}
+            />
+            <Content
+              user={this.props.user}
+              modeFormatted={this.props.modeFormatted}
+            />
+            <Footer showMobileNav={this.props.windowWidth < 950} />
+          </React.Fragment>
+        )}
 
         {/* Creates Portal for the comp */}
         <ModalDialog />
