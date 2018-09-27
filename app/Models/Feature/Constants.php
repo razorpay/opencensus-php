@@ -170,7 +170,6 @@ class Constants
         self::EMI_MERCHANT_SUBVENTION         => true,
         self::FSS_RISK_UDF                    => true,
         self::RULE_FILTER                     => true,
-        self::TERMINAL_BANKS_FILTER           => true,
         self::TPV                             => true,
         self::IRCTC_REPORT                    => true,
         self::DISABLE_MAESTRO                 => true,
@@ -223,6 +222,7 @@ class Constants
         self::FIRST_DATA_S2S_FLOW             => true,
         self::BIN_ISSUER_VALIDATOR            => true,
         self::OFFER_PRIVATE_AUTH              => true,
+        self::TERMINAL_BANKS_FILTER           => true,
     ];
 
     // Entity type constants

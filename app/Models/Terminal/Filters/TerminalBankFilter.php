@@ -17,11 +17,11 @@ class TerminalBankFilter extends Terminal\Filter
 
         $applicableTerminals = [];
 
+        $bank = $this->input['payment']->getBank();
+
         foreach ($terminals as $terminal)
         {
             $enabledBanks = (array) $terminal->getEnabledBanks();
-
-            $bank = $this->input['payment']->getBank();
 
             if (in_array($bank, $enabledBanks, true) === true)
             {
