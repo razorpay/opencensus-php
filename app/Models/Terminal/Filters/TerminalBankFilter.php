@@ -12,7 +12,7 @@ class TerminalBankFilter extends Terminal\Filter
     {
         if ($this->input['payment']->isNetbanking() === false)
         {
-            return;
+            return $terminals;
         }
 
         $applicableTerminals = [];
