@@ -1,0 +1,180 @@
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import ModalHeader from 'rzp/ui/ModalHeader';
+import * as ModalActions from 'rzp/modules/modals';
+import Button from 'component/Button';
+import { isInteger } from 'rzp/utils/validators';
+import ajax from 'merchant/utils/ajax';
+import { trackOndemand } from './ga';
+import { fetchCurrentBalance } from 'merchant/modules/home';
+import Input from 'component/Input';
+import Alert from 'rzp/ui/Forms/Alert';
+
+@connect(
+  state => ({ user: state.session.user }),
+  {
+    ...ModalActions,
+    fetchCurrentBalance,
+  }
+)
+export default class OndemandModal extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isSaving: false,
+      isSaved: false,
+      amount: props.currentBalance || 0,
+      errors: [],
+    };
+
+    this.validateAmount = this.validateAmount.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleCloseModal = this.handleCloseModal.bind(this);
+  }
+
+  onSubmit() {
+    if (this.state.amount) {
+      let payload = {
+        amount: this.state.amount,
+      };
+
+      let eventLabel = `${this.props.fromWhere} | `;
+      eventLabel +=
+        this.props.currentBalance == this.state.amount ? 'Total' : 'Partial';
+      trackOndemand.trackSettleEarly(eventLabel);
+
+      this.setState({
+        isSaving: true,
+        errors: [],
+      });
+      ajax(
+        {
+          url: '/merchant/payout/demand',
+          method: 'POST',
+          data: payload,
+        },
+        {},
+        '/merchant/api'
+      )
+        .then(response => {
+          this.setState({
+            isSaving: false,
+            isSaved: true,
+          });
+          this.props.fetchCurrentBalance();
+        })
+        .catch(response => {
+          this.setState({
+            isSaving: false,
+            isSaved: false,
+            errors: response.errors,
+          });
+        });
+    }
+  }
+
+  handleChange(e) {
+    this.setState({
+      amount: e.target.value,
+    });
+  }
+
+  validateAmount(val) {
+    if (isInteger(val) && val > 100) {
+      if (val > this.props.currentBalance) {
+        trackOndemand.trackAmounTooHigh(this.props.fromWhere);
+        return 'Amount cannot be greater than your current balance';
+      }
+    } else {
+      return 'Invalid Amount';
+    }
+  }
+
+  handleCloseModal(eventType) {
+    switch (eventType) {
+      case 'Close Modal Screen 1':
+        trackOndemand.trackCloseModal(this.props.fromWhere);
+        break;
+      case 'Close Button':
+        trackOndemand.trackCloseButton(this.props.fromWhere);
+        break;
+      case 'Close Modal Screen 2':
+        trackOndemand.trackSuccessCloseModal(this.props.fromWhere);
+        break;
+    }
+    this.props.closeModal();
+  }
+
+  render() {
+    return (
+      <React.Fragment>
+        {this.state.isSaved ? (
+          <div class="onmdemand-modal">
+            <ModalHeader
+              title="Early Settlement Requested"
+              onCloseClick={() => this.handleCloseModal('Close Modal Screen 2')}
+            />
+            <div class="modal-body">
+              <div class="help-block">
+                The requested balance will be settled in the next few hours.
+              </div>
+              <Button.Primary
+                class="close-btn"
+                onClick={() => this.handleCloseModal('Close Button')}
+              >
+                Close
+              </Button.Primary>
+            </div>
+          </div>
+        ) : (
+          <div class="onmdemand-modal">
+            <ModalHeader
+              title="Early Settlements"
+              onCloseClick={() => this.handleCloseModal('Close Modal Screen 1')}
+            />
+            <div class="modal-body">
+              <p>
+                Get settlements in a few working hours for an additional charge.
+              </p>
+              <p>
+                <i className="i i-info-circle" /> No Early Settlements on Bank
+                holidays
+              </p>
+              {this.state.errors && (
+                <div>
+                  {this.state.errors.map((item, key) => {
+                    return <Alert key={key} type="error" message={item} />;
+                  })}
+                </div>
+              )}
+              <div>
+                <div class="InputGroup Input Input--vTop">
+                  <Input
+                    label="Enter amount to be settled(Paise)"
+                    required={true}
+                    addonBefore="₹"
+                    autoFocus={true}
+                    name="amount"
+                    class="Input"
+                    disabled={this.state.isSaving}
+                    value={this.state.amount}
+                    validator={this.validateAmount}
+                    onChange={this.handleChange}
+                  />
+                </div>
+                <Button.Primary
+                  class="submit-btn"
+                  disabled={this.state.isSaving}
+                  onClick={this.onSubmit}
+                >
+                  Settle Early
+                </Button.Primary>
+              </div>
+            </div>
+          </div>
+        )}
+      </React.Fragment>
+    );
+  }
+}

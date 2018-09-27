@@ -166,6 +166,10 @@ export default class User {
   get showEarlySettlementAnnouncement() {
     return this.activated && this.findTag('announcement_early_settlements');
   }
+
+  get isOndemandSettlementEnabled() {
+    return this.isFeatureEnabled('ES_ON_DEMAND');
+  }
 }
 
 function _isAllowed(userRole, moduleName, isReadOnly) {

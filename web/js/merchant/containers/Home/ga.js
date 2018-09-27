@@ -84,3 +84,14 @@ export const trackViewTour = () => {
 };
 
 export default track;
+
+export const trackES = setTrackData({
+  eventCategory: 'Dashboard - Early Settlement',
+});
+
+export const trackSettleNow = () => {
+  trackES({
+    eventAction: 'Click - Settle Now',
+    eventLabel: 'Home',
+  });
+};
