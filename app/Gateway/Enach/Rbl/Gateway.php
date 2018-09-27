@@ -639,7 +639,7 @@ class Gateway extends Base\Gateway
 
         $errorCode = $gatewayPayment->getErrorCode();
 
-        $recurringFailureReason = NetBankingErrorCodes::getEmandateRegisterErrorDescriptionFromCode($errorCode);
+        $recurringFailureReason = NetbankingErrorCodes::getEmandateRegisterErrorDescriptionFromCode($errorCode);
 
         $recurringData = [
             Token\Entity::RECURRING_STATUS         => $recurringStatus,
