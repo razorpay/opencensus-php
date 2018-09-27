@@ -245,7 +245,7 @@ const MODULE_PERMISSION_MAP = {
   customers: '22211100',
 
   // Reports
-  reports: '22200000',
+  reports: '22211000',
   api_keys: '22000000',
 
   // My Account
