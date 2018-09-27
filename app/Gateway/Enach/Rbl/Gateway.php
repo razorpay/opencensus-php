@@ -166,6 +166,14 @@ class Gateway extends Base\Gateway
             $attributes = $this->getErrorResponseGatewayAttributes($xmlData);
         }
 
+        $this->trace->info(
+            TraceCode::GATEWAY_MANDATE_RESPONSE,
+            [
+                'payment_id'            => $input['payment']['id'],
+                'gateway'               => $this->gateway,
+                'mandate response data' => $xmlData,
+            ]);
+
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
