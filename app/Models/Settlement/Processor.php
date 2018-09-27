@@ -78,9 +78,7 @@ class Processor extends Base\Core
 
         $this->preSettlementProcessing($input);
 
-        $channel = $input['channel'] ?? null;
-
-        list($shouldProcess, $data) = $this->shouldProcessSettlements($input, $channel);
+        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
 
         if ($shouldProcess === true)
         {
