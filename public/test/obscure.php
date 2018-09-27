@@ -116,6 +116,8 @@ function disableEmptyInputs(form) {
                 <option value="INDB">Indusind Bank</option>
                 <option value="PUNB">Punjab National Bank</option>
                 <option value="ESFB">Equitas Small Finance Bank</option>
+                <option value="CBIN">CBI</option>
+
             </select>
         </td>
     </tr>
