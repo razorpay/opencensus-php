@@ -847,7 +847,33 @@ trait PaymentTrait
             $this->assertEquals($amount, $refund['amount']);
         }
 
+        //TODO: remove merchant id check
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
+        {
+            $this->scroogeRefund($refund);
+        }
+
         return $refund;
+    }
+
+    protected function scroogeRefund(array $refund)
+    {
+        $input = $this->getDefaultScroogeInputArray();
+
+        $input['gateway'] = $this->gateway;
+        $input['id'] = substr($refund['id'], strlen('rfnd_'));
+        $input['payment_id'] = substr($refund['payment_id'], strlen('pay_'));
+
+        $this->ba->scroogeAuth();
+
+        $request = array(
+            'method'  => 'POST',
+            'url'     => '/refunds/'.$input['id'].'/gateway_refund',
+            'content' => $input);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 
     protected function disputePayment(Payment\Entity $payment, int $deduct = 0): array
@@ -949,6 +975,12 @@ trait PaymentTrait
 
         $this->assertEquals('refund', $refund['entity']);
 
+        //TODO: remove merchant id check
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
+        {
+            $this->scroogeRefund($refund);
+        }
+
         return $refund;
     }
 
@@ -962,6 +994,12 @@ trait PaymentTrait
             'content' => []);
 
         $data = $this->makeRequestAndGetContent($request);
+
+        //TODO: remove merchant id check
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
+        {
+            $this->scroogeRefund($refund);
+        }
 
         return $data;
     }
@@ -1047,6 +1085,22 @@ trait PaymentTrait
         $payment['terminal_id'] = '1n25f6uN5S1Z5a';
 
         return $payment;
+    }
+
+    protected function getDefaultScroogeInputArray()
+    {
+        $refund = [
+            'amount'                => 100,
+            'base_amount'           => 100,
+            'currency'              => 'INR',
+            'merchant_id'           => '10000000000000',
+            'method'                => 'card',
+            'payment_amount'        => 100,
+            'payment_base_amount'   => 100,
+            'payment_created_at'    => 1536067732,
+        ];
+
+        return $refund;
     }
 
     protected function getDefaultPaymentArrayNeutral()

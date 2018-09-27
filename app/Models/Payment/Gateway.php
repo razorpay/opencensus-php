@@ -89,9 +89,17 @@ class Gateway
     const BT_DASHBOARD       = 'bt_dashboard';
 
     //
-    // Constant used to store the response of various refund functions
+    // Constant used to store the response of various refund functions, used to prepare response for scrooge/
+    // success and status_code defined the status of refund and also category of refund if it is retriable or not.
     //
+    // Stores boolean value indicating refund was successful or not
     const SUCCESS            = 'success';
+    // Stores error code if refund is failed at gateway side
+    const STATUS_CODE        = 'status_code';
+    // Stores array of gateway related keys such as refund_id, auth_code
+    const GATEWAY_KEYS       = 'gateway_keys';
+    // Stores raw gateway response in string format.
+    const GATEWAY_RESPONSE   = 'gateway_response';
 
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
@@ -384,6 +392,7 @@ class Gateway
      */
     public static $scroogeGateways = [
         Payment\Gateway::SHARP,
+        Payment\Gateway::FIRST_DATA
     ];
 
     /**
@@ -1308,14 +1317,17 @@ class Gateway
     }
 
     /**
+     * This function checks if given gateway is eligible for scrooge call.
+     * Merchant id is not being used currently, but keeping the support of enabling specific merchants only.
+     *
      * @param $gateway
      * @param $merchantId
      * @return bool
+     *
      */
     public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
     {
-        return ((in_array($gateway, self::$scroogeGateways, true) === true) and
-                (in_array($merchantId, self::$scroogeMerchants, true) === true));
+        return (in_array($gateway, self::$scroogeGateways, true) === true);
     }
 
     /**

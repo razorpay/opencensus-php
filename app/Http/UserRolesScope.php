@@ -74,7 +74,7 @@ class UserRolesScope
             ],
             'merchant_edit_email_la'              => [Role::OWNER, Role::ADMIN],
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],
-            'merchant_fetch_keys'                 => [Role::OWNER, Role::ADMIN],
+            'merchant_fetch_keys'                 => [Role::OWNER, Role::ADMIN, Role::SELLERAPP],
             'merchant_edit_config_logo'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_fetch_config'               => Role::allExceptPaymentLinkRoles(),
             'merchant_fetch_referrals'            => Role::allExceptPaymentLinkRoles(),

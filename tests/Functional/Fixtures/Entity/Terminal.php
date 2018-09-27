@@ -1743,10 +1743,9 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'upi_axis',
-            'gateway_merchant_id'       => 'RAZAORPAY',
-            'gateway_terminal_id'       => 'RAZAORPAYAPP',
-            'gateway_merchant_id2'      => 'razaorpay@axis',
-            'gateway_terminal_password' => '1520',
+            'gateway_merchant_id'       => 'TSTMERCHI',
+            'gateway_merchant_id2'      => 'TSTMERCHIAPP',
+            'vpa'                       => 'a@axis',
             'upi'                       => true,
         ];
 

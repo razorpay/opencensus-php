@@ -915,4 +915,10 @@ class ErrorCode
     const GATEWAY_ERROR_SEND_EMAIL_ERROR                                            = 'GATEWAY_ERROR_SEND_EMAIL_ERROR';
     const GATEWAY_ERROR_FAILED_DATA_UPDATE                                          = 'GATEWAY_ERROR_FAILED_DATA_UPDATE';
     const GATEWAY_ERROR_ACQUIRER_UNAVAILABLE                                        = 'GATEWAY_ERROR_ACQUIRER_UNAVAILABLE';
+
+    // Scrooge error codes
+    const GATEWAY_VERIFY_REFUND_ABSENT                                              = 'GATEWAY_VERIFY_REFUND_ABSENT';
+    const GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED                                     = 'GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED';
+    const REFUND_MANUALLY_CONFIRMED_UNPROCESSED                                     = 'REFUND_MANUALLY_CONFIRMED_UNPROCESSED';
+    const GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED                            = 'GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED';
 }

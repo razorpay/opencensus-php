@@ -932,17 +932,15 @@ class Service extends Base\Service
 
     public function markRefundProcessed(string $refundId)
     {
-        $refund = [];
+        $this->trace->info(
+            TraceCode::REFUND_MARK_PROCESSED_REQUEST,
+            [
+                'refund_id' => $refundId,
+            ]);
 
         try
         {
             $refund = $this->repo->refund->findOrFailPublic($refundId);
-
-            $this->trace->info(
-                TraceCode::REFUND_MARK_PROCESSED_REQUEST,
-                [
-                    'refund_id' => $refund->getId(),
-                ]);
 
             $gateway = $refund->getGateway();
             $merchantId = $refund->merchant->getId();
@@ -963,13 +961,16 @@ class Service extends Base\Service
                 $this->trace->error(
                     TraceCode::REFUND_MARK_PROCESSED_NON_SCROOGE_GATEWAY,
                     [
-                        'refund_id' => $refund->getId()
+                        'refund_id' => $refund->getId(),
+                        'status' => $refund->getStatus(),
                     ]);
             }
         }
         catch (\Exception $ex)
         {
             $this->trace->traceException($ex, null, null, ['refund_id' => $refundId]);
+
+            throw $ex;
         }
 
         return $refund;

@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use Requests;
-use Illuminate\Http\Request;
+use Request;
 use Illuminate\Http\Response;
 use Response as ResponseFactory;
 
@@ -16,13 +16,12 @@ class ApspdclController extends Controller
      * @param  Request $req
      * @return Response
      */
-    public function any(Request $req)
+    public function any($path)
     {
-        $path            = $req->getRequestUri();
-        $method          = $req->method();
-        $input           = $req->post();
+        $method = Request::method();
+        $input = Request::all();
         $headers         = ['Content-Type' => 'application/json'];
-        $apspdclEndpoint = config('services.apspdcl.base_url') . str_after($req->getRequestUri(), '/v1/apspdcl');
+        $apspdclEndpoint = config('services.apspdcl.base_url') . '/' . $path;
 
         $this->trace->info(TraceCode::APSPDCL_REQUEST, compact('apspdclEndpoint', 'headers', 'input', 'method'));
 

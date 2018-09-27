@@ -1344,7 +1344,7 @@ class BankTransferTest extends TestCase
         $this->assertNotNull($bankTransfer['payment_id']);
     }
 
-    public function testBankTransferNotifyFailure()
+    public function testBankTransferNotifyNonFailure()
     {
         $this->startTest();
     }

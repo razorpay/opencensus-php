@@ -414,6 +414,8 @@ class Validator extends Base\Validator
     protected static $upiAxisTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_axis',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::VPA                        => 'required|string',
         Entity::UPI                        => 'required|boolean|in:1',
     ];
 
