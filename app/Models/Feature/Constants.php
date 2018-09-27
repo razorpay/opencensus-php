@@ -87,6 +87,7 @@ class Constants
     const OTP_AUTH_DEFAULT                = 'otp_auth_default';
     const CAPTURE_QUEUE                   = 'capture_queue';
     const TRANSACTION_V2                  = 'transaction_v2';
+    const ES_AUTOMATIC                    = 'es_automatic';
     const HEADLESS                        = 'headless';
 
     // Orders
@@ -210,6 +211,7 @@ class Constants
         self::EDIT_METHODS                    => true,
         self::CAPTURE_QUEUE                   => true,
         self::TRANSACTION_V2                  => true,
+        self::ES_AUTOMATIC                    => true,
         self::HEADLESS                        => true,
     ];
 
