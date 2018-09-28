@@ -29,9 +29,6 @@ class CreateEnachTable extends Migration
             $table->char(Enach::REFUND_ID, Refund::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Enach::AUTHENTICATION_GATEWAY)
-                  ->nullable();
-
             $table->string(Enach::ACTION);
 
             $table->string(Enach::ACQUIRER);

@@ -1164,12 +1164,6 @@ trait PaymentTrait
         if ($authType === Payment\AuthType::AADHAAR)
         {
             $payment['aadhaar']['number'] = '123123123123';
-
-            $payment['bank_account'] = [
-                'account_number' => '914010009305862',
-                'ifsc'           => 'utib0000123',
-                'name'           => 'Test account',
-            ];
         }
 
         return $payment;

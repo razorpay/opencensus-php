@@ -25,36 +25,6 @@ return [
         ],
     ],
 
-    'testFailedPaymentVerifyOnLegaldesk' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
-                ],
-            ],
-            'status_code' => 504,
-        ],
-        'exception' => [
-            'class'                 => RZP\Exception\GatewayTimeoutException::class,
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-        ]
-    ],
-
-    'legaldeskVerifyFailed' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => RZP\Exception\PaymentVerificationException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
-        ]
-    ],
-
     'testRegistrationReconWithTestMerchantProxyAuth' => [
         'response'  => [
             'content'     => [

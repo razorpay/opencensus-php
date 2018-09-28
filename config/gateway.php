@@ -20,7 +20,6 @@ return [
         'card_fss',
         'cybersource',
         'esigner_digio',
-        'esigner_legaldesk',
         'enach_rbl',
         'ebs',
         'first_data',
@@ -72,7 +71,6 @@ return [
     'mock_atom'                   => env('ATOM_MOCK'),
     'mock_hitachi'                => env('HITACHI_MOCK'),
     'mock_esigner_digio'          => env('ESIGNER_DIGIO_MOCK'),
-    'mock_esigner_legaldesk'      => env('ESIGNER_LEGALDESK_MOCK'),
     'mock_enach_rbl'              => env('ENACH_RBL_MOCK'),
     'mock_axis_migs'              => env('AXIS_MIGS_MOCK'),
     'mock_axis_genius'            => env('AXIS_GENIUS_MOCK'),
@@ -241,13 +239,6 @@ return [
         'test_merchant_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_MERCHANT_ID'),
         'test_merchant_id2' => env('DIGIO_ESIGNER_GATEWAY_TEST_MERCHANT_ID2'),
         'test_terminal_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_TERMINAL_ID')
-    ],
-
-    'esigner_legaldesk' => [
-        'live_api_key'        => env('LEGALDESK_ESIGNER_GATEWAY_LIVE_API_KEY'),
-        'live_application_id' => env('LEGALDESK_ESIGNER_GATEWAY_LIVE_APPLICATION_ID'),
-        'test_api_key'        => env('LEGALDESK_ESIGNER_GATEWAY_TEST_API_KEY'),
-        'test_application_id' => env('LEGALDESK_ESIGNER_GATEWAY_TEST_APPLICATION_ID'),
     ],
 
     'enach_rbl' => [],

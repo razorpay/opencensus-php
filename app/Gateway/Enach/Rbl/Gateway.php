@@ -2,10 +2,12 @@
 
 namespace RZP\Gateway\Enach\Rbl;
 
+use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use phpseclib\Crypt\AES;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Enach\Base;
 use RZP\Gateway\Base\Action;
@@ -20,11 +22,6 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'enach_rbl';
 
-    /**
-     * @param array $input
-     * @return array|void
-     * @throws Exception\GatewayErrorException
-     */
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -37,13 +34,11 @@ class Gateway extends Base\Gateway
 
         try
         {
-            $authenticationGateway = $input['authenticate']['gateway'];
-
-            $authenticationResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+            $authenticationResponse = $this->callAuthenticationGateway($input);
 
             $content[Base\Entity::GATEWAY_REFERENCE_ID] = $authenticationResponse['content']['reference_id'];
 
-            $this->createGatewayPaymentEntity($content, $authenticationGateway, Action::AUTHORIZE);
+            $this->createGatewayPaymentEntity($content, 'authorize');
 
             unset($authenticationResponse['content']['reference_id']);
         }
@@ -60,7 +55,7 @@ class Gateway extends Base\Gateway
 
             if ($content[Base\Entity::GATEWAY_REFERENCE_ID] !== null)
             {
-                $this->createGatewayPaymentEntity($content, $authenticationGateway, Action::AUTHORIZE);
+                $this->createGatewayPaymentEntity($content, 'authorize');
             }
             else
             {
@@ -81,14 +76,12 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $authResponse = $this->callAuthenticationGateway($input);
+
         $enach = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],
             Action::AUTHORIZE
         );
-
-        $authenticationGateway = $enach[Base\Entity::AUTHENTICATION_GATEWAY];
-
-        $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
         $this->updateGatewayPaymentEntity($enach, $authResponse, false);
 
@@ -100,6 +93,13 @@ class Gateway extends Base\Gateway
         }
 
         return $data;
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        return $this->callAuthenticationGateway($input);
     }
 
     protected function getRecurringData()
@@ -145,34 +145,13 @@ class Gateway extends Base\Gateway
             'Refund is not implemented');
     }
 
-    public function verify(array $input)
+    protected function callAuthenticationGateway(array $input)
     {
-        parent::verify($input);
-
-        $enach = $this->repo->findByPaymentIdAndAction(
-            $input['payment']['id'],
-            Action::AUTHORIZE
-        );
-
-        $authenticationGateway = $enach[Base\Entity::AUTHENTICATION_GATEWAY];
-
-        return $this->callAuthenticationGateway($input, $authenticationGateway);
-    }
-
-    /**
-     * @param array $input
-     * @param $authenticationGateway
-     * @return array
-     */
-    protected function callAuthenticationGateway(array $input, $authenticationGateway)
-    {
-        $esignerGatewayResponse = $this->app['gateway']->call(
-            $authenticationGateway,
+        return $this->app['gateway']->call(
+            Payment\Gateway::ESIGNER_DIGIO,
             $this->action,
             $input,
             $this->mode);
-
-        return $esignerGatewayResponse;
     }
 
     protected function extractPaymentsProperties($gatewayPayment)

@@ -1296,77 +1296,27 @@ trait Authorize
         $this->setGatewayTokenInInput($payment, $gatewayInput);
     }
 
-    /**
-     * @param Payment\Entity $payment
-     * @param array $gatewayInput
-     */
     protected function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
     {
-        if (Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true)
+        if (($payment->isMethodCardOrEmi() === true) and
+            (Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true))
         {
-            $method = $payment->getMethod();
-
-            switch ($method)
+            //
+            // Payments where authentication is required
+            //
+            if (($payment->isRecurring() === false) or
+                ($payment->isRecurringTypeInitial() === true))
             {
-                case Payment\Method::EMANDATE:
+                if ($payment->getGateway() === Payment\Gateway::HITACHI)
                 {
-                    //
-                    // Todo: During NPCI eMandate integration, we need to have one more condition
-                    // here to check if the auth method is aadhaar.
-                    //
+                    $authGateway = Payment\Gateway::MPI_BLADE;
 
-                    $eSignerGateway = Payment\Gateway::ESIGNER_DIGIO;
-
-                    $key = ConfigKey::MERCHANT_ENACH_CONFIGS;
-
-                    $merchantId = $payment->merchant->getId();
-
-                    $esignerConfigs = null;
-
-                    try
+                    if ($this->canRunAxisExpressPay($payment) === true)
                     {
-                        $esignerConfigs = Cache::get($key);
-                    }
-                    catch (\Throwable $ex)
-                    {
-                        // If cache fetch fails(say, the cache service is down), do not fail the payment.
-                        // Instead, fallback to the default eSigner gateway.
-                        $this->trace->traceException(
-                            $ex,
-                            Trace::CRITICAL,
-                            TraceCode::REDIS_KEY_FETCH,
-                            ['key' => $key]
-                        );
+                        $authGateway = Payment\Gateway::MPI_ENSTAGE;
                     }
 
-                    $esignerConfigs = json_decode($esignerConfigs, true);
-
-                    if (isset($esignerConfigs['auth_gateway'][$merchantId]) === true)
-                    {
-                        $eSignerGateway = $esignerConfigs['auth_gateway'][$merchantId];
-                    }
-
-                    $gatewayInput['authenticate']['gateway'] = $eSignerGateway;
-                }
-
-                case Payment\Method::CARD:
-                case Payment\Method::EMI:
-                {
-                    if (($payment->isRecurring() === false) or
-                        ($payment->isRecurringTypeInitial() === true))
-                    {
-                        if ($payment->getGateway() === Payment\Gateway::HITACHI)
-                        {
-                            $authGateway = Payment\Gateway::MPI_BLADE;
-
-                            if ($this->canRunAxisExpressPay($payment) === true)
-                            {
-                                $authGateway = Payment\Gateway::MPI_ENSTAGE;
-                            }
-
-                            $gatewayInput['authenticate']['gateway'] = $authGateway;
-                        }
-                    }
+                    $gatewayInput['authenticate']['gateway'] = $authGateway;
                 }
             }
         }

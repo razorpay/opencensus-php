@@ -16,7 +16,6 @@ class Shared
     const BILLDESK_RAZORPAY_TERMINAL         = '1000BdeskTrmnl';
     const BLADE_RAZORPAY_TERMINAL            = '1000BladeTrmnl';
     const DIGIO_RAZORPAY_TERMINAL            = '1000DigioTrmnl';
-    const LEGALDESK_RAZORPAY_TERMINAL        = '1000LegalDskTl';
     const ENACH_RBL_RAZORPAY_TERMINAL        = '1000EnachRblTl';
     const EBS_RAZORPAY_TERMINAL              = '100000EbsTrmnl';
     const HDFC_RAZORPAY_TERMINAL             = '1000HdfcShared';
@@ -84,7 +83,6 @@ class Shared
         self::BILLDESK_RAZORPAY_TERMINAL,
         self::BLADE_RAZORPAY_TERMINAL,
         self::DIGIO_RAZORPAY_TERMINAL,
-        self::LEGALDESK_RAZORPAY_TERMINAL,
         self::EBS_RAZORPAY_TERMINAL,
         self::ENACH_RBL_RAZORPAY_TERMINAL,
         self::HDFC_RAZORPAY_TERMINAL,
@@ -134,7 +132,6 @@ class Shared
         self::AMEX_RAZORPAY_TERMINAL             => Gateway::AMEX,
         self::BLADE_RAZORPAY_TERMINAL            => Gateway::MPI_BLADE,
         self::DIGIO_RAZORPAY_TERMINAL            => Gateway::ESIGNER_DIGIO,
-        self::LEGALDESK_RAZORPAY_TERMINAL        => Gateway::ESIGNER_LEGALDESK,
         self::ATOM_RAZORPAY_TERMINAL             => Gateway::ATOM,
         self::AXIS_GENIUS_RAZORPAY_TERMINAL      => Gateway::AXIS_GENIUS,
         self::AXIS_MIGS_RAZORPAY_TERMINAL        => Gateway::AXIS_MIGS,
