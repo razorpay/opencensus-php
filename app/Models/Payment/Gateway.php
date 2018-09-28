@@ -554,6 +554,12 @@ class Gateway
         self::ATOM
     ];
 
+    const BANK_TRANSFER_REFUND_GATEWAYS = [
+        self::ENACH_RBL,
+        self::NETBANKING_HDFC,
+        self::NETBANKING_AXIS,
+    ];
+
     /**
      * Card gateways which support auth and capture mechanism for at
      * least one card network.
