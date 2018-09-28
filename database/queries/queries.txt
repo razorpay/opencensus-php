@@ -4314,3 +4314,10 @@ ALTER TABLE subscriptions
     ADD COLUMN customer_email VARCHAR(100) DEFAULT NULL AFTER global_customer,
     ADD INDEX subscriptions_customer_email_index (customer_email);
 
+# hulk recon columns
+ALTER TABLE upi
+    ADD COLUMN gateway VARCHAR(255) DEFAULT NULL AFTER id,
+    ADD COLUMN npci_txn_id VARCHAR(255) DEFAULT NULL AFTER npci_reference_id,
+    ADD COLUMN reconciled_at INTEGER DEFAULT NULL AFTER npci_txn_id,
+    ADD INDEX upi_gateway_reconciled_at_index (gateway, reconciled_at),
+    ADD INDEX upi_npci_txn_id_index (npci_txn_id);

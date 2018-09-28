@@ -12,7 +12,6 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::NAME                            => 'filled|string|max:40',
-        Entity::DESCRIPTOR                      => 'sometimes|nullable|alpha_num',
         Entity::AMOUNT_EXPECTED                 => 'filled|integer|min:0',
         Entity::DESCRIPTION                     => 'sometimes|nullable|string|max:2048',
         Entity::CUSTOMER_ID                     => 'filled|public_id|size:19',
@@ -33,27 +32,6 @@ class Validator extends Base\Validator
         Entity::NUMERIC    => 'sometimes|boolean',
         Entity::DESCRIPTOR => 'sometimes|alpha_num|max:10',
     ];
-
-    public function validateDescriptor($descriptor, $isPrivileged)
-    {
-        if ($descriptor === null)
-        {
-            return;
-        }
-
-        $descriptorLength = strlen($descriptor);
-
-        if (($descriptorLength > Receiver::DESCRIPTOR_LENGTH) and
-             ($isPrivileged === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,
-                'descriptor',
-                [
-                    'descriptor' => $descriptor,
-                ]);
-        }
-    }
 
     protected function validateReceivers(string $key, array $value, array $data)
     {

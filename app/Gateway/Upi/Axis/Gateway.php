@@ -605,7 +605,10 @@ class Gateway extends Base\Gateway
     {
         $content = $verify->verifyResponseContent;
 
-        $verify->gatewaySuccess = ($content[Fields::DATA][Fields::RESULT] === Status::VERIFY_SUCCESS);
+        // Gateway sends result in different positions based on the kind of error hence handling both
+        $result = $content[Fields::DATA][Fields::RESULT] ?? $content[Fields::RESULT];
+
+        $verify->gatewaySuccess = ($result === Status::VERIFY_SUCCESS);
     }
 
     protected function getCipherInstance(): RSA
@@ -626,7 +629,11 @@ class Gateway extends Base\Gateway
     {
         $rsa = $this->getCipherInstance();
 
-        $rsa->loadKey($this->config['public_key']);
+        $publickey = $this->config['public_key'];
+
+        $publickey = str_replace('\n', '', $publickey);
+
+        $rsa->loadKey($publickey);
 
         return $rsa->encrypt($data);
     }
