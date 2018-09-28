@@ -4,7 +4,7 @@ namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
 class GreylistActivationFlow implements ActivationFlowInterface
 {
-    public function activateMerchant()
+    public function process()
     {
         // TODO: Implement activateMerchant() method.
     }

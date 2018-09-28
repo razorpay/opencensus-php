@@ -1512,6 +1512,11 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * updates category and category2 of merchant
+     * @param Entity $merchant
+     * @param array  $subCategoryMetaData
+     */
     public function updateSubCategoryMetaData(Entity $merchant, array $subCategoryMetaData)
     {
         $merchant->setCategory2($subCategoryMetaData[Entity::CATEGORY2]);

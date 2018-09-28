@@ -3,14 +3,22 @@
 namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 
 class ActivationFlowFactory
 {
-    public function _construct(string $activationFlow) :ActivationFlowInterface
+    /**
+     * returns activationFlow interface implementation instance based on activation flow
+     * @param Entity $merchantDetails
+     *
+     * @return ActivationFlowInterface
+     * @throws InvalidArgumentException
+     */
+    public function _construct(Entity $merchantDetails) :ActivationFlowInterface
     {
-        switch ($activationFlow)
+        switch ($merchantDetails->getActivationFlow())
         {
             case  ActivationFlow::WHITELIST:
                 return new WhitelistActivationFlow();

@@ -4,5 +4,5 @@ namespace RZP\Models\Merchant\Detail\ActivationFlow;
 
 interface ActivationFlowInterface
 {
-    public function activateMerchant();
+    public function process();
 }
