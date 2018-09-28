@@ -1514,28 +1514,37 @@ class Core extends Base\Core
     }
 
     /**
-     * updates category and category2 of merchant
-     * @param Entity $merchant
-     * @param string  $subCategory
+     * fetches subcategory metadata from subcategory and updates
+     * merchant category and cateogry2
+     *
+     * @param \RZP\Models\Merchant\Entity $merchant
+     * @param string                      $subCategory
+     *
+     * @return \RZP\Models\Merchant\Entity
      */
-    public function updateSubCategoryMetaData(Entity $merchant, string $subCategory)
+    public function autoUpdateCategoryDetails(Entity $merchant, string $subCategory): Entity
     {
-        $subCategoryMetaData = BusinessSubCategoryMetaData::getMetaDataForSubCategory($subCategory);
+        $subCategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($subCategory);
 
         $this->trace->info(
-            TraceCode::MERCHANT_AUTO_TAG_MCC_CATEGORY2,
+            TraceCode::MERCHANT_AUTO_UPDATE_METADATA,
             [
-                'prev_category2'    => $merchant->getCategory2(),
-                'prev_category'     => $merchant->getCategory(),
-                'updated_category2' => $subCategoryMetaData[Entity::CATEGORY2],
-                'updated_category'  => $subCategoryMetaData[Entity::CATEGORY],
-                'merchant_id'       => $merchant->getId(),
+                Detail\Entity::MERCHANT_ID => $merchant->getId(),
+                'old_data'                 => [
+                    Entity::CATEGORY2 => $merchant->getCategory2(),
+                    Entity::CATEGORY  => $merchant->getCategory(),
+                ],
+                'new_data'                 => [
+                    Entity::CATEGORY2 => $subCategoryMetaData[Entity::CATEGORY2],
+                    Entity::CATEGORY  => $subCategoryMetaData[Entity::CATEGORY],
+                ],
             ]);
 
         $merchant->setCategory2($subCategoryMetaData[Entity::CATEGORY2]);
         $merchant->setCategory($subCategoryMetaData[Entity::CATEGORY]);
 
         $this->repo->saveOrFail($merchant);
-    }
 
+        return $merchant;
+    }
 }

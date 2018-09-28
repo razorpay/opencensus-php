@@ -76,7 +76,7 @@ class Core extends Base\Core
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
 
-            $this->updateMerchantSubCategoryMetaDataIfApplicable($input, $oldMerchantDetails, $merchant);
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($input, $oldMerchantDetails, $merchant);
 
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
 
@@ -106,13 +106,12 @@ class Core extends Base\Core
 
     /**
      * updates merchant category and category2 data if
-     * there is change in business subcategory or
-     * category and category2 are not set
+     * there is change in business subcategory
      * @param array           $input
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      */
-    public function updateMerchantSubCategoryMetaDataIfApplicable(array $input, Entity $merchantDetails, Merchant\Entity $merchant)
+    public function autoUpdateMerchantCategoryDetailsIfApplicable(array $input, Entity $merchantDetails, Merchant\Entity $merchant)
     {
         if (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false)
         {
@@ -121,11 +120,9 @@ class Core extends Base\Core
 
         $subCategory = $input[Entity::BUSINESS_SUBCATEGORY];
 
-        if (($merchantDetails->getBusinessSubcategory() !== $subCategory) or
-            (($merchant->getCategory() === 0) and
-             ($merchant->getCategory2() === null)))
+        if ($merchantDetails->getBusinessSubcategory() !== $subCategory)
         {
-            (new Merchant\Core)->updateSubCategoryMetaData($merchant, $subCategory);
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $subCategory);
         }
     }
 

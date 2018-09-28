@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\Error\ErrorCode;
+use InvalidArgumentException;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
@@ -757,14 +759,27 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW => ActivationFlow::WHITELIST,
         ],
     ];
-  
-    public static function getMetaDataForSubCategory(string $subcategory): array
+
+    /**
+     * returns metadata for given subcategory
+     * throws InvalidArgumentException if metadata is not defined for subcategory
+     *
+     * @param string $subcategory
+     *
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    public static function getSubCategoryMetaData(string $subcategory): array
     {
         if (isset(self::SUB_CATEGORY_METADATA[$subcategory]) === true)
         {
             return self::SUB_CATEGORY_METADATA[$subcategory];
         }
 
-        return null;
+        $errorDetails = [
+            Entity::BUSINESS_SUBCATEGORY => $subcategory,
+        ];
+
+        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_SUBCATEGORY, $errorDetails);
     }
 }
