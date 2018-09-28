@@ -1666,7 +1666,7 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice, true);
 
-        $invoice->getValidator()->validateInvoicePayable($payment);
+        $invoice->getValidator()->validateInvoicePayableForPayment($payment);
 
         $payment->invoice()->associate($invoice);
     }
