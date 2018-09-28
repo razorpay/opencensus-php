@@ -254,7 +254,7 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, 30)
                 ->nullable();
 
-            $table->string(MerchantDetail::ACTIVATION_FLOW, 30)
+            $table->string(MerchantDetail::ACTIVATION_FLOW, 50)
                   ->nullable();
 
             $table->boolean(MerchantDetail::SUBMITTED)

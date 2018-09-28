@@ -548,7 +548,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVATION_FLOW, $activationFlow);
     }
 
-    public function getActivationFlow(): string
+    public function getActivationFlow()
     {
         return $this->getAttribute(self::ACTIVATION_FLOW);
     }
@@ -720,5 +720,10 @@ class Entity extends Base\PublicEntity
         $adminId = $this->getAttribute(Entity::REVIEWER_ID);
 
         $attributes[Entity::REVIEWER_ID] = Admin\Entity::getSignedIdOrNull($adminId);
+    }
+
+    public function isSubCategoryChanged(string $subcategory)
+    {
+        return (($this->getBusinessSubcategory() !== $subcategory) ? true : false);
     }
 }
