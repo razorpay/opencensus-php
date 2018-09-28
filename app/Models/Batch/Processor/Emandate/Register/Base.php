@@ -35,6 +35,11 @@ abstract class Base extends BaseProcessor
      */
     protected $gatewayPaymentMapping = [];
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $useSpreadSheetLibrary = true;
+
     protected function processEntry(array & $entry)
     {
         //

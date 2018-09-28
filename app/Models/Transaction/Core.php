@@ -71,6 +71,9 @@ class Core extends Base\Core
      */
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
+        return $this->createTransactionForSource($payment);
+
+        // old code, will delete port refactoring all entites
         $this->trace->info(
             TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
             [
@@ -78,11 +81,6 @@ class Core extends Base\Core
             ]);
 
         $merchant = $payment->merchant;
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_V2) === true)
-        {
-            return $this->createTransactionForSource($payment);
-        }
 
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, false);
 
@@ -124,12 +122,10 @@ class Core extends Base\Core
 
     public function createOrUpdateFromPaymentCaptured(Payment\Entity $payment)
     {
-        $merchant = $payment->merchant;
+        return $this->createTransactionForSource($payment);
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_V2) === true)
-        {
-            return $this->createTransactionForSource($payment);
-        }
+        // old code, will delete it post refactoring of all the entities
+        $merchant = $payment->merchant;
 
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
@@ -199,23 +195,29 @@ class Core extends Base\Core
 
             $feesSplit = new Base\PublicCollection;
 
+            $this->repo->fee_breakup->deleteFeeBreakupForTransactionId($txn->getId());
+
             list($credit, $fee, $serviceTax, $feesSplit) = $this->calculatePostpaidFee($txn);
 
             $txn->setCredit($credit);
             $txn->setDebit(0);
             $txn->setFee($fee);
-            $txn->setServiceTax($serviceTax);
             $txn->setFeeModel(FeeModel::POSTPAID);
             $txn->setGratis(false);
             $txn->setCreditType(Transaction\CreditType::DEFAULT);
             $txn->setPricingRule(null);
 
-            $payment->setServiceTax($serviceTax);
-
             if ($merchant->isFeeBearerCustomer() === false)
             {
                 //set and fee values from txn
                 $payment->setFee($fee);
+            }
+
+            foreach ($feesSplit as $feeSplit)
+            {
+                $feeSplit->transaction()->associate($txn);
+
+                $this->repo->saveOrFail($feeSplit);
             }
 
             $this->repo->saveOrFail($payment);
@@ -224,6 +226,11 @@ class Core extends Base\Core
 
             (new PaymentProcessor($merchant))->saveFeeDetails($txn, $feesSplit);
         });
+    }
+
+    public function markTransactionPostpaid(Entity $txn)
+    {
+        $this->markGratisTransactionPostpaid($txn, $txn->merchant);
     }
 
     public function updateReconciliationData(Entity $transaction)

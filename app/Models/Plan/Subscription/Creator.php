@@ -47,6 +47,8 @@ class Creator extends Base\Core
                 if ($customer !== null)
                 {
                     $subscription->setGlobalCustomer(false);
+
+                    $subscription->setCustomerEmail($customer->getEmail());
                 }
 
                 //

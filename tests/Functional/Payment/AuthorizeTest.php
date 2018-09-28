@@ -59,6 +59,8 @@ class AuthorizeTest extends TestCase
 
     public function testMagicKeyFalseMerchantDisabled()
     {
+        $this->markTestSkipped();
+
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -624,6 +626,8 @@ class AuthorizeTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
+        // Adding otpelf features to ensure that it doesn't break the integration
+        $this->fixtures->merchant->addFeatures(['otpelf', 'otp_auth_default']);
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
         $response = $this->doAuthPayment($payment);

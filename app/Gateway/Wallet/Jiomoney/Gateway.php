@@ -211,8 +211,7 @@ class Gateway extends Base\Gateway
             return true;
         }
 
-        if ((empty($input['gateway']['gateway_payment_id']) === true) or
-            (empty($input['gateway']['gateway_payment_date']) === true))
+        if (empty($input['gateway']['gateway_payment_id']) === true)
         {
             throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING,
@@ -222,7 +221,6 @@ class Gateway extends Base\Gateway
 
         $contentToSave = [
             Entity::GATEWAY_PAYMENT_ID => $input['gateway']['gateway_payment_id'],
-            Entity::DATE               => $input['gateway']['gateway_payment_date'],
             Entity::STATUS_CODE        => StatusCode::SUCCESS,
             Entity::RESPONSE_CODE      => ResponseCode::SUCCESS
         ];

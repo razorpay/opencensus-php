@@ -1,10 +1,12 @@
 <?php
 
-namespace RZP\Gateway\AxisMigs;
+namespace RZP\Gateway\AxisMigs\ErrorCodes;
 
-class ErrorCodes
+use RZP\Gateway\Base\ErrorCodes\Cards;
+
+class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
 {
-    protected static $map = [
+    public static $vpcErrorDescriptionMap = [
         '5000' => 'Undefined error',
         '5001' => 'Invalid Digital Order',
         '5002' => 'Invalid Digital Order: not enough fields',
@@ -14,7 +16,33 @@ class ErrorCodes
         '5006' => 'Invalid Digital Order: invalid purchase amount',
         '5007' => 'Invalid Digital Order: invalid locale',
         '5008' => 'Invalid Digital Order: outdated version',
-        '5009' => 'Invalid Digital Order: bad or too many Transaction Request parameters. It could be one of the following:',
+        '5009' => 'Invalid Digital Order: bad or too many Transaction Request parameters.',
+        /**
+         * 5009 - Invalid Digital Order: bad or too many Transaction Request parameters
+         * It could be one of the following:
+         *   1.  Invalid Digital Order: Invalid PAN Entry Mode
+         *   2.  Invalid Digital Order: Invalid PIN Entry Capability
+         *   3.  Bad Credit Payment Type
+         *   4.  Bad Account Balance Type
+         *   5.  Unsupported Transaction Type
+         *   6.  Invalid Digital Order: Invalid Payment Method
+         *   7.  Invalid Digital Order: Invalid PIN field
+         *   8.  Invalid Digital Order: Invalid KSN field
+         *   9.  Invalid Digital Order: Invalid STAN field
+         *   10. Invalid Digital Order: Invalid PhysicalTerminalId field
+         *   11. Invalid Digital Order: Invalid POSEntryMode field
+         *   12. PIN Entry Capability Terminal Cannot Accept PIN
+         *   13. PIN Entry Capability Terminal PIN pad down
+         *   14. Authorisation Code must be provided
+         *   15. Authorisation Code must be numeric and 1 to 6 characters in length'
+         */
+        '5010' => 'Bad DCC Base Amount',
+        '5011' => 'Bad DCC Base Currency',
+        '5012' => 'Bad DCC Exchange Rate',
+        '5013' => 'Bad DCC Offer State',
+        '5014' => 'DCC Offer State Unsupported',
+        '5015' => 'Missing or Invalid Currency',
+        '5016' => 'Missing or Invalid Merchant Transaction Reference',
         '5020' => 'Invalid Digital Receipt',
         '5021' => 'Invalid Digital Receipt: not enough fields',
         '5022' => 'Invalid Digital Receipt: too many fields',
@@ -70,13 +98,22 @@ class ErrorCodes
         '5087' => 'Unknown database type',
         '5090' => 'Illegal user name',
         '5091' => 'Illegal password error',
-        '5101' => 'Could not create and load the specified KeyStore object. If you are using a QSIDB KeyStore the database connection may have failed',
-        '5103' => 'Could not create the specified javax.crypto.Cipher object. You may not have a provider installed to create this type of Cipher object or the Cipher object that is specified in your config file is incorrect',
-        '5104' => 'Error in call to javax.crypto.Cipher.doFinal. Either the input was too large or the padding was bad',
-        '5106' => 'The Message type specified is not supported. Check the com.qsipayments.technology.security.MessageCrypto.properties file to ensure that the MsgType is valid',
+        '5101' => 'Could not create and load the specified KeyStore object. If you are using a QSIDB 
+                   KeyStore the database connection may have failed',
+        '5103' => 'Could not create the specified javax.crypto.Cipher object.',
+        // You may not have a
+        // provider installed to create this type of Cipher object or the Cipher object
+        // that is specified in your config file is incorrect',
+        '5104' => 'Error in call to javax.crypto.Cipher.doFinal. Either the input was too large or the 
+                   padding was bad',
+        '5106' => 'The Message type specified is not supported.',
+        // Check the com.qsipayments.technology.security.MessageCrypto.properties
+        // file to ensure that the MsgType is valid',
         '5108' => 'The message received has a bad format',
         '5109' => 'Error verifying signature',
         '5110' => 'Error creating a signature',
+        '5161' => 'Customer Reference too long',
+        '5175' => 'Card track data exceeded the allowed lengths',
         '5120' => 'Unable to generate new keys',
         '5121' => 'Try to access an invalid key file',
         '5122' => 'Not able to store the security keys',
@@ -93,9 +130,12 @@ class ErrorCodes
         '5133' => 'Signature Key used is invalid',
         '5134' => 'RSA Decrypt Failed',
         '5135' => 'RSA Encrypt Failed',
-        '5136' => 'The keys stored in the keyfile given to SecureCGIParam was corrupt or one of the keys is invalid',
-        '5137' => 'The private key stored in the keyfile given to SecureCGIParam was corrupt or one of the keys is invalid',
-        '5138' => 'The public key stored in the keyfile given to SecureCGIParam was corrupt or one of the keys is invalid',
+        '5136' => 'The keys stored in the keyfile given to SecureCGIParam was corrupt or one of the 
+                   keys is invalid',
+        '5137' => 'The private key stored in the keyfile given to SecureCGIParam was corrupt or one 
+                   of the keys is invalid',
+        '5138' => 'The public key stored in the keyfile given to SecureCGIParam was corrupt or one 
+                   of the keys is invalid',
         '5140' => 'Invalid Acquirer',
         '5141' => 'Generic error for a financial transaction',
         '5142' => 'Generic reconciliation error for a transaction',
@@ -104,7 +144,8 @@ class ErrorCodes
         '5145' => 'Generic terminal error',
         '5146' => 'Terminal near full',
         '5147' => 'Terminal Full',
-        '5148' => 'Attempted to call a method that required a reconciliation to be in progress but this was not the case',
+        '5148' => 'Attempted to call a method that required a reconciliation to be in progress but 
+                   this was not the case',
         '5150' => 'Invalid credit card: incorrect issue number length',
         '5151' => 'Invalid Credit Card Specifications',
         '5152' => 'Invalid Credit Card information contained in the database',
@@ -114,18 +155,15 @@ class ErrorCodes
         '5156' => 'Invalid Card Number Check Digit',
         '5157' => 'Invalid Card Expiry Date',
         '5158' => 'Invalid Card Expiry Date Length',
-        '5161' => 'Customer Reference too long',
         '5162' => 'Invalid Card Initialisation file',
         '5166' => 'Invalid Credit Card: incorrect secure code number length',
         '5170' => 'Unable to delete terminal',
         '5171' => 'Unable to create terminal',
-        '5175' => 'Card track data exceeded the allowed lengths',
         '5176' => 'Bad Card Track, invalid card track sentinels',
         '5185' => 'Invalid Acknowledgement',
         '5200' => 'Payment Client Creation Failed',
         '5201' => 'Creating Digital Order Failed',
         '5202' => 'Creating Digital Receipt Failed',
-        '5203' => 'Executing Extension Command Failed',
         '5204' => 'Executing Administration Capture Failed',
         '5205' => 'Executing Administration Refund Failed',
         '5206' => 'Executing Administration Void Capture Failed',
@@ -143,7 +181,6 @@ class ErrorCodes
         '5234' => 'MOTO Internal Error',
         '5235' => 'Digital Receipt Internal Error',
         '5336' => 'Administration Internal Error',
-        '5337' => 'Extension Internal Error',
         '5400' => 'Digital Order is null',
         '5401' => 'Null Parameter',
         '5402' => 'Command Missing',
@@ -155,6 +192,7 @@ class ErrorCodes
         '5414' => 'Capture Error',
         '5415' => 'Refund Error',
         '5416' => 'VoidCapture Error',
+        '5417' => 'VoidRefund Error',
         '5418' => 'Financial Transaction History Error',
         '5419' => 'Shopping Transaction History Error',
         '5420' => 'Reconciliation Error',
@@ -168,14 +206,13 @@ class ErrorCodes
         '5428' => 'VoidPurchase Error',
         '5429' => 'QueryDR Error',
         '5430' => 'Missing Field',
-        '5431' => 'Invalid Field. Digital TRANS_NO must be provided to indicate which existing order this transaction is to be performed against',
+        '5431' => 'Invalid Field Digital.TRANS_NO must be provided to indicate which existing order this 
+                   transaction is to be performed against',
         '5432' => 'Internal Error',
         '5433' => 'Invalid Permission',
         '5434' => 'Deferred Payment service currently unavailable',
         '5435' => 'Max No of Deferred Payment reached',
         '5436' => 'Invalid recurring transaction number',
-        '5440' => 'Missing extension parameter',
-        '5441' => 'ExtensionHandler: Invalid Recurring Transaction Number',
         '5450' => 'DirectPaymentSend: Null digital order',
         '5451' => 'DirectPaymentSend: Internal error',
         '5500' => 'Error in card detail',
@@ -224,7 +261,7 @@ class ErrorCodes
         '5910' => 'Null pointer caught',
         '5911' => 'URL Decode Exception occurred',
         '5930' => 'Invalid card type for excessive refunds',
-        '5931' => 'Agent is not authorized to perform excessive refunds for this amount',
+        '5931' => 'Agent not authorized to perform excessive refunds for this amount',
         '5932' => 'Too many excessive refunds apply to this shopping transaction already',
         '5933' => 'Merchant agent is not authorized to perform excessive refunds',
         '5934' => 'Merchant is not authorized to perform excessive refunds',
@@ -238,7 +275,8 @@ class ErrorCodes
         '7004' => 'XML Parameter had an invalid index. Check input .html file',
         '7005' => 'XML [Bad Provider Class]',
         '7050' => 'SleepTimer: Time value is not in a valid format (ignored this time value)',
-        '7100' => 'No valid times and/or interval specified in StatementProcessing.properties file. Execution terminated.',
+        '7100' => 'No valid times and/or interval specified in StatementProcessing.properties file. 
+                   Execution terminated',
         '7101' => 'Status file for this data file was never created – deleting',
         '7102' => 'Error loading Statement.properties file',
         '7104' => 'Can’t find file',
@@ -279,31 +317,136 @@ class ErrorCodes
         '8002' => 'Purchaser Postcode Too Long',
         '8003' => 'Invalid Local Tax Flag and Local Tax Flag Amount Combination',
         '8004' => 'Invalid Local Tax Amount',
-        // '8015' => 'Payment method must be EBT for a balance inquiry',
-        '8015' => 'Invalid Digital Order: Invalid PaymentMethod',
+        '8015' => 'Payment method must be EBT for a balance inquiry or Invalid Digital Order: Invalid PaymentMethod',
         '8016' => 'Invalid Digital Order: Invalid PIN field',
         '8017' => 'Invalid Digital Order: Invalid KSN field',
         '8019' => 'Invalid Digital Order: Invalid PhysicalTerminalID field',
         '8020' => 'Invalid Digital Order: Invalid POSEntryMode field',
         '8021' => 'Invalid Digital Order: Invalid AdditionalAmount field',
         '9000' => 'Acquirer did not respond',
+        '9150' => 'Missing or Invalid Secure Hash',
+        '9151' => 'Invalid Secure Hash Type, or Secure Hash Type not allowed for this merchant',
+        '9152' => 'Missing or Invalid Access Code',
+        '9153' => 'Request contains more than one instance of the same field',
+        '9154' => 'General merchant configuration error preventing request from being processed',
+        '9200' => 'Missing or Invalid Template Number',
+        'Timed out' => 'Timed Out',
+        'Pending' => 'Pending',
     ];
 
-    protected static $errorCode5009 = [
-        'Invalid Digital Order: Invalid PAN Entry Mode',
-        'Invalid Digital Order: Invalid PIN Entry Capability',
-        'Bad Credit Payment Type',
-        'Bad Account Balance Type',
-        'Unsupported Transaction Type',
-        'Invalid Digital Order: Invalid Payment Method',
-        'Invalid Digital Order: Invalid PIN field',
-        'Invalid Digital Order: Invalid KSN field',
-        'Invalid Digital Order: Invalid STAN field',
-        'Invalid Digital Order: Invalid PhysicalTerminalId field',
-        'Invalid Digital Order: Invalid POSEntryMode field',
-        'PIN Entry Capability Terminal Cannot Accept PIN',
-        'PIN Entry Capability Terminal PIN pad down',
-        'Authorisation Code must be provided',
-        'Authorisation Code must be numeric and 1 to 6 characters in length',
+    public static $txnErrorDescriptionMap = [
+        '0' => 'Transaction Successful',
+        '1' => 'Unknown Error',
+        '2' => 'Bank Declined Transaction',
+        '3' => 'No Reply from Bank',
+        '4' => 'Expired Card',
+        '5' => 'Insufficient Funds',
+        '6' => 'Error Communicating with Bank',
+        '7' => [
+            'E5000'   => 'Username and/or password for merchant is invalid.',
+            'E5159'   => 'Invalid Card Type',
+            'E5408'   => 'Not an auth transaction',
+            'E5414'   => [
+                'no payments identified' => 'No payments identified',
+                'requested capture amount exceeds outstanding authorized amount' =>
+                    'Requested capture amount exceeds outstanding authorized amount',
+            ],
+            'E5415'   => 'Excessive refund attempted',
+            'I5154'   => 'Invalid Card Number : Card number is best match for card range in card brand 
+                          MS and not expected card brand MC',
+            'I5166'   => 'Invalid credit card: incorrect secure code number length : Invalid Card Security Code length',
+            'I5426'   => 'Invalid Permission : advanceMA',
+            'W9520'   => 'Server is unable to process the request at the moment - please try later',
+            'default' => 'Payment Server System Error',
+        ],
+        '8' => 'Transaction Type Not Supported',
+        '9' => 'Bank declined transaction (Do not contact Bank)',
+        'A' => 'Transaction Aborted',
+        'B' => 'Transaction was blocked by the Payment Server because it did not pass all risk checks.',
+        'C' => 'Transaction Cancelled',
+        'D' => 'Deferred transaction has been received and is awaiting processing',
+        'E' => 'Transaction Declined - Refer to card issuer',
+        'F' => '3D Secure Authentication failed',
+        'I' => 'Card Security Code verification failed',
+        'L' => 'Shopping Transaction Locked (Please try the transaction again later)',
+        'N' => 'Cardholder is not enrolled in 3DSecure Authentication Scheme',
+//        'P' => 'Transaction has been received by the Payment Adaptor and is being processed',
+        'R' => 'Transaction was not processed - Reached limit of retry attempts allowed',
+        'S' => 'Duplicate SessionID (OrderInfo)',
+        'T' => 'Address Verification Failed',
+        'U' => 'Card Security Code Failed',
+        'V' => 'Address Verification and Card Security Code Failed',
+        '?' => 'Transaction status is unknown',
+        'Aborted' => 'Transaction Aborted',
     ];
+
+    public static $avsErrorDescriptionMap = [
+        'A' => 'Address matches, postal code does not.',
+        'B' => 'Visa only: Street address match. Postal code not verified because of incompatible 
+                formats. (Acquirer sent both street address and postal code).',
+        'C' => 'Visa only: Street address and postal code not verified because of incompatible formats. 
+                (Acquirer sent both street address and postal code).',
+        'D' => 'Visa: Street address and postal code match. Address and zip match. Amex: Card Member Name 
+                incorrect, Billing Postal Code match. Z 5-digit zip match',
+        'E' => 'Amex: Card Member Name incorrect, Billing Address and Postal Code match.',
+        'F' => 'Visa: Street address and Postal Code match. Applies to U.K. only. Amex: Card Member Name 
+                incorrect, Billing Address matches. A Address match only.',
+        'G' => 'Visa only. Non-AVS participant outside the U.S.; address not verified for international 
+                transaction.',
+        'I' => 'Visa only. Address information not verified for international transaction.',
+        'K' => 'Amex: Card Member Name matches.',
+        'L' => 'Amex: Card Member Name and Billing Postal Code match.',
+        'M' => 'Visa: Street addresses and Postal Codes match. Amex: Card Member Name, Billing Address and 
+                Postal Code match.',
+        'N' => 'Neither address nor postal code matches.',
+        'O' => 'Amex: Card Member Name and Billing Address match.',
+        'P' => 'Visa only. Postal Codes match. Street address not verified because of incompatible formats. 
+                (Acquirer sent both street address and postal code).',
+        'R' => 'Retry, system is unable to process.',
+        'S' => 'AVS currently not supported. Amex: SE not allowed AAV function.',
+        'U' => 'No data from Issuer/authorisation system.',
+        'W' => 'For U.S. addresses, 9-digit postal code matches, address does not; for address outside the 
+                U.S., postal code matches, address does not.',
+        'X' => 'For U.S. addresses, 9-digit Postal Code and Address match; for address outside the U.S., 
+                Postal Code and Address match.',
+        'Y' => 'For U.S. addresses, 5-digit Postal Code and Address match.',
+        'Z' => 'For U.S. addresses, 5-digit Postal Code matches, Address does not.',
+    ];
+
+    public static $cscErrorDescriptionMap = [
+        'M' => 'Valid or matched CSC', // This is a success case
+        'S' => 'Merchant indicates CSC not present on card',
+        'P' => 'CSC Not Processed',
+        'U' => 'Card issuer is not registered and/or certified',
+        'N' => 'Code invalid or not matched',
+    ];
+
+    public static function getRelevantGatewayErrorCode($errorFieldName, $content)
+    {
+        if ($errorFieldName === ErrorFields::VPC_MESSAGE)
+        {
+            return static::getVpcMessageErrorCode($content[$errorFieldName]);
+        }
+
+        return parent::getRelevantGatewayErrorCode($errorFieldName, $content);
+    }
+
+    public static function getVpcMessageErrorCode($code)
+    {
+        $gatewayCode = null;
+
+        if (in_array($code, ['Pending', 'Timed out']) === true)
+        {
+            return $code;
+        }
+
+        $isMatched = preg_match('/[0-9]{4}/', $code, $matches);
+
+        if ($isMatched === 1)
+        {
+            $gatewayCode = $matches[0];
+        }
+
+        return $gatewayCode;
+    }
 }

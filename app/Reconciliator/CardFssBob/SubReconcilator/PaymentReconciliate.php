@@ -17,9 +17,13 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 {
+    const ONUS_INDICATOR = 'yes';
+
     public function getPaymentId(array $row)
     {
-        return $row[ReconciliationFields::MERCHANT_TRACK_ID] ?? null;
+        $paymentId = $row[ReconciliationFields::MERCHANT_TRACK_ID] ?? null;
+
+        return trim(str_replace("'", '', $paymentId));
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
@@ -84,7 +88,9 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     public function getReferenceNumber($row)
     {
-        return $row[ReconciliationFields::RRN] ?? null;
+        $rrn = $row[ReconciliationFields::RRN] ?? null;
+
+        return trim(str_replace("'", '', $rrn ?? null));
     }
 
     /**
@@ -96,7 +102,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
      */
     public function getArn($row)
     {
-        $onusIndicator = $row[ReconciliationFields::ONUS_INDICATOR];
+        $onusIndicator = $this->getOnusIndicator($row);
 
         $rrn = $this->getReferenceNumber($row);
 
@@ -104,16 +110,22 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
         {
             $this->reportMissingColumn($row, $row[ReconciliationFields::RRN]);
         }
-        else if ($onusIndicator === 'YES')
+        else if (strtolower($onusIndicator) === self::ONUS_INDICATOR)
         {
             // Only in case of ONUS transactions, we want to store RRN
             // In all the other cases, we want to store ARN only.
             // Currently, only ONUS transactions go through this gateways.
 
-            return $row[ReconciliationFields::RRN] ?? null;
+            return $rrn;
         }
 
         return null;
+    }
+
+
+    protected function getOnusIndicator($row)
+    {
+        return strtolower($row[ReconciliationFields::ONUS_INDICATOR]?? '');
     }
 
     protected function getGatewayPayment($paymentId)
@@ -154,7 +166,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
      */
     protected function getCardType($row)
     {
-        $cardType = explode(' ', strtolower($row[ReconciliationFields::PAYMENT_METHOD]))[0];
+        $cardType = explode(' ', strtolower($row[ReconciliationFields::PAYMENT_METHOD] ?? null))[0];
 
         if (in_array($cardType, [BaseReconciliate::DEBIT, BaseReconciliate::CREDIT]) === false)
         {
@@ -180,7 +192,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
      */
     protected function getCardLocale($row)
     {
-        $cardLocale = strtolower($row[ReconciliationFields::DESTINATION]);
+        $cardLocale = strtolower($row[ReconciliationFields::DESTINATION] ?? null);
 
         if (in_array($cardLocale, [BaseReconciliate::DOMESTIC, BaseReconciliate::INTERNATIONAL]) === false)
         {
@@ -207,9 +219,9 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
      */
     protected function getIssuer($row)
     {
-        $onusIndicator = $row[ReconciliationFields::ONUS_INDICATOR] ?? null;
+        $onusIndicator = $this->getOnusIndicator($row);
 
-        if ($onusIndicator === 'YES')
+        if (strtolower($onusIndicator) === self::ONUS_INDICATOR)
         {
             return IFSC::BARB;
         }
@@ -250,9 +262,25 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
             $this->reportMissingColumn($row, ReconciliationFields::MSF_AMOUNT);
         }
 
-        $lateSettlementFee = (isset($row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT]) === true) ? abs($row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT]) : 0;
+        if (isset($row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT]) === true)
+        {
+            $lateSettlementFee = abs($row[ReconciliationFields::LATE_SETTLEMENT_FEE_AMOUNT]);
+        }
 
-        $rrfAmount = (isset($row[ReconciliationFields::RRF_AMOUNT]) === true) ? abs($row[ReconciliationFields::RRF_AMOUNT]) : 0;
+        else
+        {
+            $lateSettlementFee = 0;
+        }
+
+        if (isset($row[ReconciliationFields::RRF_AMOUNT]) === true)
+        {
+            $rrfAmount = abs($row[ReconciliationFields::RRF_AMOUNT]);
+        }
+
+        else
+        {
+            $rrfAmount = 0;
+        }
 
         $msfAmount = abs($row[ReconciliationFields::MSF_AMOUNT]);
 
@@ -270,7 +298,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
      */
     protected function getGatewayTransactionId(array $row)
     {
-        return $row[ReconciliationFields::PG_TRANSACTION_ID] ?? null;
+        return trim(str_replace("'", '', $row[ReconciliationFields::PG_TRANSACTION_ID] ?? null));
     }
 
     protected function getGatewaySettledAt(array $row)
@@ -294,7 +322,7 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
     }
 
     /**
-     * In MIS file, we are not receiving ARN hence storing RRN in reference1 field of payment entity.
+     * In MIS file, we are not receiving ARN hence sstoring RRN in reference1 field of payment entity.
      * This is done because for reporting purposes, we need reference number in payment entity.
      * @param $rowDetails
      */

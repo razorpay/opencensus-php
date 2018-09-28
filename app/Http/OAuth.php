@@ -219,7 +219,7 @@ class OAuth
         // Sets the identifiers that are sent in trace logs
         $this->ba->setAccessTokenId($response[OAuthToken::ID]);
         $this->ba->setOAuthClientId($response[OAuthToken::CLIENT_ID]);
-        $this->ba->setOAuthApplicationId($response[OAuthToken::APPLICATION][OAuthToken::ID]);
+        $this->ba->setOAuthApplicationId($response[OAuthToken::APPLICATION_ID]);
     }
 
     /**

@@ -8,6 +8,7 @@ use RZP\Exception;
 use ErrorException;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\BharatQr;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
@@ -19,7 +20,7 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Models\BharatQr;
+use RZP\Models\BharatQr\GatewayResponseParams;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
@@ -45,7 +46,7 @@ class Gateway extends Base\Gateway
         Fields::ID                        => Entity::GATEWAY_PAYMENT_ID,
         Fields::STATUS                    => Entity::STATUS_CODE,
         Fields::RRN                       => Entity::NPCI_REFERENCE_ID,
-
+        Fields::TXN_ID                    => Entity::NPCI_TXN_ID,
         Entity::VPA                       => Entity::VPA,
         Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
         Entity::PROVIDER                  => Entity::PROVIDER,
@@ -54,6 +55,7 @@ class Gateway extends Base\Gateway
         Entity::RECEIVED                  => Entity::RECEIVED,
         Fields::CALLER_ACCOUNT_NUMBER     => Entity::ACCOUNT_NUMBER,
         Fields::CALLER_IFSC_CODE          => Entity::IFSC,
+        Fields::MERCHANT_REFERENCE_ID     => Entity::MERCHANT_REFERENCE,
     ];
 
     protected $forceFillable = [
@@ -71,6 +73,21 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        if ($this->isBharatQrPayment() === true)
+        {
+            $gatewayInput = $input[Fields::CONTENT][Fields::DATA];
+
+            $gatewayInput[Entity::RECEIVED] = true;
+
+            $gatewayInput[Fields::TYPE] = Type::getMappedTyped($gatewayInput[Fields::TYPE]);
+
+            $gatewayInput[Entity::VPA] = $gatewayInput[Fields::SENDER][Fields::ADDRESS];
+
+            $this->createGatewayPaymentEntity($gatewayInput);
+
+            return null;
+        }
 
         // @todo Enable intent
         if ((isset($input['upi']['flow']) === true) and
@@ -216,7 +233,7 @@ class Gateway extends Base\Gateway
 
         $hashed = hash_hmac(self::HASH_ALGO, $content, $password);
 
-        if(hash_equals($hashed, $signature) !== true)
+        if (hash_equals($hashed, $signature) !== true)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
@@ -235,12 +252,22 @@ class Gateway extends Base\Gateway
      * @param $input
      * @return array
      */
-    public function preProcessServerCallback($input): array
+    public function preProcessServerCallback($input, $isBharatQr = false): array
     {
         $input[Fields::SIGNATURE] = array_get($input, 'headers.x-hulk-signature.0');
 
         // To make sure, we do not use it later in code.
         unset($input['headers']);
+
+        if ($isBharatQr === true)
+        {
+            $qrData = $this->getBharatQrData($input);
+
+            return [
+                Fields::QR_DATA       => $qrData,
+                Fields::CALLBACK_DATA => $input,
+            ];
+        }
 
         return $input;
     }
@@ -298,11 +325,21 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayPassword(): string
     {
+        if ($this->isTestMode() === true)
+        {
+            return $this->config['test_terminal_password'];
+        }
+
         // This is set on all environments, we will be using this regardless of auth
         return $this->config['gateway_terminal_password'];
     }
 
-    /**
+    public function verifyBharatQrNotification($gatewayResponse)
+    {
+        $this->validateCallbackSignature($gatewayResponse[Fields::CALLBACK_DATA]);
+    }
+
+     /**
      * If gateway_access_code is empty, we will still be using proxy auth.
      * This way we can switch between proxy and app auth from terminal itself.
      *
@@ -429,14 +466,7 @@ class Gateway extends Base\Gateway
 
     protected function updateGatewayPaymentResponse($payment, array $response)
     {
-        // Unsetting as we don't want to override it
-        unset($response[Entity::TYPE]);
-
-        $attr = $this->getMappedAttributes($response);
-
-        $attr[Entity::VPA] = array_get($response, Fields::SENDER.'.'.Fields::ADDRESS);
-        // To mark that we have received a response for this request
-        $attr[Entity::RECEIVED] = 1;
+        $attr = $this->getMappedResponseToUpdate($response);
 
         $payment->fill($attr);
 
@@ -552,9 +582,28 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->verifyResponseContent = $this->getMappedAttributes($content);
+        $attr = $this->getMappedResponseToUpdate($content);
+
+        // We have to call this method explicitly as AuthorizeFailed does not
+        $verify->payment->generatePspData($attr);
+
+        $verify->verifyResponseContent = $attr;
 
         return $status;
+    }
+
+    protected function getMappedResponseToUpdate(array $response)
+    {
+        // Unsetting as we don't want to override it
+        unset($response[Entity::TYPE]);
+
+        $attr = $this->getMappedAttributes($response);
+
+        $attr[Entity::VPA] = array_get($response, Fields::SENDER.'.'.Fields::ADDRESS);
+        // To mark that we have received a response for this request
+        $attr[Entity::RECEIVED] = 1;
+
+        return $attr;
     }
 
     public function forceAuthorizeFailed(array $input)
@@ -637,5 +686,21 @@ class Gateway extends Base\Gateway
     protected function getExternalMockUrl(string $type)
     {
         return env('UPI_HULK_URL') . '/' . $this->getRelativeUrl($type);
+    }
+
+    protected function getBharatQrData(array $bharatQrInput)
+    {
+        $input = $bharatQrInput[Fields::CONTENT][Fields::DATA];
+
+        $attributes = [
+            GatewayResponseParams::AMOUNT                => $input[Fields::AMOUNT],
+            GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[Fields::RECEIVER][Fields::ID],
+            GatewayResponseParams::VPA                   => $input[Fields::RECEIVER][Fields::ADDRESS],
+            GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[Fields::MERCHANT_REFERENCE_ID], 3, 17),
+            GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[Fields::TXN_ID],
+        ];
+
+        return $attributes;
     }
 }

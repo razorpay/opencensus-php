@@ -159,6 +159,11 @@ class Service extends Base\Service
         $emiOfferPlans = [];
 
         $offers->map(function ($offer) use($emiPlans, & $emiOfferPlans) {
+            if ($offer->getEmiSubvention() !== true)
+            {
+                return;
+            }
+
             $bank = $offer->getIssuer();
 
             $network = $offer->getPaymentNetwork();

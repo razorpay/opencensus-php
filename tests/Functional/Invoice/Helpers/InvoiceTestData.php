@@ -4047,8 +4047,8 @@ return [
     // Expectations for ES
 
     'testGetInvoiceByReceiptExpectedSearchParams' => [
-        'index' => 'testing_invoice_test',
-        'type'  => 'testing_invoice_test',
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -4103,8 +4103,8 @@ return [
     ],
 
     'testGetMultipleInvoicesOnlyEsFieldsExpectedSearchParams' => [
-        'index' => 'testing_invoice_test',
-        'type'  => 'testing_invoice_test',
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -4171,8 +4171,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByQExpectedSearchParams' => [
-        'index' => 'testing_invoice_test',
-        'type'  => 'testing_invoice_test',
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 10,
@@ -4236,8 +4236,8 @@ return [
     ],
 
     'testGetMultipleInvoicesSearchHitsOnlyExpectedSearchParams' => [
-        'index' => 'testing_invoice_test',
-        'type'  => 'testing_invoice_test',
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
         'body'  => [
             '_source' => true,
             'from'    => 0,
@@ -4299,8 +4299,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByEsFeildAndFromExpectedSearchParams' => [
-        'index' => 'testing_invoice_test',
-        'type'  => 'testing_invoice_test',
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 20,
@@ -4358,8 +4358,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByEsFeildFromAndToExpectedSearchParams' => [
-        'index' => 'testing_invoice_test',
-        'type'  => 'testing_invoice_test',
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 20,
@@ -4418,8 +4418,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByCommonAndEsFieldsExpectedSearchParams' => [
-        'index' => 'testing_invoice_test',
-        'type'  => 'testing_invoice_test',
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -4491,8 +4491,8 @@ return [
         'body' => [
             [
                 'index' => [
-                    '_index' => 'testing_invoice_test',
-                    '_type'  => 'testing_invoice_test',
+                    '_index' => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
+                    '_type'  => env('ES_ENTITY_TYPE_PREFIX').'invoice_test',
                     // '_id'    => '7KoRT3qkc1KGFb',
                 ],
             ],

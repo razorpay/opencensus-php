@@ -13,6 +13,7 @@ use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMa
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
@@ -695,7 +696,25 @@ class Service extends Base\Service
 
         $iinEntity = $this->repo->iin->find($input['iin']);
 
-        $data = $merchant->getPaymentFlows($iinEntity);
+        $flows = $merchant->getPaymentFlows($iinEntity);
+
+        $data = $flows;
+
+        $data['flows'] = $data;
+
+        if (isset($input['order_id']) === true)
+        {
+            $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+
+            if ($order->hasOffers() === true)
+            {
+                $payment = $this->getDummyPayment($order, $iinEntity);
+
+                $applicableOffers = (new Offer\Core)->getApplicableOffersForPayment($order, $payment);
+
+                $data['offers'] = $applicableOffers;
+            }
+        }
 
         return $data;
     }
@@ -1406,5 +1425,26 @@ class Service extends Base\Service
 
             return true;
         });
+    }
+
+    private function getDummyPayment(Order\Entity $orderEntity, Card\IIN\Entity $iinEntity)
+    {
+        $payment = new Payment\Entity;
+
+        $card = new Card\Entity;
+
+        $payment->merchant()->associate($this->merchant);
+
+        $paymentInput = $payment->getDummyPaymentArray(Payment\Method::CARD, null, $iinEntity->getNetworkCode());
+
+        $payment->fill($paymentInput);
+
+        $cardInput = $card->getDummyCardArray(null, $iinEntity);
+
+        $card->fill($cardInput);
+
+        $payment->card()->associate($card);
+
+        return $payment;
     }
 }

@@ -11,7 +11,7 @@ return [
     */
     'channel' => 'Razorpay API',
 
-    'fallbackEmail' => 'developers@razorpay.com',
+    'fallback_email' => 'developers@razorpay.com',
 
     'cloud' => ! env('APP_DEBUG', false),
 

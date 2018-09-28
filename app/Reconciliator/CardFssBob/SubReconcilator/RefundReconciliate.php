@@ -14,9 +14,13 @@ use RZP\Reconciliator\Base\SubReconciliator;
 
 class RefundReconciliate extends SubReconciliator\RefundReconciliate
 {
+    const  ONUS_INDICATOR_VALUE = 'yes';
+
     public function getRefundId(array $row)
     {
-        return $row[ReconciliationFields::MERCHANT_TRACK_ID] ?? null;
+        $refundId = $row[ReconciliationFields::MERCHANT_TRACK_ID] ?? null;
+
+        return trim(str_replace("'", '', $refundId));
     }
 
     protected function getPaymentId(array $row)
@@ -59,23 +63,23 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
      */
     protected function getGatewayTransactionId(array $row)
     {
-        return $row[ReconciliationFields::PG_TRANSACTION_ID] ?? null;
+        return trim(str_replace("'", '', $row[ReconciliationFields::PG_TRANSACTION_ID] ?? null));
     }
 
     protected function getArn(array $row)
     {
         $onusIndicator = $row[ReconciliationFields::ONUS_INDICATOR];
 
-        $rrn = $this->getReferenceNumber($row);
+        $rrn = trim(str_replace("'", '',  ($row[ReconciliationFields::RRN] ?? null)));
 
         if (empty($rrn) === true)
         {
-            $this->reportMissingColumn($row, $row[ReconciliationFields::RRN]);
+            $this->reportMissingColumn($row, ReconciliationFields::RRN);
         }
 
-        if ($onusIndicator === 'YES')
+        if (strtolower($onusIndicator) === self::ONUS_INDICATOR_VALUE)
         {
-            return $row[ReconciliationFields::RRN] ?? null;
+           return $rrn;
         }
 
         return null;
@@ -131,14 +135,7 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
 
     protected function getReconCurrencyCode($row)
     {
-        if (empty(ReconciliationFields::TRANSACTION_CURRENCY_CODE) === true)
-        {
-            $this->reportMissingColumn($row, ReconciliationFields::TRANSACTION_CURRENCY_CODE);
-
-            return null;
-        }
-
-        return $row[ReconciliationFields::TRANSACTION_CURRENCY_CODE];
+        return $row[ReconciliationFields::TRANSACTION_CURRENCY_CODE] ?? null;
     }
 
     protected function validateRefundCurrencyEqualsReconCurrency(array $row) : bool

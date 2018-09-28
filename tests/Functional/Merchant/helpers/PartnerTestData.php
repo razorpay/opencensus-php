@@ -692,6 +692,97 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantPurePlatform' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => '10000RandomApp',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                     => 'acc_10000000000009',
+                'entity'                 => 'merchant',
+                'user'                   => [],
+                'details'                => [
+                    'activation_status' => 'under_review',
+                ],
+                'dashboard_access'       => false,
+                'application'            => [
+                    'id'   => '10000RandomApp',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantPurePlatformNoApps' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => '10000RandomApp',
+            ],
+        ],
+        'response'   => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OAUTH_APP_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OAUTH_APP_NOT_FOUND,
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantPurePlatformMissingAppId' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MISSING_APPLICATION_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MISSING_APPLICATION_ID,
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantPurePlatformInvalidAppId' => [
+        'request'  => [
+            'url'     => '/submerchants/acc_10000000000009',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => 'NotExistentApp',
+            ],
+        ],
+        'response'   => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_APPLICATION_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_APPLICATION_ID,
+        ],
+    ],
+
     'testFetchPartnerSubmerchantProxyAuth' => [
         'request'  => [
             'url'     => '/submerchants/acc_10000000000009',
@@ -774,6 +865,32 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantsPurePlatform' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'application' => [
+                            'id' => '8ckeirnw84ifke',
+                        ]
+                    ],
+                    [
+                        'application' => [
+                            'id' => '10000RandomApp',
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchPartnerSubmerchantsFilters' => [
         'request'  => [
             'url'     => '/submerchants',
@@ -799,6 +916,29 @@ return [
                             'activation_status' => 'under_review',
                         ],
                         'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsPurePlatformFilters' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => '10000RandomApp',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'application' => [
+                            'id' => '10000RandomApp',
+                        ]
                     ],
                 ],
             ],

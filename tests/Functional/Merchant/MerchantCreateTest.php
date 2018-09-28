@@ -4,28 +4,26 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use Mail;
-use Razorpay\OAuth\Application;
-use Illuminate\Database\Eloquent\Factory;
-use Razorpay\OAuth\Application\Entity as OAuthApp;
-
 use RZP\Constants;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
-use RZP\Models\Settlement\Channel;
 use RZP\Models\User\Role;
 use RZP\Models\Batch\Header;
+use Razorpay\OAuth\Application;
 use RZP\Mail\User\MappedToAccount;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\LinkedAccountUserAccess;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use Razorpay\OAuth\Application\Entity as OAuthApp;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerMail;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMail;
-
 
 class MerchantCreateTest extends TestCase
 {
@@ -545,10 +543,6 @@ class MerchantCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
-
         $this->ba->proxyAuth();
 
         $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
@@ -657,10 +651,6 @@ class MerchantCreateTest extends TestCase
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
-
-        $merchant = Merchant\Entity::find("10000000000000");
-        $merchant->reTag([Merchant\Entity::ENABLE_LA_DASHBOARD]);
-        $merchant->saveOrFail();
 
         $this->ba->proxyAuth();
 
@@ -834,6 +824,113 @@ class MerchantCreateTest extends TestCase
 
         $this->assertEquals('test 2', $account['name']);
         $this->assertEquals(true, $account['activated']);
+    }
+
+    public function testCreateLinkedAccountDashboardAccess()
+    {
+        Mail::fake();
+
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+        
+        $this->startTest();
+
+        Mail::assertQueued(LinkedAccountUserAccess::class, function ($mail) use ($account)
+        {
+            return $mail->hasTo($account['email']);
+        });
+    }
+
+    public function testCreateLinkedAccountDashboardAccessNoEmail()
+    {
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000',
+                                                                 'email' => 'test@razorpay.com']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $this->startTest();
+    }
+
+    public function testCreateLinkedAccountDashboardAccessRevoke()
+    {
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $user = $this->fixtures->create('user', ['email' => 'testing1@testing.com']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $account['id'],
+            'role'        => Role::LINKED_ACCOUNT_OWNER,
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $this->startTest();
+
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $account['id'])->get();
+
+        $this->assertEquals(0, $users->count());
+    }
+
+    public function testLinkedAccountDashboardAccessAlreadyGiven()
+    {
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $user = $this->fixtures->create('user', ['email' => 'testing1@testing.com']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $account['id'],
+            'role'        => Role::LINKED_ACCOUNT_OWNER,
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $this->startTest();
+    }
+
+    public function testLinkedAccountDashboardAccessRevokeNoUsers()
+    {
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $this->startTest();
     }
 
     protected function startTest($testDataToReplace = [])

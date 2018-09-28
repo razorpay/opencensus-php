@@ -42,6 +42,8 @@ class Validator extends Base\Validator
         ConfigKey::SKIP_SLAVE                           => 'filled|boolean',
         ConfigKey::BLOCK_BANK_TRANSFERS_FOR_CRYPTO      => 'filled|boolean',
         ConfigKey::DISABLE_MAGIC                        => 'filled|boolean',
+        ConfigKey::BLOCK_SMART_COLLECT                  => 'filled|boolean',
+        ConfigKey::BLOCK_YESBANK                        => 'filled|boolean',
         ConfigKey::NPCI_UPI_DEMO                        => 'filled|array',
     ];
 

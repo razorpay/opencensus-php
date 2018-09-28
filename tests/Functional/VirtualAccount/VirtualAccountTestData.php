@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\BankTransfer;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Exception\BadRequestValidationFailureException;
 
 return [
     'testCreateVirtualAccount' => [
@@ -25,9 +26,6 @@ return [
         'entity'          => 'virtual_account',
         'status'          => 'active',
         'amount_expected' => 1000000,
-        'notes'           => [
-            'a' => 'b',
-        ],
         'amount_paid'     => 0,
         'customer_id'     => NULL,
         'receivers'       => [
@@ -83,6 +81,30 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,
+        ],
+    ],
+
+    'testCreateVirtualAccountValidationFailure' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'description' => 'VA for tests',
+                'receivers'   => 'This is the best receiver ever.',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The receivers must be an array.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
 
@@ -207,30 +229,13 @@ return [
         ],
     ],
 
-    'testCreateVirtualAccountWithDescriptor' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Descriptor field cannot be used as ' .
-                                     'merchant handle is not set for your account.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE,
-        ],
-    ],
-
     'testVirtualAccountCreateRequestUpdate' => [
         'descriptorWithNumeric' => [
             'response' => [
                 'content' => [
                     'error' => [
                         'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'Descriptor cannot be used for numeric accounts.',
+                        'description' => 'Descriptor cannot be used with your account.',
                     ],
                 ],
                 'status_code' => 400,
@@ -239,52 +244,6 @@ return [
                 'class' => 'RZP\Exception\BadRequestValidationFailureException',
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
-        ],
-        'descriptorWithAlphaWithoutHandle' => [
-            'response' => [
-                'content' => [
-                    'error' => [
-                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'Descriptor cannot be used as merchant handle is not set.',
-                    ],
-                ],
-                'status_code' => 400,
-            ],
-            'exception' => [
-                'class' => 'RZP\Exception\BadRequestValidationFailureException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-            ],
-        ],
-        'descriptorWithNumericWithHandle' => [
-            'response' => [
-                'content' => [
-                    'error' => [
-                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'Descriptor cannot be used for numeric accounts.',
-                    ],
-                ],
-                'status_code' => 400,
-            ],
-            'exception' => [
-                'class' => 'RZP\Exception\BadRequestValidationFailureException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-            ],
-        ],
-    ],
-
-    'testCreateVirtualAccountDescriptorLengths' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid length for descriptor.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,
         ],
     ],
 

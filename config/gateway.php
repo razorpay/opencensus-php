@@ -30,6 +30,7 @@ return [
         'kotak',
         'mobikwik',
         'netbanking_hdfc',
+        'netbanking_idfc',
         'netbanking_bob',
         'netbanking_corporation',
         'netbanking_kotak',
@@ -42,6 +43,7 @@ return [
         'netbanking_pnb',
         'netbanking_obc',
         'netbanking_csb',
+        'netbanking_equitas',
         'paytm',
         'sharp',
         'upi_axis',
@@ -85,7 +87,9 @@ return [
     'mock_netbanking_airtel'      => env('NETBANKING_AIRTEL_MOCK'),
     'mock_netbanking_axis'        => env('NETBANKING_AXIS_MOCK'),
     'mock_netbanking_federal'     => env('NETBANKING_FEDERAL_MOCK'),
+    'mock_netbanking_idfc'        => env('NETBANKING_IDFC_MOCK'),
     'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
+    'mock_netbanking_equitas'     => env('NETBANKING_EQUITAS_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
@@ -283,12 +287,12 @@ return [
     ],
 
     'upi_axis' => [
-        'merchant_id'           => env('UPI_AXIS_GATEWAY_MERCHANT_ID'),
-        'merchant_channel_id'   => env('UPI_AXIS_GATEWAY_MERCHANT_CHANNEL_ID'),
         'public_key'            => env('UPI_AXIS_GATEWAY_PUBLIC_KEY'),
         'mobile_no'             => env('UPI_AXIS_GATEWAY_MOBILE_NUMBER'),
         'aes_encryption_key'    => env('UPI_AXIS_GATEWAY_AES_KEY'),
-        'default_payee_vpa'     => env('UPI_AXIS_GATEWAY_PAYEE_VPA'),
+        'test_merchant_id'      => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2'     => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_CHANNEL_ID'),
+        'test_vpa'              => env('UPI_AXIS_GATEWAY_TEST_PAYEE_VPA'),
     ],
 
     'aeps_icici' => [
@@ -439,6 +443,11 @@ return [
         'pooling_account_number' => env('BOB_POOLING_ACCOUNT_NUMBER'),
     ],
 
+    'netbanking_idfc' => [
+        'test_merchant_id'       => env('NETBANKING_IDFC_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_IDFC_GATEWAY_TEST_HASH_SECRET')
+    ],
+
     'netbanking_icici' => [
         //retail netbanking
         'test_hash_secret'       => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
@@ -519,6 +528,11 @@ return [
         'test_merchant_id_2' => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
         'test_merchant_id'   => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID_2'),
         'test_hash_secret'   => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
+    ],
+
+    'netbanking_equitas' => [
+        'test_hash_secret'   => env('NETBANKING_EQUITAS_TEST_HASH_SECRET'),
+        'test_merchant_id'   => env('NETBANKING_EQUITAS_TEST_MERCHANT_ID'),
     ],
 
     'sharp' => [

@@ -74,7 +74,7 @@ class UserRolesScope
             ],
             'merchant_edit_email_la'              => [Role::OWNER, Role::ADMIN],
             'merchant_create_key'                 => [Role::OWNER, Role::ADMIN],
-            'merchant_fetch_keys'                 => [Role::OWNER, Role::ADMIN],
+            'merchant_fetch_keys'                 => [Role::OWNER, Role::ADMIN, Role::SELLERAPP],
             'merchant_edit_config_logo'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_fetch_config'               => Role::allExceptPaymentLinkRoles(),
             'merchant_fetch_referrals'            => Role::allExceptPaymentLinkRoles(),
@@ -127,7 +127,8 @@ class UserRolesScope
             'item_update'         => Role::WRITER_ROLES,
 
             // marketplace
-            'transfer_fetch_multiple' => Role::READER_ROLES,
+            'transfer_fetch_multiple'      => Role::READER_ROLES,
+            'merchant_dashboard_access_la' => [Role::OWNER, Role::ADMIN, Role::MANAGER],
 
             // TODO change the role to LA dashboard admin and owner after launch.
             'transfer_fetch_multiple_la'  => Role::LINKED_ACCOUNT_ROLES,

@@ -4,14 +4,13 @@ namespace RZP\Reconciliator\Airtel\SubReconciliator;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Models\Payment\Method;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const COLUMN_PAYMENT_ID = 'partner_txn_id';
-    const COLUMN_COMMISSION = 'commision_dr';
-    const COLUMN_SERVICE_TAX = ['ugst_dr', 'igst_dr', 'cgst_dr', 'sgst_dr', 'tds_dr', 'gds_dr'];
     const COLUMN_AMOUNT     = 'original_input_amt';
     const COLUMN_GATEWAY_PAYMENT_ID = 'transaction_id';
 
@@ -29,21 +28,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $paymentId;
     }
 
-    protected function getGatewayServiceTax($row)
-    {
-        $gatewayTax = 0;
-
-        foreach (self::COLUMN_SERVICE_TAX as $serviceTax)
-        {
-            if (isset($row[$serviceTax]) === true)
-            {
-                $gatewayTax += Helper::getIntegerFormattedAmount($row[$serviceTax]);
-            }
-        }
-
-        return $gatewayTax;
-    }
-
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
         if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
@@ -52,7 +36,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'message'         => 'Payment amount mismatch',
                     'payment_id'      => $this->payment->getId(),
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'actual_amount'   => $this->getReconPaymentAmount($row),
@@ -76,31 +59,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return Helper::getIntegerFormattedAmount($row[self::COLUMN_AMOUNT]);
     }
 
-    protected function getGatewayFee($row)
-    {
-        $gatewayFee = $this->getGatewayServiceTax($row);
-
-        if (isset($row[self::COLUMN_COMMISSION]) === true)
-        {
-            $gatewayFee += Helper::getIntegerFormattedAmount($row[self::COLUMN_COMMISSION]);
-        }
-
-        return $gatewayFee;
-    }
-
     protected function getGatewayPayment($paymentId)
     {
-        $payment = $this->repo->payment->findOrFail($paymentId);
-
-        $this->method = $payment['gateway'];
-
-        if ($payment['gateway'] === 'wallet_airtelmoney')
+        if ($this->payment->getMethod() === Method::WALLET)
         {
-            $gatewayPayment = $this->app['repo']->wallet->fetchWalletByPaymentId($paymentId);
+            $gatewayPayment = $this->repo->wallet->fetchWalletByPaymentId($paymentId);
         }
         else
         {
-            $gatewayPayment = $this->app['repo']->netbanking->findByPaymentIdAndAction($paymentId, 'authorize');
+            $gatewayPayment = $this->repo->netbanking->findByPaymentIdAndAction($paymentId, 'authorize');
         }
 
         return $gatewayPayment;
@@ -120,7 +87,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $func = 'BankPaymentId';
 
-        if($this->method === 'wallet_airtelmoney')
+        if ($this->payment->getMethod() === Method::WALLET)
         {
             $func = 'GatewayPaymentId';
         }

@@ -112,8 +112,12 @@ class SettlementTest extends TestCase
     {
         $this->fixtures->merchant->holdFunds('10000000000000');
 
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0);
+
+        Carbon::setTestNow($now);
+
         // Create payments and refunds with timestamps two days back
-        $payments = $this->createPaymentEntities(1);
+        $this->createPaymentEntities(1);
 
         $channel = Channel::AXIS;
 
@@ -126,128 +130,55 @@ class SettlementTest extends TestCase
         $this->assertSame($content['count'], 0);
     }
 
-
     // Random settlement holiday - Test for live mode
-    public function testSettlementOnHolidayInLiveMode()
+    public function testSettlementOnHolidayNon247Channel()
     {
-        //@TODO
-        $this->markTestSkipped("Fix test as soon as possible.");
+        $this->markTestSkipped('test mode overrides holiday check');
 
-        $this->ba->publicLiveAuth();
+        $this->createPaymentEntities(2);
 
-        $days = $this->getDaysForSettlementHolidayTests();
+        $now = Carbon::create(2018, 8, 15, 10, 0, 0);
 
-        $createdAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp;
-        $capturedAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp + 10;
+        Carbon::setTestNow($now);
 
-        $payments = $this->fixtures->times(2)->create('payment:captured',
-                ['captured_at' => $capturedAt,
-                 'created_at' => $createdAt,
-                 'updated_at' => $createdAt]);
-
-        $setDate = Carbon::parse($days['payment_settlment_holiday'],Timezone::IST);
-
-        Carbon::setTestNow($setDate);
+        $this->ba->appAuth();
 
         // Generate settlements for above transactions
         $content = $this->initiateSettlements(Channel::AXIS);
 
         $this->assertEquals('Today is a holiday! Happy holidays :)', $content['message']);
-
-        // Reset test params
-        Carbon::setTestNow();
-        $this->ba->publicAuth();
     }
 
     // Random settlement non holiday - Test for live mode
-    public function testSettlementOnNonHolidayInLiveMode()
+    public function testSettlementOnNonHolidayNon247Channel()
     {
-        $this->ba->publicLiveAuth();
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0);
 
-        $days = $this->getDaysForSettlementNonHolidayTests();
+        Carbon::setTestNow($now);
 
-        $createdAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp;
-        $capturedAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp + 10;
+        $this->createPaymentEntities(2);
 
-        $payments = $this->fixtures->times(2)->create('payment:captured',
-                ['captured_at' => $capturedAt,
-                 'created_at' => $createdAt,
-                 'updated_at' => $createdAt]);
-
-        $txn = $this->getEntities('transaction',[],true);
-
-        $setDate = Carbon::parse($days['payment_settlement_on'], Timezone::IST);
-        Carbon::setTestNow($setDate);
+        $this->ba->appAuth();
 
         $channel = Channel::AXIS;
         // Generate settlements for above transactions
         $content = $this->initiateSettlements($channel);
 
         $this->assertEquals(2, $content[$channel]['txnCount']);
-
-        // Reset test params
-        Carbon::setTestNow();
-        $this->ba->publicAuth();
-    }
-
-    // Random settlement holiday - Test for test mode
-    public function testSettlementOnHolidayInTestMode()
-    {
-        $days = $this->getDaysForSettlementHolidayTests();
-
-        $createdAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp;
-        $capturedAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp + 10;
-
-        $payments = $this->fixtures->times(2)->create('payment:captured',
-                ['captured_at' => $capturedAt,
-                 'created_at' => $createdAt,
-                 'updated_at' => $createdAt]);
-
-        $setDate = Carbon::parse($days['payment_settlement_on'], Timezone::IST);
-        Carbon::setTestNow($setDate);
-
-        $channel = Channel::AXIS;
-        // Generate settlements for above transactions
-        $content = $this->initiateSettlements($channel);
-
-        $this->assertEquals(2, $content[$channel]['txnCount']);
-
-        Carbon::setTestNow();
-    }
-
-    // Random settlement non holiday - Test for test mode
-    public function testSettlementOnNonHolidayInTestMode()
-    {
-        $days = $this->getDaysForSettlementNonHolidayTests();
-
-        $createdAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp;
-        $capturedAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp + 10;
-
-        $payments = $this->fixtures->times(2)->create('payment:captured',
-                ['captured_at' => $capturedAt,
-                 'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
-
-        $setDate = Carbon::parse($days['payment_settlement_on'],Timezone::IST);
-        Carbon::setTestNow($setDate);
-
-        $channel = Channel::AXIS;
-        // Generate settlements for above transactions
-        $content = $this->initiateSettlements($channel);
-
-        $this->assertEquals(2, $content[$channel]['txnCount']);
-
-        Carbon::setTestNow();
     }
 
     public function testSettlementWithPayout()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0);
+
+        Carbon::setTestNow($now);
+
         // Create payments and refunds with timestamps two days back
-        $payments = $this->createPaymentEntities(2);
+        $this->createPaymentEntities(2);
 
         $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
 
-        $payout = $this->fixtures->create(
+        $this->fixtures->create(
             'payout',
             [
                 'amount'     => '1000',
@@ -275,6 +206,10 @@ class SettlementTest extends TestCase
            ]);
 
         $this->fixtures->merchant->editFeeCredits('50000', Account::TEST_ACCOUNT);
+
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0);
+
+        Carbon::setTestNow($now);
 
         $payments = $this->createPaymentEntities();
 
@@ -352,51 +287,190 @@ class SettlementTest extends TestCase
         assert(count($settlementReport) === 1);
     }
 
-    public function testMerchantSettlementV2YesBank()
+    public function testMerchantSettlementV2YesBankOnHoliday()
     {
+        $now = Carbon::create(2018, 8, 15, 10, 0, 0);
 
-        $this->ba->adminAuth();
+        Carbon::setTestNow($now);
 
         $channel = Channel::YESBANK;
 
         $this->initiateAndverifySettlementEntitiesForChannel($channel);
     }
 
+    public function testMerchantSettlementV2YesBankOutsideBankWorkHours()
+    {
+        $channel = Channel::YESBANK;
+
+        $now = Carbon::create(2018, 8, 14, 20, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $this->initiateAndverifySettlementEntitiesForChannel($channel);
+    }
+
     public function testMerchantSettlementV2Axis()
     {
-        $this->ba->adminAuth();
-
         $channel = Channel::AXIS;
+
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
 
         $this->initiateAndverifySettlementEntitiesForChannel($channel);
     }
 
     public function testMerchantSettlementV2Icici()
     {
-        $this->ba->adminAuth();
-
         $channel = Channel::ICICI;
+
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
 
         $this->initiateAndverifySettlementEntitiesForChannel($channel);
     }
 
     public function testMerchantSettlementV2Hdfc()
     {
-        $this->ba->adminAuth();
-
         $channel = Channel::HDFC;
+
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
 
         $this->initiateAndverifySettlementEntitiesForChannel($channel);
     }
 
-    public function testMerchantSettlementV2Kotak()
+    public function testMerchantEarlySettlement()
     {
+        $channel = Channel::AXIS;
 
         $this->ba->adminAuth();
 
-        $channel = Channel::KOTAK;
+        $this->fixtures->merchant->addFeatures([Constants::ES_AUTOMATIC]);
 
-        $this->initiateAndverifySettlementEntitiesForChannel($channel);
+        $dt = Carbon::create(2018, 8, 14, 6, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $attrs = [
+            'captured_at' => $dt->getTimestamp() + 1,
+            'method'      => 'card',
+            'created_at'  => $dt->getTimestamp(),
+            'amount'       => 2000,
+        ];
+
+        $payment = $this->fixtures->create('payment:captured', $attrs);
+
+        $txn = $this->getLastTransaction(true);
+
+        $this->fixtures->edit('transaction', $txn['id'], ['settled_at' => $dt->addHour()->getTimestamp()]);
+
+        $txn = $this->getLastTransaction(true);
+
+        $now = Carbon::create(
+            2018, 8, 14, 8, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(0, $setlResponse[$channel]['count']);
+
+        $dt = Carbon::create(2018, 8, 14, 9, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+
+        Carbon::setTestNow();
+
+        // Part 2
+
+        $dt = Carbon::create(2018, 8, 14, 12, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $attrs = [
+            'captured_at' => $dt->getTimestamp() + 1,
+            'method'      => 'card',
+            'created_at'  => $dt->getTimestamp(),
+            'amount'       => 2000,
+        ];
+
+        $payment = $this->fixtures->create('payment:captured', $attrs);
+
+        $txn = $this->getLastTransaction(true);
+
+        $this->fixtures->edit('transaction', $txn['id'], ['settled_at' => $dt->addHour()->getTimestamp()]);
+
+        $txn = $this->getLastTransaction(true);
+
+        $now = Carbon::create(
+            2018, 8, 14, 16, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(0, $setlResponse[$channel]['count']);
+
+        $dt = Carbon::create(2018, 8, 14, 17, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testDelayedEarlySettlement()
+    {
+        $channel = Channel::AXIS;
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->addFeatures([Constants::ES_AUTOMATIC]);
+
+        $dt = Carbon::create(2018, 8, 13, 8, 1, 0, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $attrs = [
+            'captured_at' => $dt->getTimestamp() + 1,
+            'method'      => 'card',
+            'created_at'  => $dt->getTimestamp(),
+            'amount'       => 2000,
+        ];
+
+        $payment = $this->fixtures->create('payment:captured', $attrs);
+
+        $txn = $this->getLastTransaction(true);
+
+        $this->fixtures->edit('transaction', $txn['id'], ['settled_at' => $dt->addHour()->getTimestamp()]);
+
+        $txn = $this->getLastTransaction(true);
+
+        $now = Carbon::create(
+            2018, 8, 14, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertEquals(1, $setlResponse[$channel]['count']);
+
+        Carbon::setTestNow();
     }
 
     public function testMerchantSettlementV2DspSpecific()
@@ -637,6 +711,10 @@ class SettlementTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
 
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $this->createPaymentEntities(1);
 
         // Setting the balance to a value less than expected settlement
@@ -665,6 +743,10 @@ class SettlementTest extends TestCase
         $secondMerchant = $merchants[1]->getId();
 
         $amount = 10000;
+
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
 
         foreach ($merchants as $merchant)
         {
@@ -714,6 +796,10 @@ class SettlementTest extends TestCase
     {
         $this->ba->appAuth();
 
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
         $capturedAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 10;
 
@@ -728,7 +814,7 @@ class SettlementTest extends TestCase
             ]
         );
 
-        $refund = $this->fixtures->create(
+        $this->fixtures->create(
             'refund:from_payment',
             [
                 'payment' => $payment,
@@ -757,9 +843,9 @@ class SettlementTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $payment = $this->doAuthAndCapturePayment();
+        $this->doAuthAndCapturePayment();
 
-        $p1 = $this->getLastEntity('payment', true);
+        $this->getLastEntity('payment', true);
 
         $testTime = Carbon::tomorrow(Timezone::IST)->addHours(5);
 
@@ -853,6 +939,10 @@ class SettlementTest extends TestCase
 
     public function testSettlementWithAccountTransfer()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $payment = $this->createPaymentEntities(1);
 
         $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
@@ -941,7 +1031,12 @@ class SettlementTest extends TestCase
 
     public function testSettlementAccountTransferOnHold()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $channel = Channel::AXIS;
+
         $payment = $this->createPaymentEntities(1);
 
         $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
@@ -974,6 +1069,10 @@ class SettlementTest extends TestCase
 
     public function testSettlementAccountTransferOnHoldUntil()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         $channel = Channel::AXIS;
         $payment = $this->createPaymentEntities(1);
 
@@ -1079,7 +1178,6 @@ class SettlementTest extends TestCase
         $this->assertEquals(7, $content[$channel]['txnCount']);
 
         $lastSetlAcct = $this->getLastEntity('settlement', true);
-
 
         // Assert linked account settlement
         $this->assertEquals($transfer[1]['to_id'], $lastSetlAcct['merchant_id']);
@@ -1208,6 +1306,10 @@ class SettlementTest extends TestCase
 
     public function testSettlementWithDispute()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         // Create payment
         $payment = $this->createPaymentEntities(1);
 
@@ -1234,11 +1336,15 @@ class SettlementTest extends TestCase
 
     public function testAdjustmentCreationAgainstSettlement()
     {
+        $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
         // Create payments and refunds with timestamps two days back
-        $prEntities = $this->createPaymentAndRefundEntities();
+        $this->createPaymentAndRefundEntities();
 
         // Generate settlements for above transactions
-        $setlFile = $this->initiateSettlements(Channel::AXIS);
+        $this->initiateSettlements(Channel::AXIS);
 
         $setl = $this->getLastEntity('settlement', true);
 
@@ -1299,7 +1405,8 @@ class SettlementTest extends TestCase
         $this->assertEquals($channel, $setl[SettlementEntity::CHANNEL]);
 
         // Validate settlement txn entity
-        $setlTxn = $this->getLastEntity('transaction', true);
+        $setlTxn = $this->getEntities('transaction', ['entity_id' => $setl['id']], true);
+        $setlTxn = $setlTxn['items'][0];
         $this->assertEquals('settlement', $setlTxn[TransactionEntity::TYPE]);
         $this->assertEquals($setl['id'], $setlTxn[TransactionEntity::ENTITY_ID]);
         $this->assertNull($setlTxn[TransactionEntity::RECONCILED_AT]);

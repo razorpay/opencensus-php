@@ -93,6 +93,9 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::UPI)
                   ->default(0);
 
+            $table->tinyInteger(Terminal::BANK_TRANSFER)
+                  ->default(0);
+
             $table->tinyInteger(Terminal::AEPS)
                   ->default(0);
 
@@ -139,6 +142,12 @@ class CreateTerminals extends Migration
 
             $table->string(Terminal::NETWORK_CATEGORY)
                   ->nullable();
+
+            $table->json(Terminal::ENABLED_BANKS)
+                  ->nullable();
+
+            $table->string(Terminal::ACCOUNT_NUMBER, 50)
+                 ->nullable();
 
             $table->integer(Terminal::CREATED_AT);
 

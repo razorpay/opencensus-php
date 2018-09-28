@@ -5,6 +5,7 @@ namespace RZP\Models\NodalBeneficiary;
 use Config;
 
 use RZP\Models\Base;
+use RZP\Models\Settlement\SlackNotification;
 
 class Core extends Base\Core
 {
@@ -40,15 +41,12 @@ class Core extends Base\Core
     /**
      * @param array $input
      * @return mixed
+     * @throws \RZP\Exception\BadRequestValidationFailureException
      * @throws \RZP\Exception\LogicException
      */
     public function update(array $input)
     {
-        $channel = $input[Entity::CHANNEL];
-
         $bankAccountId = $input[Entity::BANK_ACCOUNT_ID];
-
-        unset($input[Entity::CHANNEL]);
 
         unset($input[Entity::BANK_ACCOUNT_ID]);
 
@@ -56,11 +54,15 @@ class Core extends Base\Core
 
         $validator->validateInput('edit', $input);
 
+        $channel = $input[Entity::CHANNEL];
+
         $nodalBeneficiary = $this->repo->nodal_beneficiary
                                  ->fetchBeneficiaryDetailsForChannel(
                                      $bankAccountId,
                                      $channel
                                  );
+
+        $validator->validateBankAccount($nodalBeneficiary, $bankAccountId);
 
         $validator->validateNewRegistrationStatus(
                         $input[Entity::REGISTRATION_STATUS],
@@ -112,17 +114,6 @@ class Core extends Base\Core
                     $bankAccountId . ' on channel ' . $channel .
                     ' changed from '. $currentStatus . ' to ' . $input[Entity::REGISTRATION_STATUS];
 
-        $channel = Config::get('slack.channels.settlements');
-
-        $this->app['slack']->queue(
-            $message,
-            $input,
-            [
-                'color'    => 'bad',
-                'icon'     => ':boom:',
-                'channel'  => $channel,
-                'username' => 'Beneficiary Registration',
-            ]
-        );
+        (new SlackNotification)->send($message, $input, null, 1);
     }
 }

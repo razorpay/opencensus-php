@@ -1501,6 +1501,72 @@ return [
         ],
     ],
 
+
+    'testGetCheckoutPreferencesForPaidOrder' => [
+        'request' => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForCancelledInvoice' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'invoice_id' => 'inv_1000000invoice',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment Link is not payable in cancelled status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForExpiredInvoice' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'invoice_id' => 'inv_1000000invoice',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment Link is not payable in expired status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithSharedMerchantOffer' => [
         'request' => [
             'url'    => '/preferences',
@@ -1706,7 +1772,7 @@ return [
                         'methods' => [
                             'entity'     => 'methods',
                             'wallet' => [
-                                'airtelmoney'
+                                'airtelmoney' => true,
                             ]
                         ],
                         'offers' => [
@@ -1950,7 +2016,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 14,
+                'count' => 13,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1985,13 +2051,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'DBSS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'IDFB',
                         ],
                     ],
                     [
@@ -2063,7 +2122,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 15,
+                'count' => 14,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -2105,13 +2164,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'DBSS',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'IDFB',
                         ],
                     ],
                     [
@@ -2368,7 +2420,6 @@ return [
                                 'BKDN',
                                 'COSB',
                                 'DBSS',
-                                'IDFB',
                                 'JSBP',
                                 'NKGS',
                                 'SVCB',

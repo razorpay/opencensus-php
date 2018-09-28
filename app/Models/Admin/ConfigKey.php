@@ -13,6 +13,8 @@ class ConfigKey
     const SKIP_SLAVE                            = 'skip_slave';
     const DISABLE_MAGIC                         = 'disable_magic';
     const NPCI_UPI_DEMO                         = 'npci_upi_demo';
+    const BLOCK_SMART_COLLECT                   = 'block_smart_collect';
+    const BLOCK_YESBANK                         = 'block_yesbank';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
@@ -23,6 +25,8 @@ class ConfigKey
         self::SKIP_SLAVE,
         self::DISABLE_MAGIC,
         self::NPCI_UPI_DEMO,
+        self::BLOCK_SMART_COLLECT,
+        self::BLOCK_YESBANK,
     ];
 
     public static function isSensitive(string $key)

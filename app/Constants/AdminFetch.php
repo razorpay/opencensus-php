@@ -1728,6 +1728,7 @@ class AdminFetch
             ],
 
             Entity::UPI => [
+                'gateway'   => Fetch::FIELD_GATEWAY,
                 'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'bank' => Fetch::FIELD_UPI,
                 'gateway_payment_id' => [

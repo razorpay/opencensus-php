@@ -16,7 +16,7 @@
             <script>
                 var Razorpay = {
                     config: {
-                        api: '/'
+                        api: "{{ config('app.url') }}/"
                     }
                 }
             </script>

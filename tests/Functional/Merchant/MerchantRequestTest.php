@@ -173,13 +173,6 @@ class MerchantRequestTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $this->fixtures->create('merchant_request', [
-            'merchant_id' => MerchantRequestFixture::DEFAULT_MERCHANT_ID,
-            'name'        => Feature\Constants::MARKETPLACE,
-            'status'      => Request\Status::UNDER_REVIEW,
-            'type'        => Request\Type::PRODUCT,
-        ]);
-
         $this->startTest();
     }
 

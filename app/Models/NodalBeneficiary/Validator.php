@@ -10,12 +10,13 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::CHANNEL             => 'required|filled|string|max:8|custom',
-        Entity::BENEFICIARY_CODE    => 'sometimes|filled|nullable|string|max:30',
+        Entity::BENEFICIARY_CODE    => 'sometimes|nullable|string|max:30',
         Entity::REGISTRATION_STATUS => 'required|filled|string|max:40|custom'
     ];
 
     protected static $editRules = [
         Entity::REGISTRATION_STATUS => 'required|filled|string|max:40',
+        Entity::CHANNEL             => 'required|filled|string|max:8|custom',
     ];
 
     /**
@@ -78,6 +79,19 @@ class Validator extends Base\Validator
         if (in_array($value, $channels, true) !== true)
         {
             throw new Exception\BadRequestValidationFailureException('Invalid channel value : ' . $value);
+        }
+    }
+
+    /**
+     * @param $nodalBeneficiary
+     * @param $bankAccountId
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateBankAccount(Entity $nodalBeneficiary, string $bankAccountId)
+    {
+        if ($nodalBeneficiary == null)
+        {
+            throw new Exception\BadRequestValidationFailureException('Invalid bankAccount id : '. $bankAccountId);
         }
     }
 }
