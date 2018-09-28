@@ -101,6 +101,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateConfigKey()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateConfigKey($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getConfigKeys()
     {
         $data = $this->service()->getConfigKeys();
