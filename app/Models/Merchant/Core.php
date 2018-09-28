@@ -1522,6 +1522,16 @@ class Core extends Base\Core
     {
         $subCategoryMetaData = BusinessSubCategoryMetaData::getMetaDataForSubCategory($subCategory);
 
+        $this->trace->info(
+            TraceCode::MERCHANT_AUTO_TAG_MCC_CATEGORY2,
+            [
+                'prev_category2'    => $merchant->getCategory2(),
+                'prev_category'     => $merchant->getCategory(),
+                'updated_category2' => $subCategoryMetaData[Entity::CATEGORY2],
+                'updated_category'  => $subCategoryMetaData[Entity::CATEGORY],
+                'merchant_id'       => $merchant->getId(),
+            ]);
+
         $merchant->setCategory2($subCategoryMetaData[Entity::CATEGORY2]);
         $merchant->setCategory($subCategoryMetaData[Entity::CATEGORY]);
 
