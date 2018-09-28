@@ -46,7 +46,7 @@ class Gateway extends Base\Gateway
         Fields::ID                        => Entity::GATEWAY_PAYMENT_ID,
         Fields::STATUS                    => Entity::STATUS_CODE,
         Fields::RRN                       => Entity::NPCI_REFERENCE_ID,
-
+        Fields::TXN_ID                    => Entity::NPCI_TXN_ID,
         Entity::VPA                       => Entity::VPA,
         Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
         Entity::PROVIDER                  => Entity::PROVIDER,

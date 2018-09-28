@@ -19,6 +19,8 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
+
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
         $this->fixtures->merchant->activate();

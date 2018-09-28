@@ -1,0 +1,353 @@
+<?php
+
+namespace RZP\Models\BankAccount;
+
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Models\Payment\Method;
+use RZP\Models\VirtualAccount;
+use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
+
+class Generator extends Base\Core
+{
+    /**
+     * Constants
+     */
+    const NUMERIC    = 'numeric';
+
+    const DESCRIPTOR = 'descriptor';
+
+    // No 0s and Os
+    // No 1s and Is
+    // No 5s and Ss
+    // No 8s and Bs
+    // No 2s and Zs
+    const ACCOUNT_NUMBER_ALPHANUM_CHAR_SPACE    = '34679ACDEFGHJKLMNPQRTUVWXY';
+
+    const ACCOUNT_NUMBER_NUM_CHAR_SPACE         = '0123456789';
+
+    const VA_BANK_ACCOUNT_GENERATION            = 'va_bank_account_generation';
+
+    const MAX_ACCOUNT_GENERATION_ATTEMPTS       = 10;
+
+    /**
+     * @var Merchant\Entity
+     */
+    protected $merchant;
+
+    protected $options = [
+        self::DESCRIPTOR => null,
+        self::NUMERIC    => true,
+    ];
+
+    public function __construct(Merchant\Entity $merchant, array $input)
+    {
+        parent::__construct();
+
+        $this->merchant = $merchant;
+
+        $this->setBankAccountOptions($input);
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
+    protected function buildBankAccountEntity(VirtualAccount\Entity $virtualAccount): Entity
+    {
+        $bankAccount = new Entity();
+
+        $bankAccount->merchant()->associate($this->merchant);
+
+        $bankAccount->source()->associate($virtualAccount);
+
+        return $bankAccount;
+    }
+
+    protected function updateBankAccountEntity(Entity $bankAccount, VirtualAccount\Entity $virtualAccount, Terminal\Entity $terminal): Entity
+    {
+        $accountNumber = $this->generateBankAccountNumber($terminal);
+
+        $bankAccountInput = $this->getBankAccountInput($accountNumber, $virtualAccount->getName(), $this->getProviderBank($terminal));
+
+        $bankAccount->build($bankAccountInput, 'addVirtualBankAccount');
+
+        return $bankAccount;
+    }
+
+    protected function getTerminalForBankAccount(Entity $bankAccount): Terminal\Entity
+    {
+        $terminal = (new VirtualAccount\Provider())->getTerminalForMethod(Method::BANK_TRANSFER, $bankAccount, null, $this->options);
+
+        if ($terminal === null)
+        {
+            throw new LogicException(
+                'No Terminal applicable.',
+                null,
+                [
+                    'merchant_id'   => $this->merchant->getId(),
+                    'method'        => Method::BANK_TRANSFER,
+                    'options'       => $this->options,
+                ]);
+        }
+
+        return $terminal;
+    }
+
+    public function generate(VirtualAccount\Entity $virtualAccount): Entity
+    {
+        $bankAccount = $this->buildBankAccountEntity($virtualAccount);
+
+        $terminal = $this->getTerminalForBankAccount($bankAccount);
+
+        $attempts = 0;
+
+        while ($attempts <= self::MAX_ACCOUNT_GENERATION_ATTEMPTS)
+        {
+            $bankAccount = $this->updateBankAccountEntity($bankAccount, $virtualAccount, $terminal);
+
+            $savedBankAccount = $this->lockAndSaveBankAccount($bankAccount);
+
+            if ($savedBankAccount !== null)
+            {
+                return $savedBankAccount;
+            }
+            else if($this->options[self::DESCRIPTOR] !== null)
+            {
+                /*
+                 * Bank Account is null when same bank account already exist
+                 * for any other virtual account in our system.
+                 *
+                 * But If Descriptor was passed by merchant then we throw
+                 * bad request identical descriptor .
+                 */
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR,
+                    'descriptor',
+                    [
+                        'terminal'      => $terminal->getId(),
+                        'descriptor'    => $this->options[Generator::DESCRIPTOR],
+                    ]);
+            }
+
+            $attempts++;
+        }
+
+        $this->trace->critical(
+            TraceCode::VIRTUAL_ACCOUNT_UNAVAILABLE,
+            [
+                'method'        => Method::BANK_TRANSFER,
+                'options'       => $this->options,
+                'terminal'      => $terminal->getId(),
+                'merchant_id'   => $this->merchant->getId(),
+            ]);
+
+        // This should never happen
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_UNAVAILABLE);
+    }
+
+    /**
+     * Grabs a lock on the account number, then checks if it is a
+     * valid one, and if so, saves it to DB in the bank accounts table.
+     *
+     * This function is called in a loop, and is expected to return a bank
+     * account entity. If an entity is not returned, and null is returned
+     * instead, the calling function assumes that bank account was not created
+     * for some reason (usually because the lock on that account number was
+     * already taken by a different process), and creates a new account number
+     * for the next attempt.
+     *
+     * This allows us to 'fail' an attempt at account generation by simply returning null.
+     *
+     * @param  Entity                   $bankAccount    Bank Account entity to be saved.
+     * @return Entity|null                              Saved bank account, or null if no account was saved.
+     */
+    protected function lockAndSaveBankAccount(Entity $bankAccount)
+    {
+        $bankAccount = $this->mutex->acquireAndRelease(
+            self::VA_BANK_ACCOUNT_GENERATION . $bankAccount->getAccountNumber(),
+            function() use ($bankAccount)
+            {
+                $existingAccount = $this->repo->bank_account
+                    ->findVirtualBankAccountByAccountNumberAndBankCode($bankAccount->getAccountNumber(), $bankAccount->getIfscCode());
+
+                if ($existingAccount !== null)
+                {
+                    // Account with this number already exists, fail this attempt
+                    return;
+                }
+
+                $this->repo->saveOrFail($bankAccount);
+
+                return $bankAccount;
+            },
+            60,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
+
+        return $bankAccount;
+    }
+
+    protected function getBankAccountInput(string $accountNumber, string $beneficiaryName, string $provider): array
+    {
+        $bankAccountInput = VirtualAccount\Provider::DEFAULT_DETAILS[$provider];
+
+        $merchantDetails = [
+            Entity::ACCOUNT_NUMBER     => $accountNumber,
+            Entity::BENEFICIARY_NAME   => $beneficiaryName,
+        ];
+
+        return array_merge($bankAccountInput, $merchantDetails);
+    }
+
+    protected function getCharSpace(): array
+    {
+        $charSpace = self::ACCOUNT_NUMBER_NUM_CHAR_SPACE;
+
+        $numeric = $this->options[self::NUMERIC];
+
+        if ($numeric === false)
+        {
+            $charSpace = self::ACCOUNT_NUMBER_ALPHANUM_CHAR_SPACE;
+        }
+
+        return str_split($charSpace);
+    }
+
+    protected function padWithRandomDigits(int $desiredLength): string
+    {
+        $pad = '';
+
+        $charSpace = $this->getCharSpace();
+
+        while (strlen($pad) < $desiredLength)
+        {
+            $pad .= $charSpace[array_rand($charSpace)];
+        }
+
+        return $pad;
+    }
+
+    /*
+     * This is temporarily used for virtual bank account terminal, until we
+     * migrate gateway column in BankTransfer Entity from yesbank to bt_yesbank.
+     */
+    public function getProviderBank(Terminal\Entity $terminal): string
+    {
+        return str_replace('bt_' , '' , $terminal->getGateway());
+    }
+
+    protected function validateDescriptor(Terminal\Entity $terminal)
+    {
+        $root = $this->getRoot($terminal);
+
+        $handle = $this->getHandle($terminal);
+
+        $descriptor = $this->options[Generator::DESCRIPTOR];
+
+        $totalLength = Entity::ACCOUNT_NUMBER_LENGTH;
+
+        $availableLength = $totalLength - strlen($root) - strlen($handle);
+
+        if (strlen($descriptor) > $availableLength)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,
+                'descriptor',
+                [
+                    'descriptor' => $descriptor,
+                ]);
+        }
+        //TODO: Later add a validation to only allow numeric digits in case of numeric account number.
+
+        if ($terminal->isShared() === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Descriptor cannot be used with your account.',
+                null,
+                [
+                    'options'       => $this->options,
+                    'merchant_id'   => $this->merchant->getId(),
+                ]);
+        }
+    }
+
+    protected function getRoot(Terminal\Entity $terminal): string
+    {
+        return $terminal->getGatewayMerchantId();
+    }
+
+    protected function getHandle(Terminal\Entity $terminal): string
+    {
+        return $terminal->getGatewayMerchantId2() ?: '';
+    }
+
+    protected function getDescriptor(string $handle, string $root): string
+    {
+        $descriptor = $this->options[Generator::DESCRIPTOR];
+
+        if ($descriptor !== null)
+        {
+            return $descriptor;
+        }
+
+        $totalLength = Entity::ACCOUNT_NUMBER_LENGTH;
+
+        $availableLength = $totalLength - strlen($root) - strlen($handle);
+
+        $descriptor = $this->padWithRandomDigits($availableLength);
+
+        return $descriptor;
+    }
+
+    protected function generateBankAccountNumber(Terminal\Entity $terminal): string
+    {
+        $root = $this->getRoot($terminal);
+
+        $handle = $this->getHandle($terminal);
+
+        if ($this->options[Generator::DESCRIPTOR] !== null)
+        {
+            $this->validateDescriptor($terminal);
+        }
+
+        $descriptor = $this->getDescriptor($handle, $root);
+
+        $accountNumber = strtoupper($root . $handle . $descriptor);
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_NUMBER_GENERATED,
+            [
+                'root'          => $root,
+                'handle'        => $handle,
+                'descriptor'    => $descriptor,
+                'accountNumber' => $accountNumber,
+                'terminalId'    => $terminal->getId(),
+            ]
+        );
+
+        if (strlen($accountNumber) > Entity::ACCOUNT_NUMBER_LENGTH)
+        {
+            throw new LogicException(
+                'Error in account number generation.',
+                null,
+                [
+                    'account_number'    => $accountNumber,
+                    'max_length'        => Entity::ACCOUNT_NUMBER_LENGTH,
+                ]);
+        }
+
+        return $accountNumber;
+    }
+
+    protected function setBankAccountOptions(array $input)
+    {
+        $this->options = array_merge($this->options, $input);
+
+        $this->options[self::NUMERIC] = boolval($this->options[self::NUMERIC]);
+    }
+}

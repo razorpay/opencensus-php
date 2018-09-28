@@ -19,7 +19,9 @@ class Entity extends Base\Entity
     const MERCHANT_REFERENCE    = 'merchant_reference';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     const GATEWAY_PAYMENT_ID    = 'gateway_payment_id';
+    const GATEWAY               = 'gateway';
     const NPCI_REFERENCE_ID     = 'npci_reference_id';
+    const NPCI_TXN_ID           = 'npci_txn_id';
     const PAYMENT_ID            = 'payment_id';
     const REFUND_ID             = 'refund_id';
     const EXPIRY_TIME           = 'expiry_time';
@@ -28,6 +30,7 @@ class Entity extends Base\Entity
     const RECEIVED              = 'received';
     const STATUS_CODE           = 'status_code';
     const VPA                   = 'vpa';
+    const RECONCILED_AT         = 'reconciled_at';
 
     public $incrementing = true;
 
@@ -47,7 +50,9 @@ class Entity extends Base\Entity
         self::MERCHANT_REFERENCE,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
+        self::GATEWAY,
         self::NPCI_REFERENCE_ID,
+        self::NPCI_TXN_ID,
         self::REFUND_ID,
         self::PAYMENT_ID,
         self::ACCOUNT_NUMBER,
@@ -56,6 +61,7 @@ class Entity extends Base\Entity
         self::STATUS_CODE,
         self::VPA,
         self::EXPIRY_TIME,
+        self::RECONCILED_AT,
     ];
 
     protected $fillable = [
@@ -72,6 +78,7 @@ class Entity extends Base\Entity
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
         self::NPCI_REFERENCE_ID,
+        self::NPCI_TXN_ID,
         self::PAYMENT_ID,
         self::REFUND_ID,
         self::ACCOUNT_NUMBER,
@@ -114,6 +121,11 @@ class Entity extends Base\Entity
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setGateway($gateway)
+    {
+        $this->setAttribute(self::GATEWAY, $gateway);
     }
 
     public function getPaymentId()

@@ -50,8 +50,6 @@
           <exclude>./tests/Functional/User/</exclude>
           <exclude>./tests/Functional/VirtualAccount/</exclude>
           <exclude>./tests/Functional/Workflow/</exclude>
-          <exclude>./tests/Functional/Dispute/</exclude>
-          <exclude>./tests/Functional/Payment/</exclude>
           <exclude>./tests/Unit/</exclude>
           <exclude>./tests/Functional/Gateway/</exclude>
           <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
@@ -60,7 +58,6 @@
           <directory>./tests/Functional/Currency/</directory>
           <directory>./tests/Functional/Customer/</directory>
           <directory>./tests/Functional/Device/</directory>
-          <directory>./tests/Functional/Dispute/</directory>
           <directory>./tests/Functional/EMI/</directory>
           <directory>./tests/Functional/FileStore/</directory>
           <directory>./tests/Functional/Invoice/</directory>
@@ -123,6 +120,7 @@
           <directory>./tests/Functional/Gateway/Amex/</directory>
           <directory>./tests/Functional/Gateway/Atom/</directory>
           <directory>./tests/Functional/Gateway/AxisMigs/</directory>
+          <directory>./tests/Functional/Gateway/AxisGenius/</directory>
           <directory>./tests/Functional/Gateway/Billdesk/</directory>
           <directory>./tests/Functional/Gateway/Card/</directory>
           <directory>./tests/Functional/Gateway/Cybersource/</directory>
@@ -137,7 +135,7 @@
           <directory>./tests/Functional/Gateway/Mpi/</directory>
           <directory>./tests/Functional/Gateway/File/</directory>
           <directory>./tests/Functional/Gateway/Paytm/</directory>
-          <directory>./tests/Functional/Gateway/Reconcillator/</directory>
+          <directory>./tests/Functional/Gateway/Reconciliation/</directory>
           <directory>./tests/Functional/Gateway/Sharp/</directory>
           <directory>./tests/Functional/Gateway/Upi/</directory>
           <directory>./tests/Functional/Gateway/Wallet/</directory>
