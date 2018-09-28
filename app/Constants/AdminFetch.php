@@ -4,8 +4,8 @@ namespace RZP\Constants;
 
 use RZP\Base\Fetch;
 use RZP\Models\Dispute;
+use RZP\Models\NodalBeneficiary;
 use RZP\Models\Settlement\Channel;
-
 /**
  * Class AdminFetch
  *
@@ -1781,6 +1781,21 @@ class AdminFetch
 
             Entity::SCHEDULE => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
+            Entity::NODAL_BENEFICIARY => [
+                'merchant_id'     => Fetch::FIELD_MERCHANT_ID,
+                'bank_account_id' => Fetch::TYPE_STRING,
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getChannels(),
+                ],
+                'registration_status' => [
+                    Fetch::LABEL  => 'Registration Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => NodalBeneficiary\Status::getAllowedBeneficiaryStatus(),
+                ],
             ],
         ];
     }
