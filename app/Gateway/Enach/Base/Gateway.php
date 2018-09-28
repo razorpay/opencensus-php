@@ -10,15 +10,13 @@ use RZP\Gateway\Base\Action;
 
 class Gateway extends \RZP\Gateway\Base\Gateway
 {
-    protected function createGatewayPaymentEntity($attributes, $eSignerGateway, $action = null)
+    protected function createGatewayPaymentEntity($attributes, $action = null)
     {
         $action = $action ?: $this->action;
 
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
         $gatewayPayment->setPaymentId($this->input['payment']['id']);
-
-        $gatewayPayment->setAuthenticationGateway($eSignerGateway);
 
         $gatewayPayment->setAmount($this->input['payment']['amount']);
 
