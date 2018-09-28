@@ -565,6 +565,7 @@ class ErrorCode
     const BAD_REQUEST_LOGO_NOT_PRESENT                                              = 'BAD_REQUEST_LOGO_NOT_PRESENT';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                       = 'BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL';
     const BAD_REQUEST_MERCHANT_INVALID                                              = 'BAD_REQUEST_MERCHANT_INVALID';
+    const BAD_REQUEST_INVALID_ACTIVATION_FLOW                                       = 'BAD_REQUEST_INVALID_ACTIVATION_FLOW';
     const GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION                            = 'GATEWAY_ERROR_INCORRECT_MERCHANT_CONFIGURATION';
 
     // Features
