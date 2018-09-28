@@ -9,26 +9,31 @@ use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 
 class ActivationFlowFactory
 {
+    const ACTIVATION_FLOW_TO_CLASS_MAPPING = [
+        ActivationFlow::WHITELIST => 'WhitelistActivationFlow',
+        ActivationFlow::BLACKLIST => 'BlacklistActivationFlow',
+        ActivationFlow::GREYLIST  => 'GreylistActivationFlow',
+    ];
+
     /**
      * returns activationFlow interface implementation instance based on activation flow
+     *
      * @param Entity $merchantDetails
      *
      * @return ActivationFlowInterface
      * @throws InvalidArgumentException
      */
-    public function _construct(Entity $merchantDetails) :ActivationFlowInterface
+    public function _construct(Entity $merchantDetails): ActivationFlowInterface
     {
-        switch ($merchantDetails->getActivationFlow())
+        $activationFlow = $merchantDetails->getActivationFlow();
+
+        if (isset(self::ACTIVATION_FLOW_TO_CLASS_MAPPING[$activationFlow]) === true)
         {
-            case  ActivationFlow::WHITELIST:
-                return new WhitelistActivationFlow();
-            case ActivationFlow::BLACKLIST:
-                return new BlacklistActivationFlow();
-            case ActivationFlow::GREYLIST:
-                return new GreylistActivationFlow();
-            default:
-                throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_ACTIVATION_FLOW);
+            $class = self::ACTIVATION_FLOW_TO_CLASS_MAPPING[$activationFlow];
+
+            return new $class();
         }
+        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_ACTIVATION_FLOW);
     }
 
 }

@@ -6,6 +6,6 @@ class GreylistActivationFlow implements ActivationFlowInterface
 {
     public function process()
     {
-        // TODO: Implement activateMerchant() method.
+        // TODO: Implement process() method.
     }
 }

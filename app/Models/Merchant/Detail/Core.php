@@ -122,12 +122,10 @@ class Core extends Base\Core
         $subCategory = $input[Entity::BUSINESS_SUBCATEGORY];
 
         if (($merchantDetails->getBusinessSubcategory() !== $subCategory) or
-            ($merchant->getCategory() === 0) and
-            ($merchant->getCategory2() === null))
+            (($merchant->getCategory() === 0) and
+             ($merchant->getCategory2() === null)))
         {
-            $subCategoryMetaData = BusinessSubCategoryMetaData::getMetaDataForSubCategory($subCategory);
-
-            (new Merchant\Core)->updateSubCategoryMetaData($merchant, $subCategoryMetaData);
+            (new Merchant\Core)->updateSubCategoryMetaData($merchant, $subCategory);
         }
     }
 

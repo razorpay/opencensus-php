@@ -35,6 +35,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 
 class Core extends Base\Core
 {
@@ -1515,10 +1516,12 @@ class Core extends Base\Core
     /**
      * updates category and category2 of merchant
      * @param Entity $merchant
-     * @param array  $subCategoryMetaData
+     * @param string  $subCategory
      */
-    public function updateSubCategoryMetaData(Entity $merchant, array $subCategoryMetaData)
+    public function updateSubCategoryMetaData(Entity $merchant, string $subCategory)
     {
+        $subCategoryMetaData = BusinessSubCategoryMetaData::getMetaDataForSubCategory($subCategory);
+
         $merchant->setCategory2($subCategoryMetaData[Entity::CATEGORY2]);
         $merchant->setCategory($subCategoryMetaData[Entity::CATEGORY]);
 

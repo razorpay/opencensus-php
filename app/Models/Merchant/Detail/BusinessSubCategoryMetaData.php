@@ -766,6 +766,5 @@ class BusinessSubCategoryMetaData
         }
 
         return null;
-
     }
 }
