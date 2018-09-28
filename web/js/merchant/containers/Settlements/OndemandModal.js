@@ -26,7 +26,7 @@ export default class OndemandModal extends Component {
       amount: 0,
       errors: [],
     };
-    if (currentBalance) {
+    if (props.currentBalance) {
       this.state.amount = parseInt(props.currentBalance / 100);
     }
     this.validateAmount = this.validateAmount.bind(this);
@@ -37,7 +37,12 @@ export default class OndemandModal extends Component {
 
   onSubmit() {
     let amount = this.state.amount;
-    if (amount && isInteger(amount) && amount > 0) {
+    if (
+      amount &&
+      isInteger(amount) &&
+      amount > 0 &&
+      amount * 100 <= this.props.currentBalance
+    ) {
       let payload = {
         amount: amount * 100,
       };
