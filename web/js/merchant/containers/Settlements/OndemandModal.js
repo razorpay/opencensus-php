@@ -23,10 +23,12 @@ export default class OndemandModal extends Component {
     this.state = {
       isSaving: false,
       isSaved: false,
-      amount: props.currentBalance || 0,
+      amount: 0,
       errors: [],
     };
-
+    if (currentBalance) {
+      this.state.amount = parseInt(props.currentBalance / 100);
+    }
     this.validateAmount = this.validateAmount.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -34,9 +36,10 @@ export default class OndemandModal extends Component {
   }
 
   onSubmit() {
-    if (this.state.amount) {
+    let amount = this.state.amount;
+    if (amount && isInteger(amount) && amount > 0) {
       let payload = {
-        amount: this.state.amount,
+        amount: amount * 100,
       };
 
       let eventLabel = `${this.props.fromWhere} | `;
@@ -81,8 +84,8 @@ export default class OndemandModal extends Component {
   }
 
   validateAmount(val) {
-    if (isInteger(val) && val > 100) {
-      if (val > this.props.currentBalance) {
+    if (isInteger(val) && val > 0) {
+      if (val * 100 > this.props.currentBalance) {
         trackOndemand.trackAmounTooHigh(this.props.fromWhere);
         return 'Amount cannot be greater than your current balance';
       }
@@ -151,7 +154,7 @@ export default class OndemandModal extends Component {
               <div>
                 <div class="InputGroup Input Input--vTop">
                   <Input
-                    label="Enter amount to be settled(Paise)"
+                    label="Enter amount to be settled"
                     required={true}
                     addonBefore="₹"
                     autoFocus={true}
