@@ -31,6 +31,8 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
         $this->bankAccount = $this->createVirtualAccount();
 
         $this->fixtures->create('terminal:bharat_qr_terminal');
@@ -1344,7 +1346,7 @@ class BankTransferTest extends TestCase
         $this->assertNotNull($bankTransfer['payment_id']);
     }
 
-    public function testBankTransferNotifyFailure()
+    public function testBankTransferNotifyNonFailure()
     {
         $this->startTest();
     }
@@ -1360,25 +1362,6 @@ class BankTransferTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $response = $this->doAuthPayment($payment);
         });
-    }
-
-    public function testBankTransferReservedAccount()
-    {
-        $accountNumber = 'RZRNODAL123';
-        $ifsc = $this->bankAccount['ifsc'];
-
-        // Process API always returns true
-        $response = $this->processBankTransfer($accountNumber, $ifsc);
-        $this->assertEquals(true, $response['valid']);
-        $this->assertNull($response['message']);
-
-        // No bank transfer created
-        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
-        $this->assertNull($bankTransfer);
-
-        // No payment created
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertNull($payment);
     }
 
     public function testBankTransferRefundReconciliation()

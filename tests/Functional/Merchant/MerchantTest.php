@@ -34,6 +34,7 @@ use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
+use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
@@ -50,6 +51,7 @@ class MerchantTest extends TestCase
     use MocksDnsTrait;
     use DbEntityFetchTrait;
     use OAuthTrait;
+    use CreatesInvoice;
 
     public function setUp()
     {
@@ -1661,6 +1663,38 @@ class MerchantTest extends TestCase
         $this->ba->publicAuth();
 
         $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesForCancelledInvoice()
+    {
+        $attributes = [
+            'type'         => 'link',
+            'status'       => 'cancelled',
+            'amount'       => 100000,
+            'cancelled_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+        ];
+
+        $invoice = $this->createInvoice($attributes);
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesForExpiredInvoice()
+    {
+        $attributes = [
+            'type'       => 'link',
+            'status'     => 'expired',
+            'amount'     => 100000,
+            'expired_at' => Carbon::now(Timezone::IST)->getTimestamp(),
+        ];
+
+        $invoice = $this->createInvoice($attributes);
+
+        $this->ba->publicAuth();
 
         $this->startTest();
     }

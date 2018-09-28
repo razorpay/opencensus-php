@@ -7,10 +7,8 @@ use RZP\Constants\Mode;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Method;
 use RZP\Gateway\Upi\Hulk\Fields;
-use RZP\Gateway\Upi\Hulk\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Upi\Hulk\Mock\Server;
-use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -42,6 +40,8 @@ class BharatQrHulkGatewayTest extends TestCase
         ];
 
         $this->fixtures->create('terminal:shared_upi_hulk_terminal', $attributes);
+
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 

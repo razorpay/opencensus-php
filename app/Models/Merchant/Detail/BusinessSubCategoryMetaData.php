@@ -757,4 +757,14 @@ class BusinessSubCategoryMetaData
             Entity::ACTIVATION_FLOW => ActivationFlow::WHITELIST,
         ],
     ];
+  
+    public static function getMetaDataForSubCategory(string $subcategory): array
+    {
+        if (isset(self::SUB_CATEGORY_METADATA[$subcategory]) === true)
+        {
+            return self::SUB_CATEGORY_METADATA[$subcategory];
+        }
+
+        return null;
+    }
 }

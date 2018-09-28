@@ -45,9 +45,11 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateIsNotLocked();
 
+        $oldMerchantDetails = clone $merchantDetails;
+
         $merchantDetails->edit($input);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $oldMerchantDetails, $merchant)
         {
             $this->repo->saveOrFail($merchantDetails);
 
@@ -73,6 +75,8 @@ class Core extends Base\Core
 
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
+
+            $this->updateMerchantSubCategoryMetaDataIfApplicable($input, $oldMerchantDetails, $merchant);
 
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
 
@@ -130,6 +134,32 @@ class Core extends Base\Core
 
             return $response;
         });
+    }
+
+    /**
+     * updates merchant category and category2 data if
+     * there is change in business subcategory or
+     * category and category2 are not set
+     *
+     * @param array           $input
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     */
+    public function updateMerchantSubCategoryMetaDataIfApplicable(array $input, Entity $merchantDetails, Merchant\Entity $merchant)
+    {
+        if (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false)
+        {
+            return;
+        }
+
+        $subCategory = $input[Entity::BUSINESS_SUBCATEGORY];
+
+        if (($merchantDetails->getBusinessSubcategory() !== $subCategory) or
+            (($merchant->getCategory() === 0) and
+             ($merchant->getCategory2() === null)))
+        {
+            (new Merchant\Core)->updateSubCategoryMetaData($merchant, $subCategory);
+        }
     }
 
     public function getMerchantDetails(Merchant\Entity $merchant, array $input = []): Entity

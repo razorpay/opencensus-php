@@ -236,7 +236,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $requestContent = $this->getRefundRequestArray($input, TxnType::REFUND);
+        $requestContent = $this->getRefundRequestArray($input);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST,
             [
@@ -251,8 +251,7 @@ class Gateway extends Base\Gateway
             [
                 'refund_id' => $input['refund']['id'],
                 'response'  => $response,
-            ]
-        );
+            ]);
 
         $this->setApproval($response[ApiResponseFields::APPROVAL_CODE]);
 
@@ -260,7 +259,28 @@ class Gateway extends Base\Gateway
 
         $refundEntity = $this->createGatewayPaymentEntity($refundFields, $input);
 
-        $this->checkApprovalCode($refundEntity);
+        $this->checkApprovalCode($refundEntity, $response, $refundFields);
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($refundFields)
+        ];
+    }
+
+    protected function getGatewayData(array $refundFields = [])
+    {
+        if (empty($refundFields) === false)
+        {
+            return [
+                Entity::TDATE                   => $refundFields[Entity::TDATE] ?? null,
+                Entity::AUTH_CODE               => $refundFields[Entity::AUTH_CODE] ?? null,
+                Entity::APPROVAL_CODE           => $refundFields[Entity::APPROVAL_CODE] ?? null,
+                Entity::TRANSACTION_RESULT      => $refundFields[Entity::TRANSACTION_RESULT] ?? null,
+                Entity::GATEWAY_TRANSACTION_ID  => $refundFields[Entity::GATEWAY_TRANSACTION_ID] ?? null,
+            ];
+        }
+
+        return [];
     }
 
     public function reverse(array $input)
@@ -292,6 +312,11 @@ class Gateway extends Base\Gateway
         $reverseEntity = $this->createGatewayPaymentEntity($reverseFields, $input);
 
         $this->checkApprovalCode($reverseEntity);
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($reverseFields)
+        ];
     }
 
     public function verify(array $input)
@@ -350,19 +375,28 @@ class Gateway extends Base\Gateway
             // Temporary hack. FirstData verifyReverse needs to be
             // refactored to use a different gateway API, since it
             // is currently timing out regularly.
+            // Returning false here, so reversal on gateway will be called always.
+            // Gateway keeps check if reversal or refunded already happened.
             //
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+                [
+                    'message'    => 'Temporarily blocking verifyRefund',
+                    'payment_id' => $input['refund']['payment_id'],
+                    'refund_id'  => $input['refund']['id'],
+                ]);
 
-            throw new Exception\LogicException('Temporarily blocking verifyRefund');
+            return $this->prepareScroogeResponse(false, ErrorCode::GATEWAY_PAYMENT_REVERSAL_VERIFICATION_DISABLED);
         }
 
         if ($this->isUnprocessedRefund($input) === true)
         {
-            return false;
+            return $this->prepareScroogeResponse(false, ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED);
         }
 
         if ($this->isProcessedRefund($input) === true)
         {
-            return true;
+            return $this->prepareScroogeResponse(true);
         }
 
         $this->validateVerifyRefundIsPossible($input);
@@ -371,9 +405,7 @@ class Gateway extends Base\Gateway
 
         $this->sendVerifyRequest($verify);
 
-        $refunded = $this->verifyRefundResponse($verify);
-
-        return $refunded;
+        return $this->verifyRefundResponse($verify);
     }
 
     protected function verifyRefundResponse(Base\Verify $verify)
@@ -382,7 +414,9 @@ class Gateway extends Base\Gateway
 
         if ($refundTransactionValue === null)
         {
-            return false;
+            return $this->prepareScroogeResponse(false,
+                                                 ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT,
+                                                 json_encode($verify->verifyResponseContent));
         }
 
         $xmlResponse  = $refundTransactionValue->children('ipgapi', true)
@@ -403,7 +437,20 @@ class Gateway extends Base\Gateway
 
         $refunded = in_array($refundGatewayStatus, Status::SUCCESSFUL_REFUND_STATES, true);
 
-        return $refunded;
+        return $this->prepareScroogeResponse($refunded, '', json_encode($refundResponse), $refundFields);
+    }
+
+    protected function prepareScroogeResponse(bool $success,
+                                              $statusCode = ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
+                                              $gatewayResponse = '',
+                                              $refundFields = [])
+    {
+        return [
+            Payment\Gateway::SUCCESS          => $success,
+            Payment\Gateway::STATUS_CODE      => ($success === true) ? 'REFUND_SUCCESSFUL' : $statusCode,
+            Payment\Gateway::GATEWAY_RESPONSE => $gatewayResponse,
+            Payment\Gateway::GATEWAY_KEYS     => $this->getGatewayData($refundFields)
+        ];
     }
 
     protected function getRefundTransactionValue(Base\Verify $verify)
@@ -486,14 +533,20 @@ class Gateway extends Base\Gateway
             return;
         }
 
+        //
         // For refunds older than this, verification is not possible.
+        // Throwing exception here and catching in Processor/refund. Can't return true/false here as
+        // if false is returned, that means refund success is false and call gateway refund which is incorrect.
+        // Same way if true is returned, refund will be marked processed considering
+        // refund is successful at gateway side. Catched exception will return false with error code to scrooge.
+        //
         throw new Exception\LogicException(
-                'Verification is not possible for older refunds.',
-                null,
-                [
-                    'payment_id' => $input['refund']['payment_id'],
-                    'refund_id'  => $input['refund']['id'],
-                ]);
+            'Verification is not possible for older refunds.',
+            ErrorCode::GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED,
+            [
+                'payment_id' => $input['refund']['payment_id'],
+                'refund_id'  => $input['refund']['id'],
+            ]);
     }
 
     // First Data is not returning approval code in some cases.
@@ -551,7 +604,7 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    protected function checkApprovalCode(Entity $gatewayEntity)
+    protected function checkApprovalCode(Entity $gatewayEntity, array $response = [], array $refundFields = [])
     {
         if ($this->approval === false)
         {
@@ -564,7 +617,14 @@ class Gateway extends Base\Gateway
             // Cryptic error messages that First Data keeps sending us
             $this->checkSpecialCases($errorCode, $gatewayEntity, $gatewayErrorDesc);
 
-            throw new Exception\GatewayErrorException($mappedErrorCode, $errorCode, $gatewayErrorDesc);
+            throw new Exception\GatewayErrorException(
+                $mappedErrorCode,
+                $errorCode,
+                $gatewayErrorDesc,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($refundFields)
+                ]);
         }
     }
 

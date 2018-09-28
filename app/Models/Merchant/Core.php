@@ -35,6 +35,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 
 class Core extends Base\Core
 {
@@ -1511,4 +1512,30 @@ class Core extends Base\Core
             (new User\Service)->sendAccountLinkedCommunicationEmail($subMerchantUser, $merchant, $createdNew);
         }
     }
+
+    /**
+     * updates category and category2 of merchant
+     * @param Entity $merchant
+     * @param string  $subCategory
+     */
+    public function updateSubCategoryMetaData(Entity $merchant, string $subCategory)
+    {
+        $subCategoryMetaData = BusinessSubCategoryMetaData::getMetaDataForSubCategory($subCategory);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_AUTO_TAG_MCC_CATEGORY2,
+            [
+                'prev_category2'    => $merchant->getCategory2(),
+                'prev_category'     => $merchant->getCategory(),
+                'updated_category2' => $subCategoryMetaData[Entity::CATEGORY2],
+                'updated_category'  => $subCategoryMetaData[Entity::CATEGORY],
+                'merchant_id'       => $merchant->getId(),
+            ]);
+
+        $merchant->setCategory2($subCategoryMetaData[Entity::CATEGORY2]);
+        $merchant->setCategory($subCategoryMetaData[Entity::CATEGORY]);
+
+        $this->repo->saveOrFail($merchant);
+    }
+
 }

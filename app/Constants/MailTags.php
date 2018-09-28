@@ -142,6 +142,8 @@ class MailTags
 
     // Dispute tags
     const DISPUTE_CREATED                  = 'dispute_created';
+    const DISPUTE_ACCEPTED_ADMIN           = 'dispute_accepted_admin';
+    const DISPUTE_SUBMITTED_ADMIN          = 'files_submitted_admin';
 
     // Daily Recon summary tags
     const DAILY_RECON_SUMMARY              = 'daily_recon_summary';
