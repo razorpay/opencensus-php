@@ -33,6 +33,7 @@ class ActivationFlowFactory
 
             return new $class();
         }
+
         throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_ACTIVATION_FLOW);
     }
 
