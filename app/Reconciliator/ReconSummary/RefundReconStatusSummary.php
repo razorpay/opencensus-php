@@ -10,8 +10,7 @@ class RefundReconStatusSummary extends DailyReconStatusSummary
                               ->transaction
                               ->fetchRefundReconStatusSummary(
                                   $from,
-                                  $to,
-                                  Constants::GATEWAYS);
+                                  $to);
 
         $formattedSummary = Helpers::getFormattedSummary($refundSummary);
 
@@ -27,7 +26,7 @@ class RefundReconStatusSummary extends DailyReconStatusSummary
                          ->fetchUnreconciledEntitiesBetweenDates(
                             $from,
                             $to,
-                            Constants::GATEWAYS,
+                            config('gateway.available'),
                             Constants::LIMIT,
                             Constants::PAYMENT_PARAMS,
                             Constants::REFUND_PARAMS
