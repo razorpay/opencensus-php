@@ -70,7 +70,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchByNpciReferenceIdAndMerchantReference(string $npciReferenceId, string $merchantReference)
+    public function fetchByMerchantReference(string $merchantReference)
     {
         return $this->newQuery()
                     ->where('merchant_reference', '=', $merchantReference)
