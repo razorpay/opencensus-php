@@ -4321,3 +4321,7 @@ ALTER TABLE upi
     ADD COLUMN reconciled_at INTEGER DEFAULT NULL AFTER npci_txn_id,
     ADD INDEX upi_gateway_reconciled_at_index (gateway, reconciled_at),
     ADD INDEX upi_npci_txn_id_index (npci_txn_id);
+
+# adds index on merchant_reference (upi table)
+ALTER TABLE upi
+    ADD INDEX upi_merchant_reference_index (merchant_reference);

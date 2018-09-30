@@ -904,8 +904,7 @@ class Gateway extends Base\Gateway
 
         $merchantReference = $callbackData[ResponseFields::PAYMENT_ID];
 
-        $gatewayPayment = $this->repo->fetchByNpciReferenceIdAndMerchantReference(
-            $npciReferenceId, $merchantReference);
+        $gatewayPayment = $this->repo->fetchByNpciReferenceIdAndMerchantReference($merchantReference);
 
         if(is_null($gatewayPayment) === false)
         {
