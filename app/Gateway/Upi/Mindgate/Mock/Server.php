@@ -384,10 +384,10 @@ class Server extends Base\Mock\Server
 
         $res = [
             $response['txn_id'],
-            $response['payment_id'],
+            $input[1],
             $response['amount'],
             $response['auth_time'],
-            $response['status'],
+            $input[1] === 'paysucc123' ? Status::SUCCESS : Status::FAILED,
             $response['message'],
             $response['resp_code'],
             $response['approval_num'],

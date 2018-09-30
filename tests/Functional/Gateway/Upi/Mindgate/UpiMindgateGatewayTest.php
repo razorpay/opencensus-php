@@ -676,7 +676,7 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals($expectedStatus, $status);
     }
 
-    public function testUnexpectedPayment()
+    public function testUnexpectedPaymentSuccess()
     {
         $this->fixtures->merchant->createAccount('100DemoAccount');
 
@@ -701,5 +701,20 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('authorized', $paymentEntity['status']);
 
         $this->assertEquals('pay_' . $upiEntity['payment_id'], $paymentEntity['id']);
+    }
+
+    public function testUnexpectedPaymentFail()
+    {
+        $this->fixtures->merchant->createAccount('100DemoAccount');
+
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['meRes'] = $this->mockServer()->encrypt($data['meRes']);
+
+        $response = $this->makeS2SCallbackAndGetContent($data);
+
+        $this->assertFalse($response['success']);
     }
 }
