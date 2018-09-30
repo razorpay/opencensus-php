@@ -2,15 +2,9 @@
 
 namespace RZP\Models\BharatQr;
 
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\QrCode;
-use RZP\Constants\Mode;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\VirtualAccount\Provider;
 
 class Core extends Base\Core
 {
@@ -38,7 +32,7 @@ class Core extends Base\Core
         {
             $bharatQr = (new Entity)->build($input);
 
-            $bharatQr = $this->mutex->acquireAndRelease(
+            $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
                 function() use ($bharatQr, $gatewayResponse, $terminal)
                 {

@@ -345,12 +345,23 @@ trait Authorize
             'gateway'    => $this->getEncryptedGatewayText($payment->getGateway()),
             'contact'    => $payment->getContact(),
             'amount'     => number_format(($payment->getAmount() / 100), 2),
-            'wallet'     => $payment->getWallet()
+            'wallet'     => $payment->getWallet(),
+            'merchant'   => $payment->merchant->getName(),
         ];
 
         // This is a hack to return direct method for IVR payments
         if ($payment->isCard() === true)
         {
+            $card = $payment->card;
+
+            $metaData = [
+                'issuer'     => $card->getIssuer(),
+                'network'    => $card->getNetworkCode(),
+                'last4'      => $card->getLast4(),
+            ];
+
+            $response['metadata'] = $metaData;
+
             $templateData = [
                'data' => $response,
                'cdn'  => $this->app['config']->get('url.cdn.production')

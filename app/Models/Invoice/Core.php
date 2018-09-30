@@ -485,13 +485,12 @@ class Core extends Base\Core
         string $invoiceId,
         Merchant\Entity $merchant): array
     {
-        $invoice = $this->repo->invoice
-                              ->findByPublicIdAndMerchant($invoiceId, $merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $merchant);
+        $invoice->getValidator()->validateInvoicePayable();
 
         $orderId       = $invoice->getOrderId();
         $publicOrderId = Order\Entity::getSignedId($orderId);
-
-        $customer = $invoice->customer;
+        $customer      = $invoice->customer;
 
         // Currently EPOS application usage following attributes.
         //
