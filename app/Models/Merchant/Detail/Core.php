@@ -106,8 +106,7 @@ class Core extends Base\Core
 
     /**
      * updates merchant category and category2 data if
-     * there is change in business subcategory or
-     * category and category2 are not set
+     * there is change in business subcategory
      * @param array           $input
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
@@ -121,26 +120,15 @@ class Core extends Base\Core
 
         $subCategory = $input[Entity::BUSINESS_SUBCATEGORY];
 
-        if (($merchantDetails->getBusinessSubcategory() !== $subCategory) or
-            (($merchant->getCategory() === 0) and
-             ($merchant->getCategory2() === null)))
+        if ($merchantDetails->getBusinessSubcategory() !== $subCategory)
         {
-            (new Merchant\Core)->updateSubCategoryMetaData($merchant, $subCategory);
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $subCategory);
         }
     }
 
     public function getMerchantDetails(Merchant\Entity $merchant, array $input = []): Entity
     {
         $merchantDetails = $merchant->merchantDetail;
-
-        if ($merchantDetails === null)
-        {
-            $this->trace->info(
-                TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
-                [ 'merchant_id'    => $merchant->getId() ]);
-
-            $merchantDetails = $this->createMerchantDetails($merchant, $input);
-        }
 
         return $merchantDetails;
     }
