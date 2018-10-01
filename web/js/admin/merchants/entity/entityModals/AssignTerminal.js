@@ -270,7 +270,12 @@ export default class TerminalForm extends Component {
             <option value="0">No</option>
           </SelectField>
 
-          <SelectField name="bank_transfer" label="Bank Transfer" defaultValue="0">
+          <SelectField
+              name="bank_transfer"
+              label="Bank Transfer"
+              defaultValue={isEditMode && (entity.bank_transfer !== null) ? (entity.bank_transfer | 0): ''}
+          >
+            <option value="" />
             <option value="1">Yes</option>
             <option value="0">No</option>
           </SelectField>
