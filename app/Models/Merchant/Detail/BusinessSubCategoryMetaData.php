@@ -776,6 +776,10 @@ class BusinessSubCategoryMetaData
             return self::SUB_CATEGORY_METADATA[$subcategory];
         }
 
-        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_SUBCATEGORY . $subcategory);
+        $errorDetails = [
+            Entity::BUSINESS_SUBCATEGORY => $subcategory,
+        ];
+
+        throw new InvalidArgumentException(ErrorCode::BAD_REQUEST_INVALID_SUBCATEGORY, $errorDetails);
     }
 }

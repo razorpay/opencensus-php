@@ -543,7 +543,7 @@ class MerchantDetailTest extends TestCase
         $this->assertSame('Kerala', $liveMerchant->merchantDetail->getBusinessRegisteredState());
         $this->assertSame('kerala@test.com', $liveMerchant->merchantDetail->getContactEmail());
     }
-
+    
     /**
      * checks that category and category2 details should be set on business subcategory change
      */

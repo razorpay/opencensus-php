@@ -77,7 +77,7 @@ class Core extends Base\Core
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
 
-            $this->autoUpdateMerchantCategoryDetails($input, $oldMerchantDetails, $merchant);
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($input, $oldMerchantDetails, $merchant);
 
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
 
@@ -164,12 +164,11 @@ class Core extends Base\Core
     /**
      * updates merchant category and category2 data if
      * there is change in business subcategory
-     *
      * @param array           $input
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      */
-    public function autoUpdateMerchantCategoryDetails(array $input, Entity $merchantDetails, Merchant\Entity $merchant)
+    public function autoUpdateMerchantCategoryDetailsIfApplicable(array $input, Entity $merchantDetails, Merchant\Entity $merchant)
     {
         if (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false)
         {
